@@ -1,0 +1,2827 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Query
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Query";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (Q)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span>
+     &raquo; 
+    <span class="title">Query</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Query
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Query</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  <dl>
+      <dt>Extended by:</dt>
+      <dd>Forwardable</dd>
+  </dl>
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd><span class='object_link'><a href="Tracing/Traceable.html" title="GraphQL::Tracing::Traceable (module)">Tracing::Traceable</a></span></dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/query.rb<span class="defines">,<br />
+  lib/graphql/query/result.rb,<br /> lib/graphql/query/context.rb,<br /> lib/graphql/query/executor.rb,<br /> lib/graphql/query/arguments.rb,<br /> lib/graphql/query/variables.rb,<br /> lib/graphql/query/null_context.rb,<br /> lib/graphql/query/literal_input.rb,<br /> lib/graphql/query/arguments_cache.rb,<br /> lib/graphql/query/serial_execution.rb,<br /> lib/graphql/query/validation_pipeline.rb,<br /> lib/graphql/query/input_validation_result.rb,<br /> lib/graphql/query/variable_validation_error.rb,<br /> lib/graphql/query/serial_execution/field_resolution.rb,<br /> lib/graphql/query/serial_execution/value_resolution.rb,<br /> lib/graphql/query/serial_execution/operation_resolution.rb,<br /> lib/graphql/query/serial_execution/selection_resolution.rb</span>
+</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>A combination of query string and <span class='object_link'><a href="Schema.html" title="GraphQL::Schema (class)">Schema</a></span> instance which can be reduced to a <span class='object_link'><a href="#result-instance_method" title="GraphQL::Query#result (method)">#result</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Query/ArgumentsCache.html" title="GraphQL::Query::ArgumentsCache (module)">ArgumentsCache</a></span>
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Query/Arguments.html" title="GraphQL::Query::Arguments (class)">Arguments</a></span>, <span class='object_link'><a href="Query/Context.html" title="GraphQL::Query::Context (class)">Context</a></span>, <span class='object_link'><a href="Query/Executor.html" title="GraphQL::Query::Executor (class)">Executor</a></span>, <span class='object_link'><a href="Query/InputValidationResult.html" title="GraphQL::Query::InputValidationResult (class)">InputValidationResult</a></span>, <span class='object_link'><a href="Query/LiteralInput.html" title="GraphQL::Query::LiteralInput (class)">LiteralInput</a></span>, <span class='object_link'><a href="Query/NullContext.html" title="GraphQL::Query::NullContext (class)">NullContext</a></span>, <span class='object_link'><a href="Query/OperationNameMissingError.html" title="GraphQL::Query::OperationNameMissingError (class)">OperationNameMissingError</a></span>, <span class='object_link'><a href="Query/Result.html" title="GraphQL::Query::Result (class)">Result</a></span>, <span class='object_link'><a href="Query/SerialExecution.html" title="GraphQL::Query::SerialExecution (class)">SerialExecution</a></span>, <span class='object_link'><a href="Query/ValidationPipeline.html" title="GraphQL::Query::ValidationPipeline (class)">ValidationPipeline</a></span>, <span class='object_link'><a href="Query/VariableValidationError.html" title="GraphQL::Query::VariableValidationError (class)">VariableValidationError</a></span>, <span class='object_link'><a href="Query/Variables.html" title="GraphQL::Query::Variables (class)">Variables</a></span>
+    
+  
+</p>
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#analysis_errors-instance_method" title="#analysis_errors (instance method)">#<strong>analysis_errors</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute analysis_errors.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#context-instance_method" title="#context (instance method)">#<strong>context</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute context.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#operation_name-instance_method" title="#operation_name (instance method)">#<strong>operation_name</strong>  &#x21d2; String<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#provided_variables-instance_method" title="#provided_variables (instance method)">#<strong>provided_variables</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute provided_variables.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#query_string-instance_method" title="#query_string (instance method)">#<strong>query_string</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute query_string.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#result_values-instance_method" title="#result_values (instance method)">#<strong>result_values</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#root_value-instance_method" title="#root_value (instance method)">#<strong>root_value</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The value for root types.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#schema-instance_method" title="#schema (instance method)">#<strong>schema</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute schema.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#subscription_topic-instance_method" title="#subscription_topic (instance method)">#<strong>subscription_topic</strong>  &#x21d2; String<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The triggered event, if this query is a subscription update.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#tracers-instance_method" title="#tracers (instance method)">#<strong>tracers</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute tracers.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#validate-instance_method" title="#validate (instance method)">#<strong>validate</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>If false, static validation is skipped (execution behavior for invalid queries is undefined).</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#warden-instance_method" title="#warden (instance method)">#<strong>warden</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute warden.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#arguments_for-instance_method" title="#arguments_for (instance method)">#<strong>arguments_for</strong>(irep_or_ast_node, definition)  &#x21d2; GraphQL::Query::Arguments </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Node-level cache for calculating arguments.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#document-instance_method" title="#document (instance method)">#<strong>document</strong>  &#x21d2; GraphQL::Language::Nodes::Document </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fragments-instance_method" title="#fragments (instance method)">#<strong>fragments</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)  &#x21d2; Query </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Prepare query <code>query_string</code> on <code>schema</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#inspect-instance_method" title="#inspect (instance method)">#<strong>inspect</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#irep_selection-instance_method" title="#irep_selection (instance method)">#<strong>irep_selection</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#merge_filters-instance_method" title="#merge_filters (instance method)">#<strong>merge_filters</strong>(only: nil, except: nil)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#mutation%3F-instance_method" title="#mutation? (instance method)">#<strong>mutation?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#operations-instance_method" title="#operations (instance method)">#<strong>operations</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#query%3F-instance_method" title="#query? (instance method)">#<strong>query?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve_type-instance_method" title="#resolve_type (instance method)">#<strong>resolve_type</strong>(abstract_type, value = :__undefined__)  &#x21d2; GraphQL::ObjectType<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The runtime type of <code>value</code> from <span class='object_link'><a href="Schema.html#resolve_type-instance_method" title="GraphQL::Schema#resolve_type (method)">Schema#resolve_type</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#result-instance_method" title="#result (instance method)">#<strong>result</strong>  &#x21d2; Hash </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Get the result for this query, executing it once.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#selected_operation-instance_method" title="#selected_operation (instance method)">#<strong>selected_operation</strong>  &#x21d2; GraphQL::Language::Nodes::OperationDefinition<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#selected_operation_name-instance_method" title="#selected_operation_name (instance method)">#<strong>selected_operation_name</strong>  &#x21d2; String<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The name of the operation to run (may be inferred).</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#static_errors-instance_method" title="#static_errors (instance method)">#<strong>static_errors</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#subscription%3F-instance_method" title="#subscription? (instance method)">#<strong>subscription?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#subscription_update%3F-instance_method" title="#subscription_update? (instance method)">#<strong>subscription_update?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#valid%3F-instance_method" title="#valid? (instance method)">#<strong>valid?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#validation_pipeline-instance_method" title="#validation_pipeline (instance method)">#<strong>validation_pipeline</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#variables-instance_method" title="#variables (instance method)">#<strong>variables</strong>  &#x21d2; GraphQL::Query::Variables </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Determine the values for variables of this query, using default values if a value isn’t provided at runtime.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Tracing/Traceable.html" title="GraphQL::Tracing::Traceable (module)">Tracing::Traceable</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Tracing/Traceable.html#trace-instance_method" title="GraphQL::Tracing::Traceable#trace (method)">#trace</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Query (class)">Query</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Prepare query <code>query_string</code> on <code>schema</code></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>schema</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Schema.html" title="GraphQL::Schema (class)">GraphQL::Schema</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>query_string</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt>#[]</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>an arbitrary hash of values which you can access in <span class='object_link'><a href="Field.html#resolve-instance_method" title="GraphQL::Field#resolve (method)">Field#resolve</a></span></p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>variables</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>values for <code>$variables</code> in the query</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>operation_name</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the query string contains many operations, this is the one which should be executed</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>root_value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the object used to resolve fields on the root type</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>max_depth</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum number of nested selections allowed for this query (falls back to schema-level value)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>max_complexity</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum field complexity for this query (falls back to schema-level value)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>except</span>
+      
+      
+        <span class='type'>(<tt>&lt;#call(schema_member, <span class='object_link'><a href="#context-instance_method" title="GraphQL::Query#context (method)">context</a></span>)&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>If provided, objects will be hidden from the schema when <code>.call(schema_member, context)</code> returns truthy</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>only</span>
+      
+      
+        <span class='type'>(<tt>&lt;#call(schema_member, <span class='object_link'><a href="#context-instance_method" title="GraphQL::Query#context (method)">context</a></span>)&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>If provided, objects will be hidden from the schema when <code>.call(schema_member, context)</code> returns false</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 79</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='comma'>,</span> <span class='id identifier rubyid_query_string'>query_string</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>query:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>document:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>variables:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='label'>validate:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>subscription_topic:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>operation_name:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>root_value:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>max_depth:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>max_complexity:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>except:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>only:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@schema</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span>
+  <span class='ivar'>@filter</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_default_filter'>default_filter</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='label'>except:</span> <span class='id identifier rubyid_except'>except</span><span class='comma'>,</span> <span class='label'>only:</span> <span class='id identifier rubyid_only'>only</span><span class='rparen'>)</span>
+  <span class='ivar'>@context</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_context_class'>context_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>query:</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='label'>object:</span> <span class='id identifier rubyid_root_value'>root_value</span><span class='comma'>,</span> <span class='label'>values:</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='ivar'>@subscription_topic</span> <span class='op'>=</span> <span class='id identifier rubyid_subscription_topic'>subscription_topic</span>
+  <span class='ivar'>@root_value</span> <span class='op'>=</span> <span class='id identifier rubyid_root_value'>root_value</span>
+  <span class='ivar'>@fragments</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@operations</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@validate</span> <span class='op'>=</span> <span class='id identifier rubyid_validate'>validate</span>
+  <span class='comment'># TODO: remove support for global tracers
+</span>  <span class='ivar'>@tracers</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_tracers'>tracers</span> <span class='op'>+</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span><span class='period'>.</span><span class='id identifier rubyid_tracers'><span class='object_link'><a href="Tracing.html#tracers-class_method" title="GraphQL::Tracing.tracers (method)">tracers</a></span></span> <span class='op'>+</span> <span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span> <span class='op'>?</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='symbol'>:tracers</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='comment'># Support `ctx[:backtrace] = true` for wrapping backtraces
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_context'>context</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='symbol'>:backtrace</span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ivar'>@tracers</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Backtrace.html" title="GraphQL::Backtrace (class)">Backtrace</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Backtrace/Tracer.html" title="GraphQL::Backtrace::Tracer (module)">Tracer</a></span></span><span class='rparen'>)</span>
+    <span class='ivar'>@tracers</span> <span class='op'>&lt;&lt;</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Backtrace.html" title="GraphQL::Backtrace (class)">Backtrace</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Backtrace/Tracer.html" title="GraphQL::Backtrace::Tracer (module)">Tracer</a></span></span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@analysis_errors</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_variables'>variables</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Query variables should be a Hash, not a String. Try JSON.parse to prepare variables.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@provided_variables</span> <span class='op'>=</span> <span class='id identifier rubyid_variables'>variables</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@query_string</span> <span class='op'>=</span> <span class='id identifier rubyid_query_string'>query_string</span> <span class='op'>||</span> <span class='id identifier rubyid_query'>query</span>
+  <span class='ivar'>@document</span> <span class='op'>=</span> <span class='id identifier rubyid_document'>document</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@query_string</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@document</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Query should only be provided a query string or a document, not both.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># A two-layer cache of type resolution:
+</span>  <span class='comment'># { abstract_type =&gt; { value =&gt; resolved_type } }
+</span>  <span class='ivar'>@resolved_types_cache</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_h1'>h1</span><span class='comma'>,</span> <span class='id identifier rubyid_k1'>k1</span><span class='op'>|</span>
+    <span class='id identifier rubyid_h1'>h1</span><span class='lbracket'>[</span><span class='id identifier rubyid_k1'>k1</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_h2'>h2</span><span class='comma'>,</span> <span class='id identifier rubyid_k2'>k2</span><span class='op'>|</span>
+      <span class='id identifier rubyid_h2'>h2</span><span class='lbracket'>[</span><span class='id identifier rubyid_k2'>k2</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_resolve_type'>resolve_type</span><span class='lparen'>(</span><span class='id identifier rubyid_k1'>k1</span><span class='comma'>,</span> <span class='id identifier rubyid_k2'>k2</span><span class='comma'>,</span> <span class='ivar'>@context</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@arguments_cache</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Query/ArgumentsCache.html" title="GraphQL::Query::ArgumentsCache (module)">ArgumentsCache</a></span></span><span class='period'>.</span><span class='id identifier rubyid_build'><span class='object_link'><a href="Query/ArgumentsCache.html#build-class_method" title="GraphQL::Query::ArgumentsCache.build (method)">build</a></span></span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
+
+  <span class='comment'># Trying to execute a document
+</span>  <span class='comment'># with no operations returns an empty hash
+</span>  <span class='ivar'>@ast_variables</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@mutation</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='ivar'>@operation_name</span> <span class='op'>=</span> <span class='id identifier rubyid_operation_name'>operation_name</span>
+  <span class='ivar'>@prepared_ast</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='ivar'>@validation_pipeline</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@max_depth</span> <span class='op'>=</span> <span class='id identifier rubyid_max_depth'>max_depth</span> <span class='op'>||</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_max_depth'>max_depth</span>
+  <span class='ivar'>@max_complexity</span> <span class='op'>=</span> <span class='id identifier rubyid_max_complexity'>max_complexity</span> <span class='op'>||</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_max_complexity'>max_complexity</span>
+
+  <span class='ivar'>@result_values</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@executed</span> <span class='op'>=</span> <span class='kw'>false</span>
+
+  <span class='comment'># TODO add a general way to define schema-level filters
+</span>  <span class='comment'># TODO also add this to schema dumps
+</span>  <span class='kw'>if</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:visible?</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_merge_filters'>merge_filters</span><span class='lparen'>(</span><span class='label'>only:</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_method'>method</span><span class='lparen'>(</span><span class='symbol'>:visible?</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="analysis_errors=-instance_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="analysis_errors-instance_method">
+  
+    #<strong>analysis_errors</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute analysis_errors</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+232
+233
+234</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 232</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_analysis_errors'>analysis_errors</span>
+  <span class='ivar'>@analysis_errors</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="context-instance_method">
+  
+    #<strong>context</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute context</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+32
+33
+34</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 32</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_context'>context</span>
+  <span class='ivar'>@context</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="operation_name=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="operation_name-instance_method">
+  
+    #<strong>operation_name</strong>  &#x21d2; <tt>String</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+38
+39
+40</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 38</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_operation_name'>operation_name</span>
+  <span class='ivar'>@operation_name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="provided_variables-instance_method">
+  
+    #<strong>provided_variables</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute provided_variables</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+32
+33
+34</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 32</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_provided_variables'>provided_variables</span>
+  <span class='ivar'>@provided_variables</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="query_string=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="query_string-instance_method">
+  
+    #<strong>query_string</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute query_string</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+43
+44
+45</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 43</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_query_string'>query_string</span>
+  <span class='ivar'>@query_string</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="result_values=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="result_values-instance_method">
+  
+    #<strong>result_values</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+154
+155
+156</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 154</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_result_values'>result_values</span>
+  <span class='ivar'>@result_values</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="root_value=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="root_value-instance_method">
+  
+    #<strong>root_value</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The value for root types</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+35
+36
+37</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 35</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_root_value'>root_value</span>
+  <span class='ivar'>@root_value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="schema-instance_method">
+  
+    #<strong>schema</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute schema</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+32
+33
+34</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 32</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_schema'>schema</span>
+  <span class='ivar'>@schema</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="subscription_topic-instance_method">
+  
+    #<strong>subscription_topic</strong>  &#x21d2; <tt>String</tt><sup>?</sup>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the triggered event, if this query is a subscription update</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the triggered event, if this query is a subscription update</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+61
+62
+63</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 61</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_subscription_topic'>subscription_topic</span>
+  <span class='ivar'>@subscription_topic</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="tracers-instance_method">
+  
+    #<strong>tracers</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute tracers</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+66
+67
+68</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 66</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_tracers'>tracers</span>
+  <span class='ivar'>@tracers</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="validate=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="validate-instance_method">
+  
+    #<strong>validate</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns if false, static validation is skipped (execution behavior for invalid queries is undefined)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if false, static validation is skipped (execution behavior for invalid queries is undefined)</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+41
+42
+43</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 41</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_validate'>validate</span>
+  <span class='ivar'>@validate</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="warden-instance_method">
+  
+    #<strong>warden</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute warden</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+32
+33
+34</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 32</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_warden'>warden</span>
+  <span class='ivar'>@warden</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="arguments_for-instance_method">
+  
+    #<strong>arguments_for</strong>(irep_or_ast_node, definition)  &#x21d2; <tt><span class='object_link'><a href="Query/Arguments.html" title="GraphQL::Query::Arguments (class)">GraphQL::Query::Arguments</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Node-level cache for calculating arguments. Used during execution and query analysis.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Query/Arguments.html" title="GraphQL::Query::Arguments (class)">GraphQL::Query::Arguments</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Arguments for this node, merging default values, literal values and query variables</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+217
+218
+219</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 217</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_arguments_for'>arguments_for</span><span class='lparen'>(</span><span class='id identifier rubyid_irep_or_ast_node'>irep_or_ast_node</span><span class='comma'>,</span> <span class='id identifier rubyid_definition'>definition</span><span class='rparen'>)</span>
+  <span class='ivar'>@arguments_cache</span><span class='lbracket'>[</span><span class='id identifier rubyid_irep_or_ast_node'>irep_or_ast_node</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_definition'>definition</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="document-instance_method">
+  
+    #<strong>document</strong>  &#x21d2; <tt><span class='object_link'><a href="Language/Nodes/Document.html" title="GraphQL::Language::Nodes::Document (class)">GraphQL::Language::Nodes::Document</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Language/Nodes/Document.html" title="GraphQL::Language::Nodes::Document (class)">GraphQL::Language::Nodes::Document</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+46
+47
+48</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 46</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_document'>document</span>
+  <span class='id identifier rubyid_with_prepared_ast'>with_prepared_ast</span> <span class='lbrace'>{</span> <span class='ivar'>@document</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="fragments-instance_method">
+  
+    #<strong>fragments</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+156
+157
+158</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 156</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fragments'>fragments</span>
+  <span class='id identifier rubyid_with_prepared_ast'>with_prepared_ast</span> <span class='lbrace'>{</span> <span class='ivar'>@fragments</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="inspect-instance_method">
+  
+    #<strong>inspect</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+50
+51
+52</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 50</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_inspect'>inspect</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>query ...</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="irep_selection-instance_method">
+  
+    #<strong>irep_selection</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+204
+205
+206
+207
+208
+209
+210
+211
+212</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 204</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_irep_selection'>irep_selection</span>
+  <span class='ivar'>@selection</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_selected_operation'>selected_operation</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_internal_representation'>internal_representation</span>
+      <span class='id identifier rubyid_internal_representation'>internal_representation</span><span class='period'>.</span><span class='id identifier rubyid_operation_definitions'>operation_definitions</span><span class='lbracket'>[</span><span class='id identifier rubyid_selected_operation'>selected_operation</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span>
+    <span class='kw'>else</span>
+      <span class='kw'>nil</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="merge_filters-instance_method">
+  
+    #<strong>merge_filters</strong>(only: nil, except: nil)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+268
+269
+270
+271
+272
+273
+274
+275</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 268</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_merge_filters'>merge_filters</span><span class='lparen'>(</span><span class='label'>only:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>except:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@prepared_ast</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Can&#39;t add filters after preparing the query</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@filter</span> <span class='op'>=</span> <span class='ivar'>@filter</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='label'>only:</span> <span class='id identifier rubyid_only'>only</span><span class='comma'>,</span> <span class='label'>except:</span> <span class='id identifier rubyid_except'>except</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="mutation?-instance_method">
+  
+    #<strong>mutation?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+259
+260
+261</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 259</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_mutation?'>mutation?</span>
+  <span class='id identifier rubyid_with_prepared_ast'>with_prepared_ast</span> <span class='lbrace'>{</span> <span class='ivar'>@mutation</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="operations-instance_method">
+  
+    #<strong>operations</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+160
+161
+162</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 160</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_operations'>operations</span>
+  <span class='id identifier rubyid_with_prepared_ast'>with_prepared_ast</span> <span class='lbrace'>{</span> <span class='ivar'>@operations</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="query?-instance_method">
+  
+    #<strong>query?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+263
+264
+265</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 263</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_query?'>query?</span>
+  <span class='id identifier rubyid_with_prepared_ast'>with_prepared_ast</span> <span class='lbrace'>{</span> <span class='ivar'>@query</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolve_type-instance_method">
+  
+    #<strong>resolve_type</strong>(abstract_type, value = :__undefined__)  &#x21d2; <tt><span class='object_link'><a href="ObjectType.html" title="GraphQL::ObjectType (class)">GraphQL::ObjectType</a></span></tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The runtime type of <code>value</code> from <span class='object_link'><a href="Schema.html#resolve_type-instance_method" title="GraphQL::Schema#resolve_type (method)">Schema#resolve_type</a></span></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>abstract_type</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="UnionType.html" title="GraphQL::UnionType (class)">GraphQL::UnionType</a></span></tt>, <tt><span class='object_link'><a href="InterfaceType.html" title="GraphQL::InterfaceType (class)">GraphQL::InterfaceType</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>:__undefined__</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>Any runtime value</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="ObjectType.html" title="GraphQL::ObjectType (class)">GraphQL::ObjectType</a></span></tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The runtime type of <code>value</code> from <span class='object_link'><a href="Schema.html#resolve_type-instance_method" title="GraphQL::Schema#resolve_type (method)">Schema#resolve_type</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li>to apply filtering from `only` / `except`</li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 247</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_resolve_type'>resolve_type</span><span class='lparen'>(</span><span class='id identifier rubyid_abstract_type'>abstract_type</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='symbol'>:__undefined__</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>==</span> <span class='symbol'>:__undefined__</span>
+    <span class='comment'># Old method signature
+</span>    <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_abstract_type'>abstract_type</span>
+    <span class='id identifier rubyid_abstract_type'>abstract_type</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Schema/Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@resolved_types_cache</span><span class='lbracket'>[</span><span class='id identifier rubyid_abstract_type'>abstract_type</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_value'>value</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="result-instance_method">
+  
+    #<strong>result</strong>  &#x21d2; <tt>Hash</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Get the result for this query, executing it once</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A GraphQL response, with <code>"data"</code> and/or <code>"errors"</code> keys</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+166
+167
+168
+169
+170
+171
+172
+173</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 166</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_result'>result</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='ivar'>@executed</span>
+    <span class='id identifier rubyid_with_prepared_ast'>with_prepared_ast</span> <span class='lbrace'>{</span>
+      <span class='const'><span class='object_link'><a href="Execution.html" title="GraphQL::Execution (module)">Execution</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Execution/Multiplex.html" title="GraphQL::Execution::Multiplex (class)">Multiplex</a></span></span><span class='period'>.</span><span class='id identifier rubyid_run_queries'><span class='object_link'><a href="Execution/Multiplex.html#run_queries-class_method" title="GraphQL::Execution::Multiplex.run_queries (method)">run_queries</a></span></span><span class='lparen'>(</span><span class='ivar'>@schema</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='kw'>self</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='ivar'>@context</span><span class='rparen'>)</span>
+    <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@result</span> <span class='op'>||=</span> <span class='const'><span class='object_link'><a href="" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Query/Result.html" title="GraphQL::Query::Result (class)">Result</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Query/Result.html#initialize-instance_method" title="GraphQL::Query::Result#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>query:</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='label'>values:</span> <span class='ivar'>@result_values</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="selected_operation-instance_method">
+  
+    #<strong>selected_operation</strong>  &#x21d2; <tt><span class='object_link'><a href="Language/Nodes/OperationDefinition.html" title="GraphQL::Language::Nodes::OperationDefinition (class)">GraphQL::Language::Nodes::OperationDefinition</a></span></tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Language/Nodes/OperationDefinition.html" title="GraphQL::Language::Nodes::OperationDefinition (class)">GraphQL::Language::Nodes::OperationDefinition</a></span></tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+182
+183
+184</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 182</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_selected_operation'>selected_operation</span>
+  <span class='id identifier rubyid_with_prepared_ast'>with_prepared_ast</span> <span class='lbrace'>{</span> <span class='ivar'>@selected_operation</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="selected_operation_name-instance_method">
+  
+    #<strong>selected_operation_name</strong>  &#x21d2; <tt>String</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The name of the operation to run (may be inferred)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The name of the operation to run (may be inferred)</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+55
+56
+57
+58</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 55</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_selected_operation_name'>selected_operation_name</span>
+  <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>unless</span> <span class='id identifier rubyid_selected_operation'>selected_operation</span>
+  <span class='id identifier rubyid_selected_operation'>selected_operation</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="static_errors-instance_method">
+  
+    #<strong>static_errors</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+175
+176
+177</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 175</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_static_errors'>static_errors</span>
+  <span class='id identifier rubyid_validation_errors'>validation_errors</span> <span class='op'>+</span> <span class='id identifier rubyid_analysis_errors'>analysis_errors</span> <span class='op'>+</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_errors'>errors</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="subscription?-instance_method">
+  
+    #<strong>subscription?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+277
+278
+279</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 277</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_subscription?'>subscription?</span>
+  <span class='id identifier rubyid_with_prepared_ast'>with_prepared_ast</span> <span class='lbrace'>{</span> <span class='ivar'>@subscription</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="subscription_update?-instance_method">
+  
+    #<strong>subscription_update?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+139
+140
+141</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 139</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_subscription_update?'>subscription_update?</span>
+  <span class='ivar'>@subscription_topic</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_subscription?'>subscription?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="valid?-instance_method">
+  
+    #<strong>valid?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+233
+234
+235</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 233</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_valid?'>valid?</span>
+  <span class='id identifier rubyid_validation_pipeline'>validation_pipeline</span><span class='period'>.</span><span class='id identifier rubyid_valid?'>valid?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_analysis_errors'>analysis_errors</span><span class='period'>.</span><span class='id identifier rubyid_none?'>none?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="validation_pipeline-instance_method">
+  
+    #<strong>validation_pipeline</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+226
+227
+228</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 226</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_validation_pipeline'>validation_pipeline</span>
+  <span class='id identifier rubyid_with_prepared_ast'>with_prepared_ast</span> <span class='lbrace'>{</span> <span class='ivar'>@validation_pipeline</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="variables-instance_method">
+  
+    #<strong>variables</strong>  &#x21d2; <tt><span class='object_link'><a href="Query/Variables.html" title="GraphQL::Query::Variables (class)">GraphQL::Query::Variables</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Determine the values for variables of this query, using default values
+if a value isn’t provided at runtime.</p>
+
+<p>If some variable is invalid, errors are added to #validation_errors.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Query/Variables.html" title="GraphQL::Query::Variables (class)">GraphQL::Query::Variables</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Variables to apply to this query</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query.rb', line 192</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_variables'>variables</span>
+  <span class='ivar'>@variables</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='id identifier rubyid_with_prepared_ast'>with_prepared_ast</span> <span class='lbrace'>{</span>
+      <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Query/Variables.html" title="GraphQL::Query::Variables (class)">Variables</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Query/Variables.html#initialize-instance_method" title="GraphQL::Query::Variables#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+        <span class='ivar'>@context</span><span class='comma'>,</span>
+        <span class='ivar'>@ast_variables</span><span class='comma'>,</span>
+        <span class='ivar'>@provided_variables</span><span class='comma'>,</span>
+      <span class='rparen'>)</span>
+    <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu Jun 21 10:34:16 2018 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.12 (ruby-2.4.2).
+</div>
+
+    </div>
+  </body>
+</html>

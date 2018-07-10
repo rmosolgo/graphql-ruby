@@ -1,0 +1,208 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Overview</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.8.5/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#authorization-guides">Authorization</a>
+  &raquo; Overview
+</p>
+
+
+
+<h1 class="guide-header">Overview</h1>
+<div class="guide-container">
+  <p>Here’s a conceptual approach to GraphQL authorization, followed by an introduction to the built-in authorization framework. Each part of the framework is described in detail in its own guide.</p>
+
+<h2 id="authorization-graphql-vs-rest">Authorization: GraphQL vs REST</h2>
+
+<p>In a REST API, the common authorization pattern is fairly simple. Before performing the requested action, the server asserts that the current client has the required permissions for that action. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PostsController</span> <span class="o">&lt;</span> <span class="no">ApiController</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="c1"># First, check the client's permission level:</span>
+    <span class="k">if</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">can?</span><span class="p">(</span><span class="ss">:create_posts</span><span class="p">)</span>
+      <span class="c1"># If the user is permitted, then perform the action:</span>
+      <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+      <span class="n">render</span> <span class="ss">json: </span><span class="n">post</span>
+    <span class="k">else</span>
+      <span class="c1"># Otherwise, return an error:</span>
+      <span class="n">render</span> <span class="ss">nothing: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">status: </span><span class="mi">403</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>However, this request-by-request mindset doesn’t map well to GraphQL because there’s only one controller and the requests that come to it may be <em>very</em> different. To illustrate the problem:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GraphqlController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">execute</span>
+    <span class="c1"># What permission is required for `query_str`?</span>
+    <span class="c1"># It depends on the string! So, you can't generalize at this level.</span>
+    <span class="k">if</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">can?</span><span class="p">(</span><span class="ss">:"???"</span><span class="p">)</span>
+      <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="ss">context: </span><span class="n">ctx</span><span class="p">,</span> <span class="ss">variables: </span><span class="n">variables</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>So, what new mindset will work with a GraphQL API?</p>
+
+<p>For <strong>mutations</strong>, remember that each mutation is like an API request in itself. For example, <code class="highlighter-rouge">Posts#create</code> above would map to the <code class="highlighter-rouge">createPost(...)</code> mutation in GraphQL. So, each mutation should be authorized in its own right.</p>
+
+<p>For <strong>queries</strong>, you can think of each individual <em>object</em> like a <code class="highlighter-rouge">GET</code> request to a REST API. So, each object should be authorized for reading in its own right.</p>
+
+<p>By applying this mindset, each part of the GraphQL query will be properly authorized before it is executed. Also, since the different units of code are each authorized on their own, you can be sure that each incoming query will be properly authorized, even if it’s a brand new query that the server has never seen before.</p>
+
+<h2 id="what-about-authentication">What About Authentication?</h2>
+
+<p>As a reminder:</p>
+
+<ul>
+  <li><em>Authentication</em> is the process of determining what user is making the current request, for example, accepting a username and password, or finding a <code class="highlighter-rouge">User</code> in the database from <code class="highlighter-rouge">session[:current_user_id]</code>.</li>
+  <li><em>Authorization</em> is the process of verifying that the current user has permission to do something (or see something), for example, checking <code class="highlighter-rouge">admin?</code> status or looking up permission groups from the database.</li>
+</ul>
+
+<p>In general, authentication is <em>not</em> addressed in GraphQL at all. Instead, your controller should get the current user based on the HTTP request (eg, an HTTP header or a cookie) and provide that information to the GraphQL query. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GraphqlController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">execute</span>
+    <span class="c1"># Somehow get the the current `User` from this HTTP request.</span>
+    <span class="n">current_user</span> <span class="o">=</span> <span class="n">get_logged_in_user</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="c1"># Provide the current user in `context` for use during the query</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">current_user: </span><span class="n">current_user</span> <span class="p">}</span>
+    <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>After your HTTP handler has loaded the current user, you can access it via <code class="highlighter-rouge">context[:current_user]</code> in your GraphQL code.</p>
+
+<h2 id="authorization-in-your-business-logic">Authorization in Your Business Logic</h2>
+
+<p>Before introducing GraphQL-specific authorization, consider the advantages of application-level authorization. (See the <a href="https://graphql.org/learn/authorization/">GraphQL.org post</a> on the same topic.) For example, here’s authorization mixed into the GraphQL API layer:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span>
+
+<span class="k">def</span> <span class="nf">posts</span>
+  <span class="c1"># Perform an auth check in the GraphQL field code:</span>
+  <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">admin?</span>
+    <span class="no">Post</span><span class="p">.</span><span class="nf">all</span>
+  <span class="k">else</span>
+    <span class="no">Post</span><span class="p">.</span><span class="nf">published</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The downside of this is that, when <code class="highlighter-rouge">Types::Post</code> is queried in other contexts, the same authorization check may not be applied. Additionally, since the authorization code is coupled with the GraphQL API, the only way to test it is via GraphQL queries, which adds some complexity to tests.</p>
+
+<p>Alternatively, you could move the authorization to your business logic, the <code class="highlighter-rouge">Post</code> class:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="c1"># Return the list of posts which `user` may see</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">posts_for</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">user</span><span class="p">.</span><span class="nf">admin?</span>
+      <span class="nb">self</span><span class="p">.</span><span class="nf">all</span>
+    <span class="k">else</span>
+      <span class="nb">self</span><span class="p">.</span><span class="nf">published</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, use this application method in your GraphQL code:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span>
+
+<span class="k">def</span> <span class="nf">posts</span>
+  <span class="c1"># Fetch the posts this user can see:</span>
+  <span class="no">Post</span><span class="p">.</span><span class="nf">posts_for</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">])</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>In this case, <code class="highlighter-rouge">Post.posts_for(user)</code> could be tested <em>independently</em> from GraphQL. Then, you have less to worry about in your GraphQL tests. As a bonus, you can use <code class="highlighter-rouge">Post.posts_for(user)</code> in <em>other</em> parts of the app, too, such as the web UI or REST API.</p>
+
+<h2 id="graphql-rubys-authorization-framework">GraphQL-Ruby’s Authorization Framework</h2>
+
+<p>Despite the advantages of authorization at the application layer, as described above, there might be some reasons to authorize in the API layer:</p>
+
+<ul>
+  <li>Have an extra assurance that your API layer is secure</li>
+  <li>Authorize the API request <em>before</em> running it (see “visibility” below)</li>
+  <li>Integrate with code that doesn’t have authorization built-in</li>
+</ul>
+
+<p>To accomplish these, you can use GraphQL-Ruby’s authorization framework. The framework has three levels, each of which is described in its own guide:</p>
+
+<ul>
+  <li><a href="/authorization/visibility">Visibility</a> hides parts of the GraphQL schema from users who don’t have full permission.</li>
+  <li><a href="/authorization/accessibility">Accessibility</a> prevents running queries which access parts of the GraphQL schema, unless users have the required permission.</li>
+  <li><a href="/authorization/authorization">Authorization</a> checks application objects during execution to be sure the user has permission to access them.</li>
+</ul>
+
+<p>Also, GraphQL::Pro has integrations for CanCan and Pundit.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/authorization/overview.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Overview">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

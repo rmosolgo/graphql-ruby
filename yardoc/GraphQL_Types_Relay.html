@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.5/GraphQL/Types/Relay" />
+  </head>
+  <body>
+    <p>Module: GraphQL::Types::Relay
+This module contains some types and fields that could support Relay
+conventions in GraphQL. 
+You can use these classes out of the box if you want, but if you
+want to use your <em>own</em> GraphQL extensions along with the features in
+this code, you could also open up the source files and copy the
+relevant methods and configuration into your own classes. 
+For example, the provided object types extend
+Types::Relay::BaseObject, but you might want to:</p>
+<ol>
+  <li>Migrate the extensions from Types::Relay::BaseObject into <em>your
+app’s</em> base object 2. Copy Relay::BaseConnection, Relay::BaseEdge,
+etc into <em>your app</em>, and
+change them to extend <em>your</em> base object.
+Similarly, <code class="highlighter-rouge">BaseField</code>’s extensions could be migrated to your app
+and <code class="highlighter-rouge">Node</code> could be implemented to mix in your base interface
+module. 
+Defined Under Namespace:
+BaseInterface, Node (modules)
+BaseConnection, BaseEdge, BaseField, BaseObject, PageInfo (classes)</li>
+</ol>
+
+
+  </body>
+</html>

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.2/GraphQL/Schema" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.5/GraphQL/Schema" />
   </head>
   <body>
     <p>Class: GraphQL::Schema &lt; Object
@@ -11,28 +11,29 @@ enums, scalars.
 Includes:
 GraphQL::Define::InstanceDefinable
 Extended by:
-Forwardable, GraphQL::Schema::Member::AcceptsDefinition
+GraphQL::Schema::Member::AcceptsDefinition, Forwardable
 Class methods:
-context_class, cursor_encoder, default_max_page_size,
-defined_instrumenters, defined_middleware,
+accessible?, call_on_type_class, context_class, cursor_encoder,
+default_max_page_size, defined_instrumenters, defined_middleware,
 defined_multiplex_analyzers, defined_query_analyzers,
 defined_tracers, directives, from_definition, from_introspection,
-graphql_definition, id_from_object, inherited, instrument,
-introspection, lazy_classes, lazy_resolve, max_complexity,
-max_depth, middleware, multiplex_analyzer, mutation, object_from_id,
-orphan_types, plugins, query, query_analyzer, rescue_from,
-resolve_type, subscription, to_graphql, tracer, type_error, use
+graphql_definition, id_from_object, inaccessible_fields, inherited,
+instrument, introspection, lazy_classes, lazy_resolve,
+max_complexity, max_depth, middleware, multiplex_analyzer, mutation,
+object_from_id, orphan_types, plugins, query, query_analyzer,
+rescue_from, resolve_type, subscription, to_graphql, tracer,
+type_error, unauthorized_object, use, visible?
 Instance methods:
-as_json, check_resolved_type, default_filter, define, execute,
-execution_strategy_for_operation, find, get_field, get_fields,
-id_from_object, id_from_object=, initialize, initialize_copy,
-instrument, introspection_system, lazy?, lazy_method_name,
-multiplex, object_from_id, object_from_id=, parse_error,
-parse_error=, possible_types, rebuild_artifacts, references_to,
-remove_handler, rescue_from, rescue_middleware, rescues?,
-resolve_type, resolve_type=, root_type_for_operation, root_types,
-to_definition, to_document, to_json, type_error, type_error=,
-type_from_ast, types, union_memberships, validate,
+after_lazy, as_json, check_resolved_type, default_filter, define,
+execute, execution_strategy_for_operation, find, get_field,
+get_fields, id_from_object, id_from_object=, initialize,
+initialize_copy, instrument, introspection_system, lazy?,
+lazy_method_name, multiplex, object_from_id, object_from_id=,
+parse_error, parse_error=, possible_types, rebuild_artifacts,
+references_to, remove_handler, rescue_from, rescue_middleware,
+rescues?, resolve_type, resolve_type=, root_type_for_operation,
+root_types, to_definition, to_document, to_json, type_error,
+type_error=, type_from_ast, types, union_memberships, validate,
 with_definition_error_check</p>
 
 

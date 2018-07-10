@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.5/GraphQL/Types/Relay/BaseConnection" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Types::Relay::BaseConnection &lt; GraphQL::Types::Relay…
+Use this to implement Relay connections, or take it as inspiration
+for Relay classes in your own app. 
+You may wish to copy this code into your own base class, so you can
+extend your own <code class="highlighter-rouge">BaseObject</code> instead of <code class="highlighter-rouge">GraphQL::Schema::Object</code>. 
+Examples:</p>
+<h1 id="implementation-a-connection-and-edge">Implementation a connection and edge</h1>
+<h1 id="given-some-object-in-your-app-">Given some object in your app …</h1>
+<p>class Types::Post &lt; BaseObject
+end</p>
+<h1 id="make-a-couple-of-base-classes">Make a couple of base classes:</h1>
+<p>class Types::BaseEdge &lt; GraphQL::Types::Relay::BaseEdge; end
+class Types::BaseConnection &lt; GraphQL::Types::Relay::BaseConnection; end</p>
+<h1 id="then-extend-them-for-the-object-in-your-app">Then extend them for the object in your app</h1>
+<p>class Types::PostEdge &lt; Types::BaseEdge
+node_type(Types::Post)
+end
+class Types::PostConnection &lt; Types::BaseConnection
+edge_type(Types::PostEdge)
+end
+See Also:</p>
+<ul>
+  <li>Relay::BaseEdge - for edge types
+Extended by:
+Forwardable
+Class methods:
+nodes_field
+Instance methods:
+nodes</li>
+</ul>
+
+
+  </body>
+</html>

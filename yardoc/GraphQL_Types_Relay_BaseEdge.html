@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.5/GraphQL/Types/Relay/BaseEdge" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Types::Relay::BaseEdge &lt; GraphQL::Types::Relay::Base…
+A class-based definition for Relay edges. 
+Use this as a parent class in your app, or use it as inspiration for
+your own base <code class="highlighter-rouge">Edge</code> class. 
+For example, you may want to extend your own <code class="highlighter-rouge">BaseObject</code> instead of
+the built-in <code class="highlighter-rouge">GraphQL::Schema::Object</code>. 
+Examples:</p>
+<h1 id="making-a-useredge-type">Making a UserEdge type</h1>
+<h1 id="make-a-base-class-for-your-app">Make a base class for your app</h1>
+<p>class Types::BaseEdge &lt; GraphQL::Types::Relay::BaseEdge
+end</p>
+<h1 id="then-extend-your-own-base-class">Then extend your own base class</h1>
+<p>class Types::UserEdge &lt; Types::BaseEdge
+node_type(Types::User)
+end
+See Also:</p>
+<ul>
+  <li>{Relay::BaseConnection} - for connection types
+Class methods:
+node_type</li>
+</ul>
+
+
+  </body>
+</html>

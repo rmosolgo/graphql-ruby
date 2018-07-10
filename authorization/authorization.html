@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Authorization</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.8.5/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#authorization-guides">Authorization</a>
+  &raquo; Authorization
+</p>
+
+
+
+<h1 class="guide-header">Authorization</h1>
+<div class="guide-container">
+  <p>While a query is running, you can check each object to see whether the current user is authorized to interact with that object. If the user is <em>not</em> authorized, you can handle the case with an error.</p>
+
+<h2 id="adding-authorization-checks">Adding Authorization Checks</h2>
+
+<p>Schema members have <code class="highlighter-rouge">.authorized?(value, context)</code> methods which will be called during execution:</p>
+
+<ul>
+  <li>Type and mutation classes have <code class="highlighter-rouge">.authorized?(value, context)</code> class methods</li>
+  <li>Fields and arguments have <code class="highlighter-rouge">#authorized?(value, context)</code> instance methods</li>
+</ul>
+
+<p>These methods are called with:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">value</code>: the object from your application which was returned from a field</li>
+  <li><code class="highlighter-rouge">context</code>: the query context, based on the hash passed as <code class="highlighter-rouge">context:</code></li>
+</ul>
+
+<p>When you implement this method to return <code class="highlighter-rouge">false</code>, the query will be halted, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Friendship</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># You can only see the details on a `Friendship`</span>
+  <span class="c1"># if you're one of the people involved in it.</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">object</span><span class="p">.</span><span class="nf">to_friend</span> <span class="o">==</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">]</span> <span class="o">||</span> <span class="n">object</span><span class="p">.</span><span class="nf">from_friend</span> <span class="o">==</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">])</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>(Always call <code class="highlighter-rouge">super</code> to get the default checks, too.)</p>
+
+<p>Now, whenever an object of type <code class="highlighter-rouge">Friendship</code> is going to be returned to the client, it will first go through the <code class="highlighter-rouge">.authorized?</code> method. If that method returns false, the field will get <code class="highlighter-rouge">nil</code> instead of the original object, and you may handle that case with an error (see below).</p>
+
+<h2 id="handling-unauthorized-objects">Handling Unauthorized Objects</h2>
+
+<p>By default, GraphQL-Ruby silently replaces unauthorized objects with <code class="highlighter-rouge">nil</code>, as if they didn’t exist. You can customize this behavior by implementing <a href="/api-doc/1.8.5/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> in your schema class, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Override this hook to handle cases when `authorized?` returns false:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">unauthorized_object</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+    <span class="c1"># Increment a metric somewhere:</span>
+    <span class="no">AppStats</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="s2">"graphql:unauthorized:</span><span class="si">#{</span><span class="n">error</span><span class="p">.</span><span class="nf">type</span><span class="p">.</span><span class="nf">graphql_name</span><span class="si">}</span><span class="s2">:</span><span class="si">#{</span><span class="n">error</span><span class="p">.</span><span class="nf">object</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="c1"># Add a top-level error to the response instead of returning nil:</span>
+    <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"An object of type </span><span class="si">#{</span><span class="n">error</span><span class="p">.</span><span class="nf">type</span><span class="p">.</span><span class="nf">graphql_name</span><span class="si">}</span><span class="s2"> was hidden due to permissions"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, the custom hook will be called instead of the default one.</p>
+
+<p>If <code class="highlighter-rouge">.unauthorized_object</code> returns a non-<code class="highlighter-rouge">nil</code> object (and doesn’t <code class="highlighter-rouge">raise</code> an error), then that object will be used in place of the unauthorized object.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/authorization/authorization.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Authorization">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.2/">API</a>
+          <a href="/api-doc/1.8.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -105,7 +105,7 @@
 
 <h2 id="object-classes">Object classes</h2>
 
-<p>Classes extending <a href="/api-doc/1.8.2/GraphQL/Schema/Object" target="_blank" title="API docs for GraphQL::Schema::Object"><code>GraphQL::Schema::Object</code></a> describe <a href="http://graphql.org/learn/schema/#object-types-and-fields">Object types</a> and customize their behavior.</p>
+<p>Classes extending <a href="/api-doc/1.8.5/GraphQL/Schema/Object" target="_blank" title="API docs for GraphQL::Schema::Object"><code>GraphQL::Schema::Object</code></a> describe <a href="http://graphql.org/learn/schema/#object-types-and-fields">Object types</a> and customize their behavior.</p>
 
 <p>Object fields can be created with the <code class="highlighter-rouge">field(...)</code> class method, <a href="#fields">described in detail below</a></p>
 
@@ -147,6 +147,7 @@
   <li><a href="#field-resolution">Resolution behavior</a> hooks up Ruby code to the GraphQL field</li>
   <li><a href="#field-arguments">Arguments</a> allow fields to take input when they’re queried</li>
   <li><a href="#extra-field-metadata">Extra field metadata</a> for low-level access to the GraphQL-Ruby runtime</li>
+  <li><a href="#field-parameter-default-values">Add default values for field parameters</a></li>
 </ul>
 
 <h3 id="field-return-type">Field Return Type</h3>
@@ -339,6 +340,22 @@
 </code></pre></div></div>
 
 <p>At runtime, the requested runtime object will be passed to the field.</p>
+
+<h3 id="field-parameter-default-values">Field Parameter Default Values</h3>
+
+<p>The field method requires you to pass <code class="highlighter-rouge">null:</code> keyword argument to determine whether the field is nullable or not. Another field you may want to overrid is <code class="highlighter-rouge">camelize</code>, which is <code class="highlighter-rouge">true</code> by default. You can override this behavior by adding a custom field.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="c1"># Add `null: false` and `camelize: false` which provide default values </span>
+  <span class="c1"># in case the caller doesn't pass anything for those arguments. </span>
+  <span class="c1"># **kwargs is a catch-all that will get everything else </span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">camelize: </span><span class="kp">false</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="c1"># Then, call super _without_ any args, where Ruby will take </span>
+    <span class="c1"># _all_ the args originally passed to this method and pass it to the super method.</span>
+    <span class="k">super</span> 
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 <h2 id="implementing-interfaces">Implementing interfaces</h2>
 

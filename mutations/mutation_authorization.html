@@ -1,0 +1,178 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Mutation authorization</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.8.5/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#mutations-guides">Mutations</a>
+  &raquo; Mutation authorization
+</p>
+
+
+
+<h1 class="guide-header">Mutation authorization</h1>
+<div class="guide-container">
+  <p>Before running a mutation, you probably want to do a few things:</p>
+
+<ul>
+  <li>Make sure the current user has permission to try this mutation</li>
+  <li>Load some objects from the database, using some <code class="highlighter-rouge">ID</code> inputs</li>
+  <li>Check if the user has permission to modify those loaded objects</li>
+</ul>
+
+<p>This guide describes how to accomplish that workflow with GraphQL-Ruby.</p>
+
+<h2 id="checking-the-user-permissions">Checking the user permissions</h2>
+
+<p>Before loading any data from the database, you might want to see if the user has a certain permission level. For example, maybe only <code class="highlighter-rouge">.admin?</code> users can run <code class="highlighter-rouge">Mutation.promoteEmployee</code>.</p>
+
+<p>This check can be implemented using the <code class="highlighter-rouge">#before_prepare</code> method in a mutation:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="k">def</span> <span class="nf">before_prepare</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">admin?</span>
+      <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"Only admins can run this mutation"</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, when any non-<code class="highlighter-rouge">admin</code> user tries to run the mutation, it won’t run. Instead, they’ll get an error in the response.</p>
+
+<h2 id="loading-and-authorizing-objects">Loading and authorizing objects</h2>
+
+<p>Often, mutations take <code class="highlighter-rouge">ID</code>s as input and use them to load records from the database. GraphQL-Ruby can load IDs for you when you provide a <code class="highlighter-rouge">loads:</code> option.</p>
+
+<p>In short, here’s an example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="c1"># `employeeId` is an ID, Types::Employee is an _Object_ type</span>
+  <span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Employee</span>
+
+  <span class="c1"># Behind the scenes, `:employee_id` is used to fetch an object from the database,</span>
+  <span class="c1"># then the object is authorized with `Employee.authorized?`, then</span>
+  <span class="c1"># if all is well, the object is injected here:</span>
+  <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
+    <span class="n">employee</span><span class="p">.</span><span class="nf">promote!</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>It works like this: if you pass a <code class="highlighter-rouge">loads:</code> option, it will:</p>
+
+<ul>
+  <li>Automatically remove <code class="highlighter-rouge">_id</code> from the name and pass that name for the <code class="highlighter-rouge">as:</code> option</li>
+  <li>Add a prepare hook to fetch an object with the given <code class="highlighter-rouge">ID</code> (using <a href="/api-doc/1.8.5/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a>)</li>
+  <li>Check that the fetched object’s type matches the <code class="highlighter-rouge">loads:</code> type (using <a href="/api-doc/1.8.5/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a>)</li>
+  <li>Run the fetched object through its type’s <code class="highlighter-rouge">.authorized?</code> hook (see <a href="/authorization/authorization">Authorization</a>)</li>
+  <li>Inject it into <code class="highlighter-rouge">#resolve</code> using the object-style name (<code class="highlighter-rouge">employee:</code>)</li>
+</ul>
+
+<p>In this case, if the argument value is provided by <code class="highlighter-rouge">object_from_id</code> doesn’t return a value, the mutation will fail with an error.</p>
+
+<p>If you don’t want this behavior, don’t use it. Instead, create arguments with type <code class="highlighter-rouge">ID</code> and use them your own way, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># No special loading behavior:</span>
+<span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+</code></pre></div></div>
+
+<h2 id="can-this-user-modify-this-thing">Can <em>this user</em> modify <em>this thing</em>?</h2>
+
+<p>Sometimes you need to authorize a specific user-object-action combination. For example, <code class="highlighter-rouge">.admin?</code> users can’t promote <em>all</em> employees! They can only promote employees which they manage.</p>
+
+<p>You can add this check by implementing a <code class="highlighter-rouge">#validate_#{arg_name}</code> method, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">validate_employee</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+  <span class="k">if</span> <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"You can only promote your _own_ employees"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>If this method raises an error, the mutation will be halted.</p>
+
+<h2 id="finally-doing-the-work">Finally, doing the work</h2>
+
+<p>Now that the user has been authorized in general, data has been loaded, and objects have been validated in particular, you can modify the database using <code class="highlighter-rouge">#resolve</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
+  <span class="k">if</span> <span class="n">employee</span><span class="p">.</span><span class="nf">promote</span>
+    <span class="p">{</span>
+      <span class="ss">employee: </span><span class="n">employee</span><span class="p">,</span>
+      <span class="ss">errors: </span><span class="p">[],</span>
+    <span class="p">}</span>
+  <span class="k">else</span>
+    <span class="c1"># See "Mutation Errors" for more:</span>
+    <span class="p">{</span>
+      <span class="ss">errors: </span><span class="n">employee</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/mutations/mutation_authorization.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Mutation authorization">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

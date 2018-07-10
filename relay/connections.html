@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.2/">API</a>
+          <a href="/api-doc/1.8.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -103,16 +103,20 @@
 
 <h2 id="connection-types">Connection types</h2>
 
-<p>You can customize a connection type with <code class="highlighter-rouge">.define_connection</code>:</p>
+<p>You can customize connection and edge types by using the class-based API:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Make a customized connection type</span>
-<span class="no">PostConnectionWithTotalCountType</span> <span class="o">=</span> <span class="no">PostType</span><span class="p">.</span><span class="nf">define_connection</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"PostConnectionWithTotalCount"</span>
-  <span class="n">field</span> <span class="ss">:totalCount</span> <span class="k">do</span>
-    <span class="n">type</span> <span class="n">types</span><span class="o">.</span><span class="no">Int</span>
-    <span class="c1"># - `obj` is the Connection</span>
-    <span class="c1"># - `obj.nodes` is the collection of Posts</span>
-    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">obj</span><span class="p">.</span><span class="nf">nodes</span><span class="p">.</span><span class="nf">size</span> <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Make an edge class for use in the connection below:</span>
+<span class="k">class</span> <span class="nc">PostEdgeType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseEdge</span>
+  <span class="n">node_type</span><span class="p">(</span><span class="no">PostType</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="c1"># Make a customized connection type</span>
+<span class="k">class</span> <span class="nc">PostConnectionWithTotalCountType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span>
+  <span class="n">field</span> <span class="ss">:total_count</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="k">def</span> <span class="nf">total_count</span>
+    <span class="c1"># - `object` is the Connection</span>
+    <span class="c1"># - `object.nodes` is the collection of Posts</span>
+    <span class="n">object</span><span class="p">.</span><span class="nf">nodes</span><span class="p">.</span><span class="nf">size</span>
   <span class="k">end</span>
 <span class="k">end</span>
 
@@ -139,48 +143,22 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<h3 id="custom-edge-types">Custom edge types</h3>
+<p>In the same vein, you can extend your <code class="highlighter-rouge">*Edge</code> classes with extra fields.</p>
 
-<p>If you need custom fields on <code class="highlighter-rouge">edge</code>s, you can define an edge type and pass it to a connection:</p>
+<h3 id="customizing-base-classes">Customizing Base Classes</h3>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Person =&gt; Membership =&gt; Team</span>
-<span class="no">MembershipSinceEdgeType</span> <span class="o">=</span> <span class="no">TeamType</span><span class="p">.</span><span class="nf">define_edge</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"MembershipSinceEdge"</span>
-  <span class="n">field</span> <span class="ss">:memberSince</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Int</span><span class="p">,</span> <span class="s2">"The date that this person joined this team"</span> <span class="k">do</span>
-    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-      <span class="n">obj</span> <span class="c1"># =&gt; GraphQL::Relay::Edge instance</span>
-      <span class="n">person</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">parent</span>
-      <span class="n">team</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">node</span>
-      <span class="n">membership</span> <span class="o">=</span> <span class="no">Membership</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">person: </span><span class="n">person</span><span class="p">,</span> <span class="ss">team: </span><span class="n">team</span><span class="p">).</span><span class="nf">first</span>
-      <span class="n">membership</span><span class="p">.</span><span class="nf">created_at</span><span class="p">.</span><span class="nf">to_i</span>
-    <span class="p">}</span>
-  <span class="k">end</span>
+<p>The provided classes in <a href="/api-doc/1.8.5/GraphQL/Types/Relay" target="_blank" title="API docs for GraphQL::Types::Relay"><code>GraphQL::Types::Relay</code></a> extend <a href="/api-doc/1.8.5/GraphQL/Schema/Object" target="_blank" title="API docs for GraphQL::Schema::Object"><code>Schema::Object</code></a>, but if you want to add your own extensions, you can build your own type system using the built-in ones for inspiration.</p>
+
+<p>For example, to make your connection classes extend your <em>own</em> base object, you could add a base connection class to your app:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseConnection</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># ... copy-paste here</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, pass the edge type when defining the connection type:</p>
+<p>Then take code from <a href="/api-doc/1.8.5/GraphQL/Types/Relay/BaseConnection" target="_blank" title="API docs for GraphQL::Types::Relay::BaseConnection"><code>GraphQL::Types::Relay::BaseConnection</code></a> and adapt it to your app.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">TeamMembershipsConnectionType</span> <span class="o">=</span> <span class="no">TeamType</span><span class="p">.</span><span class="nf">define_connection</span><span class="p">(</span><span class="ss">edge_type: </span><span class="no">MembershipSinceEdgeType</span><span class="p">)</span> <span class="k">do</span>
-  <span class="c1"># Use a name so it doesn't conflict with "TeamConnection"</span>
-  <span class="nb">name</span> <span class="s2">"TeamMembershipsConnection"</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p>Now, you can query custom fields on the <code class="highlighter-rouge">edge</code>:</p>
-
-<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
-  </span><span class="n">me</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="n">teams</span><span class="w"> </span><span class="p">{</span><span class="w">
-      </span><span class="n">edge</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="n">memberSince</span><span class="w">     </span><span class="c"># &lt;= Here's your custom field</span><span class="w">
-        </span><span class="n">node</span><span class="w"> </span><span class="p">{</span><span class="w">
-          </span><span class="n">teamName</span><span class="p">:</span><span class="w"> </span><span class="n">name</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-      </span><span class="p">}</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
+<p>You can mix-and-match customized and built-in types. For example, if you customize the base <code class="highlighter-rouge">Edge</code> class, you can still use the built-in <a href="/api-doc/1.8.5/GraphQL/Types/Relay/PageInfo" target="_blank" title="API docs for GraphQL::Types::Relay::PageInfo"><code>Types::Relay::PageInfo</code></a> class.</p>
 
 <h3 id="custom-edge-classes">Custom Edge classes</h3>
 
@@ -213,18 +191,19 @@
 <p>Then, hook it up with custom edge type and custom connection type:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Person =&gt; Membership =&gt; Team</span>
-<span class="no">MembershipSinceEdgeType</span> <span class="o">=</span> <span class="no">BaseType</span><span class="p">.</span><span class="nf">define_edge</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"MembershipSinceEdge"</span>
-  <span class="n">field</span> <span class="ss">:memberSince</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Int</span><span class="p">,</span> <span class="s2">"The date that this person joined this team"</span><span class="p">,</span> <span class="ss">property: :member_since</span>
-  <span class="n">field</span> <span class="ss">:isPrimary</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Boolean</span><span class="p">,</span> <span class="s2">"Is this person the team leader?"</span><span class="p">,</span> <span class="ss">property: :primary?</span>
+<span class="k">class</span> <span class="nc">MembershipSinceEdgeType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseEdge</span>
+  <span class="n">node_type</span><span class="p">(</span><span class="no">TeamType</span><span class="p">)</span>
+
+  <span class="n">field</span> <span class="ss">:member_since</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+    <span class="ss">description: </span><span class="s2">"The date that this person joined this team"</span>
+  <span class="n">field</span> <span class="ss">:is_primary</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+    <span class="ss">description: </span><span class="s2">"Is this person the team leader?"</span><span class="p">,</span>
+    <span class="ss">method: :primary?</span>
 <span class="k">end</span>
 
-<span class="no">TeamMembershipsConnectionType</span> <span class="o">=</span> <span class="no">TeamType</span><span class="p">.</span><span class="nf">define_connection</span><span class="p">(</span>
-    <span class="ss">edge_class: </span><span class="no">MembershipSinceEdge</span><span class="p">,</span>
-    <span class="ss">edge_type: </span><span class="no">MembershipSinceEdgeType</span><span class="p">,</span>
-  <span class="p">)</span> <span class="k">do</span>
-  <span class="c1"># Use a name so it doesn't conflict with "TeamConnection"</span>
-  <span class="nb">name</span> <span class="s2">"TeamMembershipsConnection"</span>
+<span class="k">class</span> <span class="nc">TeamMembershipsConnectionType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span>
+  <span class="c1"># Here, hook up your custom class with `edge_class:`</span>
+  <span class="n">edge_type</span><span class="p">(</span><span class="no">MembershipSinceEdgeType</span><span class="p">,</span> <span class="ss">edge_class: </span><span class="no">MembershipSinceEdge</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -331,7 +310,7 @@
 
 <p>Now, all connections will use URL-safe base-64 encoding.</p>
 
-<p>From a connection instance, the <code class="highlighter-rouge">cursor_encoders</code> methods available via <a href="/api-doc/1.8.2/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#encode"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="/api-doc/1.8.2/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#decode"><code>GraphQL::Relay::BaseConnection#decode</code></a></p>
+<p>From a connection instance, the <code class="highlighter-rouge">cursor_encoders</code> methods available via <a href="/api-doc/1.8.5/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#encode"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="/api-doc/1.8.5/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#decode"><code>GraphQL::Relay::BaseConnection#decode</code></a></p>
 
 </div>
 <p class="guide-footer">

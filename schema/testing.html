@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.2/">API</a>
+          <a href="/api-doc/1.8.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -64,7 +64,7 @@
   <span class="c1"># ...</span>
   <span class="n">field</span> <span class="ss">:is_trending</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 
-  <span class="k">def</span> <span class="nf">is_boolean</span>
+  <span class="k">def</span> <span class="nf">is_trending</span>
     <span class="n">recent_comments</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &lt; ?"</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span><span class="p">.</span><span class="nf">ago</span><span class="p">)</span>
     <span class="n">recent_comments</span><span class="p">.</span><span class="nf">count</span> <span class="o">&gt;</span> <span class="mi">100</span>
   <span class="k">end</span>
@@ -94,7 +94,7 @@
   <span class="c1"># ...</span>
   <span class="n">field</span> <span class="ss">:is_trending</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 
-  <span class="k">def</span> <span class="nf">is_boolean</span>
+  <span class="k">def</span> <span class="nf">is_trending</span>
     <span class="no">Post</span><span class="o">::</span><span class="no">Trending</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">object</span><span class="p">).</span><span class="nf">value</span>
   <span class="k">end</span>
 <span class="k">end</span>
@@ -103,7 +103,7 @@
 <p>This is an improvement because your behavior is not coupled to your GraphQL schema. Besides that, it’s easier to test: you can simply unit test the calculation class. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># spec/models/post/trending_spec.rb</span>
-<span class="n">describe</span> <span class="no">Post</span><span class="o">::</span><span class="no">Trending</span> <span class="k">do</span>
+<span class="no">RSpec</span><span class="p">.</span><span class="nf">describe</span> <span class="no">Post</span><span class="o">::</span><span class="no">Trending</span> <span class="k">do</span>
   <span class="n">let</span><span class="p">(</span><span class="ss">:post</span><span class="p">)</span> <span class="p">{</span> <span class="n">create</span><span class="p">(</span><span class="ss">:post</span><span class="p">)</span> <span class="p">}</span>
   <span class="n">let</span><span class="p">(</span><span class="ss">:trending</span><span class="p">)</span> <span class="p">{</span> <span class="no">Post</span><span class="o">::</span><span class="no">Trending</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">post</span><span class="p">)</span> <span class="p">}</span>
 
@@ -133,7 +133,7 @@
 
 <p>You can execute queries on your schema in a test. For example, you can set it up like this:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">describe</span> <span class="no">MySchema</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">RSpec</span><span class="p">.</span><span class="nf">describe</span> <span class="no">MySchema</span> <span class="k">do</span>
   <span class="c1"># You can override `context` or `variables` in</span>
   <span class="c1"># more specific scopes</span>
   <span class="n">let</span><span class="p">(</span><span class="ss">:context</span><span class="p">)</span> <span class="p">{</span> <span class="p">{}</span> <span class="p">}</span>
