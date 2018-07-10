@@ -62,7 +62,8 @@ describe GraphQL::ObjectType do
     end
 
     it "doesnt convolute field names that differ with underscore" do
-      interface = Class.new(GraphQL::Schema::Interface) do
+      interface = Module.new do
+        include GraphQL::Schema::Interface
         graphql_name 'TestInterface'
         description 'Requires an id'
 

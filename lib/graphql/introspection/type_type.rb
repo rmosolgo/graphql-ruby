@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Introspection
-    class TypeType < GraphQL::Schema::Object
+    class TypeType < Introspection::BaseObject
       graphql_name "__Type"
       description "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in "\
                   "GraphQL as represented by the `__TypeKind` enum.\n\n"\
@@ -24,7 +24,6 @@ module GraphQL
       end
       field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: true
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type"), null: true
-      introspection true
 
       def kind
         @object.kind.name
@@ -61,7 +60,7 @@ module GraphQL
       end
 
       def possible_types
-        if @object.kind.resolves?
+        if @object.kind.abstract?
           @context.warden.possible_types(@object)
         else
           nil

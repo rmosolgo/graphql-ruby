@@ -12,8 +12,7 @@ module GraphQL
         def self.instrument(type, field)
           if field.mutation.is_a?(GraphQL::Relay::Mutation) || (field.mutation.is_a?(Class) && field.mutation < GraphQL::Schema::RelayClassicMutation)
             new_resolve = Mutation::Resolve.new(field.mutation, field.resolve_proc)
-            new_lazy_resolve = Mutation::Resolve.new(field.mutation, field.lazy_resolve_proc)
-            field.redefine(resolve: new_resolve, lazy_resolve: new_lazy_resolve)
+            field.redefine(resolve: new_resolve)
           else
             field
           end

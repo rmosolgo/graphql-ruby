@@ -8,6 +8,42 @@
 
 ### Bug Fix
 
+## 1.7.7 (10 May 2018)
+
+### Bug Fix
+
+- Fix ordering of authorization field instrumenter (put it at the end, not the beginning of the list)
+
+## 1.7.6 (2 May 2018)
+
+### New Features
+
+- Authorization: Add `view`/`access`/`authorize` methods to `GraphQL::Schema::Mutation`
+
+## 1.7.5 (19 Apr 2018)
+
+### New Features
+
+- Authorization: when a `fallback:` configuration is given, apply it to each field which doesn't have a configuration of its own or from its return type. _Don't_ apply that configuration at schema level (it's applied to each otherwise uncovered field instead).
+
+## 1.7.4 (16 Apr 2018)
+
+### New Features
+
+- Support Mongoid::Criteria in authorization scoping
+
+## 1.7.3 (12 Apr 2018)
+
+### Bug Fix
+
+- Fix authorization code for when `ActiveRecord` is not defined
+
+## 1.7.2 (10 Apr 2018)
+
+### Bug Fix
+
+- Use a more permissive regexp (`/^\s*((?:[a-z._]+)\(.*\))\s*(asc|desc)?\s*$/im`) to parse SQL functions
+
 ## 1.7.1 (4 Apr 2018)
 
 ### Bug Fix

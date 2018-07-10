@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: GraphQL Pro
 title: Authorization Framework
@@ -407,6 +408,8 @@ For list types, each item of the list is authorized individually.
 
 ## Scoping
 
-`ActiveRecord::Relation`s get special treatment: they can be scoped with SQL by authorization strategies. The Pundit integration uses [policy scopes](#policy-scopes) and the CanCan integration uses [`accessible_by`](#accessibleby).
+Database query objects (`ActiveRecord::Relation`s and `Mongoid::Criteria`s) get special treatment. They get passed to _scope handlers_ so that they can be filtered at database level (eg, SQL `WHERE`) instead of Ruby level (eg, `.select`).
 
-[Custom authorization strategies](#custom-authorization-strategy) can implement `#scope(gate, relation)` to apply scoping to `ActiveRecord::Relation`s.
+`ActiveRecord::Relation`s can be scoped with SQL by authorization strategies. The Pundit integration uses [policy scopes](#policy-scopes) and the CanCan integration uses [`accessible_by`](#accessible_by). [Custom authorization strategies](#custom-authorization-strategy) can implement `#scope(gate, relation)` to apply scoping to `ActiveRecord::Relation`s.
+
+`Mongoid::Criteria`s are supported in the same way by Pundit [policy scopes](#policy-scopes)) and [custom strategy]((#custom-authorization-strategy))'s  `#scope(gate, relation)` methods, but they aren't supported by CanCan (which doesn't support Mongoid, as far as I can tell!).

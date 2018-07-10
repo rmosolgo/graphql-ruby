@@ -25,6 +25,17 @@ describe GraphQL::Schema::RescueMiddleware do
       assert_equal(GraphQL::ExecutionError, result.class)
     end
 
+    describe "rescue_from superclass" do
+      class ChildSpecExampleError < SpecExampleError; end
+
+      let(:error_class) { ChildSpecExampleError }
+      it "handles them as execution errors" do
+        result = middleware_chain.invoke([])
+        assert_equal("there was an example error: ChildSpecExampleError", result.message)
+        assert_equal(GraphQL::ExecutionError, result.class)
+      end
+    end
+
     describe "with multiple error classes" do
       let(:error_class) { SecondSpecExampleError }
       let(:rescue_middleware) do

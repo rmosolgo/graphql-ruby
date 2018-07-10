@@ -9,9 +9,13 @@ rule
     | definitions_list definition   { val[0] << val[1] }
 
   definition:
+      executable_definition
+    | type_system_definition
+    | type_system_extension
+
+  executable_definition:
       operation_definition
     | fragment_definition
-    | type_system_definition
 
   operation_definition:
       operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set {
@@ -276,7 +280,7 @@ rule
    | directive_definition
 
   schema_definition:
-      SCHEMA LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaDefinition, position_source: val[0], **val[2]) }
+      SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaDefinition, position_source: val[0], directives: val[1], **val[3]) }
 
   operation_type_definition_list:
       operation_type_definition
@@ -293,6 +297,47 @@ rule
     | enum_type_definition
     | input_object_type_definition
 
+  type_system_extension:
+      schema_extension
+    | type_extension
+
+  schema_extension:
+      EXTEND SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaExtension, position_source: val[0], directives: val[2], **val[4]) }
+    | EXTEND SCHEMA directives_list { return make_node(:SchemaExtension, position_source: val[0], directives: val[2]) }
+
+  type_extension:
+      scalar_type_extension
+    | object_type_extension
+    | interface_type_extension
+    | union_type_extension
+    | enum_type_extension
+    | input_object_type_extension
+
+  scalar_type_extension: EXTEND SCALAR name directives_list { return make_node(:ScalarTypeExtension, name: val[2], directives: val[3], position_source: val[0]) }
+
+  object_type_extension:
+      /* TODO - This first one shouldn't be necessary but parser is getting confused */
+      EXTEND TYPE name implements LCURLY field_definition_list RCURLY { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[5], position_source: val[0]) }
+    | EXTEND TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) }
+    | EXTEND TYPE name implements_opt directives_list { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
+    | EXTEND TYPE name implements { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
+
+  interface_type_extension:
+      EXTEND INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY { return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) }
+    | EXTEND INTERFACE name directives_list { return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
+
+  union_type_extension:
+      EXTEND UNION name directives_list_opt EQUALS union_members { return make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: val[5], position_source: val[0]) }
+    | EXTEND UNION name directives_list { return make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: [], position_source: val[0]) }
+
+  enum_type_extension:
+      EXTEND ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY { return make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: val[5], position_source: val[0]) }
+    | EXTEND ENUM name directives_list { return make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: [], position_source: val[0]) }
+
+  input_object_type_extension:
+      EXTEND INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY { return make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) }
+    | EXTEND INPUT name directives_list { return make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
+
   scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0]), position_source: val[0]) }
 
   object_type_definition:
@@ -302,7 +347,10 @@ rule
 
   implements_opt:
       /* none */ { return [] }
-    | IMPLEMENTS AMP interfaces_list { return val[2] }
+    | implements
+
+  implements:
+      IMPLEMENTS AMP interfaces_list { return val[2] }
     | IMPLEMENTS interfaces_list { return val[1] }
     | IMPLEMENTS legacy_interfaces_list { return val[1] }
 
@@ -343,8 +391,8 @@ rule
       }
 
   union_members:
-      name                    { return [make_node(:TypeName, name: val[0])]}
-    | union_members PIPE name { val[0] << make_node(:TypeName, name: val[2]) }
+      name                    { return [make_node(:TypeName, name: val[0], position_source: val[0])]}
+    | union_members PIPE name { val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) }
 
   union_type_definition:
       UNION name directives_list_opt EQUALS union_members {
@@ -367,8 +415,8 @@ rule
       }
 
   directive_locations:
-      name                          { return [val[0].to_s] }
-    | directive_locations PIPE name { val[0] << val[2].to_s }
+      name                          { return [make_node(:DirectiveLocation, name: val[0].to_s, position_source: val[0])] }
+    | directive_locations PIPE name { val[0] << make_node(:DirectiveLocation, name: val[2].to_s, position_source: val[2]) }
 end
 
 ---- header ----

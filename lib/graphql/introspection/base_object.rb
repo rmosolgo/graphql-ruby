@@ -9,6 +9,7 @@ module GraphQL
 
       def self.inherited(child_class)
         child_class.introspection(true)
+        super
       end
     end
   end

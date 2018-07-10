@@ -358,6 +358,135 @@ describe GraphQL::Schema::Warden do
       assert_equal false, possible_type_names(res["data"]["LanguageMember"]).include?("Phoneme")
     end
 
+    it "hides interfaces if all possible types are hidden" do
+      sdl = %|
+        type Query {
+          a: String
+          repository: Repository
+        }
+
+        type Repository implements Node {
+          id: ID!
+        }
+
+        interface Node {
+          id: ID!
+        }
+      |
+
+      schema = GraphQL::Schema.from_definition(sdl)
+
+      query_string = %|
+        {
+          Node: __type(name: "Node") { name }
+        }
+      |
+
+      res = schema.execute(query_string)
+      assert res["data"]["Node"]
+
+      res = schema.execute(query_string, except: ->(m, _) { m.name == "Repository" })
+      assert_nil res["data"]["Node"]
+    end
+
+    it "hides unions if all possible types are hidden or its references are hidden" do
+      sdl = "
+        type Query {
+          bag: BagOfThings
+        }
+
+        type A {
+          id: ID!
+        }
+
+        type B {
+          id: ID!
+        }
+
+        type C {
+          id: ID!
+        }
+
+        union BagOfThings = A | B | C
+      "
+
+      schema = GraphQL::Schema.from_definition(sdl)
+      schema.orphan_types = []
+
+      query_string = %|
+        {
+          BagOfThings: __type(name: "BagOfThings") { name }
+          Query: __type(name: "Query") { fields { name } }
+        }
+      |
+
+      res = schema.execute(query_string)
+      assert res["data"]["BagOfThings"]
+      assert_equal ["bag"], res["data"]["Query"]["fields"].map { |f| f["name"] }
+
+      # Hide the union when all its possible types are gone. This will cause the field to be hidden too.
+      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.name) })
+      assert_nil res["data"]["BagOfThings"]
+      assert_equal [], res["data"]["Query"]["fields"]
+
+      res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
+      assert_nil res["data"]["BagOfThings"]
+      assert_equal [], res["data"]["Query"]["fields"]
+
+      # Unreferenced but still visible because orphan type
+      schema.orphan_types = [schema.find("BagOfThings")]
+      res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
+      assert res["data"]["BagOfThings"]
+    end
+
+    it "hides interfaces if all possible types are hidden or its references are hidden" do
+      sdl = "
+        type Query {
+          node: Node
+        }
+
+        type A implements Node {
+          id: ID!
+        }
+
+        type B implements Node {
+          id: ID!
+        }
+
+        type C implements Node {
+          id: ID!
+        }
+
+        interface Node {
+          id: ID!
+        }
+      "
+
+      schema = GraphQL::Schema.from_definition(sdl)
+
+      query_string = %|
+        {
+          Node: __type(name: "Node") { name }
+          Query: __type(name: "Query") { fields { name } }
+        }
+      |
+
+      res = schema.execute(query_string)
+      assert res["data"]["Node"]
+      assert_equal ["node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
+
+      # When the possible types are all hidden, hide the interface and fields pointing to it
+      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.name) })
+      assert_nil res["data"]["Node"]
+      assert_equal [], res["data"]["Query"]["fields"]
+
+      # Even when it's not the return value of a field,
+      # still show the interface since it allows code reuse
+      res = schema.execute(query_string, except: ->(m, _) { m.name == "node" })
+      assert_equal "Node", res["data"]["Node"]["name"]
+      assert_equal [], res["data"]["Query"]["fields"]
+    end
+
     it "can't be a fragment condition" do
       query_string = %|
       {

@@ -1,10 +1,12 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Schema
 title: Definition
 desc: Defining your schema
 class_based_api: true
+index: 1
 ---
 
 A GraphQL system is called a _schema_. The schema contains all the types and fields in the system. The schema executes queries and publishes an {% internal_link "introspection system","/schema/introspection" %}.
@@ -143,7 +145,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`type_error`__ handles type errors at runtime, read more in the {% internal_link "Type Errors guide", "/schema/type_errors" %}.
+__`type_error`__ handles type errors at runtime, read more in the {% internal_link "Invariants guide", "/errors/type_errors" %}.
 
 ```ruby
 class MySchema < GraphQL::Schema

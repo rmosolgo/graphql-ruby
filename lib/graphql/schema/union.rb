@@ -26,6 +26,10 @@ module GraphQL
           type_defn.metadata[:type_class] = self
           type_defn
         end
+
+        def kind
+          GraphQL::TypeKinds::UNION
+        end
       end
     end
   end

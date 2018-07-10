@@ -10,13 +10,13 @@ AllCops:
 
 # def ...
 # end
-Lint/DefEndAlignment:
+Layout/DefEndAlignment:
   EnforcedStyleAlignWith: def
 
 # value = if
 #   # ...
 # end
-Lint/EndAlignment:
+Layout/EndAlignment:
   EnforcedStyleAlignWith: variable
 
 Lint/UselessAssignment:

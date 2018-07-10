@@ -16,7 +16,7 @@ module GraphQL
   # A combination of query string and {Schema} instance which can be reduced to a {#result}.
   class Query
     include Tracing::Traceable
-    extend GraphQL::Delegate
+    extend Forwardable
 
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize(name)
@@ -128,6 +128,12 @@ module GraphQL
 
       @result_values = nil
       @executed = false
+
+      # TODO add a general way to define schema-level filters
+      # TODO also add this to schema dumps
+      if @schema.respond_to?(:visible?)
+        merge_filters(only: @schema.method(:visible?))
+      end
     end
 
     def subscription_update?

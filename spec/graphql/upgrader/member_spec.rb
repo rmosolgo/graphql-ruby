@@ -111,10 +111,12 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        class UserInterface < Types::BaseInterface
+        module UserInterface
+          include Types::BaseInterface
           graphql_name "User"
         end
       }
+
       assert_equal new, upgrade(old)
 
       old = %{
@@ -139,10 +141,16 @@ describe GraphQL::Upgrader::Member do
       end}
       assert_equal new, upgrade(old)
 
-      old = %{UserInterface = GraphQL::InterfaceType.define do
-      end}
-      new = %{class UserInterface < Types::BaseInterface
-      end}
+      old = <<-RUBY
+UserInterface = GraphQL::InterfaceType.define do
+end
+RUBY
+      new = <<-RUBY
+module UserInterface
+  include Types::BaseInterface
+end
+RUBY
+
       assert_equal new, upgrade(old)
 
       old = %{UserUnion = GraphQL::UnionType.define do
@@ -187,7 +195,7 @@ describe GraphQL::Upgrader::Member do
     end
 
     describe "resolve proc to method" do
-      it "converts @object and @context" do
+      it "converts object and context" do
         old = %{
           field :firstName, !types.String do
             resolve ->(obj, arg, ctx) {
@@ -203,11 +211,11 @@ describe GraphQL::Upgrader::Member do
           field :first_name, String, null: false
 
           def first_name
-            @context.something
+            context.something
             other_ctx # test combined identifiers
 
-            @object[@context] + @object
-            @object.given_name
+            object[context] + object
+            object.given_name
           end
         }
         assert_equal new, upgrade(old)
@@ -225,7 +233,7 @@ describe GraphQL::Upgrader::Member do
           field :first_name, String, null: false
 
           def first_name
-            @object.given_name
+            object.given_name
           end
         }
         assert_equal new, upgrade(old)
@@ -474,7 +482,7 @@ describe GraphQL::Upgrader::Member do
       # Replace the default one with a custom one:
       type_transforms = GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS.map { |t|
         if t == GraphQL::Upgrader::TypeDefineToClassTransform
-          GraphQL::Upgrader::TypeDefineToClassTransform.new(base_class_pattern: "Platform::\\2s::Base")
+          GraphQL::Upgrader::TypeDefineToClassTransform.new(base_class_pattern: "Platform::\\3s::Base")
         else
           t
         end

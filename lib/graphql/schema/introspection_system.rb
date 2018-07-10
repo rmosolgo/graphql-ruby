@@ -84,7 +84,7 @@ module GraphQL
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object
           end
-          wrapped_object = @object_class.new(obj, query_ctx)
+          wrapped_object = @object_class.authorized_new(obj, query_ctx)
           @inner_resolve.call(wrapped_object, args, ctx)
         end
       end

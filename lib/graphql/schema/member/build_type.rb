@@ -16,15 +16,15 @@ module GraphQL
           when String
             case type_expr
             when "String"
-              GraphQL::STRING_TYPE
+              GraphQL::Types::String
             when "Int", "Integer"
-              GraphQL::INT_TYPE
+              GraphQL::Types::Int
             when "Float"
-              GraphQL::FLOAT_TYPE
+              GraphQL::Types::Float
             when "Boolean"
-              GraphQL::BOOLEAN_TYPE
+              GraphQL::Types::Boolean
             when "ID"
-              GraphQL::ID_TYPE
+              GraphQL::Types::ID
             when /\A\[.*\]\Z/
               list_type = true
               # List members are required by default
@@ -37,11 +37,12 @@ module GraphQL
               case maybe_type
               when GraphQL::BaseType
                 maybe_type
-              when Class
-                if maybe_type < GraphQL::Schema::Member
-                  maybe_type.graphql_definition
+              when Module
+                # This is a way to check that it's the right kind of module:
+                if maybe_type.respond_to?(:graphql_definition)
+                  maybe_type
                 else
-                  raise "Unexpected class found for GraphQL type: #{type_expr} (must be GraphQL::Object)"
+                  raise ArgumentError, "Unexpected class/module found for GraphQL type: #{type_expr} (must be type definition class/module)"
                 end
               end
             end
@@ -63,15 +64,20 @@ module GraphQL
             else
               raise ArgumentError, LIST_TYPE_ERROR
             end
-          when Class
-            if type_expr < GraphQL::Schema::Member
-              type_expr.graphql_definition
+          when Module
+            # This is a way to check that it's the right kind of module:
+            if type_expr.respond_to?(:graphql_definition)
+              type_expr
             else
               # Eg `String` => GraphQL::STRING_TYPE
               parse_type(type_expr.name, null: true)
             end
-          else
-            raise "Unexpected type_expr input: #{type_expr} (#{type_expr.class})"
+          when false
+            raise ArgumentError, "Received `false` instead of a type, maybe a `!` should be replaced with `null: true` (for fields) or `required: true` (for arguments)"
+          end
+
+          if return_type.nil?
+            raise "Unexpected type input: #{type_expr} (#{type_expr.class})"
           end
 
           # Apply list_type first, that way the
@@ -95,13 +101,15 @@ module GraphQL
           when Array
             to_type_name(something.first)
           when Module
-            if something < GraphQL::Schema::Member
+            if something.respond_to?(:graphql_name)
               something.graphql_name
             else
-              something.name.split("::").last
+              to_type_name(something.name)
             end
           when String
             something.gsub(/\]\[\!/, "").split("::").last
+          when GraphQL::Schema::NonNull, GraphQL::Schema::List
+            to_type_name(something.unwrap)
           else
             raise "Unhandled to_type_name input: #{something} (#{something.class})"
           end

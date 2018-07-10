@@ -132,11 +132,12 @@ type Hello {
 
     it 'supports adding directives while maintaining built-in directives' do
       schema = <<-SCHEMA
-schema {
+schema @custom(thing: true) {
   query: Hello
 }
 
 directive @foo(arg: Int) on FIELD
+directive @custom(thing: Boolean) on SCHEMA
 
 type Hello {
   str: String
@@ -280,10 +281,10 @@ type Type {
 
   # A list of organizations the user belongs to.
   organizations(
-    # Returns the elements in the list that come after the specified global ID.
+    # Returns the elements in the list that come after the specified cursor.
     after: String
 
-    # Returns the elements in the list that come before the specified global ID.
+    # Returns the elements in the list that come before the specified cursor.
     before: String
 
     # Returns the first _n_ elements from the list.
@@ -615,7 +616,7 @@ type Query {
 
     it "tracks original AST node" do
       schema_definition = <<-GRAPHQL
-schema {
+schema @custom(thing: true) {
   query: Query
 }
 
@@ -653,6 +654,7 @@ type Type implements Interface {
       schema = GraphQL::Schema.from_definition(schema_definition)
 
       assert_equal [1, 1], schema.ast_node.position
+      assert_equal [1, 8], schema.ast_node.directives.first.position
       assert_equal [5, 1], schema.types["Enum"].ast_node.position
       assert_equal [6, 3], schema.types["Enum"].values["VALUE"].ast_node.position
       assert_equal [9, 1], schema.types["Query"].ast_node.position
@@ -666,7 +668,7 @@ type Type implements Interface {
       assert_equal [18, 1], schema.types["Union"].ast_node.position
       assert_equal [20, 1], schema.types["Scalar"].ast_node.position
       assert_equal [22, 1], schema.types["Input"].ast_node.position
-      assert_equal [22, 1], schema.types["Input"].arguments["argument"].ast_node.position
+      assert_equal [23, 3], schema.types["Input"].arguments["argument"].ast_node.position
       assert_equal [26, 1], schema.directives["Directive"].ast_node.position
       assert_equal [28, 3], schema.directives["Directive"].arguments["argument"].ast_node.position
       assert_equal [31, 22], schema.types["Type"].ast_node.interfaces[0].position

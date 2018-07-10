@@ -1,5 +1,4 @@
-<%= type_ruby_name %> = GraphQL::ObjectType.define do
-  name "<%= type_graphql_name %>"
+class <%= type_ruby_name %> < Types::BaseObject
 <% if options.node %>  implements GraphQL::Relay::Node.interface
-<% end %><% normalized_fields.each do |f| %>  field :<%= f[0] %>, <%= f[1] %>
+<% end %><% normalized_fields.each do |f| %>  <%= f.to_ruby %>
 <% end %>end

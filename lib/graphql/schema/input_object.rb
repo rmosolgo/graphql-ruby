@@ -3,14 +3,21 @@ module GraphQL
   class Schema
     class InputObject < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::AcceptsDefinition
-      extend GraphQL::Delegate
+      extend Forwardable
       extend GraphQL::Schema::Member::HasArguments
 
       def initialize(values, context:, defaults_used:)
+        @context = context
         @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
         # Symbolized, underscored hash:
         @ruby_style_hash = @arguments.to_kwargs
-        @context = context
+        # Apply prepares, not great to have it duplicated here.
+        self.class.arguments.each do |name, arg_defn|
+          ruby_kwargs_key = arg_defn.keyword
+          if @ruby_style_hash.key?(ruby_kwargs_key) && arg_defn.prepare
+            @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
+          end
+        end
       end
 
       # @return [GraphQL::Query::Context] The context for this query
@@ -20,7 +27,28 @@ module GraphQL
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only
-      def_delegators :@ruby_style_hash, :to_h, :keys, :values, :each, :any?
+      def_delegators :@ruby_style_hash, :keys, :values, :each, :any?
+
+      def to_h
+        @ruby_style_hash.inject({}) do |h, (key, value)|
+          h.merge(key => unwrap_value(value))
+        end
+      end
+
+      def unwrap_value(value)
+        case value
+        when Array
+          value.map { |item| unwrap_value(item) }
+        when Hash
+          value.inject({}) do |h, (key, value)|
+            h.merge(key => unwrap_value(value))
+          end
+        when InputObject
+          value.to_h
+        else
+          value
+        end
+      end
 
       # Lookup a key on this object, it accepts new-style underscored symbols
       # Or old-style camelized identifiers.
@@ -69,6 +97,10 @@ module GraphQL
           # But use this InputObject class at runtime
           type_defn.arguments_class = self
           type_defn
+        end
+
+        def kind
+          GraphQL::TypeKinds::INPUT_OBJECT
         end
       end
     end

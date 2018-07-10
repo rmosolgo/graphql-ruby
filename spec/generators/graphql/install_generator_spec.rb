@@ -19,6 +19,9 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 
     assert_file "app/graphql/types/.keep"
     assert_file "app/graphql/mutations/.keep"
+    ["base_object", "base_input_object", "base_enum", "base_union", "base_interface"].each do |base_type|
+      assert_file "app/graphql/types/#{base_type}.rb"
+    end
     expected_query_route = %|post "/graphql", to: "graphql#execute"|
     expected_graphiql_route = %|
   if Rails.env.development?
@@ -36,7 +39,7 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
     end
 
     expected_schema = <<-RUBY
-DummySchema = GraphQL::Schema.define do
+class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 end
@@ -45,17 +48,15 @@ RUBY
 
 
     expected_query_type = <<-RUBY
-Types::QueryType = GraphQL::ObjectType.define do
-  name "Query"
+class Types::QueryType < Types::BaseObject
   # Add root-level fields here.
   # They will be entry points for queries on your schema.
 
   # TODO: remove me
-  field :testField, types.String do
-    description \"An example field added by the generator\"
-    resolve ->(obj, args, ctx) {
-      \"Hello World!\"
-    }
+  field :test_field, String, null: false,
+    description: \"An example field added by the generator\"
+  def test_field
+    \"Hello World!\"
   end
 end
 RUBY
@@ -79,20 +80,18 @@ RUBY
     end
 
     expected_query_type = <<-RUBY
-Types::QueryType = GraphQL::ObjectType.define do
-  name "Query"
+class Types::QueryType < Types::BaseObject
   # Add root-level fields here.
   # They will be entry points for queries on your schema.
 
   # TODO: remove me
-  field :testField, types.String do
-    description \"An example field added by the generator\"
-    resolve ->(obj, args, ctx) {
-      \"Hello World!\"
-    }
+  field :test_field, String, null: false,
+    description: \"An example field added by the generator\"
+  def test_field
+    \"Hello World!\"
   end
 
-  field :node, GraphQL::Relay::Node.field
+  field :node, field: GraphQL::Relay::Node.field
 end
 RUBY
 
@@ -126,11 +125,11 @@ RUBY
       refute_includes contents, "GraphiQL::Rails"
     end
 
-    assert_file "app/graphql/custom_schema.rb", /CustomSchema = GraphQL::Schema\.define/
+    assert_file "app/graphql/custom_schema.rb", /class CustomSchema < GraphQL::Schema/
     assert_file "app/controllers/graphql_controller.rb", /CustomSchema\.execute/
   end
 
-  EXPECTED_GRAPHQLS_CONTROLLER = <<-RUBY
+  EXPECTED_GRAPHQLS_CONTROLLER = <<-'RUBY'
 class GraphqlController < ApplicationController
   def execute
     variables = ensure_hash(params[:variables])
@@ -142,6 +141,9 @@ class GraphqlController < ApplicationController
     }
     result = DummySchema.execute(query, variables: variables, context: context, operation_name: operation_name)
     render json: result
+  rescue => e
+    raise e unless Rails.env.development?
+    handle_error_in_development e
   end
 
   private
@@ -160,43 +162,50 @@ class GraphqlController < ApplicationController
     when nil
       {}
     else
-      raise ArgumentError, "Unexpected parameter: \#{ambiguous_param}"
+      raise ArgumentError, "Unexpected parameter: #{ambiguous_param}"
     end
+  end
+
+  def handle_error_in_development(e)
+    logger.error e.message
+    logger.error e.backtrace.join("\n")
+
+    render json: { error: { message: e.message, backtrace: e.backtrace }, data: {} }, status: 500
   end
 end
 RUBY
 
   EXPECTED_RELAY_BATCH_SCHEMA = <<-RUBY
-DummySchema = GraphQL::Schema.define do
+class DummySchema < GraphQL::Schema
 
   mutation(Types::MutationType)
   query(Types::QueryType)
   # Relay Object Identification:
 
   # Return a string UUID for `object`
-  id_from_object ->(object, type_definition, query_ctx) {
+  def self.id_from_object(object, type_definition, query_ctx)
     # Here's a simple implementation which:
     # - joins the type name & object.id
     # - encodes it with base64:
     # GraphQL::Schema::UniqueWithinType.encode(type_definition.name, object.id)
-  }
+  end
 
   # Given a string UUID, find the object
-  object_from_id ->(id, query_ctx) {
+  def self.object_from_id(id, query_ctx)
     # For example, to decode the UUIDs generated above:
     # type_name, item_id = GraphQL::Schema::UniqueWithinType.decode(id)
     #
     # Then, based on `type_name` and `id`
     # find an object in your application
     # ...
-  }
+  end
 
   # Object Resolution
-  resolve_type -> (obj, ctx) {
+  def self.resolve_type(type, obj, ctx)
     # TODO: Implement this function
     # to return the correct type for `obj`
     raise(NotImplementedError)
-  }
+  end
 
   # GraphQL::Batch setup:
   use GraphQL::Batch

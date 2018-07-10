@@ -10,16 +10,15 @@ class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
       # GraphQL-style:
       ["Bird", "wingspan:Int!", "foliage:[Color]"],
       # Ruby-style:
-      ["BirdType", "wingspan:!types.Int", "foliage:types[Types::ColorType]"],
+      ["BirdType", "wingspan:!Integer", "foliage:[Types::ColorType]"],
       # Mixed
-      ["BirdType", "wingspan:!Int", "foliage:types[Color]"],
+      ["BirdType", "wingspan:!Int", "foliage:[Color]"],
     ]
 
     expected_content = <<-RUBY
-Types::BirdType = GraphQL::ObjectType.define do
-  name "Bird"
-  field :wingspan, !types.Int
-  field :foliage, types[Types::ColorType]
+class Types::BirdType < Types::BaseObject
+  field :wingspan, Integer, null: false
+  field :foliage, [Types::ColorType], null: true
 end
 RUBY
 
@@ -33,8 +32,7 @@ RUBY
   test "it generates classifed file" do
     run_generator(["page"])
     assert_file "app/graphql/types/page_type.rb", <<-RUBY
-Types::PageType = GraphQL::ObjectType.define do
-  name "Page"
+class Types::PageType < Types::BaseObject
 end
 RUBY
   end
@@ -42,8 +40,7 @@ RUBY
   test "it makes Relay nodes" do
     run_generator(["Page", "--node"])
     assert_file "app/graphql/types/page_type.rb", <<-RUBY
-Types::PageType = GraphQL::ObjectType.define do
-  name "Page"
+class Types::PageType < Types::BaseObject
   implements GraphQL::Relay::Node.interface
 end
 RUBY

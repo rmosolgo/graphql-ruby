@@ -5,7 +5,7 @@ module GraphQL
     #
     # {Arguments} recursively wraps the input in {Arguments} instances.
     class Arguments
-      extend GraphQL::Delegate
+      extend Forwardable
 
       def self.construct_arguments_class(argument_owner)
         argument_definitions = argument_owner.arguments
@@ -34,6 +34,8 @@ module GraphQL
           end
         end
       end
+
+      attr_reader :argument_values
 
       def initialize(values, context:, defaults_used:)
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|

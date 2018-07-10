@@ -5,12 +5,15 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
 
       class << self
+        extend Forwardable
+        def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result
+
         def coerce_input(val, ctx)
-          raise NotImplementedError, "#{self.name}.coerce_input(val, ctx) must prepare GraphQL input (#{val.inspect}) for Ruby processing"
+          val
         end
 
         def coerce_result(val, ctx)
-          raise NotImplementedError, "#{self.name}.coerce_result(val, ctx) must prepare Ruby value (#{val.inspect}) for GraphQL response"
+          val
         end
 
         def to_graphql
@@ -20,7 +23,19 @@ module GraphQL
           type_defn.coerce_result = method(:coerce_result)
           type_defn.coerce_input = method(:coerce_input)
           type_defn.metadata[:type_class] = self
+          type_defn.default_scalar = default_scalar
           type_defn
+        end
+
+        def kind
+          GraphQL::TypeKinds::SCALAR
+        end
+
+        def default_scalar(is_default = nil)
+          if !is_default.nil?
+            @default_scalar = is_default
+          end
+          @default_scalar
         end
       end
     end

@@ -20,7 +20,7 @@ module Platform
         { abcDef: 1 }
         some_method do { xyzAbc: 1 } end
 
-        thing = Platform::Helpers::NodeIdentification.typed_object_from_id(Objects::Thing, inputs[:thing_id], @context)
+        thing = Platform::Helpers::NodeIdentification.typed_object_from_id(Objects::Thing, inputs[:thing_id], context)
         raise Errors::Validation.new("Thing not found.") unless thing
 
         ThingActivity.track(thing.id, Time.now.change(min: 0, sec: 0))

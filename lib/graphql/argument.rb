@@ -38,6 +38,7 @@ module GraphQL
     accepts_definitions :name, :type, :description, :default_value, :as, :prepare
     attr_accessor :type, :description, :default_value, :name, :as
     attr_accessor :ast_node
+    alias :graphql_name :name
 
     ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as, :prepare)
 

@@ -1,6 +1,7 @@
 ---
 title: Instrumentation
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 desc: Wrap query execution with custom logic
@@ -9,7 +10,7 @@ desc: Wrap query execution with custom logic
 You can call hooks _before_ and _after_ each query. Query instrumentation can be attached during schema definition:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   instrument(:query, QueryTimerInstrumentation)
 end
 ```

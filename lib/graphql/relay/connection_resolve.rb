@@ -2,34 +2,24 @@
 module GraphQL
   module Relay
     class ConnectionResolve
-      def initialize(field, underlying_resolve, lazy:)
+      def initialize(field, underlying_resolve)
         @field = field
         @underlying_resolve = underlying_resolve
         @max_page_size = field.connection_max_page_size
-        @lazy = lazy
       end
 
       def call(obj, args, ctx)
-        if @lazy && obj.is_a?(LazyNodesWrapper)
-          parent = obj.parent
-          obj = obj.lazy_object
-        else
-          parent = obj
-        end
+        # in a lazy ressolve hook, obj is the promise,
+        # get the object that the promise was
+        # originally derived from
+        parent = ctx.object
 
         nodes = @underlying_resolve.call(obj, args, ctx)
 
-        if nodes.nil?
-          nil
-        elsif ctx.schema.lazy?(nodes)
-          if !@lazy
-            LazyNodesWrapper.new(obj, nodes)
-          else
-            nodes
-          end
-        elsif nodes.is_a?(GraphQL::Execution::Execute::Skip)
+        if nodes.nil? || ctx.schema.lazy?(nodes) || nodes.is_a?(GraphQL::Execution::Execute::Skip) || ctx.wrapped_connection
           nodes
         else
+          ctx.wrapped_connection = true
           build_connection(nodes, args, parent, ctx)
         end
       end
@@ -48,16 +38,6 @@ module GraphQL
           connection_class.new(nodes, args, field: @field, max_page_size: @max_page_size, parent: parent, context: ctx)
         end
       end
-
-      # A container for the proper `parent` of connection nodes.
-      # Without this wrapper, the lazy object _itself_ is passed into `build_connection`
-      # and it becomes the parent, which is wrong.
-      #
-      # We can get away with it because we know that this instrumentation will be applied last.
-      # That means its code after `underlying_resolve` will be _last_ on the way in.
-      # And, its code before `underlying_resolve` will be _first_ during lazy resolution.
-      # @api private
-      LazyNodesWrapper = Struct.new(:parent, :lazy_object)
     end
   end
 end

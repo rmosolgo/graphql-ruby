@@ -13,6 +13,11 @@ module Graphql
     #   - graphql/
     #     - resolvers/
     #     - types/
+    #       - base_enum.rb
+    #       - base_input_object.rb
+    #       - base_interface.rb
+    #       - base_object.rb
+    #       - base_union.rb
     #       - query_type.rb
     #     - loaders/
     #     - mutations/
@@ -40,6 +45,8 @@ module Graphql
     # Accept a `--batch` option which adds `GraphQL::Batch` setup.
     #
     # Use `--no-graphiql` to skip `graphiql-rails` installation.
+    #
+    # TODO: also add base classes
     class InstallGenerator < Rails::Generators::Base
       include Core
 
@@ -81,18 +88,15 @@ module Graphql
         type: :boolean,
         desc: "Preconfigure smaller stack for API only apps"
 
-
-      GRAPHIQL_ROUTE = <<-RUBY
-if Rails.env.development?
-    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
-  end
-RUBY
-
       def create_folder_structure
         create_dir("#{options[:directory]}/types")
         template("schema.erb", schema_file_path)
 
-        # Note: Yuo can't have a schema without the query type, otherwise introspection breaks
+        ["base_object", "base_enum", "base_input_object", "base_interface", "base_union"].each do |base_type|
+          template("#{base_type}.erb", "#{options[:directory]}/types/#{base_type}.rb")
+        end
+
+        # Note: You can't have a schema without the query type, otherwise introspection breaks
         template("query_type.erb", "#{options[:directory]}/types/query_type.rb")
         insert_root_type('query', 'QueryType')
 
@@ -115,7 +119,20 @@ RUBY
           # This is a little cheat just to get cleaner shell output:
           log :route, 'graphiql-rails'
           shell.mute do
-            route(GRAPHIQL_ROUTE)
+            # Rails 5.2 has better support for `route`?
+            if Rails::VERSION::STRING > "5.2"
+              route <<-RUBY
+if Rails.env.development?
+  mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
+end
+RUBY
+            else
+              route <<-RUBY
+if Rails.env.development?
+    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
+  end
+RUBY
+            end
           end
         end
 

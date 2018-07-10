@@ -44,3 +44,27 @@ it("generates an Apollo middleware", () => {
     expect(req.operationId).toEqual("example-client/b")
   })
 })
+
+it("generates an Apollo Link", () => {
+  var fakeOperation = {
+    operationName: "a",
+    context: null,
+    setContext: function(c) {
+      this.context = c
+    },
+    extensions: {},
+  }
+
+  var forwardedOperation = null
+  var fakeForward = function(operation) {
+    forwardedOperation = operation
+  }
+
+  withExampleClient("map3", (exampleClient) => {
+    exampleClient.apolloLink(fakeOperation, fakeForward)
+
+    expect(fakeOperation.extensions.operationId).toEqual("example-client/b")
+    expect(fakeOperation.context.http).toEqual({includeQuery: false, includeExtensions: true})
+    expect(forwardedOperation).toEqua;(fakeOperation)
+  })
+})

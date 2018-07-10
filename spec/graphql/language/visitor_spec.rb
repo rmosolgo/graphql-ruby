@@ -70,9 +70,34 @@ describe GraphQL::Language::Visitor do
     assert_equal(2, hooks_visitor[GraphQL::Language::Nodes::Argument].enter.length)
   end
 
+  it "can visit a document with directive definitions" do
+    document = GraphQL.parse("
+      # Marks an element of a GraphQL schema as only available via a preview header
+      directive @preview(
+        # The identifier of the API preview that toggles this field.
+        toggledBy: String
+      ) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
+      type Query {
+        hello: String
+      }
+    ")
+
+    directive = nil
+    directive_locations = []
+
+    v = GraphQL::Language::Visitor.new(document)
+    v[GraphQL::Language::Nodes::DirectiveDefinition] << ->(node, parent) { directive = node }
+    v[GraphQL::Language::Nodes::DirectiveLocation] << ->(node, parent) { directive_locations << node }
+    v.visit
+
+    assert_equal "preview", directive.name
+    assert_equal 10, directive_locations.length
+  end
+      
   [:hooks, :class_based].each do |visitor_type|
     it "#{visitor_type} visitor calls hooks during a depth-first tree traversal" do
-      visitor = public_send("#{visitor_type}_visitor")
+      visitor = public_send("#{visitor_type}_visitor")      
       visitor.visit
       counts = public_send("#{visitor_type}_counts")
       assert_equal(6, counts[:fields_entered])
@@ -95,5 +120,24 @@ describe GraphQL::Language::Visitor do
         assert_equal(0, counts[:fields_entered])
       end
     end
+  end
+
+  it "can visit InputObjectTypeDefinition directives" do
+    schema_sdl = <<-GRAPHQL
+    input Test @directive {
+      id: ID!
+    }
+    GRAPHQL
+
+    document = GraphQL.parse(schema_sdl)
+
+    visitor = GraphQL::Language::Visitor.new(document)
+
+    visited_directive = false
+    visitor[GraphQL::Language::Nodes::Directive] << ->(node, parent) { visited_directive = true }
+
+    visitor.visit
+
+    assert visited_directive
   end
 end

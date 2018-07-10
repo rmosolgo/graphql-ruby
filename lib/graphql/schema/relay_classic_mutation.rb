@@ -22,6 +22,22 @@ module GraphQL
     class RelayClassicMutation < GraphQL::Schema::Mutation
       # The payload should always include this field
       field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.", null: true)
+      # Relay classic default:
+      null(true)
+
+      # Override {GraphQL::Schema::Mutation#resolve_mutation} to
+      # delete `client_mutation_id` from the kwargs.
+      def resolve_mutation(**kwargs)
+        # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
+        kwargs.delete(:client_mutation_id)
+        if kwargs.any?
+          resolve(**kwargs)
+        else
+          resolve
+        end
+      end
+
+      resolve_method(:resolve_mutation)
 
       class << self
         # The base class for generated input object types
@@ -43,15 +59,16 @@ module GraphQL
           @input_type ||= generate_input_type
         end
 
-        private
-
-        # Extend {Schema::Mutation.generate_field} to add the `input` argument
-        def generate_field
-          field_instance = super
-          field_instance.own_arguments.clear
-          field_instance.argument(:input, input_type, required: true)
-          field_instance
+        # Extend {Schema::Mutation.field_options} to add the `input` argument
+        def field_options
+          sig = super
+          # Arguments were added at the root, but they should be nested
+          sig[:arguments].clear
+          sig[:arguments][:input] = { type: input_type, required: true }
+          sig
         end
+
+        private
 
         # Generate the input type for the `input:` argument
         # To customize how input objects are generated, override this method
@@ -67,17 +84,6 @@ module GraphQL
             own_arguments.merge!(mutation_args)
             argument :client_mutation_id, String, "A unique identifier for the client performing the mutation.", required: false
           end
-        end
-
-        # Override {GraphQL::Schema::Mutation.resolve_field} to
-        # delete `client_mutation_id` from the kwargs.
-        def resolve_field(obj, args, ctx)
-          mutation = self.new(object: obj, arguments: args, context: ctx.query.context)
-          kwargs = args.to_kwargs
-          # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
-          kwargs.delete(:client_mutation_id)
-          extras.each { |e| kwargs[e] = ctx.public_send(e) }
-          mutation.resolve(**kwargs)
         end
       end
     end

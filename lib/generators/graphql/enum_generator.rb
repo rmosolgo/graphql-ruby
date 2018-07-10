@@ -3,11 +3,11 @@ require 'generators/graphql/type_generator'
 
 module Graphql
   module Generators
-    # Generate an interface type by name,
-    # with the specified fields.
+    # Generate an enum type by name, with the given values.
+    # To add a `value:` option, add another value after a `:`.
     #
     # ```
-    # rails g graphql:interface NamedEntityType name:String!
+    # rails g graphql:enum ProgrammingLanguage RUBY PYTHON PERL PERL6:"PERL"
     # ```
     class EnumGenerator < TypeGeneratorBase
       desc "Create a GraphQL::EnumType with the given name and values"

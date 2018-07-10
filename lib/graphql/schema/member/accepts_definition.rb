@@ -37,47 +37,81 @@ module GraphQL
       #   Account.graphql_definition.metadata[:permission_level] # => 1
       module AcceptsDefinition
         def self.included(child)
-          child.extend(ClassMethods)
+          child.extend(AcceptsDefinitionDefinitionMethods)
           child.prepend(ToGraphQLExtension)
           child.prepend(InitializeExtension)
         end
 
         def self.extended(child)
-          child.extend(ClassMethods)
-          # I tried to use `super`, but super isn't quite right
-          # since the method is defined in the same class itself,
-          # not the superclass
-          child.class_eval do
-            class << self
-              prepend(ToGraphQLExtension)
+          if defined?(child::DefinitionMethods)
+            child::DefinitionMethods.include(AcceptsDefinitionDefinitionMethods)
+            child::DefinitionMethods.prepend(ToGraphQLExtension)
+          else
+            child.extend(AcceptsDefinitionDefinitionMethods)
+            # I tried to use `super`, but super isn't quite right
+            # since the method is defined in the same class itself,
+            # not the superclass
+            child.class_eval do
+              class << self
+                prepend(ToGraphQLExtension)
+              end
             end
           end
         end
 
-        module ClassMethods
+        module AcceptsDefinitionDefinitionMethods
           def accepts_definition(name)
-            @accepts_definition_methods ||= []
-            @accepts_definition_methods << name
-            ivar_name = "@#{name}_args"
-            define_singleton_method(name) do |*args|
-              if args.any?
-                instance_variable_set(ivar_name, args)
-              end
-              instance_variable_get(ivar_name)
-            end
+            own_accepts_definition_methods << name
 
-            define_method(name) do |*args|
-              if args.any?
-                instance_variable_set(ivar_name, args)
+            ivar_name = "@#{name}_args"
+            if self.is_a?(Class)
+              define_singleton_method(name) do |*args|
+                if args.any?
+                  instance_variable_set(ivar_name, args)
+                end
+                instance_variable_get(ivar_name) || (superclass.respond_to?(name) ? superclass.public_send(name) : nil)
               end
-              instance_variable_get(ivar_name)
+
+              define_method(name) do |*args|
+                if args.any?
+                  instance_variable_set(ivar_name, args)
+                end
+                instance_variable_get(ivar_name)
+              end
+            else
+              # Special handling for interfaces, define it here
+              # so it's appropriately passed down
+              self::DefinitionMethods.module_eval do
+                define_method(name) do |*args|
+                  if args.any?
+                    instance_variable_set(ivar_name, args)
+                  end
+                  instance_variable_get(ivar_name) || ((int = interfaces.first { |i| i.respond_to?()}) && int.public_send(name))
+                end
+              end
             end
           end
 
           def accepts_definition_methods
-            @accepts_definition_methods ||= []
-            sc = self.is_a?(Class) ? superclass : self.class.superclass
-            @accepts_definition_methods + (sc.respond_to?(:accepts_definition_methods) ? sc.accepts_definition_methods : [])
+            inherited_methods = if self.is_a?(Class)
+              superclass.respond_to?(:accepts_definition_methods) ? superclass.accepts_definition_methods : []
+            elsif self.is_a?(Module)
+              m = []
+              ancestors.each do |a|
+                if a.respond_to?(:own_accepts_definition_methods)
+                  m.concat(a.own_accepts_definition_methods)
+                end
+              end
+              m
+            else
+              self.class.accepts_definition_methods
+            end
+
+            own_accepts_definition_methods + inherited_methods
+          end
+
+          def own_accepts_definition_methods
+            @own_accepts_definition_methods ||= []
           end
         end
 
@@ -85,7 +119,7 @@ module GraphQL
           def to_graphql
             defn = super
             accepts_definition_methods.each do |method_name|
-              value = instance_variable_get("@#{method_name}_args")
+              value = public_send(method_name)
               if !value.nil?
                 defn = defn.redefine { public_send(method_name, *value) }
               end

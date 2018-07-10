@@ -16,13 +16,20 @@ module GraphQL
       # @return [Hash<String => Array<GraphQL::BaseType>]
       attr_reader :union_memberships
 
+
       # @param schema [GraphQL::Schema]
       def initialize(schema, introspection: true)
         @schema = schema
         @introspection = introspection
         @field_instrumenters =
           schema.instrumenters[:field] +
-            Schema::BUILT_IN_INSTRUMENTERS +
+            # Wrap Relay-related objects in wrappers
+            [
+              GraphQL::Relay::ConnectionInstrumentation,
+              GraphQL::Relay::EdgesInstrumentation,
+              GraphQL::Relay::Mutation::Instrumentation,
+              GraphQL::Schema::Member::Instrumentation,
+            ] +
             schema.instrumenters[:field_after_built_ins]
 
         # These fields have types specified by _name_,
@@ -158,7 +165,7 @@ Some late-bound types couldn't be resolved:
             end
           elsif !prev_type.equal?(type_defn)
             # If the previous entry in the map isn't the same object we just found, raise.
-            raise("Duplicate type definition found for name '#{type_defn.name}' (#{prev_type.metadata[:type_class]}, #{type_defn.metadata[:type_class]}})")
+            raise("Duplicate type definition found for name '#{type_defn.name}' at '#{context_description}' (#{prev_type.metadata[:type_class] || prev_type}, #{type_defn.metadata[:type_class] || type_defn})")
           end
         when Class
           if member.respond_to?(:graphql_definition)

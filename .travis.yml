@@ -9,7 +9,6 @@ node_js: "7"
 env:
   global:
     - CODECLIMATE_REPO_TOKEN=f5b27b2e25d3f4e199bb2566fb4fd4507144a004c71d4aa33a32c2df5f940333
-    - JRUBY_OPTS="--debug" # Coverage may be inaccurate without debug flag
 before_install:
   - gem update --system --no-doc
   - gem install bundler
@@ -17,10 +16,10 @@ before_install:
 rvm:
 - 2.2.8 # Lowest version officially supported by the gem is 2.2
 - 2.4.3
-- jruby-9.1.15.0
 
 services:
   - postgresql
+  - mongodb
 
 before_script:
   - psql -c 'create database graphql_ruby_test;' -U postgres
@@ -31,6 +30,7 @@ gemfile:
   - gemfiles/rails_4.2.gemfile
   - gemfiles/rails_5.0.gemfile
   - gemfiles/rails_5.1.gemfile
+  - gemfiles/rails_5.2.gemfile
 
 
 matrix:
@@ -66,13 +66,9 @@ matrix:
     gemfile: gemfiles/rails_4.1.gemfile
   - rvm: 2.4.3
     gemfile: gemfiles/rails_4.2.gemfile
-  - rvm: jruby-9.1.15.0
-    gemfile: gemfiles/rails_3.2.gemfile # JRuby + latest Rails only
-  - rvm: jruby-9.1.15.0
-    gemfile: gemfiles/rails_4.0.gemfile # JRuby + latest Rails only
-  - rvm: jruby-9.1.15.0
-    gemfile: gemfiles/rails_4.1.gemfile # JRuby + latest Rails only
-  - rvm: jruby-9.1.15.0
-    gemfile: gemfiles/rails_4.2.gemfile # JRuby + latest Rails only
-  - rvm: jruby-9.1.15.0
-    gemfile: gemfiles/rails_5.0.gemfile # JRuby + latest Rails only
+  - rvm: 2.2.8
+    gemfile: gemfiles/rails_5.0.gemfile
+  - rvm: 2.2.8
+    gemfile: gemfiles/rails_5.1.gemfile
+  - rvm: 2.2.8
+    gemfile: gemfiles/rails_5.2.gemfile

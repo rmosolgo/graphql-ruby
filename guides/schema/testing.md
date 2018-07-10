@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 title: Testing
 section: Schema
@@ -10,7 +11,6 @@ index: 7
 There are a few ways to test the behavior of your GraphQL schema:
 
 - _Don't_ test the schema, test other objects instead
-- Test schema elements (types, fields) in isolation
 - Execute GraphQL queries and test the result
 
 ## Don't test the schema
@@ -20,13 +20,13 @@ The easiest way to test behavior of a GraphQL schema is to extract behavior into
 For example, consider a field which calculates its own value:
 
 ```ruby
-PostType = GraphQL::ObjectType.define do
+class PostType < GraphQL::Schema::Object
   # ...
-  field :isTrending, types.Boolean do
-    resolve ->(obj, args, ctx) {
-      recent_comments = comments.where("created_at < ?", 1.day.ago)
-      recent_comments.count > 100
-    }
+  field :is_trending, Boolean, null: false
+
+  def is_trending
+    recent_comments = object.comments.where("created_at < ?", 1.day.ago)
+    recent_comments.count > 100
   end
 end
 ```
@@ -44,20 +44,19 @@ class Post
 
     def value
       recent_comments = @post.comments.where("created_at < ?", 1.day.ago)
-      recent_comments.count > TRENDING_COMMENTS_COUNT       
+      recent_comments.count > TRENDING_COMMENTS_COUNT
     end
   end
 end
 
 # ....
 
-PostType = GraphQL::ObjectType.define do
+class PostType < GraphQL::Schema::Object
   # ...
-  field :isTrending, types.Boolean do
-    resolve ->(obj, args, ctx) {
-      # Use the Post::Trending class to calculate the value
-      Post::Trending.new(obj).value
-    }
+  field :is_trending, Boolean, null: false
+
+  def is_trending
+    Post::Trending.new(object).value
   end
 end
 ```
@@ -65,8 +64,8 @@ end
 This is an improvement because your behavior is not coupled to your GraphQL schema. Besides that, it's easier to test: you can simply unit test the calculation class. For example:
 
 ```ruby
-# app/models/post/trending_spec.rb
-describe Post::Trending do
+# spec/models/post/trending_spec.rb
+RSpec.describe Post::Trending do
   let(:post) { create(:post) }
   let(:trending) { Post::Trending.new(post) }
 
@@ -90,72 +89,14 @@ describe Post::Trending do
 end
 ```
 
-## Testing schema elements in isolation
-
-You can access type and field objects from your schema to make sure they're defined correctly and behave the way you expect them to.
-
-#### Types
-
-Access a type by name from the schema with `GraphQL::Schema#types`:
-
-```ruby
-post = MySchema.types["Post"] # => PostType
-post.fields                   # => {"id" => <GraphQL::Field>, ... }
-post.fields.keys              # => ["id", "title", "body", "author", "comments"]
-```
-
-The returned value of `Schema#types[type_name]` is an instance of the type class you used to `.define` it (eg, `GraphQL::ObjectType`, `GraphQL::EnumType`, `GraphQL::InputObjectType`).
-
-#### Fields
-
-You can get a type's fields from the `GraphQL::ObjectType#fields` hash. For example:
-
-```ruby
-post_type = MySchema.types["Post"]
-title_field = post_type.fields["title"] #=> <GraphQL::Field>
-title_field.name #=> "title"
-```
-
-You can test a resolve function by calling `GraphQL::Field#resolve`:
-
-```ruby
-# Because this field doesn't use context or variables, simply pass `nil`
-post = Post.new(title: "Welcome to my blog")
-name_field.resolve(post, nil, nil) #=> "Welcome to my blog"
-```
-
-Calling `resolve` in this way does _not_ apply any coercion. (That's only applied during query execution.)
-
-#### Other elements
-
-Similarly, you can access:
-
-- `GraphQL::Field#arguments`, which are `String` => `GraphQL::Argument` pairs
-- `GraphQL::Field#type`, the field's return type
-- `GraphQL::InputObjectType#arguments`, which are `String` => `GraphQL::Argument` pairs
-- `GraphQL::EnumType#values`, which are `String` => `GraphQL::EnumType::EnumValue` pairs
-- `GraphQL::Schema#possible_types(type_defn)`, which returns the possible types for union or interface types in a given schema
-
-`GraphQL::BaseType#unwrap` may also be helpful. It returns the "inner-most" type. For example:
-
-```ruby
-required_list_of_strings = GraphQL::NonNullType.new(
-  of_type: GraphQL::ListType.new(
-    of_type: GraphQL::STRING_TYPE
-  )
-)
-
-required_list_of_strings.unwrap #=> GraphQL::STRING_TYPE
-```
-
 ## Executing GraphQL queries
 
-Sometimes, you really need an end-to-end test. Although it requires a lot of overhead, it's nice to have a "sanity check" on the system as a whole.
+Sometimes, you really need an end-to-end test. Although it requires a lot of overhead, it's nice to have a "sanity check" on the system as a whole (for example, authorization and database batching).
 
 You can execute queries on your schema in a test. For example, you can set it up like this:
 
 ```ruby
-describe MySchema do
+RSpec.describe MySchema do
   # You can override `context` or `variables` in
   # more specific scopes
   let(:context) { {} }

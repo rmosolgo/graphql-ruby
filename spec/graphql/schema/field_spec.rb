@@ -4,17 +4,22 @@ require "spec_helper"
 describe GraphQL::Schema::Field do
   describe "graphql definition" do
     let(:object_class) { Jazz::Query }
-    let(:field) { object_class.fields["inspect_input"] }
+    let(:field) { object_class.fields["inspectInput"] }
 
     it "uses the argument class" do
       arg_defn = field.graphql_definition.arguments.values.first
       assert_equal :ok, arg_defn.metadata[:custom]
     end
 
+    it "attaches itself to its graphql_definition as type_class" do
+      assert_equal field, field.graphql_definition.metadata[:type_class]
+    end
+
     it "camelizes the field name, unless camelize: false" do
       assert_equal 'inspectInput', field.graphql_definition.name
+      assert_equal 'inspectInput', field.name
 
-      underscored_field = GraphQL::Schema::Field.new(:underscored_field, String, null: false, camelize: false, owner: nil) do
+      underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, required: true, camelize: false
       end
 
@@ -25,11 +30,11 @@ describe GraphQL::Schema::Field do
     end
 
     it "exposes the method override" do
-      assert_nil field.method
       object = Class.new(Jazz::BaseObject) do
         field :t, String, method: :tt, null: true
       end
-      assert_equal :tt, object.fields["t"].method
+      assert_equal :tt, object.fields["t"].method_sym
+      assert_equal "tt", object.fields["t"].method_str
     end
 
     it "accepts a block for definition" do
@@ -50,7 +55,7 @@ describe GraphQL::Schema::Field do
       type = Class.new(GraphQL::Schema::Object) do
         graphql_name 'MyType'
       end
-      field = GraphQL::Schema::Field.new(:my_field, type, owner: nil, null: true)
+      field = GraphQL::Schema::Field.from_options(:my_field, type, owner: nil, null: true)
       assert_equal type.to_graphql, field.to_graphql.type
     end
 
@@ -82,6 +87,17 @@ describe GraphQL::Schema::Field do
 
     it "has a reference to the object that owns it with #owner" do
       assert_equal Jazz::Query, field.owner
+    end
+
+    describe "type" do
+      it "tells the return type" do
+        assert_equal "[String!]!", field.type.graphql_definition.to_s
+      end
+
+      it "returns the type class" do
+        field = Jazz::Query.fields["nowPlaying"]
+        assert_equal Jazz::PerformingAct, field.type.of_type
+      end
     end
 
     describe "complexity" do
@@ -158,10 +174,52 @@ describe GraphQL::Schema::Field do
       end
 
       err = assert_raises ArgumentError do
-        thing.fields["stuff"].to_graphql.type
+        thing.fields["stuff"].type
       end
 
       assert_includes err.message, "Thing.stuff"
+      assert_includes err.message, "Unexpected class/module"
+    end
+
+    it "makes a suggestion when the type is false" do
+      thing = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Thing"
+        # False might come from an invalid `!`
+        field :stuff, false, null: false
+      end
+
+      err = assert_raises ArgumentError do
+        thing.fields["stuff"].type
+      end
+
+      assert_includes err.message, "Thing.stuff"
+      assert_includes err.message, "Received `false` instead of a type, maybe a `!` should be replaced with `null: true` (for fields) or `required: true` (for arguments)"
+    end
+
+    it "makes a suggestion when the type is a GraphQL::Field" do
+      err = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "Thing"
+          # Previously, field was a valid second argument
+          field :stuff, GraphQL::Relay::Node.field, null: false
+        end
+      end
+
+      assert_includes err.message, "use the `field:` keyword for this instead"
+    end
+  end
+
+  describe "mutation" do
+    it "passes when not including extra arguments" do
+      mutation_class = Class.new(GraphQL::Schema::Mutation) do
+        graphql_name "Thing"
+        field :stuff, String, null: false
+      end
+
+      obj = Class.new(GraphQL::Schema::Object) do
+        field(:my_field, mutation: mutation_class, null: true)
+      end
+      assert_equal obj.fields["myField"].mutation, mutation_class
     end
   end
 end

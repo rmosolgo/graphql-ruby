@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Type Definitions
 title: Input Objects
@@ -73,10 +74,10 @@ def create_post(attributes:)
   # => "Types::PostAttributes"
   # Access a value by method (underscore-cased):
   puts attributes.full_text
-  # => "..."
+  # => "This is my first post"
   # Or by hash-style lookup (camel-cased, for compatibility):
   puts attributes[:fullText]
-  # => "..."
+  # => "This is my first post"
 end
 ```
 

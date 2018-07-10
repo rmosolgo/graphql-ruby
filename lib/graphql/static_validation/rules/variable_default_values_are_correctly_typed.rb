@@ -11,14 +11,23 @@ module GraphQL
             type = context.schema.type_from_ast(node.type)
             if type.nil?
               # This is handled by another validator
-            elsif !context.valid_literal?(value, type)
-              add_error("Default value for $#{node.name} doesn't match type #{type}", node)
-            end
-          end
-        end
+            else
+              begin
+                valid = context.valid_literal?(value, type)
+              rescue GraphQL::CoercionError => err
+                error_message = err.message
+              end
 
+              if !valid
+                error_message ||= "Default value for $#{node.name} doesn't match type #{type}"
+                add_error(error_message, node)
+              end
+            end 
+          end 
+        end
+        
         super
       end
     end
-  end
+  end 
 end

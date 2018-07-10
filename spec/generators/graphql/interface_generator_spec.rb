@@ -10,16 +10,16 @@ class GraphQLGeneratorsInterfaceGeneratorTest < BaseGeneratorTest
       # GraphQL-style:
       ["Bird", "wingspan:Int!", "foliage:[Color]"],
       # Ruby-style:
-      ["BirdType", "wingspan:!types.Int", "foliage:types[Types::ColorType]"],
+      ["BirdType", "wingspan:Integer!", "foliage:[Types::ColorType]"],
       # Mixed
-      ["BirdType", "wingspan:!Int", "foliage:types[Color]"],
+      ["BirdType", "wingspan:!Int", "foliage:[Color]"],
     ]
 
     expected_content = <<-RUBY
-Types::BirdType = GraphQL::InterfaceType.define do
-  name "Bird"
-  field :wingspan, !types.Int
-  field :foliage, types[Types::ColorType]
+module Types::BirdType
+  include Types::BaseInterface
+  field :wingspan, Integer, null: false
+  field :foliage, [Types::ColorType], null: true
 end
 RUBY
 

@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 title: Lazy Execution
 section: Schema
@@ -58,7 +59,7 @@ class LazyFindPerson
 2. Connect the lazy resolve method
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   # ...
   lazy_resolve(LazyFindPerson, :person)
 end
@@ -67,10 +68,10 @@ end
 3. Return lazy objects from `resolve`
 
 ```ruby
-field :author, PersonType do
-  resolve ->(obj, args, ctx) {
-    LazyFindPerson.new(ctx, obj.author_id)
-  }
+field :author, PersonType, null: true
+
+def author
+  LazyFindPerson.new(context, object.author_id)
 end
 ```
 

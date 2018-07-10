@@ -12,7 +12,7 @@ module GraphQL
     # It also provides limited access to the {TypeStack} instance,
     # which tracks state as you climb in and out of different fields.
     class ValidationContext
-      extend GraphQL::Delegate
+      extend Forwardable
 
       attr_reader :query, :schema,
         :document, :errors, :visitor,

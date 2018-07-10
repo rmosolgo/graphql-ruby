@@ -97,13 +97,18 @@ module GraphQL
     # Turns `{X} = GraphQL::{Y}Type.define do` into `class {X} < Types::Base{Y}`.
     class TypeDefineToClassTransform < Transform
       # @param base_class_pattern [String] Replacement pattern for the base class name. Use this if your base classes have nonstandard names.
-      def initialize(base_class_pattern: "Types::Base\\2")
-        @find_pattern = /([a-zA-Z_0-9:]*) = GraphQL::#{GRAPHQL_TYPES}Type\.define do/
-        @replace_pattern = "class \\1 < #{base_class_pattern}"
+      def initialize(base_class_pattern: "Types::Base\\3")
+        @find_pattern = /( *)([a-zA-Z_0-9:]*) = GraphQL::#{GRAPHQL_TYPES}Type\.define do/
+        @replace_pattern = "\\1class \\2 < #{base_class_pattern}"
+        @interface_replace_pattern = "\\1module \\2\n\\1  include #{base_class_pattern}"
       end
 
       def apply(input_text)
-        input_text.sub(@find_pattern, @replace_pattern)
+        if input_text.include?("GraphQL::InterfaceType.define")
+          input_text.sub(@find_pattern, @interface_replace_pattern)
+        else
+          input_text.sub(@find_pattern, @replace_pattern)
+        end
       end
     end
 
@@ -124,7 +129,12 @@ module GraphQL
     # Or, if it is not redundant, move it to `graphql_name "Something"`.
     class NameTransform < Transform
       def apply(transformable)
-        if (matches = transformable.match(/class (?<type_name>[a-zA-Z_0-9:]*) </))
+        last_type_defn = transformable
+          .split("\n")
+          .select { |line| line.include?("class ") || line.include?("module ")}
+          .last
+
+        if last_type_defn && (matches = last_type_defn.match(/(class|module) (?<type_name>[a-zA-Z_0-9:]*)( <|$)/))
           type_name = matches[:type_name]
           # Get the name without any prefixes or suffixes
           type_name_without_the_type_part = type_name.split('::').last.gsub(/Type$/, '')
@@ -151,7 +161,8 @@ module GraphQL
         keep_looking = true
         while keep_looking do
           keep_looking = false
-          input_text = input_text.gsub(/(?<field>(?:field|input_field|return_field|connection|argument)(?:\(.*|.*,))\n\s*(?<next_line>.+)/) do
+          # Find the `field` call (or other method), and an open paren, but not a close paren, or a comma between arguments
+          input_text = input_text.gsub(/(?<field>(?:field|input_field|return_field|connection|argument)(?:\([^)]*|.*,))\n\s*(?<next_line>.+)/) do
             keep_looking = true
             field = $~[:field].chomp
             next_line = $~[:next_line]
@@ -167,8 +178,8 @@ module GraphQL
     class RemoveMethodParensTransform < Transform
       def apply(input_text)
         input_text.sub(
-          /(field|input_field|return_field|connection|argument)\( *(.*?) *\) */,
-          '\1 \2'
+          /(field|input_field|return_field|connection|argument)\( *(.*?) *\)( *)/,
+          '\1 \2\3'
         )
       end
     end
@@ -345,10 +356,10 @@ module GraphQL
           # This is not good, it will hit false positives
           # Should use AST to make this substitution
           if obj_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1@object\2')
+            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1object\2')
           end
           if ctx_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1@context\2')
+            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1context\2')
           end
 
           method_defn = "def #{@proc_name}(**#{args_arg_name})\n#{method_defn_indent}  #{proc_body}\n#{method_defn_indent}end\n"
@@ -475,13 +486,13 @@ module GraphQL
 
     class ResolveProcToMethodTransform < Transform
       def apply(input_text)
-        if input_text =~ /resolve ->/
+        if input_text =~ /resolve\(? ?->/
           # - Find the proc literal
           # - Get the three argument names (obj, arg, ctx)
           # - Get the proc body
           # - Find and replace:
-          #  - The ctx argument becomes `@context`
-          #  - The obj argument becomes `@object`
+          #  - The ctx argument becomes `context`
+          #  - The obj argument becomes `object`
           # - Args is trickier:
           #   - If it's not used, remove it
           #   - If it's used, abandon ship and make it `**args`
@@ -502,10 +513,10 @@ module GraphQL
           # This is not good, it will hit false positives
           # Should use AST to make this substitution
           if obj_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1@object\2')
+            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1object\2')
           end
           if ctx_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1@context\2')
+            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1context\2')
           end
 
           method_def_indent = " " * (processor.resolve_indent - 2)
@@ -572,7 +583,8 @@ module GraphQL
         def on_block(node)
           send_node, args_node, body_node = node.children
           _receiver, method_name, _send_args_node = *send_node
-          if method_name == :lambda
+          # Assume that the first three-argument proc we enter is the resolve
+          if method_name == :lambda && args_node.children.size == 3 && @proc_arg_names.nil?
             source_exp = body_node.loc.expression
             @proc_arg_names = args_node.children.map { |arg_node| arg_node.children[0].to_s }
             @proc_start = source_exp.begin.begin_pos
@@ -705,81 +717,6 @@ module GraphQL
       end
     end
 
-    class MoveInterfaceMethodsToImplementationTransform < Transform
-      def initialize(interface_file_pattern: /<.*Interface/)
-        @interface_file_pattern = interface_file_pattern
-      end
-
-      def apply(input_text)
-        # See if it its an interface file with any instance methods
-        if input_text =~ @interface_file_pattern && input_text =~ /\n *def (?!(self|[A-Z]))/
-          # Extract the method bodies and figure out where the module should be inserted
-          method_bodies = []
-          processor = apply_processor(input_text, InterfaceMethodProcessor.new)
-          processor.methods.each do |(begin_pos, end_pos)|
-            # go all the way back to the newline so we get whitespace too
-            while input_text[begin_pos] != "\n" && begin_pos >= 0
-              begin_pos -= 1
-            end
-            # Tuck away the method body, and remove it from here
-            method_body = input_text[begin_pos..end_pos]
-            method_bodies << method_body
-          end
-          # How far are these method bodies indented? The module will be this indented
-          leading_indent = method_bodies.first[/\n +/][1..-1]
-          # Increase the indent since it will be in a nested module
-          indented_method_bodies = method_bodies.map {|m| m.gsub("\n", "\n  ").rstrip }
-          # Build the ruby module definition
-          module_body = "\n\n#{leading_indent}module Implementation#{indented_method_bodies.join("\n")}\n#{leading_indent}end"
-
-          # find the `end` of the class definition, and put the module before it
-          _class_start, class_end = processor.class_definition
-          # This might target the newline _after_ `end`, but we don't want that one
-          if input_text[class_end] == "\n"
-            class_end -= 1
-          end
-
-          while input_text[class_end] != "\n" && class_end > 0
-            class_end -= 1
-          end
-
-          input_text.insert(class_end, module_body)
-
-          # Do the replacement _after_ identifying the bodies,
-          # otherwise the offsets get messed up
-          method_bodies.each do |method_body|
-            input_text.sub!(method_body, "")
-          end
-        end
-        input_text
-      end
-
-      # Find the beginning and end of each method def,
-      # so that we can move it wholesale
-      class InterfaceMethodProcessor < Parser::AST::Processor
-        attr_reader :methods, :class_definition
-        def initialize
-          @class_definition = nil
-          @methods = []
-          super
-        end
-
-        def on_def(node)
-          start = node.loc.expression.begin_pos
-          finish = node.loc.expression.end_pos
-          @methods << [start, finish]
-          super(node)
-        end
-
-        def on_class(node)
-          @class_definition = [
-            node.loc.expression.begin_pos,
-            node.loc.expression.end_pos
-          ]
-          super(node)
-        end
-      end
-    end
     # Skip this file if you see any `field`
     # helpers with `null: true` or `null: false` keywords
     # or `argument` helpers with `required:` keywords,
@@ -829,7 +766,6 @@ module GraphQL
       ]
 
       DEFAULT_CLEAN_UP_TRANSFORMS = [
-        MoveInterfaceMethodsToImplementationTransform,
         RemoveExcessWhitespaceTransform,
         RemoveEmptyBlocksTransform,
       ]
@@ -892,8 +828,8 @@ module GraphQL
         # For each of the locations we found, extract the text for that definition.
         # The text will be transformed independently,
         # then the transformed text will replace the original text.
-        finder.locations.each do |category, locs|
-          locs.each do |name, (starting_idx, ending_idx)|
+        FieldFinder::DEFINITION_METHODS.each do |def_method|
+          finder.locations[def_method].each do |name, (starting_idx, ending_idx)|
             field_source = type_source[starting_idx..ending_idx]
             field_sources << field_source
           end
@@ -913,7 +849,9 @@ module GraphQL
 
       class FieldFinder < Parser::AST::Processor
         # These methods are definition DSLs which may accept a block,
-        # each of these definitions is passed for transformation in its own right
+        # each of these definitions is passed for transformation in its own right.
+        # `field` and `connection` take priority. In fact, they upgrade their
+        # own arguments, so those upgrades turn out to be no-ops.
         DEFINITION_METHODS = [:field, :connection, :input_field, :return_field, :argument]
         attr_reader :locations
 

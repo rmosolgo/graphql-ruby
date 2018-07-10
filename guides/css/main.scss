@@ -32,6 +32,12 @@ strong, b {
     font-weight: bold;
 }
 
+// Algolia highlights:
+.ais-Highlight {
+    font-style: normal;
+    font-weight: bold;
+}
+
 .header {
   box-shadow: 0px 0px 10px 0px #d6d6d6;
   z-index: 1;
@@ -98,7 +104,7 @@ pre {
   border: 1px solid $code-border;
   border-radius: $code-border-radius;
   background-color: $code-background;
-  margin: 20px 0px;
+  margin: 10px 0px;
   overflow-x: scroll;
   line-height: 1.4rem;
 }
@@ -109,6 +115,7 @@ p, li {
 
 li {
   margin-left: 15px;
+  margin-top: 15px
 }
 
 p, ul {
@@ -117,7 +124,7 @@ p, ul {
 
 ul {
   list-style-type: disc;
-  list-style-position: inside;
+  list-style-position: outside;
 }
 
 code {

@@ -1,16 +1,15 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Schema
 title: Class-based API
 desc: Define your GraphQL schema with Ruby classes (1.8.x alpha releases)
-experimental: true
+class_based_api: true
 index: 10
 ---
 
 In GraphQL `1.8`+, you can use Ruby classes to build your schema. You can __mix__ class-style and `.define`-style type definitions in a schema.
-
-(`1.8` is currently in prerelease, check [RubyGems](https://rubygems.org/gems/graphql) for the latest version.)
 
 You can get an overview of this new feature:
 
@@ -21,7 +20,7 @@ You can get an overview of this new feature:
 
 And learn about the APIs:
 
-- [Schema class](#schema-class)
+- {% internal_link "Schema class", "/schema/definition" %}
 - [Common type configurations](#common-type-configurations) (shared by all the following types)
 - {% internal_link "Object classes", "/type_definitions/objects" %}
 - {% internal_link "Interface classes", "/type_definitions/interfaces" %}
@@ -29,7 +28,7 @@ And learn about the APIs:
 - {% internal_link "Enum classes", "/type_definitions/enums" %}
 - {% internal_link "Input Object classes", "/type_definitions/input_objects" %}
 - {% internal_link "Scalar classes", "/type_definitions/scalars" %}
-- {% internal_link "Customizing definitoins", "/type_definitions/extensions" %}
+- {% internal_link "Customizing definitions", "/type_definitions/extensions" %}
 - {% internal_link "Custom introspection", "/schema/introspection" %}
 
 ## Rationale & Goals
@@ -272,7 +271,7 @@ Here is a working plan for rolling out this feature:
     - ☑ Custom introspection types
     - ☐ ~~Custom directives~~ Probably will mess with execution soon, not worth the investment now
     - ☐ ~~Custom `Schema#execute` method~~ not necessary
-  - ☐ Migrate all of GitHub's GraphQL schema to this new API
+  - ☑ Migrate all of GitHub's GraphQL schema to this new API
 - graphql 1.9:
   - ☐ Update all GraphQL-Ruby docs to reflect this new API
 - graphql 1.10:

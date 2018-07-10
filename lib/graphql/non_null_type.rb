@@ -33,7 +33,7 @@ module GraphQL
   #
   class NonNullType < GraphQL::BaseType
     include GraphQL::BaseType::ModifiesAnotherType
-    extend GraphQL::Delegate
+    extend Forwardable
 
     attr_reader :of_type
     def initialize(of_type:)
@@ -72,6 +72,7 @@ module GraphQL
       "#{of_type.to_s}!"
     end
     alias_method :inspect, :to_s
+    alias :to_type_signature :to_s
 
     def non_null?
       true

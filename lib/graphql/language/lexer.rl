@@ -20,6 +20,7 @@
   SCHEMA =        'schema';
   SCALAR =        'scalar';
   TYPE =          'type';
+  EXTEND =        'extend';
   IMPLEMENTS =    'implements';
   INTERFACE =     'interface';
   UNION =         'union';
@@ -66,6 +67,7 @@
     SCHEMA        => { emit(:SCHEMA, ts, te, meta) };
     SCALAR        => { emit(:SCALAR, ts, te, meta) };
     TYPE          => { emit(:TYPE, ts, te, meta) };
+    EXTEND        => { emit(:EXTEND, ts, te, meta) };
     IMPLEMENTS    => { emit(:IMPLEMENTS, ts, te, meta) };
     INTERFACE     => { emit(:INTERFACE, ts, te, meta) };
     UNION         => { emit(:UNION, ts, te, meta) };

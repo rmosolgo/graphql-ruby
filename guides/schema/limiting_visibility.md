@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 title: Limiting Visibility
 section: Schema
@@ -57,7 +58,7 @@ The `schema_member` may be any of:
 
 ## Use with Metadata
 
-This feature pairs nicely with attaching custom data to types. See the {% internal_link "Extending the DSL","/schema/extending_the_dsl" %} for information about assigning values to an object's `metadata`.
+This feature pairs nicely with attaching custom data to types. See the {% internal_link "Extensions Guide","/type_definitions/extensions" %} for information about assigning values to an object's `metadata`.
 
 Then, you can check `metadata` in your filter. For example, to hide fields based on a metadata flag:
 

@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: JavaScript Client
 title: Apollo Subscriptions
@@ -7,11 +8,68 @@ desc: GraphQL subscriptions with GraphQL-Ruby and Apollo Client
 index: 2
 ---
 
+GraphQL-Ruby's JavaScript client includes four kinds of support for Apollo Client:
+
+- Apollo 2.x:
+  - [Overview](#apollo-2)
+  - [Pusher](#apollo-2--pusher)
+  - [ActionCable](#apollo-2--actioncable)
+- Apollo 1.x:
+  - [Overview](#apollo-1)
+  - [Pusher](#apollo-1--pusher)
+  - [ActionCable](#apollo-1--actioncable)
+
 ## Apollo 2
+
+Apollo 2 is supported by implementing Apollo Links.
+
+## Apollo 2 -- Pusher
+
+`graphql-ruby-client` includes support for subscriptions with Pusher and ApolloLink.
+
+To use it, add `PusherLink` before your `HttpLink`.
+
+For example:
+
+```js
+// Load Apollo stuff
+import { ApolloLink } from 'apollo-link';
+import { ApolloClient } from 'apollo-client';
+import { HttpLink } from 'apollo-link-http';
+import Cache from 'apollo-cache-inmemory';
+// Load Pusher and create a client
+import Pusher from "pusher-js"
+var pusherClient = new Pusher("your-app-key", { cluster: "us2" })
+
+// Make the HTTP link which actually sends the queries
+const httpLink = new HttpLink({
+  uri: '/graphql',
+  credentials: 'include'
+});
+
+// Make the Pusher link which will pick up on subscriptions
+const pusherLink = new PusherLink({pusher: pusherClient})
+
+// Combine the two links to work together
+const link = ApolloLink.from([pusherLink, httpLink])
+
+// Initialize the client
+const client = new ApolloClient({
+  link: link,
+  cache: new Cache()
+});
+```
+
+This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Pusher for future updates.
+
+## Apollo 2 -- ActionCable
 
 `graphql-ruby-client` includes support for subscriptions with ActionCable and ApolloLink.
 
-To use it construct a split link that routes subsription queries to an ActionCableLink and other queries to an HttpLink.
+To use it, construct a split link that routes:
+
+- subscription queries to an `ActionCableLink`; and
+- other queries to an `HttpLink`
 
 For example:
 
@@ -56,7 +114,7 @@ To use it, require `subscriptions/addGraphQLSubscriptions` and call the function
 
 See the {% internal_link "Subscriptions guide", "/subscriptions/overview" %} for information about server-side setup.
 
-### Pusher
+### Apollo 1 -- Pusher
 
 Pass `{pusher: pusherClient}` to use Pusher:
 
@@ -74,7 +132,7 @@ var OperationStoreClient = require("./OperationStoreClient")
 RailsNetworkInterface.use([OperationStoreClient.apolloMiddleware])
 ```
 
-### ActionCable
+### Apollo 1 -- ActionCable
 
 By passing `{cable: cable}`, all `subscription` queries will be routed to ActionCable.
 

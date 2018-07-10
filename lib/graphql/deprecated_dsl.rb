@@ -24,8 +24,8 @@ module GraphQL
 
     def self.activate
       TYPE_CLASSES.each { |c| c.extend(Methods) }
-      GraphQL::Schema::Member::ListTypeProxy.include(Methods)
-      GraphQL::Schema::Member::NonNullTypeProxy.include(Methods)
+      GraphQL::Schema::List.include(Methods)
+      GraphQL::Schema::NonNull.include(Methods)
     end
     module Methods
       def !

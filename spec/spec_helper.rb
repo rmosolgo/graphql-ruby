@@ -16,6 +16,7 @@ if rails_should_be_installed?
   require "jdbc/sqlite3" if RUBY_ENGINE == 'jruby'
   require "sqlite3" if RUBY_ENGINE == 'ruby'
   require "pg" if RUBY_ENGINE == 'ruby'
+  require "mongoid" if RUBY_ENGINE == 'ruby'
   require "sequel"
 end
 
@@ -26,6 +27,22 @@ require "pry"
 require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
+
+MONGO_DETECTED = begin
+  require "mongo"
+  Mongo::Client.new('mongodb://127.0.0.1:27017/graphql_ruby_test',
+      connect_timeout: 1,
+      socket_timeout: 1,
+      server_selection_timeout: 1,
+      logger: Logger.new(nil)
+    )
+    .database
+    .collections
+rescue StandardError, LoadError => err # rubocop:disable Lint/UselessAssignment
+  # puts err.message, err.backtrace
+  false
+end
+
 Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
 
 Minitest::Spec.make_my_diffs_pretty!
@@ -40,6 +57,7 @@ assign_metadata_key = ->(target, key, value) { target.metadata[key] = value }
 assign_metadata_flag = ->(target, flag) { target.metadata[flag] = true }
 GraphQL::Schema.accepts_definitions(set_metadata: assign_metadata_key)
 GraphQL::BaseType.accepts_definitions(metadata: assign_metadata_key)
+GraphQL::BaseType.accepts_definitions(metadata2: assign_metadata_key)
 GraphQL::Field.accepts_definitions(metadata: assign_metadata_key)
 GraphQL::Argument.accepts_definitions(metadata: assign_metadata_key)
 GraphQL::Argument.accepts_definitions(metadata_flag: assign_metadata_flag)
@@ -60,11 +78,19 @@ NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
 
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
+  # These require mongodb in order to run,
+  # so only load them in the specific tests that require them.
+  next if f.include?("star_trek")
+
   unless rails_should_be_installed?
     next if f.end_with?('star_wars/data.rb')
     next if f.end_with?('base_generator_test.rb')
   end
   require f
+end
+
+def star_trek_query(string, variables={}, context: {})
+  StarTrek::Schema.execute(string, variables: variables, context: context)
 end
 
 def star_wars_query(string, variables={}, context: {})

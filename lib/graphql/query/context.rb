@@ -99,7 +99,7 @@ module GraphQL
       end
 
       include SharedMethods
-      extend GraphQL::Delegate
+      extend Forwardable
 
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
@@ -189,7 +189,7 @@ module GraphQL
       class FieldResolutionContext
         include SharedMethods
         include Tracing::Traceable
-        extend GraphQL::Delegate
+        extend Forwardable
 
         attr_reader :irep_node, :field, :parent_type, :query, :schema, :parent, :key, :type
         alias :selection :irep_node
@@ -207,7 +207,13 @@ module GraphQL
           @query = context.query
           @schema = context.schema
           @tracers = @query.tracers
+          # This hack flag is required by ConnectionResolve
+          @wrapped_connection = false
+          @wrapped_object = false
         end
+
+        # @api private
+        attr_accessor :wrapped_connection, :wrapped_object
 
         def path
           @path ||= @parent.path.dup << @key

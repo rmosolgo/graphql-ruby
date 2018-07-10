@@ -31,6 +31,8 @@ module Jazz
         ],
         "Ensemble" => [
           Models::Ensemble.new("Bela Fleck and the Flecktones"),
+          Models::Ensemble.new("Robert Glasper Experiment"),
+          Models::Ensemble.new("Spinal Tap"),
         ],
         "Musician" => [
           Models::Musician.new("Herbie Hancock", Models::Key.from_notation("B♭")),
@@ -44,9 +46,9 @@ module Jazz
   end
 
   class BaseArgument < GraphQL::Schema::Argument
-    def initialize(name, type, desc = nil, custom: nil, **kwargs)
+    def initialize(*args, custom: nil, **kwargs)
       @custom = custom
-      super(name, type, desc, **kwargs)
+      super(*args, **kwargs)
     end
 
     def to_graphql
@@ -64,15 +66,13 @@ module Jazz
       super(*args, **options, &block)
     end
 
-    def to_graphql
-      field_defn = super
-      if @upcase
-        inner_resolve = field_defn.resolve_proc
-        field_defn.resolve = ->(obj, args, ctx) {
-          inner_resolve.call(obj, args, ctx).upcase
-        }
+    def resolve_field(*)
+      result = super
+      if @upcase && result
+        result.upcase
+      else
+        result
       end
-      field_defn
     end
   end
 
@@ -99,9 +99,17 @@ module Jazz
     end
   end
 
-  class BaseInterface < GraphQL::Schema::Interface
+  module BaseInterface
+    include GraphQL::Schema::Interface
     # Use this overridden field class
     field_class BaseField
+
+    # These methods are available to child interfaces
+    definition_methods do
+      def upcased_field(*args, **kwargs, &block)
+        field(*args, upcase: true, **kwargs, &block)
+      end
+    end
   end
 
   class BaseEnumValue < GraphQL::Schema::EnumValue
@@ -123,15 +131,19 @@ module Jazz
 
   # Some arbitrary global ID scheme
   # *Type suffix is removed automatically
-  class GloballyIdentifiableType < BaseInterface
+  module GloballyIdentifiableType
+    include BaseInterface
     description "A fetchable object in the system"
-    field :id, ID, "A unique identifier for this object", null: false
-    field :upcased_id, ID, null: false, upcase: true, method: :id
+    field(
+      name: :id,
+      type: ID,
+      null: false,
+      description: "A unique identifier for this object",
+    )
+    upcased_field :upcased_id, ID, null: false, method: :id # upcase: true added by helper
 
-    module Implementation
-      def id
-        GloballyIdentifiableType.to_id(@object)
-      end
+    def id
+      GloballyIdentifiableType.to_id(@object)
     end
 
     def self.to_id(object)
@@ -160,15 +172,31 @@ module Jazz
     end
   end
 
+  module HasMusicians
+    include BaseInterface
+    field :musicians, "[Jazz::Musician]", null: false
+  end
+
+
   # Here's a new-style GraphQL type definition
   class Ensemble < ObjectWithUpcasedName
-    implements GloballyIdentifiableType, NamedEntity
+    # Test string type names
+    # This method should override inherited one
+    field :name, "String", null: false, method: :overridden_name
+    implements GloballyIdentifiableType, NamedEntity, HasMusicians
     description "A group of musicians playing together"
     config :config, :configged
-    # Test string type names:
-    field :name, "String", null: false
-    field :musicians, "[Jazz::Musician]", null: false
     field :formed_at, String, null: true, hash_key: "formedAtDate"
+
+    def overridden_name
+      @object.name.sub("Robert Glasper", "ROBERT GLASPER")
+    end
+
+    def self.authorized?(object, context)
+      # Spinal Tap is top-secret, don't show it to anyone.
+      obj_name = object.is_a?(Hash) ? object[:name] : object.name
+      obj_name != "Spinal Tap"
+    end
   end
 
   class Family < BaseEnum
@@ -209,6 +237,16 @@ module Jazz
 
     def self.coerce_result(val, ctx)
       val.to_notation
+    end
+  end
+
+  class RawJson < GraphQL::Schema::Scalar
+    def self.coerce_input(val, ctx)
+      val
+    end
+
+    def self.coerce_result(val, ctx)
+      val
     end
   end
 
@@ -279,6 +317,10 @@ module Jazz
     end
   end
 
+  class HashKeyTest < BaseObject
+    field :falsey, Boolean, null: false
+  end
+
   # Another new-style definition, with method overrides
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
@@ -300,8 +342,17 @@ module Jazz
     field :inspect_context, [String], null: false
     field :hashyEnsemble, Ensemble, null: false
 
+    field :echo_json, RawJson, null: false do
+      argument :input, RawJson, required: true
+    end
+
+    field :echo_first_json, RawJson, null: false do
+      argument :input, [RawJson], required: true
+    end
+
     def ensembles
-      Models.data["Ensemble"]
+      # Filter out the unauthorized one to avoid an error later
+      Models.data["Ensemble"].select { |e| e.name != "Spinal Tap" }
     end
 
     def find(id:)
@@ -358,6 +409,30 @@ module Jazz
           "formedAtDate" => "May 5, 1965",
       }
     end
+
+    def echo_json(input:)
+      input
+    end
+
+    def echo_first_json(input:)
+      input.first
+    end
+
+    field :hash_by_string, HashKeyTest, null: false
+    field :hash_by_sym, HashKeyTest, null: false
+    def hash_by_string
+      { "falsey" => false }
+    end
+
+    def hash_by_sym
+      { falsey: false }
+    end
+
+    field :named_entities, [NamedEntity, null: true], null: false
+
+    def named_entities
+      [Models.data["Ensemble"].first, nil]
+    end
   end
 
   class EnsembleInput < GraphQL::Schema::InputObject
@@ -365,6 +440,7 @@ module Jazz
   end
 
   class AddInstrument < GraphQL::Schema::Mutation
+    null true
     description "Register a new musical instrument in the database"
 
     argument :name, String, required: true
@@ -384,17 +460,60 @@ module Jazz
     end
   end
 
+  class AddSitar < GraphQL::Schema::RelayClassicMutation
+    null true
+    description "Get Sitar to musical instrument"
+
+    field :instrument, InstrumentType, null: false
+
+    def resolve
+      instrument = Models::Instrument.new("Sitar", :str)
+      { instrument: instrument }
+    end
+  end
+
+  class RenameEnsemble < GraphQL::Schema::RelayClassicMutation
+    argument :ensemble_id, ID, required: true, loads: Ensemble
+    argument :new_name, String, required: true
+
+    field :ensemble, Ensemble, null: false
+
+    def resolve(ensemble:, new_name:)
+      # doesn't actually update the "database"
+      dup_ensemble = ensemble.dup
+      dup_ensemble.name = new_name
+      {
+        ensemble: dup_ensemble
+      }
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
     end
 
     field :add_instrument, mutation: AddInstrument
+    field :add_sitar, mutation: AddSitar
+    field :rename_ensemble, mutation: RenameEnsemble
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
       Models.data["Ensemble"] << ens
       ens
+    end
+
+    field :prepare_input, Integer, null: false do
+      argument :input, Integer, required: true, prepare: :square, as: :squared_input
+    end
+
+    def prepare_input(squared_input:)
+      # Test that `square` is called
+      squared_input
+    end
+
+    def square(value)
+      value ** 2
     end
   end
 
@@ -464,6 +583,10 @@ module Jazz
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
       ctx.schema.types[class_name] || raise("No type for #{obj.inspect}")
+    end
+
+    def self.object_from_id(id, ctx)
+      GloballyIdentifiableType.find(id)
     end
   end
 end

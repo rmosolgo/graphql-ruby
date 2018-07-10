@@ -23,6 +23,9 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
 
       class << self
+        extend Forwardable
+        def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result, :coerce_input, :coerce_result
+
         # Define a value for this enum
         # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`
         # @param description [String], the GraphQL description for this value, present in documentation
@@ -63,6 +66,10 @@ module GraphQL
             @enum_value_class = new_enum_value_class
           end
           @enum_value_class || (superclass <= GraphQL::Schema::Enum ? superclass.enum_value_class : nil)
+        end
+
+        def kind
+          GraphQL::TypeKinds::ENUM
         end
 
         private

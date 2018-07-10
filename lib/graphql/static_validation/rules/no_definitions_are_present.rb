@@ -13,6 +13,7 @@ module GraphQL
         @schema_definition_nodes << node
       end
 
+      # TODO Add extensions
       alias :on_directive_definition :on_invalid_node
       alias :on_schema_definition :on_invalid_node
       alias :on_scalar_type_definition :on_invalid_node

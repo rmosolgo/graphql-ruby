@@ -31,6 +31,7 @@ module GraphQL
           end
 
           field :pageInfo, !PageInfo, "Information to aid in pagination.", property: :page_info
+          relay_node_type(wrapped_type)
           block && instance_eval(&block)
         end
       end

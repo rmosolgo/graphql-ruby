@@ -1,5 +1,10 @@
 # graphql-ruby-client
 
+## 1.4.0 (12 Apr 2017)
+
+- Add `PusherLink` for Apollo 2 Subscriptions on Pusher
+- Add `OperationStoreLink` for Apollo 2 persisted queries
+
 ## 1.3.0 (30 Nov 2017)
 
 - Support HTTPS, basic auth, query string and port in `sync` #1053

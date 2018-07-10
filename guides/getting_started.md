@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 title: Getting Started
 section: Other
@@ -43,21 +44,21 @@ Or, you can build a GraphQL server by hand:
 Types describe objects in your application and form the basis for [GraphQL's type system](http://graphql.org/learn/schema/#type-system).
 
 ```ruby
-PostType = GraphQL::ObjectType.define do
-  name "Post"
+# app/graphql/post_type.graphql
+class PostType < GraphQL::Schema::Object
   description "A blog post"
-  # `!` marks a field as "non-null"
-  field :id, !types.ID
-  field :title, !types.String
-  field :body, !types.String
-  field :comments, types[!CommentType]
+  field :id, ID, null: false
+  field :title, String, null: false
+  # Fields can return lists of other objects:
+  field :comments, [CommentType], null: true,
+    # And fields can have their own descriptions:
+    description: "This post's comments, or null if this post has comments disabled."
 end
 
-CommentType = GraphQL::ObjectType.define do
-  name "Comment"
-  field :id, !types.ID
-  field :body, !types.String
-  field :created_at, !types.String
+# app/graphql/comment_type.graphql
+class CommentType < GraphQL::Schema::Object
+  field :id, ID, null: false
+  field :post, PostType, null: false
 end
 ```
 
@@ -66,15 +67,18 @@ end
 Before building a schema, you have to define an [entry point to your system, the "query root"](http://graphql.org/learn/schema/#the-query-and-mutation-types):
 
 ```ruby
-QueryType = GraphQL::ObjectType.define do
-  name "Query"
+class QueryType < GraphQL::Schema::Object
   description "The query root of this schema"
 
-  field :post do
-    type PostType
-    argument :id, !types.ID
-    description "Find a Post by ID"
-    resolve ->(obj, args, ctx) { Post.find(args["id"]) }
+  # First describe the field signature:
+  field :post, PostType, null: true do
+    description "Find a post by ID"
+    argument :id, ID, required: true
+  end
+
+  # Then provide an implementation:
+  def post(id:)
+    Post.find(id)
   end
 end
 ```
@@ -82,7 +86,7 @@ end
 Then, build a schema with `QueryType` as the query entry point:
 
 ```ruby
-Schema = GraphQL::Schema.define do
+class Schema < GraphQL::Schema
   query QueryType
 end
 ```
@@ -127,4 +131,4 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 ## Use with GraphQL.js Client
 
-[GraphQL.js Client](https://github.com/f/graphql.js) is a tiny and platform and framework agnostic, easy to setup and use GraphQL client that works with `graphql-ruby` servers, since GraphQL requests are simple query strings transport over HTTP.
+[GraphQL.js Client](https://github.com/f/graphql.js) is a tiny client that is platform- and framework-agnostic. It works well with `graphql-ruby` servers, since GraphQL requests are simple query strings transport over HTTP.

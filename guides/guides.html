@@ -5,8 +5,10 @@ sections:
   - name: Queries
   - name: Types
   - name: Type Definitions
+  - name: Authorization
   - name: Fields
   - name: Mutations
+  - name: Errors
   - name: Relay
   - name: Subscriptions
   - name: GraphQL Pro
@@ -26,13 +28,26 @@ sections:
   </ul>
 </div>
 <div class="guides">
+  {% assign sorted_pages = site.pages | sort: "index" %}
+  {% assign pages_with_index = ''|split:'' %}
+  {% assign pages_without_index = ''|split:'' %}
+  {% for guide in sorted_pages %}
+    {% if guide.layout == "guide" %}
+      {% if guide.index %}
+        {% assign pages_with_index = pages_with_index | push: guide %}
+      {% else %}
+        {% assign pages_without_index = pages_without_index | push: guide %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+
+  {% assign sorted_guides = pages_with_index | concat: pages_without_index %}
   {% for section in page.sections %}
     <div class="guide-section">
       <h2 id="{{ section.name | slugify }}-guides">{{ section.name }}</h2>
       <ul>
-        {% assign sorted_pages = site.pages | sort: "index" %}
-        {% for guide in sorted_pages %}
-          {% if guide.layout == "guide" and  guide.section == section.name %}
+        {% for guide in sorted_guides %}
+          {% if guide.section == section.name %}
             <li>
               <p>
                 <a href="{% if guide.outbound_url %}{{ guide.outbound_url }}{% else %}{{ site.baseurl }}{{ guide.url }}{% endif %}">{{ guide.title }}</a>

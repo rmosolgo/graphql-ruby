@@ -10,21 +10,17 @@ describe GraphQL::Schema::Interface do
       assert_equal 2, interface.fields.size
     end
 
-    class NewInterface1 < Jazz::GloballyIdentifiableType
-      # TODO not great
-      module Implementation
-        include Jazz::GloballyIdentifiableType::Implementation
+    module NewInterface1
+      include Jazz::GloballyIdentifiableType
+    end
+
+    module NewInterface2
+      include Jazz::GloballyIdentifiableType
+      def new_method
       end
     end
 
-    class NewInterface2 < Jazz::GloballyIdentifiableType
-      module Implementation
-        def new_method
-        end
-      end
-    end
-
-    it "can override Implementation" do
+    it "can override methods" do
       new_object_1 = Class.new(GraphQL::Schema::Object) do
         implements NewInterface1
       end
@@ -33,14 +29,19 @@ describe GraphQL::Schema::Interface do
       assert new_object_1.method_defined?(:id)
 
       new_object_2 = Class.new(GraphQL::Schema::Object) do
+        graphql_name "XYZ"
         implements NewInterface2
+        field :id, "ID", null: false, description: "The ID !!!!!"
       end
 
       assert_equal 2, new_object_2.fields.size
       # It got the new method
       assert new_object_2.method_defined?(:new_method)
-      # But not the old method
-      refute new_object_2.method_defined?(:id)
+      # And the inherited method
+      assert new_object_2.method_defined?(:id)
+
+      # It gets an overridden description:
+      assert_equal "The ID !!!!!", new_object_2.graphql_definition.fields["id"].description
     end
   end
 
@@ -57,25 +58,25 @@ describe GraphQL::Schema::Interface do
     end
 
     it "can specify a resolve_type method" do
-      interface = Class.new(GraphQL::Schema::Interface) do
-        def self.resolve_type(_object, _context)
-          "MyType"
-        end
+      interface = Module.new do
+        include GraphQL::Schema::Interface
+        graphql_name "MyInterface"
 
-        def self.name
-          "MyInterface"
+        module self::DefinitionMethods # rubocop:disable Style/ClassAndModuleChildren
+          def resolve_type(_object, _context)
+            "MyType"
+          end
         end
       end
+
       interface_type = interface.to_graphql
       assert_equal "MyType", interface_type.resolve_type_proc.call(nil, nil)
     end
 
     it "can specify orphan types" do
-      interface = Class.new(GraphQL::Schema::Interface) do
-        def self.name
-          "MyInterface"
-        end
-
+      interface = Module.new do
+        include GraphQL::Schema::Interface
+        graphql_name "MyInterface"
         orphan_types Dummy::CheeseType, Dummy::HoneyType
       end
 
@@ -85,10 +86,12 @@ describe GraphQL::Schema::Interface do
   end
 
   it 'supports global_id_field' do
-    object = Class.new(GraphQL::Schema::Interface) do
+    object = Module.new do
+      include GraphQL::Schema::Interface
       graphql_name 'GlobalIdFieldTest'
       global_id_field :uuid
     end.to_graphql
+
     uuid_field = object.fields["uuid"]
 
     assert_equal GraphQL::NonNullType, uuid_field.type.class
@@ -97,6 +100,18 @@ describe GraphQL::Schema::Interface do
       GraphQL::Schema::Member::GraphQLTypeNames::ID,
       uuid_field.type.unwrap.name
     )
+  end
+
+  describe "using `include`" do
+    it "raises" do
+      err = assert_raises RuntimeError do
+        Class.new(GraphQL::Schema::Object) do
+          include(Jazz::GloballyIdentifiableType)
+        end
+      end
+
+      assert_includes err.message, "implements(Jazz::GloballyIdentifiableType)"
+    end
   end
 
   describe "in queries" do
@@ -140,6 +155,45 @@ describe GraphQL::Schema::Interface do
         "name" => "Bela Fleck and the Flecktones"
       }
       assert_equal(expected_data, res["data"]["find"])
+    end
+  end
+
+  describe ':DefinitionMethods' do
+    module InterfaceA
+      include GraphQL::Schema::Interface
+
+      definition_methods do
+        def some_method
+          42
+        end
+      end
+    end
+
+    module InterfaceB
+      include GraphQL::Schema::Interface
+    end
+
+    module InterfaceC
+      include GraphQL::Schema::Interface
+    end
+
+    class ObjectA < GraphQL::Schema::Object
+      implements InterfaceA
+    end
+
+    it "doesn't overwrite them when including multiple interfaces" do
+      def_methods = InterfaceC::DefinitionMethods
+
+      InterfaceC.module_eval do
+        include InterfaceA
+        include InterfaceB
+      end
+
+      assert_equal(InterfaceC::DefinitionMethods, def_methods)
+    end
+
+    it "extends classes with the defined methods" do
+      assert_equal(ObjectA.some_method, InterfaceA.some_method)
     end
   end
 end
