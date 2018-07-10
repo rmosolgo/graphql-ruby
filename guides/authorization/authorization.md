@@ -54,3 +54,5 @@ end
 ```
 
 Now, the custom hook will be called instead of the default one.
+
+If `.unauthorized_object` returns a non-`nil` object (and doesn't `raise` an error), then that object will be used in place of the unauthorized object.
