@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql/static_validation/message"
 require "graphql/static_validation/definition_dependencies"
+require "graphql/static_validation/type_stack"
 require "graphql/static_validation/validator"
 require "graphql/static_validation/validation_context"
 require "graphql/static_validation/literal_validator"
