@@ -81,9 +81,11 @@ module GraphQL
       alias :on_argument :on_abstract_node
       alias :on_directive :on_abstract_node
       alias :on_directive_definition :on_abstract_node
+      alias :on_directive_location :on_abstract_node
       alias :on_document :on_abstract_node
       alias :on_enum :on_abstract_node
       alias :on_enum_type_definition :on_abstract_node
+      alias :on_enum_type_extension :on_abstract_node
       alias :on_enum_value_definition :on_abstract_node
       alias :on_field :on_abstract_node
       alias :on_field_definition :on_abstract_node
@@ -92,16 +94,23 @@ module GraphQL
       alias :on_inline_fragment :on_abstract_node
       alias :on_input_object :on_abstract_node
       alias :on_input_object_type_definition :on_abstract_node
+      alias :on_input_object_type_extension :on_abstract_node
       alias :on_input_value_definition :on_abstract_node
       alias :on_interface_type_definition :on_abstract_node
+      alias :on_interface_type_extension :on_abstract_node
       alias :on_list_type :on_abstract_node
       alias :on_non_null_type :on_abstract_node
       alias :on_null_value :on_abstract_node
       alias :on_object_type_definition :on_abstract_node
+      alias :on_object_type_extension :on_abstract_node
       alias :on_operation_definition :on_abstract_node
       alias :on_scalar_type_definition :on_abstract_node
+      alias :on_scalar_type_extension :on_abstract_node
+      alias :on_schema_definition :on_abstract_node
+      alias :on_schema_extension :on_abstract_node
       alias :on_type_name :on_abstract_node
       alias :on_union_type_definition :on_abstract_node
+      alias :on_union_type_extension :on_abstract_node
       alias :on_variable_definition :on_abstract_node
       alias :on_variable_identifier :on_abstract_node
 

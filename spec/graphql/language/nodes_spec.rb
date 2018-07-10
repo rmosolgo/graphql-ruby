@@ -52,6 +52,11 @@ type Query {
         if node_class.is_a?(Class) && node_class < GraphQL::Language::Nodes::AbstractNode
           concrete_method = node_class.instance_method(:visit_method)
           refute_nil concrete_method.super_method, "#{node_class} overrides #visit_method"
+          visit_method_name = "on_" + node_class.name
+            .split("::").last
+            .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+            .downcase
+          assert GraphQL::Language::Visitor.method_defined?(visit_method_name), "Language::Visitor has a method for #{node_class} (##{visit_method_name})"
         end
       end
     end
