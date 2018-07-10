@@ -8,6 +8,34 @@
 
 ### Bug fixes
 
+## 1.8.5 (10 July 2018)
+
+### Breaking changes
+
+- GraphQL validation errors now include `"filename"` if the parsed document had a `filename` #1618
+
+### Deprecations
+
+- `TypeKind#resolves?` is deprecated in favor of `TypeKind#abstract?` #1619
+
+### New features
+
+- Add Mutation loading/authorization system #1609
+- Interface `definition_methods` are inherited by object type classes #1635
+- include `"filename"` in GraphQL errors if the parsed document has a filename #1618
+- Add `Schema::InputObject#empty?` #1651
+- require `ISO8601DateTime` by default #1660
+- Support `extend` in the parser #1620
+- Improve generator to have nicer error handling in development
+
+### Bug fixes
+
+- Fix `@skip`/`@include` with default value of `false` #1617
+- Fix lists of abstract types with promises #1613
+- Don't check the type of `nil` when it's in a list #1610
+- Fix NoMethodError when `variables: nil` is passed to `execute(...)` #1661
+- Objects returned from `Schema.unauthorized_objects` are properly wrapped by their type proxies #1662
+
 ## 1.8.4 (21 June 2018)
 
 ### New features
