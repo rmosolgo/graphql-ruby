@@ -58,6 +58,11 @@ module GraphQL
           []
         end
 
+        # @return [Symbol] the method to call on {Language::Visitor} for this node
+        def visit_method
+          raise NotImplementedError, "#{self.class.name}#visit_method shold return a symbol"
+        end
+
         def position
           [line, col]
         end
@@ -112,6 +117,10 @@ module GraphQL
         def children
           [value].flatten.select { |v| v.is_a?(AbstractNode) }
         end
+
+        def visit_method
+          :on_argument
+        end
       end
 
       class Directive < AbstractNode
@@ -122,6 +131,10 @@ module GraphQL
         def initialize_node(name: nil, arguments: [])
           @name = name
           @arguments = arguments
+        end
+
+        def visit_method
+          :on_directive
         end
       end
 
@@ -139,9 +152,17 @@ module GraphQL
         def children
           arguments + locations
         end
+
+        def visit_method
+          :on_directive_definition
+        end
       end
 
-      class DirectiveLocation < NameOnlyNode; end
+      class DirectiveLocation < NameOnlyNode
+        def visit_method
+          :on_directive_location
+        end
+      end
 
       # This is the AST root for normal queries
       #
@@ -174,13 +195,25 @@ module GraphQL
         def slice_definition(name)
           GraphQL::Language::DefinitionSlice.slice(self, name)
         end
+
+        def visit_method
+          :on_document
+        end
       end
 
       # An enum value. The string is available as {#name}.
-      class Enum < NameOnlyNode; end
+      class Enum < NameOnlyNode
+        def visit_method
+          :on_enum
+        end
+      end
 
       # A null value literal.
-      class NullValue < NameOnlyNode; end
+      class NullValue < NameOnlyNode
+        def visit_method
+          :on_null_value
+        end
+      end
 
       # A single selection in a GraphQL query.
       class Field < AbstractNode
@@ -204,6 +237,10 @@ module GraphQL
 
         def children
           arguments + directives + selections
+        end
+
+        def visit_method
+          :on_field
         end
       end
 
@@ -230,6 +267,10 @@ module GraphQL
         def scalars
           [name, type]
         end
+
+        def visit_method
+          :on_fragment_definition
+        end
       end
 
       # Application of a named fragment in a selection
@@ -244,6 +285,10 @@ module GraphQL
         def initialize_node(name: nil, directives: [])
           @name = name
           @directives = directives
+        end
+
+        def visit_method
+          :on_fragment_spread
         end
       end
 
@@ -266,6 +311,10 @@ module GraphQL
 
         def scalars
           [type]
+        end
+
+        def visit_method
+          :on_inline_fragment
         end
       end
 
@@ -290,6 +339,9 @@ module GraphQL
           end
         end
 
+        def visit_method
+          :on_input_object
+        end
         private
 
         def serialize_value_for_hash(value)
@@ -312,10 +364,18 @@ module GraphQL
 
 
       # A list type definition, denoted with `[...]` (used for variable type definitions)
-      class ListType < WrapperType; end
+      class ListType < WrapperType
+        def visit_method
+          :on_list_type
+        end
+      end
 
       # A non-null type definition, denoted with `...!` (used for variable type definitions)
-      class NonNullType < WrapperType; end
+      class NonNullType < WrapperType
+        def visit_method
+          :on_non_null_type
+        end
+      end
 
       # A query, mutation or subscription.
       # May be anonymous or named.
@@ -350,10 +410,18 @@ module GraphQL
         def scalars
           [operation_type, name]
         end
+
+        def visit_method
+          :on_operation_definition
+        end
       end
 
       # A type name, used for variable definitions
-      class TypeName < NameOnlyNode; end
+      class TypeName < NameOnlyNode
+        def visit_method
+          :on_type_name
+        end
+      end
 
       # An operation-level query variable
       class VariableDefinition < AbstractNode
@@ -374,13 +442,21 @@ module GraphQL
           @default_value = default_value
         end
 
+        def visit_method
+          :on_variable_definition
+        end
+
         def scalars
           [name, type, default_value]
         end
       end
 
       # Usage of a variable in a query. Name does _not_ include `$`.
-      class VariableIdentifier < NameOnlyNode; end
+      class VariableIdentifier < NameOnlyNode
+        def visit_method
+          :on_variable_identifier
+        end
+      end
 
       class SchemaDefinition < AbstractNode
         attr_reader :query, :mutation, :subscription, :directives
@@ -394,6 +470,10 @@ module GraphQL
 
         def scalars
           [query, mutation, subscription]
+        end
+
+        def visit_method
+          :on_schema_definition
         end
 
         alias :children :directives
@@ -414,6 +494,10 @@ module GraphQL
         end
 
         alias :children :directives
+
+        def visit_method
+          :on_schema_extension
+        end
       end
 
       class ScalarTypeDefinition < AbstractNode
@@ -426,6 +510,10 @@ module GraphQL
           @directives = directives
           @description = description
         end
+
+        def visit_method
+          :on_scalar_type_definition
+        end
       end
 
       class ScalarTypeExtension < AbstractNode
@@ -435,6 +523,10 @@ module GraphQL
         def initialize_node(name:, directives: [])
           @name = name
           @directives = directives
+        end
+
+        def visit_method
+          :on_scalar_type_extension
         end
       end
 
@@ -453,6 +545,10 @@ module GraphQL
         def children
           interfaces + fields + directives
         end
+
+        def visit_method
+          :on_object_type_definition
+        end
       end
 
       class ObjectTypeExtension < AbstractNode
@@ -467,6 +563,10 @@ module GraphQL
 
         def children
           interfaces + fields + directives
+        end
+
+        def visit_method
+          :on_object_type_extension
         end
       end
 
@@ -484,6 +584,10 @@ module GraphQL
 
         def scalars
           [name, type, default_value]
+        end
+
+        def visit_method
+          :on_input_value_definition
         end
       end
 
@@ -505,6 +609,10 @@ module GraphQL
         def scalars
           [name, type]
         end
+
+        def visit_method
+          :on_field_definition
+        end
       end
 
       class InterfaceTypeDefinition < AbstractNode
@@ -521,6 +629,10 @@ module GraphQL
         def children
           fields + directives
         end
+
+        def visit_method
+          :on_interface_type_definition
+        end
       end
 
       class InterfaceTypeExtension < AbstractNode
@@ -535,12 +647,16 @@ module GraphQL
         def children
           fields + directives
         end
+
+        def visit_method
+          :on_interface_type_extension
+        end
       end
 
       class UnionTypeDefinition < AbstractNode
         attr_reader :name, :types, :directives, :description
         include Scalars::Name
-        
+
         def initialize_node(name:, types:, directives: [], description: nil)
           @name = name
           @types = types
@@ -550,6 +666,10 @@ module GraphQL
 
         def children
           types + directives
+        end
+
+        def visit_method
+          :on_union_type_definition
         end
       end
 
@@ -564,6 +684,10 @@ module GraphQL
 
         def children
           types + directives
+        end
+
+        def visit_method
+          :on_union_type_extension
         end
       end
 
@@ -581,6 +705,10 @@ module GraphQL
         def children
           values + directives
         end
+
+        def visit_method
+          :on_enum_type_extension
+        end
       end
 
       class EnumTypeExtension < AbstractNode
@@ -595,6 +723,10 @@ module GraphQL
         def children
           values + directives
         end
+
+        def visit_method
+          :on_enum_type_extension
+        end
       end
 
       class EnumValueDefinition < AbstractNode
@@ -607,6 +739,10 @@ module GraphQL
           @directives = directives
           @description = description
         end
+
+        def visit_method
+          :on_enum_type_definition
+        end
       end
 
       class InputObjectTypeDefinition < AbstractNode
@@ -618,6 +754,10 @@ module GraphQL
           @fields = fields
           @directives = directives
           @description = description
+        end
+
+        def visit_method
+          :on_input_object_type_definition
         end
 
         def children
@@ -636,6 +776,10 @@ module GraphQL
 
         def children
           fields + directives
+        end
+
+        def visit_method
+          :on_input_object_type_extension
         end
       end
     end
