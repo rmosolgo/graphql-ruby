@@ -59,7 +59,7 @@ module GraphQL
         end
         # @return [Symbol] the method to call on {Language::Visitor} for this node
         def visit_method
-          raise NotImplementedError
+          raise NotImplementedError, "#{self.class.name}#visit_method shold return a symbol"
         end
 
         def position
@@ -470,7 +470,7 @@ module GraphQL
         def visit_method
           :on_schema_definition
         end
-  
+
         alias :children :directives
       end
 
@@ -635,7 +635,7 @@ module GraphQL
       class UnionTypeDefinition < AbstractNode
         attr_reader :name, :types, :directives, :description
         include Scalars::Name
-        
+
         def initialize_node(name:, types:, directives: [], description: nil)
           @name = name
           @types = types
@@ -725,8 +725,8 @@ module GraphQL
 
         def visit_method
           :on_input_object_type_definition
-        end 
-  
+        end
+
         def children
           fields + directives
         end
