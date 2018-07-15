@@ -14,15 +14,31 @@ module GraphQL
         "execute_query_lazy" => "graphql.execute",
       }
 
+      # @param set_endpoint_name [Boolean] If true, the GraphQL operation name will be used as the endpoint name.
+      #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
+      #   It can also be specified per-query with `context[:set_skylight_endpoint_name]`.
+      def initialize(set_endpoint_name: false)
+        @set_endpoint_name = set_endpoint_name
+        super
+      end
+
       def platform_trace(platform_key, key, data)
-        if (query = data[:query])
+        if key == "execute_query"
+          query = data[:query]
           title = query.selected_operation_name || "<anonymous>"
           category = platform_key
-          # Assign the endpoint so that queries will be grouped
-          current_instance = Skylight::Instrumenter.instance
-          if current_instance
-            endpoint = "GraphQL/#{query.operation_type}.#{title}"
-            current_instance.current_trace.endpoint = endpoint
+          set_endpoint_name_override = query.context[:set_skylight_endpoint_name]
+          if set_endpoint_name_override == true || (set_endpoint_name_override.nil? && @set_endpoint_name)
+            # Assign the endpoint so that queries will be grouped
+            instrumenter = Skylight.instrumenter
+            if instrumenter
+              current_trace = instrumenter.current_trace
+              if current_trace
+                op_type = query.selected_operation ? query.selected_operation.operation_type : "query"
+                endpoint = "GraphQL/#{op_type}.#{title}"
+                current_trace.endpoint = endpoint
+              end
+            end
           end
         elsif key.start_with?("execute_field")
           title = platform_key
