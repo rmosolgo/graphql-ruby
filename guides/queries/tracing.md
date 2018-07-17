@@ -136,3 +136,29 @@ class MySchema < GraphQL::Schema
   use(GraphQL::Tracing::DataDogTracing)
 end
 ```
+
+## Prometheus
+
+To add [Prometheus](https://prometheus.io) instrumentation:
+
+```ruby
+require 'prometheus_exporter/client'
+
+class MySchema < GraphQL::Schema
+  use(GraphQL::Tracing::PrometheusTracing)
+end
+```
+
+The PrometheusExporter server must be run with a custom type collector that extends
+`GraphQL::Tracing::PrometheusTracing::GraphQLCollector`:
+
+```ruby
+# lib/graphql_collector.rb
+
+class GraphQLCollector < GraphQL::Tracing::PrometheusTracing::GraphQLCollector
+end
+```
+
+```sh
+bundle exec prometheus_exporter -a lib/graphql_collector.rb
+```
