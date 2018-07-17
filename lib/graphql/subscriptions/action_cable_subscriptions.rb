@@ -92,7 +92,7 @@ module GraphQL
       # It will receive notifications when events come in
       # and re-evaluate the query locally.
       def write_subscription(query, events)
-        channel = query.context[:channel]
+        channel = query.context.fetch(:channel)
         subscription_id = query.context[:subscription_id] ||= build_id
         stream = query.context[:action_cable_stream] ||= SUBSCRIPTION_PREFIX + subscription_id
         channel.stream_from(stream)
