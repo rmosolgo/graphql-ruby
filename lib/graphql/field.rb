@@ -245,7 +245,40 @@ module GraphQL
     # @param arguments [Hash] Arguments declared in the query
     # @param context [GraphQL::Query::Context]
     def resolve(object, arguments, context)
-      resolve_proc.call(object, arguments, context)
+      directives = []
+      if context && context.ast_node
+        directives = context.ast_node.directives || []
+      end
+
+      # At this point, we're going to reduce over any directives. Concretely, we
+      # begin with the existing resolve_proc for this field as our starting memo
+      # value. For each directive that implements `resolve_execution`, we call
+      # that directive's `resolve_execution` proc with the arguments to the
+      # directive, the obj/args/ctx for this resolution, and the current memo.
+      # The directive can then choose to either call that memo with arguments of
+      # its choosing (probably the provided obj/args/ctx) or to return some
+      # other value. As we work through the list of directives, we're
+      # effectively wrapping them one inside the other until we eventually reach
+      # the inner provided that no directive has early aborted.
+      reduced = directives.reduce(resolve_proc) do |memo, directive_ast_node|
+        directive_defn = context.query.schema.directives[directive_ast_node.name]
+        directive_args = context.query.arguments_for(directive_ast_node, directive_defn)
+
+        # If there's no resolve_execution proc, then this is presumably a directive which
+        # does not do anything at execution time.
+        if directive_defn.resolve_execution.nil?
+          memo
+        else
+          # We wrap the inner call in a proc which closes over our directive_args and allows us to expand the three-arity of `resolve` into the five-arity of `resolve_execution`
+          ->(obj, args, ctx) {
+            inner = ->(obj, args, ctx) {
+              memo.call(obj, args, ctx)
+            }
+            directive_defn.resolve_execution.call(directive_args, obj, args, ctx, inner)
+          }
+        end
+      end
+      reduced.call(object, arguments, context)
     end
 
     # Provide a new callable for this field's resolve function. If `nil`,
