@@ -8,6 +8,10 @@ require "graphql/tracing/scout_tracing"
 require "graphql/tracing/skylight_tracing"
 require "graphql/tracing/prometheus_tracing"
 
+if defined?(PrometheusExporter::Server)
+  require "graphql/tracing/prometheus_tracing/graphql_collector"
+end
+
 module GraphQL
   # Library entry point for performance metric reporting.
   #
