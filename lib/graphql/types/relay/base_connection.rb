@@ -61,18 +61,22 @@ module GraphQL
               method: :edge_nodes,
               edge_class: edge_class
 
-            if nodes_field
-              field :nodes, [node_type, null: true],
-                null: true,
-                description: "A list of nodes."
-            end
+            define_nodes_field if nodes_field
 
             description("The connection type for #{node_type_name}.")
           end
 
           # Add the shortcut `nodes` field to this connection and its subclasses
           def nodes_field
-            field :nodes, [@node_type, null: true], null: true
+            define_nodes_field
+          end
+
+          private
+
+          def define_nodes_field
+            field :nodes, [@node_type, null: true],
+              null: true,
+              description: "A list of nodes."
           end
         end
 
