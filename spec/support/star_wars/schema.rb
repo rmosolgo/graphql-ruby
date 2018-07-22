@@ -36,8 +36,12 @@ module StarWars
     edge_type(BaseEdge)
   end
 
+  class BaseConnectionWithoutNodes < GraphQL::Types::Relay::BaseConnection
+    edge_type(BaseEdge, nodes_field: false)
+  end
+
   class BasesConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConnection
-    edge_type(BaseEdge)
+    edge_type(BaseEdge, nodes_field: false)
     nodes_field
 
     field :total_count, Integer, null: true
@@ -159,6 +163,7 @@ module StarWars
     field :basesWithDefaultMaxLimitRelation, BaseConnection, null: true, resolve: Proc.new { Base.all }
     field :basesWithDefaultMaxLimitArray, BaseConnection, null: true, resolve: Proc.new { Base.all.to_a }
     field :basesWithLargeMaxLimitRelation, BaseConnection, null: true, max_page_size: 1000, resolve: Proc.new { Base.all }
+    field :basesWithoutNodes, BaseConnectionWithoutNodes, null: true, resolve: Proc.new { Base.all.to_a }
 
     field :basesAsSequelDataset, BasesConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
       argument :nameIncludes, String, required: false

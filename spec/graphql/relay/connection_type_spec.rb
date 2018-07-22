@@ -41,7 +41,12 @@ describe GraphQL::Relay::ConnectionType do
       let(:query_string) {%|
         {
           rebels {
-            bases: basesWithCustomEdge {
+            bases {
+              nodes {
+                name
+              }
+            }
+            basesWithCustomEdge {
               nodes {
                 name
               }
@@ -54,9 +59,29 @@ describe GraphQL::Relay::ConnectionType do
         result = star_wars_query(query_string)
         bases = result["data"]["rebels"]["bases"]
         assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases["nodes"].map { |e| e["name"] }
+        bases_with_custom_edge = result["data"]["rebels"]["basesWithCustomEdge"]
+        assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases_with_custom_edge["nodes"].map { |e| e["name"] }
       end
     end
 
+    describe "connections without nodes field" do
+      let(:query_string) {%|
+        {
+          rebels {
+            basesWithoutNodes {
+              nodes {
+                name
+              }
+            }
+          }
+        }
+      |}
+
+      it "raises error" do
+        result = star_wars_query(query_string)
+        assert_includes result["errors"][0]["message"], "Field 'nodes' doesn't exist"
+      end
+    end
 
     describe "when an execution error is raised" do
       let(:query_string) {%|
