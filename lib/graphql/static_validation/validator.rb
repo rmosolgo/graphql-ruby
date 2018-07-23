@@ -39,10 +39,8 @@ module GraphQL
           context.visitor.visit
           rewrite_result = rewrite.document
 
-          if context.each_irep_node_handlers.any?
-            # Post-validation: allow validators to register handlers on rewritten query nodes
-            GraphQL::InternalRepresentation::Visit.visit_each_node(rewrite_result.operation_definitions, context.each_irep_node_handlers)
-          end
+          # Post-validation: allow validators to register handlers on rewritten query nodes
+          GraphQL::InternalRepresentation::Visit.visit_each_node(rewrite_result.operation_definitions, context.each_irep_node_handlers)
 
           {
             errors: context.errors,
