@@ -155,6 +155,8 @@ The PrometheusExporter server must be run with a custom type collector that exte
 ```ruby
 # lib/graphql_collector.rb
 
+require 'graphql/tracing'
+
 class GraphQLCollector < GraphQL::Tracing::PrometheusTracing::GraphQLCollector
 end
 ```
