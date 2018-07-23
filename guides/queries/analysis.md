@@ -40,6 +40,11 @@ A query analyzer has the same basic parts. Here's the scaffold for an analyzer:
 
 ```ruby
 class MyQueryAnalyzer
+  # Called before initializing the analyzer.
+  # Returns true to run this analyzer, or false to skip it.
+  def analyze?(query)
+  end
+
   # Called before the visit.
   # Returns the initial value for `memo`
   def initial_value(query)
@@ -58,6 +63,7 @@ class MyQueryAnalyzer
 end
 ```
 
+- `#analyze?` is called before initializing any analyzer if it is defined. When `#analyze?` returns false, the analyzer won't be ran.
 - `#initial_value` is a chance to initialize the state for your analysis. For example, you can return a hash with keys for the query, schema, and any other values you want to store.
 - `#call` is called for each node in the query. `memo` is the analyzer state. `visit_type` is either `:enter` or `:leave`. `irep_node` is the {{ "GraphQL::InternalRepresentation::Node" | api_doc }} for the current field in the query. (It is like `item` in the `Array#reduce` callback.)
 - `#final_value` is called _after_ the visit. It provides a chance to write to your log or return a {{ "GraphQL::AnalysisError" | api_doc }} to halt query execution.
