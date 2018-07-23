@@ -43,6 +43,14 @@ module GraphQL
             # In this case, it's been included into another interface.
             # This is how interface inheritance is implemented
 
+            # We need this before we can call `own_interfaces`
+            child_class.extend(Schema::Interface::DefinitionMethods)
+
+            child_class.own_interfaces << self
+            child_class.interfaces.each do |interface_defn|
+              child_class.extend(interface_defn::DefinitionMethods)
+            end
+
             # Use an instance variable to tell whether it's been included previously or not;
             # You can't use constant detection because constants are brought into scope
             # by `include`, which has already happened at this point.
@@ -51,14 +59,6 @@ module GraphQL
               child_class.instance_variable_set(:@_definition_methods, defn_methods_module)
               child_class.const_set(:DefinitionMethods, defn_methods_module)
               child_class.extend(child_class::DefinitionMethods)
-            end
-
-            # We need this before we can call `own_interfaces`
-            child_class.extend(Schema::Interface::DefinitionMethods)
-
-            child_class.own_interfaces << self
-            child_class.interfaces.each do |interface_defn|
-              child_class.extend(interface_defn::DefinitionMethods)
             end
           elsif child_class < GraphQL::Schema::Object
             # Add all definition methods of this interface and the interfaces it
