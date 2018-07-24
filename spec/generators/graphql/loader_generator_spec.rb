@@ -9,19 +9,21 @@ class GraphQLGeneratorsLoaderGeneratorTest < BaseGeneratorTest
     run_generator(["RecordLoader"])
 
     expected_content = <<-RUBY
-class Loaders::RecordLoader < GraphQL::Batch::Loader
-  # Define `initialize` to store grouping arguments, eg
-  #
-  #     Loaders::RecordLoader.for(group).load(value)
-  #
-  # def initialize()
-  # end
+module Loaders
+  class RecordLoader < GraphQL::Batch::Loader
+    # Define `initialize` to store grouping arguments, eg
+    #
+    #     Loaders::RecordLoader.for(group).load(value)
+    #
+    # def initialize()
+    # end
 
-  # `keys` contains each key from `.load(key)`.
-  # Find the corresponding values, then
-  # call `fulfill(key, value)` or `fulfill(key, nil)`
-  # for each key.
-  def perform(keys)
+    # `keys` contains each key from `.load(key)`.
+    # Find the corresponding values, then
+    # call `fulfill(key, value)` or `fulfill(key, nil)`
+    # for each key.
+    def perform(keys)
+    end
   end
 end
 RUBY
@@ -33,19 +35,21 @@ RUBY
     run_generator(["active_record::record_loader"])
 
     expected_content = <<-RUBY
-class Loaders::ActiveRecord::RecordLoader < GraphQL::Batch::Loader
-  # Define `initialize` to store grouping arguments, eg
-  #
-  #     Loaders::ActiveRecord::RecordLoader.for(group).load(value)
-  #
-  # def initialize()
-  # end
+module Loaders
+  class ActiveRecord::RecordLoader < GraphQL::Batch::Loader
+    # Define `initialize` to store grouping arguments, eg
+    #
+    #     Loaders::ActiveRecord::RecordLoader.for(group).load(value)
+    #
+    # def initialize()
+    # end
 
-  # `keys` contains each key from `.load(key)`.
-  # Find the corresponding values, then
-  # call `fulfill(key, value)` or `fulfill(key, nil)`
-  # for each key.
-  def perform(keys)
+    # `keys` contains each key from `.load(key)`.
+    # Find the corresponding values, then
+    # call `fulfill(key, value)` or `fulfill(key, nil)`
+    # for each key.
+    def perform(keys)
+    end
   end
 end
 RUBY

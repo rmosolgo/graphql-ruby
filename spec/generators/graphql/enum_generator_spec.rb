@@ -7,12 +7,14 @@ class GraphQLGeneratorsEnumGeneratorTest < BaseGeneratorTest
 
   test "it generate enums with values" do
     expected_content = <<-RUBY
-class Types::FamilyType < Types::BaseEnum
-  value "NIGHTSHADE"
-  value "BRASSICA", value: Family::COLE
-  value "UMBELLIFER", value: :umbellifer
-  value "LEGUME", value: "bean & friends"
-  value "CURCURBITS", value: 5
+module Types
+  class FamilyType < Types::BaseEnum
+    value "NIGHTSHADE"
+    value "BRASSICA", value: Family::COLE
+    value "UMBELLIFER", value: :umbellifer
+    value "LEGUME", value: "bean & friends"
+    value "CURCURBITS", value: 5
+  end
 end
 RUBY
 

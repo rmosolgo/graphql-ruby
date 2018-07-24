@@ -14,8 +14,10 @@ class GraphQLGeneratorsUnionGeneratorTest < BaseGeneratorTest
     ]
 
     expected_content = <<-RUBY
-class Types::WingedCreatureType < Types::BaseUnion
-  possible_types [Types::InsectType, Types::BirdType]
+module Types
+  class WingedCreatureType < Types::BaseUnion
+    possible_types [Types::InsectType, Types::BirdType]
+  end
 end
 RUBY
 
@@ -35,7 +37,9 @@ RUBY
     ]
 
     expected_content = <<-RUBY
-class Types::WingedCreatureType < Types::BaseUnion
+module Types
+  class WingedCreatureType < Types::BaseUnion
+  end
 end
 RUBY
 
@@ -50,7 +54,9 @@ RUBY
     command = ["WingedCreature", "--directory", "app/mydirectory"]
 
     expected_content = <<-RUBY
-class Types::WingedCreatureType < Types::BaseUnion
+module Types
+  class WingedCreatureType < Types::BaseUnion
+  end
 end
 RUBY
 
