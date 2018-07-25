@@ -16,6 +16,9 @@ module GraphQL
       # @return [Hash<String => Array<GraphQL::BaseType>]
       attr_reader :union_memberships
 
+      # @return [Hash<String => Array<GraphQL::ObjectType>]
+      attr_reader :interface_implementers
+
 
       # @param schema [GraphQL::Schema]
       def initialize(schema, introspection: true)
@@ -38,6 +41,7 @@ module GraphQL
         @late_bound_fields = []
         @type_map = {}
         @instrumented_field_map = Hash.new { |h, k| h[k] = {} }
+        @interface_implementers = Hash.new { |h, k| h[k] = [] }
         @type_reference_map = Hash.new { |h, k| h[k] = [] }
         @union_memberships = Hash.new { |h, k| h[k] = [] }
         visit(schema, schema, nil)
@@ -139,7 +143,10 @@ Some late-bound types couldn't be resolved:
             @type_map[type_defn.name] = type_defn
             case type_defn
             when GraphQL::ObjectType
-              type_defn.interfaces.each { |i| visit(schema, i, "Interface on #{type_defn.name}") }
+              type_defn.interfaces.each do |i|
+                @interface_implementers[i.name] << type_defn
+                visit(schema, i, "Interface on #{type_defn.name}")
+              end
               visit_fields(schema, type_defn)
             when GraphQL::InterfaceType
               visit_fields(schema, type_defn)

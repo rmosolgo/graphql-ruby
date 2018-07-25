@@ -219,4 +219,31 @@ describe GraphQL::Schema::Traversal do
     }
     assert_equal expected, result
   end
+
+  it "finds interface implementers" do
+    interface = GraphQL::InterfaceType.define do
+      name "AInterface"
+    end
+
+    another_interface = GraphQL::InterfaceType.define do
+      name "AnotherIterface"
+    end
+
+    b_type = GraphQL::ObjectType.define do
+      implements interface, another_interface
+      name "B"
+    end
+
+    c_type = GraphQL::ObjectType.define do
+      implements interface
+      name "C"
+    end
+
+    result = traversal([interface, another_interface, b_type, c_type]).interface_implementers
+    expected = {
+      "AInterface" => [b_type, c_type],
+      "AnotherIterface" => [b_type]
+    }
+    assert_equal expected, result
+  end
 end

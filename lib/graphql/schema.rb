@@ -9,7 +9,6 @@ require "graphql/schema/introspection_system"
 require "graphql/schema/late_bound_type"
 require "graphql/schema/middleware_chain"
 require "graphql/schema/null_mask"
-require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
 require "graphql/schema/timeout_middleware"
 require "graphql/schema/traversal"
@@ -297,6 +296,14 @@ module GraphQL
       @union_memberships.fetch(type.name, [])
     end
 
+    # Returns a list of object types which implement an interface type
+    # @param interface_type [GraphQL::InterfaceType]
+    # @return [Array<GraphQL::ObjectType>] list of object types which implement the interface type
+    def interface_implementers(interface_type)
+      rebuild_artifacts unless defined?(@union_memberships)
+      @interface_implementers.fetch(interface_type.name, [])
+    end
+
     # Execute a query on itself. Raises an error if the schema definition is invalid.
     # @see {Query#initialize} for arguments.
     # @return [Hash] query result, ready to be serialized as JSON
@@ -396,11 +403,21 @@ module GraphQL
     end
 
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
-    # @param type_defn [GraphQL::InterfaceType, GraphQL::UnionType] the type whose members you want to retrieve
+    # @param type_defn [GraphQL::BaseType] the type whose members you want to retrieve
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
     def possible_types(type_defn)
-      @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
-      @possible_types.possible_types(type_defn)
+      case type_defn
+      when Module
+        possible_types(type_defn.graphql_definition)
+      when GraphQL::UnionType
+        type_defn.possible_types
+      when GraphQL::InterfaceType
+        interface_implementers(type_defn)
+      when GraphQL::BaseType
+        [type_defn]
+      else
+        raise "Unexpected possible_types object: #{type_defn.inspect}"
+      end
     end
 
     # @see [GraphQL::Schema::Warden] Resticted access to root types
@@ -1039,6 +1056,7 @@ module GraphQL
         @instrumented_field_map = traversal.instrumented_field_map
         @type_reference_map = traversal.type_reference_map
         @union_memberships = traversal.union_memberships
+        @interface_implementers = traversal.interface_implementers
         @find_cache = {}
         @finder = Finder.new(self)
       end
