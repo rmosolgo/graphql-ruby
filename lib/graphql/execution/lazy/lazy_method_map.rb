@@ -70,9 +70,13 @@ module GraphQL
           end
 
           def compute_if_absent(key)
-            @semaphore.synchronize {
-              @storage.fetch(key) { @storage[key] = yield }
-            }
+            if stored_value = @storage[key]
+              stored_value
+            else
+              @semaphore.synchronize {
+                @storage.fetch(key) { @storage[key] = yield }
+              }
+            end
           end
 
           def initialize_copy(other)
