@@ -177,7 +177,6 @@ module GraphQL
       @query_analyzers = other.query_analyzers.dup
       @multiplex_analyzers = other.multiplex_analyzers.dup
       @tracers = other.tracers.dup
-      @possible_types = GraphQL::Schema::PossibleTypes.new(self)
 
       @lazy_methods = other.lazy_methods.dup
 
@@ -300,7 +299,7 @@ module GraphQL
     # @param interface_type [GraphQL::InterfaceType]
     # @return [Array<GraphQL::ObjectType>] list of object types which implement the interface type
     def interface_implementers(interface_type)
-      rebuild_artifacts unless defined?(@union_memberships)
+      rebuild_artifacts unless defined?(@interface_implementers)
       @interface_implementers.fetch(interface_type.name, [])
     end
 
