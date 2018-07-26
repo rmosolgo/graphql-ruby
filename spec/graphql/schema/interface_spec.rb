@@ -187,6 +187,10 @@ describe GraphQL::Schema::Interface do
       end
     end
 
+    module InterfaceE
+      include InterfaceD
+    end
+
     class ObjectA < GraphQL::Schema::Object
       implements InterfaceA
     end
@@ -210,8 +214,12 @@ describe GraphQL::Schema::Interface do
       assert_equal(ObjectA.some_method, InterfaceA.some_method)
     end
 
-    it "follows the normal Ruby inheritance chain" do
+    it "follows the normal Ruby inheritance chain for objects implementing interfaces" do
       assert_equal(ObjectB.some_method, InterfaceD.some_method)
+    end
+
+    it "follows the normal Ruby inheritance chain interfaces including other interfaces" do
+      assert_equal(InterfaceD.some_method, InterfaceE.some_method)
     end
   end
 end
