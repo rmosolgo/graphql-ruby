@@ -47,7 +47,7 @@ module GraphQL
             child_class.extend(Schema::Interface::DefinitionMethods)
 
             child_class.own_interfaces << self
-            child_class.interfaces.each do |interface_defn|
+            child_class.interfaces.reverse_each do |interface_defn|
               child_class.extend(interface_defn::DefinitionMethods)
             end
 
