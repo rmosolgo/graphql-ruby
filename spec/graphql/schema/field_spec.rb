@@ -51,6 +51,20 @@ describe GraphQL::Schema::Field do
       assert_equal "A Description.", object.fields["test"].description
     end
 
+    it "accepts a block for defintion and yields the field if the block has an arity of one" do
+      object = Class.new(Jazz::BaseObject) do
+        graphql_name "JustAName"
+
+        field :test, String, null: true do |field|
+          field.argument :test, String, required: true
+          field.description "A Description."
+        end
+      end.to_graphql
+
+      assert_equal "test", object.fields["test"].arguments["test"].name
+      assert_equal "A Description.", object.fields["test"].description
+    end
+
     it "accepts anonymous classes as type" do
       type = Class.new(GraphQL::Schema::Object) do
         graphql_name 'MyType'
