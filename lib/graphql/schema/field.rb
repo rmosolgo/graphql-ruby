@@ -152,7 +152,11 @@ module GraphQL
         @subscription_scope = subscription_scope
 
         if definition_block
-          instance_eval(&definition_block)
+          if definition_block.arity == 1
+            instance_exec(self, &definition_block)
+          else
+            instance_eval(&definition_block)
+          end
         end
       end
 
