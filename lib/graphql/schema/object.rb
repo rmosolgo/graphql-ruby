@@ -60,6 +60,10 @@ module GraphQL
         def implements(*new_interfaces)
           new_interfaces.each do |int|
             if int.is_a?(Module)
+              unless int.include?(GraphQL::Schema::Interface)
+                raise "#{int} cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
+              end
+
               # Include the methods here,
               # `.fields` will use the inheritance chain
               # to find inherited fields

@@ -41,14 +41,32 @@ describe GraphQL::Schema::Object do
       assert_equal object_class.description, new_subclass_2.description
     end
 
-    it "does not inherit singleton methods from base interface when implementing base interface" do
-      object_type = Class.new(GraphQL::Schema::Object)
-      methods = object_type.singleton_methods
-      method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
+    it "should take Ruby name (without Type suffix) as default graphql name" do
+      TestingClassType = Class.new(GraphQL::Schema::Object)
+      assert_equal "TestingClass", TestingClassType.graphql_name
+    end
 
-      object_type.implements(GraphQL::Schema::Interface)
-      new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
-      assert_equal method_defs, new_method_defs
+    it "raise on anonymous class without declared graphql name" do
+      anonymous_class = Class.new(GraphQL::Schema::Object)
+      assert_raises NotImplementedError do
+        anonymous_class.graphql_name
+      end
+    end
+  end
+
+  describe "implementing interfaces" do
+    it "raises an error when trying to implement a non-interface module" do
+      object_type = Class.new(GraphQL::Schema::Object)
+
+      module NotAnInterface
+      end
+
+      err = assert_raises do
+        object_type.implements(NotAnInterface)
+      end
+
+      message = "NotAnInterface cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
+      assert_equal message, err.message
     end
 
     it "does not inherit singleton methods from base interface when implementing another interface" do
@@ -63,18 +81,6 @@ describe GraphQL::Schema::Object do
       object_type.implements(InterfaceType)
       new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
       assert_equal method_defs, new_method_defs
-    end
-
-    it "should take Ruby name (without Type suffix) as default graphql name" do
-      TestingClassType = Class.new(GraphQL::Schema::Object)
-      assert_equal "TestingClass", TestingClassType.graphql_name
-    end
-
-    it "raise on anonymous class without declared graphql name" do
-      anonymous_class = Class.new(GraphQL::Schema::Object)
-      assert_raises NotImplementedError do
-        anonymous_class.graphql_name
-      end
     end
   end
 
