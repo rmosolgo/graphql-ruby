@@ -16,7 +16,8 @@ gem "actionpack", "~> 4.1.10"
 gem "test-unit"
 
 group :jekyll_plugins do
-  gem "algoliasearch-jekyll"
+  gem "jekyll-algolia"
+  gem "jekyll-redirect-from"
 end
 
 gemspec path: "../"

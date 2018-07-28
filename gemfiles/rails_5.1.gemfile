@@ -16,7 +16,8 @@ gem "capybara", "~> 2.13"
 gem "selenium-webdriver"
 
 group :jekyll_plugins do
-  gem "algoliasearch-jekyll"
+  gem "jekyll-algolia"
+  gem "jekyll-redirect-from"
 end
 
 gemspec path: "../"
