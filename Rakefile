@@ -96,7 +96,7 @@ namespace :test do
     success = Dir.chdir("spec/dummy") do
       system("bin/rails test:system")
     end
-    success || exit(0)
+    success || abort
   end
 
   task js: "js:test"
