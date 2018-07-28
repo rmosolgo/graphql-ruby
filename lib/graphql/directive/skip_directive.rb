@@ -6,4 +6,12 @@ GraphQL::Directive::SkipDirective = GraphQL::Directive.define do
 
   argument :if, !GraphQL::BOOLEAN_TYPE, 'Skipped when true.'
   default_directive true
+
+  resolve_field_rewrite ->(directive_args, ast_node, query) {
+    if directive_args[:if]
+      return nil
+    else
+      return ast_node
+    end
+  }
 end
