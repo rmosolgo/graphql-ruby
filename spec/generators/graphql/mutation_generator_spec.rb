@@ -33,10 +33,28 @@ class Mutations::UpdateName < GraphQL::Schema::RelayClassicMutation
 end
 RUBY
 
+  EXPECTED_MUTATION_TYPE = <<-RUBY
+class Types::MutationType < Types::BaseObject
+  field :updateName, Mutations::UpdateName.field
+  # TODO: remove me
+  field :test_field, String, null: false,
+    description: \"An example field added by the generator\"
+  def test_field
+    \"Hello World\"
+  end
+end
+RUBY
+
   test "it generates an empty resolver by name" do
     setup
     run_generator(["UpdateName"])
     assert_file "app/graphql/mutations/update_name.rb", UPDATE_NAME_MUTATION
+  end
+
+  test "it inserts the field into the MutationType" do
+    setup
+    run_generator(["UpdateName"])
+    assert_file "app/graphql/types/mutation_type.rb", EXPECTED_MUTATION_TYPE
   end
 
   test "it allows for user-specified directory" do
