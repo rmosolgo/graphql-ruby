@@ -110,7 +110,7 @@ namespace :js do
     success = Dir.chdir(client_dir) do
       system("yarn run test")
     end
-    success || exit(0)
+    success || abort
   end
 
   desc "Install JS dependencies"
