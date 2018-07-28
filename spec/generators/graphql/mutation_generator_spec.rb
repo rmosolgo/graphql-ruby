@@ -38,9 +38,9 @@ class Types::MutationType < Types::BaseObject
   field :updateName, mutation: Mutations::UpdateName
   # TODO: remove me
   field :test_field, String, null: false,
-    description: \"An example field added by the generator\"
+    description: "An example field added by the generator"
   def test_field
-    \"Hello World\"
+    "Hello World"
   end
 end
 RUBY
