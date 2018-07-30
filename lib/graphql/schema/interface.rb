@@ -9,6 +9,7 @@ module GraphQL
         include GraphQL::Schema::Member::BaseDSLMethods
         include GraphQL::Schema::Member::TypeSystemHelpers
         include GraphQL::Schema::Member::HasFields
+        include GraphQL::Schema::Member::Scoped
 
         # Methods defined in this block will be:
         # - Added as class methods to this interface

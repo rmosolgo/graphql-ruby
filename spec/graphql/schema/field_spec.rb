@@ -223,6 +223,11 @@ describe GraphQL::Schema::Field do
     end
   end
 
+  describe "#scope" do
+    it "is true for connections"
+    it "defaults to false"
+  end
+
   describe "mutation" do
     it "passes when not including extra arguments" do
       mutation_class = Class.new(GraphQL::Schema::Mutation) do
@@ -236,4 +241,5 @@ describe GraphQL::Schema::Field do
       assert_equal obj.fields["myField"].mutation, mutation_class
     end
   end
+
 end
