@@ -157,7 +157,7 @@ rule
     | schema_keyword
 
   enum_value_definition:
-    enum_name directives_list_opt { return make_node(:EnumValueDefinition, name: val[0], directives: val[1], description: get_description(val[0]), position_source: val[0]) }
+    description_opt enum_name directives_list_opt { return make_node(:EnumValueDefinition, name: val[1], directives: val[2], description: val[0] || get_description(val[1]), position_source: val[0] || val[1]) }
 
   enum_value_definitions:
       enum_value_definition                        { return [val[0]] }
@@ -338,14 +338,19 @@ rule
       EXTEND INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY { return make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) }
     | EXTEND INPUT name directives_list { return make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
 
-  scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0]), position_source: val[0]) }
+  description: STRING
 
-  type_definition_opt:
+  description_opt:
       /* none */
-    | STRING
+    | description
+
+  scalar_type_definition:
+      description_opt SCALAR name directives_list_opt {
+        return make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
+      }
 
   object_type_definition:
-      type_definition_opt TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
+      description_opt TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
         return make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
       }
 
@@ -367,8 +372,8 @@ rule
     | legacy_interfaces_list name { val[0] << make_node(:TypeName, name: val[1], position_source: val[1]) }
 
   input_value_definition:
-      name COLON type default_value_opt directives_list_opt {
-        return make_node(:InputValueDefinition, name: val[0], type: val[2], default_value: val[3], directives: val[4], description: get_description(val[0]), position_source: val[0])
+      description_opt name COLON type default_value_opt directives_list_opt {
+        return make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
       }
 
   input_value_definition_list:
@@ -380,8 +385,8 @@ rule
     | LPAREN input_value_definition_list RPAREN { return val[1] }
 
   field_definition:
-      name arguments_definitions_opt COLON type directives_list_opt {
-        return make_node(:FieldDefinition, name: val[0], arguments: val[1], type: val[3], directives: val[4], description: get_description(val[0]), position_source: val[0])
+      description_opt name arguments_definitions_opt COLON type directives_list_opt {
+        return make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
       }
 
   field_definition_list:
@@ -390,8 +395,8 @@ rule
     | field_definition_list field_definition { val[0] << val[1] }
 
   interface_type_definition:
-      INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY {
-        return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]), position_source: val[0])
+      description_opt INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY {
+        return make_node(:InterfaceTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
       }
 
   union_members:
@@ -399,23 +404,23 @@ rule
     | union_members PIPE name { val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) }
 
   union_type_definition:
-      UNION name directives_list_opt EQUALS union_members {
-        return make_node(:UnionTypeDefinition, name: val[1], directives: val[2], types: val[4], description: get_description(val[0]), position_source: val[0])
+      description_opt UNION name directives_list_opt EQUALS union_members {
+        return make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
       }
 
   enum_type_definition:
-      ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
-         return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4], description: get_description(val[0]), position_source: val[0])
+      description_opt ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
+         return make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
       }
 
   input_object_type_definition:
-      INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
-        return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]), position_source: val[0])
+      description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
+        return make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
       }
 
   directive_definition:
-      DIRECTIVE DIR_SIGN name arguments_definitions_opt ON directive_locations {
-        return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5], description: get_description(val[0]), position_source: val[0])
+      description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt ON directive_locations {
+        return make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[6], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
       }
 
   directive_locations:
