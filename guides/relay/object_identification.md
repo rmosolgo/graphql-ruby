@@ -29,7 +29,7 @@ class MySchema < GraphQL::Schema
     class_name, item_id = MyApp::GlobalId.decrypt(id)
     # "Post" => Post.find(item_id)
     Object.const_get(class_name).find(item_id)
-  }
+  end
 end
 ```
 
