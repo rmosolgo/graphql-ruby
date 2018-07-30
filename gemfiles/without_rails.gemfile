@@ -16,7 +16,8 @@ gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "globalid"
 
 group :jekyll_plugins do
-  gem "algoliasearch-jekyll"
+  gem "jekyll-algolia"
+  gem "jekyll-redirect-from"
 end
 
 gemspec path: "../"
