@@ -54,6 +54,36 @@ describe GraphQL::Schema::Object do
     end
   end
 
+  describe "implementing interfaces" do
+    it "raises an error when trying to implement a non-interface module" do
+      object_type = Class.new(GraphQL::Schema::Object)
+
+      module NotAnInterface
+      end
+
+      err = assert_raises do
+        object_type.implements(NotAnInterface)
+      end
+
+      message = "NotAnInterface cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
+      assert_equal message, err.message
+    end
+
+    it "does not inherit singleton methods from base interface when implementing another interface" do
+      object_type = Class.new(GraphQL::Schema::Object)
+      methods = object_type.singleton_methods
+      method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
+
+      module InterfaceType
+        include GraphQL::Schema::Interface
+      end
+
+      object_type.implements(InterfaceType)
+      new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
+      assert_equal method_defs, new_method_defs
+    end
+  end
+
   describe "wrapping a Hash" do
     it "automatically looks up symbol and string keys" do
       query_str = <<-GRAPHQL
