@@ -51,13 +51,19 @@ describe GraphQL::Schema::Argument do
   end
 
   describe "#description" do
+    let(:arg) { SchemaArgumentTest::Query.fields["field"].arguments["arg"] }
     it "sets description" do
-      SchemaArgumentTest::Query.fields["field"].arguments["arg"].description "new description"
-      assert_equal "new description", SchemaArgumentTest::Query.fields["field"].arguments["arg"].description
+      arg.description "new description"
+      assert_equal "new description", arg.description
     end
 
     it "returns description" do
       assert_equal "test", SchemaArgumentTest::Query.fields["field"].arguments["argWithBlock"].description
+    end
+
+    it "has an assignment method" do
+      arg.description = "another new description"
+      assert_equal "another new description", arg.description
     end
   end
 

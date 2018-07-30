@@ -236,4 +236,17 @@ describe GraphQL::Schema::Field do
       assert_equal obj.fields["myField"].mutation, mutation_class
     end
   end
+
+  describe '#deprecation_reason' do
+    it "reads and writes" do
+      object_class = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Thing"
+        field :stuff, String, null: false, deprecation_reason: "Broken"
+      end
+      field = object_class.fields["stuff"]
+      assert_equal "Broken", field.deprecation_reason
+      field.deprecation_reason += "!!"
+      assert_equal "Broken!!", field.deprecation_reason
+    end
+  end
 end
