@@ -33,6 +33,9 @@ module GraphQL
       # @return [Class] The enum type that owns this value
       attr_reader :owner
 
+      # @return [String] Explains why this value was deprecated (if present, this will be marked deprecated in introspection)
+      attr_accessor :deprecation_reason
+
       def initialize(graphql_name, desc = nil, owner:, description: nil, value: nil, deprecation_reason: nil, &block)
         @graphql_name = graphql_name.to_s
         @description = desc || description
