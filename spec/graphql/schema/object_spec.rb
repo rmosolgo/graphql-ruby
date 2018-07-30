@@ -41,30 +41,6 @@ describe GraphQL::Schema::Object do
       assert_equal object_class.description, new_subclass_2.description
     end
 
-    it "does not inherit singleton methods from base interface when implementing base interface" do
-      object_type = Class.new(GraphQL::Schema::Object)
-      methods = object_type.singleton_methods
-      method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
-
-      object_type.implements(GraphQL::Schema::Interface)
-      new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
-      assert_equal method_defs, new_method_defs
-    end
-
-    it "does not inherit singleton methods from base interface when implementing another interface" do
-      object_type = Class.new(GraphQL::Schema::Object)
-      methods = object_type.singleton_methods
-      method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
-
-      module InterfaceType
-        include GraphQL::Schema::Interface
-      end
-
-      object_type.implements(InterfaceType)
-      new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
-      assert_equal method_defs, new_method_defs
-    end
-
     it "should take Ruby name (without Type suffix) as default graphql name" do
       TestingClassType = Class.new(GraphQL::Schema::Object)
       assert_equal "TestingClass", TestingClassType.graphql_name
