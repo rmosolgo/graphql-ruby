@@ -15,8 +15,4 @@ gem "activerecord", "~> 3.2.21"
 gem "actionpack", "~> 3.2.21"
 gem "test-unit"
 
-group :jekyll_plugins do
-  gem "algoliasearch-jekyll"
-end
-
 gemspec path: "../"

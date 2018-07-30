@@ -40,6 +40,14 @@ describe GraphQL::Argument do
       assert_equal "my type is String", arg.description
     end
 
+    it "accepts a definition block and yields the argument if the block has an arity of one" do
+      arg = GraphQL::Argument.from_dsl(:foo, GraphQL::STRING_TYPE) do |argument|
+        argument.description "my type is #{target.type}"
+      end
+
+      assert_equal "my type is String", arg.description
+    end
+
     it "accepts a definition block with existing arg" do
       existing = GraphQL::Argument.define do
         name "bar"

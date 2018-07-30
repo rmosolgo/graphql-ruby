@@ -191,14 +191,6 @@ describe GraphQL::Schema::Interface do
       include InterfaceD
     end
 
-    class ObjectA < GraphQL::Schema::Object
-      implements InterfaceA
-    end
-
-    class ObjectB < GraphQL::Schema::Object
-      implements InterfaceD
-    end
-
     it "doesn't overwrite them when including multiple interfaces" do
       def_methods = InterfaceC::DefinitionMethods
 
@@ -210,16 +202,8 @@ describe GraphQL::Schema::Interface do
       assert_equal(InterfaceC::DefinitionMethods, def_methods)
     end
 
-    it "extends classes with the defined methods" do
-      assert_equal(ObjectA.some_method, InterfaceA.some_method)
-    end
-
-    it "follows the normal Ruby inheritance chain for objects implementing interfaces" do
-      assert_equal(ObjectB.some_method, InterfaceD.some_method)
-    end
-
-    it "follows the normal Ruby inheritance chain interfaces including other interfaces" do
-      assert_equal(InterfaceD.some_method, InterfaceE.some_method)
+    it "follows the normal Ruby ancestor chain when including other interfaces" do
+      assert_equal('not 42', InterfaceE.some_method)
     end
   end
 end
