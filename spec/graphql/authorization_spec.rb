@@ -272,18 +272,27 @@ describe GraphQL::Authorization do
       field :hidden_interface, HiddenInterface, null: false, method: :itself
       field :hidden_default_interface, HiddenDefaultInterface, null: false, method: :itself
       field :hidden_connection, RelayObject.connection_type, null: :false, method: :empty_array
-      field :hidden_edge, RelayObject.edge_type, null: :false, method: :itself
+      field :hidden_edge, RelayObject.edge_type, null: :false, method: :edge_object
 
       field :inaccessible, Integer, null: false, method: :object_id
       field :inaccessible_object, InaccessibleObject, null: false, method: :itself
       field :inaccessible_interface, InaccessibleInterface, null: false, method: :itself
       field :inaccessible_default_interface, InaccessibleDefaultInterface, null: false, method: :itself
       field :inaccessible_connection, RelayObject.connection_type, null: :false, method: :empty_array
-      field :inaccessible_edge, RelayObject.edge_type, null: :false, method: :itself
+      field :inaccessible_edge, RelayObject.edge_type, null: :false, method: :edge_object
 
       field :unauthorized_object, UnauthorizedObject, null: true, method: :itself
-      field :unauthorized_connection, RelayObject.connection_type, null: :false, method: :empty_array
-      field :unauthorized_edge, RelayObject.edge_type, null: :false, method: :itself
+      field :unauthorized_connection, RelayObject.connection_type, null: false, method: :array_with_item
+      field :unauthorized_edge, RelayObject.edge_type, null: false, method: :edge_object
+
+      def edge_object
+        OpenStruct.new(node: 100)
+      end
+
+      def array_with_item
+        [1]
+      end
+
       field :unauthorized_lazy_box, UnauthorizedBox, null: true do
         argument :value, String, required: true
       end
@@ -623,24 +632,56 @@ describe GraphQL::Authorization do
     end
 
     it "works with edges and connections" do
-      skip <<-MSG
-        This doesn't work because edge and connection type definitions
-        aren't class-based, and authorization is checked during class-based field execution.
-      MSG
       query = <<-GRAPHQL
       {
-        unauthorizedConnection { __typename }
-        unauthorizedEdge { __typename }
+        unauthorizedConnection {
+          __typename
+          edges {
+            __typename
+            node {
+              __typename
+            }
+          }
+          nodes {
+            __typename
+          }
+        }
+        unauthorizedEdge {
+          __typename
+          node {
+            __typename
+          }
+        }
       }
       GRAPHQL
 
       unauthorized_res = auth_execute(query, context: { unauthorized_relay: true })
-      assert_nil unauthorized_res["data"].fetch("unauthorizedConnection")
-      assert_nil unauthorized_res["data"].fetch("unauthorizedEdge")
+      conn = unauthorized_res["data"].fetch("unauthorizedConnection")
+      assert_equal "RelayObjectConnection", conn.fetch("__typename")
+      assert_equal nil, conn.fetch("nodes")
+      assert_equal [{"node" => nil, "__typename" => "RelayObjectEdge"}], conn.fetch("edges")
+
+      edge = unauthorized_res["data"].fetch("unauthorizedEdge")
+      assert_nil edge.fetch("node")
+      assert_equal "RelayObjectEdge", edge["__typename"]
+
+      unauthorized_object_paths = [
+        ["unauthorizedConnection", "edges", 0, "node"],
+        ["unauthorizedConnection", "nodes"],
+        ["unauthorizedEdge", "node"]
+      ]
+
+      assert_equal unauthorized_object_paths, unauthorized_res["errors"].map { |e| e["path"] }
 
       authorized_res = auth_execute(query)
-      assert_nil authorized_res["data"].fetch("unauthorizedConnection").fetch("__typename")
-      assert_nil authorized_res["data"].fetch("unauthorizedEdge").fetch("__typename")
+      conn = authorized_res["data"].fetch("unauthorizedConnection")
+      assert_equal "RelayObjectConnection", conn.fetch("__typename")
+      assert_equal [{"__typename"=>"RelayObject"}], conn.fetch("nodes")
+      assert_equal [{"node" => {"__typename" => "RelayObject"}, "__typename" => "RelayObjectEdge"}], conn.fetch("edges")
+
+      edge = authorized_res["data"].fetch("unauthorizedEdge")
+      assert_equal "RelayObject", edge.fetch("node").fetch("__typename")
+      assert_equal "RelayObjectEdge", edge["__typename"]
     end
 
     it "authorizes _after_ resolving lazy objects" do
