@@ -24,6 +24,91 @@ describe GraphQL::Language::Parser do
     end
   end
 
+  describe "string description" do
+    it "is parsed for scalar definitions" do
+      document = subject.parse <<-GRAPHQL
+        "Thing description"
+        scalar Thing
+      GRAPHQL
+
+      thing_defn = document.definitions[0]
+      assert_equal "Thing", thing_defn.name
+      assert_equal "Thing description", thing_defn.description
+    end
+
+    it "is parsed for object definitions, field definitions, and input value definitions" do
+      document = subject.parse <<-GRAPHQL
+      "Thing description"
+      type Thing {
+        "field description"
+        field("arg description" arg: Stuff): Stuff
+      }
+      GRAPHQL
+
+      thing_defn = document.definitions[0]
+      assert_equal "Thing", thing_defn.name
+      assert_equal "Thing description", thing_defn.description
+
+      field_defn = thing_defn.fields[0]
+      assert_equal "field", field_defn.name
+      assert_equal "field description", field_defn.description
+
+      arg_defn = field_defn.arguments[0]
+      assert_equal "arg", arg_defn.name
+      assert_equal "arg description", arg_defn.description
+    end
+
+    it "is parsed for interface definitions" do
+      document = subject.parse <<-GRAPHQL
+        "Thing description"
+        interface Thing {}
+      GRAPHQL
+
+      thing_defn = document.definitions[0]
+      assert_equal "Thing", thing_defn.name
+      assert_equal "Thing description", thing_defn.description
+    end
+
+    it "is parsed for union definitions" do
+      document = subject.parse <<-GRAPHQL
+        "Thing description"
+        union Thing = Int | String
+      GRAPHQL
+
+      thing_defn = document.definitions[0]
+      assert_equal "Thing", thing_defn.name
+      assert_equal "Thing description", thing_defn.description
+    end
+
+    it "is parsed for enum definitions and enum value definitions" do
+      document = subject.parse <<-GRAPHQL
+        "Thing description"
+        enum Thing {
+          "VALUE description"
+          VALUE
+        }
+      GRAPHQL
+
+      thing_defn = document.definitions[0]
+      assert_equal "Thing", thing_defn.name
+      assert_equal "Thing description", thing_defn.description
+
+      value_defn = thing_defn.values[0]
+      assert_equal "VALUE", value_defn.name
+      assert_equal "VALUE description", value_defn.description
+    end
+
+    it "is parsed for directive definitions" do
+      document = subject.parse <<-GRAPHQL
+      "thing description" directive @thing on FIELD
+      GRAPHQL
+
+      thing_defn = document.definitions[0]
+      assert_equal "thing", thing_defn.name
+      assert_equal "thing description", thing_defn.description
+    end
+  end
+
   it "parses empty arguments" do
     strings = [
       "{ field { inner } }",
