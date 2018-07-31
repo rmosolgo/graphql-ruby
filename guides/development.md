@@ -258,5 +258,5 @@ To cut a release:
 - Release to RubyGems with `bundle exec rake release`
 - Update the website:
   - Generate new API docs with `bundle exec rake apidocs:gen_version[<your.version.number>]`
-  - Push them to the website with `bundle exec site:publish`
+  - Push them to the website with `bundle exec rake site:publish`
 - Celebrate 🎊  !
