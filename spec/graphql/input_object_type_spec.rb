@@ -254,6 +254,10 @@ describe GraphQL::InputObjectType do
         c: String = "Default"
         d: Boolean = false
       }
+
+      input SecondLevelInputObject {
+        example: ExampleInputObject = {b: 42, d: true}
+      }
     |) }
     let(:input_type) { schema.types['ExampleInputObject'] }
 
@@ -294,6 +298,13 @@ describe GraphQL::InputObjectType do
       result = input_type.coerce_isolated_input(input)
 
       assert_equal false, result['d']
+    end
+
+    it "merges defaults of nested input objects" do
+      result = schema.types['SecondLevelInputObject'].coerce_isolated_input({})
+      assert_equal 42, result['example']['b']
+      assert_equal "Default", result['example']['c']
+      assert_equal true, result['example']['d']
     end
   end
 
