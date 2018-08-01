@@ -4,6 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::Object do
   describe "class attributes" do
     let(:object_class) { Jazz::Ensemble }
+
     it "tells type data" do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
@@ -51,6 +52,20 @@ describe GraphQL::Schema::Object do
       assert_raises NotImplementedError do
         anonymous_class.graphql_name
       end
+    end
+
+    class OverrideNameObject < GraphQL::Schema::Object
+      class << self
+        def default_graphql_name
+          "Override"
+        end
+      end
+    end
+
+    it "can override the default graphql_name" do
+      override_name_object = OverrideNameObject
+
+      assert_equal "Override", override_name_object.graphql_name
     end
   end
 
