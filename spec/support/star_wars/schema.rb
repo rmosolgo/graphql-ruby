@@ -61,24 +61,29 @@ module StarWars
     end
   end
 
-  CustomBaseEdgeType = BaseType.define_edge do
-    name "CustomBaseEdge"
-    field :upcasedName, types.String, property: :upcased_name
-    field :upcasedParentName, types.String, property: :upcased_parent_name
-    field :edgeClassName, types.String do
-      resolve ->(obj, args, ctx) { obj.class.name }
+  class CustomBaseEdgeType < GraphQL::Types::Relay::BaseEdge
+    node_type(BaseType)
+    graphql_name "CustomBaseEdge"
+    field :upcased_name, String, null: true
+    field :upcased_parent_name, String, null: true
+    field :edge_class_name, String, null: true
+
+    def edge_class_name
+      object.class.name
     end
   end
 
-  CustomEdgeBaseConnectionType = BaseType.define_connection(edge_class: CustomBaseEdge, edge_type: CustomBaseEdgeType, nodes_field: true) do
-    name "CustomEdgeBaseConnection"
-
-    field :totalCountTimes100 do
-      type types.Int
-      resolve ->(obj, args, ctx) { obj.nodes.count * 100 }
+  class CustomEdgeBaseConnectionType < GraphQL::Types::Relay::BaseConnection
+    edge_type(CustomBaseEdgeType, edge_class: CustomBaseEdge, nodes_field: true)
+    field :total_count_times_100, Integer, null: true
+    def total_count_times_100
+      object.nodes.count * 100
     end
 
-    field :fieldName, types.String, resolve: ->(obj, args, ctx) { obj.field.name }
+    field :field_name, String, null: true
+    def field_name
+      object.field.name
+    end
   end
 
   # Example of GraphQL::Function used with the connection helper:
@@ -95,10 +100,12 @@ module StarWars
     type Ship.connection_type
   end
 
-  ShipConnectionWithParentType = Ship.define_connection do
-    name "ShipConnectionWithParent"
-    field :parentClassName, !types.String do
-      resolve ->(o, a, c) { o.parent.class.name }
+  class ShipConnectionWithParentType < GraphQL::Types::Relay::BaseConnection
+    edge_type(Ship.edge_type)
+    field :parent_class_name, String, null: false
+
+    def parent_class_name
+      object.parent.class.name
     end
   end
 
