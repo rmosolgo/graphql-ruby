@@ -104,7 +104,6 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     it "is called for connection fields" do
-      # TODO: use class-based types for connections; delegate scoping to the parent object
       query_str = "
       {
         itemsConnection {
@@ -140,7 +139,7 @@ describe GraphQL::Schema::Member::Scoped do
     end
   end
 
-  describe "Schema#field.scoped?" do
+  describe "Schema::Field.scoped?" do
     it "prefers the override value" do
       assert_equal false, ScopeSchema::Query.fields["unscopedItems"].scoped?
     end
