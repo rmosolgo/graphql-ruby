@@ -27,7 +27,7 @@ var GraphQLRubySearch = {
           // Create a wrapper hyperlink
           var container = document.createElement("a")
           container.className = "search-result"
-          container.href = (result.rubydoc_url || result.url) + (result.css_selector_parent || "")
+          container.href = (result.rubydoc_url || result.url) + (result.anchor  ? "#" + result.anchor : "")
 
           // This helper will be used to accumulate text into the search-result
           function createSpan(text, className) {
