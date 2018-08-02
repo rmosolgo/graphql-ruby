@@ -65,7 +65,7 @@ module GraphQL
         @default_value = nil
       else
         @has_default_value = true
-        @default_value = new_default_value
+        @default_value = GraphQL::Argument.deep_stringify(new_default_value)
       end
     end
 
@@ -125,6 +125,22 @@ module GraphQL
         type_or_argument.redefine(kwargs, &block)
       else
         GraphQL::Argument.define(kwargs, &block)
+      end
+    end
+
+    # @api private
+    def self.deep_stringify(val)
+      case val
+      when Array
+        val.map { |v| deep_stringify(v) }
+      when Hash
+        new_val = {}
+        val.each do |k, v|
+          new_val[k.to_s] = deep_stringify(v)
+        end
+        new_val
+      else
+        val
       end
     end
   end

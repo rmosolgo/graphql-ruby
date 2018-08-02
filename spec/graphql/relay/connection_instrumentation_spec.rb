@@ -77,7 +77,7 @@ describe GraphQL::Relay::ConnectionInstrumentation do
       # Before the object is wrapped in a connection, the instrumentation sees `Array`
       assert_equal ["StarWars::FactionRecord", "Array", "GraphQL::Relay::ArrayConnection"], ctx[:before_built_ins]
       # After the object is wrapped in a connection, it sees the connection object
-      assert_equal ["StarWars::Faction", "GraphQL::Relay::ArrayConnection", "GraphQL::Types::Relay::PageInfo"], ctx[:after_built_ins]
+      assert_equal ["StarWars::Faction", "StarWars::ShipConnectionWithParentType", "GraphQL::Types::Relay::PageInfo"], ctx[:after_built_ins]
     end
   end
 end

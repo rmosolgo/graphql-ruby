@@ -50,6 +50,9 @@ module GraphQL
         end
       end
 
+      attr_writer :description
+
+      # @return [String] Documentation for this argument
       def description(text = nil)
         if text
           @description = text

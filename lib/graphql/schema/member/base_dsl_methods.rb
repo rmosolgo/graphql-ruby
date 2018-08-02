@@ -10,8 +10,7 @@ module GraphQL
         # Call this with a new name to override the default name for this schema member; OR
         # call it without an argument to get the name of this schema member
         #
-        # The default name is the Ruby constant name,
-        # without any namespaces and with any `-Type` suffix removed
+        # The default name is implemented in default_graphql_name
         # @param new_name [String]
         # @return [String]
         def graphql_name(new_name = nil)
@@ -20,10 +19,10 @@ module GraphQL
             @graphql_name = new_name
           when overridden = overridden_graphql_name
             overridden
-          else # Fallback to Ruby constant name
-            raise NotImplementedError, 'Anonymous class should declare an `graphql_name`' if name.nil?
+          else
+            raise NotImplementedError, 'Anonymous class should declare a `graphql_name`' if name.nil?
 
-            name.split("::").last.sub(/Type\Z/, "")
+            default_graphql_name
           end
         end
 
@@ -76,6 +75,13 @@ module GraphQL
 
         def overridden_graphql_name
           @graphql_name || find_inherited_method(:overridden_graphql_name, nil)
+        end
+
+        # Creates the default name for a schema member.
+        # The default name is the Ruby constant name,
+        # without any namespaces and with any `-Type` suffix removed
+        def default_graphql_name
+          name.split("::").last.sub(/Type\Z/, "")
         end
 
         def visible?(context)

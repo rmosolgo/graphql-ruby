@@ -8,6 +8,38 @@
 
 ### Bug fixes
 
+## 1.8.6 (31 July 2018)
+
+### Breaking changes
+- Only allow Objects to implement actual Interfaces #1715. Use `include` instead for plain Ruby modules.
+- Revert extending interface methods onto Objects #1716. If you were taking advantage of this feature, you can create a plain Ruby module with the functionality and include it in both the interface and object.
+
+### Deprecations
+
+### New features
+
+- Support string descriptions (from June 2018 GraphQL spec) #1725
+- Add some accessors to Schema members #1722
+- Yield argument for definition block with arity of one #1714
+- Yield field for definition blocks with arity of one #1712
+- Support grouping by "endpoint" with skylight instrumentation #1663
+- Validation: Don't traverse irep if no handlers are registered #1696
+- Add `nodes_field` option to `edge_type` to hide nodes field #1693
+- Add `GraphQL::Types::ISO8601DateTime` to documentation #1694
+- Conditional Analyzers #1690
+- Improve error messages in `ActionCableSubscriptions` #1675
+- Add Prometheus tracing #1672
+- Add `map` to `InputObject` #1669
+
+### Bug fixes
+
+- Improve the mutation generator #1718
+- Fix method inheritance for interfaces #1709
+- Fix Interface inheritance chain #1686
+- Fix require in `tracing.rb` #1685
+- Remove delegate for `FieldResolutionContext#schema` #1682
+- Remove duplicated `object_class` method #1667
+
 ## 1.8.5 (10 July 2018)
 
 ### Breaking changes

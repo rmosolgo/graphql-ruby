@@ -71,6 +71,18 @@ module GraphQL
             define_nodes_field
           end
 
+          def authorized?(obj, ctx)
+            true # Let nodes be filtered out
+          end
+
+          def accessible?(ctx)
+            node_type.accessible?(ctx)
+          end
+
+          def visible?(ctx)
+            node_type.visible?(ctx)
+          end
+
           private
 
           def define_nodes_field

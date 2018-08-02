@@ -21,6 +21,7 @@ require "graphql/schema/build_from_definition"
 
 
 require "graphql/schema/member"
+require "graphql/schema/wrapper"
 require "graphql/schema/list"
 require "graphql/schema/non_null"
 require "graphql/schema/argument"

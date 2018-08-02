@@ -27,12 +27,13 @@ module StarTrek
     field :sector, String, null: true
   end
 
-  # Use an optional block to add fields to the connection type:
-  BaseConnectionWithTotalCountType = BaseType.define_connection(nodes_field: true) do
-    name "BasesConnectionWithTotalCount"
-    field :totalCount do
-      type types.Int
-      resolve ->(obj, args, ctx) { obj.nodes.count }
+  class BaseConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConnection
+    graphql_name "BasesConnectionWithTotalCount"
+    edge_type(BaseType.edge_type)
+    field :total_count, Integer, null: true
+
+    def total_count
+      object.nodes.count
     end
   end
 
@@ -46,24 +47,30 @@ module StarTrek
     end
   end
 
-  CustomBaseEdgeType = BaseType.define_edge do
-    name "CustomBaseEdge"
-    field :upcasedName, types.String, property: :upcased_name
-    field :upcasedParentName, types.String, property: :upcased_parent_name
-    field :edgeClassName, types.String do
-      resolve ->(obj, args, ctx) { obj.class.name }
+  class CustomBaseEdgeType < GraphQL::Types::Relay::BaseEdge
+    node_type(BaseType)
+    graphql_name "CustomBaseEdge"
+    field :upcased_name, String, null: true
+    field :upcased_parent_name, String, null: true
+    field :edge_class_name, String, null: true
+
+    def edge_class_name
+      object.class.name
     end
   end
 
-  CustomEdgeBaseConnectionType = BaseType.define_connection(edge_class: CustomBaseEdge, edge_type: CustomBaseEdgeType, nodes_field: true) do
-    name "CustomEdgeBaseConnection"
+  class CustomEdgeBaseConnectionType < GraphQL::Types::Relay::BaseConnection
+    edge_type(CustomBaseEdgeType, edge_class: CustomBaseEdge)
 
-    field :totalCountTimes100 do
-      type types.Int
-      resolve ->(obj, args, ctx) { obj.nodes.count * 100 }
+    field :total_count_times_100, Integer, null: true
+    def total_count_times_100
+      obj.nodes.count * 100
     end
 
-    field :fieldName, types.String, resolve: ->(obj, args, ctx) { obj.field.name }
+    field :field_name, String, null: true
+    def field_name
+      object.field.name
+    end
   end
 
   # Example of GraphQL::Function used with the connection helper:
@@ -80,10 +87,12 @@ module StarTrek
     type Ship.connection_type
   end
 
-  ShipConnectionWithParentType = Ship.define_connection do
-    name "ShipConnectionWithParent"
-    field :parentClassName, !types.String do
-      resolve ->(o, a, c) { o.parent.class.name }
+  class ShipConnectionWithParentType < GraphQL::Types::Relay::BaseConnection
+    edge_type(Ship.edge_type)
+    graphql_name "ShipConnectionWithParent"
+    field :parent_class_name, String, null: false
+    def parent_class_name
+      object.parent.class.name
     end
   end
 
