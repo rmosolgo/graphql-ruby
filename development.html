@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.5/">API</a>
+          <a href="/api-doc/1.8.6/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -58,6 +58,7 @@
   <li>Special tools for building the <a href="#lexer-and-parser">lexer and parser</a></li>
   <li>Building and publishing the <a href="#website">GraphQL Ruby website</a></li>
   <li><a href="#versioning">Versioning</a> describes how changes are managed and released</li>
+  <li><a href="#releasing">Releasing</a> Gem versions</li>
 </ul>
 
 <h3 id="setup">Setup</h3>
@@ -272,6 +273,37 @@ s post, <a href="https://gist.github.com/jashkenas/cbd2b088e20279ae2c8e">“Why 
 <p>Pull requests and issues may be tagged with a <a href="https://github.com/rmosolgo/graphql-ruby/milestones">GitHub milestone</a> to denote when they’ll be released.</p>
 
 <p>The <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> should always contain accurate and thorough information so that users can upgrade. If you have trouble upgrading based on the changelog, please open an issue on GitHub.</p>
+
+<h3 id="releasing">Releasing</h3>
+
+<p>GraphQL-Ruby doesn’t have a strict release schedule. If you think it should, consider opening an issue to share your thoughts.</p>
+
+<p>To cut a release:</p>
+
+<ul>
+  <li>Update <code class="highlighter-rouge">CHANGELOG.md</code> for the new version:
+    <ul>
+      <li>Add a new heading for the new version, and paste the four categories of changes into the new section</li>
+      <li>Open the GitHub milestone corresponding to the new version</li>
+      <li>Check each pull request and put it in the category (or categories) that it belongs in
+        <ul>
+          <li>If a change affects the default behavior of GraphQL-Ruby in a disruptive way, add it to <code class="highlighter-rouge">### Breaking Changes</code> and include migration notes if possible</li>
+          <li>Include the PR number beside the change description for future reference</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Update <code class="highlighter-rouge">lib/graphql/version.rb</code> with the new version number</li>
+  <li>Commit changes to master</li>
+  <li>Release to RubyGems with <code class="highlighter-rouge">bundle exec rake release</code></li>
+  <li>Update the website:
+    <ul>
+      <li>Generate new API docs with <code class="highlighter-rouge">bundle exec rake apidocs:gen_version[&lt;your.version.number&gt;]</code></li>
+      <li>Push them to the website with <code class="highlighter-rouge">bundle exec rake site:publish</code></li>
+    </ul>
+  </li>
+  <li>Celebrate 🎊  !</li>
+</ul>
 
 </div>
 <p class="guide-footer">

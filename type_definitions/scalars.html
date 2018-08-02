@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.5/">API</a>
+          <a href="/api-doc/1.8.6/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -65,6 +65,7 @@
   <li><code class="highlighter-rouge">Float</code>, like a JSON or Ruby floating point decimal</li>
   <li><code class="highlighter-rouge">Boolean</code>, like a JSON or Ruby boolean (<code class="highlighter-rouge">true</code> or <code class="highlighter-rouge">false</code>)</li>
   <li><code class="highlighter-rouge">ID</code>, which a specialized <code class="highlighter-rouge">String</code> for representing unique object identifiers</li>
+  <li><code class="highlighter-rouge">ISO8601DateTime</code>, an ISO 8601-encoded datetime</li>
 </ul>
 
 <p>Fields can return built-in scalars by referencing them by name:</p>
@@ -81,6 +82,8 @@
 <span class="n">field</span> <span class="ss">:is_top_ranked</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 <span class="c1"># ID field</span>
 <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+<span class="c1"># ISO8601DateTime field</span>
+<span class="n">field</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">ISO8601DateTime</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 </code></pre></div></div>
 
 <p>Custom scalars (see below) can also be used by name:</p>
@@ -96,7 +99,7 @@
 
 <h2 id="custom-scalars">Custom Scalars</h2>
 
-<p>You can implement your own scalars by extending <a href="/api-doc/1.8.5/GraphQL/Schema/Scalar" target="_blank" title="API docs for GraphQL::Schema::Scalar"><code>GraphQL::Schema::Scalar</code></a>. For example:</p>
+<p>You can implement your own scalars by extending <a href="/api-doc/1.8.6/GraphQL/Schema/Scalar" target="_blank" title="API docs for GraphQL::Schema::Scalar"><code>GraphQL::Schema::Scalar</code></a>. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_scalar.rb</span>
 <span class="c1"># Make a base class:</span>
@@ -132,7 +135,7 @@
   <li><code class="highlighter-rouge">self.coerce_result</code> takes the return value of a field and prepares it for the GraphQL response JSON</li>
 </ul>
 
-<p>When incoming data is incorrect, the method may raise <a href="/api-doc/1.8.5/GraphQL/CoercionError" target="_blank" title="API docs for GraphQL::CoercionError"><code>GraphQL::CoercionError</code></a>, which will be returned to the client in the <code class="highlighter-rouge">"errors"</code> key.</p>
+<p>When incoming data is incorrect, the method may raise <a href="/api-doc/1.8.6/GraphQL/CoercionError" target="_blank" title="API docs for GraphQL::CoercionError"><code>GraphQL::CoercionError</code></a>, which will be returned to the client in the <code class="highlighter-rouge">"errors"</code> key.</p>
 
 <p>Scalar classes are never initialized; only their <code class="highlighter-rouge">.coerce_*</code> methods are called at runtime.</p>
 

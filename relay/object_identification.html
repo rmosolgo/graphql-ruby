@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.5/">API</a>
+          <a href="/api-doc/1.8.6/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -69,7 +69,7 @@
     <span class="n">class_name</span><span class="p">,</span> <span class="n">item_id</span> <span class="o">=</span> <span class="no">MyApp</span><span class="o">::</span><span class="no">GlobalId</span><span class="p">.</span><span class="nf">decrypt</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
     <span class="c1"># "Post" =&gt; Post.find(item_id)</span>
     <span class="no">Object</span><span class="p">.</span><span class="nf">const_get</span><span class="p">(</span><span class="n">class_name</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
-  <span class="p">}</span>
+  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -94,7 +94,7 @@
 
 <p>One requirement for Relay’s object management is implementing the <code class="highlighter-rouge">"Node"</code> interface.</p>
 
-<p>To implement the node interface, add <a href="/api-doc/1.8.5/GraphQL/Relay/Node#interface-class_method" target="_blank" title="API docs for GraphQL::Relay::Node.interface"><code>GraphQL::Relay::Node.interface</code></a> to your definition:</p>
+<p>To implement the node interface, add <a href="/api-doc/1.8.6/GraphQL/Relay/Node#interface-class_method" target="_blank" title="API docs for GraphQL::Relay::Node.interface"><code>GraphQL::Relay::Node.interface</code></a> to your definition:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="n">object</span>
   <span class="c1"># Implement the "Node" interface for Relay</span>
