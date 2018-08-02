@@ -102,7 +102,7 @@ module GraphQL
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
-        if !(field || function || mutation || resolver)
+        if !(field || function || resolver_class)
           if type.nil?
             raise ArgumentError, "missing second `type` argument or keyword `type:`"
           end
@@ -110,7 +110,7 @@ module GraphQL
             raise ArgumentError, "missing keyword argument null:"
           end
         end
-        if (field || function || resolve || mutation) && extras.any?
+        if (field || function || resolve || resolver_class) && extras.any?
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, `resolve:`, or `mutation:`"
         end
         @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
