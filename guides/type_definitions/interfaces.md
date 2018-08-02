@@ -186,7 +186,8 @@ end
 If you add an object type which implements an interface, but that object type doesn't properly appear in your schema, then you need to add that object to the interfaces's `orphan_types`, for example:
 
 ```ruby
-class Types::RetailItem < Types::BaseInterface
+module Types::RetailItem
+  include Types::BaseInterface
   # ...
   orphan_types Types::Comment
 end
