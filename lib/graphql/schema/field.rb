@@ -82,8 +82,8 @@ module GraphQL
       def connection?
         if @connection.nil?
           # Provide default based on type name
-          return_type_name = if @field || @function
-            Member::BuildType.to_type_name(field_defn.type)
+          return_type_name = if (contains_type = @field || @function)
+            Member::BuildType.to_type_name(contains_type.type)
           elsif @return_type_expr
             Member::BuildType.to_type_name(@return_type_expr)
           else
@@ -101,7 +101,7 @@ module GraphQL
           # The default was overridden
           @scope
         else
-          connection? || type.list?
+          @return_type_expr && type.unwrap.respond_to?(:scope_items) && (connection? || type.list?)
         end
       end
 
