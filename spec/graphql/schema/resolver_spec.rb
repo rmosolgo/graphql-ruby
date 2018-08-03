@@ -195,6 +195,23 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class PrepResolver12 < GraphQL::Schema::Mutation
+      argument :int1, Integer, required: true
+      argument :int2, Integer, required: true
+      field :error_messages, [String], null: true
+      field :value, Integer, null: true
+      def authorized?(int1:, int2:)
+        if int1 + int2 > context[:max_int]
+          return_with({ error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"] })
+        end
+      end
+
+      def resolve(int1:, int2:)
+        { value: int1 + int2 }
+      end
+    end
+
+
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
         def resolve_field(*args)
@@ -227,6 +244,7 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_9, resolver: PrepResolver9
       field :prep_resolver_10, resolver: PrepResolver10
       field :prep_resolver_11, resolver: PrepResolver11
+      field :prep_resolver_12, resolver: PrepResolver12
     end
 
     class Schema < GraphQL::Schema
@@ -374,6 +392,15 @@ describe GraphQL::Schema::Resolver do
 
           res = exec_query("{ prepResolver11(int1: 3, int2: 5) }", context: { max_int: 90 })
           assert_equal 8, res["data"]["prepResolver11"]
+        end
+
+        it "can return data early" do
+          # This is too big because it's modified in the overridden authorized? hook:
+          res = exec_query("{ prepResolver12(int1: 9, int2: 5) { errorMessages } }", context: { max_int: 9 })
+          assert_equal ["Inputs must be less than 9 (but you provided 14)"], res["data"]["prepResolver12"]["errorMessages"]
+          # This works
+          res = exec_query("{ prepResolver12(int1: 2, int2: 5) { value } }", context: { max_int: 9 })
+          assert_equal 7, res["data"]["prepResolver12"]["value"]
         end
       end
     end
