@@ -158,6 +158,40 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    module HasValue
+      include GraphQL::Schema::Interface
+      field :value, Integer, null: false
+      def self.resolve_type(obj, ctx)
+        if obj.is_a?(Integer)
+          IntegerWrapper
+        else
+          raise "Unexpected: #{obj.inspect}"
+        end
+      end
+    end
+
+    class IntegerWrapper < GraphQL::Schema::Object
+      implements HasValue
+      field :value, Integer, null: false, method: :object
+    end
+
+    class PrepResolver9 < BaseResolver
+      argument :int_id, ID, required: true, loads: HasValue
+      # Make sure the lazy object is resolved properly:
+      type HasValue, null: false
+      def object_from_id(type, id, ctx)
+        # Make sure a lazy object is handled appropriately
+        LazyBlock.new {
+          # Make sure that the right type ends up here
+          id.to_i + type.graphql_name.length
+        }
+      end
+
+      def resolve(int:)
+        int * 3
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
         def resolve_field(*args)
@@ -189,11 +223,13 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_6, resolver: PrepResolver6
       field :prep_resolver_7, resolver: PrepResolver7
       field :prep_resolver_8, resolver: PrepResolver8
+      field :prep_resolver_9, resolver: PrepResolver9
     end
 
     class Schema < GraphQL::Schema
       query(Query)
       lazy_resolve LazyBlock, :value
+      orphan_types IntegerWrapper
     end
   end
 
@@ -330,6 +366,14 @@ describe GraphQL::Schema::Resolver do
           assert_equal 5, res["data"]["validatedInt"]
           add_error_assertions(field_name, "#{mode} validation")
         end
+      end
+    end
+
+    describe "Loading inputs" do
+      it "calls object_from_id" do
+        res = exec_query('{ prepResolver9(intId: "5") { value } }')
+        # (5 + 8) * 3
+        assert_equal 39, res["data"]["prepResolver9"]["value"]
       end
     end
   end

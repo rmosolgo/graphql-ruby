@@ -164,43 +164,58 @@ module GraphQL
         end
       end
 
+      # Look up the corresponding object for a provided ID.
+      # By default, it uses Relay-style {Schema.object_from_id},
+      # override this to find objects another way.
+      #
+      # @param type [Class, Module] A GraphQL type definition
+      # @param id [String] A client-provided to look up
+      # @param context [GraphQL::Query::Context] the current context
+      def object_from_id(type, id, context)
+        context.schema.object_from_id(id, context)
+      end
+
       def load_application_object(arg_kwarg, id)
         argument = @arguments_by_keyword[arg_kwarg]
-        # See if any object can be found for this ID
-        application_object = context.schema.object_from_id(id, context)
-        if application_object.nil?
-          raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-        end
-        # Double-check that the located object is actually of this type
-        # (Don't want to allow arbitrary access to objects this way)
         lookup_as_type = @arguments_loads_as_type[arg_kwarg]
-        application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
-        possible_object_types = context.schema.possible_types(lookup_as_type)
-        if !possible_object_types.include?(application_object_type)
-          raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-        else
-          # This object was loaded successfully
-          # and resolved to the right type,
-          # now apply the `.authorized?` class method if there is one
-          if (class_based_type = application_object_type.metadata[:type_class])
-            context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
-              if authed
-                application_object
+        # See if any object can be found for this ID
+        loaded_application_object = object_from_id(lookup_as_type, id, context)
+        context.schema.after_lazy(loaded_application_object) do |application_object|
+          begin
+            if application_object.nil?
+              raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
+            end
+            # Double-check that the located object is actually of this type
+            # (Don't want to allow arbitrary access to objects this way)
+            application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
+            possible_object_types = context.schema.possible_types(lookup_as_type)
+            if !possible_object_types.include?(application_object_type)
+              raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
+            else
+              # This object was loaded successfully
+              # and resolved to the right type,
+              # now apply the `.authorized?` class method if there is one
+              if (class_based_type = application_object_type.metadata[:type_class])
+                context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
+                  if authed
+                    application_object
+                  else
+                    raise GraphQL::UnauthorizedError.new(
+                      object: application_object,
+                      type: class_based_type,
+                      context: context,
+                    )
+                  end
+                end
               else
-                raise GraphQL::UnauthorizedError.new(
-                  object: application_object,
-                  type: class_based_type,
-                  context: context,
-                )
+                application_object
               end
             end
-          else
-            application_object
+          rescue LoadApplicationObjectFailedError => err
+            # pass it to a handler
+            load_application_object_failed(err)
           end
         end
-      rescue LoadApplicationObjectFailedError => err
-        # pass it to a handler
-        load_application_object_failed(err)
       end
 
       def load_application_object_failed(err)
