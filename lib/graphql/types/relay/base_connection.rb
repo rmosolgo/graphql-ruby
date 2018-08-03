@@ -66,6 +66,11 @@ module GraphQL
             description("The connection type for #{node_type_name}.")
           end
 
+          # Filter this list according to the way its node type would scope them
+          def scope_items(items, context)
+            node_type.scope_items(items, context)
+          end
+
           # Add the shortcut `nodes` field to this connection and its subclasses
           def nodes_field
             define_nodes_field

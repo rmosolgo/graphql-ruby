@@ -77,6 +77,34 @@ module GraphQL
         new(**kwargs, &block)
       end
 
+      # Can be set with `connection: true|false` or inferred from a type name ending in `*Connection`
+      # @return [Boolean] if true, this field will be wrapped with Relay connection behavior
+      def connection?
+        if @connection.nil?
+          # Provide default based on type name
+          return_type_name = if (contains_type = @field || @function)
+            Member::BuildType.to_type_name(contains_type.type)
+          elsif @return_type_expr
+            Member::BuildType.to_type_name(@return_type_expr)
+          else
+            raise "No connection info possible"
+          end
+          @connection = return_type_name.end_with?("Connection")
+        else
+          @connection
+        end
+      end
+
+      # @return [Boolean] if true, the return type's `.scope_items` method will be applied to this field's return value
+      def scoped?
+        if !@scope.nil?
+          # The default was overridden
+          @scope
+        else
+          @return_type_expr && type.unwrap.respond_to?(:scope_items) && (connection? || type.list?)
+        end
+      end
+
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param return_type_expr [Class, GraphQL::BaseType, Array] The return type of this field
       # @param desc [String] Field description
@@ -96,8 +124,9 @@ module GraphQL
       # @param arguments [{String=>GraphQL::Schema::Argument, Hash}] Arguments for this field (may be added in the block, also)
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
       # @param complexity [Numeric] When provided, set the complexity for this field
+      # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
 
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
@@ -140,6 +169,7 @@ module GraphQL
         @introspection = introspection
         @extras = extras
         @resolver_class = resolver_class
+        @scope = scope
 
         # Override the default from HasArguments
         @own_arguments = {}
@@ -211,18 +241,6 @@ module GraphQL
           field_defn.type = -> { type }
         end
 
-        if @connection.nil?
-          # Provide default based on type name
-          return_type_name = if @field || @function
-            Member::BuildType.to_type_name(field_defn.type)
-          elsif @return_type_expr
-            Member::BuildType.to_type_name(@return_type_expr)
-          else
-            raise "No connection info possible"
-          end
-          @connection = return_type_name.end_with?("Connection")
-        end
-
         if @description
           field_defn.description = @description
         end
@@ -239,14 +257,14 @@ module GraphQL
         end
 
         field_defn.resolve = self.method(:resolve_field)
-        field_defn.connection = @connection
+        field_defn.connection = connection?
         field_defn.connection_max_page_size = @max_page_size
         field_defn.introspection = @introspection
         field_defn.complexity = @complexity
         field_defn.subscription_scope = @subscription_scope
 
         # apply this first, so it can be overriden below
-        if @connection
+        if connection?
           # TODO: this could be a bit weird, because these fields won't be present
           # after initialization, only in the `to_graphql` response.
           # This calculation _could_ be moved up if need be.
@@ -316,7 +334,7 @@ module GraphQL
           inner_obj = after_obj && after_obj.object
           if authorized?(inner_obj, query_ctx) && arguments.each_value.all? { |a| a.authorized?(inner_obj, query_ctx) }
             # Then if it passed, resolve the field
-            if @resolve_proc
+            v = if @resolve_proc
               # Might be nil, still want to call the func in that case
               @resolve_proc.call(inner_obj, args, ctx)
             elsif @resolver_class
@@ -325,6 +343,7 @@ module GraphQL
             else
               public_send_field(after_obj, args, ctx)
             end
+            apply_scope(v, ctx)
           else
             nil
           end
@@ -370,6 +389,16 @@ module GraphQL
 
       private
 
+      def apply_scope(value, ctx)
+        if scoped?
+          ctx.schema.after_lazy(value) do |inner_value|
+            @type.unwrap.scope_items(inner_value, ctx)
+          end
+        else
+          value
+        end
+      end
+
       NO_ARGS = {}.freeze
 
       def public_send_field(obj, graphql_args, field_ctx)
@@ -384,7 +413,7 @@ module GraphQL
             end
           end
 
-          if @connection
+          if connection?
             # Remove pagination args before passing it to a user method
             ruby_kwargs.delete(:first)
             ruby_kwargs.delete(:last)
