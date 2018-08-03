@@ -110,8 +110,8 @@ module GraphQL
             raise ArgumentError, "missing keyword argument null:"
           end
         end
-        if (field || function || resolve || resolver_class) && extras.any?
-          raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, `resolve:`, or `mutation:`"
+        if (field || function || resolve) && extras.any?
+          raise ArgumentError, "keyword `extras:` may only be used with method-based resolve and class-based field such as mutation class, please remove `field:`, `function:` or `resolve:`"
         end
         @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
         @description = description
