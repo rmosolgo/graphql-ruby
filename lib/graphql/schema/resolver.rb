@@ -59,12 +59,12 @@ module GraphQL
           # for that argument, or may return a lazy object
           load_arguments_val = load_arguments(args)
           context.schema.after_lazy(load_arguments_val) do |loaded_args|
-            # Then validate each argument, which may raise or may return a lazy object
-            validate_arguments_val = validate_arguments(loaded_args)
-            context.schema.after_lazy(validate_arguments_val) do |validated_args|
+            # Then call `authorized?`, which may raise or may return a lazy object
+            authorized_val = authorized?(loaded_args)
+            context.schema.after_lazy(authorized_val) do
               # Finally, all the hooks have passed, so resolve it
-              if validated_args.any?
-                public_send(self.class.resolve_method, **validated_args)
+              if loaded_args.any?
+                public_send(self.class.resolve_method, **loaded_args)
               else
                 public_send(self.class.resolve_method)
               end
@@ -89,6 +89,15 @@ module GraphQL
       # @raise [GraphQL::ExecutionError] To add an error to the response
       # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
       def before_prepare(**args)
+      end
+
+      # Called after arguments are loaded, but before resolving.
+      #
+      # Override it to check everything before calling the mutation.
+      # @param args [Hash] The input arguments
+      # @raise [GraphQL::ExecutionError] To add an error to the response
+      # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
+      def authorized?(**args)
       end
 
       private
@@ -122,31 +131,6 @@ module GraphQL
 
       def load_argument(name, value)
         public_send("load_#{name}", value)
-      end
-
-      # TODO dedup with load_arguments
-      def validate_arguments(args)
-        validate_lazies = []
-        args.each do |key, value|
-          arg_defn = @arguments_by_keyword[key]
-          if arg_defn
-            validate_return = validate_argument(key, value)
-            if context.schema.lazy?(validate_return)
-              validate_lazies << context.schema.after_lazy(validate_return).then { "no-op" }
-            end
-          end
-        end
-
-        # Avoid returning a lazy if none are needed
-        if validate_lazies.any?
-          GraphQL::Execution::Lazy.all(validate_lazies).then { args }
-        else
-          args
-        end
-      end
-
-      def validate_argument(name, value)
-        public_send("validate_#{name}", value)
       end
 
       class LoadApplicationObjectFailedError < GraphQL::ExecutionError
@@ -330,11 +314,6 @@ module GraphQL
             RUBY
           end
 
-          class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          def validate_#{arg_defn.keyword}(value)
-            # No-op
-          end
-          RUBY
           arg_defn
         end
 

@@ -140,24 +140,6 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
-    class PrepResolver7 < PrepResolver1
-      type Integer, null: true
-
-      def load_int(int)
-        int
-      end
-
-      def validate_int(int)
-        check_for_magic_number(int)
-      end
-    end
-
-    class PrepResolver8 < PrepResolver7
-      def validate_int(int)
-        LazyBlock.new { super }
-      end
-    end
-
     module HasValue
       include GraphQL::Schema::Interface
       field :value, Integer, null: false
@@ -192,6 +174,27 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class PrepResolver10 < BaseResolver
+      argument :int1, Integer, required: true
+      argument :int2, Integer, required: true
+      type Integer, null: false
+      def authorized?(int1:, int2:)
+        if int1 + int2 > context[:max_int]
+          raise GraphQL::ExecutionError, "Inputs too big"
+        end
+      end
+
+      def resolve(int1:, int2:)
+        int1 + int2
+      end
+    end
+
+    class PrepResolver11 < PrepResolver10
+      def authorized?(int1:, int2:)
+        LazyBlock.new { super(int1: int1 * 2, int2: int2) }
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
         def resolve_field(*args)
@@ -221,9 +224,9 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_4, resolver: PrepResolver4
       field :prep_resolver_5, resolver: PrepResolver5
       field :prep_resolver_6, resolver: PrepResolver6
-      field :prep_resolver_7, resolver: PrepResolver7
-      field :prep_resolver_8, resolver: PrepResolver8
       field :prep_resolver_9, resolver: PrepResolver9
+      field :prep_resolver_10, resolver: PrepResolver10
+      field :prep_resolver_11, resolver: PrepResolver11
     end
 
     class Schema < GraphQL::Schema
@@ -355,16 +358,22 @@ describe GraphQL::Schema::Resolver do
     end
 
     describe "validating arguments" do
-      test_cases = {
-        "eager" => "prepResolver7",
-        "lazy" => "prepResolver8",
-      }
+      describe ".authorized?" do
+        it "can raise an error to halt" do
+          res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: { max_int: 9 })
+          assert_equal ["Inputs too big"], res["errors"].map { |e| e["message"] }
 
-      test_cases.each do |mode, field_name|
-        it "supports raising #{mode} errors" do
-          res = exec_query("{ validatedInt: #{field_name}(int: 5) }")
-          assert_equal 5, res["data"]["validatedInt"]
-          add_error_assertions(field_name, "#{mode} validation")
+          res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: { max_int: 90 })
+          assert_equal 11, res["data"]["prepResolver10"]
+        end
+
+        it "can return a lazy object" do
+          # This is too big because it's modified in the overridden authorized? hook:
+          res = exec_query("{ prepResolver11(int1: 3, int2: 5) }", context: { max_int: 9 })
+          assert_equal ["Inputs too big"], res["errors"].map { |e| e["message"] }
+
+          res = exec_query("{ prepResolver11(int1: 3, int2: 5) }", context: { max_int: 90 })
+          assert_equal 8, res["data"]["prepResolver11"]
         end
       end
     end
