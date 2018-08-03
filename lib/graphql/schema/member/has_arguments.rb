@@ -16,6 +16,13 @@ module GraphQL
         def argument(*args, **kwargs, &block)
           kwargs[:owner] = self
           arg_defn = self.argument_class.new(*args, **kwargs, &block)
+          add_argument(arg_defn)
+        end
+
+        # Register this argument with the class.
+        # @param arg_defn [GraphQL::Schema::Argument]
+        # @return [GraphQL::Schema::Argument]
+        def add_argument(arg_defn)
           own_arguments[arg_defn.name] = arg_defn
           arg_defn
         end

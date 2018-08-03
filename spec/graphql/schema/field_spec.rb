@@ -11,6 +11,15 @@ describe GraphQL::Schema::Field do
       assert_equal :ok, arg_defn.metadata[:custom]
     end
 
+    it "can add argument directly with add_argument" do
+      argument = Jazz::Query.fields["instruments"].arguments["family"]
+
+      field.add_argument(argument)
+
+      assert_equal "family", field.arguments["family"].name
+      assert_equal Jazz::Family, field.arguments["family"].type
+    end
+
     it "attaches itself to its graphql_definition as type_class" do
       assert_equal field, field.graphql_definition.metadata[:type_class]
     end
