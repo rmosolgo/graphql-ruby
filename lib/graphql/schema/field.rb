@@ -11,8 +11,7 @@ module GraphQL
       attr_reader :name
       alias :graphql_name :name
 
-      # @return [String]
-      attr_accessor :description
+      attr_writer :description
 
       # @return [String, nil] If present, the field is marked as deprecated with this documentation
       attr_accessor :deprecation_reason
@@ -193,6 +192,8 @@ module GraphQL
         end
       end
 
+      # @param text [String]
+      # @return [String]
       def description(text = nil)
         if text
           @description = text

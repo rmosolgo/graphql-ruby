@@ -77,6 +77,7 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver1 < BaseResolver
       argument :int, Integer, required: true
 
+      undef_method :load_int
       def load_int(i)
         i * 10
       end

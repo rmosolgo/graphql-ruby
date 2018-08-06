@@ -123,7 +123,7 @@ module GraphQL
     attr_accessor :context_class
 
     class << self
-      attr_accessor :default_execution_strategy
+      attr_writer :default_execution_strategy
     end
 
     def default_filter
@@ -655,7 +655,7 @@ module GraphQL
         # Execution
         :execute, :multiplex,
         :static_validator, :introspection_system,
-        :query_analyzers, :middleware, :tracers, :instrumenters,
+        :query_analyzers, :tracers, :instrumenters,
         :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy,
         # Configuration
@@ -664,7 +664,7 @@ module GraphQL
         :default_mask,
         :default_filter, :redefine,
         :id_from_object_proc, :object_from_id_proc,
-        :id_from_object=, :object_from_id=, :type_error,
+        :id_from_object=, :object_from_id=,
         :remove_handler,
         # Members
         :types, :get_fields, :find,
@@ -672,7 +672,7 @@ module GraphQL
         :subscriptions,
         :union_memberships,
         :get_field, :root_types, :references_to, :type_from_ast,
-        :possible_types, :get_field
+        :possible_types
 
       def graphql_definition
         @graphql_definition ||= to_graphql

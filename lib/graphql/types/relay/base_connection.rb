@@ -35,9 +35,6 @@ module GraphQL
           # @return [Class]
           attr_reader :node_type
 
-          # @return [Class]
-          attr_reader :edge_type
-
           # Configure this connection to return `edges` and `nodes` based on `edge_type_class`.
           #
           # This method will use the inputs to create:

@@ -14,9 +14,7 @@ module GraphQL
     class ValidationContext
       extend Forwardable
 
-      attr_reader :query, :schema,
-        :document, :errors, :visitor,
-        :warden, :dependencies, :each_irep_node_handlers
+      attr_reader :query, :errors, :visitor, :dependencies, :each_irep_node_handlers
 
       def_delegators :@query, :schema, :document, :fragments, :operations, :warden
 

@@ -101,7 +101,8 @@ module GraphQL
         return_field: GraphQL::Define::AssignObjectField,
         function: GraphQL::Define::AssignMutationFunction,
       )
-      attr_accessor :name, :description, :fields, :arguments, :return_type, :return_interfaces
+      attr_accessor :name, :description, :fields, :arguments
+      attr_writer :return_type, :return_interfaces
 
       ensure_defined(
         :input_fields, :return_fields, :name, :description,

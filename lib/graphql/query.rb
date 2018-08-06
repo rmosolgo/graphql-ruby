@@ -29,7 +29,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :context, :warden, :provided_variables
+    attr_reader :schema, :context, :provided_variables
 
     # The value for root types
     attr_accessor :root_value
@@ -59,9 +59,6 @@ module GraphQL
 
     # @return [String, nil] the triggered event, if this query is a subscription update
     attr_reader :subscription_topic
-
-    # @return [String, nil]
-    attr_reader :operation_name
 
     attr_reader :tracers
 
@@ -218,11 +215,6 @@ module GraphQL
     # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
     def arguments_for(irep_or_ast_node, definition)
       @arguments_cache[irep_or_ast_node][definition]
-    end
-
-    # @return [GraphQL::Language::Nodes::OperationDefinition, nil]
-    def selected_operation
-      with_prepared_ast { @selected_operation }
     end
 
     def validation_pipeline

@@ -7,11 +7,13 @@ describe GraphQL::Language::Generation do
       GraphQL.parse('type Query { a: String! }')
     }
 
-    class CustomPrinter < GraphQL::Language::Printer
-      def print_field_definition(print_field_definition)
-        "<Field Hidden>"
-      end
-    end
+    let(:custom_printer_class) {
+      Class.new(GraphQL::Language::Printer) {
+        def print_field_definition(print_field_definition)
+          "<Field Hidden>"
+        end
+      }
+    }
 
     it "accepts a custom printer" do
       expected = <<-SCHEMA
@@ -30,7 +32,7 @@ type Query {
 }
       SCHEMA
 
-      assert_equal expected.chomp, GraphQL::Language::Generation.generate(document, printer: CustomPrinter.new)
+      assert_equal expected.chomp, GraphQL::Language::Generation.generate(document, printer: custom_printer_class.new)
     end
   end
 end
