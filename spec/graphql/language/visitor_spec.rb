@@ -140,4 +140,46 @@ describe GraphQL::Language::Visitor do
 
     assert visited_directive
   end
+
+  describe "AST modification" do
+    class ModificationTestVisitor < GraphQL::Language::Visitor
+      def on_field(node, parent)
+        if node.name == "c"
+          new_node = node.merge(name: "renamedC")
+          super(new_node, parent)
+        else
+          super
+        end
+      end
+    end
+
+    it "returns a new AST with modifications applied" do
+      query = <<-GRAPHQL.chop
+query {
+  a(a1: 1) {
+    b(b2: 2) {
+      c(c3: 3)
+    }
+  }
+}
+      GRAPHQL
+      document = GraphQL.parse(query)
+
+      visitor = ModificationTestVisitor.new(document)
+      visitor.visit
+      new_document = visitor.result
+      refute_equal document, new_document
+      expected_result = <<-GRAPHQL.chop
+query {
+  a(a1: 1) {
+    b(b2: 2) {
+      renamedC(c3: 3)
+    }
+  }
+}
+GRAPHQL
+      assert_equal expected_result, new_document.to_query_string, "the result has changes"
+      assert_equal query, document.to_query_string, "the original is unchanged"
+    end
+  end
 end

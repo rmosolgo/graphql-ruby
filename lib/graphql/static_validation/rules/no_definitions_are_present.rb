@@ -11,6 +11,7 @@ module GraphQL
 
       def on_invalid_node(node, parent)
         @schema_definition_nodes << node
+        nil
       end
 
       alias :on_directive_definition :on_invalid_node

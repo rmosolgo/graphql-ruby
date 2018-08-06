@@ -39,7 +39,11 @@ module GraphQL
       def initialize(document)
         @document = document
         @visitors = {}
+        @result = nil
       end
+
+      # @return [GraphQL::Language::Nodes::Document] The document with any modifications applied
+      attr_reader :result
 
       # Get a {NodeVisitor} for `node_class`
       # @param node_class [Class] The node class that you want to listen to
@@ -55,7 +59,7 @@ module GraphQL
       # Visit `document` and all children, applying hooks as you go
       # @return [void]
       def visit
-        on_document(@document, nil)
+        @result, _nil_parent = on_node_with_modifications(@document, nil)
       end
 
       # The default implementation for visiting an AST node.
@@ -72,10 +76,12 @@ module GraphQL
         begin_hooks_ok = @visitors.none? || begin_visit(node, parent)
         if begin_hooks_ok
           node.children.each do |child_node|
-            public_send(child_node.visit_method, child_node, node)
+            # Reassign `node` in case the child hook makes a modification
+            _new_child_node, node = on_node_with_modifications(child_node, node)
           end
         end
         @visitors.any? && end_visit(node, parent)
+        return node, parent
       end
 
       alias :on_argument :on_abstract_node
@@ -115,6 +121,23 @@ module GraphQL
       alias :on_variable_identifier :on_abstract_node
 
       private
+
+      # Run the hooks for `node`, and if the hooks return a copy of `node`,
+      # copy `parent` so that it contains the copy of that node as a child,
+      # then return the copies
+      def on_node_with_modifications(node, parent)
+        new_node, new_parent = public_send(node.visit_method, node, parent)
+        if new_node.is_a?(Nodes::AbstractNode) && !node.equal?(new_node)
+          # The user-provided hook returned a new node.
+          new_parent = new_parent && new_parent.replace_child(node, new_node)
+          return new_node, new_parent
+        else
+          # The user-provided hook didn't make any modifications.
+          # In fact, the hook might have returned who-knows-what, so
+          # ignore the return value and use the original values.
+          return node, parent
+        end
+      end
 
       def begin_visit(node, parent)
         node_visitor = self[node.class]

@@ -34,11 +34,6 @@ module GraphQL
           initialize_node(options)
         end
 
-        # This is called with node-specific options
-        def initialize_node(options={})
-          raise NotImplementedError
-        end
-
         # Value equality
         # @return [Boolean] True if `self` is equivalent to `other`
         def eql?(other)
@@ -69,6 +64,44 @@ module GraphQL
 
         def to_query_string(printer: GraphQL::Language::Printer.new)
           printer.print(self)
+        end
+
+        # This creates a copy of `self`, with `new_options` applied.
+        # @param new_options [Hash]
+        # @return [AbstractNode] a shallow copy of `self`
+        def merge(new_options)
+          copied_self = dup
+          copied_self.set_attributes(new_options)
+          copied_self
+        end
+
+        # Copy `self`, but modify the copy so that `previous_child` is replaced by `new_child`
+        def replace_child(previous_child, new_child)
+          # Figure out which list `previous_child` may be found in
+          method_name = previous_child.children_method_name
+          # Copy that list, and replace `previous_child` with `new_child`
+          # in the list.
+          new_children = public_send(method_name).dup
+          prev_idx = new_children.index(previous_child)
+          new_children[prev_idx] = new_child
+          # Copy this node, but with the new list of children:
+          copy_of_self = merge(method_name => new_children)
+          # Return the copy:
+          copy_of_self
+        end
+
+        protected
+
+        # Write each key-value pair to an instance variable.
+        def set_attributes(attrs)
+          attrs.each do |key, value|
+            instance_variable_set(:"@#{key}", value)
+          end
+        end
+
+        # This is called with node-specific options
+        def initialize_node(options={})
+          raise NotImplementedError
         end
       end
 
@@ -121,6 +154,10 @@ module GraphQL
         def visit_method
           :on_argument
         end
+
+        def children_method_name
+          :arguments
+        end
       end
 
       class Directive < AbstractNode
@@ -135,6 +172,10 @@ module GraphQL
 
         def visit_method
           :on_directive
+        end
+
+        def children_method_name
+          :directives
         end
       end
 
@@ -223,12 +264,8 @@ module GraphQL
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
 
         def initialize_node(name: nil, arguments: [], directives: [], selections: [], **kwargs)
-          @name = name
           # oops, alias is a keyword:
-          @alias = kwargs.fetch(:alias, nil)
-          @arguments = arguments
-          @directives = directives
-          @selections = selections
+          set_attributes(name: name, arguments: arguments, directives: directives, selections: selections, alias: kwargs.fetch(:alias, nil))
         end
 
         def scalars
@@ -241,6 +278,10 @@ module GraphQL
 
         def visit_method
           :on_field
+        end
+
+        def children_method_name
+          :selections
         end
       end
 
@@ -270,6 +311,10 @@ module GraphQL
 
         def visit_method
           :on_fragment_definition
+        end
+
+        def children_method_name
+          :definitions
         end
       end
 
@@ -413,6 +458,10 @@ module GraphQL
 
         def visit_method
           :on_operation_definition
+        end
+
+        def children_method_name
+          :definitions
         end
       end
 
