@@ -36,6 +36,11 @@ module GraphQL
       # @deprecated Use `super` to continue the visit; or don't call it to halt.
       SKIP = :_skip
 
+      class DeleteNode; end
+      # When this is returned from a visitor method,
+      # Then the `node` passed into the method is removed from `parent`'s children.
+      DELETE_NODE = DeleteNode.new
+
       def initialize(document)
         @document = document
         @visitors = {}
@@ -72,16 +77,22 @@ module GraphQL
       # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
       # @return [void]
       def on_abstract_node(node, parent)
-        # Run hooks if there are any
-        begin_hooks_ok = @visitors.none? || begin_visit(node, parent)
-        if begin_hooks_ok
-          node.children.each do |child_node|
-            # Reassign `node` in case the child hook makes a modification
-            _new_child_node, node = on_node_with_modifications(child_node, node)
+        if node == DELETE_NODE
+          # This might be passed to `super(DELETE_NODE, ...)`
+          # by a user hook, don't want to keep visiting in that case.
+          return node, parent
+        else
+          # Run hooks if there are any
+          begin_hooks_ok = @visitors.none? || begin_visit(node, parent)
+          if begin_hooks_ok
+            node.children.each do |child_node|
+              # Reassign `node` in case the child hook makes a modification
+              _new_child_node, node = on_node_with_modifications(child_node, node)
+            end
           end
+          @visitors.any? && end_visit(node, parent)
+          return node, parent
         end
-        @visitors.any? && end_visit(node, parent)
-        return node, parent
       end
 
       alias :on_argument :on_abstract_node
@@ -131,7 +142,12 @@ module GraphQL
           # The user-provided hook returned a new node.
           new_parent = new_parent && new_parent.replace_child(node, new_node)
           return new_node, new_parent
+        elsif new_node == DELETE_NODE
+          # The user-provided hook requested to remove this node
+          new_parent = new_parent && new_parent.delete_child(node)
+          return nil, new_parent
         else
+          # TODO: be less lax here
           # The user-provided hook didn't make any modifications.
           # In fact, the hook might have returned who-knows-what, so
           # ignore the return value and use the original values.

@@ -151,6 +151,29 @@ describe GraphQL::Language::Visitor do
           super
         end
       end
+
+      def on_argument(node, parent)
+        if node.name == "deleteMe"
+          super(DELETE_NODE, parent)
+        else
+          super
+        end
+      end
+
+      def on_input_object(node, parent)
+        if node.arguments.map(&:name).sort == ["delete", "me"]
+          super(DELETE_NODE, parent)
+        else
+          super
+        end
+      end
+    end
+
+    def get_result(query_str)
+      document = GraphQL.parse(query_str)
+      visitor = ModificationTestVisitor.new(document)
+      visitor.visit
+      return document, visitor.result
     end
 
     it "returns a new AST with modifications applied" do
@@ -164,11 +187,7 @@ query {
   d(d4: 4)
 }
       GRAPHQL
-      document = GraphQL.parse(query)
-
-      visitor = ModificationTestVisitor.new(document)
-      visitor.visit
-      new_document = visitor.result
+      document, new_document = get_result(query)
       refute_equal document, new_document
       expected_result = <<-GRAPHQL.chop
 query {
@@ -199,6 +218,52 @@ GRAPHQL
       copy_b_field = new_document.definitions.first.selections.first.selections.first
       assert_equal "b", orig_b_field.name
       refute orig_b_field.equal?(copy_b_field), "Parents with modified children are copied"
+    end
+
+    it "deletes nodes with DELETE_NODE" do
+      before_query = <<-GRAPHQL.chop
+query {
+  f1 {
+    f2(deleteMe: 1) {
+      f3(c1: {deleteMe: {c2: 2}})
+      f4(c2: [{keepMe: 1}, {deleteMe: 2}, {keepMe: 3}])
+    }
+  }
+}
+GRAPHQL
+
+      after_query = <<-GRAPHQL.chop
+query {
+  f1 {
+    f2 {
+      f3(c1: {})
+      f4(c2: [{keepMe: 1}, {}, {keepMe: 3}])
+    }
+  }
+}
+GRAPHQL
+
+      document, new_document = get_result(before_query)
+      assert_equal before_query, document.to_query_string
+      assert_equal after_query, new_document.to_query_string
+    end
+
+    it "Deletes from lists" do
+      before_query = <<-GRAPHQL.chop
+query {
+  f1(arg1: [{a: 1}, {delete: 1, me: 2}, {b: 2}])
+}
+GRAPHQL
+
+      after_query = <<-GRAPHQL.chop
+query {
+  f1(arg1: [{a: 1}, {b: 2}])
+}
+GRAPHQL
+
+      document, new_document = get_result(before_query)
+      assert_equal before_query, document.to_query_string
+      assert_equal after_query, new_document.to_query_string
     end
   end
 end

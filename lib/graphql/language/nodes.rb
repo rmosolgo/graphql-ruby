@@ -79,11 +79,31 @@ module GraphQL
         def replace_child(previous_child, new_child)
           # Figure out which list `previous_child` may be found in
           method_name = previous_child.children_method_name
-          # Copy that list, and replace `previous_child` with `new_child`
-          # in the list.
+          # Get the value from this (original) node
+          prev_children = public_send(method_name)
+          if prev_children.is_a?(Array)
+            # Copy that list, and replace `previous_child` with `new_child`
+            # in the list.
+            new_children = public_send(method_name).dup
+            prev_idx = new_children.index(previous_child)
+            new_children[prev_idx] = new_child
+          else
+            # Use the new value for the given attribute
+            new_children = new_child
+          end
+          # Copy this node, but with the new child value
+          copy_of_self = merge(method_name => new_children)
+          # Return the copy:
+          copy_of_self
+        end
+
+        # TODO DRY with `replace_child`
+        def delete_child(previous_child)
+          # Figure out which list `previous_child` may be found in
+          method_name = previous_child.children_method_name
+          # Copy that list, and delete previous_child
           new_children = public_send(method_name).dup
-          prev_idx = new_children.index(previous_child)
-          new_children[prev_idx] = new_child
+          new_children.delete(previous_child)
           # Copy this node, but with the new list of children:
           copy_of_self = merge(method_name => new_children)
           # Return the copy:
@@ -387,6 +407,11 @@ module GraphQL
         def visit_method
           :on_input_object
         end
+
+        def children_method_name
+          :value
+        end
+
         private
 
         def serialize_value_for_hash(value)
