@@ -94,10 +94,10 @@ describe GraphQL::Language::Visitor do
     assert_equal "preview", directive.name
     assert_equal 10, directive_locations.length
   end
-      
+
   [:hooks, :class_based].each do |visitor_type|
     it "#{visitor_type} visitor calls hooks during a depth-first tree traversal" do
-      visitor = public_send("#{visitor_type}_visitor")      
+      visitor = public_send("#{visitor_type}_visitor")
       visitor.visit
       counts = public_send("#{visitor_type}_counts")
       assert_equal(6, counts[:fields_entered])
@@ -161,6 +161,7 @@ query {
       c(c3: 3)
     }
   }
+  d(d4: 4)
 }
       GRAPHQL
       document = GraphQL.parse(query)
@@ -176,10 +177,28 @@ query {
       renamedC(c3: 3)
     }
   }
+  d(d4: 4)
 }
 GRAPHQL
       assert_equal expected_result, new_document.to_query_string, "the result has changes"
       assert_equal query, document.to_query_string, "the original is unchanged"
+
+      # This is testing the implementation: nodes which aren't affected by modification
+      # should be shared between the two trees
+      orig_c3_argument =     document.definitions.first.selections.first.selections.first.selections.first.arguments.first
+      copy_c3_argument = new_document.definitions.first.selections.first.selections.first.selections.first.arguments.first
+      assert_equal "c3", orig_c3_argument.name
+      assert orig_c3_argument.equal?(copy_c3_argument), "Child nodes are persisted"
+
+      orig_d_field =     document.definitions.first.selections[1]
+      copy_d_field = new_document.definitions.first.selections[1]
+      assert_equal "d", orig_d_field.name
+      assert orig_d_field.equal?(copy_d_field), "Sibling nodes are persisted"
+
+      orig_b_field =     document.definitions.first.selections.first.selections.first
+      copy_b_field = new_document.definitions.first.selections.first.selections.first
+      assert_equal "b", orig_b_field.name
+      refute orig_b_field.equal?(copy_b_field), "Parents with modified children are copied"
     end
   end
 end
