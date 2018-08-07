@@ -63,14 +63,19 @@ module GraphQL
           context.schema.after_lazy(load_arguments_val) do |loaded_args|
             # Then call `authorized?`, which may raise or may return a lazy object
             authorized_val = authorized?(loaded_args)
-            context.schema.after_lazy(authorized_val) do
+            context.schema.after_lazy(authorized_val) do |authorized_result|
               # Finally, all the hooks have passed, so resolve it
               if @early_return_value
                 @early_return_value
-              elsif loaded_args.any?
-                public_send(self.class.resolve_method, **loaded_args)
+              elsif authorized_result
+                # Finally, all the hooks have passed, so resolve it
+                if loaded_args.any?
+                  public_send(self.class.resolve_method, **loaded_args)
+                else
+                  public_send(self.class.resolve_method)
+                end
               else
-                public_send(self.class.resolve_method)
+                nil
               end
             end
           end
@@ -101,7 +106,9 @@ module GraphQL
       # @param args [Hash] The input arguments
       # @raise [GraphQL::ExecutionError] To add an error to the response
       # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
+      # @return [Boolean] if `false`, execution will stop
       def authorized?(**args)
+        true
       end
 
       private

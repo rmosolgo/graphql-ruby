@@ -77,6 +77,7 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver1 < BaseResolver
       argument :int, Integer, required: true
 
+      undef_method :load_int
       def load_int(i)
         i * 10
       end
@@ -177,10 +178,14 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver10 < BaseResolver
       argument :int1, Integer, required: true
       argument :int2, Integer, required: true
-      type Integer, null: false
+      type Integer, null: true
       def authorized?(int1:, int2:)
         if int1 + int2 > context[:max_int]
           raise GraphQL::ExecutionError, "Inputs too big"
+        elsif context[:min_int] && (int1 + int2 < context[:min_int])
+          false
+        else
+          true
         end
       end
 
@@ -401,6 +406,17 @@ describe GraphQL::Schema::Resolver do
           # This works
           res = exec_query("{ prepResolver12(int1: 2, int2: 5) { value } }", context: { max_int: 9 })
           assert_equal 7, res["data"]["prepResolver12"]["value"]
+        end
+
+        it "can return false to halt" do
+          str = <<-GRAPHQL
+          {
+            prepResolver10(int1: 5, int2: 10)
+            prepResolver11(int1: 3, int2: 5)
+          }
+          GRAPHQL
+          res = exec_query(str, context: { max_int: 100, min_int: 20 })
+          assert_equal({ "prepResolver10" => nil, "prepResolver11" => nil }, res["data"])
         end
       end
     end

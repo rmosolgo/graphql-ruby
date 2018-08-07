@@ -36,7 +36,8 @@ module GraphQL
   class Argument
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :type, :description, :default_value, :as, :prepare
-    attr_accessor :type, :description, :default_value, :name, :as
+    attr_reader :default_value
+    attr_accessor :description, :name, :as
     attr_accessor :ast_node
     alias :graphql_name :name
 
