@@ -23,14 +23,15 @@ class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
 module Mutations
   class UpdateName < GraphQL::Schema::RelayClassicMutation
     # TODO: define return fields
-    # return_field :post, Types::PostType
+    # field :post, Types::PostType, null: false
 
     # TODO: define arguments
-    # input_field :name, !types.String
+    # argument :name, String, required: true
 
-    def resolve(**inputs)
-      # TODO: define resolve method
-    end
+    # TODO: define resolve method
+    # def resolve(name:)
+    #   { post: ... }
+    # end
   end
 end
 RUBY
