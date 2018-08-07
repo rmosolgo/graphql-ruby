@@ -207,12 +207,21 @@ describe GraphQL::Schema::Resolver do
       field :value, Integer, null: true
       def authorized?(int1:, int2:)
         if int1 + int2 > context[:max_int]
-          return_with({ error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"] })
+          return false, { error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"] }
+        else
+          true
         end
       end
 
       def resolve(int1:, int2:)
         { value: int1 + int2 }
+      end
+    end
+
+    class PrepResolver13 < PrepResolver12
+      def authorized?(int1:, int2:)
+        # Increment the numbers so we can be sure they're passing through here
+        LazyBlock.new { super(int1: int1 + 1, int2: int2 + 1) }
       end
     end
 
@@ -250,6 +259,7 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_10, resolver: PrepResolver10
       field :prep_resolver_11, resolver: PrepResolver11
       field :prep_resolver_12, resolver: PrepResolver12
+      field :prep_resolver_13, resolver: PrepResolver13
     end
 
     class Schema < GraphQL::Schema
@@ -400,12 +410,20 @@ describe GraphQL::Schema::Resolver do
         end
 
         it "can return data early" do
-          # This is too big because it's modified in the overridden authorized? hook:
           res = exec_query("{ prepResolver12(int1: 9, int2: 5) { errorMessages } }", context: { max_int: 9 })
           assert_equal ["Inputs must be less than 9 (but you provided 14)"], res["data"]["prepResolver12"]["errorMessages"]
           # This works
           res = exec_query("{ prepResolver12(int1: 2, int2: 5) { value } }", context: { max_int: 9 })
           assert_equal 7, res["data"]["prepResolver12"]["value"]
+        end
+
+        it "can return data early in a promise" do
+          # This is too big because it's modified in the overridden authorized? hook:
+          res = exec_query("{ prepResolver13(int1: 4, int2: 4) { errorMessages } }", context: { max_int: 9 })
+          assert_equal ["Inputs must be less than 9 (but you provided 10)"], res["data"]["prepResolver13"]["errorMessages"]
+          # This works
+          res = exec_query("{ prepResolver13(int1: 2, int2: 5) { value } }", context: { max_int: 9 })
+          assert_equal 7, res["data"]["prepResolver13"]["value"]
         end
 
         it "can return false to halt" do

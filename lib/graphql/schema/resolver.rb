@@ -63,10 +63,15 @@ module GraphQL
           context.schema.after_lazy(load_arguments_val) do |loaded_args|
             # Then call `authorized?`, which may raise or may return a lazy object
             authorized_val = authorized?(loaded_args)
-            context.schema.after_lazy(authorized_val) do |authorized_result|
-              # Finally, all the hooks have passed, so resolve it
-              if @early_return_value
-                @early_return_value
+            context.schema.after_lazy(authorized_val) do |(authorized_result, early_return)|
+              # If the `authorized?` returned two values, `false, early_return`,
+              # then use the early return value instead of continuing
+              if early_return
+                if authorized_result == false
+                  early_return
+                else
+                  raise "Unexpected result from authorized (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{early_return.inspect}]"
+                end
               elsif authorized_result
                 # Finally, all the hooks have passed, so resolve it
                 if loaded_args.any?
