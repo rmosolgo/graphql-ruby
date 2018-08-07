@@ -43,20 +43,26 @@ type Query {
     end
   end
 
-  describe "#visit_method" do
-    it "is implemented by all node classes" do
-      node_classes = GraphQL::Language::Nodes.constants - [:WrapperType, :NameOnlyNode]
-      node_classes.each do |const|
-        node_class = GraphQL::Language::Nodes.const_get(const)
-        if node_class.is_a?(Class) && node_class < GraphQL::Language::Nodes::AbstractNode
-          concrete_method = node_class.instance_method(:visit_method)
-          refute_nil concrete_method.super_method, "#{node_class} overrides #visit_method"
-          visit_method_name = "on_" + node_class.name
-            .split("::").last
-            .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
-            .downcase
-          assert GraphQL::Language::Visitor.method_defined?(visit_method_name), "Language::Visitor has a method for #{node_class} (##{visit_method_name})"
-        end
+  describe "required methods" do
+    node_classes = (GraphQL::Language::Nodes.constants - [:WrapperType, :NameOnlyNode])
+      .map { |name| GraphQL::Language::Nodes.const_get(name) }
+      .select { |const| const.is_a?(Class) && const < GraphQL::Language::Nodes::AbstractNode }
+
+    it "all classes have #visit_method (and Visitor has a hook)" do
+      node_classes.each do |node_class|
+        concrete_method = node_class.instance_method(:visit_method)
+        refute_nil concrete_method.super_method, "#{node_class} overrides #visit_method"
+        visit_method_name = "on_" + node_class.name
+          .split("::").last
+          .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+          .downcase
+        assert GraphQL::Language::Visitor.method_defined?(visit_method_name), "Language::Visitor has a method for #{node_class} (##{visit_method_name})"
+      end
+    end
+
+    it "has #children_method_name" do
+      node_classes.each do |node_class|
+        assert node_class.method_defined?(:children_method_name), "#{node_class} has a children_method_name"
       end
     end
   end
