@@ -38,7 +38,7 @@ module Graphql
         sentinel = /class .*MutationType\s*<\s*[^\s]+?\n/m
         in_root do
           gsub_file "#{options[:directory]}/types/mutation_type.rb", /  \# TODO\: Add Mutations as fields\s*\n/m, ""
-          inject_into_file "#{options[:directory]}/types/mutation_type.rb", "  field :#{field_name}, mutation: Mutations::#{mutation_name}\n", after: sentinel, verbose: false, force: false
+          inject_into_file "#{options[:directory]}/types/mutation_type.rb", "    field :#{field_name}, mutation: Mutations::#{mutation_name}\n", after: sentinel, verbose: false, force: false
         end
       end
 

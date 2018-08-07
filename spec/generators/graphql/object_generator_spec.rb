@@ -16,9 +16,11 @@ class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
     ]
 
     expected_content = <<-RUBY
-class Types::BirdType < Types::BaseObject
-  field :wingspan, Integer, null: false
-  field :foliage, [Types::ColorType], null: true
+module Types
+  class BirdType < Types::BaseObject
+    field :wingspan, Integer, null: false
+    field :foliage, [Types::ColorType], null: true
+  end
 end
 RUBY
 
@@ -32,7 +34,9 @@ RUBY
   test "it generates classifed file" do
     run_generator(["page"])
     assert_file "app/graphql/types/page_type.rb", <<-RUBY
-class Types::PageType < Types::BaseObject
+module Types
+  class PageType < Types::BaseObject
+  end
 end
 RUBY
   end
@@ -40,8 +44,10 @@ RUBY
   test "it makes Relay nodes" do
     run_generator(["Page", "--node"])
     assert_file "app/graphql/types/page_type.rb", <<-RUBY
-class Types::PageType < Types::BaseObject
-  implements GraphQL::Relay::Node.interface
+module Types
+  class PageType < Types::BaseObject
+    implements GraphQL::Relay::Node.interface
+  end
 end
 RUBY
   end

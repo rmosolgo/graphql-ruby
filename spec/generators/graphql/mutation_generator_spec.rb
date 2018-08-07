@@ -20,27 +20,32 @@ class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
   end
 
   UPDATE_NAME_MUTATION = <<-RUBY
-class Mutations::UpdateName < GraphQL::Schema::RelayClassicMutation
-  # TODO: define return fields
-  # return_field :post, Types::PostType
+module Mutations
+  class UpdateName < GraphQL::Schema::RelayClassicMutation
+    # TODO: define return fields
+    # field :post, Types::PostType, null: false
 
-  # TODO: define arguments
-  # input_field :name, !types.String
+    # TODO: define arguments
+    # argument :name, String, required: true
 
-  def resolve(**inputs)
     # TODO: define resolve method
+    # def resolve(name:)
+    #   { post: ... }
+    # end
   end
 end
 RUBY
 
   EXPECTED_MUTATION_TYPE = <<-RUBY
-class Types::MutationType < Types::BaseObject
-  field :updateName, mutation: Mutations::UpdateName
-  # TODO: remove me
-  field :test_field, String, null: false,
-    description: "An example field added by the generator"
-  def test_field
-    "Hello World"
+module Types
+  class MutationType < Types::BaseObject
+    field :updateName, mutation: Mutations::UpdateName
+    # TODO: remove me
+    field :test_field, String, null: false,
+      description: "An example field added by the generator"
+    def test_field
+      "Hello World"
+    end
   end
 end
 RUBY
