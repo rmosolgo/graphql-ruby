@@ -59,14 +59,16 @@ module GraphQL
           # for that argument, or may return a lazy object
           load_arguments_val = load_arguments(args)
           context.schema.after_lazy(load_arguments_val) do |loaded_args|
-            # Then validate each argument, which may raise or may return a lazy object
-            validate_arguments_val = validate_arguments(loaded_args)
-            context.schema.after_lazy(validate_arguments_val) do |validated_args|
-              # Finally, all the hooks have passed, so resolve it
-              if validated_args.any?
-                public_send(self.class.resolve_method, **validated_args)
-              else
-                public_send(self.class.resolve_method)
+            # Then call `authorized?`, which may raise or may return a lazy object
+            authorized_val = authorized?(loaded_args)
+            context.schema.after_lazy(authorized_val) do |authorized_result|
+              if authorized_result
+                # Finally, all the hooks have passed, so resolve it
+                if loaded_args.any?
+                  public_send(self.class.resolve_method, **loaded_args)
+                else
+                  public_send(self.class.resolve_method)
+                end
               end
             end
           end
@@ -89,6 +91,17 @@ module GraphQL
       # @raise [GraphQL::ExecutionError] To add an error to the response
       # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
       def before_prepare(**args)
+      end
+
+      # Called after arguments are loaded, but before resolving.
+      #
+      # Override it to check everything before calling the mutation.
+      # @param args [Hash] The input arguments
+      # @raise [GraphQL::ExecutionError] To add an error to the response
+      # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
+      # @return [Boolean] if `false`, execution will stop
+      def authorized?(**args)
+        true
       end
 
       private
@@ -124,31 +137,6 @@ module GraphQL
         public_send("load_#{name}", value)
       end
 
-      # TODO dedup with load_arguments
-      def validate_arguments(args)
-        validate_lazies = []
-        args.each do |key, value|
-          arg_defn = @arguments_by_keyword[key]
-          if arg_defn
-            validate_return = validate_argument(key, value)
-            if context.schema.lazy?(validate_return)
-              validate_lazies << context.schema.after_lazy(validate_return).then { "no-op" }
-            end
-          end
-        end
-
-        # Avoid returning a lazy if none are needed
-        if validate_lazies.any?
-          GraphQL::Execution::Lazy.all(validate_lazies).then { args }
-        else
-          args
-        end
-      end
-
-      def validate_argument(name, value)
-        public_send("validate_#{name}", value)
-      end
-
       class LoadApplicationObjectFailedError < GraphQL::ExecutionError
         # @return [GraphQL::Schema::Argument] the argument definition for the argument that was looked up
         attr_reader :argument
@@ -164,43 +152,58 @@ module GraphQL
         end
       end
 
+      # Look up the corresponding object for a provided ID.
+      # By default, it uses Relay-style {Schema.object_from_id},
+      # override this to find objects another way.
+      #
+      # @param type [Class, Module] A GraphQL type definition
+      # @param id [String] A client-provided to look up
+      # @param context [GraphQL::Query::Context] the current context
+      def object_from_id(type, id, context)
+        context.schema.object_from_id(id, context)
+      end
+
       def load_application_object(arg_kwarg, id)
         argument = @arguments_by_keyword[arg_kwarg]
-        # See if any object can be found for this ID
-        application_object = context.schema.object_from_id(id, context)
-        if application_object.nil?
-          raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-        end
-        # Double-check that the located object is actually of this type
-        # (Don't want to allow arbitrary access to objects this way)
         lookup_as_type = @arguments_loads_as_type[arg_kwarg]
-        application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
-        possible_object_types = context.schema.possible_types(lookup_as_type)
-        if !possible_object_types.include?(application_object_type)
-          raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-        else
-          # This object was loaded successfully
-          # and resolved to the right type,
-          # now apply the `.authorized?` class method if there is one
-          if (class_based_type = application_object_type.metadata[:type_class])
-            context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
-              if authed
-                application_object
+        # See if any object can be found for this ID
+        loaded_application_object = object_from_id(lookup_as_type, id, context)
+        context.schema.after_lazy(loaded_application_object) do |application_object|
+          begin
+            if application_object.nil?
+              raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
+            end
+            # Double-check that the located object is actually of this type
+            # (Don't want to allow arbitrary access to objects this way)
+            application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
+            possible_object_types = context.schema.possible_types(lookup_as_type)
+            if !possible_object_types.include?(application_object_type)
+              raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
+            else
+              # This object was loaded successfully
+              # and resolved to the right type,
+              # now apply the `.authorized?` class method if there is one
+              if (class_based_type = application_object_type.metadata[:type_class])
+                context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
+                  if authed
+                    application_object
+                  else
+                    raise GraphQL::UnauthorizedError.new(
+                      object: application_object,
+                      type: class_based_type,
+                      context: context,
+                    )
+                  end
+                end
               else
-                raise GraphQL::UnauthorizedError.new(
-                  object: application_object,
-                  type: class_based_type,
-                  context: context,
-                )
+                application_object
               end
             end
-          else
-            application_object
+          rescue LoadApplicationObjectFailedError => err
+            # pass it to a handler
+            load_application_object_failed(err)
           end
         end
-      rescue LoadApplicationObjectFailedError => err
-        # pass it to a handler
-        load_application_object_failed(err)
       end
 
       def load_application_object_failed(err)
@@ -315,11 +318,6 @@ module GraphQL
             RUBY
           end
 
-          class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          def validate_#{arg_defn.keyword}(value)
-            # No-op
-          end
-          RUBY
           arg_defn
         end
 

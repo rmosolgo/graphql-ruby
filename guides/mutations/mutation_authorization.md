@@ -74,14 +74,14 @@ If you don't want this behavior, don't use it. Instead, create arguments with ty
 argument :employee_id, ID, required: true
 ```
 
-## Can _this user_ modify _this thing_?
+## Can _this user_ perform _this action_?
 
-Sometimes you need to authorize a specific user-object-action combination. For example, `.admin?` users can't promote _all_ employees! They can only promote employees which they manage.
+Sometimes you need to authorize a specific user-object(s)-action combination. For example, `.admin?` users can't promote _all_ employees! They can only promote employees which they manage.
 
-You can add this check by implementing a `#validate_#{arg_name}` method, for example:
+You can add this check by implementing a `#authorized?` method, for example:
 
 ```ruby
-def validate_employee(employee)
+def authorized?(employee:)
   if !context[:current_user].manager_of?(employee)
     raise GraphQL::ExecutionError, "You can only promote your _own_ employees"
   end
