@@ -5,9 +5,8 @@ module GraphQL
     class Wrapper
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::TypeSystemHelpers
-      extend Forwardable
 
-      # @return [Class, Module] The inner type of this list, the type of which one or more objects may be present.
+      # @return [Class, Module] The inner type of this wrapping type, the type of which one or more objects may be present.
       attr_reader :of_type
 
       def initialize(of_type)
