@@ -15,9 +15,4 @@ gem "puma"
 gem "capybara", "~> 2.13"
 gem "selenium-webdriver"
 
-group :jekyll_plugins do
-  gem "jekyll-algolia"
-  gem "jekyll-redirect-from"
-end
-
 gemspec path: "../"
