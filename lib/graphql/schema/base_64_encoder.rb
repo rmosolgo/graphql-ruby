@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
+require 'graphql/schema/base_64_bp'
+
 module GraphQL
   class Schema
     # @api private
@@ -9,7 +12,7 @@ module GraphQL
 
       def self.decode(ciphertext, nonce: false)
         # urlsafe_decode64 is for forward compatibility
-        Base64.urlsafe_decode64(ciphertext)
+        Base64Bp.urlsafe_decode64(ciphertext)
       end
     end
   end

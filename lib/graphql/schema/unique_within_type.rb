@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require 'graphql/schema/base_64_bp'
+
 module GraphQL
   class Schema
     module UniqueWithinType
@@ -26,7 +28,7 @@ module GraphQL
       # @return [Array<(String, String)>] The type name & value passed to {.encode}
       def decode(node_id, separator: self.default_id_separator)
         # urlsafe_decode64 is for forward compatibility
-        Base64.urlsafe_decode64(node_id).split(separator, 2)
+        Base64Bp.urlsafe_decode64(node_id).split(separator, 2)
       end
     end
   end
