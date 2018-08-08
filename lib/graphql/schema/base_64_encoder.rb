@@ -8,7 +8,8 @@ module GraphQL
       end
 
       def self.decode(ciphertext, nonce: false)
-        Base64.decode64(ciphertext)
+        # urlsafe_decode64 is for forward compatibility
+        Base64.urlsafe_decode64(ciphertext)
       end
     end
   end
