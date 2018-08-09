@@ -20,13 +20,16 @@ This guide describes how to accomplish that workflow with GraphQL-Ruby.
 
 Before loading any data from the database, you might want to see if the user has a certain permission level. For example, maybe only `.admin?` users can run `Mutation.promoteEmployee`.
 
-This check can be implemented using the `#before_prepare` method in a mutation:
+This check can be implemented using the `#ready?` method in a mutation:
 
 ```ruby
 class Mutations::PromoteEmployee < Mutations::BaseMutation
-  def before_prepare(**args)
+  def ready?(**args)
     if !context[:current_user].admin?
       raise GraphQL::ExecutionError, "Only admins can run this mutation"
+    else
+      # Return true to continue the mutation:
+      true
     end
   end
 
@@ -35,6 +38,18 @@ end
 ```
 
 Now, when any non-`admin` user tries to run the mutation, it won't run. Instead, they'll get an error in the response.
+
+Additionally, `#ready?` may return `false, { ... }` to return {% internal_link "errors as data", "/mutations/mutation_errors" %}:
+
+```ruby
+def ready?
+  if !context[:current_user].allowed?
+    return false, { errors: ["You don't have permission to do this"]}
+  else
+    true
+  end
+end
+```
 
 ## Loading and authorizing objects
 

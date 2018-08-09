@@ -76,7 +76,6 @@ describe GraphQL::Schema::Resolver do
 
     class PrepResolver1 < BaseResolver
       argument :int, Integer, required: true
-
       undef_method :load_int
       def load_int(i)
         i * 10
@@ -128,16 +127,34 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver5 < PrepResolver1
       type Integer, null: true
 
-      def before_prepare(int:)
+      def ready?(int:)
         check_for_magic_number(int)
       end
     end
 
     class PrepResolver6 < PrepResolver5
-      def before_prepare(**args)
+      def ready?(**args)
         LazyBlock.new {
           super
         }
+      end
+    end
+
+    class PrepResolver7 < GraphQL::Schema::Mutation
+      argument :int, Integer, required: true
+      field :errors, [String], null: true
+      field :int, Integer, null: true
+
+      def ready?(int:)
+        if int == 13
+          return false, { errors: ["Bad number!"] }
+        else
+          true
+        end
+      end
+
+      def resolve(int:)
+        { int: int }
       end
     end
 
@@ -255,6 +272,7 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_4, resolver: PrepResolver4
       field :prep_resolver_5, resolver: PrepResolver5
       field :prep_resolver_6, resolver: PrepResolver6
+      field :prep_resolver_7, resolver: PrepResolver7
       field :prep_resolver_9, resolver: PrepResolver9
       field :prep_resolver_10, resolver: PrepResolver10
       field :prep_resolver_11, resolver: PrepResolver11
@@ -352,17 +370,25 @@ describe GraphQL::Schema::Resolver do
       refute res.key?("errors"), "#{description}: silent auth failure (no top-level error)"
     end
 
-    describe "before_prepare" do
+    describe "ready?" do
       it "can raise errors" do
         res = exec_query("{ int: prepResolver5(int: 5) }")
         assert_equal 50, res["data"]["int"]
-        add_error_assertions("prepResolver5", "before_prepare")
+        add_error_assertions("prepResolver5", "ready?")
       end
 
       it "can raise errors in lazy sync" do
         res = exec_query("{ int: prepResolver6(int: 5) }")
         assert_equal 50, res["data"]["int"]
-        add_error_assertions("prepResolver6", "lazy before_prepare")
+        add_error_assertions("prepResolver6", "lazy ready?")
+      end
+
+      it "can return false and data" do
+        res = exec_query("{ int: prepResolver7(int: 13) { errors int } }")
+        assert_equal ["Bad number!"], res["data"]["int"]["errors"]
+
+        res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
+        assert_equal 213, res["data"]["int"]["int"]
       end
     end
 
