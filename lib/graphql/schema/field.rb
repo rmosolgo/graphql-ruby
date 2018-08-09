@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 # test_via: ../object.rb
 require "graphql/schema/field/connection_filter"
+require "graphql/schema/field/scope_filter"
 
 module GraphQL
   class Schema
@@ -103,7 +104,7 @@ module GraphQL
           # The default was overridden
           @scope
         else
-          @return_type_expr && type.unwrap.respond_to?(:scope_items) && (connection? || type.list?)
+          @return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.include?("[")) || connection?
         end
       end
 
@@ -130,7 +131,7 @@ module GraphQL
           camelize: nil, # It was already applied, so maybe nil will work
           scope: @scope,
           subscription_scope: @subscription_scope,
-          filters: @filters,
+          filters: @filters.each_with_object({}).map { |f, obj| obj[f.class] = f.options },
         }
       end
 
@@ -216,6 +217,13 @@ module GraphQL
         # Do this last so we have as much context as possible when initializing them:
         @filters = []
         self.filters(*Array(filters))
+        # This should run before connection filter,
+        # but should it run after the definition block?
+        if scoped?
+          self.filter(ScopeFilter)
+        end
+        # The problem with putting this after the definition_block
+        # is that it would override arguments
         if connection?
           self.filter(ConnectionFilter)
         end
@@ -241,36 +249,36 @@ module GraphQL
 
       # @param filters [Array<Symbol>, Hash<Symbol => Object>] Add filters to this field by name
       # @return [Array<GraphQL::Schema::FieldFilter] Filters to apply to this field
-      def filters(*filters)
-        if filters.none?
+      def filters(*new_filters)
+        if new_filters.none?
           # Read the value
           @filters
         else
           if @resolve || @function
-            raise ArgumentError, "Filters are not supported with resolve procs or functions, but #{owner.name}.#{name} has: #{@resolve || @function}\nUse a method or a Schema::Resolver instead."
+            raise ArgumentError, "Filters are not supported with resolve procs or functions,\nbut #{owner.name}.#{name} has: #{@resolve || @function}\nSo, it can have filters: #{filters}.\nUse a method or a Schema::Resolver instead."
           end
 
           cls_filters = self.class.filters
           # Normalize to a Hash of {name => options}
-          filters_with_options = if filters.last.is_a?(Hash)
-            filters.pop
+          filters_with_options = if new_filters.last.is_a?(Hash)
+            new_filters.pop
           else
             {}
           end
 
-          filters.each do |f|
+          new_filters.each do |f|
             filters_with_options[f] = nil
           end
 
           # Find the matching class and initialize it
-          filters_with_options.each do |name, options|
-            filter_cls = if name.is_a?(Class)
-              name
+          filters_with_options.each do |filter_name, options|
+            filter_cls = if filter_name.is_a?(Class)
+              filter_name
             else
               begin
-                cls_filters.fetch(name)
+                cls_filters.fetch(filter_name)
               rescue KeyError
-                raise ArgumentError, "Failed to find filter `#{name}` among #{cls_filters.keys}"
+                raise ArgumentError, "#{owner}.#{name}: failed to find filter `#{filter_name}` among #{cls_filters.keys}"
               end
             end
             @filters << filter_cls.new(field: self, options: options)
@@ -416,11 +424,7 @@ module GraphQL
             # Then if it passed, resolve the field
             if @resolve_proc
               # Might be nil, still want to call the func in that case
-              v = @resolve_proc.call(inner_obj, args, ctx)
-              # This is usually applied in `public_send_field`,
-              # so apply it here instead:
-              # TODO consider not applying it?
-              apply_scope(v, ctx)
+              @resolve_proc.call(inner_obj, args, ctx)
             elsif @resolver_class
               singleton_inst = @resolver_class.new(object: inner_obj, context: query_ctx)
               public_send_field(singleton_inst, args, ctx)
@@ -472,16 +476,6 @@ module GraphQL
 
       private
 
-      def apply_scope(value, ctx)
-        if scoped?
-          ctx.schema.after_lazy(value) do |inner_value|
-            @type.unwrap.scope_items(inner_value, ctx)
-          end
-        else
-          value
-        end
-      end
-
       NO_ARGS = {}.freeze
 
       def public_send_field(obj, graphql_args, field_ctx)
@@ -506,12 +500,11 @@ module GraphQL
 
         query_ctx = field_ctx.query.context
         with_filters(obj, ruby_kwargs, query_ctx) do |filtered_obj, filtered_args|
-          value = if filtered_args.any?
+          if filtered_args.any?
             filtered_obj.public_send(@method_sym, **filtered_args)
           else
             filtered_obj.public_send(@method_sym)
           end
-          apply_scope(value, query_ctx)
         end
       end
 
