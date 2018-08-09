@@ -256,34 +256,4 @@ describe GraphQL::Schema::Field do
       assert_equal "Broken!!", field.deprecation_reason
     end
   end
-
-  describe "#to_options" do
-    it "has a key for each of `#initialize`'s kwargs" do
-      # Sadly, GraphQL::Schema::Field.instance_method(:initialize).parameters
-      # doesn't work because of how `AcceptsDefinition` prepends over it.
-      field_file = File.read("lib/graphql/schema/field.rb")
-      def_line = field_file.lines.find { |l| l.include?("def initialize(") }
-      keywords = def_line.scan(/[a-z_]+: /).map { |match| match[0..-3].to_sym }
-
-      field = GraphQL::Schema::Field.from_options(:thing, Integer, null: true)
-      options = field.to_options
-      keywords.each do |keyword|
-        assert options.key?(keyword), "#{keyword.inspect} is present in #{options.keys}"
-      end
-    end
-
-    it "duplicates fields" do
-      fields_checked = 0
-      Jazz::Query.fields.each do |name, field_defn|
-        fields_checked += 1
-        field_as_options = field_defn.to_options
-        rebuilt_field = GraphQL::Schema::Field.from_options(field_as_options)
-        assert_equal field_as_options, rebuilt_field.to_options, "It duplicates #{name}"
-      end
-
-      # Just make sure it actually ran a few times,
-      # this is the total number of fields on Jazz::Query
-      assert_equal 14, fields_checked
-    end
-  end
 end

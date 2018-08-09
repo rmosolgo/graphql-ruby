@@ -108,33 +108,6 @@ module GraphQL
         end
       end
 
-      def to_options
-        {
-          name: name,
-          type: @return_type_expr,
-          null: @return_type_null,
-          owner: owner,
-          complexity: @complexity,
-          extras: @extras,
-          arguments: arguments,
-          description: description,
-          deprecation_reason: deprecation_reason,
-          method: method_sym,
-          hash_key: nil, # This is currently equivalent to `method:`, so just pass one
-          connection: @connection,
-          max_page_size: max_page_size,
-          introspection: @introspection,
-          resolver_class: @resolver_class,
-          resolve: @resolve,
-          field: @field,
-          function: @function,
-          camelize: nil, # It was already applied, so maybe nil will work
-          scope: @scope,
-          subscription_scope: @subscription_scope,
-          filters: @filters.each_with_object({}).map { |f, obj| obj[f.class] = f.options },
-        }
-      end
-
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param type [Class, GraphQL::BaseType, Array] The return type of this field
       # @param owner [Class] The type that this field belongs to
@@ -175,7 +148,7 @@ module GraphQL
         @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
         @description = description
         if field.is_a?(GraphQL::Schema::Field)
-          raise ArgumentError, "Instead of passing a field as `field:`, use `Field.from_options(field.to_options.merge(overrides))`"
+          raise ArgumentError, "Instead of passing a field as `field:`, use `add_field(field)` to add an already-defined field."
         else
           @field = field
         end
