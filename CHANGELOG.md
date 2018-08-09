@@ -6,13 +6,35 @@
 
 ### New features
 
-- Support Mongoid 5, 6 and 7 Relay connections #1754
+### Bug fixes
+
+## 1.8.7 (9 Aug 2018)
+
+### Breaking changes
+
+- Some mutation authorization hooks added in 1.8.5 were changed, see #1736 and #1737. Roughly:
+
+  - `before_prepare` was changed to `#ready?`
+  - `validate_*` hooks were replaced with a single `#authorized?` method
 
 ### Bug fixes
+
+- Argument default values include nested default values #1728
+- Clean up duplciate method defs #1739
+
+### New features
+
+- Built-in support for Mongoid 5, 6, 7 #1754
+- Mutation `#ready?` and `#authorized?` may halt flow and/or return data #1736, #1737
+- Add `.scope_items(items, ctx)` hook for filtering lists
+- Add `#default_graphql_name` for overriding default logic #1729
+- Add `#add_argument` for building schemas #1732
+- Cursors are decoded using `urlsafe_decode64` to future-proof for urlsafe cursors #1748
 
 ## 1.8.6 (31 July 2018)
 
 ### Breaking changes
+
 - Only allow Objects to implement actual Interfaces #1715. Use `include` instead for plain Ruby modules.
 - Revert extending interface methods onto Objects #1716. If you were taking advantage of this feature, you can create a plain Ruby module with the functionality and include it in both the interface and object.
 
