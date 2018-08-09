@@ -8,7 +8,15 @@
 
 ### Bug Fix
 
+## 1.7.9 (9 Aug 2018)
+
+### New Features
+
+- Add a new `PunditIntegration` which leverages the built-in authorization methods
+
 ## 1.7.8 (10 July 2018)
+
+### Bug Fix
 
 - Authorization: fix scoping lists of abstract type when there's no `#scope` method on the strategy
 
