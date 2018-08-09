@@ -26,6 +26,9 @@ module GraphQL
       def has_next_page
         if first
           paged_nodes.length >= first && sliced_nodes_count > first
+        elsif max_page_size && !first && !last
+          # paginating without a first/last so we pretend we got first: max_page_size
+          paged_nodes.length >= max_page_size && sliced_nodes_count > max_page_size
         elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && last
           sliced_nodes_count >= last
         else
@@ -36,6 +39,9 @@ module GraphQL
       def has_previous_page
         if last
           paged_nodes.length >= last && sliced_nodes_count > last
+        elsif max_page_size && after && !first && !last
+          # paginating without a first/last so we pretend we got first: max_page_size
+          offset_from_cursor(after) > 0
         elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && after
           # We've already paginated through the collection a bit,
           # there are nodes behind us
