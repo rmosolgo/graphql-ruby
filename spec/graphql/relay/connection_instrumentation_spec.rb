@@ -11,11 +11,6 @@ describe GraphQL::Relay::ConnectionInstrumentation do
     assert_equal ["tests"], test_type.fields.keys
   end
 
-  it "keeps a reference to the function" do
-    conn_field = StarWars::Faction.graphql_definition.fields["shipsWithMaxPageSize"]
-    assert_instance_of StarWars::ShipsWithMaxPageSize, conn_field.function
-  end
-
   let(:build_schema) {
     test_type = nil
 
@@ -73,9 +68,8 @@ describe GraphQL::Relay::ConnectionInstrumentation do
       GRAPHQL
       ctx = { before_built_ins: [], after_built_ins: [] }
       star_wars_query(query_str, {}, context: ctx)
-      # The second item is different here:
-      # Before the object is wrapped in a connection, the instrumentation sees `Array`
-      assert_equal ["StarWars::FactionRecord", "Array", "GraphQL::Relay::ArrayConnection"], ctx[:before_built_ins]
+      # These are data classes, later they're wrapped with type proxies
+      assert_equal ["StarWars::FactionRecord", "GraphQL::Relay::ArrayConnection", "GraphQL::Relay::ArrayConnection"], ctx[:before_built_ins]
       # After the object is wrapped in a connection, it sees the connection object
       assert_equal ["StarWars::Faction", "StarWars::ShipConnectionWithParentType", "GraphQL::Types::Relay::PageInfo"], ctx[:after_built_ins]
     end

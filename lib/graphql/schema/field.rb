@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 # test_via: ../object.rb
+require "graphql/schema/field/connection_filter"
+
 module GraphQL
   class Schema
     class Field
@@ -86,7 +88,8 @@ module GraphQL
           elsif @return_type_expr
             Member::BuildType.to_type_name(@return_type_expr)
           else
-            raise "No connection info possible"
+            # As a last ditch, try to force loading the return type:
+            type.unwrap.name
           end
           @connection = return_type_name.end_with?("Connection")
         else
@@ -196,8 +199,6 @@ module GraphQL
         @extras = extras
         @resolver_class = resolver_class
         @scope = scope
-        @filters = []
-        self.filters(*Array(filters))
 
         # Override the default from HasArguments
         @own_arguments = {}
@@ -211,6 +212,13 @@ module GraphQL
 
         @owner = owner
         @subscription_scope = subscription_scope
+
+        # Do this last so we have as much context as possible when initializing them:
+        @filters = []
+        self.filters(*Array(filters))
+        if connection?
+          self.filter(ConnectionFilter)
+        end
 
         if definition_block
           if definition_block.arity == 1
@@ -238,7 +246,12 @@ module GraphQL
           # Read the value
           @filters
         else
+          if @resolve || @function
+            raise ArgumentError, "Filters are not supported with resolve procs or functions, but #{owner.name}.#{name} has: #{@resolve || @function}\nUse a method or a Schema::Resolver instead."
+          end
+
           cls_filters = self.class.filters
+          # Normalize to a Hash of {name => options}
           filters_with_options = if filters.last.is_a?(Hash)
             filters.pop
           else
@@ -249,17 +262,20 @@ module GraphQL
             filters_with_options[f] = nil
           end
 
-          try_f = nil
+          # Find the matching class and initialize it
           filters_with_options.each do |name, options|
-            try_f = name
-            filter_cls = cls_filters.fetch(name)
-            # Make a new filter ...
-            filter = filter_cls.new(field: self, options: options)
-            @filters << filter
+            filter_cls = if name.is_a?(Class)
+              name
+            else
+              begin
+                cls_filters.fetch(name)
+              rescue KeyError
+                raise ArgumentError, "Failed to find filter `#{name}` among #{cls_filters.keys}"
+              end
+            end
+            @filters << filter_cls.new(field: self, options: options)
           end
         end
-      rescue KeyError => err
-        raise ArgumentError, "Failed to find filter `#{try_f.inspect}` among #{cls_filters.keys}"
       end
 
       # TODO what API to support?
@@ -298,6 +314,9 @@ module GraphQL
 
       end
 
+      # @return [Integer, nil] Applied to connections if present
+      attr_reader :max_page_size
+
       # @return [GraphQL::Field]
       def to_graphql
         field_defn = if @field
@@ -330,21 +349,10 @@ module GraphQL
 
         field_defn.resolve = self.method(:resolve_field)
         field_defn.connection = connection?
-        field_defn.connection_max_page_size = @max_page_size
+        field_defn.connection_max_page_size = max_page_size
         field_defn.introspection = @introspection
         field_defn.complexity = @complexity
         field_defn.subscription_scope = @subscription_scope
-
-        # apply this first, so it can be overriden below
-        if connection?
-          # TODO: this could be a bit weird, because these fields won't be present
-          # after initialization, only in the `to_graphql` response.
-          # This calculation _could_ be moved up if need be.
-          argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
-          argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false
-          argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
-          argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
-        end
 
         arguments.each do |name, defn|
           arg_graphql = defn.to_graphql
@@ -406,16 +414,19 @@ module GraphQL
           inner_obj = after_obj && after_obj.object
           if authorized?(inner_obj, query_ctx) && arguments.each_value.all? { |a| a.authorized?(inner_obj, query_ctx) }
             # Then if it passed, resolve the field
-            v = if @resolve_proc
+            if @resolve_proc
               # Might be nil, still want to call the func in that case
-              @resolve_proc.call(inner_obj, args, ctx)
+              v = @resolve_proc.call(inner_obj, args, ctx)
+              # This is usually applied in `public_send_field`,
+              # so apply it here instead:
+              # TODO consider not applying it?
+              apply_scope(v, ctx)
             elsif @resolver_class
               singleton_inst = @resolver_class.new(object: inner_obj, context: query_ctx)
               public_send_field(singleton_inst, args, ctx)
             else
               public_send_field(after_obj, args, ctx)
             end
-            apply_scope(v, ctx)
           else
             nil
           end
@@ -485,14 +496,6 @@ module GraphQL
             end
           end
 
-          if connection?
-            # Remove pagination args before passing it to a user method
-            ruby_kwargs.delete(:first)
-            ruby_kwargs.delete(:last)
-            ruby_kwargs.delete(:before)
-            ruby_kwargs.delete(:after)
-          end
-
           @extras.each do |extra_arg|
             # TODO: provide proper tests for `:ast_node`, `:irep_node`, `:parent`, others?
             ruby_kwargs[extra_arg] = field_ctx.public_send(extra_arg)
@@ -501,12 +504,14 @@ module GraphQL
           ruby_kwargs = NO_ARGS
         end
 
-        with_filters(obj, ruby_kwargs, field_ctx.query.context) do |filtered_obj, filtered_args|
-          if filtered_args.any?
+        query_ctx = field_ctx.query.context
+        with_filters(obj, ruby_kwargs, query_ctx) do |filtered_obj, filtered_args|
+          value = if filtered_args.any?
             filtered_obj.public_send(@method_sym, **filtered_args)
           else
             filtered_obj.public_send(@method_sym)
           end
+          apply_scope(value, query_ctx)
         end
       end
 
