@@ -125,7 +125,8 @@ module GraphQL
       # @param complexity [Numeric] When provided, set the complexity for this field
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
+      # @param filters [Array<Symbols>] Named filters to apply to this field (registered with {.filter})
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], filters: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
 
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
@@ -169,6 +170,8 @@ module GraphQL
         @extras = extras
         @resolver_class = resolver_class
         @scope = scope
+        @filters = []
+        self.filters(*Array(filters))
 
         # Override the default from HasArguments
         @own_arguments = {}
@@ -200,6 +203,57 @@ module GraphQL
         else
           @description
         end
+      end
+
+      # @param filters [Array<Symbol>, Hash<Symbol => Object>] Add filters to this field by name
+      # @return [Array<GraphQL::Schema::FieldFilter] Filters to apply to this field
+      def filters(*filters)
+        if filters.none?
+          # Read the value
+          @filters
+        else
+          cls_filters = self.class.filters
+          filters_with_options = if filters.last.is_a?(Hash)
+            filters.pop
+          else
+            {}
+          end
+
+          filters.each do |f|
+            filters_with_options[f] = nil
+          end
+
+          try_f = nil
+          filters_with_options.each do |name, options|
+            try_f = name
+            filter_cls = cls_filters.fetch(name)
+            # Make a new filter ...
+            filter = filter_cls.new(field: self, options: options)
+            # But `.freeze` it, so that ivars aren't updated during execution,
+            # which would be subject to all kinds of race conditions.
+            filter.freeze
+            @filters << filter
+          end
+        end
+      rescue KeyError => err
+        raise ArgumentError, "Failed to find filter `#{try_f.inspect}` among #{cls_filters.keys}"
+      end
+
+      # TODO what API to support?
+      def filter(name, options = nil)
+        filters({name => options})
+      end
+
+      def self.filter(name, filter)
+        own_filters[name] = filter
+      end
+
+      def self.filters
+        own_filters.merge(superclass.respond_to?(:filters) ? superclass.filters : {})
+      end
+
+      def self.own_filters
+        @own_filters ||= {}
       end
 
       def complexity(new_complexity)
@@ -430,11 +484,45 @@ module GraphQL
           ruby_kwargs = NO_ARGS
         end
 
+        with_filters(obj, ruby_kwargs, field_ctx.query.context) do |filtered_obj, filtered_args|
+          if filtered_args.any?
+            filtered_obj.public_send(@method_sym, **filtered_args)
+          else
+            filtered_obj.public_send(@method_sym)
+          end
+        end
+      end
 
-        if ruby_kwargs.any?
-          obj.public_send(@method_sym, **ruby_kwargs)
+      # TODO this needs the same kind of work as instrumenters to avoid long, boring stack traces
+      def with_filters(obj, args, ctx)
+        memos = []
+        value = run_before_filter(0, memos, obj, args, ctx) { |filtered_obj, filtered_args| yield(filtered_obj, filtered_args) }
+        ctx.schema.after_lazy(value) do |resolved_value|
+          run_after_filter(0, memos, obj, args, ctx, resolved_value)
+        end
+      end
+
+      def run_before_filter(idx, memos, obj, args, ctx)
+        filter = @filters[idx]
+        if filter
+          filter.before_resolve(object: obj, arguments: args, context: ctx) do |filtered_obj, filtered_args, memo|
+            memos << memo
+            run_before_filter(idx + 1, memos, filtered_obj, filtered_args, ctx) { |o, a| yield(o, a) }
+          end
         else
-          obj.public_send(@method_sym)
+          yield(obj, args)
+        end
+      end
+
+      def run_after_filter(idx, memos, obj, args, ctx, value)
+        filter = @filters[idx]
+        if filter
+          memo = memos[idx]
+          filtered_value = filter.after_resolve(object: obj, arguments: args, context: ctx, value: value, memo: memo)
+          # TODO after_lazy?
+          run_after_filter(idx + 1, memos, obj, args, ctx, filtered_value)
+        else
+          value
         end
       end
     end
