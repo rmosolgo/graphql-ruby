@@ -229,9 +229,6 @@ module GraphQL
             filter_cls = cls_filters.fetch(name)
             # Make a new filter ...
             filter = filter_cls.new(field: self, options: options)
-            # But `.freeze` it, so that ivars aren't updated during execution,
-            # which would be subject to all kinds of race conditions.
-            filter.freeze
             @filters << filter
           end
         end
