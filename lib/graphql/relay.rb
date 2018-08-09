@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require 'base64'
 
 require 'graphql/relay/page_info'
 require 'graphql/relay/edge'
