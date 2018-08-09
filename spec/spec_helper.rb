@@ -1,24 +1,13 @@
 # frozen_string_literal: true
+
+require 'rubygems'
+Bundler.require
+
 # Print full backtrace for failiures:
 ENV["BACKTRACE"] = "1"
 
-def rails_should_be_installed?
-  ENV['WITHOUT_RAILS'] != 'yes'
-end
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
-
-if rails_should_be_installed?
-  require "rake"
-  require "rails/all"
-  require "rails/generators"
-
-  require "jdbc/sqlite3" if RUBY_ENGINE == 'jruby'
-  require "sqlite3" if RUBY_ENGINE == 'ruby'
-  require "pg" if RUBY_ENGINE == 'ruby'
-  require "mongoid" if RUBY_ENGINE == 'ruby'
-  require "sequel"
-end
 
 require "graphql"
 require "graphql/rake_task"
@@ -28,21 +17,6 @@ require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
 
-MONGO_DETECTED = begin
-  require "mongo"
-  Mongo::Client.new('mongodb://127.0.0.1:27017/graphql_ruby_test',
-      connect_timeout: 1,
-      socket_timeout: 1,
-      server_selection_timeout: 1,
-      logger: Logger.new(nil)
-    )
-    .database
-    .collections
-rescue StandardError, LoadError => err # rubocop:disable Lint/UselessAssignment
-  # puts err.message, err.backtrace
-  false
-end
-
 Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
 
 Minitest::Spec.make_my_diffs_pretty!
@@ -50,7 +24,6 @@ Minitest::Spec.make_my_diffs_pretty!
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
-
 
 # This is for convenient access to metadata in test definitions
 assign_metadata_key = ->(target, key, value) { target.metadata[key] = value }
@@ -76,16 +49,21 @@ NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
   raise "this should never be called"
 }
 
+# Load dependencies
+['Mongoid', 'PG', 'Rails', 'SQLite3'].each do |dependency|
+  begin
+    dep = Object.const_get(dependency)
+    puts "Loading #{dep} ..."
+    Dir["#{File.dirname(__FILE__)}/dependencies/#{dependency.downcase}/**/*.rb"].each do |f|
+      require f
+    end
+  rescue NameError
+    # ignore
+  end
+end
+
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
-  # These require mongodb in order to run,
-  # so only load them in the specific tests that require them.
-  next if f.include?("star_trek")
-
-  unless rails_should_be_installed?
-    next if f.end_with?('star_wars/data.rb')
-    next if f.end_with?('base_generator_test.rb')
-  end
   require f
 end
 

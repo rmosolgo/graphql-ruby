@@ -1,16 +1,9 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-if MONGO_DETECTED
-  require "support/star_trek/data"
-  require "support/star_trek/schema"
-end
-
 describe GraphQL::Relay::MongoRelationConnection do
   before do
-    if !MONGO_DETECTED
-      skip("Mongo not detected")
-    end
+    skip("Mongo not detected") unless defined?(Mongoid)
   end
 
   def get_names(result)
