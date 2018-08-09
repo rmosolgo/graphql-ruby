@@ -18,6 +18,15 @@ describe GraphQL::Relay::MongoRelationConnection do
     ships.map { |e| e["node"]["name"] }
   end
 
+  def get_residents(ship)
+    ship["residents"]["edges"].map { |e| e["node"]["name"] }
+  end
+
+  def get_ships_residents(result)
+    ships = result["data"]["federation"]["bases"]["edges"]
+    Hash[ships.map { |e| [e["node"]["name"], get_residents(e["node"])] }]
+  end
+
   def get_page_info(result)
     result["data"]["federation"]["bases"]["pageInfo"]
   end
@@ -481,5 +490,50 @@ describe GraphQL::Relay::MongoRelationConnection do
     assert relation.is_a?(Mongoid::Criteria)
     connection = GraphQL::Relay::BaseConnection.connection_for_nodes(relation)
     assert_equal GraphQL::Relay::MongoRelationConnection, connection
+  end
+
+  describe "relations" do
+    let(:query_string) {%|
+      query getShips {
+        federation {
+          bases {
+            ... basesConnection
+          }
+        }
+      }
+
+      fragment basesConnection on BasesConnectionWithTotalCount {
+        edges {
+          cursor
+          node {
+            name
+            residents {
+              edges {
+                node {
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    |}
+
+    it "Mongoid::Association::Referenced::HasMany::Targets::Enumerable" do
+      result = star_trek_query(query_string)
+      assert_equal get_ships_residents(result), {
+        "Deep Space Station K-7" => [
+          "Shir th'Talias",
+          "Lurry",
+          "Mackenzie Calhoun"
+        ],
+        "Regula I" => [
+          "V. Madison",
+          "D. March",
+          "C. Marcus"
+        ],
+        "Deep Space Nine" => []
+      }
+    end
   end
 end

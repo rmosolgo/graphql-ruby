@@ -40,15 +40,32 @@ module StarTrek
     field :name, type: String
     field :sector, type: String
     field :faction_id, type: Integer
+    has_many :residents, class_name: 'StarTrek::Resident', inverse_of: :base
+  end
+
+  class Resident
+    include Mongoid::Document
+    field :name, type: String
+    belongs_to :base, class_name: 'StarTrek::Base'
   end
 
   Base.collection.drop
-  Base.create!(name: "Deep Space Station K-7", sector: "Mempa", faction_id: 1)
-  Base.create!(name: "Regula I", sector: "Mutara", faction_id: 1)
+
+  dsk7 = Base.create!(name: "Deep Space Station K-7", sector: "Mempa", faction_id: 1)
+  dsk7.residents.create!(name: "Shir th'Talias")
+  dsk7.residents.create!(name: "Lurry")
+  dsk7.residents.create!(name: "Mackenzie Calhoun")
+
+  r1 = Base.create!(name: "Regula I", sector: "Mutara", faction_id: 1)
+  r1.residents.create!(name: "V. Madison")
+  r1.residents.create!(name: "D. March")
+  r1.residents.create!(name: "C. Marcus")
+
   Base.create!(name: "Deep Space Nine", sector: "Bajoran", faction_id: 1)
   Base.create!(name: "Firebase P'ok", sector: nil, faction_id: 2)
   Base.create!(name: "Ganalda Space Station", sector: "Archanis", faction_id: 2)
   Base.create!(name: "Rh'Ihho Station", sector: "Rator", faction_id: 3)
+
 
   class FactionRecord
     attr_reader :id, :name, :ships, :bases, :bases_clone

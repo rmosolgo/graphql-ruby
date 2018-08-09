@@ -6,6 +6,8 @@
 
 ### New features
 
+- Support Mongoid 5, 6 and 7 Relay connections #1754
+
 ### Bug fixes
 
 ## 1.8.6 (31 July 2018)
