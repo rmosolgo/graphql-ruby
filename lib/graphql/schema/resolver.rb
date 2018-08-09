@@ -31,8 +31,6 @@ module GraphQL
         @context = context
         # Since this hash is constantly rebuilt, cache it for this call
         @arguments_by_keyword = {}
-        # This might be set by {#early_return(val)}
-        @early_return_value = nil
         self.class.arguments.each do |name, arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
@@ -220,23 +218,6 @@ module GraphQL
 
       def load_application_object_failed(err)
         raise err
-      end
-
-      # Call this during loading or authorization to
-      # skip {#resolve} and return data instead of top-level errors.
-      #
-      # It doesn't halt the flow of the code so be sure to return
-      # after calling it, or combine it with `return return_with(...)`.
-      #
-      #
-      # @param response [Object] The value to respond with
-      # @return [void]
-      def return_with(response)
-        if @early_return_value.nil?
-          @early_return_value = response
-        else
-          raise "Can't return_with again, already returned early with: #{@early_return_value.inspect}"
-        end
       end
 
       class << self
