@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.6/GraphQL/Subscriptions/ActionCableSubscriptions" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.7/GraphQL/Subscriptions/ActionCableSubscriptions" />
   </head>
   <body>
     <p>Class: GraphQL::Subscriptions::ActionCableSubscriptions &lt; GraphQL::S…
@@ -39,7 +39,7 @@ variables: variables,
 operation_name: operation_name
 })
 payload = {
-result: result.subscription? ? {data: nil} : result.to_h,
+result: result.subscription? ? nil : result.to_h,
 more: result.subscription?,
 }</p>
     <h1 id="track-the-subscription-here-so-we-can-remove-it">Track the subscription here so we can remove it</h1>

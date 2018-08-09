@@ -1,0 +1,228 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Pundit Integration</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.8.7/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#authorization-guides">Authorization</a>
+  &raquo; Pundit Integration
+</p>
+
+
+
+  <div class="pro-header">
+    <p>
+      <strong>⚡️ Pro Feature ⚡️</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="http://graphql.pro">GraphQL-Pro</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Pundit Integration</h1>
+<div class="guide-container">
+  <p><a href="http://graphql.pro">GraphQL::Pro</a> includes an integration for powering GraphQL authorization with <a href="https://github.com/varvet/pundit">Pundit</a> policies.</p>
+
+<p><strong>Why bother?</strong> You <em>could</em> put your authorization code in your GraphQL types themselves, but writing a separate authorization layer gives you a few advantages:</p>
+
+<ul>
+  <li>Since the authorization code isn’t embedded in GraphQL, you can use the same logic in non-GraphQL (or legacy) parts of the app.</li>
+  <li>The authorization logic can be tested in isolation, so your end-to-end GraphQL tests don’t have to cover as many possibilities.</li>
+</ul>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p><strong>NOTE</strong>: Requires the latest gems, so make sure your <code class="highlighter-rouge">Gemfile</code> has:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># For PunditIntegration:</span>
+<span class="n">gem</span> <span class="s2">"graphql-pro"</span><span class="p">,</span> <span class="s2">"&gt;=1.7.9"</span>
+<span class="c1"># For list scoping:</span>
+<span class="n">gem</span> <span class="s2">"graphql"</span><span class="p">,</span> <span class="s2">"&gt;=1.8.7"</span>
+</code></pre></div></div>
+
+<p>To use the Pundit integration, include modules into your base object and base field classes, then set a default role:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="c1"># Add the Pundit integration:</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PunditIntegration</span><span class="o">::</span><span class="no">FieldIntegration</span>
+  <span class="c1"># By default, don't require a role at field-level:</span>
+  <span class="n">pundit_role</span> <span class="kp">nil</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="c1"># Hook up the custom field class:</span>
+  <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
+  <span class="c1"># Add the Pundit integration:</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PunditIntegration</span><span class="o">::</span><span class="no">ObjectIntegration</span>
+  <span class="c1"># By default, require staff:</span>
+  <span class="n">pundit_role</span> <span class="ss">:staff</span>
+  <span class="c1"># Or, to require no permissions by default:</span>
+  <span class="c1"># pundit_role nil</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>If you haven’t already done so, you should also hook up your base field class to your base interface and base mutation:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Types::BaseInterface</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
+  <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
+<span class="k">end</span>
+
+<span class="c1"># And:</span>
+
+<span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+  <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, in your query context, always include <code class="highlighter-rouge">current_user:</code></p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="ss">current_user: </span><span class="n">current_user</span><span class="p">,</span>
+  <span class="c1"># ...</span>
+<span class="p">}</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This will add the following behaviors to your schema:</p>
+
+<ul>
+  <li>Before any object is exposed by GraphQL, it will use a Pundit policy for that object</li>
+  <li>When lists or connections are exposed by GraphQL, it will use a Pundit scope to filter that list</li>
+</ul>
+
+<p>When any Policy method returns <code class="highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.8.7/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
+
+<h2 id="policies-and-methods">Policies and Methods</h2>
+
+<p>For each object returned by GraphQL, the integration matches it to a policy and method.</p>
+
+<p>The policy is found using <a href="https://www.rubydoc.info/gems/pundit/Pundit%2Epolicy!"><code class="highlighter-rouge">Pundit.policy!</code></a>, which looks up a policy using the object’s class name.</p>
+
+<p>Then, GraphQL will call a method on the policy to see whether the object is permitted or not. This method is assigned in the object class, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Employee</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># Only show employee objects to their bosses,</span>
+  <span class="c1"># or when that employee is the current viewer</span>
+  <span class="n">pundit_role</span> <span class="ss">:employer_or_self</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>That configuration will call <code class="highlighter-rouge">#employer_or_self?</code> on the corresponding Pundit policy.</p>
+
+<h3 id="default-method">Default Method</h3>
+
+<p>This configuration is inherited, so you can set a default value in the parent class, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="c1"># By default, restrict all GraphQL objects to internal staff;</span>
+  <span class="c1"># override this to allow access to any other users.</span>
+  <span class="n">pundit_role</span> <span class="ss">:staff</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="bypassing-policies">Bypassing Policies</h3>
+
+<p>The integration requires that every object with a <code class="highlighter-rouge">pundit_role</code> has a corresponding policy class. To allow objects to <em>skip</em> authorization, you can pass <code class="highlighter-rouge">nil</code> as the role:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PublicProfile</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># Anyone can see this</span>
+  <span class="n">pundit_role</span> <span class="kp">nil</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="field-level-authorization">Field-level authorization</h2>
+
+<p>Sometimes, some fields require higher permission than others. You can add <code class="highlighter-rouge">pundit_role</code> to <code class="highlighter-rouge">field(...)</code> calls to specify a method to call. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># Allow signed-in users to browse listings</span>
+  <span class="n">pundit_role</span> <span class="ss">:signed_in</span>
+
+  <span class="c1"># But, only allow `JobPostingPolicy#staff?` users to see</span>
+  <span class="c1"># who has applied</span>
+  <span class="n">field</span> <span class="ss">:applicants</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+    <span class="ss">pundit_role: :staff</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This way, certain fields can have higher permission requirements.</p>
+
+<h2 id="scopes">Scopes</h2>
+
+<p>The Pundit integration adds <a href="https://github.com/varvet/pundit#scopes">Pundit scopes</a> to GraphQL-Ruby’s <a href="/authorization/scoping">list scoping</a> feature. <code class="highlighter-rouge">ActiveRecord::Relation</code>s and <code class="highlighter-rouge">Mongoid::Criteria</code>s will be matched to Policy scopes and filtered accordingly. If a scope is missing, the query will crash rather than risk leaking unfiltered data.</p>
+
+<p>To allow an unscoped relation to be returned from a field, disable scoping with <code class="highlighter-rouge">scope: false</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Allow anyone to browse the job postings</span>
+<span class="n">field</span> <span class="ss">:job_postings</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">JobPosting</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+  <span class="ss">scope: </span><span class="kp">false</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/authorization/pundit_integration.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Pundit Integration">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

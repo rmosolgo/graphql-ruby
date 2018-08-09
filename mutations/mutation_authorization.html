@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.6/">API</a>
+          <a href="/api-doc/1.8.7/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -61,12 +61,15 @@
 
 <p>Before loading any data from the database, you might want to see if the user has a certain permission level. For example, maybe only <code class="highlighter-rouge">.admin?</code> users can run <code class="highlighter-rouge">Mutation.promoteEmployee</code>.</p>
 
-<p>This check can be implemented using the <code class="highlighter-rouge">#before_prepare</code> method in a mutation:</p>
+<p>This check can be implemented using the <code class="highlighter-rouge">#ready?</code> method in a mutation:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
-  <span class="k">def</span> <span class="nf">before_prepare</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">ready?</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
     <span class="k">if</span> <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">admin?</span>
       <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"Only admins can run this mutation"</span>
+    <span class="k">else</span>
+      <span class="c1"># Return true to continue the mutation:</span>
+      <span class="kp">true</span>
     <span class="k">end</span>
   <span class="k">end</span>
 
@@ -75,6 +78,17 @@
 </code></pre></div></div>
 
 <p>Now, when any non-<code class="highlighter-rouge">admin</code> user tries to run the mutation, it won’t run. Instead, they’ll get an error in the response.</p>
+
+<p>Additionally, <code class="highlighter-rouge">#ready?</code> may return <code class="highlighter-rouge">false, { ... }</code> to return <a href="/mutations/mutation_errors">errors as data</a>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">ready?</span>
+  <span class="k">if</span> <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">allowed?</span>
+    <span class="k">return</span> <span class="kp">false</span><span class="p">,</span> <span class="p">{</span> <span class="ss">errors: </span><span class="p">[</span><span class="s2">"You don't have permission to do this"</span><span class="p">]}</span>
+  <span class="k">else</span>
+    <span class="kp">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 <h2 id="loading-and-authorizing-objects">Loading and authorizing objects</h2>
 
@@ -99,8 +113,8 @@
 
 <ul>
   <li>Automatically remove <code class="highlighter-rouge">_id</code> from the name and pass that name for the <code class="highlighter-rouge">as:</code> option</li>
-  <li>Add a prepare hook to fetch an object with the given <code class="highlighter-rouge">ID</code> (using <a href="/api-doc/1.8.6/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a>)</li>
-  <li>Check that the fetched object’s type matches the <code class="highlighter-rouge">loads:</code> type (using <a href="/api-doc/1.8.6/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a>)</li>
+  <li>Add a prepare hook to fetch an object with the given <code class="highlighter-rouge">ID</code> (using <a href="/api-doc/1.8.7/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a>)</li>
+  <li>Check that the fetched object’s type matches the <code class="highlighter-rouge">loads:</code> type (using <a href="/api-doc/1.8.7/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a>)</li>
   <li>Run the fetched object through its type’s <code class="highlighter-rouge">.authorized?</code> hook (see <a href="/authorization/authorization">Authorization</a>)</li>
   <li>Inject it into <code class="highlighter-rouge">#resolve</code> using the object-style name (<code class="highlighter-rouge">employee:</code>)</li>
 </ul>
@@ -113,20 +127,42 @@
 <span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
 </code></pre></div></div>
 
-<h2 id="can-this-user-modify-this-thing">Can <em>this user</em> modify <em>this thing</em>?</h2>
+<h2 id="can-this-user-perform-this-action">Can <em>this user</em> perform <em>this action</em>?</h2>
 
-<p>Sometimes you need to authorize a specific user-object-action combination. For example, <code class="highlighter-rouge">.admin?</code> users can’t promote <em>all</em> employees! They can only promote employees which they manage.</p>
+<p>Sometimes you need to authorize a specific user-object(s)-action combination. For example, <code class="highlighter-rouge">.admin?</code> users can’t promote <em>all</em> employees! They can only promote employees which they manage.</p>
 
-<p>You can add this check by implementing a <code class="highlighter-rouge">#validate_#{arg_name}</code> method, for example:</p>
+<p>You can add this check by implementing a <code class="highlighter-rouge">#authorized?</code> method, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">validate_employee</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
+  <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>When <code class="highlighter-rouge">#authorized?</code> returns <code class="highlighter-rouge">false</code>, the mutation will be halted. If it returns <code class="highlighter-rouge">true</code> (or something truthy), the mutation will continue.</p>
+
+<h4 id="adding-errors">Adding errors</h4>
+
+<p>To add errors as data (as described in <a href="/mutations/mutation_errors">Mutation errors</a>), return a value <em>along with</em> <code class="highlighter-rouge">false</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
+  <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+    <span class="kp">true</span>
+  <span class="k">else</span>
+    <span class="k">return</span> <span class="kp">false</span><span class="p">,</span> <span class="p">{</span> <span class="ss">errors: </span><span class="p">[</span><span class="s2">"Can't promote an employee you don't manage"</span><span class="p">]</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Alternatively, you can add top-level errors by raising <code class="highlighter-rouge">GraphQL::ExecutionError</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
   <span class="k">if</span> <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
     <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"You can only promote your _own_ employees"</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>If this method raises an error, the mutation will be halted.</p>
+<p>In either case (returning <code class="highlighter-rouge">[false, data]</code> or raising an error), the mutation will be halted.</p>
 
 <h2 id="finally-doing-the-work">Finally, doing the work</h2>
 
