@@ -104,9 +104,35 @@ module GraphQL
         end
       end
 
+      def to_options
+        {
+          name: name,
+          type: @return_type_expr,
+          null: @return_type_null,
+          owner: owner,
+          complexity: @complexity,
+          extras: @extras,
+          arguments: arguments,
+          description: description,
+          deprecation_reason: deprecation_reason,
+          method: method_sym,
+          hash_key: nil, # This is currently equivalent to `method:`, so just pass one
+          connection: @connection,
+          max_page_size: max_page_size,
+          introspection: @introspection,
+          resolver_class: @resolver_class,
+          resolve: @resolve,
+          field: @field,
+          function: @function,
+          camelize: nil, # It was already applied, so maybe nil will work
+          scope: @scope,
+          subscription_scope: @subscription_scope,
+          filters: @filters,
+        }
+      end
+
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
-      # @param return_type_expr [Class, GraphQL::BaseType, Array] The return type of this field
-      # @param desc [String] Field description
+      # @param type [Class, GraphQL::BaseType, Array] The return type of this field
       # @param owner [Class] The type that this field belongs to
       # @param null [Boolean] `true` if this field may return `null`, `false` if it is never `null`
       # @param description [String] Field description
@@ -145,7 +171,7 @@ module GraphQL
         @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
         @description = description
         if field.is_a?(GraphQL::Schema::Field)
-          @field_instance = field
+          raise ArgumentError, "Instead of passing a field as `field:`, use `Field.from_options(field.to_options.merge(overrides))`"
         else
           @field = field
         end
@@ -274,12 +300,6 @@ module GraphQL
 
       # @return [GraphQL::Field]
       def to_graphql
-        # this field was previously defined and passed here, so delegate to it
-        if @field_instance
-          return @field_instance.to_graphql
-        end
-
-
         field_defn = if @field
           @field.dup
         elsif @function
