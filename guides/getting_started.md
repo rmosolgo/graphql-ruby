@@ -49,6 +49,8 @@ class PostType < GraphQL::Schema::Object
   description "A blog post"
   field :id, ID, null: false
   field :title, String, null: false
+  # fields should be queried in camel-case (see below in query)
+  field :camel_case_field, String, null: false
   # Fields can return lists of other objects:
   field :comments, [CommentType], null: true,
     # And fields can have their own descriptions:
@@ -103,6 +105,7 @@ query_string = "
   post(id: 1) {
     id
     title
+    camelCaseField
   }
 }"
 result_hash = Schema.execute(query_string)
@@ -111,6 +114,7 @@ result_hash = Schema.execute(query_string)
 #     "post" => {
 #        "id" => 1,
 #        "title" => "GraphQL is nice"
+#        "camelCaseField" => ""
 #     }
 #   }
 # }
