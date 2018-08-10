@@ -50,11 +50,10 @@ NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
 }
 
 # Load dependencies
-['Mongoid', 'PG', 'Rails', 'SQLite3'].each do |dependency|
+['Mongoid', 'PG', 'Rails', 'SQLite3'].each do |integration|
   begin
-    dep = Object.const_get(dependency)
-    puts "Loading #{dep} ..."
-    Dir["#{File.dirname(__FILE__)}/dependencies/#{dependency.downcase}/**/*.rb"].each do |f|
+    Object.const_get(integration)
+    Dir["#{File.dirname(__FILE__)}/integration/#{integration.downcase}/**/*.rb"].each do |f|
       require f
     end
   rescue NameError
