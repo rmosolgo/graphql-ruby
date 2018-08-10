@@ -23,9 +23,7 @@ rvm:
 matrix:
   include:
   - env:
-      - SYSTEM_TESTS=yes
       - DISPLAY=':99.0'
-    gemfile: gemfiles/rails_5.1.gemfile
     rvm: 2.4.3
     addons:
       apt:
@@ -39,6 +37,9 @@ matrix:
       - unzip chromedriver_linux64.zip && chmod +x chromedriver && sudo mv chromedriver /usr/local/bin
     before_script:
       - sh -e /etc/init.d/xvfb start
+    gemfile: spec/dummy/Gemfile
+    script:
+      - cd spec/dummy && bundle exec rails test:system
   - rvm: 2.2.8
     gemfile: Gemfile
   - rvm: 2.2.8
@@ -67,7 +68,7 @@ matrix:
       - mongodb
   - env: DATABASE=POSTGRESQL
     rvm: 2.4.3
-    gemfile: gemfiles/rails_5.1.gemfile
+    gemfile: gemfiles/rails_5.2_postgresql.gemfile
     services:
       - postgresql
     before_script:

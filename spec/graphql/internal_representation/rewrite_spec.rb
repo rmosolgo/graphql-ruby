@@ -108,7 +108,6 @@ describe GraphQL::InternalRepresentation::Rewrite do
       GRAPHQL
     }
 
-=begin # TODO: debug
     it "groups selections by object types which they apply to" do
       doc = rewrite_result.operation_definitions["getPlant"]
       assert_nil doc.definition
@@ -125,12 +124,13 @@ describe GraphQL::InternalRepresentation::Rewrite do
 
       nut_selections = plant_selection.typed_children[schema.types["Nut"]]
       # `... on Tree`, `... on Nut`, and `NutFields`, but not `... on Fruit { ... on Tree }`
+
       assert_equal 3, nut_selections["leafType"].ast_nodes.size
+
       # Multi-level merging when including fragments:
       habitats_selections = nut_selections["habitats"].typed_children[schema.types["Habitat"]]
       assert_equal ["averageWeight", "seasons"], habitats_selections.keys
     end
-=end
 
     it "tracks parent nodes" do
       doc = rewrite_result.operation_definitions["getPlant"]

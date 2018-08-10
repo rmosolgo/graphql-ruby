@@ -98,7 +98,8 @@ namespace :test do
   desc "Run system tests for ActionCable subscriptions"
   task :system do
     success = Dir.chdir("spec/dummy") do
-      system("bin/rails test:system")
+      system("bundle install")
+      system("bundle exec bin/rails test:system")
     end
     success || abort
   end
