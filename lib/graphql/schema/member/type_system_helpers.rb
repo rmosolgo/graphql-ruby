@@ -24,10 +24,6 @@ module GraphQL
           false
         end
 
-        def to_type_signature
-          graphql_name
-        end
-
         # @return [GraphQL::TypeKinds::TypeKind]
         def kind
           raise NotImplementedError

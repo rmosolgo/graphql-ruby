@@ -13,6 +13,14 @@ module GraphQL
         @of_type = of_type
       end
 
+      def description
+        nil
+      end
+
+      def graphql_name
+        raise NotImplementedError
+      end
+
       def to_graphql
         raise NotImplementedError
       end

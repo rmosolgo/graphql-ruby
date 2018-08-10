@@ -18,8 +18,12 @@ describe GraphQL::Schema::List do
     assert_equal GraphQL::TypeKinds::LIST, list_type.kind
   end
 
-  it "returns correct type signature" do
+  it "returns correct type graphql_name and to_type_signature is aliased" do
     assert_equal "[Musician]", list_type.to_type_signature
+  end
+
+  it "returns correct type graphql_name" do
+    assert_equal "[Musician]", list_type.graphql_name
   end
 
   describe "comparison operator" do

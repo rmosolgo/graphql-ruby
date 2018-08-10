@@ -20,9 +20,11 @@ module GraphQL
         true
       end
 
-      def to_type_signature
-        "[#{@of_type.to_type_signature}]"
+      def graphql_name
+        "[#{@of_type.graphql_name}]"
       end
+
+      alias_method :to_type_signature, :graphql_name
     end
   end
 end
