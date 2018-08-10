@@ -4,6 +4,7 @@ module GraphQL
     class Argument
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
+      include GraphQL::Schema::Member::HasPath
 
       NO_DEFAULT = :__no_default__
 

@@ -23,6 +23,8 @@ module GraphQL
       # Really we only need description from here, but:
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
+      include Schema::Member::HasPath
+      extend Schema::Member::HasPath
 
       # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
       # @param context [GraphQL::Query::Context]

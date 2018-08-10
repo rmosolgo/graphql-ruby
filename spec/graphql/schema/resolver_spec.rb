@@ -291,6 +291,22 @@ describe GraphQL::Schema::Resolver do
     ResolverTest::Schema.execute(*args)
   end
 
+  describe ".path" do
+    it "is the name" do
+      assert_equal "Resolver1", ResolverTest::Resolver1.path
+    end
+
+    it "is used for arguments and fields" do
+      assert_equal "Resolver1.value", ResolverTest::Resolver1.arguments["value"].path
+      assert_equal "PrepResolver7.int", ResolverTest::PrepResolver7.fields["int"].path
+    end
+
+    it "works on instances" do
+      r = ResolverTest::Resolver1.new(object: nil, context: nil)
+      assert_equal "Resolver1", r.path
+    end
+  end
+
   it "gets initialized for each resolution" do
     # State isn't shared between calls:
     res = exec_query " { r1: resolver1(value: 1) r2: resolver1 }"

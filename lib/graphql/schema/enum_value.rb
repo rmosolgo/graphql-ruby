@@ -27,6 +27,7 @@ module GraphQL
     #   end
     class EnumValue < GraphQL::Schema::Member
       include GraphQL::Schema::Member::AcceptsDefinition
+      include GraphQL::Schema::Member::HasPath
 
       attr_reader :graphql_name
 

@@ -14,6 +14,12 @@ describe GraphQL::Schema::Object do
       assert object_class.respond_to?(:connection_type)
     end
 
+    describe "path" do
+      it "is the type name" do
+        assert_equal "Ensemble", object_class.path
+      end
+    end
+
     it "inherits fields and interfaces" do
       new_object_class = Class.new(object_class) do
         field :newField, String, null: true
