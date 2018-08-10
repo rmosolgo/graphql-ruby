@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.7.10 (10 Aug 2018)
+
+### New Features
+
+- Update `PunditIntegration` for arguments, unions, interfaces and mutations
+
 ## 1.7.9 (9 Aug 2018)
 
 ### New Features
