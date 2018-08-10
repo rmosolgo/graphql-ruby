@@ -3,7 +3,7 @@
 module GraphQL
   class Schema
     class Field
-      class ScopeFilter < GraphQL::Schema::FieldFilter
+      class ScopeExtension < GraphQL::Schema::FieldExtension
         def after_resolve(value:, context:, **rest)
           ret_type = @field.type.unwrap
           if ret_type.respond_to?(:scope_items)

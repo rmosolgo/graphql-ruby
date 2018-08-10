@@ -1,21 +1,21 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Schema::FieldFilter do
+describe GraphQL::Schema::FieldExtension do
   module FilterTestSchema
-    class DoubleFilter < GraphQL::Schema::FieldFilter
+    class DoubleFilter < GraphQL::Schema::FieldExtension
       def after_resolve(object:, value:, arguments:, context:, memo:)
         value * 2
       end
     end
 
-    class MultiplyByOption < GraphQL::Schema::FieldFilter
+    class MultiplyByOption < GraphQL::Schema::FieldExtension
       def after_resolve(object:, value:, arguments:, context:, memo:)
         value * options[:factor]
       end
     end
 
-    class MultiplyByArgument < GraphQL::Schema::FieldFilter
+    class MultiplyByArgument < GraphQL::Schema::FieldExtension
       def initialize(field:, options:)
         field.argument(:factor, Integer, required: true)
         super
@@ -36,20 +36,20 @@ describe GraphQL::Schema::FieldFilter do
 
     class Query < BaseObject
       field :doubled, Integer, null: false, method: :pass_thru do
-        filter(DoubleFilter)
+        extension(DoubleFilter)
         argument :input, Integer, required: true
       end
 
       def pass_thru(input:)
-        input # return it as-is, it will be modified by filters
+        input # return it as-is, it will be modified by extensions
       end
 
       field :trippled_by_option, Integer, null: false, method: :pass_thru do
-        filter(MultiplyByOption, factor: 3)
+        extension(MultiplyByOption, factor: 3)
         argument :input, Integer, required: true
       end
 
-      field :multiply_input, Integer, null: false, method: :pass_thru, filters: [MultiplyByArgument] do
+      field :multiply_input, Integer, null: false, method: :pass_thru, extensions: [MultiplyByArgument] do
         argument :input, Integer, required: true
       end
     end
@@ -61,6 +61,14 @@ describe GraphQL::Schema::FieldFilter do
 
   def exec_query(query_str, **kwargs)
     FilterTestSchema::Schema.execute(query_str, **kwargs)
+  end
+
+  describe "reading" do
+    it "has a reader method" do
+      field = FilterTestSchema::Query.fields["multiplyInput"]
+      assert_equal 1, field.extensions.size
+      assert_instance_of FilterTestSchema::MultiplyByArgument, field.extensions.first
+    end
   end
 
   describe "modifying return values" do

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 # test_via: ../object.rb
-require "graphql/schema/field/connection_filter"
-require "graphql/schema/field/scope_filter"
+require "graphql/schema/field/connection_extension"
+require "graphql/schema/field/scope_extension"
 
 module GraphQL
   class Schema
@@ -128,8 +128,8 @@ module GraphQL
       # @param complexity [Numeric] When provided, set the complexity for this field
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
-      # @param filters [Array<Class>] Named filters to apply to this field (see also {#filter})
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], filters: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
+      # @param extensions [Array<Class>] Named extensions to apply to this field (see also {#extension})
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
 
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
@@ -188,17 +188,19 @@ module GraphQL
         @subscription_scope = subscription_scope
 
         # Do this last so we have as much context as possible when initializing them:
-        @filters = []
-        self.filters(filters)
-        # This should run before connection filter,
+        @extensions = []
+        if extensions.any?
+          self.extensions(extensions)
+        end
+        # This should run before connection extension,
         # but should it run after the definition block?
         if scoped?
-          self.filter(ScopeFilter)
+          self.extension(ScopeExtension)
         end
         # The problem with putting this after the definition_block
         # is that it would override arguments
         if connection?
-          self.filter(ConnectionFilter)
+          self.extension(ConnectionExtension)
         end
 
         if definition_block
@@ -220,42 +222,47 @@ module GraphQL
         end
       end
 
-      # Read filter instances from this field,
+      # Read extension instances from this field,
       # or add new classes/options to be initialized on this field.
       #
-      # @param filters [Array<Class>, Hash<Class => Object>] Add filters to this field
-      # @return [Array<GraphQL::Schema::FieldFilter>] Filters to apply to this field
-      def filters(new_filters)
-        if new_filters.none?
+      # @param extensions [Array<Class>, Hash<Class => Object>] Add extensions to this field
+      # @return [Array<GraphQL::Schema::FieldExtension>] extensions to apply to this field
+      def extensions(new_extensions = nil)
+        if new_extensions.nil?
           # Read the value
-          @filters
+          @extensions
         else
           if @resolve || @function
-            raise ArgumentError, "Filters are not supported with resolve procs or functions,\nbut #{owner.name}.#{name} has: #{@resolve || @function}\nSo, it can have filters: #{filters}.\nUse a method or a Schema::Resolver instead."
+            raise ArgumentError, <<~MSG
+Extensions are not supported with resolve procs or functions,
+but #{owner.name}.#{name} has: #{@resolve || @function}
+So, it can't have extensions: #{extensions}.
+Use a method or a Schema::Resolver instead.
+MSG
           end
 
           # Normalize to a Hash of {name => options}
-          filters_with_options = if new_filters.last.is_a?(Hash)
-            new_filters.pop
+          extensions_with_options = if new_extensions.last.is_a?(Hash)
+            new_extensions.pop
           else
             {}
           end
-          new_filters.each do |f|
-            filters_with_options[f] = nil
+          new_extensions.each do |f|
+            extensions_with_options[f] = nil
           end
 
           # Initialize each class and stash the instance
-          filters_with_options.each do |filter_class, options|
-            @filters << filter_class.new(field: self, options: options)
+          extensions_with_options.each do |extension_class, options|
+            @extensions << extension_class.new(field: self, options: options)
           end
         end
       end
 
-      # Add `filter` to this field, initialized with `options` if provided.
-      # @param filter [Class] subclass of {Schema::FieldFilter}
-      # @param options [Object] if provided, given as `options:` when initializing `filter`.
-      def filter(filter, options = nil)
-        filters([{filter => options}])
+      # Add `extension` to this field, initialized with `options` if provided.
+      # @param extension [Class] subclass of {Schema::Fieldextension}
+      # @param options [Object] if provided, given as `options:` when initializing `extension`.
+      def extension(extension, options = nil)
+        extensions([{extension => options}])
       end
 
       def complexity(new_complexity)
@@ -454,43 +461,43 @@ module GraphQL
         end
 
         query_ctx = field_ctx.query.context
-        with_filters(obj, ruby_kwargs, query_ctx) do |filtered_obj, filtered_args|
-          if filtered_args.any?
-            filtered_obj.public_send(@method_sym, **filtered_args)
+        with_extensions(obj, ruby_kwargs, query_ctx) do |extended_obj, extended_args|
+          if extended_args.any?
+            extended_obj.public_send(@method_sym, **extended_args)
           else
-            filtered_obj.public_send(@method_sym)
+            extended_obj.public_send(@method_sym)
           end
         end
       end
 
       # TODO this needs the same kind of work as instrumenters to avoid long, boring stack traces
-      def with_filters(obj, args, ctx)
+      def with_extensions(obj, args, ctx)
         memos = []
-        value = run_before_filter(0, memos, obj, args, ctx) { |filtered_obj, filtered_args| yield(filtered_obj, filtered_args) }
+        value = run_before_extension(0, memos, obj, args, ctx) { |extended_obj, extended_args| yield(extended_obj, extended_args) }
         ctx.schema.after_lazy(value) do |resolved_value|
-          run_after_filter(0, memos, obj, args, ctx, resolved_value)
+          run_after_extension(0, memos, obj, args, ctx, resolved_value)
         end
       end
 
-      def run_before_filter(idx, memos, obj, args, ctx)
-        filter = @filters[idx]
-        if filter
-          filter.before_resolve(object: obj, arguments: args, context: ctx) do |filtered_obj, filtered_args, memo|
+      def run_before_extension(idx, memos, obj, args, ctx)
+        extension = @extensions[idx]
+        if extension
+          extension.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
             memos << memo
-            run_before_filter(idx + 1, memos, filtered_obj, filtered_args, ctx) { |o, a| yield(o, a) }
+            run_before_extension(idx + 1, memos, extended_obj, extended_args, ctx) { |o, a| yield(o, a) }
           end
         else
           yield(obj, args)
         end
       end
 
-      def run_after_filter(idx, memos, obj, args, ctx, value)
-        filter = @filters[idx]
-        if filter
+      def run_after_extension(idx, memos, obj, args, ctx, value)
+        extension = @extensions[idx]
+        if extension
           memo = memos[idx]
-          filtered_value = filter.after_resolve(object: obj, arguments: args, context: ctx, value: value, memo: memo)
+          extended_value = extension.after_resolve(object: obj, arguments: args, context: ctx, value: value, memo: memo)
           # TODO after_lazy?
-          run_after_filter(idx + 1, memos, obj, args, ctx, filtered_value)
+          run_after_extension(idx + 1, memos, obj, args, ctx, extended_value)
         else
           value
         end
