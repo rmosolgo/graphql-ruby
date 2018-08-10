@@ -19,3 +19,4 @@ tmp/*
 __*.db
 node_modules/
 OperationStoreClient.js
+spec/integration/tmp

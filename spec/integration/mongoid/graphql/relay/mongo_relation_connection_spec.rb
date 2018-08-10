@@ -2,10 +2,6 @@
 require 'spec_helper'
 
 describe GraphQL::Relay::MongoRelationConnection do
-  before do
-    skip("Mongo not detected") unless defined?(Mongoid)
-  end
-
   def get_names(result)
     ships = result["data"]["federation"]["bases"]["edges"]
     ships.map { |e| e["node"]["name"] }

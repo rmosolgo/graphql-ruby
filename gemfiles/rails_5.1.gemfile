@@ -6,9 +6,12 @@ gem "bootsnap"
 gem "ruby-prof", platform: :ruby
 gem "pry"
 gem "pry-stack_explorer", platform: :ruby
-gem "rails", "~> 5.1.0"
+gem "rails", "~> 5.1.0", require: "rails/all"
 gem "puma"
 gem "capybara", "~> 2.13"
 gem "selenium-webdriver"
+gem "sqlite3", platform: :ruby
+gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
+gem "sequel"
 
 gemspec path: "../"

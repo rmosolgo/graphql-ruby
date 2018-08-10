@@ -50,7 +50,7 @@ NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
 }
 
 # Load dependencies
-['Mongoid', 'PG', 'Rails', 'SQLite3'].each do |integration|
+['Mongoid', 'Rails'].each do |integration|
   begin
     Object.const_get(integration)
     Dir["#{File.dirname(__FILE__)}/integration/#{integration.downcase}/**/*.rb"].each do |f|

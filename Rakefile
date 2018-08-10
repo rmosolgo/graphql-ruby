@@ -6,11 +6,13 @@ require "rake/testtask"
 require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
 
+Bundler.require
+
 Rake::TestTask.new do |t|
   t.libs << "spec" << "lib"
 
   exclude_integrations = []
-  ['Mongoid', 'PG', 'Rails', 'SQLite3'].each do |integration|
+  ['Mongoid', 'Rails'].each do |integration|
     begin
       Object.const_get(integration)
     rescue NameError
@@ -19,9 +21,12 @@ Rake::TestTask.new do |t|
   end
 
   t.test_files = Dir['spec/**/*_spec.rb'].reject do |f|
-    exclude_integrations.any? do |integration|
+    next unless f.start_with?("spec/integration/")
+    excluded = exclude_integrations.any? do |integration|
       f.start_with?("spec/integration/#{integration}/")
     end
+    puts "+ #{f}" unless excluded
+    excluded
   end
 
   t.warning = false
@@ -112,7 +117,7 @@ namespace :js do
     success || abort
   end
 
-  desc "Install JS integrations"
+  desc "Install JS dependencies"
   task :install do
     Dir.chdir(client_dir) do
       system("yarn install")

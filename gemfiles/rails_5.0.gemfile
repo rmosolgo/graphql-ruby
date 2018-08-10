@@ -6,8 +6,11 @@ gem "bootsnap"
 gem "ruby-prof", platform: :ruby
 gem "pry"
 gem "pry-stack_explorer", platform: :ruby
-gem "rails", "~> 5.0"
+gem "rails", "~> 5.0", require: "rails/all"
 gem "activerecord", "~> 5.0.0"
 gem "actionpack", "~> 5.0.0"
+gem "sqlite3", platform: :ruby
+gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
+gem "sequel"
 
 gemspec path: "../"
