@@ -233,7 +233,7 @@ module GraphQL
           @extensions
         else
           if @resolve || @function
-            raise ArgumentError, <<~MSG
+            raise ArgumentError, <<-MSG
 Extensions are not supported with resolve procs or functions,
 but #{owner.name}.#{name} has: #{@resolve || @function}
 So, it can't have extensions: #{extensions}.
