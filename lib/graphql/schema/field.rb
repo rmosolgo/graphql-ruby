@@ -128,7 +128,7 @@ module GraphQL
       # @param complexity [Numeric] When provided, set the complexity for this field
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
-      # @param filters [Array<Symbols>] Named filters to apply to this field (registered with {.filter})
+      # @param filters [Array<Class>] Named filters to apply to this field (see also {#filter})
       def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], filters: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
 
         if name.nil?
@@ -189,7 +189,7 @@ module GraphQL
 
         # Do this last so we have as much context as possible when initializing them:
         @filters = []
-        self.filters(*Array(filters))
+        self.filters(filters)
         # This should run before connection filter,
         # but should it run after the definition block?
         if scoped?
@@ -220,9 +220,12 @@ module GraphQL
         end
       end
 
-      # @param filters [Array<Symbol>, Hash<Symbol => Object>] Add filters to this field by name
-      # @return [Array<GraphQL::Schema::FieldFilter] Filters to apply to this field
-      def filters(*new_filters)
+      # Read filter instances from this field,
+      # or add new classes/options to be initialized on this field.
+      #
+      # @param filters [Array<Class>, Hash<Class => Object>] Add filters to this field
+      # @return [Array<GraphQL::Schema::FieldFilter>] Filters to apply to this field
+      def filters(new_filters)
         if new_filters.none?
           # Read the value
           @filters
@@ -231,49 +234,28 @@ module GraphQL
             raise ArgumentError, "Filters are not supported with resolve procs or functions,\nbut #{owner.name}.#{name} has: #{@resolve || @function}\nSo, it can have filters: #{filters}.\nUse a method or a Schema::Resolver instead."
           end
 
-          cls_filters = self.class.filters
           # Normalize to a Hash of {name => options}
           filters_with_options = if new_filters.last.is_a?(Hash)
             new_filters.pop
           else
             {}
           end
-
           new_filters.each do |f|
             filters_with_options[f] = nil
           end
 
-          # Find the matching class and initialize it
-          filters_with_options.each do |filter_name, options|
-            filter_cls = if filter_name.is_a?(Class)
-              filter_name
-            else
-              begin
-                cls_filters.fetch(filter_name)
-              rescue KeyError
-                raise ArgumentError, "#{owner}.#{name}: failed to find filter `#{filter_name}` among #{cls_filters.keys}"
-              end
-            end
-            @filters << filter_cls.new(field: self, options: options)
+          # Initialize each class and stash the instance
+          filters_with_options.each do |filter_class, options|
+            @filters << filter_class.new(field: self, options: options)
           end
         end
       end
 
-      # TODO what API to support?
-      def filter(name, options = nil)
-        filters({name => options})
-      end
-
-      def self.filter(name, filter)
-        own_filters[name] = filter
-      end
-
-      def self.filters
-        own_filters.merge(superclass.respond_to?(:filters) ? superclass.filters : {})
-      end
-
-      def self.own_filters
-        @own_filters ||= {}
+      # Add `filter` to this field, initialized with `options` if provided.
+      # @param filter [Class] subclass of {Schema::FieldFilter}
+      # @param options [Object] if provided, given as `options:` when initializing `filter`.
+      def filter(filter, options = nil)
+        filters([{filter => options}])
       end
 
       def complexity(new_complexity)

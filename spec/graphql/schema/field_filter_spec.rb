@@ -3,48 +3,40 @@ require "spec_helper"
 
 describe GraphQL::Schema::FieldFilter do
   module FilterTestSchema
-    class BaseField < GraphQL::Schema::Field
-      class DoubleFilter < GraphQL::Schema::FieldFilter
-        def after_resolve(object:, value:, arguments:, context:, memo:)
-          value * 2
-        end
+    class DoubleFilter < GraphQL::Schema::FieldFilter
+      def after_resolve(object:, value:, arguments:, context:, memo:)
+        value * 2
+      end
+    end
+
+    class MultiplyByOption < GraphQL::Schema::FieldFilter
+      def after_resolve(object:, value:, arguments:, context:, memo:)
+        value * options[:factor]
+      end
+    end
+
+    class MultiplyByArgument < GraphQL::Schema::FieldFilter
+      def initialize(field:, options:)
+        field.argument(:factor, Integer, required: true)
+        super
       end
 
-      class MultiplyByOption < GraphQL::Schema::FieldFilter
-        def after_resolve(object:, value:, arguments:, context:, memo:)
-          value * options[:factor]
-        end
+      def before_resolve(object:, arguments:, context:)
+        factor = arguments.delete(:factor)
+        yield(object, arguments, factor)
       end
 
-      class MultiplyByArgument < GraphQL::Schema::FieldFilter
-        def initialize(field:, options:)
-          field.argument(:factor, Integer, required: true)
-          super
-        end
-
-        def before_resolve(object:, arguments:, context:)
-          factor = arguments.delete(:factor)
-          yield(object, arguments, factor)
-        end
-
-        def after_resolve(object:, value:, arguments:, context:, memo:)
-          value * memo
-        end
+      def after_resolve(object:, value:, arguments:, context:, memo:)
+        value * memo
       end
-
-      # TODO support `filter(cls, as: ...) with default to underscored name`
-      filter(:double, DoubleFilter)
-      filter(:multiply_by_option, MultiplyByOption)
-      filter(:multiply_by_argument, MultiplyByArgument)
     end
 
     class BaseObject < GraphQL::Schema::Object
-      field_class(BaseField)
     end
 
     class Query < BaseObject
       field :doubled, Integer, null: false, method: :pass_thru do
-        filters(:double)
+        filter(DoubleFilter)
         argument :input, Integer, required: true
       end
 
@@ -53,12 +45,11 @@ describe GraphQL::Schema::FieldFilter do
       end
 
       field :trippled_by_option, Integer, null: false, method: :pass_thru do
-        filter(:multiply_by_option, factor: 3)
+        filter(MultiplyByOption, factor: 3)
         argument :input, Integer, required: true
       end
 
-      field :multiply_input, Integer, null: false, method: :pass_thru do
-        filter(:multiply_by_argument)
+      field :multiply_input, Integer, null: false, method: :pass_thru, filters: [MultiplyByArgument] do
         argument :input, Integer, required: true
       end
     end
