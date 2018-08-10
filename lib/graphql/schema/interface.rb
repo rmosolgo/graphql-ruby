@@ -9,6 +9,7 @@ module GraphQL
         include GraphQL::Schema::Member::BaseDSLMethods
         include GraphQL::Schema::Member::TypeSystemHelpers
         include GraphQL::Schema::Member::HasFields
+        include GraphQL::Schema::Member::HasPath
         include GraphQL::Schema::Member::RelayShortcuts
         include GraphQL::Schema::Member::Scoped
 

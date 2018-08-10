@@ -29,7 +29,11 @@ describe GraphQL::Schema::Argument do
     end
   end
 
-
+  describe "#path" do
+    it "includes type, field and argument names" do
+      assert_equal "Query.field.argWithBlock", SchemaArgumentTest::Query.fields["field"].arguments["argWithBlock"].path
+    end
+  end
 
   describe "#name" do
     it "reflects camelization" do

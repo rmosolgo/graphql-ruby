@@ -3,6 +3,13 @@ require "spec_helper"
 
 describe GraphQL::Schema::Union do
   let(:union) { Jazz::PerformingAct }
+
+  describe ".path" do
+    it "is the name" do
+      assert_equal "PerformingAct", union.path
+    end
+  end
+
   describe "type info" do
     it "has some" do
       assert_equal 2, union.possible_types.size
