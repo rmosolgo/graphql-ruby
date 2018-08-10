@@ -57,6 +57,12 @@ appraise 'rails_5.2' do
   gem 'sequel'
 end
 
+appraise 'rails_5.2_postgresql' do
+  gem 'rails', '~> 5.2.0', require: 'rails/all'
+  gem 'pg', "< 1.0", platform: :ruby
+  gem 'sequel'
+end
+
 appraise 'mongoid_7' do
   gem 'mongoid', '~> 7.0.1'
 end

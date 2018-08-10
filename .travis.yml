@@ -65,3 +65,10 @@ matrix:
     gemfile: gemfiles/mongoid_5.gemfile
     services:
       - mongodb
+  - env: DATABASE=POSTGRESQL
+    rvm: 2.4.3
+    gemfile: gemfiles/rails_5.1.gemfile
+    services:
+      - postgresql
+    before_script:
+      - psql -c 'create database graphql_ruby_test;' -U postgres
