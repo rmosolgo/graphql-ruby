@@ -65,7 +65,7 @@ module GraphQL
         )
 
         if field.deprecation_reason
-          field_node.directives << GraphQL::Language::Nodes::Directive.new(
+          field_node = field_node.merge_directive(
             name: GraphQL::Directive::DeprecatedDirective.name,
             arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: field.deprecation_reason)]
           )
@@ -107,7 +107,7 @@ module GraphQL
         )
 
         if enum_value.deprecation_reason
-          enum_value_node.directives << GraphQL::Language::Nodes::Directive.new(
+          enum_value_node = enum_value_node.merge_directive(
             name: GraphQL::Directive::DeprecatedDirective.name,
             arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: enum_value.deprecation_reason)]
           )

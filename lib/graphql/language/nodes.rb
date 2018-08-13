@@ -168,7 +168,7 @@ module GraphQL
               else
                 module_eval <<-RUBY, __FILE__, __LINE__
                   def children
-                    @children ||= #{children_of_type.keys.map { |k| "@#{k}" }.join(" + ")}
+                    @children ||= (#{children_of_type.keys.map { |k| "@#{k}" }.join(" + ")}).freeze
                   end
                 RUBY
               end
@@ -200,7 +200,7 @@ module GraphQL
                 attr_reader #{method_names.map { |m| ":#{m}"}.join(", ")}
 
                 def scalars
-                  @scalars ||= [#{method_names.map { |k| "@#{k}" }.join(", ")}]
+                  @scalars ||= [#{method_names.map { |k| "@#{k}" }.join(", ")}].freeze
                 end
               RUBY
             end
@@ -224,7 +224,9 @@ module GraphQL
               arguments = scalar_method_names.map { |m| "#{m}: nil"} +
                 @children_methods.keys.map { |m| "#{m}: []" }
 
-              assignments = all_method_names.map { |m| "@#{m} = #{m}"}
+              assignments = scalar_method_names.map { |m| "@#{m} = #{m}"} +
+                @children_methods.keys.map { |m| "@#{m} = #{m}.freeze" }
+
               module_eval <<-RUBY, __FILE__, __LINE__
                 def initialize_node #{arguments.join(", ")}
                   #{assignments.join("\n")}
