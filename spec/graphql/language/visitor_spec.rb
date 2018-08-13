@@ -147,6 +147,14 @@ describe GraphQL::Language::Visitor do
         if node.name == "c"
           new_node = node.merge(name: "renamedC")
           super(new_node, parent)
+        elsif node.name == "addFields"
+          new_node = node.merge_selection(name: "addedChild")
+          super(new_node, parent)
+        elsif node.name == "anotherAddition"
+          new_node = node
+            .merge_argument(name: "addedArgument", value: 1)
+            .merge_directive(name: "doStuff")
+          super(new_node, parent)
         else
           super
         end
@@ -163,6 +171,15 @@ describe GraphQL::Language::Visitor do
       def on_input_object(node, parent)
         if node.arguments.map(&:name).sort == ["delete", "me"]
           super(DELETE_NODE, parent)
+        else
+          super
+        end
+      end
+
+      def on_directive(node, parent)
+        if node.name == "doStuff"
+          new_node = node.merge_argument(name: "addedArgument2", value: 2)
+          super(new_node, parent)
         else
           super
         end
@@ -258,6 +275,28 @@ GRAPHQL
       after_query = <<-GRAPHQL.chop
 query {
   f1(arg1: [{a: 1}, {b: 2}])
+}
+GRAPHQL
+
+      document, new_document = get_result(before_query)
+      assert_equal before_query, document.to_query_string
+      assert_equal after_query, new_document.to_query_string
+    end
+
+    it "can add children" do
+      before_query = <<-GRAPHQL.chop
+query {
+  addFields
+  anotherAddition
+}
+GRAPHQL
+
+      after_query = <<-GRAPHQL.chop
+query {
+  addFields {
+    addedChild
+  }
+  anotherAddition(addedArgument: 1) @doStuff(addedArgument2: 2)
 }
 GRAPHQL
 
