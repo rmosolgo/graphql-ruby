@@ -147,7 +147,6 @@ module GraphQL
           new_parent = new_parent && new_parent.delete_child(node)
           return nil, new_parent
         else
-          # TODO: be less lax here
           # The user-provided hook didn't make any modifications.
           # In fact, the hook might have returned who-knows-what, so
           # ignore the return value and use the original values.
