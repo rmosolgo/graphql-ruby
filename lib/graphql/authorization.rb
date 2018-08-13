@@ -71,7 +71,13 @@ module GraphQL
           end
           context = memo[:context]
           err = InaccessibleFieldsError.new(fields: fields, irep_nodes: nodes, context: context)
-          context.schema.inaccessible_fields(err)
+
+          # TODO: fix
+          if context.schema.respond_to?(:inaccessible_field)
+            context[:inaccessible_nodes] = memo[:inaccessible_nodes]
+          else
+            context.schema.inaccessible_fields(err)
+          end
         else
           nil
         end

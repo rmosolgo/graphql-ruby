@@ -310,6 +310,10 @@ module GraphQL
       #
       # Eventually, we might hook up field instances to execution in another way. TBD.
       def resolve_field(obj, args, ctx)
+        if ctx[:inaccessible_nodes] && ctx[:inaccessible_nodes].include?(ctx.irep_node)
+          ctx.schema.inaccessible_field(self)
+        end
+
         ctx.schema.after_lazy(obj) do |after_obj|
           # First, apply auth ...
           query_ctx = ctx.query.context
