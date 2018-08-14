@@ -36,15 +36,13 @@ See below for how extensions may modify fields.
 
 ### Modifying field configuration
 
-When extensions are attached, they are initialized with a `field:` and `options:`. During `#initialize`, they may extend the field they're attached to. For example:
+When extensions are attached, they are initialized with a `field:` and `options:`. Then, `#apply` is called, when they may extend the field they're attached to. For example:
 
 ```ruby
 class SearchableExtension < GraphQL::Schema::FieldExtension
-  def initialize(field:, options:)
+  def apply
     # add an argument to this field:
     field.argument(:query, String, required: false, description: "A search query")
-    # and always call super:
-    super
   end
 end
 ```

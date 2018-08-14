@@ -16,9 +16,8 @@ describe GraphQL::Schema::FieldExtension do
     end
 
     class MultiplyByArgument < GraphQL::Schema::FieldExtension
-      def initialize(field:, options:)
+      def apply
         field.argument(:factor, Integer, required: true)
-        super
       end
 
       def before_resolve(object:, arguments:, context:)

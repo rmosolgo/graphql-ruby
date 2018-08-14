@@ -22,7 +22,14 @@ module GraphQL
       def initialize(field:, options:)
         @field = field
         @options = options
+        apply
         freeze
+      end
+
+      # Called when this extension is attached to a field.
+      # The field definition may be extended during this method.
+      # @return [void]
+      def apply
       end
 
       # Called before resolving {#field}. It should either:
