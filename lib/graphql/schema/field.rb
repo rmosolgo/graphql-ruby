@@ -499,10 +499,10 @@ MSG
             @extensions.each_with_index do |ext, idx|
               memo = memos[idx]
               # TODO after_lazy?
-              value = ext.after_resolve(object: original_obj, arguments: original_args, context: ctx, value: value, memo: memo)
+              resolved_value = ext.after_resolve(object: original_obj, arguments: original_args, context: ctx, value: resolved_value, memo: memo)
             end
+            resolved_value
           end
-          value
         end
       end
     end
