@@ -597,6 +597,30 @@ describe GraphQL::Authorization do
     end
   end
 
+  # TODO: fix
+  describe "applying the accessible? method when inaccessible_field is defined on schema" do
+    class AuthTest::Schema
+      def self.inaccessible_field(field)
+        raise GraphQL::ExecutionError.new("#{field.owner.graphql_name}.#{field.graphql_name} is not accessible")
+      end
+    end
+
+    it "works with fields and arguments" do
+      queries = {
+        "{ inaccessible }" => ["Query.inaccessible is not accessible"],
+        "{ int2(inaccessible: 1) }" => ["Query.int2 is not accessible"],
+      }
+
+      queries.each do |query_str, errors|
+        res = auth_execute(query_str, context: { hide: true })
+        assert_equal errors, res.fetch("errors").map { |e| e["message"] }
+
+        res = auth_execute(query_str, context: { hide: false })
+        refute res.key?("errors")
+      end
+    end
+  end
+
   describe "applying the authorized? method" do
     it "halts on unauthorized objects" do
       query = "{ unauthorizedObject { __typename } }"
