@@ -392,9 +392,6 @@ MSG
             if @resolve_proc
               # Might be nil, still want to call the func in that case
               @resolve_proc.call(inner_obj, args, ctx)
-            elsif @resolver_class
-              singleton_inst = @resolver_class.new(object: inner_obj, context: query_ctx)
-              public_send_field(singleton_inst, args, ctx)
             else
               public_send_field(after_obj, args, ctx)
             end
@@ -467,6 +464,13 @@ MSG
 
         query_ctx = field_ctx.query.context
         with_extensions(obj, ruby_kwargs, query_ctx) do |extended_obj, extended_args|
+          if @resolver_class
+            if extended_obj.is_a?(GraphQL::Schema::Object)
+              extended_obj = extended_obj.object
+            end
+            extended_obj = @resolver_class.new(object: extended_obj, context: query_ctx)
+          end
+
           if extended_args.any?
             extended_obj.public_send(@method_sym, **extended_args)
           else

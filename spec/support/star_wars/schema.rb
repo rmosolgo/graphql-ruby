@@ -108,6 +108,14 @@ module StarWars
     end
   end
 
+  class ShipsByResolver < GraphQL::Schema::Resolver
+    type ShipConnectionWithParentType, null: false
+
+    def resolve
+      object.ships.map { |ship_id| StarWars::DATA["Ship"][ship_id] }
+    end
+  end
+
   class Faction < GraphQL::Schema::Object
     implements GraphQL::Relay::Node.interface
 
@@ -116,6 +124,8 @@ module StarWars
     field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true do
       argument :name_includes, String, required: false
     end
+
+    field :shipsByResolver, resolver: ShipsByResolver, connection: true
 
     def ships(name_includes: nil)
       all_ships = object.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
