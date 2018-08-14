@@ -4,12 +4,11 @@ module GraphQL
   class Schema
     class Field
       class ConnectionExtension < GraphQL::Schema::FieldExtension
-        def initialize(field:, options:)
+        def apply
           field.argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
           field.argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false
           field.argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
           field.argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
-          super
         end
 
         # Remove pagination args before passing it to a user method
@@ -23,7 +22,6 @@ module GraphQL
         end
 
         def after_resolve(value:, object:, arguments:, context:, memo:)
-          # TODO this should be extracted away
           if value.is_a? GraphQL::ExecutionError
             # This isn't even going to work because context doesn't have ast_node anymore
             context.add_error(value)
