@@ -478,6 +478,10 @@ MSG
         if @extensions.none?
           yield(obj, args)
         else
+          # Save these so that the originals can be re-given to `after_resolve` handlers.
+          original_args = args
+          original_obj = obj
+
           memos = []
           @extensions.each do |ext|
             ext.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
@@ -495,7 +499,7 @@ MSG
             @extensions.each_with_index do |ext, idx|
               memo = memos[idx]
               # TODO after_lazy?
-              value = ext.after_resolve(object: obj, arguments: args, context: ctx, value: value, memo: memo)
+              value = ext.after_resolve(object: original_obj, arguments: original_args, context: ctx, value: value, memo: memo)
             end
           end
           value
