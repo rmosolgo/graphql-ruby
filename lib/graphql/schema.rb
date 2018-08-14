@@ -19,7 +19,6 @@ require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
 
-
 require "graphql/schema/member"
 require "graphql/schema/wrapper"
 require "graphql/schema/list"
@@ -27,15 +26,17 @@ require "graphql/schema/non_null"
 require "graphql/schema/argument"
 require "graphql/schema/enum_value"
 require "graphql/schema/enum"
+require "graphql/schema/field_extension"
 require "graphql/schema/field"
 require "graphql/schema/input_object"
 require "graphql/schema/interface"
+require "graphql/schema/scalar"
+require "graphql/schema/object"
+require "graphql/schema/union"
+
 require "graphql/schema/resolver"
 require "graphql/schema/mutation"
 require "graphql/schema/relay_classic_mutation"
-require "graphql/schema/object"
-require "graphql/schema/scalar"
-require "graphql/schema/union"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
