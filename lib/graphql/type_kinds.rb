@@ -29,6 +29,38 @@ module GraphQL
       def to_s;       @name;      end
       # Is this TypeKind composed of many values?
       def composite?; @composite; end
+
+      def scalar?
+        self == TypeKinds::SCALAR
+      end
+
+      def object?
+        self == TypeKinds::OBJECT
+      end
+
+      def interface?
+        self == TypeKinds::INTERFACE
+      end
+
+      def union?
+        self == TypeKinds::UNION
+      end
+
+      def enum?
+        self == TypeKinds::ENUM
+      end
+
+      def input_object?
+        self == TypeKinds::INPUT_OBJECT
+      end
+
+      def list?
+        self == TypeKinds::LIST
+      end
+
+      def non_null?
+        self == TypeKinds::NON_NULL
+      end
     end
 
     TYPE_KINDS = [
@@ -41,13 +73,5 @@ module GraphQL
       LIST =          TypeKind.new("LIST", wraps: true, description: 'Indicates this type is a list. `ofType` is a valid field.'),
       NON_NULL =      TypeKind.new("NON_NULL", wraps: true, description: 'Indicates this type is a non-null. `ofType` is a valid field.'),
     ]
-
-    class TypeKind
-      TYPE_KINDS.map(&:name).each do |kind_name|
-        define_method("#{kind_name.downcase}?") do
-          self.name == kind_name
-        end
-      end
-    end
   end
 end

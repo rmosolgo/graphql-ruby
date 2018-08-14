@@ -11,6 +11,11 @@ module StarTrek
     field :ships, Ship.connection_type, null: false
   end
 
+  class ResidentType < GraphQL::Schema::Object
+    global_id_field :id
+    field :name, String, null: true
+  end
+
   class BaseType < GraphQL::Schema::Object
     graphql_name "Base"
     implements GraphQL::Relay::Node.interface
@@ -25,6 +30,7 @@ module StarTrek
       }
     }
     field :sector, String, null: true
+    field :residents, ResidentType.connection_type, null: true
   end
 
   class BaseConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConnection

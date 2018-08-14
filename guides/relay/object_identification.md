@@ -107,7 +107,7 @@ You should also provide a root-level `node` field so that Relay can refetch obje
 ```ruby
 class Types::QueryType < GraphQL::Schema::Object
   # Used by Relay to lookup objects by UUID:
-  field :node, GraphQL::Relay::Node.field
+  field :node, field: GraphQL::Relay::Node.field
   # ...
 end
 ```
@@ -119,7 +119,7 @@ You can also provide a root-level `nodes` field so that Relay can refetch object
 ```ruby
 class QueryType < GraphQL::Schema::Object
   # Fetches a list of objects given a list of IDs
-  field :nodes, GraphQL::Relay::Node.plural_field
+  field :nodes, field: GraphQL::Relay::Node.plural_field
   # ...
 end
 ```

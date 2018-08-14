@@ -6,23 +6,27 @@ require "rake/testtask"
 require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
 
+Bundler.require
+
 Rake::TestTask.new do |t|
   t.libs << "spec" << "lib"
 
-  if ENV["WITHOUT_RAILS"] == "yes"
-    t.test_files = Dir['spec/**/*_spec.rb'].reject do |f|
-      f.end_with?('_generator_spec.rb') ||
-        f.end_with?('input_object_type_spec.rb') ||
-        f.end_with?('variables_spec.rb') ||
-        f.end_with?('relation_connection_spec.rb') ||
-        f.end_with?('node_spec.rb') ||
-        f.end_with?('connection_instrumentation_spec.rb') ||
-        f.end_with?('graphql/schema_spec.rb') ||
-        f.end_with?('graphql/tracing/active_support_notifications_tracing_spec.rb') ||
-        f.start_with?('spec/graphql/relay/')
+  exclude_integrations = []
+  ['Mongoid', 'Rails'].each do |integration|
+    begin
+      Object.const_get(integration)
+    rescue NameError
+      exclude_integrations << integration.downcase
     end
-  else
-    t.pattern = "spec/**/*_spec.rb"
+  end
+
+  t.test_files = Dir['spec/**/*_spec.rb'].reject do |f|
+    next unless f.start_with?("spec/integration/")
+    excluded = exclude_integrations.any? do |integration|
+      f.start_with?("spec/integration/#{integration}/")
+    end
+    puts "+ #{f}" unless excluded
+    excluded
   end
 
   t.warning = false
@@ -94,7 +98,8 @@ namespace :test do
   desc "Run system tests for ActionCable subscriptions"
   task :system do
     success = Dir.chdir("spec/dummy") do
-      system("bin/rails test:system")
+      system("bundle install")
+      system("bundle exec bin/rails test:system")
     end
     success || abort
   end

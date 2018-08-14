@@ -2,17 +2,16 @@
 
 source "https://rubygems.org"
 
-gem "rails", "~> 4.2"
 gem "bootsnap"
 gem "ruby-prof", platform: :ruby
-gem "sqlite3", platform: :ruby
-gem "pg", "< 1.0", platform: :ruby
-gem "mongoid"
 gem "pry"
 gem "pry-stack_explorer", platform: :ruby
-gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
+gem "rails", "~> 4.2", require: "rails/all"
 gem "activerecord", "~> 4.2.4"
 gem "actionpack", "~> 4.2.4"
 gem "concurrent-ruby", "1.0.0"
+gem "sqlite3", platform: :ruby
+gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
+gem "sequel"
 
 gemspec path: "../"

@@ -36,5 +36,15 @@ module GraphQL
     if defined?(Mongoid::Criteria)
       BaseConnection.register_connection_implementation(Mongoid::Criteria, MongoRelationConnection)
     end
+
+    # Mongoid 5 and 6
+    if defined?(Mongoid::Relations::Targets::Enumerable)
+      BaseConnection.register_connection_implementation(Mongoid::Relations::Targets::Enumerable, MongoRelationConnection)
+    end
+
+    # Mongoid 7
+    if defined?(Mongoid::Association::Referenced::HasMany::Targets::Enumerable)
+      BaseConnection.register_connection_implementation(Mongoid::Association::Referenced::HasMany::Targets::Enumerable, MongoRelationConnection)
+    end
   end
 end

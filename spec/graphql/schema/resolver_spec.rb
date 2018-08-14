@@ -76,7 +76,6 @@ describe GraphQL::Schema::Resolver do
 
     class PrepResolver1 < BaseResolver
       argument :int, Integer, required: true
-
       undef_method :load_int
       def load_int(i)
         i * 10
@@ -128,16 +127,34 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver5 < PrepResolver1
       type Integer, null: true
 
-      def before_prepare(int:)
+      def ready?(int:)
         check_for_magic_number(int)
       end
     end
 
     class PrepResolver6 < PrepResolver5
-      def before_prepare(**args)
+      def ready?(**args)
         LazyBlock.new {
           super
         }
+      end
+    end
+
+    class PrepResolver7 < GraphQL::Schema::Mutation
+      argument :int, Integer, required: true
+      field :errors, [String], null: true
+      field :int, Integer, null: true
+
+      def ready?(int:)
+        if int == 13
+          return false, { errors: ["Bad number!"] }
+        else
+          true
+        end
+      end
+
+      def resolve(int:)
+        { int: int }
       end
     end
 
@@ -200,6 +217,32 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class PrepResolver12 < GraphQL::Schema::Mutation
+      argument :int1, Integer, required: true
+      argument :int2, Integer, required: true
+      field :error_messages, [String], null: true
+      field :value, Integer, null: true
+      def authorized?(int1:, int2:)
+        if int1 + int2 > context[:max_int]
+          return false, { error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"] }
+        else
+          true
+        end
+      end
+
+      def resolve(int1:, int2:)
+        { value: int1 + int2 }
+      end
+    end
+
+    class PrepResolver13 < PrepResolver12
+      def authorized?(int1:, int2:)
+        # Increment the numbers so we can be sure they're passing through here
+        LazyBlock.new { super(int1: int1 + 1, int2: int2 + 1) }
+      end
+    end
+
+
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
         def resolve_field(*args)
@@ -229,9 +272,12 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_4, resolver: PrepResolver4
       field :prep_resolver_5, resolver: PrepResolver5
       field :prep_resolver_6, resolver: PrepResolver6
+      field :prep_resolver_7, resolver: PrepResolver7
       field :prep_resolver_9, resolver: PrepResolver9
       field :prep_resolver_10, resolver: PrepResolver10
       field :prep_resolver_11, resolver: PrepResolver11
+      field :prep_resolver_12, resolver: PrepResolver12
+      field :prep_resolver_13, resolver: PrepResolver13
     end
 
     class Schema < GraphQL::Schema
@@ -243,6 +289,22 @@ describe GraphQL::Schema::Resolver do
 
   def exec_query(*args)
     ResolverTest::Schema.execute(*args)
+  end
+
+  describe ".path" do
+    it "is the name" do
+      assert_equal "Resolver1", ResolverTest::Resolver1.path
+    end
+
+    it "is used for arguments and fields" do
+      assert_equal "Resolver1.value", ResolverTest::Resolver1.arguments["value"].path
+      assert_equal "PrepResolver7.int", ResolverTest::PrepResolver7.fields["int"].path
+    end
+
+    it "works on instances" do
+      r = ResolverTest::Resolver1.new(object: nil, context: nil)
+      assert_equal "Resolver1", r.path
+    end
   end
 
   it "gets initialized for each resolution" do
@@ -324,17 +386,25 @@ describe GraphQL::Schema::Resolver do
       refute res.key?("errors"), "#{description}: silent auth failure (no top-level error)"
     end
 
-    describe "before_prepare" do
+    describe "ready?" do
       it "can raise errors" do
         res = exec_query("{ int: prepResolver5(int: 5) }")
         assert_equal 50, res["data"]["int"]
-        add_error_assertions("prepResolver5", "before_prepare")
+        add_error_assertions("prepResolver5", "ready?")
       end
 
       it "can raise errors in lazy sync" do
         res = exec_query("{ int: prepResolver6(int: 5) }")
         assert_equal 50, res["data"]["int"]
-        add_error_assertions("prepResolver6", "lazy before_prepare")
+        add_error_assertions("prepResolver6", "lazy ready?")
+      end
+
+      it "can return false and data" do
+        res = exec_query("{ int: prepResolver7(int: 13) { errors int } }")
+        assert_equal ["Bad number!"], res["data"]["int"]["errors"]
+
+        res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
+        assert_equal 213, res["data"]["int"]["int"]
       end
     end
 
@@ -379,6 +449,23 @@ describe GraphQL::Schema::Resolver do
 
           res = exec_query("{ prepResolver11(int1: 3, int2: 5) }", context: { max_int: 90 })
           assert_equal 8, res["data"]["prepResolver11"]
+        end
+
+        it "can return data early" do
+          res = exec_query("{ prepResolver12(int1: 9, int2: 5) { errorMessages } }", context: { max_int: 9 })
+          assert_equal ["Inputs must be less than 9 (but you provided 14)"], res["data"]["prepResolver12"]["errorMessages"]
+          # This works
+          res = exec_query("{ prepResolver12(int1: 2, int2: 5) { value } }", context: { max_int: 9 })
+          assert_equal 7, res["data"]["prepResolver12"]["value"]
+        end
+
+        it "can return data early in a promise" do
+          # This is too big because it's modified in the overridden authorized? hook:
+          res = exec_query("{ prepResolver13(int1: 4, int2: 4) { errorMessages } }", context: { max_int: 9 })
+          assert_equal ["Inputs must be less than 9 (but you provided 10)"], res["data"]["prepResolver13"]["errorMessages"]
+          # This works
+          res = exec_query("{ prepResolver13(int1: 2, int2: 5) { value } }", context: { max_int: 9 })
+          assert_equal 7, res["data"]["prepResolver13"]["value"]
         end
 
         it "can return false to halt" do

@@ -23,6 +23,8 @@ module GraphQL
       # Really we only need description from here, but:
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
+      include Schema::Member::HasPath
+      extend Schema::Member::HasPath
 
       # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
       # @param context [GraphQL::Query::Context]
@@ -48,26 +50,49 @@ module GraphQL
       # the user-defined `#resolve` method.
       # @api private
       def resolve_with_support(**args)
-        # First call the before_prepare hook which may raise
-        before_prepare_val = if args.any?
-          before_prepare(**args)
+        # First call the ready? hook which may raise
+        ready_val = if args.any?
+          ready?(**args)
         else
-          before_prepare
+          ready?
         end
-        context.schema.after_lazy(before_prepare_val) do
-          # Then call each prepare hook, which may return a different value
-          # for that argument, or may return a lazy object
-          load_arguments_val = load_arguments(args)
-          context.schema.after_lazy(load_arguments_val) do |loaded_args|
-            # Then call `authorized?`, which may raise or may return a lazy object
-            authorized_val = authorized?(loaded_args)
-            context.schema.after_lazy(authorized_val) do |authorized_result|
-              if authorized_result
-                # Finally, all the hooks have passed, so resolve it
-                if loaded_args.any?
-                  public_send(self.class.resolve_method, **loaded_args)
+        context.schema.after_lazy(ready_val) do |is_ready, ready_early_return|
+          if ready_early_return
+            if is_ready != false
+              raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{ready_early_return.inspect}]"
+            else
+              ready_early_return
+            end
+          elsif is_ready
+            # Then call each prepare hook, which may return a different value
+            # for that argument, or may return a lazy object
+            load_arguments_val = load_arguments(args)
+            context.schema.after_lazy(load_arguments_val) do |loaded_args|
+              # Then call `authorized?`, which may raise or may return a lazy object
+              authorized_val = if loaded_args.any?
+                authorized?(loaded_args)
+              else
+                authorized?
+              end
+              authorized?(loaded_args)
+              context.schema.after_lazy(authorized_val) do |(authorized_result, early_return)|
+                # If the `authorized?` returned two values, `false, early_return`,
+                # then use the early return value instead of continuing
+                if early_return
+                  if authorized_result == false
+                    early_return
+                  else
+                    raise "Unexpected result from #authorized? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{early_return.inspect}]"
+                  end
+                elsif authorized_result
+                  # Finally, all the hooks have passed, so resolve it
+                  if loaded_args.any?
+                    public_send(self.class.resolve_method, **loaded_args)
+                  else
+                    public_send(self.class.resolve_method)
+                  end
                 else
-                  public_send(self.class.resolve_method)
+                  nil
                 end
               end
             end
@@ -90,7 +115,9 @@ module GraphQL
       # @param args [Hash] The input arguments, if there are any
       # @raise [GraphQL::ExecutionError] To add an error to the response
       # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
-      def before_prepare(**args)
+      # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
+      def ready?(**args)
+        true
       end
 
       # Called after arguments are loaded, but before resolving.
@@ -99,7 +126,7 @@ module GraphQL
       # @param args [Hash] The input arguments
       # @raise [GraphQL::ExecutionError] To add an error to the response
       # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
-      # @return [Boolean] if `false`, execution will stop
+      # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
       def authorized?(**args)
         true
       end

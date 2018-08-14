@@ -6,6 +6,13 @@ describe GraphQL::Schema::Field do
     let(:object_class) { Jazz::Query }
     let(:field) { object_class.fields["inspectInput"] }
 
+    describe "path" do
+      it "is the object/interface and field name" do
+        assert_equal "Query.inspectInput", field.path
+        assert_equal "GloballyIdentifiable.id", Jazz::GloballyIdentifiableType.fields["id"].path
+      end
+    end
+
     it "uses the argument class" do
       arg_defn = field.graphql_definition.arguments.values.first
       assert_equal :ok, arg_defn.metadata[:custom]

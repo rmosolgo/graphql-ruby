@@ -20,8 +20,6 @@ module GraphQL
           when overridden = overridden_graphql_name
             overridden
           else
-            raise NotImplementedError, 'Anonymous class should declare a `graphql_name`' if name.nil?
-
             default_graphql_name
           end
         end
@@ -81,6 +79,8 @@ module GraphQL
         # The default name is the Ruby constant name,
         # without any namespaces and with any `-Type` suffix removed
         def default_graphql_name
+          raise NotImplementedError, 'Anonymous class should declare a `graphql_name`' if name.nil?
+
           name.split("::").last.sub(/Type\Z/, "")
         end
 
