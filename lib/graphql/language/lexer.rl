@@ -202,8 +202,14 @@ module GraphQL
         value = meta[:data][ts...te - quotes_length].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
         if block
           value = GraphQL::Language::BlockString.trim_whitespace(value)
-        end
-        if value !~ VALID_STRING
+          meta[:tokens] << token = GraphQL::Language::Token.new(
+            name: :STRING,
+            value: value.gsub('\\"""', '"""'),
+            line: meta[:line],
+            col: meta[:col],
+            prev_token: meta[:previous_token],
+          )
+        elsif value !~ VALID_STRING
           meta[:tokens] << token = GraphQL::Language::Token.new(
             name: :BAD_UNICODE_ESCAPE,
             value: value,
