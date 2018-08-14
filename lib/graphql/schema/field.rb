@@ -471,35 +471,33 @@ MSG
         end
       end
 
-      # TODO this needs the same kind of work as instrumenters to avoid long, boring stack traces
+      # Wrap execution with hooks.
+      # Written iteratively to avoid big stack traces.
+      # @return [Object] Whatever the
       def with_extensions(obj, args, ctx)
-        memos = []
-        value = run_before_extension(0, memos, obj, args, ctx) { |extended_obj, extended_args| yield(extended_obj, extended_args) }
-        ctx.schema.after_lazy(value) do |resolved_value|
-          run_after_extension(0, memos, obj, args, ctx, resolved_value)
-        end
-      end
-
-      def run_before_extension(idx, memos, obj, args, ctx)
-        extension = @extensions[idx]
-        if extension
-          extension.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
-            memos << memo
-            run_before_extension(idx + 1, memos, extended_obj, extended_args, ctx) { |o, a| yield(o, a) }
-          end
-        else
+        if @extensions.none?
           yield(obj, args)
-        end
-      end
-
-      def run_after_extension(idx, memos, obj, args, ctx, value)
-        extension = @extensions[idx]
-        if extension
-          memo = memos[idx]
-          extended_value = extension.after_resolve(object: obj, arguments: args, context: ctx, value: value, memo: memo)
-          # TODO after_lazy?
-          run_after_extension(idx + 1, memos, obj, args, ctx, extended_value)
         else
+          memos = []
+          @extensions.each do |ext|
+            ext.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
+              # update this scope with the yielded value
+              obj = extended_obj
+              args = extended_args
+              # record the memo (or nil if none was yielded)
+              memos << memo
+            end
+          end
+          # Call the block which actually calls resolve
+          value = yield(obj, args)
+
+          ctx.schema.after_lazy(value) do |resolved_value|
+            @extensions.each_with_index do |ext, idx|
+              memo = memos[idx]
+              # TODO after_lazy?
+              value = ext.after_resolve(object: obj, arguments: args, context: ctx, value: value, memo: memo)
+            end
+          end
           value
         end
       end
