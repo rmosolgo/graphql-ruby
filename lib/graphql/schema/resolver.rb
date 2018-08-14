@@ -74,7 +74,6 @@ module GraphQL
               else
                 authorized?
               end
-              authorized?(loaded_args)
               context.schema.after_lazy(authorized_val) do |(authorized_result, early_return)|
                 # If the `authorized?` returned two values, `false, early_return`,
                 # then use the early return value instead of continuing

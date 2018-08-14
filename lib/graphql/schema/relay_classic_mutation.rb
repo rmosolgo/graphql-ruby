@@ -25,19 +25,13 @@ module GraphQL
       # Relay classic default:
       null(true)
 
-      # Override {GraphQL::Schema::Mutation#resolve_mutation} to
+      # Override {GraphQL::Schema::Resolver#resolve_with_support} to
       # delete `client_mutation_id` from the kwargs.
-      def resolve_mutation(**kwargs)
+      def resolve_with_support(**kwargs)
         # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
         kwargs.delete(:client_mutation_id)
-        if kwargs.any?
-          resolve(**kwargs)
-        else
-          resolve
-        end
+        super
       end
-
-      resolve_method(:resolve_mutation)
 
       class << self
         # The base class for generated input object types

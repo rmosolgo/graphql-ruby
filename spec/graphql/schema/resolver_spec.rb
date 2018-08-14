@@ -242,6 +242,17 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class PrepResolver14 < GraphQL::Schema::RelayClassicMutation
+      field :number, Integer, null: false
+
+      def authorized?
+        true
+      end
+
+      def resolve
+        { number: 1 }
+      end
+    end
 
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
@@ -278,6 +289,7 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_11, resolver: PrepResolver11
       field :prep_resolver_12, resolver: PrepResolver12
       field :prep_resolver_13, resolver: PrepResolver13
+      field :prep_resolver_14, resolver: PrepResolver14
     end
 
     class Schema < GraphQL::Schema
@@ -477,6 +489,11 @@ describe GraphQL::Schema::Resolver do
           GRAPHQL
           res = exec_query(str, context: { max_int: 100, min_int: 20 })
           assert_equal({ "prepResolver10" => nil, "prepResolver11" => nil }, res["data"])
+        end
+
+        it "works with no arguments for RelayClassicMutation" do
+          res = exec_query("{ prepResolver14(input: {}) { number } }")
+          assert_equal 1, res["data"]["prepResolver14"]["number"]
         end
       end
     end
