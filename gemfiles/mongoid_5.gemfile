@@ -2,14 +2,10 @@
 
 source "https://rubygems.org"
 
-gem "rails"
 gem "bootsnap"
 gem "ruby-prof", platform: :ruby
-gem "sqlite3", platform: :ruby
-gem "pg", "< 1.0", platform: :ruby
-gem "mongoid", "~> 5.4.0"
 gem "pry"
 gem "pry-stack_explorer", platform: :ruby
-gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
+gem "mongoid", "~> 5.4.0"
 
 gemspec path: "../"

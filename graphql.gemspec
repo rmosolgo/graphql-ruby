@@ -39,11 +39,11 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rubocop", "~> 0.45"
   # following are required for relay helpers
   s.add_development_dependency "appraisal"
-  s.add_development_dependency "sequel"
   # required for upgrader
   s.add_development_dependency "parser"
-
   # website stuff
   s.add_development_dependency "jekyll"
   s.add_development_dependency "yard"
+  s.add_development_dependency "jekyll-algolia" if RUBY_VERSION >= '2.3.0'
+  s.add_development_dependency "jekyll-redirect-from" if RUBY_VERSION >= '2.3.0'
 end

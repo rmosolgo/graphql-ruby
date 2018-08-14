@@ -6,6 +6,8 @@ gem "bootsnap"
 gem "ruby-prof", platform: :ruby
 gem "pry"
 gem "pry-stack_explorer", platform: :ruby
-gem "mongoid", "~> 6.4.1"
+gem "rails", "~> 5.2.0", require: "rails/all"
+gem "pg", platform: :ruby
+gem "sequel"
 
 gemspec path: "../"

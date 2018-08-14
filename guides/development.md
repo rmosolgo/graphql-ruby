@@ -103,12 +103,6 @@ You can specify a gemfile with `BUNDLE_GEMFILE`, eg:
 BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake
 ```
 
-You can test without Rails using `WITHOUT_RAILS=yes`, eg:
-
-```
-WITHOUT_RAILS=yes bundle exec rake
-```
-
 ### Debugging with Pry
 
 [`pry`](http://pryrepl.org/) is included with GraphQL-Ruby's development setup to help with debugging.
