@@ -29,6 +29,9 @@ module GraphQL
           elsif value.nil?
             nil
           else
+            if object.is_a?(GraphQL::Schema::Object)
+              object = object.object
+            end
             connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(value)
             connection_class.new(
               value,
