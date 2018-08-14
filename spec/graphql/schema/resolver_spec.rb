@@ -194,26 +194,26 @@ describe GraphQL::Schema::Resolver do
 
     class PrepResolver10 < BaseResolver
       argument :int1, Integer, required: true
-      argument :int2, Integer, required: true
+      argument :int2, Integer, required: true, as: :integer_2
       type Integer, null: true
-      def authorized?(int1:, int2:)
-        if int1 + int2 > context[:max_int]
+      def authorized?(int1:, integer_2:)
+        if int1 + integer_2 > context[:max_int]
           raise GraphQL::ExecutionError, "Inputs too big"
-        elsif context[:min_int] && (int1 + int2 < context[:min_int])
+        elsif context[:min_int] && (int1 + integer_2 < context[:min_int])
           false
         else
           true
         end
       end
 
-      def resolve(int1:, int2:)
-        int1 + int2
+      def resolve(int1:, integer_2:)
+        int1 + integer_2
       end
     end
 
     class PrepResolver11 < PrepResolver10
-      def authorized?(int1:, int2:)
-        LazyBlock.new { super(int1: int1 * 2, int2: int2) }
+      def authorized?(int1:, integer_2:)
+        LazyBlock.new { super(int1: int1 * 2, integer_2: integer_2) }
       end
     end
 
@@ -450,6 +450,11 @@ describe GraphQL::Schema::Resolver do
           res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: { max_int: 9 })
           assert_equal ["Inputs too big"], res["errors"].map { |e| e["message"] }
 
+          res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: { max_int: 90 })
+          assert_equal 11, res["data"]["prepResolver10"]
+        end
+
+        it "uses the argument name provided in `as:`" do
           res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: { max_int: 90 })
           assert_equal 11, res["data"]["prepResolver10"]
         end
