@@ -44,6 +44,11 @@ describe GraphQL::Language::Lexer do
         assert_equal "c\n  d", tokens[5].value
       end
 
+      it "tokenizes empty string" do
+        tokens = subject.tokenize(%|"""""", """\n""", """\n\n"""|)
+        assert_equal ["", "", ""], tokens.map(&:value)
+      end
+
       it "do not unescape characters" do
         tokens = subject.tokenize(%|"""\\n\\\\_"""|)
         assert_equal "\\n\\\\_", tokens.first.value
