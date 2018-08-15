@@ -6,6 +6,7 @@ module GraphQL
       # See "Block Strings" in https://github.com/facebook/graphql/blob/master/spec/Section%202%20--%20Language.md
       def self.trim_whitespace(str)
         lines = str.split("\n")
+        return "" if lines.empty?
         common_indent = nil
 
         # find the common whitespace
