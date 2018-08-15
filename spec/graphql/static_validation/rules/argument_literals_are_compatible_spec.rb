@@ -67,6 +67,68 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     assert_includes(errors, fragment_error)
   end
 
+  describe "enum value" do
+    it "can't be used for an ID argument" do
+      schema_sdl = <<~GRAPHQL
+        type Node {
+          id: ID!
+        }
+
+        type Query {
+          node(id: ID!): Node
+        }
+      GRAPHQL
+
+      default_resolve = -> (type, field, obj, args, ctx) { }
+
+      schema = GraphQL::Schema.from_definition(schema_sdl, default_resolve: default_resolve)
+
+      result = schema.execute(
+        <<~GRAPHQL
+        {
+          node(id: garbage) {
+            id
+          }
+        }
+        GRAPHQL
+      )
+
+      expected_error = {
+        "message"=>"Argument 'id' on Field 'node' has an invalid value. Expected type 'ID!'.",
+        "locations"=>[{"line"=>2, "column"=>3}],
+        "fields"=>["query", "node", "id"],
+      }
+      assert_includes(result.to_h["errors"], expected_error)
+    end
+
+    it "can't be used for a String argument" do
+      schema_sdl = <<~GRAPHQL
+        type Query {
+          something(arg: String): String
+        }
+      GRAPHQL
+
+      default_resolve = -> (type, field, obj, args, ctx) { }
+
+      schema = GraphQL::Schema.from_definition(schema_sdl, default_resolve: default_resolve)
+
+      result = schema.execute(
+        <<~GRAPHQL
+        {
+          something(arg: garbage)
+        }
+        GRAPHQL
+      )
+
+      expected_error = {
+        "message"=>"Argument 'arg' on Field 'something' has an invalid value. Expected type 'String'.",
+        "locations"=>[{"line"=>2, "column"=>3}],
+        "fields"=>["query", "something", "arg"],
+      }
+      assert_includes(result.to_h["errors"], expected_error)
+    end
+  end
+
   describe "using input objects for enums" do
     let(:query_string) { <<-GRAPHQL
       {
