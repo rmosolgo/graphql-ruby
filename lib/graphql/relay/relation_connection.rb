@@ -98,7 +98,7 @@ module GraphQL
         # Store this here so we can convert the relation to an Array
         # (this avoids an extra DB call on Sequel)
         @paged_nodes_offset = relation_offset(items)
-        @paged_nodes = items.to_a
+        @paged_nodes = items.all
       end
 
       def paged_nodes_offset
