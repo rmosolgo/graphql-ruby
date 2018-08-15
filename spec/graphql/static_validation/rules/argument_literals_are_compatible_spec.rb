@@ -79,7 +79,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         }
       GRAPHQL
 
-      default_resolve = -> (type, field, obj, args, ctx) { }
+      default_resolve = ->(type, field, obj, args, ctx) { }
 
       schema = GraphQL::Schema.from_definition(schema_sdl, default_resolve: default_resolve)
 
@@ -108,7 +108,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         }
       GRAPHQL
 
-      default_resolve = -> (type, field, obj, args, ctx) { }
+      default_resolve = ->(type, field, obj, args, ctx) { }
 
       schema = GraphQL::Schema.from_definition(schema_sdl, default_resolve: default_resolve)
 
