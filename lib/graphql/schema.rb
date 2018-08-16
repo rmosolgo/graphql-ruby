@@ -133,7 +133,7 @@ module GraphQL
     # @see {Query#tracers} for query-specific tracers
     attr_reader :tracers
 
-    self.default_execution_strategy = GraphQL::Execution::Execute
+    # self.default_execution_strategy = GraphQL::Execution::Execute
 
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]

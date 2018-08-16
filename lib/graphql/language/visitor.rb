@@ -55,7 +55,7 @@ module GraphQL
       # Visit `document` and all children, applying hooks as you go
       # @return [void]
       def visit
-        on_document(@document, nil)
+        visit_node(@document, nil)
       end
 
       # The default implementation for visiting an AST node.
@@ -72,7 +72,7 @@ module GraphQL
         begin_hooks_ok = @visitors.none? || begin_visit(node, parent)
         if begin_hooks_ok
           node.children.each do |child_node|
-            public_send(child_node.visit_method, child_node, node)
+            visit_node(child_node, node)
           end
         end
         @visitors.any? && end_visit(node, parent)
@@ -113,6 +113,10 @@ module GraphQL
       alias :on_union_type_extension :on_abstract_node
       alias :on_variable_definition :on_abstract_node
       alias :on_variable_identifier :on_abstract_node
+
+      def visit_node(node, parent)
+        public_send(node.visit_method, node, parent)
+      end
 
       private
 
