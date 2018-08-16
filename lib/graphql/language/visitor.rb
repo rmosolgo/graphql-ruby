@@ -141,6 +141,8 @@ module GraphQL
         if new_node.is_a?(Nodes::AbstractNode) && !node.equal?(new_node)
           # The user-provided hook returned a new node.
           new_parent = new_parent && new_parent.replace_child(node, new_node)
+          # TODO can this be handled by the parent?
+          new_node.parent = new_parent
           return new_node, new_parent
         elsif new_node == DELETE_NODE
           # The user-provided hook requested to remove this node
