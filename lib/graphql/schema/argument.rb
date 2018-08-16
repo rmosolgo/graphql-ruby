@@ -102,7 +102,7 @@ module GraphQL
           value
         when Symbol, String
           obj.public_send(@prepare, value)
-        when Proc
+        when ->(p) { p.respond_to? :call }
           @prepare.call(value, obj.context)
         else
           raise "Invalid prepare for #{@owner.name}.name: #{@prepare.inspect}"
