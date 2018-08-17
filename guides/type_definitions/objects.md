@@ -250,7 +250,7 @@ Arguments can also accept a description and a `default_value:`, for example:
 field :transactions, [Types::Transaction], null: false do
   # Description is added after the type name or the `description:` keyword argument
   # By default, `isCompleted: true` will be used
-  argument :is_completed, Boolean, "Filter by completed/incompleted status", required: false, default: true
+  argument :is_completed, Boolean, "Filter by completed/incompleted status", required: false, default_value: true
 end
 ```
 
