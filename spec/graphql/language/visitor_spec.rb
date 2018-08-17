@@ -225,6 +225,8 @@ GRAPHQL
       copy_c3_argument = new_document.definitions.first.selections.first.selections.first.selections.first.arguments.first
       assert_equal "c3", orig_c3_argument.name
       assert orig_c3_argument.equal?(copy_c3_argument), "Child nodes are persisted"
+      assert_equal ["query", "a", "b", "c", "c3"], orig_c3_argument.path
+      assert_equal ["query", "a", "b", "renamedC", "c3"], copy_c3_argument.path
 
       orig_d_field =     document.definitions.first.selections[1]
       copy_d_field = new_document.definitions.first.selections[1]

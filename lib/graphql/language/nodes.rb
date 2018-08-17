@@ -12,6 +12,33 @@ module GraphQL
       class AbstractNode
         attr_reader :line, :col, :filename
 
+        # @return [AbstractNode, nil] The node above this one on the tree, if there is one
+        attr_accessor :parent
+
+        # @return [Array<String>] The path to this node in the query string
+        def path
+          @path ||= begin
+            if (p_part = path_part)
+              if @parent
+                own_path = @parent.path.dup
+                own_path << p_part
+                own_path.freeze
+              else
+                [p_part].freeze
+              end
+            elsif @parent
+              @parent.path
+            else
+              [].freeze
+            end
+          end
+        end
+
+        # @param [String, nil] This node's name in {#path}
+        def path_part
+          raise NotImplementedError, "#{self.class.name}#path_part should return a string or nil"
+        end
+
         # Initialize a node by extracting its position,
         # then calling the class's `initialize_node` method.
         # @param options [Hash] Initial attributes for this node
@@ -24,6 +51,7 @@ module GraphQL
           @filename = options.delete(:filename)
 
           initialize_node(options)
+          children.each { |child| child.parent = self }
         end
 
         # Value equality
@@ -37,12 +65,12 @@ module GraphQL
 
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] all nodes in the tree below this one
         def children
-          []
+          @children ||= get_children
         end
 
         # @return [Array<Integer, Float, String, Boolean, Array>] Scalar values attached to this node
         def scalars
-          []
+          @scalars ||= get_scalars
         end
 
         # @return [Symbol] the method to call on {Language::Visitor} for this node
@@ -56,6 +84,13 @@ module GraphQL
 
         def to_query_string(printer: GraphQL::Language::Printer.new)
           printer.print(self)
+        end
+
+        # Bust caches
+        def initialize_copy(other)
+          @children = nil
+          @scalars = nil
+          @path = nil
         end
 
         # This creates a copy of `self`, with `new_options` applied.
@@ -140,9 +175,12 @@ module GraphQL
 
             if children_of_type == false
               @children_methods = {}
-              # skip
+              module_eval <<-RUBY, __FILE__, __LINE__
+                def get_children
+                  []
+                end
+              RUBY
             else
-
               children_of_type.each do |method_name, node_type|
                 module_eval <<-RUBY, __FILE__, __LINE__
                   # A reader for these children
@@ -167,8 +205,8 @@ module GraphQL
                 RUBY
               else
                 module_eval <<-RUBY, __FILE__, __LINE__
-                  def children
-                    @children ||= (#{children_of_type.keys.map { |k| "@#{k}" }.join(" + ")}).freeze
+                  def get_children
+                    (#{children_of_type.keys.map { |k| "@#{k}" }.join(" + ")}).freeze
                   end
                 RUBY
               end
@@ -193,14 +231,18 @@ module GraphQL
 
             if method_names == [false]
               @scalar_methods = []
-              # skip it
+              module_eval <<-RUBY, __FILE__, __LINE__
+                def get_scalars
+                  []
+                end
+              RUBY
             else
               module_eval <<-RUBY, __FILE__, __LINE__
                 # add readers for each scalar
                 attr_reader #{method_names.map { |m| ":#{m}"}.join(", ")}
 
-                def scalars
-                  @scalars ||= [#{method_names.map { |k| "@#{k}" }.join(", ")}].freeze
+                def get_scalars
+                  [#{method_names.map { |k| "@#{k}" }.join(", ")}].freeze
                 end
               RUBY
             end
@@ -241,26 +283,28 @@ module GraphQL
       class WrapperType < AbstractNode
         scalar_methods :of_type
         children_methods(false)
+        def path_part; nil; end
       end
 
       # Base class for nodes whose only value is a name (no child nodes or other scalars)
       class NameOnlyNode < AbstractNode
         scalar_methods :name
         children_methods(false)
+        alias :path_part :name
       end
 
       # A key-value pair for a field's inputs
       class Argument < AbstractNode
         scalar_methods :name, :value
         children_methods(false)
-
+        alias :path_part :name
         # @!attribute name
         #   @return [String] the key for this argument
 
         # @!attribute value
         #   @return [String, Float, Integer, Boolean, Array, InputObject] The value passed for this key
 
-        def children
+        def get_children
           [value].flatten.select { |v| v.is_a?(AbstractNode) }
         end
       end
@@ -268,6 +312,9 @@ module GraphQL
       class Directive < AbstractNode
         scalar_methods :name
         children_methods(arguments: GraphQL::Language::Nodes::Argument)
+        def path_part
+          "@#{name}"
+        end
       end
 
       class DirectiveLocation < NameOnlyNode
@@ -280,6 +327,7 @@ module GraphQL
           locations: Nodes::DirectiveLocation,
           arguments: Nodes::Argument,
         )
+        alias :path_part :name
       end
 
       # This is the AST root for normal queries
@@ -309,6 +357,8 @@ module GraphQL
         def slice_definition(name)
           GraphQL::Language::DefinitionSlice.slice(self, name)
         end
+
+        def path_part; nil; end
       end
 
       # An enum value. The string is available as {#name}.
@@ -327,6 +377,10 @@ module GraphQL
           selections: GraphQL::Language::Nodes::Field,
           directives: GraphQL::Language::Nodes::Directive,
         })
+
+        def path_part
+          self.alias || name
+        end
 
         # @!attribute selections
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
@@ -353,18 +407,13 @@ module GraphQL
           selections: GraphQL::Language::Nodes::Field,
           directives: GraphQL::Language::Nodes::Directive,
         })
+        alias :path_part :name
 
         # @!attribute name
         #   @return [String] the identifier for this fragment, which may be applied with `...#{name}`
 
         # @!attribute type
         #   @return [String] the type condition for this fragment (name of type which it may apply to)
-        def initialize_node(name: nil, type: nil, directives: [], selections: [])
-          @name = name
-          @type = type
-          @directives = directives
-          @selections = selections
-        end
 
         def children_method_name
           :definitions
@@ -377,6 +426,7 @@ module GraphQL
         children_methods(directives: GraphQL::Language::Nodes::Directive)
         # @!attribute name
         #   @return [String] The identifier of the fragment to apply, corresponds with {FragmentDefinition#name}
+        alias :path_part :name
       end
 
       # An unnamed fragment, defined directly in the query with `... {  }`
@@ -386,6 +436,10 @@ module GraphQL
           selections: GraphQL::Language::Nodes::Field,
           directives: GraphQL::Language::Nodes::Directive,
         })
+
+        def path_part
+          "... on #{type}"
+        end
 
         # @!attribute type
         #   @return [String, nil] Name of the type this fragment applies to, or `nil` if this fragment applies to any type
@@ -412,6 +466,7 @@ module GraphQL
           :value
         end
 
+        def path_part; nil; end
         private
 
         def serialize_value_for_hash(value)
@@ -453,6 +508,10 @@ module GraphQL
 
         # @!attribute name
         #   @return [String] The identifier for this variable, _without_ `$`
+
+        def path_part
+          "$#{name}"
+        end
       end
 
       # A query, mutation or subscription.
@@ -465,6 +524,10 @@ module GraphQL
           selections: GraphQL::Language::Nodes::Field,
           directives: GraphQL::Language::Nodes::Directive,
         })
+
+        def path_part
+          name || operation_type || "query"
+        end
 
         # @!attribute variables
         #   @return [Array<VariableDefinition>] Variable definitions for this operation
@@ -496,6 +559,10 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+
+        def path_part
+          "schema"
+        end
       end
 
       class SchemaExtension < AbstractNode
@@ -503,6 +570,10 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+
+        def path_part
+          "extend schema"
+        end
       end
 
       class ScalarTypeDefinition < AbstractNode
@@ -511,6 +582,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def path_part
+          "scalar #{name}"
+        end
       end
 
       class ScalarTypeExtension < AbstractNode
@@ -518,6 +592,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def path_part
+          "extend scalar #{name}"
+        end
       end
 
       class InputValueDefinition < AbstractNode
@@ -526,6 +603,7 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        alias :path_part :name
       end
 
       class FieldDefinition < AbstractNode
@@ -535,6 +613,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           arguments: GraphQL::Language::Nodes::InputValueDefinition,
         })
+        alias :path_part :name
       end
 
       class ObjectTypeDefinition < AbstractNode
@@ -544,6 +623,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def path_part
+          "type #{name}"
+        end
       end
 
       class ObjectTypeExtension < AbstractNode
@@ -552,6 +634,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def path_part
+          "extend type #{name}"
+        end
       end
 
       class InterfaceTypeDefinition < AbstractNode
@@ -561,6 +646,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def path_part
+          "interface #{name}"
+        end
       end
 
       class InterfaceTypeExtension < AbstractNode
@@ -569,6 +657,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def path_part
+          "extend interface #{name}"
+        end
       end
 
       class UnionTypeDefinition < AbstractNode
@@ -577,6 +668,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def path_part
+          "union #{name}"
+        end
       end
 
       class UnionTypeExtension < AbstractNode
@@ -585,6 +679,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def path_part
+          "extend union #{name}"
+        end
       end
 
       class EnumValueDefinition < AbstractNode
@@ -593,6 +690,7 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        alias :path_part :name
       end
 
       class EnumTypeDefinition < AbstractNode
@@ -602,6 +700,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           values: GraphQL::Language::Nodes::EnumValueDefinition,
         })
+        def path_part
+          "enum #{name}"
+        end
       end
 
       class EnumTypeExtension < AbstractNode
@@ -610,6 +711,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           values: GraphQL::Language::Nodes::EnumValueDefinition,
         })
+        def path_part
+          "extend enum #{name}"
+        end
       end
 
       class InputObjectTypeDefinition < AbstractNode
@@ -619,6 +723,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::InputValueDefinition,
         })
+        def path_part
+          "input #{name}"
+        end
       end
 
       class InputObjectTypeExtension < AbstractNode
@@ -627,6 +734,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::InputValueDefinition,
         })
+        def path_part
+          "extend input #{name}"
+        end
       end
     end
   end
