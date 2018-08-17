@@ -13,7 +13,8 @@ module GraphQL
 
         def on_operation_definition(node, _parent)
           if node == query.selected_operation
-            root_type = schema.query.metadata[:type_class]
+            root_type = schema.root_type_for_operation(node.operation_type || "query")
+            root_type = root_type.metadata[:type_class]
             object_proxy = root_type.authorized_new(query.root_value, query.context)
             trace.with_type(root_type) do
               trace.with_object(object_proxy) do
@@ -89,12 +90,20 @@ module GraphQL
         end
 
         def continue_field(type, value)
+          if value.nil?
+            trace.write(nil)
+            return
+          elsif GraphQL::Execution::Execute::SKIP == value
+            return
+          end
+
           case type.kind
           when TypeKinds::SCALAR, TypeKinds::ENUM
             r = type.coerce_result(value, query.context)
             trace.write(r)
           when  TypeKinds::UNION, TypeKinds::INTERFACE
-            obj_type = type.resolve_type(value, query.context)
+            obj_type = schema.resolve_type(type, value, query.context)
+            obj_type = obj_type.metadata[:type_class]
             object_proxy = obj_type.authorized_new(value, query.context)
             trace.with_type(obj_type) do
               trace.with_object(object_proxy) do
@@ -149,7 +158,7 @@ module GraphQL
         def initialize(query:)
           @query = query
           @path = []
-          @result = {}
+          @result = nil
           @objects = []
           @types = []
         end
@@ -185,7 +194,7 @@ TRACE
         end
 
         def write(value)
-          write_target = @result
+          write_target = @result ||= {}
           @path.each_with_index do |path_part, idx|
             next_part = @path[idx + 1]
             if next_part.nil?

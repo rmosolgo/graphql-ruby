@@ -156,10 +156,9 @@ module Jazz
     end
   end
 
-  # A legacy-style interface used by new-style types
-  NamedEntity = GraphQL::InterfaceType.define do
-    name "NamedEntity"
-    field :name, !types.String
+  module NamedEntity
+    include BaseInterface
+    field :name, String, null: false
   end
 
   # test field inheritance
@@ -214,19 +213,17 @@ module Jazz
 
   # Lives side-by-side with an old-style definition
   using GraphQL::DeprecatedDSL # for ! and types[]
-  InstrumentType = GraphQL::ObjectType.define do
-    name "Instrument"
-    interfaces [NamedEntity]
+  class InstrumentType < BaseObject
+    implements NamedEntity
     implements GloballyIdentifiableType
 
-    field :id, !types.ID, "A unique identifier for this object", resolve: ->(obj, args, ctx) { GloballyIdentifiableType.to_id(obj) }
-    field :upcasedId, !types.ID, resolve: ->(obj, args, ctx) { GloballyIdentifiableType.to_id(obj).upcase }
-    if RUBY_ENGINE == "jruby"
-      # JRuby doesn't support refinements, so the `using` above won't work
-      field :family, Family.to_non_null_type
-    else
-      field :family, !Family
+    field :upcased_id, ID, null: false
+
+    def upcased_id
+      GloballyIdentifiableType.to_id(object).upcase
     end
+
+    field :family, Family, null: false
   end
 
   class Key < GraphQL::Schema::Scalar
@@ -589,4 +586,13 @@ module Jazz
       GloballyIdentifiableType.find(id)
     end
   end
+
+  # TODO dry with interpreter_spec
+  # TODO encapsulate this in `use` ?
+  Schema.graphql_definition.query_execution_strategy = GraphQL::Execution::Interpreter
+  Schema.graphql_definition.mutation_execution_strategy = GraphQL::Execution::Interpreter
+  # Don't want this wrapping automatically
+  Schema.instrumenters[:field].delete(GraphQL::Schema::Member::Instrumentation)
+  Schema.instrumenters[:query].delete(GraphQL::Schema::Member::Instrumentation)
+
 end
