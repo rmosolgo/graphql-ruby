@@ -36,6 +36,12 @@ describe GraphQL::Language::Lexer do
         tokens = subject.tokenize(%|"\\\\" "\\\\\\"" "\\"\\\\" "\\""|)
         assert_equal ["\\", "\\\"", "\"\\", "\""], tokens.map(&:value)
       end
+
+      it "tokenizes quote missing string" do
+        tokens = subject.tokenize(%|"a\\"b\\"c|)
+        assert_equal 1, tokens.size
+        assert_equal :UNMATCHED_QUOTED_STRING, tokens.first.name
+      end
     end
 
     describe "block strings" do
@@ -57,6 +63,15 @@ describe GraphQL::Language::Lexer do
       it "recognizes escape block quotes" do
         tokens = subject.tokenize(%|"""\\"\\"\\a\\"\\\\""\\"""\\\\""""\\"""""\\\\""""""|)
         assert_equal %|\\"\\"\\a\\"\\\\"""""\\"""""""""\\"""|, tokens.first.value
+      end
+
+      it "tokenizes quote missing string" do
+        expressions = ['"""', '"""a', '"""a"', '"""a""', '"""a\\"""', '"""a\\']
+        expressions.each do |exp|
+          tokens = subject.tokenize(exp)
+          assert_equal 1, tokens.size
+          assert_equal :UNMATCHED_BLOCK_STRING, tokens.first.name
+        end
       end
     end
 

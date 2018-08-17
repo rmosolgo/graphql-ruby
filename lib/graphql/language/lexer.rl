@@ -52,6 +52,8 @@
 
   QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
   BLOCK_STRING = BLOCK_QUOTE BLOCK_STRING_CHAR* BLOCK_QUOTE;
+  UNMATCHED_QUOTED_STRING = QUOTE STRING_CHAR*;
+  UNMATCHED_BLOCK_STRING = BLOCK_QUOTE BLOCK_STRING_CHAR* BLOCK_STRING_ESCAPE_FRAGMENT* SHORT_BLOCK_QUOTES;
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
 
@@ -102,6 +104,9 @@
 
     BLANK   => { meta[:col] += te - ts };
 
+
+    UNMATCHED_BLOCK_STRING => { emit(:UNMATCHED_BLOCK_STRING, ts, te, meta) };
+    UNMATCHED_QUOTED_STRING => { emit(:UNMATCHED_QUOTED_STRING, ts, te, meta) };
     UNKNOWN_CHAR => { emit(:UNKNOWN_CHAR, ts, te, meta) };
 
   *|;
