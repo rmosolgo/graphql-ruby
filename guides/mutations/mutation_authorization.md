@@ -20,13 +20,16 @@ This guide describes how to accomplish that workflow with GraphQL-Ruby.
 
 Before loading any data from the database, you might want to see if the user has a certain permission level. For example, maybe only `.admin?` users can run `Mutation.promoteEmployee`.
 
-This check can be implemented using the `#before_prepare` method in a mutation:
+This check can be implemented using the `#ready?` method in a mutation:
 
 ```ruby
 class Mutations::PromoteEmployee < Mutations::BaseMutation
-  def before_prepare(**args)
+  def ready?(**args)
     if !context[:current_user].admin?
       raise GraphQL::ExecutionError, "Only admins can run this mutation"
+    else
+      # Return true to continue the mutation:
+      true
     end
   end
 
@@ -35,6 +38,18 @@ end
 ```
 
 Now, when any non-`admin` user tries to run the mutation, it won't run. Instead, they'll get an error in the response.
+
+Additionally, `#ready?` may return `false, { ... }` to return {% internal_link "errors as data", "/mutations/mutation_errors" %}:
+
+```ruby
+def ready?
+  if !context[:current_user].allowed?
+    return false, { errors: ["You don't have permission to do this"]}
+  else
+    true
+  end
+end
+```
 
 ## Loading and authorizing objects
 
@@ -74,21 +89,45 @@ If you don't want this behavior, don't use it. Instead, create arguments with ty
 argument :employee_id, ID, required: true
 ```
 
-## Can _this user_ modify _this thing_?
+## Can _this user_ perform _this action_?
 
-Sometimes you need to authorize a specific user-object-action combination. For example, `.admin?` users can't promote _all_ employees! They can only promote employees which they manage.
+Sometimes you need to authorize a specific user-object(s)-action combination. For example, `.admin?` users can't promote _all_ employees! They can only promote employees which they manage.
 
-You can add this check by implementing a `#validate_#{arg_name}` method, for example:
+You can add this check by implementing a `#authorized?` method, for example:
 
 ```ruby
-def validate_employee(employee)
+def authorized?(employee:)
+  context[:current_user].manager_of?(employee)
+end
+```
+
+When `#authorized?` returns `false`, the mutation will be halted. If it returns `true` (or something truthy), the mutation will continue.
+
+#### Adding errors
+
+To add errors as data (as described in {% internal_link "Mutation errors", "/mutations/mutation_errors" %}), return a value _along with_ `false`, for example:
+
+```ruby
+def authorized?(employee:)
+  if context[:current_user].manager_of?(employee)
+    true
+  else
+    return false, { errors: ["Can't promote an employee you don't manage"] }
+  end
+end
+```
+
+Alternatively, you can add top-level errors by raising `GraphQL::ExecutionError`, for example:
+
+```ruby
+def authorized?(employee:)
   if !context[:current_user].manager_of?(employee)
     raise GraphQL::ExecutionError, "You can only promote your _own_ employees"
   end
 end
 ```
 
-If this method raises an error, the mutation will be halted.
+In either case (returning `[false, data]` or raising an error), the mutation will be halted.
 
 ## Finally, doing the work
 

@@ -16,6 +16,21 @@ describe GraphQL::Analysis do
     end
   end
 
+  class ConditionalAnalyzer
+    def analyze?(query)
+      !!query.context[:analyze]
+    end
+
+    def initial_value(query)
+      {}
+    end
+
+    def call(memo, visit_type, irep_node)
+      memo[:i_have_been_called] ||= true
+      memo
+    end
+  end
+
   describe ".analyze_query" do
     let(:node_counter) {
       ->(memo, visit_type, irep_node) {
@@ -37,6 +52,29 @@ describe GraphQL::Analysis do
         }
       }
     |}
+
+    describe "conditional analysis" do
+      let(:conditional_analyzer) { ConditionalAnalyzer.new }
+      let(:analyzers) { [type_collector, conditional_analyzer] }
+
+      describe "when analyze? returns false" do
+        let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: { analyze: false }) }
+
+        it "does not run the analyzer" do
+          # Only type_collector ran
+          assert_equal 1, reduce_result.size
+        end
+      end
+
+      describe "when analyze? returns true" do
+        let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: { analyze: true }) }
+
+        it "it runs the analyzer" do
+          # Both analyzers ran
+          assert_equal 2, reduce_result.size
+        end
+      end
+    end
 
     it "calls the defined analyzers" do
       collected_types, node_counts = reduce_result

@@ -19,22 +19,24 @@ require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
 
-
 require "graphql/schema/member"
+require "graphql/schema/wrapper"
 require "graphql/schema/list"
 require "graphql/schema/non_null"
 require "graphql/schema/argument"
 require "graphql/schema/enum_value"
 require "graphql/schema/enum"
+require "graphql/schema/field_extension"
 require "graphql/schema/field"
 require "graphql/schema/input_object"
 require "graphql/schema/interface"
+require "graphql/schema/scalar"
+require "graphql/schema/object"
+require "graphql/schema/union"
+
 require "graphql/schema/resolver"
 require "graphql/schema/mutation"
 require "graphql/schema/relay_classic_mutation"
-require "graphql/schema/object"
-require "graphql/schema/scalar"
-require "graphql/schema/union"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -122,7 +124,7 @@ module GraphQL
     attr_accessor :context_class
 
     class << self
-      attr_accessor :default_execution_strategy
+      attr_writer :default_execution_strategy
     end
 
     def default_filter
@@ -654,7 +656,7 @@ module GraphQL
         # Execution
         :execute, :multiplex,
         :static_validator, :introspection_system,
-        :query_analyzers, :middleware, :tracers, :instrumenters,
+        :query_analyzers, :tracers, :instrumenters,
         :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy,
         # Configuration
@@ -663,7 +665,7 @@ module GraphQL
         :default_mask,
         :default_filter, :redefine,
         :id_from_object_proc, :object_from_id_proc,
-        :id_from_object=, :object_from_id=, :type_error,
+        :id_from_object=, :object_from_id=,
         :remove_handler,
         # Members
         :types, :get_fields, :find,
@@ -671,7 +673,7 @@ module GraphQL
         :subscriptions,
         :union_memberships,
         :get_field, :root_types, :references_to, :type_from_ast,
-        :possible_types, :get_field
+        :possible_types
 
       def graphql_definition
         @graphql_definition ||= to_graphql
@@ -870,6 +872,10 @@ module GraphQL
       # the field resolvers not to return unauthorized objects.
       #
       # By default, this hook just replaces the unauthorized object with `nil`.
+      #
+      # Whatever value is returned from this method will be used instead of the
+      # unauthorized object (accessible ass `unauthorized_error.object`). If an
+      # error is raised, then `nil` will be used.
       #
       # If you want to add an error to the `"errors"` key, raise a {GraphQL::ExecutionError}
       # in this hook.

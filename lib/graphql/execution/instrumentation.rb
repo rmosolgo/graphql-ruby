@@ -51,30 +51,38 @@ module GraphQL
 
         # Call each before hook, and if they all succeed, yield.
         # If they don't all succeed, call after_ for each one that succeeded.
-        def call_hooks(instrumenters, object, before_hook_name, after_hook_name, i = 0)
-          if i >= instrumenters.length
-            # We've reached the end of the instrumenters, so start exiting the call stack.
-            # (This will eventually call the originally-passed block.)
-            yield
-          else
-            # Get the next instrumenter and call the before_hook.
-            instrumenter = instrumenters[i]
-            instrumenter.public_send(before_hook_name, object)
-            # At this point, the before_hook did _not_ raise an error.
-            # (If it did raise an error, we wouldn't reach this point.)
-            # So we should guarantee that we run the after_hook.
+        def call_hooks(instrumenters, object, before_hook_name, after_hook_name)
+          begin
+            successful = []
+            instrumenters.each do |instrumenter|
+              instrumenter.public_send(before_hook_name, object)
+              successful << instrumenter
+            end
+
+            # if any before hooks raise an exception, quit calling before hooks,
+            # but call the after hooks on anything that succeeded but also
+            # raise the exception that came from the before hook.
+          rescue => e
+            raise call_after_hooks(successful, object, after_hook_name, e)
+          end
+
+          begin
+            yield # Call the user code
+          ensure
+            ex = call_after_hooks(successful, object, after_hook_name, nil)
+            raise ex if ex
+          end
+        end
+
+        def call_after_hooks(instrumenters, object, after_hook_name, ex)
+          instrumenters.reverse.each do |instrumenter|
             begin
-              # Call the next instrumenter on the list,
-              # basically passing along the original block
-              call_hooks(instrumenters, object, before_hook_name, after_hook_name, i + 1) {
-                yield
-              }
-            ensure
-              # Regardless of how the next instrumenter in the list behaves,
-              # call the after_hook of this instrumenter
               instrumenter.public_send(after_hook_name, object)
+            rescue => e
+              ex = e
             end
           end
+          ex
         end
       end
     end

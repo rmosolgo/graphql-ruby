@@ -137,7 +137,7 @@ This transformation may not be perfect, but it should cover the most common case
 
 ### Using the Default Upgrade Task
 
-The upgrader ships with rake tasks, included as a railtie ([source](https://github.com/rmosolgo/graphql-ruby/blob/1.8-dev/lib/graphql/railtie.rb)). The railtie will be automatically installed by your Rails app, and it provides the following tasks:
+The upgrader ships with rake tasks, included as a railtie ([source](https://github.com/rmosolgo/graphql-ruby/blob/v1.8.0/lib/graphql/railtie.rb)). The railtie will be automatically installed by your Rails app, and it provides the following tasks:
 
 - `graphql:upgrade:schema[path/to/schema.rb]`: upgrade the Schema file
 - `graphql:upgrade:member[path/to/some/type.rb]`: upgrade a type definition (object, interface, union, etc)

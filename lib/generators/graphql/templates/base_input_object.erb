@@ -1,2 +1,4 @@
-class Types::BaseInputObject < GraphQL::Schema::InputObject
+module Types
+  class BaseInputObject < GraphQL::Schema::InputObject
+  end
 end

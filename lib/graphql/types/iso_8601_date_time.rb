@@ -4,11 +4,7 @@ module GraphQL
     # This scalar takes `DateTime`s and transmits them as strings,
     # using ISO 8601 format.
     #
-    # To use it, require it in your project:
-    #
-    #     require "graphql/types/iso_8601_date_time"
-    #
-    # Then use it for fields or arguments:
+    # Use it for fields or arguments as follows:
     #
     #     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     #

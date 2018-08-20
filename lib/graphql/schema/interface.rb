@@ -9,6 +9,9 @@ module GraphQL
         include GraphQL::Schema::Member::BaseDSLMethods
         include GraphQL::Schema::Member::TypeSystemHelpers
         include GraphQL::Schema::Member::HasFields
+        include GraphQL::Schema::Member::HasPath
+        include GraphQL::Schema::Member::RelayShortcuts
+        include GraphQL::Schema::Member::Scoped
 
         # Methods defined in this block will be:
         # - Added as class methods to this interface
@@ -43,6 +46,14 @@ module GraphQL
             # In this case, it's been included into another interface.
             # This is how interface inheritance is implemented
 
+            # We need this before we can call `own_interfaces`
+            child_class.extend(Schema::Interface::DefinitionMethods)
+
+            child_class.own_interfaces << self
+            child_class.interfaces.reverse_each do |interface_defn|
+              child_class.extend(interface_defn::DefinitionMethods)
+            end
+
             # Use an instance variable to tell whether it's been included previously or not;
             # You can't use constant detection because constants are brought into scope
             # by `include`, which has already happened at this point.
@@ -52,21 +63,7 @@ module GraphQL
               child_class.const_set(:DefinitionMethods, defn_methods_module)
               child_class.extend(child_class::DefinitionMethods)
             end
-
-            # We need this before we can call `own_interfaces`
-            child_class.extend(Schema::Interface::DefinitionMethods)
-
-            child_class.own_interfaces << self
-            child_class.interfaces.each do |interface_defn|
-              child_class.extend(interface_defn::DefinitionMethods)
-            end
           elsif child_class < GraphQL::Schema::Object
-            # Add all definition methods of this interface and the interfaces it
-            # includes onto the child class.
-            (own_interfaces + [self]).each do |interface_defn|
-              child_class.extend(interface_defn::DefinitionMethods)
-            end
-
             # This is being included into an object type, make sure it's using `implements(...)`
             backtrace_line = caller(0, 10).find { |line| line.include?("schema/object.rb") && line.include?("in `implements'")}
             if !backtrace_line

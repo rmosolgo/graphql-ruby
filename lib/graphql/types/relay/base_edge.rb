@@ -39,6 +39,18 @@ module GraphQL
             end
             @node_type
           end
+
+          def authorized?(obj, ctx)
+            true
+          end
+
+          def accessible?(ctx)
+            node_type.accessible?(ctx)
+          end
+
+          def visible?(ctx)
+            node_type.visible?(ctx)
+          end
         end
 
 

@@ -29,7 +29,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :context, :warden, :provided_variables
+    attr_reader :schema, :context, :provided_variables
 
     # The value for root types
     attr_accessor :root_value
@@ -60,9 +60,6 @@ module GraphQL
     # @return [String, nil] the triggered event, if this query is a subscription update
     attr_reader :subscription_topic
 
-    # @return [String, nil]
-    attr_reader :operation_name
-
     attr_reader :tracers
 
     # Prepare query `query_string` on `schema`
@@ -76,7 +73,9 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
+      # Even if `variables: nil` is passed, use an empty hash for simpler logic
+      variables ||= {}
       @schema = schema
       @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
@@ -216,11 +215,6 @@ module GraphQL
     # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
     def arguments_for(irep_or_ast_node, definition)
       @arguments_cache[irep_or_ast_node][definition]
-    end
-
-    # @return [GraphQL::Language::Nodes::OperationDefinition, nil]
-    def selected_operation
-      with_prepared_ast { @selected_operation }
     end
 
     def validation_pipeline

@@ -8,6 +8,90 @@
 
 ### Bug fixes
 
+## 1.8.7 (9 Aug 2018)
+
+### Breaking changes
+
+- Some mutation authorization hooks added in 1.8.5 were changed, see #1736 and #1737. Roughly:
+
+  - `before_prepare` was changed to `#ready?`
+  - `validate_*` hooks were replaced with a single `#authorized?` method
+
+### Bug fixes
+
+- Argument default values include nested default values #1728
+- Clean up duplciate method defs #1739
+
+### New features
+
+- Built-in support for Mongoid 5, 6, 7 #1754
+- Mutation `#ready?` and `#authorized?` may halt flow and/or return data #1736, #1737
+- Add `.scope_items(items, ctx)` hook for filtering lists
+- Add `#default_graphql_name` for overriding default logic #1729
+- Add `#add_argument` for building schemas #1732
+- Cursors are decoded using `urlsafe_decode64` to future-proof for urlsafe cursors #1748
+
+## 1.8.6 (31 July 2018)
+
+### Breaking changes
+
+- Only allow Objects to implement actual Interfaces #1715. Use `include` instead for plain Ruby modules.
+- Revert extending interface methods onto Objects #1716. If you were taking advantage of this feature, you can create a plain Ruby module with the functionality and include it in both the interface and object.
+
+### Deprecations
+
+### New features
+
+- Support string descriptions (from June 2018 GraphQL spec) #1725
+- Add some accessors to Schema members #1722
+- Yield argument for definition block with arity of one #1714
+- Yield field for definition blocks with arity of one #1712
+- Support grouping by "endpoint" with skylight instrumentation #1663
+- Validation: Don't traverse irep if no handlers are registered #1696
+- Add `nodes_field` option to `edge_type` to hide nodes field #1693
+- Add `GraphQL::Types::ISO8601DateTime` to documentation #1694
+- Conditional Analyzers #1690
+- Improve error messages in `ActionCableSubscriptions` #1675
+- Add Prometheus tracing #1672
+- Add `map` to `InputObject` #1669
+
+### Bug fixes
+
+- Improve the mutation generator #1718
+- Fix method inheritance for interfaces #1709
+- Fix Interface inheritance chain #1686
+- Fix require in `tracing.rb` #1685
+- Remove delegate for `FieldResolutionContext#schema` #1682
+- Remove duplicated `object_class` method #1667
+
+## 1.8.5 (10 July 2018)
+
+### Breaking changes
+
+- GraphQL validation errors now include `"filename"` if the parsed document had a `filename` #1618
+
+### Deprecations
+
+- `TypeKind#resolves?` is deprecated in favor of `TypeKind#abstract?` #1619
+
+### New features
+
+- Add Mutation loading/authorization system #1609
+- Interface `definition_methods` are inherited by object type classes #1635
+- include `"filename"` in GraphQL errors if the parsed document has a filename #1618
+- Add `Schema::InputObject#empty?` #1651
+- require `ISO8601DateTime` by default #1660
+- Support `extend` in the parser #1620
+- Improve generator to have nicer error handling in development
+
+### Bug fixes
+
+- Fix `@skip`/`@include` with default value of `false` #1617
+- Fix lists of abstract types with promises #1613
+- Don't check the type of `nil` when it's in a list #1610
+- Fix NoMethodError when `variables: nil` is passed to `execute(...)` #1661
+- Objects returned from `Schema.unauthorized_objects` are properly wrapped by their type proxies #1662
+
 ## 1.8.4 (21 June 2018)
 
 ### New features

@@ -8,6 +8,24 @@
 
 ### Bug Fix
 
+## 1.7.10 (10 Aug 2018)
+
+### New Features
+
+- Update `PunditIntegration` for arguments, unions, interfaces and mutations
+
+## 1.7.9 (9 Aug 2018)
+
+### New Features
+
+- Add a new `PunditIntegration` which leverages the built-in authorization methods
+
+## 1.7.8 (10 July 2018)
+
+### Bug Fix
+
+- Authorization: fix scoping lists of abstract type when there's no `#scope` method on the strategy
+
 ## 1.7.7 (10 May 2018)
 
 ### Bug Fix
