@@ -594,5 +594,4 @@ module Jazz
   # Don't want this wrapping automatically
   Schema.instrumenters[:field].delete(GraphQL::Schema::Member::Instrumentation)
   Schema.instrumenters[:query].delete(GraphQL::Schema::Member::Instrumentation)
-
 end

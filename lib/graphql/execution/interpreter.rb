@@ -2,13 +2,16 @@
 module GraphQL
   module Execution
     class Interpreter
+      # The visitor itself is stateless,
+      # it delegates state to the `trace`
       class Visitor < GraphQL::Language::Visitor
-        attr_reader :trace, :query, :schema
+        extend Forwardable
+        def_delegators :@trace, :query, :schema
+        attr_reader :trace
+
         def initialize(document, trace:)
           super(document)
           @trace = trace
-          @query = trace.query
-          @schema = query.schema
         end
 
         def on_operation_definition(node, _parent)
@@ -56,9 +59,10 @@ module GraphQL
         def on_field(node, _parent)
           # TODO call out to directive here
           node.directives.each do |dir|
-            if dir.name == "skip" && trace.arguments(dir)[:if] == true
+            dir_defn = schema.directives.fetch(dir.name)
+            if dir.name == "skip" && trace.arguments(dir_defn, dir)[:if] == true
               return
-            elsif dir.name == "include" && trace.arguments(dir)[:if] == false
+            elsif dir.name == "include" && trace.arguments(dir_defn, dir)[:if] == false
               return
             end
           end
@@ -78,7 +82,7 @@ module GraphQL
           trace.with_path(node.alias || node.name) do
             object = trace.objects.last
             result = if field_defn.arguments.any?
-              kwarg_arguments = trace.arguments(node)
+              kwarg_arguments = trace.arguments(field_defn, node)
               object.public_send(field_defn.method_sym, **kwarg_arguments)
             else
               object.public_send(field_defn.method_sym)
@@ -148,9 +152,11 @@ module GraphQL
         raise
       end
 
-      # A mutable tag-along for execution;
-      # The plan is to support cloning it for
-      # deferring execution til later
+      # The center of execution state.
+      # It's mutable as a performance consideration.
+      # (TODO provide explicit APIs for providing stuff to user code)
+      # It can be "branched" to create a divergent, parallel execution state.
+      # (TODO create branching API and prove its value)
       class Trace
         extend Forwardable
         def_delegators :query, :schema, :context
@@ -208,20 +214,28 @@ TRACE
           nil
         end
 
-        def arguments(ast_node)
+        def arguments(arg_owner, ast_node)
           kwarg_arguments = {}
           ast_node.arguments.each do |arg|
-            value = arg_to_value(arg.value)
+            arg_defn = arg_owner.arguments[arg.name]
+            value = arg_to_value(arg_defn.type, arg.value)
             kwarg_arguments[arg.name.to_sym] = value
           end
           kwarg_arguments
         end
 
-        def arg_to_value(ast_value)
+        def arg_to_value(arg_defn, ast_value)
           if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
             query.variables[ast_value.name]
-          elsif ast_value.is_a?(Array)
-            ast_value.map { |v| arg_to_value(v) }
+          elsif arg_defn.is_a?(GraphQL::Schema::NonNull)
+            arg_to_value(arg_defn.of_type, ast_value)
+          elsif arg_defn.is_a?(GraphQL::Schema::List)
+            ast_value.map do |inner_v|
+              arg_to_value(arg_defn.of_type, inner_v)
+            end
+          elsif arg_defn.is_a?(Class) && arg_defn < GraphQL::Schema::InputObject
+            args = arguments(arg_defn, ast_value)
+            arg_defn.new(ruby_kwargs: args, context: context, defaults_used: nil)
           else
             ast_value
           end

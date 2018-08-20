@@ -6,11 +6,15 @@ module GraphQL
       extend Forwardable
       extend GraphQL::Schema::Member::HasArguments
 
-      def initialize(values, context:, defaults_used:)
+      def initialize(values = nil, ruby_kwargs: nil, context:, defaults_used:)
         @context = context
-        @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
-        # Symbolized, underscored hash:
-        @ruby_style_hash = @arguments.to_kwargs
+        if ruby_kwargs
+          @ruby_style_hash = ruby_kwargs
+        else
+          @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
+          # Symbolized, underscored hash:
+          @ruby_style_hash = @arguments.to_kwargs
+        end
         # Apply prepares, not great to have it duplicated here.
         self.class.arguments.each do |name, arg_defn|
           ruby_kwargs_key = arg_defn.keyword
