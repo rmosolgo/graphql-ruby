@@ -130,6 +130,11 @@ describe GraphQL::EnumType do
     assert_equal({ "COW" => cow, "GOAT" => goat }, enum.values)
   end
 
+  it "values respond to graphql_name" do
+    cow = GraphQL::EnumType::EnumValue.define(name: "COW")
+    assert_equal("COW", cow.graphql_name)
+  end
+
   describe "#dup" do
     it "copies the values map without altering the original" do
       enum_2 = enum.dup
