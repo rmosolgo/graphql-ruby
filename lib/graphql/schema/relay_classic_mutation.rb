@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require "graphql/types/string"
+
 module GraphQL
   class Schema
     # Mutations that extend this base class get some conventions added for free:

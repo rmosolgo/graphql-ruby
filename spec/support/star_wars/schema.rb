@@ -86,17 +86,18 @@ module StarWars
     end
   end
 
-  class ShipsWithMaxPageSize < GraphQL::Schema::Resolver
-    argument :name_includes, String, required: false
-    type Ship.connection_type, null: true
-
-    def resolve(name_includes: nil)
-      all_ships = object.ships.map { |ship_id| StarWars::DATA["Ship"][ship_id] }
-      if name_includes
-        all_ships = all_ships.select { |ship| ship.name.include?(name_includes)}
+  # Example of GraphQL::Function used with the connection helper:
+  class ShipsWithMaxPageSize < GraphQL::Function
+    argument :nameIncludes, GraphQL::STRING_TYPE
+    def call(obj, args, ctx)
+      all_ships = obj.ships.map { |ship_id| StarWars::DATA["Ship"][ship_id] }
+      if args[:nameIncludes]
+        all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
       end
       all_ships
     end
+
+    type Ship.connection_type
   end
 
   class ShipConnectionWithParentType < GraphQL::Types::Relay::BaseConnection
@@ -113,14 +114,10 @@ module StarWars
 
     field :id, ID, null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
     field :name, String, null: true
-    field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true do
-      argument :name_includes, String, required: false
-    end
-
-    def ships(name_includes: nil)
-      all_ships = object.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
-      if name_includes
-        case name_includes
+    field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true, resolve: ->(obj, args, ctx) {
+      all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
+      if args[:nameIncludes]
+        case args[:nameIncludes]
         when "error"
           all_ships = GraphQL::ExecutionError.new("error from within connection")
         when "raisedError"
@@ -135,24 +132,25 @@ module StarWars
           prev_all_ships = all_ships
           all_ships = LazyWrapper.new { prev_all_ships }
         else
-          all_ships = all_ships.select { |ship| ship.name.include?(name_includes)}
+          all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
         end
       end
       all_ships
+    } do
+      # You can define arguments here and use them in the connection
+      argument :nameIncludes, String, required: false
     end
 
-    field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, resolver: ShipsWithMaxPageSize
+    field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, function: ShipsWithMaxPageSize.new
 
-    field :bases, BasesConnectionWithTotalCountType, null: true, connection: true do
-      argument :name_includes, String, required: false
-    end
-
-    def bases(name_includes: nil)
-      all_bases = Base.where(id: object.bases)
-      if name_includes
-        all_bases = all_bases.where("name LIKE ?", "%#{name_includes}%")
+    field :bases, BasesConnectionWithTotalCountType, null: true, connection: true, resolve: ->(obj, args, ctx) {
+      all_bases = Base.where(id: obj.bases)
+      if args[:nameIncludes]
+        all_bases = all_bases.where("name LIKE ?", "%#{args[:nameIncludes]}%")
       end
       all_bases
+    } do
+      argument :nameIncludes, String, required: false
     end
 
     field :basesClone, BaseConnection, null: true
@@ -167,20 +165,12 @@ module StarWars
       end
     end
 
-    def all_bases
-      Base.all
-    end
-
-    def all_bases_array
-      all_bases.to_a
-    end
-
-    field :basesWithMaxLimitRelation, BaseConnection, null: true, max_page_size: 2, method: :all_bases
-    field :basesWithMaxLimitArray, BaseConnection, null: true, max_page_size: 2, method: :all_bases_array
-    field :basesWithDefaultMaxLimitRelation, BaseConnection, null: true, method: :all_bases
-    field :basesWithDefaultMaxLimitArray, BaseConnection, null: true, method: :all_bases_array
-    field :basesWithLargeMaxLimitRelation, BaseConnection, null: true, max_page_size: 1000, method: :all_bases
-    field :basesWithoutNodes, BaseConnectionWithoutNodes, null: true, method: :all_bases_array
+    field :basesWithMaxLimitRelation, BaseConnection, null: true, max_page_size: 2, resolve: Proc.new { Base.all}
+    field :basesWithMaxLimitArray, BaseConnection, null: true, max_page_size: 2, resolve: Proc.new { Base.all.to_a }
+    field :basesWithDefaultMaxLimitRelation, BaseConnection, null: true, resolve: Proc.new { Base.all }
+    field :basesWithDefaultMaxLimitArray, BaseConnection, null: true, resolve: Proc.new { Base.all.to_a }
+    field :basesWithLargeMaxLimitRelation, BaseConnection, null: true, max_page_size: 1000, resolve: Proc.new { Base.all }
+    field :basesWithoutNodes, BaseConnectionWithoutNodes, null: true, resolve: Proc.new { Base.all.to_a }
 
     field :basesAsSequelDataset, BasesConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
       argument :nameIncludes, String, required: false
@@ -194,11 +184,7 @@ module StarWars
       all_bases
     end
 
-    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, method: :lazy_bases
-
-    def lazy_bases
-      LazyNodesWrapper.new(object.bases)
-    end
+    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, resolve: ->(o, a, c) { LazyNodesWrapper.new(o.bases) }
   end
 
   class IntroduceShipMutation < GraphQL::Schema::RelayClassicMutation
@@ -334,20 +320,16 @@ module StarWars
 
     field :largestBase, BaseType, null: true, resolve: ->(obj, args, ctx) { Base.find(3) }
 
-    field :newestBasesGroupedByFaction, BaseConnection, null: true
-
-    def newest_bases_grouped_by_faction
+    field :newestBasesGroupedByFaction, BaseConnection, null: true, resolve: ->(obj, args, ctx) {
       Base
         .having('id in (select max(id) from bases group by faction_id)')
         .group(:id)
         .order('faction_id desc')
-    end
+    }
 
-    field :basesWithNullName, BaseConnection, null: false
-
-    def bases_with_null_name
+    field :basesWithNullName, BaseConnection, null: false, resolve: ->(obj, args, ctx) {
       [OpenStruct.new(id: nil)]
-    end
+    }
 
     field :node, field: GraphQL::Relay::Node.field
 
