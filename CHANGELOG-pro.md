@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.7.11 (21 Aug 2018)
+
+- `PunditIntegration`: Don't try to authorize loaded objects when they're `nil`
+
 ## 1.7.10 (10 Aug 2018)
 
 ### New Features
