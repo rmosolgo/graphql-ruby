@@ -3,6 +3,13 @@ require "spec_helper"
 
 describe GraphQL::Schema::Enum do
   let(:enum) { Jazz::Family }
+
+  describe ".path" do
+    it "is the name" do
+      assert_equal "Family", enum.path
+    end
+  end
+
   describe "type info" do
     it "tells about the definition" do
       assert_equal "Family", enum.graphql_name

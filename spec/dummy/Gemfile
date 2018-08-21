@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 source 'https://rubygems.org'
 
-gem 'rails'
+gem 'rails', '~> 5.2.1'
 gem 'puma'
 gem 'capybara'
 gem 'selenium-webdriver'

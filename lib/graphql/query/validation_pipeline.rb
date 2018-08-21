@@ -16,7 +16,6 @@ module GraphQL
     class ValidationPipeline
       def initialize(query:, validate:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
         @validation_errors = []
-        @analysis_errors = []
         @internal_representation = nil
         @validate = validate
         @parse_error = parse_error
@@ -33,12 +32,6 @@ module GraphQL
       def valid?
         ensure_has_validated
         @valid
-      end
-
-      # @return [Array<GraphQL::AnalysisError>] Errors for this particular query run (eg, exceeds max complexity)
-      def analysis_errors
-        ensure_has_validated
-        @analysis_errors
       end
 
       # @return [Array<GraphQL::StaticValidation::Message>] Static validation errors for the query string
@@ -86,17 +79,15 @@ module GraphQL
           end
 
           if @validation_errors.none?
-            @query_analyzers = build_analyzers(@schema, @max_depth, @max_complexity)
-            # if query_analyzers.any?
-            #   analysis_results = GraphQL::Analysis.analyze_query(@query, query_analyzers)
-            #   @analysis_errors = analysis_results
-            #     .flatten # accept n-dimensional array
-            #     .select { |r| r.is_a?(GraphQL::AnalysisError) }
-            # end
+            @query_analyzers = build_analyzers(
+              @schema,
+              @max_depth,
+              @max_complexity
+            )
           end
         end
 
-        @valid = @validation_errors.none? && @analysis_errors.none?
+        @valid = @validation_errors.none?
       end
 
       # If there are max_* values, add them,
@@ -104,6 +95,7 @@ module GraphQL
       def build_analyzers(schema, max_depth, max_complexity)
         if max_depth || max_complexity
           qa = schema.query_analyzers.dup
+
           if max_depth
             qa << GraphQL::Analysis::MaxQueryDepth.new(max_depth)
           end

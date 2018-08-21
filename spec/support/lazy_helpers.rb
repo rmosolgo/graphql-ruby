@@ -20,7 +20,7 @@ module LazyHelpers
 
   class SumAll
     attr_reader :own_value
-    attr_accessor :value
+    attr_writer :value
 
     def initialize(ctx, own_value)
       @own_value = own_value

@@ -6,9 +6,25 @@ describe GraphQL::Schema::Field do
     let(:object_class) { Jazz::Query }
     let(:field) { object_class.fields["inspectInput"] }
 
+    describe "path" do
+      it "is the object/interface and field name" do
+        assert_equal "Query.inspectInput", field.path
+        assert_equal "GloballyIdentifiable.id", Jazz::GloballyIdentifiableType.fields["id"].path
+      end
+    end
+
     it "uses the argument class" do
       arg_defn = field.graphql_definition.arguments.values.first
       assert_equal :ok, arg_defn.metadata[:custom]
+    end
+
+    it "can add argument directly with add_argument" do
+      argument = Jazz::Query.fields["instruments"].arguments["family"]
+
+      field.add_argument(argument)
+
+      assert_equal "family", field.arguments["family"].name
+      assert_equal Jazz::Family, field.arguments["family"].type
     end
 
     it "attaches itself to its graphql_definition as type_class" do
@@ -44,6 +60,20 @@ describe GraphQL::Schema::Field do
         field :test, String, null: true do
           argument :test, String, required: true
           description "A Description."
+        end
+      end.to_graphql
+
+      assert_equal "test", object.fields["test"].arguments["test"].name
+      assert_equal "A Description.", object.fields["test"].description
+    end
+
+    it "accepts a block for defintion and yields the field if the block has an arity of one" do
+      object = Class.new(Jazz::BaseObject) do
+        graphql_name "JustAName"
+
+        field :test, String, null: true do |field|
+          field.argument :test, String, required: true
+          field.description "A Description."
         end
       end.to_graphql
 
@@ -182,14 +212,12 @@ describe GraphQL::Schema::Field do
     end
 
     it "makes a suggestion when the type is false" do
-      thing = Class.new(GraphQL::Schema::Object) do
-        graphql_name "Thing"
-        # False might come from an invalid `!`
-        field :stuff, false, null: false
-      end
-
       err = assert_raises ArgumentError do
-        thing.fields["stuff"].type
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "Thing"
+          # False might come from an invalid `!`
+          field :stuff, false, null: false
+        end
       end
 
       assert_includes err.message, "Thing.stuff"
@@ -220,6 +248,19 @@ describe GraphQL::Schema::Field do
         field(:my_field, mutation: mutation_class, null: true)
       end
       assert_equal obj.fields["myField"].mutation, mutation_class
+    end
+  end
+
+  describe '#deprecation_reason' do
+    it "reads and writes" do
+      object_class = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Thing"
+        field :stuff, String, null: false, deprecation_reason: "Broken"
+      end
+      field = object_class.fields["stuff"]
+      assert_equal "Broken", field.deprecation_reason
+      field.deprecation_reason += "!!"
+      assert_equal "Broken!!", field.deprecation_reason
     end
   end
 end

@@ -5,6 +5,7 @@ module GraphQL
     module Visit
       module_function
       def visit_each_node(operations, handlers)
+        return if handlers.empty?
         # Post-validation: make some assertions about the rewritten query tree
         operations.each do |op_name, op_node|
           # Yield each node to listeners which were attached by validators

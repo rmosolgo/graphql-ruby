@@ -177,6 +177,7 @@ module GraphQL
         pending_methods = @pending_methods
         self.singleton_class.class_eval {
           pending_methods.each do |method|
+            undef_method(method.name) if method_defined?(method.name)
             define_method(method.name, method)
           end
         }
@@ -200,6 +201,7 @@ module GraphQL
         @pending_methods = method_names.map { |n| self.class.instance_method(n) }
         self.singleton_class.class_eval do
           method_names.each do |method_name|
+            undef_method(method_name) if method_defined?(method_name)
             define_method(method_name) { |*args, &block|
               ensure_defined
               self.send(method_name, *args, &block)

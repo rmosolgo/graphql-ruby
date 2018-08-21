@@ -39,7 +39,13 @@ module GraphQL
             if is_authorized
               self.new(object, context)
             else
-              raise GraphQL::UnauthorizedError.new(object: object, type: self, context: context)
+              # It failed the authorization check, so go to the schema's authorized object hook
+              err = GraphQL::UnauthorizedError.new(object: object, type: self, context: context)
+              # If a new value was returned, wrap that instead of the original value
+              new_obj = context.schema.unauthorized_object(err)
+              if new_obj
+                self.new(new_obj, context)
+              end
             end
           end
         end
@@ -54,6 +60,10 @@ module GraphQL
         def implements(*new_interfaces)
           new_interfaces.each do |int|
             if int.is_a?(Module)
+              unless int.include?(GraphQL::Schema::Interface)
+                raise "#{int} cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
+              end
+
               # Include the methods here,
               # `.fields` will use the inheritance chain
               # to find inherited fields

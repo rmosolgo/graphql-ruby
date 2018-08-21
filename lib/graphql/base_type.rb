@@ -35,7 +35,7 @@ module GraphQL
     end
 
     # @return [String] the name of this type, must be unique within a Schema
-    attr_accessor :name
+    attr_reader :name
     # Future-compatible alias
     # @see {GraphQL::SchemaMember}
     alias :graphql_name :name

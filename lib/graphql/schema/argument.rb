@@ -4,6 +4,7 @@ module GraphQL
     class Argument
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
+      include GraphQL::Schema::Member::HasPath
 
       NO_DEFAULT = :__no_default__
 
@@ -42,10 +43,17 @@ module GraphQL
         @prepare = prepare
 
         if definition_block
-          instance_eval(&definition_block)
+          if definition_block.arity == 1
+            instance_exec(self, &definition_block)
+          else
+            instance_eval(&definition_block)
+          end
         end
       end
 
+      attr_writer :description
+
+      # @return [String] Documentation for this argument
       def description(text = nil)
         if text
           @description = text

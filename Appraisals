@@ -1,44 +1,76 @@
 # frozen_string_literal: true
 appraise 'rails_3.2' do
-  gem "rails", "3.2.22.5"
+  gem 'rails', '3.2.22.5', require: 'rails/all'
   gem 'activerecord', '~> 3.2.21'
   gem 'actionpack', '~> 3.2.21'
   gem 'test-unit'
+  gem 'sqlite3', platform: :ruby
+  gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
+  gem 'sequel'
 end
 
 appraise 'rails_4.1' do
-  gem "rails", "~> 4.1"
+  gem 'rails', '~> 4.1', require: 'rails/all'
   gem 'activerecord', '~> 4.1.10'
   gem 'actionpack', '~> 4.1.10'
   gem 'test-unit'
+  gem 'sqlite3', platform: :ruby
+  gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
+  gem 'sequel'
 end
 
 appraise 'rails_4.2' do
-  gem "rails", "~> 4.2"
+  gem 'rails', '~> 4.2', require: 'rails/all'
   gem 'activerecord', '~> 4.2.4'
   gem 'actionpack', '~> 4.2.4'
   gem 'concurrent-ruby', '1.0.0'
+  gem 'sqlite3', platform: :ruby
+  gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
+  gem 'sequel'
 end
 
 appraise 'rails_5.0' do
-  gem "rails", "~> 5.0"
+  gem 'rails', '~> 5.0', require: 'rails/all'
   gem 'activerecord', '~> 5.0.0'
   gem 'actionpack', '~> 5.0.0'
+  gem 'sqlite3', platform: :ruby
+  gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
+  gem 'sequel'
 end
 
 appraise 'rails_5.1' do
-  gem 'rails', '~> 5.1.0'
+  gem 'rails', '~> 5.1.0', require: 'rails/all'
   # Required for testing action cable
   gem 'puma'
   # Required for system tests
-  gem 'capybara'
+  gem 'capybara', '~> 2.13'
   gem 'selenium-webdriver'
+  gem 'sqlite3', platform: :ruby
+  gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
+  gem 'sequel'
 end
 
-appraise "rails_5.2" do
-  gem 'rails', '~> 5.2.0'
+appraise 'rails_5.2' do
+  gem 'rails', '~> 5.2.0', require: 'rails/all'
+  gem 'sqlite3', platform: :ruby
+  gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
+  gem 'sequel'
 end
 
-appraise 'without_rails' do
-  gem "globalid"
+appraise 'rails_5.2_postgresql' do
+  gem 'rails', '~> 5.2.0', require: 'rails/all'
+  gem 'pg', platform: :ruby
+  gem 'sequel'
+end
+
+appraise 'mongoid_7' do
+  gem 'mongoid', '~> 7.0.1'
+end
+
+appraise 'mongoid_6' do
+  gem 'mongoid', '~> 6.4.1'
+end
+
+appraise 'mongoid_5' do
+  gem 'mongoid', '~> 5.4.0'
 end

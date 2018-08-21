@@ -156,7 +156,7 @@ module GraphQL
     attr_reader :lazy_resolve_proc
 
     # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
-    attr_accessor :name
+    attr_reader :name
     alias :graphql_name :name
 
     # @return [String, nil] The client-facing description of this field
@@ -175,10 +175,10 @@ module GraphQL
     attr_accessor :complexity
 
     # @return [Symbol, nil] The method to call on `obj` to return this field (overrides {#name} if present)
-    attr_accessor :property
+    attr_reader :property
 
     # @return [Object, nil] The key to access with `obj.[]` to resolve this field (overrides {#name} if present)
-    attr_accessor :hash_key
+    attr_reader :hash_key
 
     # @return [Object, GraphQL::Function] The function used to derive this field
     attr_accessor :function

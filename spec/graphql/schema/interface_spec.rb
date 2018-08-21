@@ -4,6 +4,12 @@ require "spec_helper"
 describe GraphQL::Schema::Interface do
   let(:interface) { Jazz::GloballyIdentifiableType }
 
+  describe ".path" do
+    it "is the name" do
+      assert_equal "GloballyIdentifiable", interface.path
+    end
+  end
+
   describe "type info" do
     it "tells its type info" do
       assert_equal "GloballyIdentifiable", interface.graphql_name
@@ -177,8 +183,18 @@ describe GraphQL::Schema::Interface do
       include GraphQL::Schema::Interface
     end
 
-    class ObjectA < GraphQL::Schema::Object
-      implements InterfaceA
+    module InterfaceD
+      include InterfaceA
+
+      definition_methods do
+        def some_method
+          'not 42'
+        end
+      end
+    end
+
+    module InterfaceE
+      include InterfaceD
     end
 
     it "doesn't overwrite them when including multiple interfaces" do
@@ -192,8 +208,8 @@ describe GraphQL::Schema::Interface do
       assert_equal(InterfaceC::DefinitionMethods, def_methods)
     end
 
-    it "extends classes with the defined methods" do
-      assert_equal(ObjectA.some_method, InterfaceA.some_method)
+    it "follows the normal Ruby ancestor chain when including other interfaces" do
+      assert_equal('not 42', InterfaceE.some_method)
     end
   end
 end

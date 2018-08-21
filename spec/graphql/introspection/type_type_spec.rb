@@ -147,7 +147,7 @@ describe GraphQL::Introspection::TypeType do
 
         type_result = res["data"]["__schema"]["types"].find { |t| t["name"] == "Faction" }
         field_result = type_result["fields"].find { |f| f["name"] == "bases" }
-        all_arg_names = ["first", "after", "last", "before", "nameIncludes"]
+        all_arg_names = ["after", "before", "first", "last", "nameIncludes"]
         returned_arg_names = field_result["args"].map { |a| a["name"] }
         assert_equal all_arg_names, returned_arg_names
       end
