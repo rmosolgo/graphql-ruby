@@ -232,8 +232,11 @@ Also, you can configure [unauthorized object handling](#unauthorized-mutations)
 Add `MutationIntegration` to your base mutation, for example:
 
 ```ruby
-class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
-  include GraphQL::Pro::PunditIntegration
+class Mutations::BaseMutation < GraphQL::Schema::Mutation
+  include GraphQL::Pro::PunditIntegration::MutationIntegration
+  
+  # If you want to use argument authorization in the mutations
+  argument_class Types::BaseArgument
 end
 ```
 
