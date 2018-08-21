@@ -52,6 +52,50 @@ describe GraphQL::Schema::RelayClassicMutation do
     end
   end
 
+  describe "loading multiple application objects" do
+    let(:query_str) {
+      <<-GRAPHQL
+        mutation($ids: [ID!]!) {
+          upvoteEnsembles(input: {ensembleIds: $ids}) {
+            ensembles {
+              id
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    it "loads arguments as objects of the given type" do
+      res = Jazz::Schema.execute(query_str, variables: { ids: ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"]})
+      assert_equal ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"], res["data"]["upvoteEnsembles"]["ensembles"].map { |e| e["id"] }
+    end
+
+    it "returns an error instead when the ID resolves to nil" do
+      res = Jazz::Schema.execute(query_str, variables: {
+        ids: ["Ensemble/Nonexistant Name"],
+      })
+      assert_nil res["data"].fetch("upvoteEnsembles")
+      assert_equal ['No object found for `ensembleIds: "Ensemble/Nonexistant Name"`'], res["errors"].map { |e| e["message"] }
+    end
+
+    it "returns an error instead when the ID resolves to an object of the wrong type" do
+      res = Jazz::Schema.execute(query_str, variables: {
+        ids: ["Instrument/Organ"],
+      })
+      assert_nil res["data"].fetch("upvoteEnsembles")
+      assert_equal ["No object found for `ensembleIds: \"Instrument/Organ\"`"], res["errors"].map { |e| e["message"] }
+    end
+
+    it "raises an authorization error when the type's auth fails" do
+      res = Jazz::Schema.execute(query_str, variables: {
+        ids: ["Ensemble/Spinal Tap"],
+      })
+      assert_nil res["data"].fetch("upvoteEnsembles")
+      # Failed silently
+      refute res.key?("errors")
+    end
+  end
+
   describe "loading application objects" do
     let(:query_str) {
       <<-GRAPHQL

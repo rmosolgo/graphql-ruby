@@ -488,6 +488,18 @@ module Jazz
     end
   end
 
+  class UpvoteEnsembles < GraphQL::Schema::RelayClassicMutation
+    argument :ensemble_ids, [ID], required: true, loads: Ensemble, as: :ensembles
+
+    field :ensembles, [Ensemble], null: false
+
+    def resolve(ensembles:)
+      {
+        ensembles: ensembles
+      }
+    end
+  end
+
   class RenameEnsembleAsBand < RenameEnsemble
     argument :ensemble_id, ID, required: true, loads: Ensemble, as: :band
 
@@ -504,6 +516,7 @@ module Jazz
     field :add_instrument, mutation: AddInstrument
     field :add_sitar, mutation: AddSitar
     field :rename_ensemble, mutation: RenameEnsemble
+    field :upvote_ensembles, mutation: UpvoteEnsembles
     field :rename_ensemble_as_band, mutation: RenameEnsembleAsBand
 
     def add_ensemble(input:)

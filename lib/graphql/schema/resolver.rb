@@ -329,7 +329,13 @@ module GraphQL
           end
           arg_defn = super(name, type, *rest, **kwargs, &block)
 
-          if loads
+          if loads && arg_defn.type.list?
+            class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def load_#{arg_defn.keyword}(values)
+              GraphQL::Execution::Lazy.all(values.map { |value| load_application_object(:#{arg_defn.keyword}, value) })
+            end
+            RUBY
+          elsif loads
             class_eval <<-RUBY, __FILE__, __LINE__ + 1
             def load_#{arg_defn.keyword}(value)
               load_application_object(:#{arg_defn.keyword}, value)
