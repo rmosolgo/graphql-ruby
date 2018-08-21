@@ -187,7 +187,7 @@ describe GraphQL::Language::Visitor do
 
       def on_inline_fragment(node, parent)
         if node.selections.map(&:name) == ["renameFragmentField", "spread"]
-          field, spread = node.selections
+          _field, spread = node.selections
           new_node = node.merge(selections: [GraphQL::Language::Nodes::Field.new(name: "renamed"), spread])
           super(new_node, parent)
         else
