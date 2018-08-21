@@ -184,6 +184,25 @@ describe GraphQL::Language::Visitor do
           super
         end
       end
+
+      def on_inline_fragment(node, parent)
+        if node.selections.map(&:name) == ["renameFragmentField", "spread"]
+          _field, spread = node.selections
+          new_node = node.merge(selections: [GraphQL::Language::Nodes::Field.new(name: "renamed"), spread])
+          super(new_node, parent)
+        else
+          super(node, parent)
+        end
+      end
+
+      def on_fragment_spread(node, parent)
+        if node.name == "spread"
+          new_node = node.merge(name: "renamedSpread")
+          super(new_node, parent)
+        else
+          super(node, parent)
+        end
+      end
     end
 
     def get_result(query_str)
@@ -297,6 +316,30 @@ query {
     addedChild
   }
   anotherAddition(addedArgument: 1) @doStuff(addedArgument2: 2)
+}
+GRAPHQL
+
+      document, new_document = get_result(before_query)
+      assert_equal before_query, document.to_query_string
+      assert_equal after_query, new_document.to_query_string
+    end
+
+    it "can modify inline fragments" do
+      before_query = <<-GRAPHQL.chop
+query {
+  ... on Query {
+    renameFragmentField
+    ...spread
+  }
+}
+GRAPHQL
+
+      after_query = <<-GRAPHQL.chop
+query {
+  ... on Query {
+    renamed
+    ...renamedSpread
+  }
 }
 GRAPHQL
 
