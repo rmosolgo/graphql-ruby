@@ -60,6 +60,7 @@ module GraphQL
       # TODO: Remove this code once deprecated middleware becomes unsupported
       class MiddlewareWrapper
         attr_reader :callable
+
         def initialize(callable)
           @callable = callable
         end

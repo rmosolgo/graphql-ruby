@@ -22,15 +22,15 @@ describe GraphQL::Tracing::PrometheusTracing do
       client = Minitest::Mock.new
 
       client.expect :send_json, true do |obj|
-        obj[:type] == 'graphql' &&
-          obj[:key] == 'execute_field' &&
-          obj[:platform_key] == 'Query.int'
+        obj[:type] == "graphql" &&
+          obj[:key] == "execute_field" &&
+          obj[:platform_key] == "Query.int"
       end
 
       PrometheusTracingTest::Schema.use(
         GraphQL::Tracing::PrometheusTracing,
         client: client,
-        trace_scalars: true
+        trace_scalars: true,
       )
 
       PrometheusTracingTest::Schema.execute "query X { int }"

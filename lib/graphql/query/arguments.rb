@@ -20,8 +20,8 @@ module GraphQL
               # Don't define a helper method if it would override something.
               if instance_methods.include?(method_name)
                 warn(
-                  "Unable to define a helper for argument with name '#{method_name}' "\
-                  "as this is a reserved name. If you're using an argument such as "\
+                  "Unable to define a helper for argument with name '#{method_name}' " \
+                  "as this is a reserved name. If you're using an argument such as " \
                   "`argument #{method_name}`, consider renaming this argument.`"
                 )
               else

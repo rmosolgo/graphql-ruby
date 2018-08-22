@@ -65,14 +65,14 @@ module GraphQL
       # Apply cursors to edges
       def sliced_nodes
         @sliced_nodes ||= if before && after
-          nodes[index_from_cursor(after)..index_from_cursor(before)-1] || []
-        elsif before
-          nodes[0..index_from_cursor(before)-2] || []
-        elsif after
-          nodes[index_from_cursor(after)..-1] || []
-        else
-          nodes
-        end
+                            nodes[index_from_cursor(after)..index_from_cursor(before) - 1] || []
+                          elsif before
+                            nodes[0..index_from_cursor(before) - 2] || []
+                          elsif after
+                            nodes[index_from_cursor(after)..-1] || []
+                          else
+                            nodes
+                          end
       end
 
       def index_from_cursor(cursor)

@@ -27,7 +27,7 @@ module GraphQL
         definition_dependencies = DefinitionDependencies.mount(self)
         @on_dependency_resolve_handlers = []
         @each_irep_node_handlers = []
-        visitor[GraphQL::Language::Nodes::Document].leave << ->(_n, _p) {
+        visitor[GraphQL::Language::Nodes::Document].leave << -> (_n, _p) {
           @dependencies = definition_dependencies.dependency_map { |defn, spreads, frag|
             @on_dependency_resolve_handlers.each { |h| h.call(defn, spreads, frag) }
           }

@@ -23,7 +23,7 @@ module GraphQL
   #
   class ObjectType < GraphQL::BaseType
     accepts_definitions :interfaces, :fields, :mutation, :relay_node_type, field: GraphQL::Define::AssignObjectField
-    accepts_definitions implements: ->(type, *interfaces, inherit: false) { type.implements(interfaces, inherit: inherit) }
+    accepts_definitions implements: -> (type, *interfaces, inherit: false) { type.implements(interfaces, inherit: inherit) }
 
     attr_accessor :fields, :mutation, :relay_node_type
     ensure_defined(:fields, :mutation, :interfaces, :relay_node_type)

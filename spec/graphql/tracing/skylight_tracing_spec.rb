@@ -38,10 +38,10 @@ describe GraphQL::Tracing::SkylightTracing do
 
   it "can override the transaction name per query" do
     # Override with `false`
-    SkylightTest::SchemaWithTransactionName.execute "{ int }", context: { set_skylight_endpoint_name: false }
+    SkylightTest::SchemaWithTransactionName.execute "{ int }", context: {set_skylight_endpoint_name: false}
     assert_equal [], Skylight::ENDPOINT_NAMES
     # Override with `true`
-    SkylightTest::SchemaWithoutTransactionName.execute "{ int }", context: { set_skylight_endpoint_name: true }
+    SkylightTest::SchemaWithoutTransactionName.execute "{ int }", context: {set_skylight_endpoint_name: true}
     assert_equal ["GraphQL/query.<anonymous>"], Skylight::ENDPOINT_NAMES
   end
 end

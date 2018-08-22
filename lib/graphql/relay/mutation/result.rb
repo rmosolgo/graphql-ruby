@@ -7,6 +7,7 @@ module GraphQL
       # @api private
       class Result
         attr_reader :client_mutation_id
+
         def initialize(client_mutation_id:, result:)
           @client_mutation_id = client_mutation_id
           result && result.each do |key, value|

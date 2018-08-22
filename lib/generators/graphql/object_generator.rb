@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'generators/graphql/type_generator'
+require "generators/graphql/type_generator"
 
 module Graphql
   module Generators
@@ -13,7 +13,7 @@ module Graphql
     # Add the Node interface with `--node`.
     class ObjectGenerator < TypeGeneratorBase
       desc "Create a GraphQL::ObjectType with the given name and fields"
-      source_root File.expand_path('../templates', __FILE__)
+      source_root File.expand_path("../templates", __FILE__)
 
       argument :fields,
         type: :array,

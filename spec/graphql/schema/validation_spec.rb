@@ -58,7 +58,7 @@ describe GraphQL::Schema::Validation do
         type !types[!GraphQL::INT_TYPE]
         argument :invalid do
           type GraphQL::FLOAT_TYPE
-          default_value [1,2,3]
+          default_value [1, 2, 3]
         end
       end
     }
@@ -93,7 +93,7 @@ describe GraphQL::Schema::Validation do
 
     let(:invalid_name_type) {
       GraphQL::BaseType.define do
-        name '__Something'
+        name "__Something"
       end
     }
 
@@ -219,7 +219,7 @@ describe GraphQL::Schema::Validation do
       GraphQL::UnionType.define do
         name "NonObjectTypes"
         possible_types [
-          GraphQL::InterfaceType.new
+          GraphQL::InterfaceType.new,
         ]
       end
     }

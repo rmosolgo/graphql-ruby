@@ -18,7 +18,7 @@ describe GraphQL::Query::Arguments do
 
     GraphQL::Query::Arguments.construct_arguments_class(test_input_1)
     GraphQL::Query::Arguments.construct_arguments_class(test_input_2)
-    arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
+    arg_values = {a: 1, b: 2, c: {d: 3, e: 4}}
     test_input_2.arguments_class.new(arg_values, context: nil, defaults_used: Set.new)
   }
 
@@ -39,7 +39,7 @@ describe GraphQL::Query::Arguments do
   end
 
   it "returns a stringified, aliased hash with to_h" do
-    assert_equal({ "a"=> 1, "b" => 2, "inputObject" => { "d" => 3, "e" => 4 } }, arguments.to_h)
+    assert_equal({"a" => 1, "b" => 2, "inputObject" => {"d" => 3, "e" => 4}}, arguments.to_h)
   end
 
   it "yields key, value, and arg_defnition" do
@@ -49,10 +49,10 @@ describe GraphQL::Query::Arguments do
       type_info << [arg_value.key, value, arg_value.definition.type.unwrap.name]
     end
 
-    expected_type_info =[
+    expected_type_info = [
       ["a", 1, "Int"],
       ["b", 2, "Int"],
-      ["inputObject", { "d" => 3, "e" => 4 }, "TestInput1"],
+      ["inputObject", {"d" => 3, "e" => 4}, "TestInput1"],
     ]
     assert_equal expected_type_info, type_info
   end
@@ -77,7 +77,7 @@ describe GraphQL::Query::Arguments do
     expected_hash = {
       "A" => 1,
       "B" => 2,
-      "INPUTOBJECT" => { "d"  => 3 , "e" => 4 },
+      "INPUTOBJECT" => {"d" => 3, "e" => 4},
     }
     assert_equal expected_hash, new_arguments.to_h
   end
@@ -141,30 +141,30 @@ describe GraphQL::Query::Arguments do
           argument :b, types.Int, default_value: 2
           argument :c, types.Int, as: :specialKeyName
           argument :d, test_input_type
-          resolve ->(obj, args, ctx) {
-            arg_values_array << args
-            1
-          }
+          resolve -> (obj, args, ctx) {
+                    arg_values_array << args
+                    1
+                  }
         end
 
         field :noArgTest, types.Int do
-          resolve ->(obj, args, ctx) {
-            arg_values_array << args
-            1
-          }
+          resolve -> (obj, args, ctx) {
+                    arg_values_array << args
+                    1
+                  }
         end
 
         field :noDefaultsTest, types.Int do
           argument :a, types.Int
           argument :b, types.Int
-          resolve ->(obj, args, ctx) {
-            arg_values_array << args
-            1
-          }
-          resolve ->(obj, args, ctx) {
-            arg_values_array << args
-            1
-          }
+          resolve -> (obj, args, ctx) {
+                    arg_values_array << args
+                    1
+                  }
+          resolve -> (obj, args, ctx) {
+                    arg_values_array << args
+                    1
+                  }
         end
       end
 
@@ -204,12 +204,12 @@ describe GraphQL::Query::Arguments do
 
       last_args = arg_values.last
 
-      assert_equal false, last_args.default_used?('a')
-      assert_equal true, last_args.default_used?('b')
+      assert_equal false, last_args.default_used?("a")
+      assert_equal true, last_args.default_used?("b")
     end
 
     it "works from variables" do
-      variables = { "arg" => { "a" => 1, "d" => nil } }
+      variables = {"arg" => {"a" => 1, "d" => nil}}
       schema.execute("query ArgTest($arg: TestInput){ argTest(d: $arg) }", variables: variables)
 
       test_inputs = arg_values.last["d"]
@@ -260,9 +260,9 @@ describe GraphQL::Query::Arguments do
       arg_values_array = arg_values
       test_input_1 = GraphQL::InputObjectType.define do
         name "TestInput1"
-        argument :a, types.Int, prepare: ->(value, ctx) do
-          value * 10
-        end
+        argument :a, types.Int, prepare: -> (value, ctx) do
+                                  value * 10
+                                end
       end
 
       test_input_2 = GraphQL::InputObjectType.define do
@@ -274,10 +274,10 @@ describe GraphQL::Query::Arguments do
         name "Query"
         field :prepareTest, types.Int do
           argument :a, test_input_2
-          resolve ->(obj, args, ctx) {
-            arg_values_array << args
-            1
-          }
+          resolve -> (obj, args, ctx) {
+                    arg_values_array << args
+                    1
+                  }
         end
       end
 
@@ -288,7 +288,7 @@ describe GraphQL::Query::Arguments do
       schema.execute("query prepareTest($arg: TestInput2 = {b: {a: 2}}){ prepareTest(a: $arg) }")
 
       args = arg_values[0].values[0]
-      assert_equal 2 * 10, args['inputObject']['a']
+      assert_equal 2 * 10, args["inputObject"]["a"]
     end
 
     it "returns prepared argument value for nested input type" do
@@ -297,10 +297,10 @@ describe GraphQL::Query::Arguments do
           prepareTest(a: $arg)
       }"
 
-      schema.execute(query_str, variables: { "arg" => { "b" => { "a" => 3 } } } )
+      schema.execute(query_str, variables: {"arg" => {"b" => {"a" => 3}}})
 
       args = arg_values[0].values[0]
-      assert_equal 30, args['inputObject']['a']
+      assert_equal 30, args["inputObject"]["a"]
     end
   end
 

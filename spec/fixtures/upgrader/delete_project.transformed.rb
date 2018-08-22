@@ -11,7 +11,7 @@ module Platform
       field :owner, Interfaces::ProjectOwner, "The repository or organization the project was removed from.", null: false
 
       def resolve(**inputs)
-        project =  Platform::Helpers::NodeIdentification.typed_object_from_id(
+        project = Platform::Helpers::NodeIdentification.typed_object_from_id(
           [Objects::Project], inputs[:project_id], context
         )
 
@@ -20,7 +20,7 @@ module Platform
 
         project.enqueue_delete(actor: context[:viewer])
 
-        { owner: project.owner }
+        {owner: project.owner}
       end
     end
   end

@@ -10,7 +10,7 @@ describe GraphQL::Schema::Traversal do
   it "finds types from directives" do
     expected = {
       "Boolean" => GraphQL::BOOLEAN_TYPE, # `skip` argument
-      "String" => GraphQL::STRING_TYPE # `deprecated` argument
+      "String" => GraphQL::STRING_TYPE, # `deprecated` argument
     }
     result = traversal([]).type_map
     assert_equal(expected.keys.sort, result.keys.sort)
@@ -49,7 +49,7 @@ describe GraphQL::Schema::Traversal do
     result = traversal([type]).type_map
     expected_types = [
       "ArgTypeTest", "ArgTypeTestConnection", "ArgTypeTestEdge",
-      "Boolean", "Int", "PageInfo", "String"
+      "Boolean", "Int", "PageInfo", "String",
     ]
     assert_equal expected_types, result.keys.sort
   end
@@ -91,11 +91,11 @@ describe GraphQL::Schema::Traversal do
     }
 
     it "raises an InvalidTypeError when passed nil" do
-      assert_raises(GraphQL::Schema::InvalidTypeError) {  traversal([invalid_type]) }
+      assert_raises(GraphQL::Schema::InvalidTypeError) { traversal([invalid_type]) }
     end
 
     it "raises an InvalidTypeError when passed an object that isnt a GraphQL::BaseType" do
-      assert_raises(GraphQL::Schema::InvalidTypeError) {  traversal([another_invalid_type]) }
+      assert_raises(GraphQL::Schema::InvalidTypeError) { traversal([another_invalid_type]) }
     end
   end
 
@@ -156,7 +156,7 @@ describe GraphQL::Schema::Traversal do
       "Boolean" => [include_if_argument, skip_if_argument],
       "B" => [a_type.fields["someField"]],
       "String" => [deprecated_reason_argument, b_type.fields["anotherField"], c_type.input_fields["someField"]],
-      "C" => [b_type.fields["anotherField"].arguments["anArgument"]]
+      "C" => [b_type.fields["anotherField"].arguments["anArgument"]],
     }
 
     assert_equal expected, traversal([a_type, b_type, c_type]).type_reference_map
@@ -184,7 +184,7 @@ describe GraphQL::Schema::Traversal do
     result = traversal([union, another_union, b_type, c_type]).union_memberships
     expected = {
       "B" => [union, another_union],
-      "C" => [another_union]
+      "C" => [another_union],
     }
     assert_equal expected, result
   end
@@ -215,7 +215,7 @@ describe GraphQL::Schema::Traversal do
       "AInterface" => interface,
       "AnotherIterface" => another_interface,
       "B" => b_type,
-      "C" => c_type
+      "C" => c_type,
     }
     assert_equal expected, result
   end

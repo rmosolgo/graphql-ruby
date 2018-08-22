@@ -8,7 +8,7 @@ describe GraphQL::StaticValidation::Validator do
   let(:errors) { validator.validate(query, validate: validate)[:errors].map(&:to_h) }
 
   describe "tracing" do
-    let(:query_string) { "{ t: __typename }"}
+    let(:query_string) { "{ t: __typename }" }
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, context: {tracers: [TestTracing]}) }
 
     it "emits a trace" do
@@ -34,17 +34,18 @@ describe GraphQL::StaticValidation::Validator do
       expected_errors = [{
         "message" => "Variable $undefinedVar is used by  but not declared",
         "locations" => [{"line" => 1, "column" => 14, "filename" => "not_a_real.graphql"}],
-        "fields" => ["query", "cheese", "id"]
+        "fields" => ["query", "cheese", "id"],
       }]
       assert_equal expected_errors, errors
     end
   end
 
   describe "validation order" do
-    let(:document) { GraphQL.parse(query_string)}
+    let(:document) { GraphQL.parse(query_string) }
 
     describe "fields & arguments" do
-      let(:query_string) { %|
+      let(:query_string) {
+        %|
         query getCheese($id: Int!) {
           cheese(id: $undefinedVar, bogusArg: true) {
             source,
@@ -57,7 +58,8 @@ describe GraphQL::StaticValidation::Validator do
             source,
           }
         }
-      |}
+      |
+      }
 
       it "handles args on invalid fields" do
         # nonsenseField, nonsenseArg, bogusField, bogusArg, undefinedVar
@@ -74,7 +76,8 @@ describe GraphQL::StaticValidation::Validator do
     end
 
     describe "infinite fragments" do
-      let(:query_string) { %|
+      let(:query_string) {
+        %|
         query getCheese {
           cheese(id: 1) {
             ... cheeseFields
@@ -85,14 +88,16 @@ describe GraphQL::StaticValidation::Validator do
             id, ... cheeseFields
           }
         }
-      |}
+      |
+      }
 
       it "handles infinite fragment spreads" do
         assert_equal(1, errors.length)
       end
 
       describe "nested spreads" do
-        let(:query_string) {%|
+        let(:query_string) {
+          %|
         {
           allEdible {
             ... on Cheese {
@@ -108,15 +113,16 @@ describe GraphQL::StaticValidation::Validator do
             }
           }
         }
-        |}
+        |
+        }
 
         it "finds an error on the nested spread" do
           expected = [
             {
-              "message"=>"Fragment cheeseFields contains an infinite loop",
-              "locations"=>[{"line"=>10, "column"=>9}],
-              "fields"=>["fragment cheeseFields"]
-            }
+              "message" => "Fragment cheeseFields contains an infinite loop",
+              "locations" => [{"line" => 10, "column" => 9}],
+              "fields" => ["fragment cheeseFields"],
+            },
           ]
           assert_equal(expected, errors)
         end
@@ -124,7 +130,8 @@ describe GraphQL::StaticValidation::Validator do
     end
 
     describe "fragment spreads with no selections" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query SimpleQuery {
           cheese(id: 1) {
             # OK:
@@ -135,19 +142,22 @@ describe GraphQL::StaticValidation::Validator do
             ...cheeseFields
           }
         }
-      |}
+      |
+      }
       it "marks an error" do
         assert_equal(1, errors.length)
       end
     end
 
     describe "fragments with no names" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         fragment on Cheese {
           id
           flavor
         }
-      |}
+      |
+      }
       it "marks an error" do
         assert_equal(1, errors.length)
       end

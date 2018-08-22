@@ -10,9 +10,9 @@ describe GraphQL::Analysis::MaxQueryComplexity do
     Dummy::Schema.max_complexity = @prev_max_complexity
   end
 
-
   let(:result) { Dummy::Schema.execute(query_string) }
-  let(:query_string) {%|
+  let(:query_string) {
+    %|
     {
       a: cheese(id: 1) { id }
       b: cheese(id: 1) { id }
@@ -20,7 +20,8 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       d: cheese(id: 1) { id }
       e: cheese(id: 1) { id }
     }
-  |}
+  |
+  }
 
   describe "when a query goes over max complexity" do
     before do
@@ -77,7 +78,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       Dummy::Schema.max_complexity = 9
     end
 
-    let(:queries) { 5.times.map { |n|  { query: "{ cheese(id: #{n}) { id } }" } } }
+    let(:queries) { 5.times.map { |n| {query: "{ cheese(id: #{n}) { id } }"} } }
 
     it "returns errors for all queries" do
       results = Dummy::Schema.multiplex(queries)

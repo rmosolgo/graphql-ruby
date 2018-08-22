@@ -33,8 +33,8 @@ describe GraphQL::Analysis do
 
   describe ".analyze_query" do
     let(:node_counter) {
-      ->(memo, visit_type, irep_node) {
-        memo ||= Hash.new { |h,k| h[k] = 0 }
+      -> (memo, visit_type, irep_node) {
+        memo ||= Hash.new { |h, k| h[k] = 0 }
         visit_type == :enter && memo[irep_node.ast_node.class] += 1
         memo
       }
@@ -44,21 +44,23 @@ describe GraphQL::Analysis do
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:variables) { {} }
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         cheese(id: 1) {
           id
           flavor
         }
       }
-    |}
+    |
+    }
 
     describe "conditional analysis" do
       let(:conditional_analyzer) { ConditionalAnalyzer.new }
       let(:analyzers) { [type_collector, conditional_analyzer] }
 
       describe "when analyze? returns false" do
-        let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: { analyze: false }) }
+        let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: {analyze: false}) }
 
         it "does not run the analyzer" do
           # Only type_collector ran
@@ -67,7 +69,7 @@ describe GraphQL::Analysis do
       end
 
       describe "when analyze? returns true" do
-        let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: { analyze: true }) }
+        let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: {analyze: true}) }
 
         it "it runs the analyzer" do
           # Both analyzers ran
@@ -88,11 +90,11 @@ describe GraphQL::Analysis do
     end
 
     describe "tracing" do
-      let(:query_string) { "{ t: __typename }"}
+      let(:query_string) { "{ t: __typename }" }
 
       it "emits traces" do
         traces = TestTracing.with_trace do
-          ctx = { tracers: [TestTracing] }
+          ctx = {tracers: [TestTracing]}
           Dummy::Schema.execute(query_string, context: ctx)
         end
 
@@ -108,15 +110,17 @@ describe GraphQL::Analysis do
     end
 
     describe "when a variable is missing" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query something($cheeseId: Int!){
           cheese(id: $cheeseId) {
             id
             flavor
           }
         }
-      |}
-      let(:variable_accessor) { ->(memo, visit_type, irep_node) { query.variables["cheeseId"] } }
+      |
+      }
+      let(:variable_accessor) { -> (memo, visit_type, irep_node) { query.variables["cheeseId"] } }
 
       before do
         @previous_query_analyzers = Dummy::Schema.query_analyzers.dup
@@ -137,8 +141,8 @@ describe GraphQL::Analysis do
 
     describe "when processing fields" do
       let(:connection_counter) {
-        ->(memo, visit_type, irep_node) {
-          memo ||= Hash.new { |h,k| h[k] = 0 }
+        -> (memo, visit_type, irep_node) {
+          memo ||= Hash.new { |h, k| h[k] = 0 }
           if visit_type == :enter
             if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
               if irep_node.definition.connection?
@@ -156,20 +160,22 @@ describe GraphQL::Analysis do
       let(:analyzers) { [connection_counter] }
       let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
       let(:query) { GraphQL::Query.new(StarWars::Schema, query_string, variables: variables) }
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getBases {
           empire {
             basesByName(first: 30) { edges { cursor } }
             bases(first: 30) { edges { cursor } }
           }
         }
-      |}
+      |
+      }
 
       it "knows which fields are connections" do
         connection_counts = reduce_result.first
         expected_connection_counts = {
           :field => 5,
-          :connection => 2
+          :connection => 2,
         }
         assert_equal expected_connection_counts, connection_counts
       end
@@ -191,7 +197,7 @@ describe GraphQL::Analysis do
     class FlavorCatcher
       def initial_value(query)
         {
-          :errors => []
+          :errors => [],
         }
       end
 
@@ -214,24 +220,28 @@ describe GraphQL::Analysis do
     let(:analyzers) { [id_catcher, flavor_catcher] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         cheese(id: 1) {
           id
           flavor
         }
       }
-    |}
+    |
+    }
     let(:schema) { Dummy::Schema }
     let(:result) { schema.execute(query_string) }
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         cheese(id: 1) {
           id
           flavor
         }
       }
-    |}
+    |
+    }
 
     before do
       @previous_query_analyzers = Dummy::Schema.query_analyzers.dup
@@ -252,12 +262,12 @@ describe GraphQL::Analysis do
       flavor_error_hash = errors[1]
 
       id_error_response = {
-        "message"=>"Don't use the id field.",
-        "locations"=>[{"line"=>4, "column"=>11}]
+        "message" => "Don't use the id field.",
+        "locations" => [{"line" => 4, "column" => 11}],
       }
       flavor_error_response = {
-        "message"=>"Don't use the flavor field.",
-        "locations"=>[{"line"=>5, "column"=>11}]
+        "message" => "Don't use the flavor field.",
+        "locations" => [{"line" => 5, "column" => 11}],
       }
 
       assert_nil data

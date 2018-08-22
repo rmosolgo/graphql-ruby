@@ -86,7 +86,7 @@ module GraphQL
                   if args.any?
                     instance_variable_set(ivar_name, args)
                   end
-                  instance_variable_get(ivar_name) || ((int = interfaces.first { |i| i.respond_to?()}) && int.public_send(name))
+                  instance_variable_get(ivar_name) || ((int = interfaces.first { |i| i.respond_to?() }) && int.public_send(name))
                 end
               end
             end
@@ -94,18 +94,18 @@ module GraphQL
 
           def accepts_definition_methods
             inherited_methods = if self.is_a?(Class)
-              superclass.respond_to?(:accepts_definition_methods) ? superclass.accepts_definition_methods : []
-            elsif self.is_a?(Module)
-              m = []
-              ancestors.each do |a|
-                if a.respond_to?(:own_accepts_definition_methods)
-                  m.concat(a.own_accepts_definition_methods)
-                end
-              end
-              m
-            else
-              self.class.accepts_definition_methods
-            end
+                                  superclass.respond_to?(:accepts_definition_methods) ? superclass.accepts_definition_methods : []
+                                elsif self.is_a?(Module)
+                                  m = []
+                                  ancestors.each do |a|
+                                    if a.respond_to?(:own_accepts_definition_methods)
+                                      m.concat(a.own_accepts_definition_methods)
+                                    end
+                                  end
+                                  m
+                                else
+                                  self.class.accepts_definition_methods
+                                end
 
             own_accepts_definition_methods + inherited_methods
           end

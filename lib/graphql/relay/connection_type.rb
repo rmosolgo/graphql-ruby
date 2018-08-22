@@ -27,7 +27,7 @@ module GraphQL
           field :edges, types[edge_type], "A list of edges.", edge_class: custom_edge_class, property: :edge_nodes
 
           if nodes_field
-            field :nodes, types[wrapped_type],  "A list of nodes.", property: :edge_nodes
+            field :nodes, types[wrapped_type], "A list of nodes.", property: :edge_nodes
           end
 
           field :pageInfo, !PageInfo, "Information to aid in pagination.", property: :page_info

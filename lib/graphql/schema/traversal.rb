@@ -16,7 +16,6 @@ module GraphQL
       # @return [Hash<String => Array<GraphQL::BaseType>]
       attr_reader :union_memberships
 
-
       # @param schema [GraphQL::Schema]
       def initialize(schema, introspection: true)
         @schema = schema

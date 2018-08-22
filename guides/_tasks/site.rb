@@ -35,10 +35,10 @@ namespace :site do
   task serve: [:build_doc] do
     require "jekyll"
     options = {
-      "source"      => File.expand_path("guides"),
+      "source" => File.expand_path("guides"),
       "destination" => File.expand_path("guides/_site"),
-      "watch"       => true,
-      "serving"     => true
+      "watch" => true,
+      "serving" => true,
     }
     # Generate the site in server mode.
     puts "Running Jekyll..."
@@ -64,11 +64,11 @@ namespace :site do
     # Proceed to purge all files in case we removed a file in this release.
     puts "Cleaning gh-pages directory..."
     purge_exclude = [
-      'gh-pages/.',
-      'gh-pages/..',
-      'gh-pages/.git',
-      'gh-pages/.gitignore',
-      'gh-pages/api-doc',
+      "gh-pages/.",
+      "gh-pages/..",
+      "gh-pages/.git",
+      "gh-pages/.gitignore",
+      "gh-pages/api-doc",
     ]
 
     FileList["gh-pages/{*,.*}"].exclude(*purge_exclude).each do |path|
@@ -77,25 +77,25 @@ namespace :site do
 
     # Copy site to gh-pages dir.
     puts "Building site into gh-pages branch..."
-    ENV['JEKYLL_ENV'] = 'production'
+    ENV["JEKYLL_ENV"] = "production"
     require "jekyll"
     Jekyll::Commands::Build.process({
-      "source"       => File.expand_path("guides"),
-      "destination"  => File.expand_path("gh-pages"),
-      "sass"         => { "style" => "compressed" }
+      "source" => File.expand_path("guides"),
+      "destination" => File.expand_path("gh-pages"),
+      "sass" => {"style" => "compressed"},
     })
 
-    File.write('gh-pages/.nojekyll', "Prevent GitHub from running Jekyll")
+    File.write("gh-pages/.nojekyll", "Prevent GitHub from running Jekyll")
 
     # Commit and push.
     puts "Committing and pushing to GitHub Pages..."
     sha = `git rev-parse HEAD`.strip
-    Dir.chdir('gh-pages') do
+    Dir.chdir("gh-pages") do
       sh "git add ."
       sh "git commit --allow-empty -m 'Updating to #{sha}.'"
       sh "git push origin gh-pages"
     end
-    puts 'Done.'
+    puts "Done."
   end
 
   YARD::Rake::YardocTask.new(:prepare_yardoc)
@@ -105,8 +105,8 @@ namespace :site do
 
     def to_rubydoc_url(path)
       "/api-doc/#{GraphQL::VERSION}/" + path
-        .gsub("::", "/")                        # namespaces
-        .sub(/#(.+)$/, "#\\1-instance_method")  # instance methods
+        .gsub("::", "/") # namespaces
+        .sub(/#(.+)$/, "#\\1-instance_method") # instance methods
         .sub(/\.(.+)$/, "#\\1-class_method")    # class methods
     end
 

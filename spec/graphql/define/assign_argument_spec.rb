@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Define::AssignArgument do
   it "it accepts default_value" do
-    arg = define_argument(:a, GraphQL::STRING_TYPE, default_value: 'Default')
+    arg = define_argument(:a, GraphQL::STRING_TYPE, default_value: "Default")
 
     assert_equal "Default", arg.default_value
     assert arg.default_value?
@@ -56,6 +56,6 @@ describe GraphQL::Define::AssignArgument do
       end
     end
 
-    type.fields['a'].arguments[args.first.to_s]
+    type.fields["a"].arguments[args.first.to_s]
   end
 end

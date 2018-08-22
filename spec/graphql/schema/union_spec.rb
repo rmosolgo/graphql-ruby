@@ -65,7 +65,7 @@ describe GraphQL::Schema::Union do
       GRAPHQL
 
       res = Jazz::Schema.execute(query_str)
-      expected_data = { "name" => "Bela Fleck and the Flecktones" }
+      expected_data = {"name" => "Bela Fleck and the Flecktones"}
       assert_equal expected_data, res["data"]["nowPlaying"]
     end
   end

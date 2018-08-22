@@ -23,11 +23,11 @@ module GraphQL
                 n.arguments.reduce({}) do |memo, a|
                   arg_value = a.value
                   memo[a.name] = case arg_value
-                  when GraphQL::Language::Nodes::AbstractNode
-                    arg_value.to_query_string
-                  else
-                    GraphQL::Language.serialize(arg_value)
-                  end
+                                 when GraphQL::Language::Nodes::AbstractNode
+                                   arg_value.to_query_string
+                                 else
+                                   GraphQL::Language.serialize(arg_value)
+                                 end
                   memo
                 end
               else
@@ -37,7 +37,7 @@ module GraphQL
             args.uniq!
 
             if args.length > 1
-              msg = "Field '#{node.name}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?"
+              msg = "Field '#{node.name}' has an argument conflict: #{args.map { |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?"
               context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: node.ast_nodes.to_a)
             end
           end

@@ -2,7 +2,8 @@
 require "spec_helper"
 
 describe GraphQL::Language::Visitor do
-  let(:document) { GraphQL.parse("
+  let(:document) {
+    GraphQL.parse("
     query cheese {
       cheese(id: 1) {
         flavor,
@@ -15,18 +16,19 @@ describe GraphQL::Language::Visitor do
     }
 
     fragment cheeseFields on Cheese { flavor }
-    ")}
+    ")
+  }
   let(:counts) { {fields_entered: 0, arguments_entered: 0, arguments_left: 0, argument_names: []} }
 
   let(:visitor) do
     v = GraphQL::Language::Visitor.new(document)
-    v[GraphQL::Language::Nodes::Field] << ->(node, parent) { counts[:fields_entered] += 1 }
+    v[GraphQL::Language::Nodes::Field] << -> (node, parent) { counts[:fields_entered] += 1 }
     # two ways to set up enter hooks:
-    v[GraphQL::Language::Nodes::Argument] <<       ->(node, parent) { counts[:argument_names] << node.name }
-    v[GraphQL::Language::Nodes::Argument].enter << ->(node, parent) { counts[:arguments_entered] += 1}
-    v[GraphQL::Language::Nodes::Argument].leave << ->(node, parent) { counts[:arguments_left] += 1 }
+    v[GraphQL::Language::Nodes::Argument] << -> (node, parent) { counts[:argument_names] << node.name }
+    v[GraphQL::Language::Nodes::Argument].enter << -> (node, parent) { counts[:arguments_entered] += 1 }
+    v[GraphQL::Language::Nodes::Argument].leave << -> (node, parent) { counts[:arguments_left] += 1 }
 
-    v[GraphQL::Language::Nodes::Document].leave << ->(node, parent) { counts[:finished] = true }
+    v[GraphQL::Language::Nodes::Document].leave << -> (node, parent) { counts[:finished] = true }
     v
   end
 
@@ -57,8 +59,8 @@ describe GraphQL::Language::Visitor do
     directive_locations = []
 
     v = GraphQL::Language::Visitor.new(document)
-    v[GraphQL::Language::Nodes::DirectiveDefinition] << ->(node, parent) { directive = node }
-    v[GraphQL::Language::Nodes::DirectiveLocation] << ->(node, parent) { directive_locations << node }
+    v[GraphQL::Language::Nodes::DirectiveDefinition] << -> (node, parent) { directive = node }
+    v[GraphQL::Language::Nodes::DirectiveLocation] << -> (node, parent) { directive_locations << node }
     v.visit
 
     assert_equal "preview", directive.name
@@ -67,7 +69,7 @@ describe GraphQL::Language::Visitor do
 
   describe "Visitor::SKIP" do
     it "skips the rest of the node" do
-      visitor[GraphQL::Language::Nodes::Document] << ->(node, parent) { GraphQL::Language::Visitor::SKIP }
+      visitor[GraphQL::Language::Nodes::Document] << -> (node, parent) { GraphQL::Language::Visitor::SKIP }
       visitor.visit
       assert_equal(0, counts[:fields_entered])
     end
@@ -85,7 +87,7 @@ describe GraphQL::Language::Visitor do
     visitor = GraphQL::Language::Visitor.new(document)
 
     visited_directive = false
-    visitor[GraphQL::Language::Nodes::Directive] << ->(node, parent) { visited_directive = true }
+    visitor[GraphQL::Language::Nodes::Directive] << -> (node, parent) { visited_directive = true }
 
     visitor.visit
 

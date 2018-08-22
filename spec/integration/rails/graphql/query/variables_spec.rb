@@ -2,7 +2,8 @@
 require "spec_helper"
 
 describe GraphQL::Query::Variables do
-  let(:query_string) {%|
+  let(:query_string) {
+    %|
   query getCheese(
     $animals: [DairyAnimal!],
     $intDefaultNull: Int = null,
@@ -13,21 +14,23 @@ describe GraphQL::Query::Variables do
       similarCheese(source: $animals)
     }
   }
-  |}
+  |
+  }
   let(:ast_variables) { GraphQL.parse(query_string).definitions.first.variables }
   let(:schema) { Dummy::Schema }
   let(:variables) {
     GraphQL::Query::Variables.new(
-    OpenStruct.new({
-      schema: schema,
-      warden: GraphQL::Schema::Warden.new(schema.default_filter, schema: schema, context: nil),
-    }),
-    ast_variables,
-    provided_variables)
+      OpenStruct.new({
+        schema: schema,
+        warden: GraphQL::Schema::Warden.new(schema.default_filter, schema: schema, context: nil),
+      }),
+      ast_variables,
+      provided_variables
+    )
   }
 
   describe "#to_h" do
-    let(:provided_variables) { { "animals" => "YAK" } }
+    let(:provided_variables) { {"animals" => "YAK"} }
 
     it "returns a hash representation including default values" do
       expected_hash = {
@@ -41,7 +44,7 @@ describe GraphQL::Query::Variables do
 
   describe "#initialize" do
     describe "coercing inputs" do
-      let(:provided_variables) { { "animals" => "YAK" } }
+      let(:provided_variables) { {"animals" => "YAK"} }
 
       it "coerces single items into one-element lists" do
         assert_equal ["YAK"], variables["animals"]
@@ -49,7 +52,8 @@ describe GraphQL::Query::Variables do
     end
 
     describe "symbol keys" do
-      let(:query_string) { <<-GRAPHQL
+      let(:query_string) {
+        <<-GRAPHQL
         query testVariables(
           $dairy_product_1: DairyProductInput!
           $dairy_product_2: DairyProductInput!
@@ -61,17 +65,17 @@ describe GraphQL::Query::Variables do
 
       let(:provided_variables) {
         {
-          dairy_product_1: { source: "COW", fatContent: 0.99 },
-          "dairy_product_2" => { source: "DONKEY", "fatContent": 0.89 },
+          dairy_product_1: {source: "COW", fatContent: 0.99},
+          "dairy_product_2" => {source: "DONKEY", "fatContent": 0.89},
         }
       }
 
       it "checks for string matches" do
         # These get merged into all the values above
         default_values = {
-          "originDairy"=>"Sugar Hollow Dairy",
-          "organic"=>false,
-          "order_by"=>{"direction"=>"ASC"}
+          "originDairy" => "Sugar Hollow Dairy",
+          "organic" => false,
+          "order_by" => {"direction" => "ASC"},
         }
 
         expected_input_1 = {
@@ -90,7 +94,8 @@ describe GraphQL::Query::Variables do
     end
 
     describe "validating input objects" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
       query searchMyDairy (
         $product: DairyProductInput
       ) {
@@ -100,10 +105,11 @@ describe GraphQL::Query::Variables do
           }
         }
       }
-      |}
+      |
+      }
 
       describe "when provided input is an array" do
-        let(:provided_variables) { { "product" => [] } }
+        let(:provided_variables) { {"product" => []} }
 
         it "validates invalid input objects" do
           expected = "Variable product of type DairyProductInput was provided invalid value"
@@ -112,7 +118,8 @@ describe GraphQL::Query::Variables do
       end
 
       describe "when provided input cannot be coerced" do
-        let(:query_string) {%|
+        let(:query_string) {
+          %|
         query searchMyDairy (
           $time: Time
         ) {
@@ -122,8 +129,9 @@ describe GraphQL::Query::Variables do
             }
           }
         }
-        |}
-        let(:provided_variables) { { "time" => "a" } }
+        |
+        }
+        let(:provided_variables) { {"time" => "a"} }
 
         it "validates invalid input objects" do
           expected = "Variable time of type Time was provided invalid value"
@@ -139,23 +147,26 @@ describe GraphQL::Query::Variables do
         end
       end
 
-      let(:schema) { GraphQL::Schema.from_definition(%|
+      let(:schema) {
+        GraphQL::Schema.from_definition(%|
         type Query {
           thingsCount(ids: [ID!]): Int!
         }
       |)
       }
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getThingsCount($ids: [ID!]) {
           thingsCount(ids: $ids)
         }
-      |}
+      |
+      }
       let(:result) {
         schema.execute(query_string, variables: provided_variables, root_value: ObjectWithThingsCount)
       }
 
       describe "when they are present, but null" do
-        let(:provided_variables) { { "ids" => nil } }
+        let(:provided_variables) { {"ids" => nil} }
         it "ignores them" do
           assert_equal 1, result["data"]["thingsCount"]
         end
@@ -169,7 +180,7 @@ describe GraphQL::Query::Variables do
       end
 
       describe "when a non-nullable list has a null in it" do
-        let(:provided_variables) { { "ids" => [nil] } }
+        let(:provided_variables) { {"ids" => [nil]} }
         it "returns an error" do
           assert_equal 1, result["errors"].length
           assert_nil result["data"]
@@ -207,10 +218,10 @@ describe GraphQL::Query::Variables do
             argument :val, types.Int
             argument :val_with_default, types.Int, default_value: 13
             argument :complex_val, complex_val
-            resolve ->(o, a, c) {
-              args_cache[c.ast_node.alias] = a
-              1
-            }
+            resolve -> (o, a, c) {
+                      args_cache[c.ast_node.alias] = a
+                      1
+                    }
           end
         end
 
@@ -219,7 +230,8 @@ describe GraphQL::Query::Variables do
         end
       }
 
-      let(:query_string) {<<-GRAPHQL
+      let(:query_string) {
+        <<-GRAPHQL
         query testVariables(
           $intWithVariable: Int,
           $intWithDefault: Int = 10,
@@ -264,13 +276,15 @@ describe GraphQL::Query::Variables do
 
       let(:run_query) { schema.execute(query_string, variables: provided_variables) }
 
-      let(:variables) { GraphQL::Query::Variables.new(
-        OpenStruct.new({
-          schema: schema,
-          warden: GraphQL::Schema::Warden.new(schema.default_mask, schema: schema, context: nil),
-        }),
-        ast_variables,
-        provided_variables)
+      let(:variables) {
+        GraphQL::Query::Variables.new(
+          OpenStruct.new({
+            schema: schema,
+            warden: GraphQL::Schema::Warden.new(schema.default_mask, schema: schema, context: nil),
+          }),
+          ast_variables,
+          provided_variables
+        )
       }
 
       def assert_has_key_with_value(hash, key, has_key, value)
@@ -349,7 +363,8 @@ describe GraphQL::Query::Variables do
 
   if ActionPack::VERSION::MAJOR > 3
     describe "with a ActionController::Parameters" do
-      let(:query_string) { <<-GRAPHQL
+      let(:query_string) {
+        <<-GRAPHQL
         query getCheeses($source: DairyAnimal!, $fatContent: Float!){
           searchDairy(product: [{source: $source, fatContent: $fatContent}]) {
             ... on Cheese { flavor }
@@ -362,7 +377,7 @@ describe GraphQL::Query::Variables do
           "variables" => {
             "source" => "COW",
             "fatContent" => 0.4,
-          }
+          },
         )
       end
 

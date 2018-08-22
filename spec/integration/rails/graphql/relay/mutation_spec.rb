@@ -1,8 +1,9 @@
 # frozen_string_literal: true
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Relay::Mutation do
-  let(:query_string) {%|
+  let(:query_string) {
+    %|
     mutation addBagel($clientMutationId: String, $shipName: String = "Bagel") {
       introduceShip(input: {shipName: $shipName, factionId: "1", clientMutationId: $clientMutationId}) {
         clientMutationId
@@ -12,14 +13,17 @@ describe GraphQL::Relay::Mutation do
         faction { name }
       }
     }
-  |}
-  let(:introspect) {%|
+  |
+  }
+  let(:introspect) {
+    %|
     {
       __schema {
         types { name, fields { name } }
       }
     }
-  |}
+  |
+  }
 
   after do
     StarWars::DATA["Ship"].delete("9")
@@ -38,8 +42,8 @@ describe GraphQL::Relay::Mutation do
             "id" => GraphQL::Schema::UniqueWithinType.encode("Ship", "9"),
           },
         },
-        "faction" => {"name" => StarWars::DATA["Faction"]["1"].name }
-      }
+        "faction" => {"name" => StarWars::DATA["Faction"]["1"].name},
+      },
     }}
     assert_equal(expected, result)
   end
@@ -51,16 +55,16 @@ describe GraphQL::Relay::Mutation do
 
   it "raises when using a generated return type and resolve doesnt return a Hash" do
     bad_mutation = GraphQL::Relay::Mutation.define do
-      name 'BadMutation'
-      description 'A mutation type that doesnt return a hash'
+      name "BadMutation"
+      description "A mutation type that doesnt return a hash"
 
       input_field :input, types.String
       return_field :return, types.String
 
-      resolve ->(_, _, _) {
-        # Should have been { return: 'my_bad_return_value' }
-        'my_bad_return_value'
-      }
+      resolve -> (_, _, _) {
+                # Should have been { return: 'my_bad_return_value' }
+                "my_bad_return_value"
+              }
     end
 
     root = GraphQL::ObjectType.define do
@@ -74,8 +78,8 @@ describe GraphQL::Relay::Mutation do
       schema.execute('mutation { bad(input: { input: "graphql" }) { return } }')
     end
 
-    expected_message = "Expected `my_bad_return_value` to be a Hash."\
-      " Return a hash when using `return_field` or specify a custom `return_type`."
+    expected_message = "Expected `my_bad_return_value` to be a Hash." \
+    " Return a hash when using `return_field` or specify a custom `return_type`."
     assert_equal expected_message, exception.message
   end
 
@@ -90,8 +94,8 @@ describe GraphQL::Relay::Mutation do
             "id" => GraphQL::Schema::UniqueWithinType.encode("Ship", "9"),
           },
         },
-        "faction" => {"name" => StarWars::DATA["Faction"]["1"].name }
-      }
+        "faction" => {"name" => StarWars::DATA["Faction"]["1"].name},
+      },
     }}
     assert_equal(expected, result)
   end
@@ -132,17 +136,17 @@ describe GraphQL::Relay::Mutation do
 
   describe "aliased methods" do
     describe "on an unreached mutation" do
-      it 'still ensures definitions' do
+      it "still ensures definitions" do
         UnreachedMutation = GraphQL::Relay::Mutation.define do
-          name 'UnreachedMutation'
-          description 'A mutation type not directly used in the schema.'
+          name "UnreachedMutation"
+          description "A mutation type not directly used in the schema."
 
           input_field :input, types.String
           return_field :return, types.String
         end
 
-        assert UnreachedMutation.input_fields['input']
-        assert UnreachedMutation.return_fields['return']
+        assert UnreachedMutation.input_fields["input"]
+        assert UnreachedMutation.return_fields["return"]
       end
     end
   end
@@ -162,16 +166,16 @@ describe GraphQL::Relay::Mutation do
 
         input_field :nullDefault, types.String, default_value: nil
         input_field :noDefault, types.String
-        input_field :stringDefault, types.String, default_value: 'String'
+        input_field :stringDefault, types.String, default_value: "String"
 
         return_type custom_type
-        resolve ->(obj, input, ctx) {
-          OpenStruct.new(name: "Custom Return Type Test")
-        }
+        resolve -> (obj, input, ctx) {
+                  OpenStruct.new(name: "Custom Return Type Test")
+                }
       end
     }
 
-    let(:input) { mutation.field.arguments['input'].type.unwrap }
+    let(:input) { mutation.field.arguments["input"].type.unwrap }
 
     let(:schema) {
       mutation_field = mutation.field
@@ -199,18 +203,18 @@ describe GraphQL::Relay::Mutation do
     end
 
     it "supports input fields with nil default value" do
-      assert input.arguments['nullDefault'].default_value?
-      assert_nil input.arguments['nullDefault'].default_value
+      assert input.arguments["nullDefault"].default_value?
+      assert_nil input.arguments["nullDefault"].default_value
     end
 
     it "supports input fields with no default value" do
-      assert !input.arguments['noDefault'].default_value?
-      assert_nil input.arguments['noDefault'].default_value
+      assert !input.arguments["noDefault"].default_value?
+      assert_nil input.arguments["noDefault"].default_value
     end
 
     it "supports input fields with non-nil default value" do
-      assert input.arguments['stringDefault'].default_value?
-      assert_equal "String", input.arguments['stringDefault'].default_value
+      assert input.arguments["stringDefault"].default_value?
+      assert_equal "String", input.arguments["stringDefault"].default_value
     end
   end
 
@@ -239,14 +243,14 @@ describe GraphQL::Relay::Mutation do
 
         return_interfaces interfaces
 
-        resolve ->(obj, input, ctx) {
-          {
-            name: "Type Specific Field",
-            success: true,
-            notice: "Success Interface Field",
-            error: "Error Interface Field"
-          }
-        }
+        resolve -> (obj, input, ctx) {
+                  {
+                    name: "Type Specific Field",
+                    success: true,
+                    notice: "Success Interface Field",
+                    error: "Error Interface Field",
+                  }
+                }
       end
     }
 
@@ -264,7 +268,7 @@ describe GraphQL::Relay::Mutation do
       end
     }
 
-    it 'makes the mutation type implement the interfaces' do
+    it "makes the mutation type implement the interfaces" do
       assert_equal [result_interface, error_interface], mutation.return_type.interfaces
     end
 
@@ -289,10 +293,10 @@ describe GraphQL::Relay::Mutation do
         "errors" => [
           {
             "message" => "Sorry, Millennium Falcon ship is reserved",
-            "locations" => [ { "line" => 3 , "column" => 7}],
-            "path" => ["introduceShip"]
-          }
-        ]
+            "locations" => [{"line" => 3, "column" => 7}],
+            "path" => ["introduceShip"],
+          },
+        ],
       }
 
       assert_equal(expected, result)
@@ -308,10 +312,10 @@ describe GraphQL::Relay::Mutation do
         "errors" => [
           {
             "message" => "💥",
-            "locations" => [ { "line" => 3 , "column" => 7}],
-            "path" => ["introduceShip"]
-          }
-        ]
+            "locations" => [{"line" => 3, "column" => 7}],
+            "path" => ["introduceShip"],
+          },
+        ],
       }
 
       assert_equal(expected, result)
@@ -327,10 +331,10 @@ describe GraphQL::Relay::Mutation do
         "errors" => [
           {
             "message" => "🔥",
-            "locations" => [ { "line" => 3 , "column" => 7}],
-            "path" => ["introduceShip"]
-          }
-        ]
+            "locations" => [{"line" => 3, "column" => 7}],
+            "path" => ["introduceShip"],
+          },
+        ],
       }
 
       assert_equal(expected, result)

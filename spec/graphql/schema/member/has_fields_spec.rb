@@ -13,6 +13,7 @@ describe GraphQL::Schema::Member::HasFields do
     module InterfaceWithFloatField
       include BaseInterface
       field :float, Float, null: false
+
       def float
         # This should call the default implementation
         super * 0.5
@@ -21,6 +22,7 @@ describe GraphQL::Schema::Member::HasFields do
 
     module SubInterfaceWithFloatField
       include InterfaceWithFloatField
+
       def float
         # This should call `InterfaceWithFloatField#float`
         super * 0.1
@@ -38,6 +40,7 @@ describe GraphQL::Schema::Member::HasFields do
     module InterfaceWithStringField
       include BaseInterface
       field :string, String, null: false
+
       def string
         # Return a literal value to ensure this method was called
         "here's a string"
@@ -46,6 +49,7 @@ describe GraphQL::Schema::Member::HasFields do
 
     class ObjectWithStringField < BaseObject
       implements InterfaceWithStringField
+
       def string
         # This should call to `InterfaceWithStringField#string`
         super.upcase
@@ -65,6 +69,7 @@ describe GraphQL::Schema::Member::HasFields do
 
     class Query < BaseObject
       field :int, Integer, null: false
+
       def int
         # This should call default resolution
         super * 2
@@ -94,7 +99,7 @@ describe GraphQL::Schema::Member::HasFields do
 
     describe "Object methods" do
       it "may call super to default implementation" do
-        res = SuperTest::Schema.execute("{ int }", root_value: { int: 4 })
+        res = SuperTest::Schema.execute("{ int }", root_value: {int: 4})
         assert_equal 8, res["data"]["int"]
       end
 
@@ -116,12 +121,12 @@ describe GraphQL::Schema::Member::HasFields do
 
     describe "Interface methods" do
       it "may call super to interface method" do
-        res = SuperTest::Schema.execute(" { float1 { float } }", root_value: { float: 6.0 })
+        res = SuperTest::Schema.execute(" { float1 { float } }", root_value: {float: 6.0})
         assert_equal 3.0, res["data"]["float1"]["float"]
       end
 
       it "may call super to superclass method" do
-        res = SuperTest::Schema.execute(" { float2 { float } }", root_value: { float: 6.0 })
+        res = SuperTest::Schema.execute(" { float2 { float } }", root_value: {float: 6.0})
         assert_in_delta 0.001, 0.3, res["data"]["float2"]["float"]
       end
     end

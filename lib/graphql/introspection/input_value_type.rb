@@ -3,8 +3,8 @@ module GraphQL
   module Introspection
     class InputValueType < Introspection::BaseObject
       graphql_name "__InputValue"
-      description "Arguments provided to Fields or Directives and the input fields of an "\
-                  "InputObject are represented as Input Values which describe their type and "\
+      description "Arguments provided to Fields or Directives and the input fields of an " \
+                  "InputObject are represented as Input Values which describe their type and " \
                   "optionally a default value."
       field :name, String, null: false
       field :description, String, null: true
@@ -15,7 +15,7 @@ module GraphQL
         if @object.default_value?
           value = @object.default_value
           if value.nil?
-            'null'
+            "null"
           else
             coerced_default_value = @object.type.coerce_result(value, @context)
             if @object.type.unwrap.is_a?(GraphQL::EnumType)

@@ -4,7 +4,8 @@ require "spec_helper"
 describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
   include StaticValidationHelpers
 
-  let(:query_string) {%|
+  let(:query_string) {
+    %|
     query getCheese(
       $id:        Int = 1,
       $int:       Int = 3.4e24, # can be coerced
@@ -22,25 +23,26 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
       search2: searchDairy(product: [$badInput]) { __typename }
       __type(name: $str) { name }
     }
-  |}
+  |
+  }
 
   it "finds default values that don't match their types" do
     expected = [
       {
-        "message"=>"Default value for $badInt doesn't match type Int",
-        "locations"=>[{"line"=>6, "column"=>7}],
-        "fields"=>["query getCheese"],
+        "message" => "Default value for $badInt doesn't match type Int",
+        "locations" => [{"line" => 6, "column" => 7}],
+        "fields" => ["query getCheese"],
       },
       {
-        "message"=>"Default value for $badInput doesn't match type DairyProductInput",
-        "locations"=>[{"line"=>8, "column"=>7}],
-        "fields"=>["query getCheese"],
+        "message" => "Default value for $badInput doesn't match type DairyProductInput",
+        "locations" => [{"line" => 8, "column" => 7}],
+        "fields" => ["query getCheese"],
       },
       {
-        "message"=>"Non-null variable $nonNull can't have a default value",
-        "locations"=>[{"line"=>9, "column"=>7}],
-        "fields"=>["query getCheese"],
-      }
+        "message" => "Non-null variable $nonNull can't have a default value",
+        "locations" => [{"line" => 9, "column" => 7}],
+        "fields" => ["query getCheese"],
+      },
     ]
     assert_equal(expected, errors)
   end
@@ -72,7 +74,8 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
         |)
       }
 
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getCheese(
           $a: Int = null,
           $b: String = null,
@@ -80,7 +83,8 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
         ) {
           field(a: $a, b: $b, c: $c)
         }
-      |}
+      |
+      }
 
       it "finds no errors" do
         assert_equal [], errors
@@ -101,7 +105,8 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
         |)
       }
 
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getCheese(
           $a: Int! = null,
           $b: String! = null,
@@ -109,25 +114,26 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
         ) {
           field(a: $a, b: $b, c: $c)
         }
-      |}
+      |
+      }
 
       it "finds errors" do
         expected = [
           {
-            "message"=>"Non-null variable $a can't have a default value",
-            "locations"=>[{"line"=>3, "column"=>11}],
-            "fields"=>["query getCheese"]
+            "message" => "Non-null variable $a can't have a default value",
+            "locations" => [{"line" => 3, "column" => 11}],
+            "fields" => ["query getCheese"],
           },
           {
-            "message"=>"Non-null variable $b can't have a default value",
-            "locations"=>[{"line"=>4, "column"=>11}],
-            "fields"=>["query getCheese"]
+            "message" => "Non-null variable $b can't have a default value",
+            "locations" => [{"line" => 4, "column" => 11}],
+            "fields" => ["query getCheese"],
           },
           {
-            "message"=>"Default value for $c doesn't match type ComplexInput",
-            "locations"=>[{"line"=>5, "column"=>11}],
-            "fields"=>["query getCheese"]
-          }
+            "message" => "Default value for $c doesn't match type ComplexInput",
+            "locations" => [{"line" => 5, "column" => 11}],
+            "fields" => ["query getCheese"],
+          },
         ]
 
         assert_equal expected, errors
@@ -141,15 +147,15 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
         name "Time"
         description "Time since epoch in seconds"
 
-        coerce_input ->(value, ctx) do
-          begin
-            Time.at(Float(value))
-          rescue ArgumentError
-            raise GraphQL::CoercionError, 'cannot coerce to Float'
-          end
-        end
+        coerce_input -> (value, ctx) do
+                       begin
+                         Time.at(Float(value))
+                       rescue ArgumentError
+                         raise GraphQL::CoercionError, "cannot coerce to Float"
+                       end
+                     end
 
-        coerce_result ->(value, ctx) { value.to_f }
+        coerce_result -> (value, ctx) { value.to_f }
       end
 
       QueryType = GraphQL::ObjectType.define do
@@ -159,7 +165,7 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
         field :time do
           type TimeType
           argument :value, !TimeType
-          resolve ->(obj, args, ctx) { args[:value] }
+          resolve -> (obj, args, ctx) { args[:value] }
         end
       end
 
@@ -168,21 +174,23 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
       end
     }
 
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query(
         $value: Time = "a"
       ) {
         time(value: $value)
       }
-    |}
+    |
+    }
 
     it "sets error message from a CoercionError if raised" do
       assert_equal 1, errors.length
 
       assert_includes errors, {
-        "message"=> "cannot coerce to Float",
-        "locations"=>[{"line"=>3, "column"=>9}],
-        "fields"=>["query"]
+        "message" => "cannot coerce to Float",
+        "locations" => [{"line" => 3, "column" => 9}],
+        "fields" => ["query"],
       }
     end
   end

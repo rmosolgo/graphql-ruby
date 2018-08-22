@@ -5,7 +5,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        context.visitor[GraphQL::Language::Nodes::VariableDefinition] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::VariableDefinition] << -> (node, parent) {
           if !node.default_value.nil?
             validate_default_value(node, context)
           end

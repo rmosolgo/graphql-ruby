@@ -52,10 +52,10 @@ module GraphQL
       def resolve_with_support(**args)
         # First call the ready? hook which may raise
         ready_val = if args.any?
-          ready?(**args)
-        else
-          ready?
-        end
+                      ready?(**args)
+                    else
+                      ready?
+                    end
         context.schema.after_lazy(ready_val) do |is_ready, ready_early_return|
           if ready_early_return
             if is_ready != false
@@ -70,10 +70,10 @@ module GraphQL
             context.schema.after_lazy(load_arguments_val) do |loaded_args|
               # Then call `authorized?`, which may raise or may return a lazy object
               authorized_val = if loaded_args.any?
-                authorized?(loaded_args)
-              else
-                authorized?
-              end
+                                 authorized?(loaded_args)
+                               else
+                                 authorized?
+                               end
               context.schema.after_lazy(authorized_val) do |(authorized_result, early_return)|
                 # If the `authorized?` returned two values, `false, early_return`,
                 # then use the early return value instead of continuing
@@ -170,6 +170,7 @@ module GraphQL
         attr_reader :id
         # @return [Object] The value found with this ID
         attr_reader :object
+
         def initialize(argument:, id:, object:)
           @id = id
           @argument = argument

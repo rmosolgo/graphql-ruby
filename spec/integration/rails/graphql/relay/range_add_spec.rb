@@ -20,8 +20,8 @@ describe GraphQL::Relay::RangeAdd do
         items: [
           OpenStruct.new(name: "California Burrito", price: 699),
           OpenStruct.new(name: "Fish Taco", price: 399),
-        ]
-      )
+        ],
+      ),
     ]
 
     item = GraphQL::ObjectType.define do
@@ -47,23 +47,23 @@ describe GraphQL::Relay::RangeAdd do
       return_field :item_edge, item.edge_type
       return_field :items, item.connection_type
       return_field :menu, menu
-      resolve ->(obj, input, ctx) {
-        this_menu = menus[input[:menu_idx]]
-        new_item = OpenStruct.new(name: input[:name], price: input[:price])
-        this_menu.items << new_item
-        range_add = GraphQL::Relay::RangeAdd.new(
-          parent: this_menu,
-          item: new_item,
-          collection: this_menu.items,
-          context: ctx,
-        )
+      resolve -> (obj, input, ctx) {
+                this_menu = menus[input[:menu_idx]]
+                new_item = OpenStruct.new(name: input[:name], price: input[:price])
+                this_menu.items << new_item
+                range_add = GraphQL::Relay::RangeAdd.new(
+                  parent: this_menu,
+                  item: new_item,
+                  collection: this_menu.items,
+                  context: ctx,
+                )
 
-        {
-          menu: range_add.parent,
-          items: range_add.connection,
-          item_edge: range_add.edge,
-        }
-      }
+                {
+                  menu: range_add.parent,
+                  items: range_add.connection,
+                  item_edge: range_add.edge,
+                }
+              }
     end
     mutation = GraphQL::ObjectType.define do
       name "Mutation"
@@ -77,9 +77,9 @@ describe GraphQL::Relay::RangeAdd do
     end
   }
 
-
   describe "returning Relay objects" do
-    let(:query_str) { <<-GRAPHQL
+    let(:query_str) {
+      <<-GRAPHQL
     mutation {
       add_item(input: {name: "Chilaquiles", price: 699, menu_idx: 0}) {
         menu {
@@ -109,7 +109,7 @@ describe GraphQL::Relay::RangeAdd do
 
       mutation_res = res["data"]["add_item"]
       assert_equal("Los Primos", mutation_res["menu"]["name"])
-      assert_equal({"name"=>"Chilaquiles", "price"=>699}, mutation_res["item_edge"]["node"])
+      assert_equal({"name" => "Chilaquiles", "price" => 699}, mutation_res["item_edge"]["node"])
       assert_equal(["California Burrito", "Fish Taco", "Chilaquiles"], mutation_res["items"]["edges"].map { |e| e["node"]["name"] })
       assert_equal(["__1", "__2", "__3"], mutation_res["items"]["edges"].map { |e| e["cursor"] })
     end

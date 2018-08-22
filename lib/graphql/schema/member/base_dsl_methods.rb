@@ -29,7 +29,7 @@ module GraphQL
           return super() if new_name.nil?
 
           fail(
-            "The new name override method is `graphql_name`, not `name`. Usage: "\
+            "The new name override method is `graphql_name`, not `name`. Usage: " \
             "graphql_name \"#{new_name}\""
           )
         end
@@ -79,7 +79,7 @@ module GraphQL
         # The default name is the Ruby constant name,
         # without any namespaces and with any `-Type` suffix removed
         def default_graphql_name
-          raise NotImplementedError, 'Anonymous class should declare a `graphql_name`' if name.nil?
+          raise NotImplementedError, "Anonymous class should declare a `graphql_name`" if name.nil?
 
           name.split("::").last.sub(/Type\Z/, "")
         end

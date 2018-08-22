@@ -66,39 +66,39 @@ describe GraphQL::Schema::RelayClassicMutation do
     }
 
     it "loads arguments as objects of the given type" do
-      res = Jazz::Schema.execute(query_str, variables: { id: "Ensemble/Robert Glasper Experiment", newName: "August Greene"})
+      res = Jazz::Schema.execute(query_str, variables: {id: "Ensemble/Robert Glasper Experiment", newName: "August Greene"})
       assert_equal "August Greene", res["data"]["renameEnsemble"]["ensemble"]["name"]
     end
 
     it "uses the `as:` name when loading" do
       band_query_str = query_str.sub("renameEnsemble", "renameEnsembleAsBand")
-      res = Jazz::Schema.execute(band_query_str, variables: { id: "Ensemble/Robert Glasper Experiment", newName: "August Greene"})
+      res = Jazz::Schema.execute(band_query_str, variables: {id: "Ensemble/Robert Glasper Experiment", newName: "August Greene"})
       assert_equal "August Greene", res["data"]["renameEnsembleAsBand"]["ensemble"]["name"]
     end
 
     it "returns an error instead when the ID resolves to nil" do
       res = Jazz::Schema.execute(query_str, variables: {
-        id: "Ensemble/Nonexistant Name",
-        newName: "August Greene"
-      })
+                                              id: "Ensemble/Nonexistant Name",
+                                              newName: "August Greene",
+                                            })
       assert_nil res["data"].fetch("renameEnsemble")
       assert_equal ['No object found for `ensembleId: "Ensemble/Nonexistant Name"`'], res["errors"].map { |e| e["message"] }
     end
 
     it "returns an error instead when the ID resolves to an object of the wrong type" do
       res = Jazz::Schema.execute(query_str, variables: {
-        id: "Instrument/Organ",
-        newName: "August Greene"
-      })
+                                              id: "Instrument/Organ",
+                                              newName: "August Greene",
+                                            })
       assert_nil res["data"].fetch("renameEnsemble")
       assert_equal ["No object found for `ensembleId: \"Instrument/Organ\"`"], res["errors"].map { |e| e["message"] }
     end
 
     it "raises an authorization error when the type's auth fails" do
       res = Jazz::Schema.execute(query_str, variables: {
-        id: "Ensemble/Spinal Tap",
-        newName: "August Greene"
-      })
+                                              id: "Ensemble/Spinal Tap",
+                                              newName: "August Greene",
+                                            })
       assert_nil res["data"].fetch("renameEnsemble")
       # Failed silently
       refute res.key?("errors")

@@ -30,6 +30,7 @@ module GraphQL
       include Tracing::Traceable
 
       attr_reader :context, :queries, :schema
+
       def initialize(schema:, queries:, context:)
         @schema = schema
         @queries = queries
@@ -55,7 +56,7 @@ module GraphQL
         # @return [Array<Hash>] One result per query
         def run_queries(schema, queries, context: {}, max_complexity: schema.max_complexity)
           multiplex = self.new(schema: schema, queries: queries, context: context)
-          multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
+          multiplex.trace("execute_multiplex", {multiplex: multiplex}) do
             if has_custom_strategy?(schema)
               if queries.length != 1
                 raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
@@ -82,7 +83,7 @@ module GraphQL
           end
 
           # Then, work through lazy results in a breadth-first way
-          GraphQL::Execution::Execute::ExecutionFunctions.lazy_resolve_root_selection(results, { multiplex: multiplex })
+          GraphQL::Execution::Execute::ExecutionFunctions.lazy_resolve_root_selection(results, {multiplex: multiplex})
 
           # Then, find all errors and assign the result to the query object
           results.each_with_index.map do |data_result, idx|
@@ -119,38 +120,38 @@ module GraphQL
         def finish_query(data_result, query)
           # Assign the result so that it can be accessed in instrumentation
           query.result_values = if data_result.equal?(NO_OPERATION)
-            if !query.valid?
-              { "errors" => query.static_errors.map(&:to_h) }
-            else
-              data_result
-            end
-          else
-            # Use `context.value` which was assigned during execution
-            result = {
-              "data" => Execution::Flatten.call(query.context)
-            }
+                                  if !query.valid?
+                                    {"errors" => query.static_errors.map(&:to_h)}
+                                  else
+                                    data_result
+                                  end
+                                else
+                                  # Use `context.value` which was assigned during execution
+                                  result = {
+                                    "data" => Execution::Flatten.call(query.context),
+                                  }
 
-            if query.context.errors.any?
-              error_result = query.context.errors.map(&:to_h)
-              result["errors"] = error_result
-            end
+                                  if query.context.errors.any?
+                                    error_result = query.context.errors.map(&:to_h)
+                                    result["errors"] = error_result
+                                  end
 
-            result
-          end
+                                  result
+                                end
         end
 
         # use the old `query_execution_strategy` etc to run this query
         def run_one_legacy(schema, query)
           query.result_values = if !query.valid?
-            all_errors = query.validation_errors + query.analysis_errors + query.context.errors
-            if all_errors.any?
-              { "errors" => all_errors.map(&:to_h) }
-            else
-              nil
-            end
-          else
-            GraphQL::Query::Executor.new(query).result
-          end
+                                  all_errors = query.validation_errors + query.analysis_errors + query.context.errors
+                                  if all_errors.any?
+                                    {"errors" => all_errors.map(&:to_h)}
+                                  else
+                                    nil
+                                  end
+                                else
+                                  GraphQL::Query::Executor.new(query).result
+                                end
         end
 
         def has_custom_strategy?(schema)

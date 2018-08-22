@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Query::Result do
   let(:query_string) { '{ __type(name: "Cheese") { name } }' }
   let(:schema) { Dummy::Schema }
-  let(:result) { schema.execute(query_string, context: { a: :b }) }
+  let(:result) { schema.execute(query_string, context: {a: :b}) }
 
   it "exposes hash-like methods" do
     assert_equal "Cheese", result["data"]["__type"]["name"]
@@ -13,7 +13,7 @@ describe GraphQL::Query::Result do
   end
 
   it "is equal with hashes" do
-    hash_result = {"data" => { "__type" => { "name" => "Cheese" } } }
+    hash_result = {"data" => {"__type" => {"name" => "Cheese"}}}
     assert_equal hash_result, result
   end
 

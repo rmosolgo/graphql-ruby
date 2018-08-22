@@ -21,10 +21,10 @@ module GraphQL
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize(name)
         msg = if name.nil?
-          %|An operation name is required|
-        else
-          %|No operation named "#{name}"|
-        end
+                %|An operation name is required|
+              else
+                %|No operation named "#{name}"|
+              end
         super(msg)
       end
     end
@@ -224,6 +224,7 @@ module GraphQL
     def_delegators :validation_pipeline, :validation_errors, :internal_representation, :analyzers
 
     attr_accessor :analysis_errors
+
     def valid?
       validation_pipeline.valid? && analysis_errors.none?
     end
@@ -290,14 +291,14 @@ module GraphQL
 
       parse_error = nil
       @document ||= begin
-        if query_string
-          GraphQL.parse(query_string, tracer: self)
-        end
-      rescue GraphQL::ParseError => err
-        parse_error = err
-        @schema.parse_error(err, @context)
-        nil
-      end
+                      if query_string
+                        GraphQL.parse(query_string, tracer: self)
+                      end
+                    rescue GraphQL::ParseError => err
+                      parse_error = err
+                      @schema.parse_error(err, @context)
+                      nil
+                    end
 
       @fragments = {}
       @operations = {}

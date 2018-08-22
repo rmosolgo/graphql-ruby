@@ -132,9 +132,9 @@ module GraphQL
       end
 
       def print_schema_definition(schema)
-        if (schema.query.nil? || schema.query == 'Query') &&
-           (schema.mutation.nil? || schema.mutation == 'Mutation') &&
-           (schema.subscription.nil? || schema.subscription == 'Subscription') &&
+        if (schema.query.nil? || schema.query == "Query") &&
+           (schema.mutation.nil? || schema.mutation == "Mutation") &&
+           (schema.subscription.nil? || schema.subscription == "Subscription") &&
            (schema.directives.none?)
           return
         end
@@ -176,13 +176,13 @@ module GraphQL
       end
 
       def print_arguments(arguments, indent: "")
-        if arguments.all?{ |arg| !arg.description }
-          return "(#{arguments.map{ |arg| print_input_value_definition(arg) }.join(", ")})"
+        if arguments.all? { |arg| !arg.description }
+          return "(#{arguments.map { |arg| print_input_value_definition(arg) }.join(", ")})"
         end
 
         out = "(\n".dup
-        out << arguments.map.with_index{ |arg, i|
-          "#{print_description(arg, indent: "  " + indent, first_in_block: i == 0)}  #{indent}"\
+        out << arguments.map.with_index { |arg, i|
+          "#{print_description(arg, indent: "  " + indent, first_in_block: i == 0)}  #{indent}" \
           "#{print_input_value_definition(arg)}"
         }.join("\n")
         out << "\n#{indent})"
@@ -215,7 +215,7 @@ module GraphQL
         out = print_description(enum_type)
         out << "enum #{enum_type.name}#{print_directives(enum_type.directives)} {\n"
         enum_type.values.each.with_index do |value, i|
-          out << print_description(value, indent: '  ', first_in_block: i == 0)
+          out << print_description(value, indent: "  ", first_in_block: i == 0)
           out << print_enum_value_definition(value)
         end
         out << "}"
@@ -233,7 +233,7 @@ module GraphQL
         out << print_directives(input_object_type.directives)
         out << " {\n"
         input_object_type.fields.each.with_index do |field, i|
-          out << print_description(field, indent: '  ', first_in_block: i == 0)
+          out << print_description(field, indent: "  ", first_in_block: i == 0)
           out << "  #{print_input_value_definition(field)}\n"
         end
         out << "}"
@@ -247,20 +247,20 @@ module GraphQL
           out << print_arguments(directive.arguments)
         end
 
-        out << " on #{directive.locations.map(&:name).join(' | ')}"
+        out << " on #{directive.locations.map(&:name).join(" | ")}"
       end
 
       def print_description(node, indent: "", first_in_block: true)
-        return ''.dup unless node.description
+        return "".dup unless node.description
 
-        description = indent != '' && !first_in_block ? "\n".dup : "".dup
+        description = indent != "" && !first_in_block ? "\n".dup : "".dup
         description << GraphQL::Language::Comments.commentize(node.description, indent: indent)
       end
 
       def print_field_definitions(fields)
         out = " {\n".dup
         fields.each.with_index do |field, i|
-          out << print_description(field, indent: '  ', first_in_block: i == 0)
+          out << print_description(field, indent: "  ", first_in_block: i == 0)
           out << "  #{print_field_definition(field)}\n"
         end
         out << "}"

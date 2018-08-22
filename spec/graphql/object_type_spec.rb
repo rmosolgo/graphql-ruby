@@ -48,7 +48,7 @@ describe GraphQL::ObjectType do
         Dummy::EdibleInterface,
         Dummy::EdibleAsMilkInterface,
         Dummy::AnimalProductInterface,
-        Dummy::LocalProductInterface
+        Dummy::LocalProductInterface,
       ], type.interfaces)
     end
 
@@ -64,20 +64,20 @@ describe GraphQL::ObjectType do
     it "doesnt convolute field names that differ with underscore" do
       interface = Module.new do
         include GraphQL::Schema::Interface
-        graphql_name 'TestInterface'
-        description 'Requires an id'
+        graphql_name "TestInterface"
+        description "Requires an id"
 
         field :id, GraphQL::ID_TYPE, null: false
       end
 
       object = Class.new(GraphQL::Schema::Object) do
-        graphql_name 'TestObject'
+        graphql_name "TestObject"
         implements interface
         global_id_field :id
 
         # When the validation for `id` is run for `_id`, it will fail because
         # GraphQL::STRING_TYPE cannot be transformed into a GraphQL::ID_TYPE
-        field :_id, String, description: 'database id', null: true
+        field :_id, String, description: "database id", null: true
       end
 
       assert_equal nil, GraphQL::Schema::Validation.validate(object.to_graphql)
@@ -93,7 +93,7 @@ describe GraphQL::ObjectType do
   describe "#implements" do
     it "adds an interface" do
       type = GraphQL::ObjectType.define do
-        name 'Hello'
+        name "Hello"
         implements Dummy::EdibleInterface
         implements Dummy::AnimalProductInterface
 
@@ -105,7 +105,7 @@ describe GraphQL::ObjectType do
 
     it "adds many interfaces" do
       type = GraphQL::ObjectType.define do
-        name 'Hello'
+        name "Hello"
         implements Dummy::EdibleInterface, Dummy::AnimalProductInterface
 
         field :hello, types.String
@@ -116,7 +116,7 @@ describe GraphQL::ObjectType do
 
     it "preserves existing interfaces and appends a new one" do
       type = GraphQL::ObjectType.define do
-        name 'Hello'
+        name "Hello"
         interfaces [Dummy::EdibleInterface]
         implements Dummy::AnimalProductInterface
 
@@ -128,19 +128,19 @@ describe GraphQL::ObjectType do
 
     it "can be used to inherit fields from the interface" do
       type_1 = GraphQL::ObjectType.define do
-        name 'Hello'
+        name "Hello"
         implements Dummy::EdibleInterface
         implements Dummy::AnimalProductInterface
       end
 
       type_2 = GraphQL::ObjectType.define do
-        name 'Hello'
+        name "Hello"
         implements Dummy::EdibleInterface
         implements Dummy::AnimalProductInterface, inherit: true
       end
 
       type_3 = GraphQL::ObjectType.define do
-        name 'Hello'
+        name "Hello"
         implements Dummy::EdibleInterface, Dummy::AnimalProductInterface, inherit: true
       end
 
@@ -150,7 +150,7 @@ describe GraphQL::ObjectType do
     end
   end
 
-  describe '#get_field' do
+  describe "#get_field" do
     it "exposes fields" do
       field = type.get_field("id")
       assert_equal(GraphQL::TypeKinds::NON_NULL, field.type.kind)

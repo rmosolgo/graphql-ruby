@@ -13,12 +13,12 @@ module Platform
 
       def resolve(**inputs)
         if some_early_check
-          return { thing_id: "000" }
+          return {thing_id: "000"}
         end
 
         # These shouldn't be modified:
-        { abcDef: 1 }
-        some_method do { xyzAbc: 1 } end
+        {abcDef: 1}
+        some_method do {xyzAbc: 1} end
 
         thing = Platform::Helpers::NodeIdentification.typed_object_from_id(Objects::Thing, inputs[:thing_id], context)
         raise Errors::Validation.new("Thing not found.") unless thing
@@ -26,23 +26,23 @@ module Platform
         ThingActivity.track(thing.id, Time.now.change(min: 0, sec: 0))
 
         if random_condition
-          { thing_id: thing.global_relay_id }
+          {thing_id: thing.global_relay_id}
         elsif other_random_thing
-          { :thing_id => "abc" }
+          {:thing_id => "abc"}
         elsif something_else
           method_with_block {
-            { thing_id: "pqr" }
+            {thing_id: "pqr"}
           }
         elsif yet_another_thing
           begin
-            { thing_id: "987" }
+            {thing_id: "987"}
           rescue
-            { thing_id: "789" }
+            {thing_id: "789"}
           end
         else
           return {
-            thing_id: "xyz"
-          }
+                   thing_id: "xyz",
+                 }
         end
       end
     end

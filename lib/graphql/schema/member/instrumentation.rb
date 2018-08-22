@@ -6,11 +6,12 @@ module GraphQL
     class Member
       module Instrumentation
         module_function
+
         def instrument(type, field)
           return_type = field.type.unwrap
           if (return_type.is_a?(GraphQL::ObjectType) && return_type.metadata[:type_class]) ||
-              return_type.is_a?(GraphQL::InterfaceType) ||
-              (return_type.is_a?(GraphQL::UnionType) && return_type.possible_types.any? { |t| t.metadata[:type_class] })
+             return_type.is_a?(GraphQL::InterfaceType) ||
+             (return_type.is_a?(GraphQL::UnionType) && return_type.possible_types.any? { |t| t.metadata[:type_class] })
             field = apply_proxy(field)
           end
 
@@ -92,13 +93,13 @@ module GraphQL
                   nil
                 else
                   concrete_type = case @inner_return_type
-                  when GraphQL::UnionType, GraphQL::InterfaceType
-                    ctx.query.resolve_type(@inner_return_type, inner_obj)
-                  when GraphQL::ObjectType
-                    @inner_return_type
-                  else
-                    raise "unexpected proxying type #{@inner_return_type} for #{inner_obj} at #{ctx.owner_type}.#{ctx.field.name}"
-                  end
+                                  when GraphQL::UnionType, GraphQL::InterfaceType
+                                    ctx.query.resolve_type(@inner_return_type, inner_obj)
+                                  when GraphQL::ObjectType
+                                    @inner_return_type
+                                  else
+                                    raise "unexpected proxying type #{@inner_return_type} for #{inner_obj} at #{ctx.owner_type}.#{ctx.field.name}"
+                                  end
 
                   if concrete_type && (object_class = concrete_type.metadata[:type_class])
                     # use the query-level context here, since it won't be field-specific anyways

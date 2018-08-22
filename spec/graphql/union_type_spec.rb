@@ -2,9 +2,9 @@
 require "spec_helper"
 
 describe GraphQL::UnionType do
-  let(:type_1) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT)}
-  let(:type_2) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT)}
-  let(:type_3) { OpenStruct.new(kind: GraphQL::TypeKinds::SCALAR)}
+  let(:type_1) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT) }
+  let(:type_2) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT) }
+  let(:type_3) { OpenStruct.new(kind: GraphQL::TypeKinds::SCALAR) }
   let(:union) {
     types = [type_1, type_2]
     GraphQL::UnionType.define {
@@ -18,17 +18,17 @@ describe GraphQL::UnionType do
     assert_equal("MyUnion", union.name)
   end
 
-  it '#include? returns true if type in in possible_types' do
+  it "#include? returns true if type in in possible_types" do
     assert union.include?(type_1)
   end
 
-  it '#include? returns false if type is not in possible_types' do
+  it "#include? returns false if type is not in possible_types" do
     assert_equal(false, union.include?(type_3))
   end
 
-  it '#resolve_type raises error if resolved type is not in possible_types' do
-    test_str = 'Hello world'
-    union.resolve_type = ->(value, ctx) {
+  it "#resolve_type raises error if resolved type is not in possible_types" do
+    test_str = "Hello world"
+    union.resolve_type = -> (value, ctx) {
       "This is not the types you are looking for"
     }
     fake_ctx = OpenStruct.new(query: GraphQL::Query.new(Dummy::Schema, ""))
@@ -40,7 +40,8 @@ describe GraphQL::UnionType do
 
   describe "#resolve_type" do
     let(:result) { Dummy::Schema.execute(query_string) }
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         allAnimal {
           type: __typename
@@ -59,21 +60,22 @@ describe GraphQL::UnionType do
           }
         }
       }
-    |}
+    |
+    }
 
-    it 'returns correct types for general schema and specific union' do
+    it "returns correct types for general schema and specific union" do
       expected_result = {
         # When using Query#resolve_type
         "allAnimal" => [
-          { "type" => "Cow", "cowName" => "Billy" },
-          { "type" => "Goat", "goatName" => "Gilly" }
+          {"type" => "Cow", "cowName" => "Billy"},
+          {"type" => "Goat", "goatName" => "Gilly"},
         ],
 
         # When using UnionType#resolve_type
         "allAnimalAsCow" => [
-          { "type" => "Cow", "name" => "Billy" },
-          { "type" => "Cow", "name" => "Gilly" }
-        ]
+          {"type" => "Cow", "name" => "Billy"},
+          {"type" => "Cow", "name" => "Gilly"},
+        ],
       }
       assert_equal expected_result, result["data"]
     end
@@ -81,7 +83,8 @@ describe GraphQL::UnionType do
 
   describe "typecasting from union to union" do
     let(:result) { Dummy::Schema.execute(query_string) }
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         allDairy {
           dairyName: __typename
@@ -93,14 +96,15 @@ describe GraphQL::UnionType do
           }
         }
       }
-    |}
+    |
+    }
 
     it "casts if the object belongs to both unions" do
       expected_result = [
-        {"dairyName"=>"Cheese"},
-        {"dairyName"=>"Cheese"},
-        {"dairyName"=>"Cheese"},
-        {"dairyName"=>"Milk", "bevName"=>"Milk", "flavors"=>["Natural", "Chocolate", "Strawberry"]},
+        {"dairyName" => "Cheese"},
+        {"dairyName" => "Cheese"},
+        {"dairyName" => "Cheese"},
+        {"dairyName" => "Milk", "bevName" => "Milk", "flavors" => ["Natural", "Chocolate", "Strawberry"]},
       ]
       assert_equal expected_result, result["data"]["allDairy"]
     end
@@ -109,7 +113,8 @@ describe GraphQL::UnionType do
   describe "list of union type" do
     describe "fragment spreads" do
       let(:result) { Dummy::Schema.execute(query_string) }
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         {
           allDairy {
             __typename
@@ -130,7 +135,8 @@ describe GraphQL::UnionType do
           origin
           flavor
         }
-      |}
+      |
+      }
 
       it "resolves the right fragment on the right item" do
         all_dairy = result["data"]["allDairy"]
@@ -160,13 +166,15 @@ describe GraphQL::UnionType do
   end
 
   describe "#get_possible_type" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         __type(name: "Beverage") {
           name
         }
       }
-    |}
+    |
+    }
 
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
     let(:union) { Dummy::BeverageUnion }
@@ -185,13 +193,15 @@ describe GraphQL::UnionType do
   end
 
   describe "#possible_type?" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         __type(name: "Beverage") {
           name
         }
       }
-    |}
+    |
+    }
 
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
     let(:union) { Dummy::BeverageUnion }

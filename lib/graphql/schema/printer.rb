@@ -65,7 +65,7 @@ module GraphQL
 
         introspection_schema_ast = GraphQL::Language::DocumentFromSchemaDefinition.new(
           schema,
-          except: ->(member, _) { member.name == "Root" },
+          except: -> (member, _) { member.name == "Root" },
           include_introspection_types: true,
           include_built_in_directives: true,
         ).document

@@ -15,6 +15,7 @@ module GraphQL
       # @api private
       class PropagateNull
       end
+
       # @api private
       PROPAGATE_NULL = PropagateNull.new
 
@@ -37,7 +38,7 @@ module GraphQL
               query.root_value,
               root_type,
               query.context,
-              mutation: query.mutation?
+              mutation: query.mutation?,
             )
           end
         end
@@ -53,7 +54,7 @@ module GraphQL
           end
         end
 
-        def resolve_selection(object, current_type, current_ctx, mutation: false )
+        def resolve_selection(object, current_type, current_ctx, mutation: false)
           # Assign this _before_ resolving the children
           # so that when a child propagates null, the selection result is
           # ready for it.
@@ -81,7 +82,6 @@ module GraphQL
               GraphQL::Execution::Lazy.resolve(field_ctx)
             end
 
-
             # If the last subselection caused a null to propagate to _this_ selection,
             # then we may as well quit executing fields because they
             # won't be in the response
@@ -102,17 +102,17 @@ module GraphQL
           field = field_ctx.field
 
           raw_value = begin
-            begin
-              arguments = query.arguments_for(irep_node, field)
-              field_ctx.trace("execute_field", { context: field_ctx }) do
-                field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
-              end
-            rescue GraphQL::UnauthorizedError => err
-              field_ctx.schema.unauthorized_object(err)
-            end
-          rescue GraphQL::ExecutionError => err
-            err
-          end
+                        begin
+                          arguments = query.arguments_for(irep_node, field)
+                          field_ctx.trace("execute_field", {context: field_ctx}) do
+                            field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+                          end
+                        rescue GraphQL::UnauthorizedError => err
+                          field_ctx.schema.unauthorized_object(err)
+                        end
+                      rescue GraphQL::ExecutionError => err
+                        err
+                      end
 
           if field_ctx.schema.lazy?(raw_value)
             field_ctx.value = Execution::Lazy.new {
@@ -145,14 +145,14 @@ module GraphQL
           if (lazy_method = field_ctx.schema.lazy_method_name(raw_value))
             field_ctx.value = Execution::Lazy.new {
               inner_value = begin
-                  begin
-                    raw_value.public_send(lazy_method)
-                  rescue GraphQL::UnauthorizedError => err
-                    field_ctx.schema.unauthorized_object(err)
-                  end
-                rescue GraphQL::ExecutionError => err
-                  err
-                end
+                              begin
+                                raw_value.public_send(lazy_method)
+                              rescue GraphQL::UnauthorizedError => err
+                                field_ctx.schema.unauthorized_object(err)
+                              end
+                            rescue GraphQL::ExecutionError => err
+                              err
+                            end
 
               field_ctx.value = continue_or_wait(inner_value, field_type, field_ctx)
             }
@@ -211,7 +211,7 @@ module GraphQL
             else
               nil
             end
-          elsif value.is_a?(Array) && value.any? && value.all? {|v| v.is_a?(GraphQL::ExecutionError)}
+          elsif value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
             if field_type.kind.non_null?
               PROPAGATE_NULL
             else

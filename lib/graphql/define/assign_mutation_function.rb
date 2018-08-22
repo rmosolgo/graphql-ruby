@@ -16,7 +16,7 @@ module GraphQL
 
         target.arguments = function.arguments
         target.description = function.description
-        target.resolve = ->(o, a, c) {
+        target.resolve = -> (o, a, c) {
           res = function.call(o, a, c)
           ResultProxy.new(res, a[:clientMutationId])
         }
@@ -24,6 +24,7 @@ module GraphQL
 
       class ResultProxy < SimpleDelegator
         attr_reader :client_mutation_id
+
         def initialize(target, client_mutation_id)
           @client_mutation_id = client_mutation_id
           super(target)

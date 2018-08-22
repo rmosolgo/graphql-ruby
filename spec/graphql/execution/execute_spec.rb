@@ -39,7 +39,8 @@ describe GraphQL::Execution::Execute do
     end
 
     describe "when root fields are non-nullable" do
-      let(:schema) { GraphQL::Schema.from_definition <<-GRAPHQL
+      let(:schema) {
+        GraphQL::Schema.from_definition <<-GRAPHQL
         type Mutation {
           push(int: Int!): Int!
         }
@@ -57,8 +58,9 @@ describe GraphQL::Execution::Execute do
       end
     end
 
-    describe 'mutation fields are nullable' do
-      let(:schema) { GraphQL::Schema.from_definition <<-GRAPHQL
+    describe "mutation fields are nullable" do
+      let(:schema) {
+        GraphQL::Schema.from_definition <<-GRAPHQL
         type Mutation {
           push(int: Int!): Int
         }
@@ -69,10 +71,10 @@ describe GraphQL::Execution::Execute do
       GRAPHQL
       }
 
-      it 'does not halt execution and returns data for the successful mutations' do
+      it "does not halt execution and returns data for the successful mutations" do
         res = schema.execute(query_str, root_value: root)
         assert_equal [1, 2], MutationNullTestRoot::INTS
-        assert_equal({"one"=>1, "thirteen"=>nil, "two"=>2}, res["data"])
+        assert_equal({"one" => 1, "thirteen" => nil, "two" => 2}, res["data"])
       end
     end
   end
@@ -83,9 +85,9 @@ describe GraphQL::Execution::Execute do
         name "Node"
 
         field :id, types.ID, "" do
-          resolve ->(obj, args, ctx) {
-            obj[:id]
-          }
+          resolve -> (obj, args, ctx) {
+                    obj[:id]
+                  }
         end
       end
 
@@ -93,39 +95,39 @@ describe GraphQL::Execution::Execute do
         name "Query"
 
         field :nonNullListWithNullStrings, types[!types.String], "" do
-          resolve ->(obj, args, ctx) {
-            [nil]
-          }
+          resolve -> (obj, args, ctx) {
+                    [nil]
+                  }
         end
 
         field :nonNullListWithNullStringsLazy, types[!types.String], "" do
-          resolve ->(obj, args, ctx) {
-            LazyHelpers::Wrapper.new([nil])
-          }
+          resolve -> (obj, args, ctx) {
+                    LazyHelpers::Wrapper.new([nil])
+                  }
         end
 
         field :nonNullListWithNullTypes, types[!node_type], "" do
-          resolve ->(obj, args, ctx) {
-            [{ id: 1 }, nil, { id: 2 }]
-          }
+          resolve -> (obj, args, ctx) {
+                    [{id: 1}, nil, {id: 2}]
+                  }
         end
 
         field :listWithNullStrings, types[types.String], "" do
-          resolve ->(obj, args, ctx) {
-            [nil, "hello"]
-          }
+          resolve -> (obj, args, ctx) {
+                    [nil, "hello"]
+                  }
         end
 
         field :listWithNullTypes, types[node_type], "" do
-          resolve ->(obj, args, ctx) {
-            [nil, { id: 1 }, nil]
-          }
+          resolve -> (obj, args, ctx) {
+                    [nil, {id: 1}, nil]
+                  }
         end
 
         field :nonNullList, !types[!types.String], "" do
-          resolve ->(obj, args, ctx) {
-            [nil]
-          }
+          resolve -> (obj, args, ctx) {
+                    [nil]
+                  }
         end
       end
 
@@ -156,7 +158,7 @@ describe GraphQL::Execution::Execute do
       assert_equal nil, result["data"]["nonNullListWithNullStrings"]
       assert_equal nil, result["data"]["nonNullListWithNullTypes"]
       assert_equal [nil, "hello"], result["data"]["listWithNullStrings"]
-      assert_equal [nil, { "id" => "1" }, nil], result["data"]["listWithNullTypes"]
+      assert_equal [nil, {"id" => "1"}, nil], result["data"]["listWithNullTypes"]
     end
 
     it "propagates null for lazy resolvers" do
@@ -179,26 +181,26 @@ describe GraphQL::Execution::Execute do
       thing_type = GraphQL::ObjectType.define do
         name "Thing"
         field :name, !types.String do
-          resolve ->(o, a, c) {
-            -> {
-              raise GraphQL::ExecutionError.new("👻")
-            }
-          }
+          resolve -> (o, a, c) {
+                    -> {
+                      raise GraphQL::ExecutionError.new("👻")
+                    }
+                  }
         end
       end
 
       query_type = GraphQL::ObjectType.define do
         name "Query"
         field :things, !types[!thing_type] do
-          resolve ->(o, a, c) {
-            [OpenStruct.new(name: "A")]
-          }
+          resolve -> (o, a, c) {
+                    [OpenStruct.new(name: "A")]
+                  }
         end
 
         field :nullableThings, !types[thing_type] do
-          resolve ->(o, a, c) {
-            [OpenStruct.new(name: "A")]
-          }
+          resolve -> (o, a, c) {
+                    [OpenStruct.new(name: "A")]
+                  }
         end
       end
 
@@ -272,13 +274,13 @@ describe GraphQL::Execution::Execute do
         assert_equal expected_traces, exec_traces.map { |t| t[:key] }
 
         field_1_eager, field_2_eager,
-          query_eager, lazy_loader,
-          # field 3 is eager-resolved _during_ field 1's lazy resolve
-          field_1_lazy, field_3_eager,
-          field_2_lazy, field_4_eager,
-          # field 3 didn't finish above, it's resolved in the next round
-          field_3_lazy, field_4_lazy,
-          query_lazy, multiplex = exec_traces
+        query_eager, lazy_loader,
+        # field 3 is eager-resolved _during_ field 1's lazy resolve
+        field_1_lazy, field_3_eager,
+        field_2_lazy, field_4_eager,
+        # field 3 didn't finish above, it's resolved in the next round
+        field_3_lazy, field_4_lazy,
+        query_lazy, multiplex = exec_traces
 
         assert_equal ["b1"], field_1_eager[:context].path
         assert_equal ["b2"], field_2_eager[:context].path

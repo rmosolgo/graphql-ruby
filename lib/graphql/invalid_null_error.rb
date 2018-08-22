@@ -21,7 +21,7 @@ module GraphQL
 
     # @return [Hash] An entry for the response's "errors" key
     def to_h
-      { "message" => message }
+      {"message" => message}
     end
 
     # @deprecated always false

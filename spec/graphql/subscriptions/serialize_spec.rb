@@ -16,7 +16,7 @@ describe GraphQL::Subscriptions::Serialize do
       user_b = GlobalIDUser.new("b")
 
       str_a = serialize_dump(["first", 2, user_a])
-      str_b = serialize_dump({"first" => 'first', "second" => 2, "user" => user_b})
+      str_b = serialize_dump({"first" => "first", "second" => 2, "user" => user_b})
 
       assert_equal str_a, '["first",2,{"__gid__":"Z2lkOi8vZ3JhcGhxbC1ydWJ5LXRlc3QvR2xvYmFsSURVc2VyL2E"}]'
       assert_equal str_b, '{"first":"first","second":2,"user":{"__gid__":"Z2lkOi8vZ3JhcGhxbC1ydWJ5LXRlc3QvR2xvYmFsSURVc2VyL2I"}}'
@@ -33,12 +33,12 @@ describe GraphQL::Subscriptions::Serialize do
       parsed_obj_b = serialize_load(str_b)
 
       assert_equal parsed_obj_a, ["first", 2, user_a]
-      assert_equal parsed_obj_b, {'first' => 'first', 'second' => 2, 'user' => user_b}
+      assert_equal parsed_obj_b, {"first" => "first", "second" => 2, "user" => user_b}
     end
   end
 
   it "can deserialize symbols" do
-    value = { a: :a, "b" => 2 }
+    value = {a: :a, "b" => 2}
 
     dumped = serialize_dump(value)
     expected_dumped = '{"a":{"__sym__":"a"},"b":2,"__sym_keys__":["a"]}'

@@ -22,6 +22,7 @@ module GraphQL
 
     module Analyzer
       module_function
+
       def initial_value(query)
         {
           schema: query.schema,

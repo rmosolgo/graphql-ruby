@@ -26,7 +26,6 @@ module GraphQL
       # @return [Class] The type that this field belongs to
       attr_reader :owner
 
-
       # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one
       def resolver
         @resolver_class
@@ -83,12 +82,12 @@ module GraphQL
         if @connection.nil?
           # Provide default based on type name
           return_type_name = if (contains_type = @field || @function)
-            Member::BuildType.to_type_name(contains_type.type)
-          elsif @return_type_expr
-            Member::BuildType.to_type_name(@return_type_expr)
-          else
-            raise "No connection info possible"
-          end
+                               Member::BuildType.to_type_name(contains_type.type)
+                             elsif @return_type_expr
+                               Member::BuildType.to_type_name(@return_type_expr)
+                             else
+                               raise "No connection info possible"
+                             end
           @connection = return_type_name.end_with?("Connection")
         else
           @connection
@@ -127,7 +126,6 @@ module GraphQL
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
-
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -208,7 +206,7 @@ module GraphQL
         when Proc
           if new_complexity.parameters.size != 3
             fail(
-              "A complexity proc should always accept 3 parameters: ctx, args, child_complexity. "\
+              "A complexity proc should always accept 3 parameters: ctx, args, child_complexity. " \
               "E.g.: complexity ->(ctx, args, child_complexity) { child_complexity * args[:limit] }"
             )
           else
@@ -219,7 +217,6 @@ module GraphQL
         else
           raise("Invalid complexity: #{new_complexity.inspect} on #{@name}")
         end
-
       end
 
       # @return [GraphQL::Field]
@@ -229,14 +226,13 @@ module GraphQL
           return @field_instance.to_graphql
         end
 
-
         field_defn = if @field
-          @field.dup
-        elsif @function
-          GraphQL::Function.build_field(@function)
-        else
-          GraphQL::Field.new
-        end
+                       @field.dup
+                     elsif @function
+                       GraphQL::Function.build_field(@function)
+                     else
+                       GraphQL::Field.new
+                     end
 
         field_defn.name = @name
         if @return_type_expr
@@ -283,12 +279,12 @@ module GraphQL
 
         # Support a passed-in proc, one way or another
         @resolve_proc = if @resolve
-          @resolve
-        elsif @function
-          @function
-        elsif @field
-          @field.resolve_proc
-        end
+                          @resolve
+                        elsif @function
+                          @function
+                        elsif @field
+                          @field.resolve_proc
+                        end
 
         # Ok, `self` isn't a class, but this is for consistency with the classes
         field_defn.metadata[:type_class] = self
@@ -337,14 +333,14 @@ module GraphQL
           if authorized?(inner_obj, query_ctx) && arguments.each_value.all? { |a| a.authorized?(inner_obj, query_ctx) }
             # Then if it passed, resolve the field
             v = if @resolve_proc
-              # Might be nil, still want to call the func in that case
-              @resolve_proc.call(inner_obj, args, ctx)
-            elsif @resolver_class
-              singleton_inst = @resolver_class.new(object: inner_obj, context: query_ctx)
-              public_send_field(singleton_inst, args, ctx)
-            else
-              public_send_field(after_obj, args, ctx)
-            end
+                  # Might be nil, still want to call the func in that case
+                  @resolve_proc.call(inner_obj, args, ctx)
+                elsif @resolver_class
+                  singleton_inst = @resolver_class.new(object: inner_obj, context: query_ctx)
+                  public_send_field(singleton_inst, args, ctx)
+                else
+                  public_send_field(after_obj, args, ctx)
+                end
             apply_scope(v, ctx)
           else
             nil
@@ -430,7 +426,6 @@ module GraphQL
         else
           ruby_kwargs = NO_ARGS
         end
-
 
         if ruby_kwargs.any?
           obj.public_send(@method_sym, **ruby_kwargs)

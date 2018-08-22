@@ -27,6 +27,7 @@ module GraphQL
   class ListType < GraphQL::BaseType
     include GraphQL::BaseType::ModifiesAnotherType
     attr_reader :of_type
+
     def initialize(of_type:)
       super()
       @of_type = of_type
@@ -39,6 +40,7 @@ module GraphQL
     def to_s
       "[#{of_type.to_s}]"
     end
+
     alias_method :inspect, :to_s
     alias :to_type_signature :to_s
 

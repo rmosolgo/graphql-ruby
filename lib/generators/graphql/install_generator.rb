@@ -1,6 +1,6 @@
 # frozen_string_literal: true
-require 'rails/generators/base'
-require_relative 'core'
+require "rails/generators/base"
+require_relative "core"
 
 module Graphql
   module Generators
@@ -51,7 +51,7 @@ module Graphql
       include Core
 
       desc "Install GraphQL folder structure and boilerplate code"
-      source_root File.expand_path('../templates', __FILE__)
+      source_root File.expand_path("../templates", __FILE__)
 
       class_option :schema,
         type: :string,
@@ -98,7 +98,7 @@ module Graphql
 
         # Note: You can't have a schema without the query type, otherwise introspection breaks
         template("query_type.erb", "#{options[:directory]}/types/query_type.rb")
-        insert_root_type('query', 'QueryType')
+        insert_root_type("query", "QueryType")
 
         create_mutation_root_type unless options.skip_mutation_root_type?
 
@@ -117,7 +117,7 @@ module Graphql
           gem("graphiql-rails", group: :development)
 
           # This is a little cheat just to get cleaner shell output:
-          log :route, 'graphiql-rails'
+          log :route, "graphiql-rails"
           shell.mute do
             # Rails 5.2 has better support for `route`?
             if Rails::VERSION::STRING > "5.2"

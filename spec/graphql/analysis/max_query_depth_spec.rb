@@ -11,7 +11,8 @@ describe GraphQL::Analysis::MaxQueryDepth do
   end
 
   let(:result) { Dummy::Schema.execute(query_string) }
-  let(:query_string) { "
+  let(:query_string) {
+    "
     {
       cheese(id: 1) {
         similarCheese(source: SHEEP) {
@@ -27,7 +28,8 @@ describe GraphQL::Analysis::MaxQueryDepth do
         }
       }
     }
-  "}
+  "
+  }
 
   describe "when the query is deeper than max depth" do
     it "adds an error message for a too-deep query" do
@@ -68,7 +70,8 @@ describe GraphQL::Analysis::MaxQueryDepth do
       Dummy::Schema.max_depth = 4
     end
 
-    let(:query_string) { "
+    let(:query_string) {
+      "
       {
         cheese(id: 1) {
           ...moreFields
@@ -92,7 +95,8 @@ describe GraphQL::Analysis::MaxQueryDepth do
           }
         }
       }
-    "}
+    "
+    }
 
     it "adds an error message for a too-deep query" do
       assert_equal 1, result["errors"].length

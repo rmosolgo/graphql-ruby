@@ -24,7 +24,7 @@ describe GraphQL::Language::Nodes::AbstractNode do
 
   describe "#to_query_tring" do
     let(:document) {
-      GraphQL.parse('type Query { a: String! }')
+      GraphQL.parse("type Query { a: String! }")
     }
 
     let(:custom_printer_class) {

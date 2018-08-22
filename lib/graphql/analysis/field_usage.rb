@@ -21,7 +21,7 @@ module GraphQL
         {
           query: query,
           used_fields: Set.new,
-          used_deprecated_fields: Set.new
+          used_deprecated_fields: Set.new,
         }
       end
 

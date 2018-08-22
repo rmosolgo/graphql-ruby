@@ -3,8 +3,8 @@ module GraphQL
   module Introspection
     class SchemaType < Introspection::BaseObject
       graphql_name "__Schema"
-      description "A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all "\
-                  "available types and directives on the server, as well as the entry points for "\
+      description "A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all " \
+                  "available types and directives on the server, as well as the entry points for " \
                   "query, mutation, and subscription operations."
 
       field :types, [GraphQL::Schema::LateBoundType.new("__Type")], "A list of all types supported by this server.", null: false

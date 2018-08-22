@@ -4,13 +4,13 @@ module GraphQL
     module Comments
       extend self
 
-      def commentize(description, indent: '')
+      def commentize(description, indent: "")
         lines = description.split("\n")
 
-        comment = ''.dup
+        comment = "".dup
 
         lines.each do |line|
-          if line == ''
+          if line == ""
             comment << "#{indent}#\n"
           else
             sublines = break_line(line, 120 - indent.length)

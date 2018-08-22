@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rubygems'
+require "rubygems"
 Bundler.require
 
 # Print full backtrace for failiures:
@@ -26,8 +26,8 @@ Minitest::Spec.make_my_diffs_pretty!
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
 # This is for convenient access to metadata in test definitions
-assign_metadata_key = ->(target, key, value) { target.metadata[key] = value }
-assign_metadata_flag = ->(target, flag) { target.metadata[flag] = true }
+assign_metadata_key = -> (target, key, value) { target.metadata[key] = value }
+assign_metadata_flag = -> (target, flag) { target.metadata[flag] = true }
 GraphQL::Schema.accepts_definitions(set_metadata: assign_metadata_key)
 GraphQL::BaseType.accepts_definitions(metadata: assign_metadata_key)
 GraphQL::BaseType.accepts_definitions(metadata2: assign_metadata_key)
@@ -45,12 +45,12 @@ end
 
 # Use this when a schema requires a `resolve_type` hook
 # but you know it won't be called
-NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
+NO_OP_RESOLVE_TYPE = -> (type, obj, ctx) {
   raise "this should never be called"
 }
 
 # Load dependencies
-['Mongoid', 'Rails'].each do |integration|
+["Mongoid", "Rails"].each do |integration|
   begin
     Object.const_get(integration)
     Dir["#{File.dirname(__FILE__)}/integration/#{integration.downcase}/**/*.rb"].each do |f|
@@ -66,11 +66,11 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
   require f
 end
 
-def star_trek_query(string, variables={}, context: {})
+def star_trek_query(string, variables = {}, context: {})
   StarTrek::Schema.execute(string, variables: variables, context: context)
 end
 
-def star_wars_query(string, variables={}, context: {})
+def star_wars_query(string, variables = {}, context: {})
   StarWars::Schema.execute(string, variables: variables, context: context)
 end
 

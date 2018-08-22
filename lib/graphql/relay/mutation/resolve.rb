@@ -16,10 +16,10 @@ module GraphQL
 
         def call(obj, args, ctx)
           mutation_result = begin
-            @resolve.call(obj, args[:input], ctx)
-          rescue GraphQL::ExecutionError => err
-            err
-          end
+                              @resolve.call(obj, args[:input], ctx)
+                            rescue GraphQL::ExecutionError => err
+                              err
+                            end
 
           ctx.schema.after_lazy(mutation_result) do |res|
             build_result(res, args, ctx)
@@ -38,8 +38,8 @@ module GraphQL
             nil
           elsif @wrap_result
             if mutation_result && !mutation_result.is_a?(Hash)
-              raise StandardError, "Expected `#{mutation_result}` to be a Hash."\
-                " Return a hash when using `return_field` or specify a custom `return_type`."
+              raise StandardError, "Expected `#{mutation_result}` to be a Hash." \
+                    " Return a hash when using `return_field` or specify a custom `return_type`."
             end
 
             @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: mutation_result)

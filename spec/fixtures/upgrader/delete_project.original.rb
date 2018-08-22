@@ -11,18 +11,18 @@ module Platform
       input_field :projectId, !types.ID, "The Project ID to update."
       return_field :owner, !Interfaces::ProjectOwner, "The repository or organization the project was removed from."
 
-      resolve ->(root_obj, inputs, context) do
-        project =  Platform::Helpers::NodeIdentification.typed_object_from_id(
-          [Objects::Project], inputs[:projectId], context
-        )
+      resolve -> (root_obj, inputs, context) do
+                project = Platform::Helpers::NodeIdentification.typed_object_from_id(
+                  [Objects::Project], inputs[:projectId], context
+                )
 
-        context[:permission].can_modify?("DeleteProject", project).sync
-        context[:abilities].authorize_content(:project, :destroy, owner: project.owner)
+                context[:permission].can_modify?("DeleteProject", project).sync
+                context[:abilities].authorize_content(:project, :destroy, owner: project.owner)
 
-        project.enqueue_delete(actor: context[:viewer])
+                project.enqueue_delete(actor: context[:viewer])
 
-        { owner: project.owner }
-      end
+                {owner: project.owner}
+              end
     end
   end
 end

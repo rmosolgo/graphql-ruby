@@ -6,7 +6,7 @@ describe GraphQL::Execution::Lazy do
 
   describe "resolving" do
     it "calls value handlers" do
-      res = run_query('{  int(value: 2, plus: 1) }')
+      res = run_query("{  int(value: 2, plus: 1) }")
       assert_equal 3, res["data"]["int"]
     end
 
@@ -47,23 +47,23 @@ describe GraphQL::Execution::Lazy do
       |
 
       expected_data = {
-        "a"=>{"value"=>14, "nestedSum"=>{
-          "value"=>46,
-          "nestedSum"=>{
-            "value"=>95,
-            "nestedSum"=>{"value"=>90}
-          }
+        "a" => {"value" => 14, "nestedSum" => {
+          "value" => 46,
+          "nestedSum" => {
+            "value" => 95,
+            "nestedSum" => {"value" => 90},
+          },
         }},
-        "b"=>{"value"=>14, "nestedSum"=>{
-          "value"=>46,
-          "nestedSum"=>{
-            "value"=>95,
-            "nestedSum"=>{"value"=>90}
-          }
+        "b" => {"value" => 14, "nestedSum" => {
+          "value" => 46,
+          "nestedSum" => {
+            "value" => 95,
+            "nestedSum" => {"value" => 90},
+          },
         }},
-        "c"=>[
-          {"nestedSum"=>{"value"=>14}},
-          {"nestedSum"=>{"value"=>14}}
+        "c" => [
+          {"nestedSum" => {"value" => 14}},
+          {"nestedSum" => {"value" => 14}},
         ],
       }
 
@@ -104,7 +104,7 @@ describe GraphQL::Execution::Lazy do
         "nullableNestedSum" => {
           "value" => 1,
           "nullableNestedSum" => nil,
-        }
+        },
       }
       assert_equal(expected_data, res["data"])
       assert_equal 1, res["errors"].length
@@ -119,16 +119,16 @@ describe GraphQL::Execution::Lazy do
       }|
 
       expected_data = {
-        "a" => { "value" => 3 },
+        "a" => {"value" => 3},
         "b" => nil,
-        "c" => { "value" => 3 },
+        "c" => {"value" => 3},
       }
       assert_equal expected_data, res["data"]
 
       expected_errors = [{
-        "message"=>"13 is unlucky",
-        "locations"=>[{"line"=>4, "column"=>9}],
-        "path"=>["b"],
+        "message" => "13 is unlucky",
+        "locations" => [{"line" => 4, "column" => 9}],
+        "path" => ["b"],
       }]
       assert_equal expected_errors, res["errors"]
     end

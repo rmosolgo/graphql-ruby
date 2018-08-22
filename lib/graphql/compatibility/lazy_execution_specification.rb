@@ -42,15 +42,15 @@ module GraphQL
             res = self.class.lazy_schema.execute(query_str, context: {pushes: pushes})
 
             expected_data = {
-              "p1"=>{"value"=>1},
-              "p2"=>{"push"=>{"value"=>3, "push"=>{"value"=>21}}},
-              "p3"=>{"push"=>{"value"=>5, "push"=>{"value"=>22}}},
+              "p1" => {"value" => 1},
+              "p2" => {"push" => {"value" => 3, "push" => {"value" => 21}}},
+              "p3" => {"push" => {"value" => 5, "push" => {"value" => 22}}},
             }
             assert_equal expected_data, res["data"]
 
             expected_pushes = [
-              [1,2,4], # first level
-              [3,5], # second level
+              [1, 2, 4], # first level
+              [3, 5], # second level
               [21, 22],
             ]
             assert_equal expected_pushes, pushes
@@ -103,9 +103,9 @@ module GraphQL
             res = self.class.lazy_schema.execute(query_str, context: {pushes: pushes})
 
             expected_data = {
-              "p1"=>{"value"=>1},
-              "p2"=>{"push"=>{"value"=>3}},
-              "p3"=>{"p5"=>{"value"=>5},"p6"=>{"value"=>6}},
+              "p1" => {"value" => 1},
+              "p2" => {"push" => {"value" => 3}},
+              "p3" => {"p5" => {"value" => 5}, "p6" => {"value" => 6}},
             }
             assert_equal expected_data, res["data"]
 
@@ -136,9 +136,9 @@ module GraphQL
             res = self.class.lazy_schema.execute(query_str, context: {pushes: pushes})
 
             expected_edges = [
-              {"node"=>{"value"=>1, "push"=>{"value"=>4}}},
-              {"node"=>{"value"=>2, "push"=>{"value"=>4}}},
-              {"node"=>{"value"=>3, "push"=>{"value"=>4}}},
+              {"node" => {"value" => 1, "push" => {"value" => 4}}},
+              {"node" => {"value" => 2, "push" => {"value" => 4}}},
+              {"node" => {"value" => 3, "push" => {"value" => 4}}},
             ]
             assert_equal expected_edges, res["data"]["pushes"]["edges"]
             assert_equal [[1, 2, 3], [4, 4, 4]], pushes
@@ -203,8 +203,8 @@ module GraphQL
             GRAPHQL
             pushes = []
             res = self.class.lazy_schema.execute(query_string, context: {pushes: pushes})
-            assert_equal [[1,2]], pushes
-            assert_equal({"data"=>{"p1"=>{"value"=>1}, "p2"=>{"value"=>2}}}, res)
+            assert_equal [[1, 2]], pushes
+            assert_equal({"data" => {"p1" => {"value" => 1}, "p2" => {"value" => 2}}}, res)
           end
         end
       end

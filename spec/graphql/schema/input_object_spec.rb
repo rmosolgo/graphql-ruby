@@ -62,7 +62,7 @@ describe GraphQL::Schema::InputObject do
         argument :b, Integer, required: true, as: :b2
         argument :c, Integer, required: true, prepare: :prep
         argument :d, Integer, required: true, prepare: :prep, as: :d2
-        argument :e, Integer, required: true, prepare: ->(val, ctx) { val * ctx[:multiply_by] * 2 }, as: :e2
+        argument :e, Integer, required: true, prepare: -> (val, ctx) { val * ctx[:multiply_by] * 2 }, as: :e2
 
         def prep(val)
           val * context[:multiply_by]
@@ -89,8 +89,8 @@ describe GraphQL::Schema::InputObject do
       { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5 }) }
       GRAPHQL
 
-      res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
-      expected_obj = { a: 1, b2: 2, c: 9, d2: 12, e2: 30 }.inspect
+      res = InputObjectPrepareTest::Schema.execute(query_str, context: {multiply_by: 3})
+      expected_obj = {a: 1, b2: 2, c: 9, d2: 12, e2: 30}.inspect
       assert_equal expected_obj, res["data"]["inputs"]
     end
   end
@@ -107,7 +107,7 @@ describe GraphQL::Schema::InputObject do
       }
       GRAPHQL
 
-      res = Jazz::Schema.execute(query_str, context: { message: "hi" })
+      res = Jazz::Schema.execute(query_str, context: {message: "hi"})
       expected_info = [
         "Jazz::InspectableInput",
         "hi, ABC, 4, (hi, xyz, -, (-))",
@@ -140,15 +140,15 @@ describe GraphQL::Schema::InputObject do
     end
 
     it "returns a symbolized, aliased, ruby keyword style hash" do
-      arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
+      arg_values = {a: 1, b: 2, c: {d: 3, e: 4}}
 
       input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
         context: nil,
-        defaults_used: Set.new
+        defaults_used: Set.new,
       )
 
-      assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4 } }, input_object.to_h)
+      assert_equal({a: 1, b: 2, input_object: {d: 3, e: 4}}, input_object.to_h)
     end
   end
 end

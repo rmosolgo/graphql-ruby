@@ -40,7 +40,7 @@ module GraphQL
         # this node is the one who depends on it
         current_parent = nil
 
-        visitor[GraphQL::Language::Nodes::Document] << ->(node, prev_node) {
+        visitor[GraphQL::Language::Nodes::Document] << -> (node, prev_node) {
           node.definitions.each do |definition|
             case definition
             when GraphQL::Language::Nodes::OperationDefinition
@@ -50,25 +50,25 @@ module GraphQL
           end
         }
 
-        visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, prev_node) {
+        visitor[GraphQL::Language::Nodes::OperationDefinition] << -> (node, prev_node) {
           @node_paths[node] = NodeWithPath.new(node, context.path)
           current_parent = node
         }
 
-        visitor[GraphQL::Language::Nodes::OperationDefinition].leave << ->(node, prev_node) {
+        visitor[GraphQL::Language::Nodes::OperationDefinition].leave << -> (node, prev_node) {
           current_parent = nil
         }
 
-        visitor[GraphQL::Language::Nodes::FragmentDefinition] << ->(node, prev_node) {
+        visitor[GraphQL::Language::Nodes::FragmentDefinition] << -> (node, prev_node) {
           @node_paths[node] = NodeWithPath.new(node, context.path)
           current_parent = node
         }
 
-        visitor[GraphQL::Language::Nodes::FragmentDefinition].leave << ->(node, prev_node) {
+        visitor[GraphQL::Language::Nodes::FragmentDefinition].leave << -> (node, prev_node) {
           current_parent = nil
         }
 
-        visitor[GraphQL::Language::Nodes::FragmentSpread] << ->(node, prev_node) {
+        visitor[GraphQL::Language::Nodes::FragmentSpread] << -> (node, prev_node) {
           @node_paths[node] = NodeWithPath.new(node, context.path)
 
           # Track both sides of the dependency
@@ -105,6 +105,7 @@ module GraphQL
       class NodeWithPath
         extend Forwardable
         attr_reader :node, :path
+
         def initialize(node, path)
           @node = node
           @path = path

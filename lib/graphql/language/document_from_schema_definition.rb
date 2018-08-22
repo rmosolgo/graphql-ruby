@@ -14,9 +14,8 @@ module GraphQL
     # @param include_built_in_directives [Boolean] Whether or not to include built in diirectives in the AST
     class DocumentFromSchemaDefinition
       def initialize(
-        schema, context: nil, only: nil, except: nil, include_introspection_types: false,
-        include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false
-      )
+                     schema, context: nil, only: nil, except: nil, include_introspection_types: false,
+                             include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false)
         @schema = schema
         @always_include_schema = always_include_schema
         @include_introspection_types = include_introspection_types
@@ -32,7 +31,7 @@ module GraphQL
 
       def document
         GraphQL::Language::Nodes::Document.new(
-          definitions: build_definition_nodes
+          definitions: build_definition_nodes,
         )
       end
 
@@ -67,7 +66,7 @@ module GraphQL
         if field.deprecation_reason
           field_node.directives << GraphQL::Language::Nodes::Directive.new(
             name: GraphQL::Directive::DeprecatedDirective.name,
-            arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: field.deprecation_reason)]
+            arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: field.deprecation_reason)],
           )
         end
 
@@ -78,7 +77,7 @@ module GraphQL
         GraphQL::Language::Nodes::UnionTypeDefinition.new(
           name: union_type.name,
           description: union_type.description,
-          types: warden.possible_types(union_type).sort_by(&:name).map { |type| build_type_name_node(type) }
+          types: warden.possible_types(union_type).sort_by(&:name).map { |type| build_type_name_node(type) },
         )
       end
 
@@ -86,7 +85,7 @@ module GraphQL
         GraphQL::Language::Nodes::InterfaceTypeDefinition.new(
           name: interface_type.name,
           description: interface_type.description,
-          fields: build_field_nodes(warden.fields(interface_type))
+          fields: build_field_nodes(warden.fields(interface_type)),
         )
       end
 
@@ -109,7 +108,7 @@ module GraphQL
         if enum_value.deprecation_reason
           enum_value_node.directives << GraphQL::Language::Nodes::Directive.new(
             name: GraphQL::Directive::DeprecatedDirective.name,
-            arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: enum_value.deprecation_reason)]
+            arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: enum_value.deprecation_reason)],
           )
         end
 
@@ -160,7 +159,7 @@ module GraphQL
 
       def build_directive_location_node(location)
         GraphQL::Language::Nodes::DirectiveLocation.new(
-          name: location.to_s
+          name: location.to_s,
         )
       end
 
@@ -168,11 +167,11 @@ module GraphQL
         case type
         when GraphQL::ListType
           GraphQL::Language::Nodes::ListType.new(
-            of_type: build_type_name_node(type.of_type)
+            of_type: build_type_name_node(type.of_type),
           )
         when GraphQL::NonNullType
           GraphQL::Language::Nodes::NonNullType.new(
-            of_type: build_type_name_node(type.of_type)
+            of_type: build_type_name_node(type.of_type),
           )
         else
           GraphQL::Language::Nodes::TypeName.new(name: type.name)
@@ -195,9 +194,9 @@ module GraphQL
               arg_type = type.input_fields.fetch(arg_name.to_s).type
               GraphQL::Language::Nodes::Argument.new(
                 name: arg_name,
-                value: build_default_value(arg_value, arg_type)
+                value: build_default_value(arg_value, arg_type),
               )
-            end
+            end,
           )
         when NonNullType
           build_default_value(default_value, type.of_type)
@@ -278,9 +277,9 @@ module GraphQL
       end
 
       def schema_respects_root_name_conventions?(schema)
-        (schema.query.nil? || schema.query.name == 'Query') &&
-        (schema.mutation.nil? || schema.mutation.name == 'Mutation') &&
-        (schema.subscription.nil? || schema.subscription.name == 'Subscription')
+        (schema.query.nil? || schema.query.name == "Query") &&
+        (schema.mutation.nil? || schema.mutation.name == "Mutation") &&
+        (schema.subscription.nil? || schema.subscription.name == "Subscription")
       end
 
       attr_reader :schema, :warden, :always_include_schema,

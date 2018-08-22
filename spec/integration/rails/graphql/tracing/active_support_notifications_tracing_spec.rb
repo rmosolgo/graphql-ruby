@@ -11,7 +11,7 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
   it "pushes through AS::N" do
     traces = []
 
-    callback = ->(name, started, finished, id, data) {
+    callback = -> (name, started, finished, id, data) {
       traces << name
     }
 
@@ -26,9 +26,9 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
 
     ActiveSupport::Notifications.subscribed(callback, /^graphql/) do
       schema.execute(query_string, variables: {
-        "id1" => first_id,
-        "id2" => last_id,
-      })
+                                     "id1" => first_id,
+                                     "id2" => last_id,
+                                   })
     end
 
     expected_traces = [

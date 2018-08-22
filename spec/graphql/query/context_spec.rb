@@ -9,16 +9,16 @@ describe GraphQL::Query::Context do
     GraphQL::ObjectType.define {
       name "ParentInfo"
       field :object, types.String do
-        resolve ->(o, a, c) { c.parent.parent.object }
+        resolve -> (o, a, c) { c.parent.parent.object }
       end
       field :objectClassName, types.String do
-        resolve ->(o, a, c) { c.parent.parent.object.class.name }
+        resolve -> (o, a, c) { c.parent.parent.object.class.name }
       end
       field :valueClassName, types.String do
-        resolve ->(o, a, c) { c.parent.parent.value.class.name }
+        resolve -> (o, a, c) { c.parent.parent.value.class.name }
       end
       field :value, types.String do
-        resolve ->(o, a, c) { c.parent.parent.value.to_s }
+        resolve -> (o, a, c) { c.parent.parent.value.to_s }
       end
     }
   }
@@ -27,13 +27,13 @@ describe GraphQL::Query::Context do
       name "Backtrace"
       field :backtraceEntry, types.String do
         argument :idx, !types.Int
-        resolve ->(o, a, c) { c.backtrace[a[:idx]] }
+        resolve -> (o, a, c) { c.backtrace[a[:idx]] }
       end
       field :backtraceArray, types[types.String] do
-        resolve ->(o, a, c) { c.backtrace.to_a }
+        resolve -> (o, a, c) { c.backtrace.to_a }
       end
       field :backtraceTable, types.String do
-        resolve ->(o, a, c) { c.backtrace.inspect }
+        resolve -> (o, a, c) { c.backtrace.inspect }
       end
     end
   }
@@ -44,39 +44,40 @@ describe GraphQL::Query::Context do
       name "Query"
       field :context, types.String do
         argument :key, !types.String
-        resolve ->(target, args, ctx) { ctx[args[:key]] }
+        resolve -> (target, args, ctx) { ctx[args[:key]] }
       end
       field :contextAstNodeName, types.String do
-        resolve ->(target, args, ctx) { ctx.ast_node.class.name }
+        resolve -> (target, args, ctx) { ctx.ast_node.class.name }
       end
       field :contextIrepNodeName, types.String do
-        resolve ->(target, args, ctx) { ctx.irep_node.class.name }
+        resolve -> (target, args, ctx) { ctx.irep_node.class.name }
       end
       field :queryName, types.String do
-        resolve ->(target, args, ctx) { ctx.query.class.name }
+        resolve -> (target, args, ctx) { ctx.query.class.name }
       end
 
       field :pushContext, types.Int do
-        resolve ->(t,a,c) { CTX << c; 1 }
+        resolve -> (t, a, c) { CTX << c; 1 }
       end
 
       field :pushQueryError, types.Int do
-        resolve ->(t,a,c) {
-          c.query.context.add_error(GraphQL::ExecutionError.new("Query-level error"))
-          1
-        }
+        resolve -> (t, a, c) {
+                  c.query.context.add_error(GraphQL::ExecutionError.new("Query-level error"))
+                  1
+                }
       end
 
-      field :parentInfo, parent_info, resolve: ->(o,a,c) { :noop }
+      field :parentInfo, parent_info, resolve: -> (o, a, c) { :noop }
       field :backtrace, backtrace, resolve: Proc.new { :noop }
     }
   }
 
-  let(:schema) { GraphQL::Schema.define(query: query_type, mutation: nil)}
-  let(:result) { schema.execute(query_string, root_value: "rootval", context: {"some_key" => "some value"})}
+  let(:schema) { GraphQL::Schema.define(query: query_type, mutation: nil) }
+  let(:result) { schema.execute(query_string, root_value: "rootval", context: {"some_key" => "some value"}) }
 
   describe "access to parent context" do
-    let(:query_string) { %|
+    let(:query_string) {
+      %|
       {
         parentInfo {
           value
@@ -85,7 +86,8 @@ describe GraphQL::Query::Context do
           objectClassName
         }
       }
-    |}
+    |
+    }
 
     it "exposes the parent object" do
       expected = {
@@ -95,17 +97,19 @@ describe GraphQL::Query::Context do
             "object" => "rootval",
             "value" => "{}",
             "valueClassName" => "Hash",
-          }
-        }
+          },
+        },
       }
       assert_equal(expected, result)
     end
   end
 
   describe "access to passed-in values" do
-    let(:query_string) { %|
+    let(:query_string) {
+      %|
       query getCtx { context(key: "some_key") }
-    |}
+    |
+    }
 
     it "passes context to fields" do
       expected = {"data" => {"context" => "some value"}}
@@ -114,9 +118,11 @@ describe GraphQL::Query::Context do
   end
 
   describe "access to the AST node" do
-    let(:query_string) { %|
+    let(:query_string) {
+      %|
       query getCtx { contextAstNodeName }
-    |}
+    |
+    }
 
     it "provides access to the AST node" do
       expected = {"data" => {"contextAstNodeName" => "GraphQL::Language::Nodes::Field"}}
@@ -125,7 +131,8 @@ describe GraphQL::Query::Context do
   end
 
   describe "#backtrace" do
-    let(:query_string) { %|
+    let(:query_string) {
+      %|
       query {
         backtrace {
           b1: backtraceEntry(idx: 0)
@@ -136,7 +143,8 @@ describe GraphQL::Query::Context do
         }
         pushContext
       }
-    |}
+    |
+    }
 
     it "exposes the GraphQL backtrace" do
       backtrace_result = result.fetch("data").fetch("backtrace")
@@ -145,11 +153,11 @@ describe GraphQL::Query::Context do
       assert_equal "2:7: query", backtrace_result.fetch("b3")
       assert_equal ["7:11: Backtrace.backtraceArray", "3:9: Query.backtrace", "2:7: query"], backtrace_result.fetch("backtraceArray")
       expected_table = [
-        'Loc  | Field                    | Object    | Arguments | Result',
-        '8:11 | Backtrace.backtraceTable | :noop     | {}        | nil',
+        "Loc  | Field                    | Object    | Arguments | Result",
+        "8:11 | Backtrace.backtraceTable | :noop     | {}        | nil",
         '3:9  | Query.backtrace          | "rootval" | {}        | {b1: "4:11: Backtrace.backtraceEntry as b1", b2: "3:9: Query.backtrace", b3: "2:7: query", backtr...',
         '2:7  | query                    | "rootval" | {}        | {}',
-        '',
+        "",
       ].join("\n")
       assert_equal expected_table, backtrace_result.fetch("backtraceTable")
 
@@ -165,9 +173,11 @@ TABLE
   end
 
   describe "access to the InternalRepresentation node" do
-    let(:query_string) { %|
+    let(:query_string) {
+      %|
       query getCtx { contextIrepNodeName }
-    |}
+    |
+    }
 
     it "provides access to the AST node" do
       expected = {"data" => {"contextIrepNodeName" => "GraphQL::InternalRepresentation::Node"}}
@@ -176,9 +186,11 @@ TABLE
   end
 
   describe "access to the query" do
-    let(:query_string) { %|
+    let(:query_string) {
+      %|
       query getCtx { queryName }
-    |}
+    |
+    }
 
     it "provides access to the AST node" do
       expected = {"data" => {"queryName" => "GraphQL::Query"}}
@@ -218,9 +230,11 @@ TABLE
   end
 
   describe "accessing context after the fact" do
-    let(:query_string) { %|
+    let(:query_string) {
+      %|
       { pushContext }
-    |}
+    |
+    }
 
     it "preserves path information" do
       assert_equal 1, result["data"]["pushContext"]
@@ -234,12 +248,14 @@ TABLE
   end
 
   describe "query-level errors" do
-    let(:query_string) { %|
+    let(:query_string) {
+      %|
       { pushQueryError }
-    |}
+    |
+    }
 
     it "allows query-level errors" do
-      expected_err = { "message" => "Query-level error" }
+      expected_err = {"message" => "Query-level error"}
       assert_equal [expected_err], result["errors"]
     end
   end
@@ -254,7 +270,7 @@ TABLE
           }
         }
       }'
-      res = Jazz::Schema.execute(query_str, context: { magic_key: :ignored, normal_key: "normal_value" })
+      res = Jazz::Schema.execute(query_str, context: {magic_key: :ignored, normal_key: "normal_value"})
       expected_values = ["custom_method", "magic_value", "normal_value"]
       expected_values_with_nil = expected_values + [nil]
       assert_equal expected_values, res["data"]["inspectContext"]

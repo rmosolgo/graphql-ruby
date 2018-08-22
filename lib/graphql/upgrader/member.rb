@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 begin
-  require 'parser/current'
+  require "parser/current"
 rescue LoadError
   raise LoadError, "GraphQL::Upgrader requires the 'parser' gem, please install it and/or add it to your Gemfile"
 end
 
 module GraphQL
   module Upgrader
-    GRAPHQL_TYPES = '(Object|InputObject|Interface|Enum|Scalar|Union)'
+    GRAPHQL_TYPES = "(Object|InputObject|Interface|Enum|Scalar|Union)"
 
     class Transform
       # @param input_text [String] Untransformed GraphQL-Ruby code
@@ -66,8 +66,8 @@ module GraphQL
 
       def underscorize(str)
         str
-          .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
-          .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+          .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2') # URLDecoder -> URL_Decoder
+          .gsub(/([a-z\d])([A-Z])/, '\1_\2') # someThing -> some_Thing
           .downcase
       end
 
@@ -135,13 +135,13 @@ module GraphQL
       def apply(transformable)
         last_type_defn = transformable
           .split("\n")
-          .select { |line| line.include?("class ") || line.include?("module ")}
+          .select { |line| line.include?("class ") || line.include?("module ") }
           .last
 
         if last_type_defn && (matches = last_type_defn.match(/(class|module) (?<type_name>[a-zA-Z_0-9:]*)( <|$)/))
           type_name = matches[:type_name]
           # Get the name without any prefixes or suffixes
-          type_name_without_the_type_part = type_name.split('::').last.gsub(/Type$/, '')
+          type_name_without_the_type_part = type_name.split("::").last.gsub(/Type$/, "")
           # Find an overridden name value
           if matches = transformable.match(/ name ('|")(?<overridden_name>.*)('|")/)
             name = matches[:overridden_name]
@@ -150,7 +150,7 @@ module GraphQL
               transformable = transformable.sub(/ name (.*)/, ' graphql_name \1')
             else
               # Otherwise, remove it altogether
-              transformable = transformable.sub(/\s+name ('|").*('|")/, '')
+              transformable = transformable.sub(/\s+name ('|").*('|")/, "")
             end
           end
         end
@@ -163,7 +163,7 @@ module GraphQL
     class RemoveNewlinesTransform
       def apply(input_text)
         keep_looking = true
-        while keep_looking do
+        while keep_looking
           keep_looking = false
           # Find the `field` call (or other method), and an open paren, but not a close paren, or a comma between arguments
           input_text = input_text.gsub(/(?<field>(?:field|input_field|return_field|connection|argument)(?:\([^)]*|.*,))\n\s*(?<next_line>.+)/) do
@@ -235,7 +235,7 @@ module GraphQL
     # Transform `property:` kwarg to `method:` kwarg
     class PropertyToMethodTransform < Transform
       def apply(input_text)
-        input_text.gsub /property:/, 'method:'
+        input_text.gsub /property:/, "method:"
       end
     end
 
@@ -297,6 +297,7 @@ module GraphQL
 
       class NamedProcProcessor < Parser::AST::Processor
         attr_reader :proc_arg_names, :proc_defn_start, :proc_defn_end, :proc_defn_indent, :proc_body_start, :proc_body_end
+
         def initialize(proc_name)
           @proc_name_sym = proc_name.to_sym
           @proc_arg_names = nil
@@ -404,6 +405,7 @@ module GraphQL
 
       class ReturnedHashLiteralProcessor < Parser::AST::Processor
         attr_reader :keys_to_upgrade
+
         def initialize
           @keys_to_upgrade = []
         end
@@ -430,7 +432,6 @@ module GraphQL
               end
             end
           end
-
         end
 
         private
@@ -441,8 +442,8 @@ module GraphQL
           if node.is_a?(Array)
             *possible_returns, last_expression = *node
             return possible_returns.map { |c| find_returned_hashes(c, returning: false) }.flatten +
-              # Check the last expression of a method body
-              find_returned_hashes(last_expression, returning: returning)
+                     # Check the last expression of a method body
+                     find_returned_hashes(last_expression, returning: returning)
           end
 
           case node.type
@@ -484,7 +485,6 @@ module GraphQL
           p node
           raise
         end
-
       end
     end
 
@@ -528,12 +528,12 @@ module GraphQL
           method_body = reindent_lines(proc_body, from_indent: processor.resolve_indent + 2, to_indent: processor.resolve_indent)
           # Add `def... end`
           method_def = if input_text.include?("argument ")
-            # This field has arguments
-            "def #{field_name}(**#{args_arg_name})"
-          else
-            # No field arguments, so, no method arguments
-            "def #{field_name}"
-          end
+                         # This field has arguments
+                         "def #{field_name}(**#{args_arg_name})"
+                       else
+                         # No field arguments, so, no method arguments
+                         "def #{field_name}"
+                       end
           # Wrap the body in def ... end
           method_body = "\n#{method_def_indent}#{method_def}\n#{method_body}\n#{method_def_indent}end\n"
           # Update Argument access to be underscore and symbols
@@ -564,6 +564,7 @@ module GraphQL
 
       class ResolveProcProcessor < Parser::AST::Processor
         attr_reader :proc_start, :proc_end, :proc_arg_names, :resolve_start, :resolve_end, :resolve_indent
+
         def initialize
           @proc_arg_names = nil
           @resolve_start = nil
@@ -602,10 +603,11 @@ module GraphQL
     # Transform `interfaces [A, B, C]` to `implements A\nimplements B\nimplements C\n`
     class InterfacesToImplementsTransform < Transform
       PATTERN = /(?<indent>\s*)(?:interfaces) \[\s*(?<interfaces>(?:[a-zA-Z_0-9:\.,\s]+))\]/m
+
       def apply(input_text)
         input_text.gsub(PATTERN) do
           indent = $~[:indent]
-          interfaces = $~[:interfaces].split(',').map(&:strip).reject(&:empty?)
+          interfaces = $~[:interfaces].split(",").map(&:strip).reject(&:empty?)
           # Preserve leading newlines before the `interfaces ...`
           # call, but don't re-insert them between `implements` calls.
           extra_leading_newlines = "\n" * (indent[/^\n*/].length - 1)
@@ -621,14 +623,15 @@ module GraphQL
     # Transform `possible_types [A, B, C]` to `possible_types(A, B, C)`
     class PossibleTypesTransform < Transform
       PATTERN = /(?<indent>\s*)(?:possible_types) \[\s*(?<possible_types>(?:[a-zA-Z_0-9:\.,\s]+))\]/m
+
       def apply(input_text)
         input_text.gsub(PATTERN) do
           indent = $~[:indent]
-          possible_types = $~[:possible_types].split(',').map(&:strip).reject(&:empty?)
+          possible_types = $~[:possible_types].split(",").map(&:strip).reject(&:empty?)
           extra_leading_newlines = indent[/^\n*/]
           method_indent = indent.sub(/^\n*/m, "")
           type_indent = "  " + method_indent
-          possible_types_call = "#{method_indent}possible_types(\n#{possible_types.map { |t| "#{type_indent}#{t},"}.join("\n")}\n#{method_indent})"
+          possible_types_call = "#{method_indent}possible_types(\n#{possible_types.map { |t| "#{type_indent}#{t}," }.join("\n")}\n#{method_indent})"
           extra_leading_newlines + trim_lines(possible_types_call)
         end
       end
@@ -643,10 +646,10 @@ module GraphQL
             return_type = matches[:return_type]
             remainder = matches[:remainder]
             field_type = matches[:field_type]
-            with_block = remainder.gsub!(/\ do$/, '')
+            with_block = remainder.gsub!(/\ do$/, "")
 
-            remainder.gsub! /,$/, ''
-            remainder.gsub! /^,/, ''
+            remainder.gsub! /,$/, ""
+            remainder.gsub! /^,/, ""
             remainder.chomp!
 
             if return_type
@@ -660,37 +663,37 @@ module GraphQL
             end
 
             input_text.sub!(field) do
-              is_argument = ['argument', 'input_field'].include?(field_type)
-              f = "#{is_argument ? 'argument' : 'field'} :#{name}"
+              is_argument = ["argument", "input_field"].include?(field_type)
+              f = "#{is_argument ? "argument" : "field"} :#{name}"
 
               if return_type
                 f += ", #{return_type}"
               end
 
               unless remainder.empty?
-                f += ',' + remainder
+                f += "," + remainder
               end
 
               if is_argument
                 if nullable
-                  f += ', required: false'
+                  f += ", required: false"
                 elsif non_nullable
-                  f += ', required: true'
+                  f += ", required: true"
                 end
               else
                 if nullable
-                  f += ', null: true'
+                  f += ", null: true"
                 elsif non_nullable
-                  f += ', null: false'
+                  f += ", null: false"
                 end
               end
 
-              if field_type == 'connection'
-                f += ', connection: true'
+              if field_type == "connection"
+                f += ", connection: true"
               end
 
               if with_block
-                f += ' do'
+                f += " do"
               end
 
               f
@@ -798,7 +801,7 @@ module GraphQL
       end
 
       def upgradeable?
-        return false if @member.include? '< GraphQL::Schema::'
+        return false if @member.include? "< GraphQL::Schema::"
         return false if @member =~ /< Types::Base#{GRAPHQL_TYPES}/
 
         true
@@ -863,12 +866,12 @@ module GraphQL
         def initialize
           # Pairs of `{ { method_name => { name => [start, end] } }`,
           # since fields/arguments are unique by name, within their category
-          @locations = Hash.new { |h,k| h[k] = {} }
+          @locations = Hash.new { |h, k| h[k] = {} }
         end
 
         # @param send_node [node] The node which might be a `field` call, etc
         # @param source_node [node] The node whose source defines the bounds of the definition (eg, the surrounding block)
-        def add_location(send_node:,source_node:)
+        def add_location(send_node:, source_node:)
           receiver_node, method_name, *arg_nodes = *send_node
           # Implicit self and one of the recognized methods
           if receiver_node.nil? && DEFINITION_METHODS.include?(method_name)

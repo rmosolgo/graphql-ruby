@@ -1,6 +1,6 @@
 # frozen_string_literal: true
-require 'rails/generators/named_base'
-require_relative 'core'
+require "rails/generators/named_base"
+require_relative "core"
 
 module Graphql
   module Generators
@@ -12,7 +12,7 @@ module Graphql
       include Core
 
       desc "Create a Relay Classic mutation by name"
-      source_root File.expand_path('../templates', __FILE__)
+      source_root File.expand_path("../templates", __FILE__)
 
       argument :name, type: :string
 

@@ -5,11 +5,11 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        context.visitor[GraphQL::Language::Nodes::Field] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::Field] << -> (node, parent) {
           validate_arguments(node, context)
         }
 
-        context.visitor[GraphQL::Language::Nodes::Directive] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::Directive] << -> (node, parent) {
           validate_arguments(node, context)
         }
       end

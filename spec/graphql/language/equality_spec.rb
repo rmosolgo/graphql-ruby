@@ -7,7 +7,8 @@ describe GraphQL::Language::Nodes::AbstractNode do
     let(:document2) { GraphQL::Language::Parser.parse(query_string2) }
 
     describe "large identical document" do
-      let(:query_string1) {%|
+      let(:query_string1) {
+        %|
         query getStuff($someVar: Int = 1, $anotherVar: [String!], $skipNested: Boolean! = false) @skip(if: false) {
           myField: someField(someArg: $someVar, ok: 1.4) @skip(if: $anotherVar) @thing(or: "Whatever")
           anotherField(someArg: [1, 2, 3]) {
@@ -26,7 +27,8 @@ describe GraphQL::Language::Nodes::AbstractNode do
         fragment moreNestedFields on NestedType @or(something: "ok") {
           anotherNestedField
         }
-      |}
+      |
+      }
       let(:query_string2) { query_string1 }
 
       it "should be equal" do
@@ -56,7 +58,8 @@ describe GraphQL::Language::Nodes::AbstractNode do
     end
 
     describe "different schemas" do
-      let(:query_string1) {%|
+      let(:query_string1) {
+        %|
         schema {
           query: Query
         }
@@ -64,8 +67,10 @@ describe GraphQL::Language::Nodes::AbstractNode do
         type Query {
           field: String!
         }
-      |}
-      let(:query_string2) {%|
+      |
+      }
+      let(:query_string2) {
+        %|
         schema {
           query: Query
         }
@@ -73,7 +78,8 @@ describe GraphQL::Language::Nodes::AbstractNode do
         type Query {
           field: Int!
         }
-      |}
+      |
+      }
 
       it "should not be equal" do
         refute document1.eql?(document2)

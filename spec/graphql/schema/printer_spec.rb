@@ -25,8 +25,8 @@ REASON
     sub_input_type = GraphQL::InputObjectType.define do
       name "Sub"
       description "Test"
-      input_field :string, types.String, 'Something'
-      input_field :int, types.Int, 'Something'
+      input_field :string, types.String, "Something"
+      input_field :int, types.Int, "Something"
     end
 
     variant_input_type = GraphQL::InputObjectType.define do
@@ -88,10 +88,10 @@ REASON
 
       field :post do
         type post_type
-        argument :id, !types.ID, 'Post ID'
-        argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
-        argument :variedWithNulls, variant_input_type, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil }
-        resolve ->(obj, args, ctx) { Post.find(args["id"]) }
+        argument :id, !types.ID, "Post ID"
+        argument :varied, variant_input_type, default_value: {id: "123", int: 234, float: 2.3, enum: :foo, sub: [{string: "str"}]}
+        argument :variedWithNulls, variant_input_type, default_value: {id: nil, int: nil, float: nil, enum: nil, sub: nil}
+        resolve -> (obj, args, ctx) { Post.find(args["id"]) }
       end
     end
 
@@ -104,7 +104,7 @@ REASON
 
       return_field :post, post_type
 
-      resolve ->(_, _, _) { }
+      resolve -> (_, _, _) { }
     end
 
     mutation_root = GraphQL::ObjectType.define do
@@ -119,7 +119,7 @@ REASON
       field :post do
         type post_type
         argument :id, !types.ID
-        resolve ->(_, _, _) { }
+        resolve -> (_, _, _) { }
       end
     end
 
@@ -127,8 +127,8 @@ REASON
       query: query_root,
       mutation: mutation_root,
       subscription: subscription_root,
-      resolve_type: ->(a,b,c) { :pass },
-      orphan_types: [media_union_type]
+      resolve_type: -> (a, b, c) { :pass },
+      orphan_types: [media_union_type],
     )
   }
 
@@ -482,9 +482,9 @@ SCHEMA
       assert_equal expected.chomp, GraphQL::Schema::Printer.print_schema(schema)
     end
 
-    it 'prints a schema without directives' do
+    it "prints a schema without directives" do
       query_type = Class.new(GraphQL::Schema::Object) do
-        graphql_name 'Query'
+        graphql_name "Query"
 
         field :foobar, Integer, null: false
 
@@ -520,7 +520,7 @@ input Varied {
 }
 SCHEMA
 
-    only_filter = ->(member, ctx) {
+    only_filter = -> (member, ctx) {
       case member
       when GraphQL::ScalarType
         true
@@ -535,10 +535,9 @@ SCHEMA
       end
     }
 
-    context = { names: ["Varied", "Choice", "Subscription"] }
+    context = {names: ["Varied", "Choice", "Subscription"]}
     assert_equal expected.chomp, schema.to_definition(context: context, only: only_filter)
   end
-
 
   it "applies an `except` filter" do
     expected = <<SCHEMA
@@ -607,11 +606,11 @@ type Subscription {
 }
 SCHEMA
 
-    except_filter = ->(member, ctx) {
+    except_filter = -> (member, ctx) {
       ctx[:names].include?(member.name) || (member.respond_to?(:deprecation_reason) && member.deprecation_reason)
     }
 
-    context = { names: ["Varied", "Image", "Sub"] }
+    context = {names: ["Varied", "Image", "Sub"]}
     assert_equal expected.chomp, schema.to_definition(context: context, except: except_filter)
   end
 
@@ -627,7 +626,7 @@ type Post {
   title: String!
 }
 SCHEMA
-      assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(schema.types['Post'])
+      assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(schema.types["Post"])
     end
 
     it "can print arguments that use non-standard Ruby objects as default values" do
@@ -635,8 +634,8 @@ SCHEMA
 
       scalar_type = GraphQL::ScalarType.define do
         name "SomeType"
-        coerce_input ->(value, ctx) { backing_object.new(value) }
-        coerce_result ->(obj, ctx) { obj.value }
+        coerce_input -> (value, ctx) { backing_object.new(value) }
+        coerce_result -> (obj, ctx) { obj.value }
       end
 
       query_root = GraphQL::ObjectType.define do
@@ -646,7 +645,7 @@ SCHEMA
         field :example do
           type scalar_type
           argument :input, scalar_type, default_value: backing_object.new("Howdy")
-          resolve ->(obj, args, ctx) { args[:input] }
+          resolve -> (obj, args, ctx) { args[:input] }
         end
       end
 
@@ -686,7 +685,7 @@ input Varied {
 }
 SCHEMA
 
-      only_filter = ->(member, ctx) {
+      only_filter = -> (member, ctx) {
         case member
         when GraphQL::ScalarType
           true
@@ -699,7 +698,7 @@ SCHEMA
         end
       }
 
-      context = { names: ["Varied", "Choice", "Subscription"] }
+      context = {names: ["Varied", "Choice", "Subscription"]}
 
       assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema, context: context, only: only_filter).print_schema
     end

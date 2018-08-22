@@ -5,7 +5,8 @@ describe GraphQL::Language::Lexer do
   subject { GraphQL::Language::Lexer }
 
   describe ".tokenize" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         query getCheese {
           cheese(id: 1) {
@@ -13,7 +14,8 @@ describe GraphQL::Language::Lexer do
           }
         }
       }
-    |}
+    |
+    }
     let(:tokens) { subject.tokenize(query_string) }
 
     it "makes utf-8 comments" do
@@ -27,7 +29,7 @@ describe GraphQL::Language::Lexer do
     end
 
     describe "block strings" do
-      let(:query_string) { %|{ a(b: """\nc\n  d\n""")}|}
+      let(:query_string) { %|{ a(b: """\nc\n  d\n""")}| }
 
       it "tokenizes them" do
         str_token = tokens[5]

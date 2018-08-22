@@ -10,21 +10,21 @@ module GraphQL
           has_count_interface = GraphQL::InterfaceType.define do
             name "HasCount"
             field :count, types.Int
-            field :counter, ->{ has_count_interface }
+            field :counter, -> { has_count_interface }
           end
 
           counter_type = GraphQL::ObjectType.define do
             name "Counter"
             interfaces [has_count_interface]
-            field :count, types.Int, resolve: ->(o,a,c) { schema.metadata[:count] += 1 }
-            field :counter, has_count_interface, resolve: ->(o,a,c) { :counter }
+            field :count, types.Int, resolve: -> (o, a, c) { schema.metadata[:count] += 1 }
+            field :counter, has_count_interface, resolve: -> (o, a, c) { :counter }
           end
 
           alt_counter_type = GraphQL::ObjectType.define do
             name "AltCounter"
             interfaces [has_count_interface]
-            field :count, types.Int, resolve: ->(o,a,c) { schema.metadata[:count] += 1 }
-            field :counter, has_count_interface, resolve: ->(o,a,c) { :counter }
+            field :count, types.Int, resolve: -> (o, a, c) { schema.metadata[:count] += 1 }
+            field :counter, has_count_interface, resolve: -> (o, a, c) { :counter }
           end
 
           has_counter_interface = GraphQL::InterfaceType.define do
@@ -35,12 +35,12 @@ module GraphQL
           query_type = GraphQL::ObjectType.define do
             name "Query"
             interfaces [has_counter_interface]
-            field :counter, has_count_interface, resolve: ->(o,a,c) { :counter }
+            field :counter, has_count_interface, resolve: -> (o, a, c) { :counter }
           end
 
           schema = GraphQL::Schema.define(
             query: query_type,
-            resolve_type: ->(t, o, c) { o == :counter ? counter_type : nil },
+            resolve_type: -> (t, o, c) { o == :counter ? counter_type : nil },
             orphan_types: [alt_counter_type, counter_type],
             query_execution_strategy: execution_strategy,
           )

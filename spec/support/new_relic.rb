@@ -10,6 +10,7 @@ module NewRelic
   def self.clear_all
     TRANSACTION_NAMES.clear
   end
+
   module Agent
     def self.set_transaction_name(name)
       TRANSACTION_NAMES << name

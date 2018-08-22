@@ -10,34 +10,39 @@ describe GraphQL::InterfaceType do
   end
 
   describe "query evaluation" do
-    let(:result) { Dummy::Schema.execute(query_string, variables: {"cheeseId" => 2})}
-    let(:query_string) {%|
+    let(:result) { Dummy::Schema.execute(query_string, variables: {"cheeseId" => 2}) }
+    let(:query_string) {
+      %|
       query fav {
         favoriteEdible { fatContent }
       }
-    |}
+    |
+    }
     it "gets fields from the type for the given object" do
-      expected = {"data"=>{"favoriteEdible"=>{"fatContent"=>0.04}}}
+      expected = {"data" => {"favoriteEdible" => {"fatContent" => 0.04}}}
       assert_equal(expected, result)
     end
   end
 
   describe "mergable query evaluation" do
-    let(:result) { Dummy::Schema.execute(query_string, variables: {"cheeseId" => 2})}
-    let(:query_string) {%|
+    let(:result) { Dummy::Schema.execute(query_string, variables: {"cheeseId" => 2}) }
+    let(:query_string) {
+      %|
       query fav {
         favoriteEdible { fatContent }
         favoriteEdible { origin }
       }
-    |}
+    |
+    }
     it "gets fields from the type for the given object" do
-      expected = {"data"=>{"favoriteEdible"=>{"fatContent"=>0.04, "origin"=>"Antiquity"}}}
+      expected = {"data" => {"favoriteEdible" => {"fatContent" => 0.04, "origin" => "Antiquity"}}}
       assert_equal(expected, result)
     end
   end
 
   describe "fragments" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
     {
       favoriteEdible {
         fatContent
@@ -46,22 +51,24 @@ describe GraphQL::InterfaceType do
         }
       }
     }
-    |}
+    |
+    }
     let(:result) { Dummy::Schema.execute(query_string) }
 
     it "can apply interface fragments to an interface" do
-      expected_result = { "data" => {
+      expected_result = {"data" => {
         "favoriteEdible" => {
           "fatContent" => 0.04,
           "origin" => "Antiquity",
-        }
-      } }
+        },
+      }}
 
       assert_equal(expected_result, result)
     end
 
     describe "filtering members by type" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
       {
         allEdible {
           __typename
@@ -70,14 +77,15 @@ describe GraphQL::InterfaceType do
           }
         }
       }
-      |}
+      |
+      }
 
       it "only applies fields to the right object" do
         expected_data = [
-          {"__typename"=>"Cheese", "origin"=>"France"},
-          {"__typename"=>"Cheese", "origin"=>"Netherlands"},
-          {"__typename"=>"Cheese", "origin"=>"Spain"},
-          {"__typename"=>"Milk", "origin"=>"Antiquity"},
+          {"__typename" => "Cheese", "origin" => "France"},
+          {"__typename" => "Cheese", "origin" => "Netherlands"},
+          {"__typename" => "Cheese", "origin" => "Spain"},
+          {"__typename" => "Milk", "origin" => "Antiquity"},
         ]
 
         assert_equal expected_data, result["data"]["allEdible"]
@@ -108,7 +116,8 @@ describe GraphQL::InterfaceType do
 
   describe "#resolve_type" do
     let(:result) { Dummy::Schema.execute(query_string) }
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         allEdible {
           __typename
@@ -127,35 +136,38 @@ describe GraphQL::InterfaceType do
           }
         }
       }
-    |}
+    |
+    }
 
-    it 'returns correct types for general schema and specific interface' do
+    it "returns correct types for general schema and specific interface" do
       expected_result = {
         # Uses schema-level resolve_type
-        "allEdible"=>[
-          {"__typename"=>"Cheese", "cheeseFatContent"=>0.19},
-          {"__typename"=>"Cheese", "cheeseFatContent"=>0.3},
-          {"__typename"=>"Cheese", "cheeseFatContent"=>0.065},
-          {"__typename"=>"Milk", "milkFatContent"=>0.04}
+        "allEdible" => [
+          {"__typename" => "Cheese", "cheeseFatContent" => 0.19},
+          {"__typename" => "Cheese", "cheeseFatContent" => 0.3},
+          {"__typename" => "Cheese", "cheeseFatContent" => 0.065},
+          {"__typename" => "Milk", "milkFatContent" => 0.04},
         ],
         # Uses type-level resolve_type
-        "allEdibleAsMilk"=>[
-          {"__typename"=>"Milk", "fatContent"=>0.19},
-          {"__typename"=>"Milk", "fatContent"=>0.3},
-          {"__typename"=>"Milk", "fatContent"=>0.065},
-          {"__typename"=>"Milk", "fatContent"=>0.04}
-        ]
+        "allEdibleAsMilk" => [
+          {"__typename" => "Milk", "fatContent" => 0.19},
+          {"__typename" => "Milk", "fatContent" => 0.3},
+          {"__typename" => "Milk", "fatContent" => 0.065},
+          {"__typename" => "Milk", "fatContent" => 0.04},
+        ],
       }
       assert_equal expected_result, result["data"]
     end
   end
 
   describe "#get_possible_type" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query fav {
         favoriteEdible { fatContent }
       }
-    |}
+    |
+    }
 
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
 
@@ -173,11 +185,13 @@ describe GraphQL::InterfaceType do
   end
 
   describe "#possible_type?" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query fav {
         favoriteEdible { fatContent }
       }
-    |}
+    |
+    }
 
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
 

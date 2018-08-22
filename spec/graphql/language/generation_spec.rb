@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Language::Generation do
   describe "#to_query_tring" do
     let(:document) {
-      GraphQL.parse('type Query { a: String! }')
+      GraphQL.parse("type Query { a: String! }")
     }
 
     let(:custom_printer_class) {

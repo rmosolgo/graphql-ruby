@@ -7,11 +7,11 @@ module GraphQL
       def validate(context)
         op_names = Hash.new { |h, k| h[k] = [] }
 
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition].enter << ->(node, _parent) {
+        context.visitor[GraphQL::Language::Nodes::OperationDefinition].enter << -> (node, _parent) {
           op_names[node.name] << node
         }
 
-        context.visitor[GraphQL::Language::Nodes::Document].leave << ->(node, _parent) {
+        context.visitor[GraphQL::Language::Nodes::Document].leave << -> (node, _parent) {
           op_count = op_names.values.inject(0) { |m, v| m + v.size }
 
           op_names.each do |name, nodes|

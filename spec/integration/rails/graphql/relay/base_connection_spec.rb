@@ -1,9 +1,10 @@
 # frozen_string_literal: true
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Relay::BaseConnection do
   module Encoder
     module_function
+
     def encode(str, nonce: false); str; end
     def decode(str, nonce: false); str; end
   end
@@ -15,6 +16,7 @@ describe GraphQL::Relay::BaseConnection do
     it "resolves most specific connection type" do
       class SpecialArray < Array; end
       class SpecialArrayConnection < GraphQL::Relay::BaseConnection; end
+
       GraphQL::Relay::BaseConnection.register_connection_implementation(SpecialArray, SpecialArrayConnection)
 
       nodes = SpecialArray.new
@@ -63,6 +65,7 @@ describe GraphQL::Relay::BaseConnection do
   describe "#encode / #decode" do
     module ReverseEncoder
       module_function
+
       def encode(str, nonce: false); str.reverse; end
       def decode(str, nonce: false); str.reverse; end
     end

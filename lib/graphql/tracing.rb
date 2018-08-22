@@ -107,6 +107,7 @@ module GraphQL
 
     module NullTracer
       module_function
+
       def trace(k, v)
         yield
       end

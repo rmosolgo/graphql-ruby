@@ -47,10 +47,10 @@ describe GraphQL::STRING_TYPE do
       let(:schema) {
         GraphQL::Schema.define do
           query(GraphQL::ObjectType.define(name: "Query"))
-          type_error ->(err, ctx) {
-            ctx.errors << err
-            "🌾"
-          }
+          type_error -> (err, ctx) {
+                       ctx.errors << err
+                       "🌾"
+                     }
         end
       }
 

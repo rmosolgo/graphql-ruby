@@ -83,13 +83,13 @@ module GraphQL
 
         def add(err_or_msg)
           err = case err_or_msg
-          when String
-            GraphQL::ExecutionError.new(err_or_msg)
-          when GraphQL::ExecutionError
-            err_or_msg
-          else
-            raise ArgumentError, "expected String or GraphQL::ExecutionError, not #{err_or_msg.class} (#{err_or_msg.inspect})"
-          end
+                when String
+                  GraphQL::ExecutionError.new(err_or_msg)
+                when GraphQL::ExecutionError
+                  err_or_msg
+                else
+                  raise ArgumentError, "expected String or GraphQL::ExecutionError, not #{err_or_msg.class} (#{err_or_msg.inspect})"
+                end
           # This will assign ast_node and path
           @context.add_error(err)
         end
@@ -137,7 +137,7 @@ module GraphQL
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
-      def initialize(query:, values: , object:)
+      def initialize(query:, values:, object:)
         @query = query
         @schema = query.schema
         @provided_values = values || {}
@@ -162,7 +162,6 @@ module GraphQL
 
       # @!method []=(key, value)
       #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
-
 
       # @return [GraphQL::Schema::Warden]
       def warden
@@ -300,6 +299,5 @@ module GraphQL
     end
   end
 end
-
 
 GraphQL::Schema::Context = GraphQL::Query::Context

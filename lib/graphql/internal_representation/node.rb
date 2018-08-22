@@ -7,7 +7,7 @@ module GraphQL
 
       # A specialized, reusable object for leaf nodes.
       NO_TYPED_CHILDREN = Hash.new({}.freeze)
-      def NO_TYPED_CHILDREN.dup; self; end;
+      def NO_TYPED_CHILDREN.dup; self; end
       NO_TYPED_CHILDREN.freeze
 
       # @return [String] the name this node has in the response
@@ -37,7 +37,6 @@ module GraphQL
           else
             NO_TYPED_CHILDREN
           end
-
         end
       end
 
@@ -63,10 +62,9 @@ module GraphQL
       attr_reader :parent
 
       def initialize(
-          name:, owner_type:, query:, return_type:, parent:,
-          ast_nodes: [],
-          definitions: []
-        )
+                     name:, owner_type:, query:, return_type:, parent:,
+                     ast_nodes: [],
+                     definitions: [])
         @name = name
         @query = query
         @owner_type = owner_type
@@ -123,7 +121,7 @@ module GraphQL
 
       def inspect
         all_children_names = scoped_children.values.map(&:keys).flatten.uniq.join(", ")
-        all_locations = ast_nodes.map {|n| "#{n.line}:#{n.col}" }.join(", ")
+        all_locations = ast_nodes.map { |n| "#{n.line}:#{n.col}" }.join(", ")
         "#<Node #{@owner_type}.#{@name} -> #{@return_type} {#{all_children_names}} @ [#{all_locations}] #{object_id}>"
       end
 
@@ -160,15 +158,15 @@ module GraphQL
       def subscription_topic
         @subscription_topic ||= begin
           scope = if definition.subscription_scope
-            @query.context[definition.subscription_scope]
-          else
-            nil
-          end
+                    @query.context[definition.subscription_scope]
+                  else
+                    nil
+                  end
           Subscriptions::Event.serialize(
             definition_name,
             @query.arguments_for(self, definition),
             definition,
-            scope: scope
+            scope: scope,
           )
         end
       end

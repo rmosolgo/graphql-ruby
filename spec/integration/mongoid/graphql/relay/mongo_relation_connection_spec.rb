@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Relay::MongoRelationConnection do
   def get_names(result)
@@ -29,7 +29,8 @@ describe GraphQL::Relay::MongoRelationConnection do
   end
 
   describe "results" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getShips($first: Int, $after: String, $last: Int, $before: String,  $nameIncludes: String){
         federation {
           bases(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
@@ -53,9 +54,10 @@ describe GraphQL::Relay::MongoRelationConnection do
           endCursor
         }
       }
-    |}
+    |
+    }
 
-    it 'limits the result' do
+    it "limits the result" do
       result = star_trek_query(query_string, "first" => 2)
       assert_equal(2, get_names(result).length)
       assert_equal(true, get_page_info(result)["hasNextPage"])
@@ -75,7 +77,7 @@ describe GraphQL::Relay::MongoRelationConnection do
       assert_equal("Mw==", get_last_cursor(result))
     end
 
-    it 'provides custom fields on the connection type' do
+    it "provides custom fields on the connection type" do
       result = star_trek_query(query_string, "first" => 2)
       assert_equal(
         StarTrek::Base.where(faction_id: 1).count,
@@ -118,7 +120,7 @@ describe GraphQL::Relay::MongoRelationConnection do
       assert_equal true, get_page_info(result)["hasPreviousPage"]
     end
 
-    it 'slices the result' do
+    it "slices the result" do
       result = star_trek_query(query_string, "first" => 2)
       assert_equal(["Deep Space Station K-7", "Regula I"], get_names(result))
 
@@ -148,7 +150,7 @@ describe GraphQL::Relay::MongoRelationConnection do
       assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasPreviousPage"])
     end
 
-    it 'works with before and after specified together' do
+    it "works with before and after specified together" do
       result = star_trek_query(query_string, "first" => 2)
       assert_equal(["Deep Space Station K-7", "Regula I"], get_names(result))
 
@@ -167,20 +169,19 @@ describe GraphQL::Relay::MongoRelationConnection do
       assert_equal([], get_names(result)) # TODO: test fails. fixme
     end
 
-    it 'handles cursors above the bounds of the array' do
+    it "handles cursors above the bounds of the array" do
       overreaching_cursor = Base64.strict_encode64("100")
       result = star_trek_query(query_string, "after" => overreaching_cursor, "first" => 2)
       assert_equal([], get_names(result))
     end
 
-    it 'handles cursors below the bounds of the array' do
+    it "handles cursors below the bounds of the array" do
       underreaching_cursor = Base64.strict_encode64("1")
       result = star_trek_query(query_string, "before" => underreaching_cursor, "first" => 2)
       assert_equal([], get_names(result))
     end
 
-
-    it 'handles grouped connections with only last argument' do
+    it "handles grouped connections with only last argument" do
       grouped_conn_query = <<-GRAPHQL
       query {
         newestBasesGroupedByFaction(last: 2) {
@@ -194,8 +195,8 @@ describe GraphQL::Relay::MongoRelationConnection do
       GRAPHQL
 
       result = star_trek_query(grouped_conn_query)
-      names = result['data']['newestBasesGroupedByFaction']['edges'].map { |edge| edge['node']['name'] }
-      assert_equal(['Ganalda Space Station', 'Deep Space Nine'], names)
+      names = result["data"]["newestBasesGroupedByFaction"]["edges"].map { |edge| edge["node"]["name"] }
+      assert_equal(["Ganalda Space Station", "Deep Space Nine"], names)
     end
 
     it "applies custom arguments" do
@@ -204,7 +205,7 @@ describe GraphQL::Relay::MongoRelationConnection do
 
       after = get_last_cursor(result)
 
-      result = star_trek_query(query_string, "first" => 2, "nameIncludes" => "eep", "after" => after )
+      result = star_trek_query(query_string, "first" => 2, "nameIncludes" => "eep", "after" => after)
       assert_equal(["Deep Space Nine"], get_names(result))
       before = get_last_cursor(result)
 
@@ -212,14 +213,15 @@ describe GraphQL::Relay::MongoRelationConnection do
       assert_equal(["Deep Space Station K-7"], get_names(result))
     end
 
-    it 'works without first/last/after/before' do
+    it "works without first/last/after/before" do
       result = star_trek_query(query_string)
 
       assert_equal(3, result["data"]["federation"]["bases"]["edges"].length)
     end
 
     describe "applying max_page_size" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getBases($first: Int, $after: String, $last: Int, $before: String){
           federation {
             bases: basesWithMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
@@ -242,7 +244,8 @@ describe GraphQL::Relay::MongoRelationConnection do
             endCursor
           }
         }
-      |}
+      |
+      }
 
       it "applies to queries by `first`" do
         result = star_trek_query(query_string, "first" => 100)
@@ -278,7 +281,8 @@ describe GraphQL::Relay::MongoRelationConnection do
     end
 
     describe "applying default_max_page_size" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getBases($first: Int, $after: String, $last: Int, $before: String){
           federation {
             bases: basesWithDefaultMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
@@ -301,7 +305,8 @@ describe GraphQL::Relay::MongoRelationConnection do
             endCursor
           }
         }
-        |}
+        |
+      }
 
       it "applies to queries by `first`" do
         result = star_trek_query(query_string, "first" => 100)
@@ -338,7 +343,8 @@ describe GraphQL::Relay::MongoRelationConnection do
   end
 
   describe "applying a max_page_size bigger than the results" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getBases($first: Int, $after: String, $last: Int, $before: String){
         federation {
           bases: basesWithLargeMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
@@ -361,7 +367,8 @@ describe GraphQL::Relay::MongoRelationConnection do
           endCursor
         }
       }
-      |}
+      |
+    }
 
     it "applies to queries by `first`" do
       result = star_trek_query(query_string, "first" => 100)
@@ -400,7 +407,8 @@ describe GraphQL::Relay::MongoRelationConnection do
   end
 
   describe "without a block" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         federation {
           basesClone(first: 10) {
@@ -411,7 +419,8 @@ describe GraphQL::Relay::MongoRelationConnection do
             }
           }
         }
-    }|}
+    }|
+    }
     it "uses default resolve" do
       result = star_trek_query(query_string)
       bases = result["data"]["federation"]["basesClone"]["edges"]
@@ -420,7 +429,8 @@ describe GraphQL::Relay::MongoRelationConnection do
   end
 
   describe "custom ordering" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getBases {
         federation {
           basesByName(first: 30) { ... basesFields }
@@ -441,7 +451,8 @@ describe GraphQL::Relay::MongoRelationConnection do
           }
         }
       }
-    |}
+    |
+    }
 
     def get_names(result, field_name)
       bases = result["data"]["federation"][field_name]["edges"]
@@ -450,7 +461,7 @@ describe GraphQL::Relay::MongoRelationConnection do
 
     it "applies the default value" do
       result = star_trek_query(query_string)
-      bases_by_id   = ["Deep Space Station K-7", "Regula I", "Deep Space Nine"]
+      bases_by_id = ["Deep Space Station K-7", "Regula I", "Deep Space Nine"]
       bases_by_name = ["Deep Space Nine", "Deep Space Station K-7", "Regula I"]
 
       assert_equal(bases_by_id, get_names(result, "bases"))
@@ -482,7 +493,8 @@ describe GraphQL::Relay::MongoRelationConnection do
   end
 
   describe "relations" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getShips {
         federation {
           bases {
@@ -506,7 +518,8 @@ describe GraphQL::Relay::MongoRelationConnection do
           }
         }
       }
-    |}
+    |
+    }
 
     it "Mongoid::Association::Referenced::HasMany::Targets::Enumerable" do
       result = star_trek_query(query_string)
@@ -514,14 +527,14 @@ describe GraphQL::Relay::MongoRelationConnection do
         "Deep Space Station K-7" => [
           "Shir th'Talias",
           "Lurry",
-          "Mackenzie Calhoun"
+          "Mackenzie Calhoun",
         ],
         "Regula I" => [
           "V. Madison",
           "D. March",
-          "C. Marcus"
+          "C. Marcus",
         ],
-        "Deep Space Nine" => []
+        "Deep Space Nine" => [],
       }
     end
   end

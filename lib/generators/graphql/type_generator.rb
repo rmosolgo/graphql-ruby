@@ -1,9 +1,9 @@
 # frozen_string_literal: true
-require 'rails/generators/base'
-require 'graphql'
-require 'active_support'
-require 'active_support/core_ext/string/inflections'
-require_relative 'core'
+require "rails/generators/base"
+require "graphql"
+require "active_support"
+require "active_support/core_ext/string/inflections"
+require_relative "core"
 
 module Graphql
   module Generators

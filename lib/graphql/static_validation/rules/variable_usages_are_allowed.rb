@@ -7,16 +7,16 @@ module GraphQL
       def validate(context)
         # holds { name => ast_node } pairs
         declared_variables = {}
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << -> (node, parent) {
           declared_variables = node.variables.each_with_object({}) { |var, memo| memo[var.name] = var }
         }
 
-        context.visitor[GraphQL::Language::Nodes::Argument] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::Argument] << -> (node, parent) {
           node_values = if node.value.is_a?(Array)
-            node.value
-          else
-            [node.value]
-          end
+                          node.value
+                        else
+                          [node.value]
+                        end
           node_values = node_values.select { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier }
 
           return if node_values.none?

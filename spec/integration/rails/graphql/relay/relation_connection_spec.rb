@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Relay::RelationConnection do
   def get_names(result)
@@ -20,7 +20,8 @@ describe GraphQL::Relay::RelationConnection do
   end
 
   describe "results" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getShips($first: Int, $after: String, $last: Int, $before: String,  $nameIncludes: String){
         empire {
           bases(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
@@ -44,9 +45,10 @@ describe GraphQL::Relay::RelationConnection do
           endCursor
         }
       }
-    |}
+    |
+    }
 
-    it 'limits the result' do
+    it "limits the result" do
       result = star_wars_query(query_string, "first" => 2)
       assert_equal(2, get_names(result).length)
       assert_equal(true, get_page_info(result)["hasNextPage"])
@@ -66,7 +68,7 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal("Mw==", get_last_cursor(result))
     end
 
-    it 'provides custom fields on the connection type' do
+    it "provides custom fields on the connection type" do
       result = star_wars_query(query_string, "first" => 2)
       assert_equal(
         StarWars::Base.where(faction_id: 2).count,
@@ -138,7 +140,7 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal true, get_page_info(result)["hasPreviousPage"]
     end
 
-    it 'slices the result' do
+    it "slices the result" do
       result = star_wars_query(query_string, "first" => 2)
       assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
@@ -168,7 +170,7 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"])
     end
 
-    it 'works with before and after specified together' do
+    it "works with before and after specified together" do
       result = star_wars_query(query_string, "first" => 2)
       assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
@@ -187,20 +189,19 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal([], get_names(result))
     end
 
-    it 'handles cursors above the bounds of the array' do
+    it "handles cursors above the bounds of the array" do
       overreaching_cursor = Base64.strict_encode64("100")
       result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
       assert_equal([], get_names(result))
     end
 
-    it 'handles cursors below the bounds of the array' do
+    it "handles cursors below the bounds of the array" do
       underreaching_cursor = Base64.strict_encode64("1")
       result = star_wars_query(query_string, "before" => underreaching_cursor, "first" => 2)
       assert_equal([], get_names(result))
     end
 
-
-    it 'handles grouped connections with only last argument' do
+    it "handles grouped connections with only last argument" do
       grouped_conn_query = <<-GRAPHQL
       query {
         newestBasesGroupedByFaction(last: 2) {
@@ -214,8 +215,8 @@ describe GraphQL::Relay::RelationConnection do
       GRAPHQL
 
       result = star_wars_query(grouped_conn_query)
-      names = result['data']['newestBasesGroupedByFaction']['edges'].map { |edge| edge['node']['name'] }
-      assert_equal(['Headquarters', 'Secret Hideout'], names)
+      names = result["data"]["newestBasesGroupedByFaction"]["edges"].map { |edge| edge["node"]["name"] }
+      assert_equal(["Headquarters", "Secret Hideout"], names)
     end
 
     it "applies custom arguments" do
@@ -224,7 +225,7 @@ describe GraphQL::Relay::RelationConnection do
 
       after = get_last_cursor(result)
 
-      result = star_wars_query(query_string, "first" => 2, "nameIncludes" => "ea", "after" => after )
+      result = star_wars_query(query_string, "first" => 2, "nameIncludes" => "ea", "after" => after)
       assert_equal(["Headquarters"], get_names(result))
       before = get_last_cursor(result)
 
@@ -232,14 +233,15 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal(["Death Star"], get_names(result))
     end
 
-    it 'works without first/last/after/before' do
+    it "works without first/last/after/before" do
       result = star_wars_query(query_string)
 
       assert_equal(3, result["data"]["empire"]["bases"]["edges"].length)
     end
 
     describe "applying max_page_size" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getBases($first: Int, $after: String, $last: Int, $before: String){
           empire {
             bases: basesWithMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
@@ -262,7 +264,8 @@ describe GraphQL::Relay::RelationConnection do
             endCursor
           }
         }
-      |}
+      |
+      }
 
       it "applies to queries by `first`" do
         result = star_wars_query(query_string, "first" => 100)
@@ -298,7 +301,8 @@ describe GraphQL::Relay::RelationConnection do
     end
 
     describe "applying default_max_page_size" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getBases($first: Int, $after: String, $last: Int, $before: String){
           empire {
             bases: basesWithDefaultMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
@@ -321,7 +325,8 @@ describe GraphQL::Relay::RelationConnection do
             endCursor
           }
         }
-        |}
+        |
+      }
 
       it "applies to queries by `first`" do
         result = star_wars_query(query_string, "first" => 100)
@@ -358,7 +363,8 @@ describe GraphQL::Relay::RelationConnection do
   end
 
   describe "applying a max_page_size bigger than the results" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getBases($first: Int, $after: String, $last: Int, $before: String){
         empire {
           bases: basesWithLargeMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
@@ -381,7 +387,8 @@ describe GraphQL::Relay::RelationConnection do
           endCursor
         }
       }
-      |}
+      |
+    }
 
     it "applies to queries by `first`" do
       result = star_wars_query(query_string, "first" => 100)
@@ -420,7 +427,8 @@ describe GraphQL::Relay::RelationConnection do
   end
 
   describe "without a block" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         empire {
           basesClone(first: 10) {
@@ -431,7 +439,8 @@ describe GraphQL::Relay::RelationConnection do
             }
           }
         }
-    }|}
+    }|
+    }
     it "uses default resolve" do
       result = star_wars_query(query_string)
       bases = result["data"]["empire"]["basesClone"]["edges"]
@@ -440,7 +449,8 @@ describe GraphQL::Relay::RelationConnection do
   end
 
   describe "custom ordering" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getBases {
         empire {
           basesByName(first: 30) { ... basesFields }
@@ -461,7 +471,8 @@ describe GraphQL::Relay::RelationConnection do
           }
         }
       }
-    |}
+    |
+    }
 
     def get_names(result, field_name)
       bases = result["data"]["empire"][field_name]["edges"]
@@ -470,7 +481,7 @@ describe GraphQL::Relay::RelationConnection do
 
     it "applies the default value" do
       result = star_wars_query(query_string)
-      bases_by_id   = ["Death Star", "Shield Generator", "Headquarters"]
+      bases_by_id = ["Death Star", "Shield Generator", "Headquarters"]
       bases_by_name = ["Death Star", "Headquarters", "Shield Generator"]
 
       assert_equal(bases_by_id, get_names(result, "bases"))
@@ -497,7 +508,8 @@ describe GraphQL::Relay::RelationConnection do
     end
 
     describe "results" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getShips($first: Int, $after: String, $last: Int, $before: String,  $nameIncludes: String){
           empire {
             basesAsSequelDataset(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
@@ -521,9 +533,10 @@ describe GraphQL::Relay::RelationConnection do
             endCursor
           }
         }
-      |}
+      |
+      }
 
-      it 'limits the result' do
+      it "limits the result" do
         result = star_wars_query(query_string, "first" => 2)
         assert_equal(2, get_names(result).length)
         assert_equal(true, get_page_info(result)["hasNextPage"])
@@ -543,7 +556,7 @@ describe GraphQL::Relay::RelationConnection do
         assert_equal("Mw==", get_last_cursor(result))
       end
 
-      it 'provides custom fields on the connection type' do
+      it "provides custom fields on the connection type" do
         result = star_wars_query(query_string, "first" => 2)
         assert_equal(
           StarWars::Base.where(faction_id: 2).count,
@@ -551,7 +564,7 @@ describe GraphQL::Relay::RelationConnection do
         )
       end
 
-      it 'slices the result' do
+      it "slices the result" do
         result = star_wars_query(query_string, "first" => 2)
         assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
@@ -571,16 +584,15 @@ describe GraphQL::Relay::RelationConnection do
 
         result = star_wars_query(query_string, "before" => last_cursor, "last" => 10)
         assert_equal(["Death Star", "Shield Generator"], get_names(result))
-
       end
 
-      it 'handles cursors above the bounds of the array' do
+      it "handles cursors above the bounds of the array" do
         overreaching_cursor = Base64.strict_encode64("100")
         result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
         assert_equal([], get_names(result))
       end
 
-      it 'handles cursors below the bounds of the array' do
+      it "handles cursors below the bounds of the array" do
         underreaching_cursor = Base64.strict_encode64("1")
         result = star_wars_query(query_string, "before" => underreaching_cursor, "first" => 2)
         assert_equal([], get_names(result))
@@ -592,7 +604,7 @@ describe GraphQL::Relay::RelationConnection do
 
         after = get_last_cursor(result)
 
-        result = star_wars_query(query_string, "first" => 2, "nameIncludes" => "ea", "after" => after )
+        result = star_wars_query(query_string, "first" => 2, "nameIncludes" => "ea", "after" => after)
         assert_equal(["Headquarters"], get_names(result))
         before = get_last_cursor(result)
 
@@ -658,7 +670,7 @@ describe GraphQL::Relay::RelationConnection do
     describe "#has_next_page" do
       it "handles joined, aliased relations" do
         relation = StarWars::Base.select("id AS crazy_id")
-        connection = GraphQL::Relay::RelationConnection.new(relation, { first: 1 })
+        connection = GraphQL::Relay::RelationConnection.new(relation, {first: 1})
         assert connection.has_next_page
       end
     end
@@ -668,63 +680,61 @@ describe GraphQL::Relay::RelationConnection do
         # Offset
         connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), {})
         assert_equal [StarWars::Base.find(3), StarWars::Base.find(4), StarWars::Base.find(5), StarWars::Base.find(6)], connection.edge_nodes,
-
-        cursor1 = connection.cursor_from_node(StarWars::Base.find(3))
+                     cursor1 = connection.cursor_from_node(StarWars::Base.find(3))
         cursor2 = connection.cursor_from_node(StarWars::Base.find(4))
         cursor3 = connection.cursor_from_node(StarWars::Base.find(5))
         cursor4 = connection.cursor_from_node(StarWars::Base.find(6))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), { first: 3 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), {first: 3})
         assert_equal [StarWars::Base.find(3), StarWars::Base.find(4), StarWars::Base.find(5)], connection.edge_nodes
 
         assert_equal cursor1, connection.cursor_from_node(StarWars::Base.find(3))
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(4))
         assert_equal cursor3, connection.cursor_from_node(StarWars::Base.find(5))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), { last: 3 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), {last: 3})
         assert_equal [StarWars::Base.find(4), StarWars::Base.find(5), StarWars::Base.find(6)], connection.edge_nodes
 
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(4))
         assert_equal cursor3, connection.cursor_from_node(StarWars::Base.find(5))
         assert_equal cursor4, connection.cursor_from_node(StarWars::Base.find(6))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), { last: 2 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), {last: 2})
         assert_equal [StarWars::Base.find(5), StarWars::Base.find(6)], connection.edge_nodes
 
         assert_equal cursor3, connection.cursor_from_node(StarWars::Base.find(5))
         assert_equal cursor4, connection.cursor_from_node(StarWars::Base.find(6))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), { first: 3, last: 1 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), {first: 3, last: 1})
         assert_equal [StarWars::Base.find(5)], connection.edge_nodes
 
         assert_equal cursor3, connection.cursor_from_node(StarWars::Base.find(5))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), { first: 2, last: 1 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), {first: 2, last: 1})
         assert_equal [StarWars::Base.find(4)], connection.edge_nodes
 
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(4))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), { after: cursor1 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), {after: cursor1})
         assert_equal [StarWars::Base.find(4), StarWars::Base.find(5), StarWars::Base.find(6)], connection.edge_nodes
 
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(4))
         assert_equal cursor3, connection.cursor_from_node(StarWars::Base.find(5))
         assert_equal cursor4, connection.cursor_from_node(StarWars::Base.find(6))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), { after: cursor1, before: cursor1 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), {after: cursor1, before: cursor1})
         assert_equal [], connection.edge_nodes
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), { after: cursor1, before: cursor3 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), {after: cursor1, before: cursor3})
         assert_equal [StarWars::Base.find(4)], connection.edge_nodes
 
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(4))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), { after: cursor1, before: cursor4 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2), {after: cursor1, before: cursor4})
         assert_equal [StarWars::Base.find(4), StarWars::Base.find(5)], connection.edge_nodes
 
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(4))
         assert_equal cursor3, connection.cursor_from_node(StarWars::Base.find(5))
-
 
         # Limit
         connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {})
@@ -735,73 +745,71 @@ describe GraphQL::Relay::RelationConnection do
         cursor3 = connection.cursor_from_node(StarWars::Base.find(3))
         cursor4 = connection.cursor_from_node(StarWars::Base.find(4))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), { first: 2 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {first: 2})
         assert_equal [StarWars::Base.find(1), StarWars::Base.find(2)], connection.edge_nodes
 
         assert_equal cursor1, connection.cursor_from_node(StarWars::Base.find(1))
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(2))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), { first: 2, last: 1 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {first: 2, last: 1})
         assert_equal [StarWars::Base.find(2)], connection.edge_nodes
 
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(2))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), { after: cursor2, first: 2 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {after: cursor2, first: 2})
         assert_equal [StarWars::Base.find(3), StarWars::Base.find(4)], connection.edge_nodes
 
         assert_equal cursor3, connection.cursor_from_node(StarWars::Base.find(3))
         assert_equal cursor4, connection.cursor_from_node(StarWars::Base.find(4))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), { after: cursor2, first: 2, last: 1 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {after: cursor2, first: 2, last: 1})
         assert_equal [StarWars::Base.find(4)], connection.edge_nodes
 
         assert_equal cursor4, connection.cursor_from_node(StarWars::Base.find(4))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), { first: 2, last: 5 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {first: 2, last: 5})
         assert_equal [StarWars::Base.find(1), StarWars::Base.find(2)], connection.edge_nodes
 
         assert_equal cursor1, connection.cursor_from_node(StarWars::Base.find(1))
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(2))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), { first: 1, last: 5 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {first: 1, last: 5})
         assert_equal [StarWars::Base.find(1)], connection.edge_nodes
 
         assert_equal cursor1, connection.cursor_from_node(StarWars::Base.find(1))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), { after: cursor1, before: cursor1 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {after: cursor1, before: cursor1})
         assert_equal [], connection.edge_nodes
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), { after: cursor1, before: cursor3 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {after: cursor1, before: cursor3})
         assert_equal [StarWars::Base.find(2)], connection.edge_nodes
 
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(2))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), { after: cursor1, before: cursor4 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {after: cursor1, before: cursor4})
         assert_equal [StarWars::Base.find(2), StarWars::Base.find(3)], connection.edge_nodes
 
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(2))
         assert_equal cursor3, connection.cursor_from_node(StarWars::Base.find(3))
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), { last: 2, before: cursor4 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.limit(5), {last: 2, before: cursor4})
         assert_equal [StarWars::Base.find(2), StarWars::Base.find(3)], connection.edge_nodes
 
         assert_equal cursor2, connection.cursor_from_node(StarWars::Base.find(2))
         assert_equal cursor3, connection.cursor_from_node(StarWars::Base.find(3))
-
 
         # Limit and offset
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2).limit(3), { first: 2 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2).limit(3), {first: 2})
         assert_equal [StarWars::Base.find(3), StarWars::Base.find(4)], connection.edge_nodes
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2).limit(3), { first: 2, last: 1 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2).limit(3), {first: 2, last: 1})
         assert_equal [StarWars::Base.find(4)], connection.edge_nodes
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2).limit(3), { first: 2, last: 5 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2).limit(3), {first: 2, last: 5})
         assert_equal [StarWars::Base.find(3), StarWars::Base.find(4)], connection.edge_nodes
 
-        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2).limit(3), { first: 1, last: 5 })
+        connection = GraphQL::Relay::RelationConnection.new(StarWars::Base.offset(2).limit(3), {first: 1, last: 5})
         assert_equal [StarWars::Base.find(3)], connection.edge_nodes
-
       end
     end
   end

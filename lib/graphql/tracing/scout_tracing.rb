@@ -3,7 +3,7 @@
 module GraphQL
   module Tracing
     class ScoutTracing < PlatformTracing
-      INSTRUMENT_OPTS = { scope: true }
+      INSTRUMENT_OPTS = {scope: true}
 
       self.platform_keys = {
         "lex" => "lex.graphql",

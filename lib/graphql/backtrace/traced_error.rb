@@ -35,12 +35,12 @@ MESSAGE
 
         cause_backtrace_remainder_length = err.backtrace.length - CAUSE_BACKTRACE_PREVIEW_LENGTH
         cause_backtrace_more = if cause_backtrace_remainder_length < 0
-          ""
-        elsif cause_backtrace_remainder_length == 1
-          "... and 1 more line\n"
-        else
-          "... and #{cause_backtrace_remainder_length} more lines\n"
-        end
+                                 ""
+                               elsif cause_backtrace_remainder_length == 1
+                                 "... and 1 more line\n"
+                               else
+                                 "... and #{cause_backtrace_remainder_length} more lines\n"
+                               end
 
         message = MESSAGE_TEMPLATE % {
           cause_message: err.message,

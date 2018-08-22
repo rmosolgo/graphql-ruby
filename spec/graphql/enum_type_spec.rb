@@ -16,7 +16,7 @@ describe GraphQL::EnumType do
   it "coerces result values to value's value" do
     assert_equal("YAK", enum.coerce_isolated_result("YAK"))
     assert_equal("COW", enum.coerce_isolated_result(1))
-    assert_equal("REINDEER", enum.coerce_isolated_result('reindeer'))
+    assert_equal("REINDEER", enum.coerce_isolated_result("reindeer"))
     assert_equal("DONKEY", enum.coerce_isolated_result(:donkey))
   end
 
@@ -69,18 +69,18 @@ describe GraphQL::EnumType do
     let(:schema) {
       enum = GraphQL::EnumType.define do
         name "PluralEnum"
-        value 'PETS', value: ["dogs", "cats"]
-        value 'FRUITS', value: ["apples", "oranges"]
-        value 'PLANETS', value: ["Earth"]
+        value "PETS", value: ["dogs", "cats"]
+        value "FRUITS", value: ["apples", "oranges"]
+        value "PLANETS", value: ["Earth"]
       end
 
       query_type = GraphQL::ObjectType.define do
         name "Query"
         field :names, types[types.String] do
           argument :things, types[enum]
-          resolve ->(o, a, c) {
-            a[:things].reduce(&:+)
-          }
+          resolve -> (o, a, c) {
+                    a[:things].reduce(&:+)
+                  }
         end
       end
 
@@ -97,13 +97,13 @@ describe GraphQL::EnumType do
 
   it "accepts a symbol as a variant and Ruby-land value" do
     enum = GraphQL::EnumType.define do
-      name 'MessageFormat'
+      name "MessageFormat"
       value :markdown
     end
 
-    variant = enum.values['markdown']
+    variant = enum.values["markdown"]
 
-    assert_equal(variant.name, 'markdown')
+    assert_equal(variant.name, "markdown")
     assert_equal(variant.value, :markdown)
   end
 
@@ -117,7 +117,7 @@ describe GraphQL::EnumType do
     it "returns an invalid result" do
       assert(!result.valid?)
       assert_equal(
-        result.problems.first['explanation'],
+        result.problems.first["explanation"],
         "Expected \"bad enum\" to be one of: COW, DONKEY, GOAT, REINDEER, SHEEP, YAK"
       )
     end
@@ -127,7 +127,7 @@ describe GraphQL::EnumType do
     cow = GraphQL::EnumType::EnumValue.define(name: "COW")
     goat = GraphQL::EnumType::EnumValue.define(name: "GOAT")
     enum = GraphQL::EnumType.define(name: "DairyAnimal", values: [cow, goat])
-    assert_equal({ "COW" => cow, "GOAT" => goat }, enum.values)
+    assert_equal({"COW" => cow, "GOAT" => goat}, enum.values)
   end
 
   it "values respond to graphql_name" do

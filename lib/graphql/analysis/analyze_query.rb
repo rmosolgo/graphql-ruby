@@ -5,7 +5,7 @@ module GraphQL
 
     # @return [void]
     def analyze_multiplex(multiplex, analyzers)
-      multiplex.trace("analyze_multiplex", { multiplex: multiplex }) do
+      multiplex.trace("analyze_multiplex", {multiplex: multiplex}) do
         reducer_states = analyzers.map { |r| ReducerState.new(r, multiplex) }
         query_results = multiplex.queries.map do |query|
           if query.valid?
@@ -38,7 +38,7 @@ module GraphQL
     # @param analyzers [Array<#call>] Objects that respond to `#call(memo, visit_type, irep_node)`
     # @return [Array<Any>] Results from those analyzers
     def analyze_query(query, analyzers, multiplex_states: [])
-      query.trace("analyze_query", { query: query }) do
+      query.trace("analyze_query", {query: query}) do
         analyzers_to_run = analyzers.select do |analyzer|
           if analyzer.respond_to?(:analyze?)
             analyzer.analyze?(query)

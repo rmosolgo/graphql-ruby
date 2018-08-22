@@ -53,7 +53,6 @@ module GraphQL
           end
         end
 
-
         field :cursor, String,
           null: false,
           description: "A cursor for use in pagination."

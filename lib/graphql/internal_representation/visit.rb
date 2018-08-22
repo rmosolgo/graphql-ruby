@@ -4,6 +4,7 @@ module GraphQL
     # Traverse a re-written query tree, calling handlers for each node
     module Visit
       module_function
+
       def visit_each_node(operations, handlers)
         return if handlers.empty?
         # Post-validation: make some assertions about the rewritten query tree

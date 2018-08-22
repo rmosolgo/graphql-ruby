@@ -197,10 +197,10 @@ module GraphQL
 
         if missing_arg_names.any?
           arg_owner_name = if arg_owner.is_a?(GraphQL::Field)
-            "Subscription.#{arg_owner.name}"
-          else
-            arg_owner.to_s
-          end
+                             "Subscription.#{arg_owner.name}"
+                           else
+                             arg_owner.to_s
+                           end
           raise InvalidTriggerError, "Can't trigger Subscription.#{event_name}, received undefined arguments: #{missing_arg_names.join(", ")}. (Should match arguments of #{arg_owner_name}.)"
         end
 

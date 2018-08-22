@@ -5,7 +5,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
   let(:subject) { GraphQL::Language::DocumentFromSchemaDefinition }
 
   describe "#document" do
-    let(:schema_idl) { <<-GRAPHQL
+    let(:schema_idl) {
+      <<-GRAPHQL
       type QueryType {
         foo: Foo
       }
@@ -59,7 +60,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
     let(:expected_document) { GraphQL.parse(expected_idl) }
 
     describe "when printing and schema respects root name conventions" do
-      let(:schema_idl) { <<-GRAPHQL
+      let(:schema_idl) {
+        <<-GRAPHQL
         type Query {
           foo: Foo
         }
@@ -108,7 +110,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
       GRAPHQL
       }
 
-      let(:expected_idl) { <<-GRAPHQL
+      let(:expected_idl) {
+        <<-GRAPHQL
         type QueryType {
           foo: Foo
         }
@@ -164,7 +167,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
     end
 
     describe "with defaults" do
-      let(:expected_idl) { <<-GRAPHQL
+      let(:expected_idl) {
+        <<-GRAPHQL
         type QueryType {
           foo: Foo
         }
@@ -225,7 +229,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
     end
 
     describe "with an except filter" do
-      let(:expected_idl) { <<-GRAPHQL
+      let(:expected_idl) {
+        <<-GRAPHQL
         type QueryType {
           foo: Foo
         }
@@ -268,7 +273,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
       let(:document) {
         subject.new(
           schema,
-          except: ->(m, _ctx) { m.is_a?(GraphQL::BaseType) && m.name == "Type" }
+          except: -> (m, _ctx) { m.is_a?(GraphQL::BaseType) && m.name == "Type" },
         ).document
       }
 
@@ -278,7 +283,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
     end
 
     describe "with an only filter" do
-      let(:expected_idl) { <<-GRAPHQL
+      let(:expected_idl) {
+        <<-GRAPHQL
         type QueryType {
           foo: Foo
         }
@@ -318,7 +324,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
       let(:document) {
         subject.new(
           schema,
-          only: ->(m, _ctx) { !(m.is_a?(GraphQL::ScalarType) && m.name == "CustomScalar") }
+          only: -> (m, _ctx) { !(m.is_a?(GraphQL::ScalarType) && m.name == "CustomScalar") },
         ).document
       }
 
@@ -328,7 +334,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
     end
 
     describe "when excluding built ins and introspection types" do
-      let(:expected_idl) { <<-GRAPHQL
+      let(:expected_idl) {
+        <<-GRAPHQL
         type QueryType {
           foo: Foo
         }
@@ -380,7 +387,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
       let(:document) {
         subject.new(
           schema,
-          always_include_schema: true
+          always_include_schema: true,
         ).document
       }
 
@@ -390,7 +397,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
     end
 
     describe "when printing excluding only introspection types" do
-      let(:expected_idl) { <<-GRAPHQL
+      let(:expected_idl) {
+        <<-GRAPHQL
         # Represents `true` or `false` values.
         scalar Boolean
 
@@ -481,7 +489,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
     end
 
     describe "when printing the full schema" do
-      let(:expected_idl) { <<-GRAPHQL
+      let(:expected_idl) {
+        <<-GRAPHQL
         # Represents `true` or `false` values.
         scalar Boolean
 

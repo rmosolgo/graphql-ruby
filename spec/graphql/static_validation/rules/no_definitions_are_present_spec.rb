@@ -22,7 +22,7 @@ describe GraphQL::StaticValidation::NoDefinitionsArePresent do
       assert_equal 1, errors.length
       err = errors[0]
       assert_equal "Query cannot contain schema definitions", err["message"]
-      assert_equal [{"line"=>5, "column"=>7}, {"line"=>9, "column"=>7}], err["locations"]
+      assert_equal [{"line" => 5, "column" => 7}, {"line" => 9, "column" => 7}], err["locations"]
     end
   end
 
@@ -50,13 +50,13 @@ describe GraphQL::StaticValidation::NoDefinitionsArePresent do
       assert_equal 1, errors.length
       err = errors[0]
       assert_equal "Query cannot contain schema definitions", err["message"]
-      assert_equal [{"line"=>5, "column"=>7},
-        {"line"=>9, "column"=>7},
-        {"line"=>10, "column"=>7},
-        {"line"=>11, "column"=>7},
-        {"line"=>12, "column"=>7},
-        {"line"=>13, "column"=>7},
-        {"line"=>14, "column"=>7}], err["locations"]
+      assert_equal [{"line" => 5, "column" => 7},
+         {"line" => 9, "column" => 7},
+         {"line" => 10, "column" => 7},
+         {"line" => 11, "column" => 7},
+         {"line" => 12, "column" => 7},
+         {"line" => 13, "column" => 7},
+         {"line" => 14, "column" => 7}], err["locations"]
     end
   end
 end

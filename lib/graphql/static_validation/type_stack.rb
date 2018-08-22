@@ -51,14 +51,13 @@ module GraphQL
 
       private
 
-
       module FragmentWithTypeStrategy
         def push(stack, node)
           object_type = if node.type
-            stack.schema.types.fetch(node.type.name, nil)
-          else
-            stack.object_types.last
-          end
+                          stack.schema.types.fetch(node.type.name, nil)
+                        else
+                          stack.object_types.last
+                        end
           if !object_type.nil?
             object_type = object_type.unwrap
           end
@@ -75,6 +74,7 @@ module GraphQL
       module FragmentDefinitionStrategy
         extend FragmentWithTypeStrategy
         module_function
+
         def push_path_member(stack, node)
           stack.path.push("fragment #{node.name}")
         end
@@ -83,6 +83,7 @@ module GraphQL
       module InlineFragmentStrategy
         extend FragmentWithTypeStrategy
         module_function
+
         def push_path_member(stack, node)
           stack.path.push("...#{node.type ? " on #{node.type.to_query_string}" : ""}")
         end
@@ -90,6 +91,7 @@ module GraphQL
 
       module OperationDefinitionStrategy
         module_function
+
         def push(stack, node)
           # eg, QueryType, MutationType
           object_type = stack.schema.root_type_for_operation(node.operation_type)
@@ -105,6 +107,7 @@ module GraphQL
 
       module FieldStrategy
         module_function
+
         def push(stack, node)
           parent_type = stack.object_types.last
           parent_type = parent_type.unwrap
@@ -129,6 +132,7 @@ module GraphQL
 
       module DirectiveStrategy
         module_function
+
         def push(stack, node)
           directive_defn = stack.schema.directives[node.name]
           stack.directive_definitions.push(directive_defn)
@@ -171,6 +175,7 @@ module GraphQL
 
       module FragmentSpreadStrategy
         module_function
+
         def push(stack, node)
           stack.path.push("... #{node.name}")
         end

@@ -5,11 +5,13 @@ describe GraphQL::Language::DefinitionSlice do
   let(:document) { GraphQL::Language::Parser.parse(query_string) }
 
   describe "anonymous query with no dependencies" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         version
       }
-    |}
+    |
+    }
 
     it "is already the smallest slice" do
       assert_equal document.to_query_string,
@@ -18,13 +20,15 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "anonymous mutation with no dependencies" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       mutation {
         ping {
           message
         }
       }
-    |}
+    |
+    }
 
     it "is already the smallest slice" do
       assert_equal document.to_query_string,
@@ -33,11 +37,13 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "anonymous fragment with no dependencies" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       fragment on User {
         name
       }
-    |}
+    |
+    }
 
     it "is already the smallest slice" do
       assert_equal document.to_query_string,
@@ -46,11 +52,13 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "named query with no dependencies" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getVersion {
         version
       }
-    |}
+    |
+    }
 
     it "is already the smallest slice" do
       assert_equal document.to_query_string,
@@ -59,12 +67,14 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "named fragment with no dependencies" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       fragment profileFields on User {
         firstName
         lastName
       }
-    |}
+    |
+    }
 
     it "is already the smallest slice" do
       assert_equal document.to_query_string,
@@ -73,7 +83,8 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "document with multiple queries but no subdependencies" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getVersion {
         version
       }
@@ -81,7 +92,8 @@ describe GraphQL::Language::DefinitionSlice do
       query getTime {
         time
       }
-    |}
+    |
+    }
 
     it "returns just the query definition" do
       assert_equal GraphQL::Language::Nodes::Document.new(definitions: [document.definitions[0]]).to_query_string,
@@ -92,7 +104,8 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "document with multiple fragments but no subdependencies" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       fragment profileFields on User {
         firstName
         lastName
@@ -101,7 +114,8 @@ describe GraphQL::Language::DefinitionSlice do
       fragment avatarFields on User {
         avatarURL(size: 80)
       }
-    |}
+    |
+    }
 
     it "returns just the fragment definition" do
       assert_equal GraphQL::Language::Nodes::Document.new(definitions: [document.definitions[0]]).to_query_string,
@@ -112,13 +126,15 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "query with missing spread" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getUser {
         viewer {
           ...profileFields
         }
       }
-    |}
+    |
+    }
 
     it "is ignored" do
       assert_equal document.to_query_string,
@@ -127,7 +143,8 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "query and fragment subdependency" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getUser {
         viewer {
           ...profileFields
@@ -138,7 +155,8 @@ describe GraphQL::Language::DefinitionSlice do
         firstName
         lastName
       }
-    |}
+    |
+    }
 
     it "returns query and fragment dependency" do
       assert_equal document.to_query_string,
@@ -147,7 +165,8 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "query and fragment nested subdependencies" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getUser {
         viewer {
           ...viewerInfo
@@ -167,7 +186,8 @@ describe GraphQL::Language::DefinitionSlice do
       fragment avatarFields on User {
         avatarURL(size: 80)
       }
-    |}
+    |
+    }
 
     it "returns query and all fragment dependencies" do
       assert_equal document.to_query_string,
@@ -176,7 +196,8 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "fragment subdependency referenced multiple times" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getUser {
         viewer {
           ...viewerInfo
@@ -196,7 +217,8 @@ describe GraphQL::Language::DefinitionSlice do
         firstName
         lastName
       }
-    |}
+    |
+    }
 
     it "is only returned once" do
       assert_equal document.to_query_string,
@@ -205,7 +227,8 @@ describe GraphQL::Language::DefinitionSlice do
   end
 
   describe "query and unused fragment" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getUser {
         viewer {
           id
@@ -216,7 +239,8 @@ describe GraphQL::Language::DefinitionSlice do
         firstName
         lastName
       }
-    |}
+    |
+    }
 
     it "returns just the query definition" do
       assert_equal GraphQL::Language::Nodes::Document.new(definitions: [document.definitions[0]]).to_query_string,

@@ -16,7 +16,7 @@ module GraphQL
             }
           ")
 
-          assert_includes(err.message, '{')
+          assert_includes(err.message, "{")
           assert_equal(3, err.line)
           assert_equal(27, err.col)
         end
@@ -32,7 +32,7 @@ module GraphQL
 
         def assert_rejects_character(char)
           err = assert_raises_parse_error("{ field#{char} }")
-          expected_char = char.inspect.gsub('"', '').downcase
+          expected_char = char.inspect.gsub('"', "").downcase
           msg_downcase = err.message.downcase
           # Case-insensitive for UTF-8 printing
           assert_includes(msg_downcase, expected_char, "The message includes the invalid character")

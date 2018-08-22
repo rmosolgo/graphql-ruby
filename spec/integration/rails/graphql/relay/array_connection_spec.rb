@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Relay::ArrayConnection do
   def get_names(result)
@@ -16,7 +16,8 @@ describe GraphQL::Relay::ArrayConnection do
   end
 
   describe "results" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getShips($first: Int, $after: String, $last: Int, $before: String, $nameIncludes: String){
         rebels {
           ships(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
@@ -35,9 +36,10 @@ describe GraphQL::Relay::ArrayConnection do
           }
         }
       }
-    |}
+    |
+    }
 
-    it 'limits the result' do
+    it "limits the result" do
       result = star_wars_query(query_string, "first" => 2)
       number_of_ships = get_names(result).length
       assert_equal(2, number_of_ships)
@@ -51,7 +53,7 @@ describe GraphQL::Relay::ArrayConnection do
       assert_equal(3, number_of_ships)
     end
 
-    it 'provides pageInfo' do
+    it "provides pageInfo" do
       result = star_wars_query(query_string, "first" => 2)
       assert_equal(true, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
       assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"])
@@ -95,7 +97,7 @@ describe GraphQL::Relay::ArrayConnection do
       assert_equal(true, get_page_info(result, "ships")["hasPreviousPage"])
     end
 
-    it 'slices the result' do
+    it "slices the result" do
       result = star_wars_query(query_string, "first" => 1)
       assert_equal(["X-Wing"], get_names(result))
 
@@ -123,7 +125,7 @@ describe GraphQL::Relay::ArrayConnection do
       assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"])
     end
 
-    it 'works with before and after specified together' do
+    it "works with before and after specified together" do
       result = star_wars_query(query_string, "first" => 1)
       assert_equal(["X-Wing"], get_names(result))
 
@@ -144,13 +146,13 @@ describe GraphQL::Relay::ArrayConnection do
       assert_equal(["Y-Wing", "A-Wing"], get_names(result))
     end
 
-    it 'handles cursors beyond the bounds of the array' do
+    it "handles cursors beyond the bounds of the array" do
       overreaching_cursor = Base64.strict_encode64("100")
       result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
       assert_equal([], get_names(result))
     end
 
-    it 'applies custom arguments' do
+    it "applies custom arguments" do
       result = star_wars_query(query_string, "nameIncludes" => "Wing", "first" => 2)
       names = get_names(result)
       assert_equal(2, names.length)
@@ -161,7 +163,7 @@ describe GraphQL::Relay::ArrayConnection do
       assert_equal(1, names.length)
     end
 
-    it 'works without first/last/after/before' do
+    it "works without first/last/after/before" do
       result = star_wars_query(query_string)
 
       assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
@@ -176,7 +178,8 @@ describe GraphQL::Relay::ArrayConnection do
         result["data"]["rebels"]["bases"]["edges"].map { |e| e["node"]["name"] }
       end
 
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getShips($first: Int, $after: String, $last: Int, $before: String){
           rebels {
             bases: basesWithMaxLimitArray(first: $first, after: $after, last: $last, before: $before) {
@@ -193,7 +196,8 @@ describe GraphQL::Relay::ArrayConnection do
             }
           }
         }
-      |}
+      |
+      }
 
       it "applies to queries by `first`" do
         result = star_wars_query(query_string, "first" => 100)
@@ -236,7 +240,8 @@ describe GraphQL::Relay::ArrayConnection do
         result["data"]["rebels"]["bases"]["pageInfo"]
       end
 
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getShips($first: Int, $after: String, $last: Int, $before: String){
           rebels {
             bases: basesWithDefaultMaxLimitArray(first: $first, after: $after, last: $last, before: $before) {
@@ -253,7 +258,8 @@ describe GraphQL::Relay::ArrayConnection do
             }
           }
         }
-      |}
+      |
+      }
 
       it "applies to queries by `first`" do
         result = star_wars_query(query_string, "first" => 100)

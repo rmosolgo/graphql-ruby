@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'graphql/schema/base_64_bp'
+require "graphql/schema/base_64_bp"
 
 module GraphQL
   class Schema

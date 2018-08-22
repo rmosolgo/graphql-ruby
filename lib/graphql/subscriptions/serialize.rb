@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 # test_via: ../subscriptions.rb
 require "set"
+
 module GraphQL
   class Subscriptions
     # Serialization helpers for passing subscription data around.
@@ -32,7 +33,7 @@ module GraphQL
       def dump_recursive(obj)
         case
         when obj.is_a?(Array)
-          obj.map { |i| dump_recursive(i) }.join(':')
+          obj.map { |i| dump_recursive(i) }.join(":")
         when obj.is_a?(Hash)
           obj.map { |k, v| "#{dump_recursive(k)}:#{dump_recursive(v)}" }.join(":")
         when obj.is_a?(GraphQL::Schema::InputObject)
@@ -53,7 +54,7 @@ module GraphQL
         # @return [Object] An object that load Global::Identification recursive
         def load_value(value)
           if value.is_a?(Array)
-            value.map{|item| load_value(item)}
+            value.map { |item| load_value(item) }
           elsif value.is_a?(Hash)
             if value.size == 1 && value.key?(GLOBALID_KEY)
               GlobalID::Locator.locate(value[GLOBALID_KEY])
@@ -82,7 +83,7 @@ module GraphQL
         # @return [Object] The object that converted Global::Identification
         def dump_value(obj)
           if obj.is_a?(Array)
-            obj.map{|item| dump_value(item)}
+            obj.map { |item| dump_value(item) }
           elsif obj.is_a?(Hash)
             symbol_keys = nil
             dumped_h = {}
@@ -98,7 +99,7 @@ module GraphQL
             end
             dumped_h
           elsif obj.is_a?(Symbol)
-            { SYMBOL_KEY => obj.to_s }
+            {SYMBOL_KEY => obj.to_s}
           elsif obj.respond_to?(:to_gid_param)
             {GLOBALID_KEY => obj.to_gid_param}
           else

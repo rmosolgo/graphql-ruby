@@ -14,7 +14,7 @@ module GraphQL
       end
 
       def to_h
-        super.merge({ "value" => value, "problems" => validation_result.problems })
+        super.merge({"value" => value, "problems" => validation_result.problems})
       end
     end
   end

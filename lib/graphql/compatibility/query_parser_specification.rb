@@ -40,7 +40,7 @@ module GraphQL
 
           def test_it_parses_unnamed_queries
             document = parse("{ name, age, height }")
-            operation =  document.definitions.first
+            operation = document.definitions.first
             assert_equal 1, document.definitions.length
             assert_equal "query", operation.operation_type
             assert_equal nil, operation.name
@@ -82,11 +82,11 @@ module GraphQL
             assert_equal %|☀︎🏆 \b \f \n \r \t " ¶ ¶ / /|, inputs[3].value, "Strings"
             assert_instance_of GraphQL::Language::Nodes::Enum, inputs[4].value
             assert_equal "ENUM_NAME", inputs[4].value.name, "Enums"
-            assert_equal [7,8,9], inputs[5].value, "Lists"
+            assert_equal [7, 8, 9], inputs[5].value, "Lists"
 
             obj = inputs[6].value
             assert_equal "a", obj.arguments[0].name
-            assert_equal [1,2,3], obj.arguments[0].value
+            assert_equal [1, 2, 3], obj.arguments[0].value
             assert_equal "b", obj.arguments[1].name
             assert_equal "c", obj.arguments[1].value.arguments[0].name
             assert_equal "4", obj.arguments[1].value.arguments[0].value
@@ -97,13 +97,13 @@ module GraphQL
             assert_instance_of GraphQL::Language::Nodes::NullValue, inputs[9].value
 
             args = inputs[10].value.arguments
-            assert_instance_of GraphQL::Language::Nodes::NullValue, args.find{ |arg| arg.name == 'a' }.value
-            assert_equal 'b', args.find{ |arg| arg.name == 'b' }.value
+            assert_instance_of GraphQL::Language::Nodes::NullValue, args.find { |arg| arg.name == "a" }.value
+            assert_equal "b", args.find { |arg| arg.name == "b" }.value
 
             values = inputs[11].value
-            assert_equal 'a', values[0]
+            assert_equal "a", values[0]
             assert_instance_of GraphQL::Language::Nodes::NullValue, values[1]
-            assert_equal 'b', values[2]
+            assert_equal "b", values[2]
 
             block_str_value = inputs[12].value
             assert_equal "Hello,\n  World", block_str_value
@@ -116,40 +116,40 @@ module GraphQL
             err_1 = assert_raises(GraphQL::ParseError) do
               parse(query_string_1)
             end
-            assert_equal [1,17], [err_1.line, err_1.col]
+            assert_equal [1, 17], [err_1.line, err_1.col]
 
             err_2 = assert_raises(GraphQL::ParseError) do
               parse(query_string_2)
             end
-            assert_equal [1,26], [err_2.line, err_2.col]
+            assert_equal [1, 26], [err_2.line, err_2.col]
           end
 
           def test_enum_value_definitions_have_a_position
-            document = parse("""
+            document = parse("" "
               enum Enum {
                 VALUE
               }
-            """)
+            " "")
 
             assert_equal [3, 17], document.definitions[0].values[0].position
           end
 
           def test_field_definitions_have_a_position
-            document = parse("""
+            document = parse("" "
               type A {
                 field: String
               }
-            """)
+            " "")
 
             assert_equal [3, 17], document.definitions[0].fields[0].position
           end
 
           def test_input_value_definitions_have_a_position
-            document = parse("""
+            document = parse("" "
               input A {
                 field: String
               }
-            """)
+            " "")
 
             assert_equal [3, 17], document.definitions[0].fields[0].position
           end

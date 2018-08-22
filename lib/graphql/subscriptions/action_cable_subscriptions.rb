@@ -83,7 +83,7 @@ module GraphQL
       # This subscription was re-evaluated.
       # Send it to the specific stream where this client was waiting.
       def deliver(subscription_id, result)
-        payload = { result: result.to_h, more: true }
+        payload = {result: result.to_h, more: true}
         ActionCable.server.broadcast(SUBSCRIPTION_PREFIX + subscription_id, payload)
       end
 

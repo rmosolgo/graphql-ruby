@@ -55,7 +55,6 @@ describe GraphQL::InternalRepresentation::Rewrite do
       seasons: [String]
     }
     GRAPHQL
-
   }
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: schema) }
   let(:query) { GraphQL::Query.new(schema, query_string) }
@@ -163,7 +162,8 @@ describe GraphQL::InternalRepresentation::Rewrite do
   end
 
   describe "tracking directives on fragment spreads" do
-    let(:query_string) { <<-GRAPHQL
+    let(:query_string) {
+      <<-GRAPHQL
       query getPlant($id: ID!) {
         plant(id: $id) {
           ... on Nut @skip(if: true) {
@@ -197,7 +197,8 @@ describe GraphQL::InternalRepresentation::Rewrite do
   end
 
   describe "deep fragment merging" do
-    let(:query_string) { <<-GRAPHQL
+    let(:query_string) {
+      <<-GRAPHQL
       {
         plant(id: 1) {
           ...TreeFields
@@ -236,7 +237,8 @@ describe GraphQL::InternalRepresentation::Rewrite do
 
   describe "nested fields on typed fragments" do
     let(:result) { Dummy::Schema.execute(query_string) }
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
     {
       allDairy {
         __typename
@@ -281,7 +283,8 @@ describe GraphQL::InternalRepresentation::Rewrite do
         milkFragmentOrigin: origin
       }
     }
-    |}
+    |
+    }
 
     it "distinguishes between nested fields with the same name on different typed fragments" do
       all_dairy = result["data"]["allDairy"]
@@ -358,7 +361,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
 
     let(:validator) {
       rules = GraphQL::StaticValidation::ALL_RULES - [
-        GraphQL::StaticValidation::FragmentsAreUsed
+        GraphQL::StaticValidation::FragmentsAreUsed,
       ]
       GraphQL::StaticValidation::Validator.new(schema: schema, rules: rules)
     }

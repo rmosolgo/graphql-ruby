@@ -22,16 +22,16 @@ module GraphQL
         @type = type_defn
         @abstract_type = false
         @types = case type_defn
-        when Array
-          type_defn
-        when GraphQL::BaseType
-          @abstract_type = true
-          nil
-        when nil
-          NO_TYPES
-        else
-          raise "Unexpected scope type: #{type_defn}"
-        end
+                 when Array
+                   type_defn
+                 when GraphQL::BaseType
+                   @abstract_type = true
+                   nil
+                 when nil
+                   NO_TYPES
+                 else
+                   raise "Unexpected scope type: #{type_defn}"
+                 end
       end
 
       # From a starting point of `self`, create a new scope by condition `other_type_defn`.
@@ -78,10 +78,10 @@ module GraphQL
 
       def concrete_types
         @concrete_types ||= if @abstract_type
-          @query.possible_types(@type)
-        else
-          @types
-        end
+                              @query.possible_types(@type)
+                            else
+                              @types
+                            end
       end
     end
   end

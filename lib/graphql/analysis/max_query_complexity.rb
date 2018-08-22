@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require_relative "./query_complexity"
+
 module GraphQL
   module Analysis
     # Used under the hood to implement complexity validation,
@@ -12,7 +13,7 @@ module GraphQL
     #
     class MaxQueryComplexity < GraphQL::Analysis::QueryComplexity
       def initialize(max_complexity)
-        disallow_excessive_complexity = ->(query, complexity) {
+        disallow_excessive_complexity = -> (query, complexity) {
           if complexity > max_complexity
             GraphQL::AnalysisError.new("Query has complexity of #{complexity}, which exceeds max complexity of #{max_complexity}")
           else

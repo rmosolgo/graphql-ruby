@@ -53,12 +53,12 @@ describe GraphQL::Schema::Member::Scoped do
     class Query < BaseObject
       field :items, [Item], null: false
       field :unscoped_items, [Item], null: false,
-        scope: false,
-        method: :items
+                                 scope: false,
+                                 method: :items
       field :french_items, [FrenchItem], null: false,
-        method: :items
+                                     method: :items
       field :items_connection, Item.connection_type, null: false,
-        method: :items
+                                                 method: :items
 
       def items
         [
@@ -68,6 +68,7 @@ describe GraphQL::Schema::Member::Scoped do
       end
 
       field :things, [Thing], null: false
+
       def things
         items + [OpenStruct.new(name: "Turbine")]
       end
@@ -135,7 +136,7 @@ describe GraphQL::Schema::Member::Scoped do
       "
       res = ScopeSchema.execute(query_str, context: {first_letter: "T"})
       things = res["data"]["things"]
-      assert_equal [{ "name" => "Trombone" }, {"designation" => "Turbine"}], things
+      assert_equal [{"name" => "Trombone"}, {"designation" => "Turbine"}], things
     end
   end
 

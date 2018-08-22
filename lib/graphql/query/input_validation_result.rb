@@ -10,7 +10,7 @@ module GraphQL
 
       def add_problem(explanation, path = nil)
         @problems ||= []
-        @problems.push({ "path" => path || [], "explanation" => explanation })
+        @problems.push({"path" => path || [], "explanation" => explanation})
       end
 
       def merge_result!(path, inner_result)

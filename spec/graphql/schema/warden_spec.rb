@@ -150,7 +150,7 @@ module MaskHelpers
     mutation MutationType
     subscription MutationType
     orphan_types [Character]
-    resolve_type ->(type, obj, ctx) { PhonemeType }
+    resolve_type -> (type, obj, ctx) { PhonemeType }
     instrument :query, FilterInstrumentation
   end
 
@@ -170,7 +170,6 @@ module MaskHelpers
   end
 end
 
-
 describe GraphQL::Schema::Warden do
   def type_names(introspection_result)
     introspection_result["data"]["__schema"]["types"].map { |t| t["name"] }
@@ -182,7 +181,7 @@ describe GraphQL::Schema::Warden do
 
   def field_type_names(schema_result)
     schema_result["types"]
-      .map {|t| t["fields"] }
+      .map { |t| t["fields"] }
       .flatten
       .map { |f| f ? get_recursive_field_type_names(f["type"]) : [] }
       .flatten
@@ -205,7 +204,7 @@ describe GraphQL::Schema::Warden do
   end
 
   describe "hiding root types" do
-    let(:mask) { ->(m, ctx) { m == MaskHelpers::MutationType } }
+    let(:mask) { -> (m, ctx) { m == MaskHelpers::MutationType } }
 
     it "acts as if the root doesn't exist" do
       query_string = %|mutation { add_phoneme(symbol: "ϕ") { name } }|
@@ -252,19 +251,19 @@ describe GraphQL::Schema::Warden do
 
   describe "hiding fields" do
     let(:mask) {
-      ->(member, ctx) { member.metadata[:hidden_field] || member.metadata[:hidden_type] }
+      -> (member, ctx) { member.metadata[:hidden_field] || member.metadata[:hidden_type] }
     }
 
     it "hides types if no other fields are using it" do
-       query_string = %|
+      query_string = %|
          {
            Chereme: __type(name: "Chereme") { fields { name } }
          }
        |
 
-       res = MaskHelpers.query_with_mask(query_string, mask)
-       assert_nil res["data"]["Chereme"]
-     end
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert_nil res["data"]["Chereme"]
+    end
 
     it "causes validation errors" do
       query_string = %|{ phoneme(symbol: "ϕ") { name } }|
@@ -295,7 +294,7 @@ describe GraphQL::Schema::Warden do
       res = MaskHelpers.query_with_mask(query_string, mask)
 
       # Fields dont appear when finding the type by name
-      language_fields = res["data"]["LanguageType"]["fields"].map {|f| f["name"] }
+      language_fields = res["data"]["LanguageType"]["fields"].map { |f| f["name"] }
       assert_equal ["families", "graphemes", "name"], language_fields
 
       # Fields don't appear in the __schema result
@@ -309,7 +308,7 @@ describe GraphQL::Schema::Warden do
 
   describe "hiding types" do
     let(:whitelist) {
-      ->(member, ctx) { !member.metadata[:hidden_type] }
+      -> (member, ctx) { !member.metadata[:hidden_type] }
     }
 
     it "hides types from introspection" do
@@ -385,7 +384,7 @@ describe GraphQL::Schema::Warden do
       res = schema.execute(query_string)
       assert res["data"]["Node"]
 
-      res = schema.execute(query_string, except: ->(m, _) { m.name == "Repository" })
+      res = schema.execute(query_string, except: -> (m, _) { m.name == "Repository" })
       assert_nil res["data"]["Node"]
     end
 
@@ -425,17 +424,17 @@ describe GraphQL::Schema::Warden do
       assert_equal ["bag"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
       # Hide the union when all its possible types are gone. This will cause the field to be hidden too.
-      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.name) })
+      res = schema.execute(query_string, except: -> (m, _) { ["A", "B", "C"].include?(m.name) })
       assert_nil res["data"]["BagOfThings"]
       assert_equal [], res["data"]["Query"]["fields"]
 
-      res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
+      res = schema.execute(query_string, except: -> (m, _) { m.name == "bag" })
       assert_nil res["data"]["BagOfThings"]
       assert_equal [], res["data"]["Query"]["fields"]
 
       # Unreferenced but still visible because orphan type
       schema.orphan_types = [schema.find("BagOfThings")]
-      res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
+      res = schema.execute(query_string, except: -> (m, _) { m.name == "bag" })
       assert res["data"]["BagOfThings"]
     end
 
@@ -476,13 +475,13 @@ describe GraphQL::Schema::Warden do
       assert_equal ["node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
       # When the possible types are all hidden, hide the interface and fields pointing to it
-      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.name) })
+      res = schema.execute(query_string, except: -> (m, _) { ["A", "B", "C"].include?(m.name) })
       assert_nil res["data"]["Node"]
       assert_equal [], res["data"]["Query"]["fields"]
 
       # Even when it's not the return value of a field,
       # still show the interface since it allows code reuse
-      res = schema.execute(query_string, except: ->(m, _) { m.name == "node" })
+      res = schema.execute(query_string, except: -> (m, _) { m.name == "node" })
       assert_equal "Node", res["data"]["Node"]["name"]
       assert_equal [], res["data"]["Query"]["fields"]
     end
@@ -524,7 +523,7 @@ describe GraphQL::Schema::Warden do
 
     describe "hiding an abstract type" do
       let(:mask) {
-        ->(member, ctx) { member.metadata[:hidden_abstract_type] }
+        -> (member, ctx) { member.metadata[:hidden_abstract_type] }
       }
 
       it "isn't present in a type's interfaces" do
@@ -557,22 +556,21 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-
   describe "hiding arguments" do
     let(:mask) {
-      ->(member, ctx) { member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
+      -> (member, ctx) { member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
     }
 
     it "hides types if no other fields or arguments are using it" do
-       query_string = %|
+      query_string = %|
          {
            CheremeInput: __type(name: "CheremeInput") { fields { name } }
          }
        |
 
-       res = MaskHelpers.query_with_mask(query_string, mask)
-       assert_nil res["data"]["CheremeInput"]
-     end
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert_nil res["data"]["CheremeInput"]
+    end
 
     it "isn't present in introspection" do
       query_string = %|
@@ -607,7 +605,7 @@ describe GraphQL::Schema::Warden do
 
   describe "hidding input type arguments" do
     let(:mask) {
-      ->(member, ctx) { member.metadata[:hidden_input_field] }
+      -> (member, ctx) { member.metadata[:hidden_input_field] }
     }
 
     it "isn't present in introspection" do
@@ -638,7 +636,7 @@ describe GraphQL::Schema::Warden do
       res = MaskHelpers.query_with_mask(query_string, mask)
       expected_errors = [
         "Argument 'within' on Field 'languages' has an invalid value. Expected type 'WithinInput'.",
-        "InputObject 'WithinInput' doesn't accept argument 'miles'"
+        "InputObject 'WithinInput' doesn't accept argument 'miles'",
       ]
       assert_equal expected_errors, error_messages(res)
     end
@@ -648,7 +646,7 @@ describe GraphQL::Schema::Warden do
       query findLanguages($nearby: WithinInput!) {
         languages(within: $nearby) { name }
       }|
-      res = MaskHelpers.query_with_mask(query_string, mask, variables: { "latitude" => 1.0, "longitude" => 2.2, "miles" => 3.3})
+      res = MaskHelpers.query_with_mask(query_string, mask, variables: {"latitude" => 1.0, "longitude" => 2.2, "miles" => 3.3})
       expected_errors = ["Variable nearby of type WithinInput! was provided invalid value"]
       assert_equal expected_errors, error_messages(res)
     end
@@ -656,7 +654,7 @@ describe GraphQL::Schema::Warden do
 
   describe "hidding input types" do
     let(:mask) {
-      ->(member, ctx) { member.metadata[:hidden_input_object_type] }
+      -> (member, ctx) { member.metadata[:hidden_input_object_type] }
     }
 
     it "isn't present in introspection" do
@@ -701,7 +699,7 @@ describe GraphQL::Schema::Warden do
 
   describe "hiding enum values" do
     let(:mask) {
-      ->(member, ctx) { member.metadata[:hidden_enum_value] }
+      -> (member, ctx) { member.metadata[:hidden_enum_value] }
     }
 
     it "isn't present in introspection" do
@@ -757,7 +755,7 @@ describe GraphQL::Schema::Warden do
         phonemes(manners: $manners) { symbol }
       }
       |
-      res = MaskHelpers.query_with_mask(query_string, mask, variables: { "manners" => ["STOP", "TRILL"] })
+      res = MaskHelpers.query_with_mask(query_string, mask, variables: {"manners" => ["STOP", "TRILL"]})
       # It's not a good error message ... but it's something!
       expected_errors = [
         "Variable manners of type [Manner]! was provided invalid value",
@@ -779,12 +777,13 @@ describe GraphQL::Schema::Warden do
 
   describe "default_mask" do
     let(:default_mask) {
-      ->(member, ctx) { member.metadata[:hidden_enum_value] }
+      -> (member, ctx) { member.metadata[:hidden_enum_value] }
     }
     let(:schema) {
       MaskHelpers::Schema.redefine(default_mask: default_mask)
     }
-    let(:query_str) { <<-GRAPHQL
+    let(:query_str) {
+      <<-GRAPHQL
       {
         enum: __type(name: "Manner") { enumValues { name } }
         input: __type(name: "WithinInput") { name }
@@ -793,7 +792,7 @@ describe GraphQL::Schema::Warden do
     }
 
     it "is additive with query filters" do
-      query_except = ->(member, ctx) { member.metadata[:hidden_input_object_type] }
+      query_except = -> (member, ctx) { member.metadata[:hidden_input_object_type] }
       res = schema.execute(query_str, except: query_except)
       assert_nil res["data"]["input"]
       enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
@@ -802,12 +801,13 @@ describe GraphQL::Schema::Warden do
   end
 
   describe "multiple filters" do
-    let(:visible_enum_value) { ->(member, ctx) { !member.metadata[:hidden_enum_value] } }
-    let(:visible_abstract_type) { ->(member, ctx) { !member.metadata[:hidden_abstract_type] } }
-    let(:hidden_input_object) { ->(member, ctx) { member.metadata[:hidden_input_object_type] } }
-    let(:hidden_type) { ->(member, ctx) { member.metadata[:hidden_type] } }
+    let(:visible_enum_value) { -> (member, ctx) { !member.metadata[:hidden_enum_value] } }
+    let(:visible_abstract_type) { -> (member, ctx) { !member.metadata[:hidden_abstract_type] } }
+    let(:hidden_input_object) { -> (member, ctx) { member.metadata[:hidden_input_object_type] } }
+    let(:hidden_type) { -> (member, ctx) { member.metadata[:hidden_type] } }
 
-    let(:query_str) { <<-GRAPHQL
+    let(:query_str) {
+      <<-GRAPHQL
       {
         enum: __type(name: "Manner") { enumValues { name } }
         input: __type(name: "WithinInput") { name }
@@ -840,7 +840,7 @@ describe GraphQL::Schema::Warden do
           only: visible_enum_value,
           except: hidden_input_object,
         }
-        res = MaskHelpers.run_query(query_str, context: { filters: filters })
+        res = MaskHelpers.run_query(query_str, context: {filters: filters})
         assert_nil res["data"]["input"]
         enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
         assert_equal 5, enum_values.length
@@ -855,7 +855,7 @@ describe GraphQL::Schema::Warden do
           only: [visible_enum_value, visible_abstract_type],
           except: [hidden_input_object, hidden_type],
         }
-        res = MaskHelpers.run_query(query_str, context: { filters: filters })
+        res = MaskHelpers.run_query(query_str, context: {filters: filters})
         assert_nil res["data"]["input"]
         enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
         assert_equal 5, enum_values.length

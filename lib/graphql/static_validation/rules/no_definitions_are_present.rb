@@ -6,7 +6,7 @@ module GraphQL
 
       def validate(context)
         schema_definition_nodes = []
-        register_node = ->(node, _p) {
+        register_node = -> (node, _p) {
           schema_definition_nodes << node
           GraphQL::Language::Visitor::SKIP
         }
@@ -30,7 +30,7 @@ module GraphQL
         visitor[GraphQL::Language::Nodes::UnionTypeExtension] << register_node
         visitor[GraphQL::Language::Nodes::EnumTypeExtension] << register_node
 
-        visitor[GraphQL::Language::Nodes::Document].leave << ->(node, _p) {
+        visitor[GraphQL::Language::Nodes::Document].leave << -> (node, _p) {
           if schema_definition_nodes.any?
             context.errors << message(%|Query cannot contain schema definitions|, schema_definition_nodes, context: context)
           end

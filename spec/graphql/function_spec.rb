@@ -13,8 +13,9 @@ describe GraphQL::Function do
     description "Returns the string you give it"
     deprecation_reason "It's useless"
     complexity 9
+
     def call(o, a, c)
-      { name: a[:name] }
+      {name: a[:name]}
     end
   end
 
@@ -25,7 +26,7 @@ describe GraphQL::Function do
       assert_equal "TestFuncPayload", f.type.name
       assert_equal "Returns the string you give it", f.description
       assert_equal "It's useless", f.deprecation_reason
-      assert_equal({name: "stuff"}, f.call(nil, { name: "stuff" }, nil))
+      assert_equal({name: "stuff"}, f.call(nil, {name: "stuff"}, nil))
       assert_equal 9, f.complexity
 
       assert_equal TestFunc.new.type, TestFunc.new.type
@@ -74,7 +75,7 @@ describe GraphQL::Function do
       assert_equal "TestFuncPayload", field.type.name
       assert_equal "Returns the string you give it", field.description
       assert_equal "It's useless", field.deprecation_reason
-      assert_equal({name: "stuff"}, field.resolve(nil, { name: "stuff" }, nil))
+      assert_equal({name: "stuff"}, field.resolve(nil, {name: "stuff"}, nil))
       assert_equal 9, field.complexity
     end
 

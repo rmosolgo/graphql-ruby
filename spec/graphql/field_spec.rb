@@ -9,7 +9,6 @@ FieldSpecReturnType = GraphQL::ObjectType.define do
 end
 
 describe GraphQL::Field do
-
   it "accepts a proc as type" do
     field = GraphQL::Field.define do
       type(-> { FieldSpecReturnType })
@@ -53,7 +52,6 @@ describe GraphQL::Field do
     describe "default resolver" do
       def acts_like_default_resolver(field, old_prop, new_prop)
         object = OpenStruct.new(old_prop => "old value", new_prop => "new value", field.name.to_sym => "unset value")
-
 
         old_result = field.resolve(object, nil, nil)
         field.property = new_prop
@@ -126,7 +124,7 @@ describe GraphQL::Field do
       int_field = GraphQL::Field.define do
         type types.Int
         argument :value, types.Int
-        resolve ->(obj, args, ctx) { args[:value] }
+        resolve -> (obj, args, ctx) { args[:value] }
       end
 
       query_type = GraphQL::ObjectType.define do
@@ -143,7 +141,7 @@ describe GraphQL::Field do
 
     it "can be used in two places" do
       res = schema.execute %|{ int(value: 1) int2(value: 2) int3(value: 3) }|
-      assert_equal({ "int" => 1, "int2" => 2, "int3" => 3}, res["data"], "It works in queries")
+      assert_equal({"int" => 1, "int2" => 2, "int3" => 3}, res["data"], "It works in queries")
 
       res = schema.execute %|{ __type(name: "Query") { fields { name } } }|
       query_field_names = res["data"]["__type"]["fields"].map { |f| f["name"] }
@@ -181,7 +179,7 @@ describe GraphQL::Field do
     it "keeps the same resolve_proc when it is not a NameResolve" do
       int_field = GraphQL::Field.define do
         name "a"
-        resolve ->(obj, _, _) { 'GraphQL is Kool' }
+        resolve -> (obj, _, _) { "GraphQL is Kool" }
       end
 
       int_field_2 = int_field.redefine(name: "b")
@@ -232,7 +230,7 @@ describe GraphQL::Field do
       end
 
       field_with_proc = GraphQL::Field.define do
-        resolve ->(o, a, c) { :whatever }
+        resolve -> (o, a, c) { :whatever }
       end
 
       field_with_class = GraphQL::Field.define do

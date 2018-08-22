@@ -19,7 +19,8 @@ describe GraphQL::Relay::PageInfo do
     get_last_cursor(result)
   }
 
-  let(:query_string) {%|
+  let(:query_string) {
+    %|
     query getShips($first: Int, $after: String, $last: Int, $before: String, $nameIncludes: String){
       empire {
         bases(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
@@ -35,13 +36,14 @@ describe GraphQL::Relay::PageInfo do
         }
       }
     }
-  |}
+  |
+  }
 
   it "is a default relay type" do
     assert_equal true, GraphQL::Relay::PageInfo.default_relay?
   end
 
-  describe 'hasNextPage / hasPreviousPage' do
+  describe "hasNextPage / hasPreviousPage" do
     it "hasNextPage is true if there are more items" do
       result = star_wars_query(query_string, "first" => 2)
       assert_equal(true, get_page_info(result)["hasNextPage"])
@@ -105,7 +107,4 @@ describe GraphQL::Relay::PageInfo do
       assert_equal("Mg==", get_last_cursor(result))
     end
   end
-
-
-
 end
