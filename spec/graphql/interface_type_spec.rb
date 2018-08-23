@@ -6,7 +6,7 @@ describe GraphQL::InterfaceType do
   let(:dummy_query_context) { OpenStruct.new(schema: Dummy::Schema) }
 
   it "has possible types" do
-    assert_equal([Dummy::CheeseType, Dummy::HoneyType, Dummy::MilkType], Dummy::Schema.possible_types(interface))
+    assert_equal([Dummy::CheeseType, Dummy::MilkType, Dummy::HoneyType], Dummy::Schema.possible_types(interface))
   end
 
   describe "query evaluation" do
