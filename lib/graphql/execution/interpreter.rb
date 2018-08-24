@@ -149,6 +149,7 @@ module GraphQL
               end
             end
           when TypeKinds::LIST
+            trace.write([])
             value.each_with_index.map do |inner_value, idx|
               trace.with_path(idx) do
                 continue_field(type.of_type, inner_value) { yield }

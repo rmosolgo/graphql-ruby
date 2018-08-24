@@ -39,6 +39,9 @@ describe GraphQL::Schema::IntrospectionSystem do
     it "runs the introspection query" do
       res = Jazz::Schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
       assert res
+      query_type = res["data"]["__schema"]["types"].find { |t| t["name"] == "QUERY" }
+      ensembles_field = query_type["fields"].find { |f| f["name"] == "ensembles" }
+      assert_equal [], ensembles_field["args"]
     end
   end
 end
