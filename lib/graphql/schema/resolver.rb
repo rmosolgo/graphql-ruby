@@ -324,9 +324,23 @@ module GraphQL
         # @see {GraphQL::Schema::Argument#initialize} for the signature
         def argument(name, type, *rest, loads: nil, **kwargs, &block)
           if loads
-            arg_keyword = kwargs[:as] ||= name.to_s.sub(/_id$/, "").to_sym
-            own_arguments_loads_as_type[arg_keyword] = loads
+            name_as_string = name.to_s
+
+            inferred_arg_name = case name_as_string
+            when /_id$/
+              name_as_string.sub(/_id$/, "").to_sym
+            when /_ids$/
+              name_as_string.sub(/_ids$/, "")
+                .sub(/([^s])$/, "\\1s")
+                .to_sym
+            else
+              name
+            end
+
+            kwargs[:as] ||= inferred_arg_name
+            own_arguments_loads_as_type[kwargs[:as]] = loads
           end
+
           arg_defn = super(name, type, *rest, **kwargs, &block)
 
           if loads && arg_defn.type.list?

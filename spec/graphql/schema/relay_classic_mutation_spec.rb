@@ -65,9 +65,30 @@ describe GraphQL::Schema::RelayClassicMutation do
       GRAPHQL
     }
 
-    it "loads arguments as objects of the given type" do
+    it "loads arguments as objects of the given type and strips `_ids` suffix off argument name and appends `s`" do
       res = Jazz::Schema.execute(query_str, variables: { ids: ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"]})
       assert_equal ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"], res["data"]["upvoteEnsembles"]["ensembles"].map { |e| e["id"] }
+    end
+
+    it "uses the `as:` name when loading" do
+      as_bands_query_str = query_str.sub("upvoteEnsembles", "upvoteEnsemblesAsBands")
+      res = Jazz::Schema.execute(as_bands_query_str, variables: { ids: ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"]})
+      assert_equal ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"], res["data"]["upvoteEnsemblesAsBands"]["ensembles"].map { |e| e["id"] }
+    end
+
+    it "doesn't append `s` to argument names that already end in `s`" do
+      query = <<-GRAPHQL
+        mutation($ids: [ID!]!) {
+          upvoteEnsemblesIds(input: {ensemblesIds: $ids}) {
+            ensembles {
+              id
+            }
+          }
+        }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query, variables: { ids: ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"]})
+      assert_equal ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"], res["data"]["upvoteEnsemblesIds"]["ensembles"].map { |e| e["id"] }
     end
 
     it "returns an error instead when the ID resolves to nil" do
