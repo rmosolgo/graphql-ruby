@@ -160,12 +160,27 @@ describe GraphQL::Execution::Multiplex do
           raise GraphQL::Error, "Crash"
         }
       end
+
+      field :raiseSyntaxError, types.String do
+        resolve ->(object, args, ctx) {
+          raise SyntaxError
+        }
+      end
+
+      field :raiseException, types.String do
+        resolve ->(object, args, ctx) {
+          raise Exception
+        }
+      end
+
     end
 
     InspectSchema = GraphQL::Schema.define do
       query InspectQueryType
       instrument(:query, InspectQueryInstrumentation)
     end
+
+    unhandled_err_json = '{}'
 
     it "can access the query results" do
       InspectSchema.execute("{ raiseExecutionError }")
@@ -176,7 +191,19 @@ describe GraphQL::Execution::Multiplex do
       assert_raises(GraphQL::Error) do
         InspectSchema.execute("{ raiseError }")
       end
-      unhandled_err_json = '{}'
+
+      assert_equal unhandled_err_json, InspectQueryInstrumentation.last_json
+    end
+
+    it "can access the query results when the error is not a StandardError" do
+      assert_raises(SyntaxError) do
+        InspectSchema.execute("{ raiseSyntaxError }")
+      end
+      assert_equal unhandled_err_json, InspectQueryInstrumentation.last_json
+
+      assert_raises(Exception) do
+        InspectSchema.execute("{ raiseException }")
+      end
       assert_equal unhandled_err_json, InspectQueryInstrumentation.last_json
     end
   end
