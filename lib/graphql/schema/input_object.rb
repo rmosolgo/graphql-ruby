@@ -60,13 +60,15 @@ module GraphQL
       def [](key)
         if @ruby_style_hash.key?(key)
           @ruby_style_hash[key]
-        else
+        elsif @arguments
           @arguments[key]
+        else
+          nil
         end
       end
 
       def key?(key)
-        @ruby_style_hash.key?(key) || @arguments.key?(key)
+        @ruby_style_hash.key?(key) || @arguments&.key?(key)
       end
 
       # A copy of the Ruby-style hash
@@ -82,8 +84,9 @@ module GraphQL
           argument_defn = super
           # Add a method access
           arg_name = argument_defn.graphql_definition.name
-          define_method(Member::BuildType.underscore(arg_name)) do
-            @arguments.public_send(arg_name)
+          method_name = Member::BuildType.underscore(arg_name).to_sym
+          define_method(method_name) do
+            @ruby_style_hash[method_name]
           end
         end
 

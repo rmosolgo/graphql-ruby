@@ -9,7 +9,7 @@ module Jazz
     Key = Struct.new(:root, :sharp, :flat) do
       def self.from_notation(key_str)
         key, sharp_or_flat = key_str.split("")
-        sharp = sharp_or_flat ==  "♯"
+        sharp = sharp_or_flat == "♯"
         flat = sharp_or_flat == "♭"
         Models::Key.new(key, sharp, flat)
       end
@@ -36,7 +36,7 @@ module Jazz
         ],
         "Musician" => [
           Models::Musician.new("Herbie Hancock", Models::Key.from_notation("B♭")),
-        ]
+        ],
       }
     end
 
@@ -61,12 +61,13 @@ module Jazz
   # A custom field class that supports the `upcase:` option
   class BaseField < GraphQL::Schema::Field
     argument_class BaseArgument
+
     def initialize(*args, **options, &block)
       @upcase = options.delete(:upcase)
       super(*args, **options, &block)
     end
 
-    def resolve_field(*)
+    def resolve_field_2(*)
       result = super
       if @upcase && result
         result.upcase
@@ -91,7 +92,7 @@ module Jazz
 
       def to_graphql
         type_defn = super
-        configs.each do |k,v|
+        configs.each do |k, v|
           type_defn.metadata[k] = v
         end
         type_defn
@@ -176,7 +177,6 @@ module Jazz
     field :musicians, "[Jazz::Musician]", null: false
   end
 
-
   # Here's a new-style GraphQL type definition
   class Ensemble < ObjectWithUpcasedName
     # Test string type names
@@ -213,6 +213,7 @@ module Jazz
 
   # Lives side-by-side with an old-style definition
   using GraphQL::DeprecatedDSL # for ! and types[]
+
   class InstrumentType < BaseObject
     implements NamedEntity
     implements GloballyIdentifiableType
@@ -258,6 +259,7 @@ module Jazz
     # Test lists with nullable members:
     field :inspect_context, [String, null: true], null: false
     field :add_error, String, null: false, extras: [:execution_errors]
+
     def inspect_context
       [
         @context.custom_method,
@@ -273,21 +275,22 @@ module Jazz
     end
   end
 
-  LegacyInputType = GraphQL::InputObjectType.define do
-    name "LegacyInput"
-    argument :intValue, !types.Int
+  # Since this is not a legacy input type, this test can be removed
+  class LegacyInputType < GraphQL::Schema::InputObject
+    argument :int_value, Int, required: true
   end
 
   class InspectableInput < GraphQL::Schema::InputObject
     argument :string_value, String, required: true, description: "Test description kwarg"
     argument :nested_input, InspectableInput, required: false
     argument :legacy_input, LegacyInputType, required: false
+
     def helper_method
       [
         # Context is available in the InputObject
         context[:message],
-        # A GraphQL::Query::Arguments instance is available
-        arguments[:stringValue],
+        # ~~A GraphQL::Query::Arguments instance is available~~ not anymore
+        self[:string_value],
         # Legacy inputs have underscored method access too
         legacy_input ? legacy_input.int_value : "-",
         # Access by method call is available
@@ -333,7 +336,10 @@ module Jazz
     field :inspect_key, InspectableKey, null: false do
       argument :key, Key, required: true
     end
-    field :nowPlaying, PerformingAct, null: false, resolve: ->(o, a, c) { Models.data["Ensemble"].first }
+    field :now_playing, PerformingAct, null: false
+
+    def now_playing; Models.data["Ensemble"].first; end
+
     # For asserting that the object is initialized once:
     field :object_id, Integer, null: false
     field :inspect_context, [String], null: false
@@ -378,8 +384,8 @@ module Jazz
         # Access by key:
         input[:string_value],
         input.key?(:string_value).to_s,
-        # Access by legacy key
-        input[:stringValue],
+        # ~~Access by legacy key~~ # not anymore
+        input[:string_value],
       ]
     end
 
@@ -391,7 +397,7 @@ module Jazz
       [
         context.custom_method,
         context[:magic_key],
-        context[:normal_key]
+        context[:normal_key],
       ]
     end
 
@@ -399,11 +405,11 @@ module Jazz
       # Both string and symbol keys are supported:
 
       {
-          name: "The Grateful Dead",
-          "musicians" => [
-            OpenStruct.new(name: "Jerry Garcia"),
-          ],
-          "formedAtDate" => "May 5, 1965",
+        name: "The Grateful Dead",
+        "musicians" => [
+          OpenStruct.new(name: "Jerry Garcia"),
+        ],
+        "formedAtDate" => "May 5, 1965",
       }
     end
 
@@ -417,12 +423,13 @@ module Jazz
 
     field :hash_by_string, HashKeyTest, null: false
     field :hash_by_sym, HashKeyTest, null: false
+
     def hash_by_string
-      { "falsey" => false }
+      {"falsey" => false}
     end
 
     def hash_by_sym
-      { falsey: false }
+      {falsey: false}
     end
 
     field :named_entities, [NamedEntity, null: true], null: false
@@ -450,10 +457,11 @@ module Jazz
 
     field :ee, String, null: false
     extras [:execution_errors]
+
     def resolve(name:, family:, execution_errors:)
       instrument = Jazz::Models::Instrument.new(name, family)
       Jazz::Models.data["Instrument"] << instrument
-      { instrument: instrument, entries: Jazz::Models.data["Instrument"], ee: execution_errors.class.name}
+      {instrument: instrument, entries: Jazz::Models.data["Instrument"], ee: execution_errors.class.name}
     end
   end
 
@@ -465,7 +473,7 @@ module Jazz
 
     def resolve
       instrument = Models::Instrument.new("Sitar", :str)
-      { instrument: instrument }
+      {instrument: instrument}
     end
   end
 
@@ -480,7 +488,7 @@ module Jazz
       dup_ensemble = ensemble.dup
       dup_ensemble.name = new_name
       {
-        ensemble: dup_ensemble
+        ensemble: dup_ensemble,
       }
     end
   end
@@ -545,16 +553,18 @@ module Jazz
       graphql_name "__Schema"
 
       field :is_jazzy, Boolean, null: false
+
       def is_jazzy
         true
       end
     end
 
     class DynamicFields < GraphQL::Introspection::DynamicFields
-      field :__typename_length, Int, null: false, extras: [:irep_node]
+      field :__typename_length, Int, null: false
       field :__ast_node_class, String, null: false, extras: [:ast_node]
-      def __typename_length(irep_node:)
-        __typename(irep_node: irep_node).length
+
+      def __typename_length
+        __typename.length
       end
 
       def __ast_node_class(ast_node:)
@@ -564,8 +574,9 @@ module Jazz
 
     class EntryPoints < GraphQL::Introspection::EntryPoints
       field :__classname, String, "The Ruby class name of the root object", null: false
+
       def __classname
-        object.class.name
+        object.object.class.name
       end
     end
   end

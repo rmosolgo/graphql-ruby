@@ -13,7 +13,7 @@ describe GraphQL::Schema::IntrospectionSystem do
       assert_equal "ENSEMBLE", res["data"]["__type"]["name"]
     end
 
-    it "serves custom entry points"  do
+    it "serves custom entry points" do
       res = Jazz::Schema.execute("{ __classname }", root_value: Set.new)
       assert_equal "Set", res["data"]["__classname"]
     end

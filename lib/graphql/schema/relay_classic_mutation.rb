@@ -25,6 +25,10 @@ module GraphQL
       # Relay classic default:
       null(true)
 
+      def resolve_with_support(input:)
+        super(input.to_h)
+      end
+
       # Override {GraphQL::Schema::Mutation#resolve_mutation} to
       # delete `client_mutation_id` from the kwargs.
       def resolve_mutation(**kwargs)
@@ -64,7 +68,7 @@ module GraphQL
           sig = super
           # Arguments were added at the root, but they should be nested
           sig[:arguments].clear
-          sig[:arguments][:input] = { type: input_type, required: true }
+          sig[:arguments][:input] = {type: input_type, required: true}
           sig
         end
 

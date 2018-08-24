@@ -19,7 +19,6 @@ require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
 
-
 require "graphql/schema/member"
 require "graphql/schema/list"
 require "graphql/schema/non_null"
@@ -81,19 +80,19 @@ module GraphQL
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
-      directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
-      instrument: ->(schema, type, instrumenter, after_built_ins: false) {
+      directives: -> (schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
+      instrument: -> (schema, type, instrumenter, after_built_ins: false) {
         if type == :field && after_built_ins
           type = :field_after_built_ins
         end
         schema.instrumenters[type] << instrumenter
       },
-      query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
-      multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
-      middleware: ->(schema, middleware) { schema.middleware << middleware },
-      lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
-      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)},
-      tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
+      query_analyzer: -> (schema, analyzer) { schema.query_analyzers << analyzer },
+      multiplex_analyzer: -> (schema, analyzer) { schema.multiplex_analyzers << analyzer },
+      middleware: -> (schema, middleware) { schema.middleware << middleware },
+      lazy_resolve: -> (schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
+      rescue_from: -> (schema, err_class, &block) { schema.rescue_from(err_class, &block) },
+      tracer: -> (schema, tracer) { schema.tracers.push(tracer) }
 
     attr_accessor \
       :query, :mutation, :subscription,
@@ -133,8 +132,6 @@ module GraphQL
     # @see {Query#tracers} for query-specific tracers
     attr_reader :tracers
 
-    # self.default_execution_strategy = GraphQL::Execution::Execute
-
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
@@ -159,9 +156,9 @@ module GraphQL
       @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
-      @query_execution_strategy = self.class.default_execution_strategy
-      @mutation_execution_strategy = self.class.default_execution_strategy
-      @subscription_execution_strategy = self.class.default_execution_strategy
+      @query_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
+      @mutation_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
+      @subscription_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
       @context_class = GraphQL::Query::Context
@@ -213,12 +210,12 @@ module GraphQL
     # @return [Array<GraphQL::StaticValidation::Message>]
     def validate(string_or_document, rules: nil)
       doc = if string_or_document.is_a?(String)
-        GraphQL.parse(string_or_document)
-      else
-        string_or_document
-      end
+              GraphQL.parse(string_or_document)
+            else
+              string_or_document
+            end
       query = GraphQL::Query.new(self, document: doc)
-      validator_opts = { schema: self }
+      validator_opts = {schema: self}
       rules && (validator_opts[:rules] = rules)
       validator = GraphQL::StaticValidation::Validator.new(validator_opts)
       res = validator.validate(query)
@@ -306,13 +303,13 @@ module GraphQL
       end
       # Some of the query context _should_ be passed to the multiplex, too
       multiplex_context = if (ctx = kwargs[:context])
-        {
-          backtrace: ctx[:backtrace],
-          tracers: ctx[:tracers],
-        }
-      else
-        {}
-      end
+                            {
+                              backtrace: ctx[:backtrace],
+                              tracers: ctx[:tracers],
+                            }
+                          else
+                            {}
+                          end
       # Since we're running one query, don't run a multiplex-level complexity analyzer
       all_results = multiplex([kwargs], max_complexity: nil, context: multiplex_context)
       all_results[0]
@@ -364,13 +361,13 @@ module GraphQL
     def get_field(parent_type, field_name)
       with_definition_error_check do
         parent_type_name = case parent_type
-        when GraphQL::BaseType
-          parent_type.name
-        when String
-          parent_type
-        else
-          raise "Unexpected parent_type: #{parent_type}"
-        end
+                           when GraphQL::BaseType
+                             parent_type.name
+                           when String
+                             parent_type
+                           else
+                             raise "Unexpected parent_type: #{parent_type}"
+                           end
 
         defined_field = @instrumented_field_map[parent_type_name][field_name]
         if defined_field
@@ -469,10 +466,10 @@ module GraphQL
       # Prefer a type-local function; fall back to the schema-level function
       type_proc = type && type.resolve_type_proc
       type_result = if type_proc
-        type_proc.call(object, ctx)
-      else
-        yield(type, object, ctx)
-      end
+                      type_proc.call(object, ctx)
+                    else
+                      yield(type, object, ctx)
+                    end
 
       if type_result.respond_to?(:graphql_definition)
         type_result = type_result.graphql_definition
@@ -591,15 +588,15 @@ module GraphQL
     def self.from_definition(definition_or_path, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser)
       # If the file ends in `.graphql`, treat it like a filepath
       definition = if definition_or_path.end_with?(".graphql")
-        File.read(definition_or_path)
-      else
-        definition_or_path
-      end
+                     File.read(definition_or_path)
+                   else
+                     definition_or_path
+                   end
       GraphQL::Schema::BuildFromDefinition.from_definition(definition, default_resolve: default_resolve, parser: parser)
     end
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
-    class InvalidDocumentError < Error; end;
+    class InvalidDocumentError < Error; end
 
     # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered wtih {#lazy_resolve}.
     def lazy_method_name(obj)
@@ -890,10 +887,10 @@ module GraphQL
 
       def instrument(instrument_step, instrumenter, options = {})
         step = if instrument_step == :field && options[:after_built_ins]
-          :field_after_built_ins
-        else
-          instrument_step
-        end
+                 :field_after_built_ins
+               else
+                 instrument_step
+               end
         defined_instrumenters[step] << instrumenter
       end
 
@@ -932,7 +929,7 @@ module GraphQL
       end
 
       def defined_instrumenters
-        @defined_instrumenters ||= Hash.new { |h,k| h[k] = [] }
+        @defined_instrumenters ||= Hash.new { |h, k| h[k] = [] }
       end
 
       def defined_tracers
@@ -958,10 +955,10 @@ module GraphQL
       # @see {.authorized?}
       def call_on_type_class(member, method_name, *args, default:)
         member = if member.respond_to?(:metadata)
-          member.metadata[:type_class] || member
-        else
-          member
-        end
+                   member.metadata[:type_class] || member
+                 else
+                   member
+                 end
 
         if member.respond_to?(:relay_node_type) && (t = member.relay_node_type)
           member = t
@@ -974,7 +971,6 @@ module GraphQL
         end
       end
     end
-
 
     def self.inherited(child_class)
       child_class.singleton_class.class_eval do

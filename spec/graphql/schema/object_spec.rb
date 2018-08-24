@@ -128,7 +128,6 @@ describe GraphQL::Schema::Object do
     end
   end
 
-
   describe "in queries" do
     after {
       Jazz::Models.reset
@@ -169,10 +168,10 @@ describe GraphQL::Schema::Object do
       }
       GRAPHQL
 
-      res = Jazz::Schema.execute(mutation_str, variables: { name: "Miles Davis Quartet" })
+      res = Jazz::Schema.execute(mutation_str, variables: {name: "Miles Davis Quartet"})
       new_id = res["data"]["addEnsemble"]["id"]
 
-      res2 = Jazz::Schema.execute(query_str, variables: { id: new_id })
+      res2 = Jazz::Schema.execute(query_str, variables: {id: new_id})
       assert_equal "Miles Davis Quartet", res2["data"]["find"]["name"]
     end
 
@@ -185,7 +184,7 @@ describe GraphQL::Schema::Object do
     it "skips fields properly" do
       query_str = "{ find(id: \"MagicalSkipId\") { __typename } }"
       res = Jazz::Schema.execute(query_str)
-      assert_equal({"data" => nil }, res.to_h)
+      assert_equal({"data" => nil}, res.to_h)
     end
   end
 end

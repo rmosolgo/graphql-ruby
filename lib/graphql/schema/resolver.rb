@@ -50,10 +50,10 @@ module GraphQL
       def resolve_with_support(**args)
         # First call the before_prepare hook which may raise
         before_prepare_val = if args.any?
-          before_prepare(**args)
-        else
-          before_prepare
-        end
+                               before_prepare(**args)
+                             else
+                               before_prepare
+                             end
         context.schema.after_lazy(before_prepare_val) do
           # Then call each prepare hook, which may return a different value
           # for that argument, or may return a lazy object
@@ -156,6 +156,7 @@ module GraphQL
         attr_reader :id
         # @return [Object] The value found with this ID
         attr_reader :object
+
         def initialize(argument:, id:, object:)
           @id = id
           @argument = argument

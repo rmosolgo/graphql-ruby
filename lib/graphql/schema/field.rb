@@ -23,13 +23,15 @@ module GraphQL
       # @return [Class] The type that this field belongs to
       attr_reader :owner
 
-
       # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one
       def resolver
         @resolver_class
       end
 
       alias :mutation :resolver
+
+      # @return [Array<Symbol>]
+      attr_reader :extras
 
       # Create a field instance from a list of arguments, keyword arguments, and a block.
       #
@@ -95,7 +97,6 @@ module GraphQL
       # @param complexity [Numeric] When provided, set the complexity for this field
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
-
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -169,7 +170,7 @@ module GraphQL
         when Proc
           if new_complexity.parameters.size != 3
             fail(
-              "A complexity proc should always accept 3 parameters: ctx, args, child_complexity. "\
+              "A complexity proc should always accept 3 parameters: ctx, args, child_complexity. " \
               "E.g.: complexity ->(ctx, args, child_complexity) { child_complexity * args[:limit] }"
             )
           else
@@ -180,7 +181,6 @@ module GraphQL
         else
           raise("Invalid complexity: #{new_complexity.inspect} on #{@name}")
         end
-
       end
 
       # @return [GraphQL::Field]
@@ -190,14 +190,13 @@ module GraphQL
           return @field_instance.to_graphql
         end
 
-
         field_defn = if @field
-          @field.dup
-        elsif @function
-          GraphQL::Function.build_field(@function)
-        else
-          GraphQL::Field.new
-        end
+                       @field.dup
+                     elsif @function
+                       GraphQL::Function.build_field(@function)
+                     else
+                       GraphQL::Field.new
+                     end
 
         field_defn.name = @name
         if @return_type_expr
@@ -207,12 +206,12 @@ module GraphQL
         if @connection.nil?
           # Provide default based on type name
           return_type_name = if @field || @function
-            Member::BuildType.to_type_name(field_defn.type)
-          elsif @return_type_expr
-            Member::BuildType.to_type_name(@return_type_expr)
-          else
-            raise "No connection info possible"
-          end
+                               Member::BuildType.to_type_name(field_defn.type)
+                             elsif @return_type_expr
+                               Member::BuildType.to_type_name(@return_type_expr)
+                             else
+                               raise "No connection info possible"
+                             end
           @connection = return_type_name.end_with?("Connection")
         end
 
@@ -256,12 +255,12 @@ module GraphQL
 
         # Support a passed-in proc, one way or another
         @resolve_proc = if @resolve
-          @resolve
-        elsif @function
-          @function
-        elsif @field
-          @field.resolve_proc
-        end
+                          @resolve
+                        elsif @function
+                          @function
+                        elsif @field
+                          @field.resolve_proc
+                        end
 
         # Ok, `self` isn't a class, but this is for consistency with the classes
         field_defn.metadata[:type_class] = self
@@ -321,6 +320,20 @@ module GraphQL
           else
             nil
           end
+        end
+      end
+
+      # Called by interpreter
+      # TODO rename this, make it public-ish
+      def resolve_field_2(obj, args, ctx)
+        if @resolver_class
+          obj = @resolver_class.new(object: obj, context: ctx)
+        end
+
+        if args.any?
+          obj.public_send(method_sym, args)
+        else
+          obj.public_send(method_sym)
         end
       end
 
@@ -392,7 +405,6 @@ module GraphQL
         else
           ruby_kwargs = NO_ARGS
         end
-
 
         if ruby_kwargs.any?
           obj.public_send(@method_sym, **ruby_kwargs)
