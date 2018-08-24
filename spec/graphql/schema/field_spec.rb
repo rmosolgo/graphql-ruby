@@ -32,17 +32,17 @@ describe GraphQL::Schema::Field do
     end
 
     it "camelizes the field name, unless camelize: false" do
-      assert_equal 'inspectInput', field.graphql_definition.name
-      assert_equal 'inspectInput', field.name
+      assert_equal "inspectInput", field.graphql_definition.name
+      assert_equal "inspectInput", field.name
 
       underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, required: true, camelize: false
       end
 
-      assert_equal 'underscored_field', underscored_field.to_graphql.name
+      assert_equal "underscored_field", underscored_field.to_graphql.name
       arg_name, arg_defn = underscored_field.to_graphql.arguments.first
-      assert_equal 'underscored_arg', arg_name
-      assert_equal 'underscored_arg', arg_defn.name
+      assert_equal "underscored_arg", arg_name
+      assert_equal "underscored_arg", arg_defn.name
     end
 
     it "exposes the method override" do
@@ -83,7 +83,7 @@ describe GraphQL::Schema::Field do
 
     it "accepts anonymous classes as type" do
       type = Class.new(GraphQL::Schema::Object) do
-        graphql_name 'MyType'
+        graphql_name "MyType"
       end
       field = GraphQL::Schema::Field.from_options(:my_field, type, owner: nil, null: true)
       assert_equal type.to_graphql, field.to_graphql.type
@@ -105,7 +105,7 @@ describe GraphQL::Schema::Field do
         err = res["errors"].first
         assert_equal "this has a path", err["message"]
         assert_equal ["find", "addError"], err["path"]
-        assert_equal [{"line"=>4, "column"=>15}], err["locations"]
+        assert_equal [{"line" => 4, "column" => 15}], err["locations"]
       end
     end
 
@@ -146,7 +146,7 @@ describe GraphQL::Schema::Field do
           graphql_name "complexityKeyword"
 
           field :complexityTest, String, null: true do
-            complexity ->(_ctx, _args, _child_complexity) { 52 }
+            complexity -> (_ctx, _args, _child_complexity) { 52 }
           end
         end.to_graphql
 
@@ -165,13 +165,13 @@ describe GraphQL::Schema::Field do
         assert_equal 38, object.fields["complexityTest"].complexity
       end
 
-      it 'fails if the complexity is not numeric and not a proc' do
+      it "fails if the complexity is not numeric and not a proc" do
         err = assert_raises(RuntimeError) do
           Class.new(Jazz::BaseObject) do
             graphql_name "complexityKeyword"
 
             field :complexityTest, String, null: true do
-              complexity 'One hundred and eighty'
+              complexity "One hundred and eighty"
             end
           end.to_graphql
         end
@@ -179,13 +179,13 @@ describe GraphQL::Schema::Field do
         assert_match /^Invalid complexity:/, err.message
       end
 
-      it 'fails if the proc does not accept 3 parameters' do
+      it "fails if the proc does not accept 3 parameters" do
         err = assert_raises(RuntimeError) do
           Class.new(Jazz::BaseObject) do
             graphql_name "complexityKeyword"
 
             field :complexityTest, String, null: true do
-              complexity ->(one, two) { 52 }
+              complexity -> (one, two) { 52 }
             end
           end.to_graphql
         end
@@ -253,7 +253,7 @@ describe GraphQL::Schema::Field do
     end
   end
 
-  describe '#deprecation_reason' do
+  describe "#deprecation_reason" do
     it "reads and writes" do
       object_class = Class.new(GraphQL::Schema::Object) do
         graphql_name "Thing"

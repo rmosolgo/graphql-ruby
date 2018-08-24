@@ -23,15 +23,15 @@ describe GraphQL::Schema::Loader do
 
     big_int_type = GraphQL::ScalarType.define do
       name "BigInt"
-      coerce_input ->(value, _ctx) { value =~ /\d+/ ? Integer(value) : nil }
-      coerce_result ->(value, _ctx) { value.to_s }
+      coerce_input -> (value, _ctx) { value =~ /\d+/ ? Integer(value) : nil }
+      coerce_result -> (value, _ctx) { value.to_s }
     end
 
     variant_input_type = GraphQL::InputObjectType.define do
       name "Varied"
       input_field :id, types.ID
       input_field :int, types.Int
-      input_field :bigint, big_int_type, default_value: 2**54
+      input_field :bigint, big_int_type, default_value: 2 ** 54
       input_field :float, types.Float
       input_field :bool, types.Boolean
       input_field :enum, choice_type
@@ -57,7 +57,7 @@ describe GraphQL::Schema::Loader do
       field :body, !types.String
 
       field :fieldWithArg, types.Int do
-        argument :bigint, big_int_type, default_value: 2**54
+        argument :bigint, big_int_type, default_value: 2 ** 54
       end
     end
 
@@ -101,8 +101,8 @@ describe GraphQL::Schema::Loader do
       field :post do
         type post_type
         argument :id, !types.ID
-        argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
-        argument :variedWithNull, variant_input_type_with_nulls, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil, bigint: nil, bool: nil }
+        argument :varied, variant_input_type, default_value: {id: "123", int: 234, float: 2.3, enum: :foo, sub: [{string: "str"}]}
+        argument :variedWithNull, variant_input_type_with_nulls, default_value: {id: nil, int: nil, float: nil, enum: nil, sub: nil, bigint: nil, bool: nil}
         argument :enum, choice_type, default_value: :foo
         argument :array, types[!types.String], default_value: ["foo", "bar"]
       end
@@ -125,7 +125,7 @@ describe GraphQL::Schema::Loader do
       query: query_root,
       mutation: mutation_root,
       orphan_types: [audio_type, video_type],
-      resolve_type: ->(a,b,c) { :pass },
+      resolve_type: -> (a, b, c) { :pass },
     )
   }
 
@@ -142,49 +142,39 @@ describe GraphQL::Schema::Loader do
         actual_type.each_with_index do |obj, index|
           assert_deep_equal expected_type[index], obj
         end
-
       when GraphQL::Schema
         assert_equal expected_type.query.name, actual_type.query.name
         assert_equal expected_type.directives.keys.sort, actual_type.directives.keys.sort
         assert_equal expected_type.types.keys.sort, actual_type.types.keys.sort
         assert_deep_equal expected_type.types.values.sort_by(&:name), actual_type.types.values.sort_by(&:name)
-
       when GraphQL::ObjectType, GraphQL::InterfaceType
         assert_equal expected_type.name, actual_type.name
         assert_equal expected_type.description, actual_type.description
         assert_deep_equal expected_type.all_fields.sort_by(&:name), actual_type.all_fields.sort_by(&:name)
-
       when GraphQL::Field
         assert_equal expected_type.name, actual_type.name
         assert_equal expected_type.description, actual_type.description
         assert_equal expected_type.arguments.keys, actual_type.arguments.keys
         assert_deep_equal expected_type.arguments.values, actual_type.arguments.values
-
       when GraphQL::ScalarType
         assert_equal expected_type.name, actual_type.name
-
       when GraphQL::EnumType
         assert_equal expected_type.name, actual_type.name
         assert_equal expected_type.description, actual_type.description
         assert_equal expected_type.values.keys, actual_type.values.keys
         assert_deep_equal expected_type.values.values, actual_type.values.values
-
       when GraphQL::EnumType::EnumValue
         assert_equal expected_type.name, actual_type.name
         assert_equal expected_type.description, actual_type.description
-
       when GraphQL::Argument
         assert_equal expected_type.name, actual_type.name
         assert_equal expected_type.description, actual_type.description
         assert_deep_equal expected_type.type, actual_type.type
-
       when GraphQL::InputObjectType
         assert_equal expected_type.arguments.keys, actual_type.arguments.keys
         assert_deep_equal expected_type.arguments.values, actual_type.arguments.values
-
       when GraphQL::NonNullType, GraphQL::ListType
         assert_deep_equal expected_type.of_type, actual_type.of_type
-
       else
         assert_equal expected_type, actual_type
       end
@@ -208,74 +198,74 @@ describe GraphQL::Schema::Loader do
 
     it "sets correct default values on custom scalar arguments" do
       type = loaded_schema.types["Comment"]
-      field = type.fields['fieldWithArg']
-      arg = field.arguments['bigint']
+      field = type.fields["fieldWithArg"]
+      arg = field.arguments["bigint"]
 
-      assert_equal((2**54).to_s, arg.default_value)
+      assert_equal((2 ** 54).to_s, arg.default_value)
     end
 
     it "sets correct default values on custom scalar input fields" do
       type = loaded_schema.types["Varied"]
-      field = type.input_fields['bigint']
+      field = type.input_fields["bigint"]
 
-      assert_equal((2**54).to_s, field.default_value)
+      assert_equal((2 ** 54).to_s, field.default_value)
     end
 
     it "sets correct default values for complex field arguments" do
-      type = loaded_schema.types['Query']
-      field = type.fields['post']
+      type = loaded_schema.types["Query"]
+      field = type.fields["post"]
 
-      varied = field.arguments['varied']
-      assert_equal varied.default_value, { 'id' => "123", 'int' => 234, 'float' => 2.3, 'enum' => "FOO", 'sub' => [{ 'string' => "str" }] }
-      assert !varied.default_value.key?('bool'), 'Omits default value for unspecified arguments'
+      varied = field.arguments["varied"]
+      assert_equal varied.default_value, {"id" => "123", "int" => 234, "float" => 2.3, "enum" => "FOO", "sub" => [{"string" => "str"}]}
+      assert !varied.default_value.key?("bool"), "Omits default value for unspecified arguments"
 
-      array = field.arguments['array']
+      array = field.arguments["array"]
       assert_equal array.default_value, ["foo", "bar"]
     end
 
     it "does not set default value when there are none on input fields" do
-      type = loaded_schema.types['Varied']
+      type = loaded_schema.types["Varied"]
 
-      assert !type.arguments['id'].default_value?
-      assert !type.arguments['int'].default_value?
-      assert type.arguments['bigint'].default_value?
-      assert !type.arguments['float'].default_value?
-      assert !type.arguments['bool'].default_value?
-      assert !type.arguments['enum'].default_value?
-      assert !type.arguments['sub'].default_value?
+      assert !type.arguments["id"].default_value?
+      assert !type.arguments["int"].default_value?
+      assert type.arguments["bigint"].default_value?
+      assert !type.arguments["float"].default_value?
+      assert !type.arguments["bool"].default_value?
+      assert !type.arguments["enum"].default_value?
+      assert !type.arguments["sub"].default_value?
     end
 
     it "sets correct default values `null` on input fields" do
-      type = loaded_schema.types['VariedWithNulls']
+      type = loaded_schema.types["VariedWithNulls"]
 
-      assert type.arguments['id'].default_value?
-      assert type.arguments['id'].default_value.nil?
+      assert type.arguments["id"].default_value?
+      assert type.arguments["id"].default_value.nil?
 
-      assert type.arguments['int'].default_value?
-      assert type.arguments['int'].default_value.nil?
+      assert type.arguments["int"].default_value?
+      assert type.arguments["int"].default_value.nil?
 
-      assert type.arguments['bigint'].default_value?
-      assert type.arguments['bigint'].default_value.nil?
+      assert type.arguments["bigint"].default_value?
+      assert type.arguments["bigint"].default_value.nil?
 
-      assert type.arguments['float'].default_value?
-      assert type.arguments['float'].default_value.nil?
+      assert type.arguments["float"].default_value?
+      assert type.arguments["float"].default_value.nil?
 
-      assert type.arguments['bool'].default_value?
-      assert type.arguments['bool'].default_value.nil?
+      assert type.arguments["bool"].default_value?
+      assert type.arguments["bool"].default_value.nil?
 
-      assert type.arguments['enum'].default_value?
-      assert type.arguments['enum'].default_value.nil?
+      assert type.arguments["enum"].default_value?
+      assert type.arguments["enum"].default_value.nil?
 
-      assert type.arguments['sub'].default_value?
-      assert type.arguments['sub'].default_value.nil?
+      assert type.arguments["sub"].default_value?
+      assert type.arguments["sub"].default_value.nil?
     end
 
     it "sets correct default values `null` on complex field arguments" do
-      type = loaded_schema.types['Query']
-      field = type.fields['post']
-      arg = field.arguments['variedWithNull']
+      type = loaded_schema.types["Query"]
+      field = type.fields["post"]
+      arg = field.arguments["variedWithNull"]
 
-      assert_equal arg.default_value, { 'id' => nil, 'int' => nil, 'float' => nil, 'enum' => nil, 'sub' => nil, 'bool' => nil, 'bigint' => nil }
+      assert_equal arg.default_value, {"id" => nil, "int" => nil, "float" => nil, "enum" => nil, "sub" => nil, "bool" => nil, "bigint" => nil}
     end
   end
 end

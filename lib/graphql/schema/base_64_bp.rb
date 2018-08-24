@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'base64'
+require "base64"
 
 # backport from ruby v2.5 to v2.2 that has no `padding` things
 # @api private

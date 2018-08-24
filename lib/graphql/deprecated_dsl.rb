@@ -27,6 +27,7 @@ module GraphQL
       GraphQL::Schema::List.include(Methods)
       GraphQL::Schema::NonNull.include(Methods)
     end
+
     module Methods
       def !
         to_non_null_type

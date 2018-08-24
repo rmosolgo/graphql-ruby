@@ -9,7 +9,7 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
   setup do
     prepare_destination
 
-    FileUtils.cd(File.join(destination_root, '..')) do
+    FileUtils.cd(File.join(destination_root, "..")) do
       `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle`
     end
   end
@@ -45,7 +45,6 @@ class DummySchema < GraphQL::Schema
 end
 RUBY
     assert_file "app/graphql/dummy_schema.rb", expected_schema
-
 
     expected_query_type = <<-RUBY
 module Types
@@ -104,7 +103,7 @@ RUBY
   end
 
   test "it doesn't install graphiql when API Only" do
-    run_generator(['--api'])
+    run_generator(["--api"])
 
     assert_file "Gemfile" do |contents|
       refute_includes contents, "graphiql-rails"

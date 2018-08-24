@@ -32,45 +32,49 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
       name "Query"
       field :tomorrow, day_of_week_enum do
         argument :today, day_of_week_enum
-        resolve ->(obj, args, ctx) { (args["today"] + 1) % 7 }
+        resolve -> (obj, args, ctx) { (args["today"] + 1) % 7 }
       end
       field :resolvesToNilInterface, interface do
-        resolve ->(obj, args, ctx) { 1337 }
+        resolve -> (obj, args, ctx) { 1337 }
       end
       field :resolvesToWrongTypeInterface, interface do
-        resolve ->(obj, args, ctx) { :something }
+        resolve -> (obj, args, ctx) { :something }
       end
     end
 
     GraphQL::Schema.define do
       query(query_root)
       orphan_types [some_object]
-      resolve_type ->(type, obj, ctx) do
-        if obj.is_a?(Symbol)
-          other_object
-        else
-          nil
-        end
-      end
+      resolve_type -> (type, obj, ctx) do
+                     if obj.is_a?(Symbol)
+                       other_object
+                     else
+                       nil
+                     end
+                   end
     end
   }
 
-  let(:result) { schema.execute(
-    query_string,
-  )}
+  let(:result) {
+    schema.execute(
+      query_string,
+    )
+  }
 
   describe "enum resolution" do
-    let(:query_string) { %|
+    let(:query_string) {
+      %|
       {
         tomorrow(today: FRIDAY)
       }
-    |}
+    |
+    }
 
     it "coerces enum input to the value and result to the name" do
       expected = {
         "data" => {
-          "tomorrow" => "SATURDAY"
-        }
+          "tomorrow" => "SATURDAY",
+        },
       }
       assert_equal(expected, result)
     end
@@ -78,11 +82,13 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
 
   describe "interface type resolution" do
     describe "when type can't be resolved" do
-      let(:query_string) { %|
+      let(:query_string) {
+        %|
         {
           resolvesToNilInterface { someField }
         }
-      |}
+      |
+      }
 
       it "raises an error" do
         err = assert_raises(GraphQL::UnresolvedTypeError) { result }
@@ -92,11 +98,13 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
     end
 
     describe "when type resolves but is not a possible type of an interface" do
-      let(:query_string) { %|
+      let(:query_string) {
+        %|
         {
           resolvesToWrongTypeInterface { someField }
         }
-      |}
+      |
+      }
 
       it "raises an error" do
         err = assert_raises(GraphQL::UnresolvedTypeError) { result }
@@ -104,6 +112,5 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
         assert_equal expected_message, err.message
       end
     end
-
   end
 end

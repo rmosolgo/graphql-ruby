@@ -93,14 +93,14 @@ describe GraphQL::Schema::Object do
     it "does not inherit singleton methods from base interface when implementing another interface" do
       object_type = Class.new(GraphQL::Schema::Object)
       methods = object_type.singleton_methods
-      method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
+      method_defs = Hash[methods.zip(methods.map { |method| object_type.method(method.to_sym) })]
 
       module InterfaceType
         include GraphQL::Schema::Interface
       end
 
       object_type.implements(InterfaceType)
-      new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
+      new_method_defs = Hash[methods.zip(methods.map { |method| object_type.method(method.to_sym) })]
       assert_equal method_defs, new_method_defs
     end
   end
@@ -179,7 +179,6 @@ describe GraphQL::Schema::Object do
     end
   end
 
-
   describe "in queries" do
     after {
       Jazz::Models.reset
@@ -220,10 +219,10 @@ describe GraphQL::Schema::Object do
       }
       GRAPHQL
 
-      res = Jazz::Schema.execute(mutation_str, variables: { name: "Miles Davis Quartet" })
+      res = Jazz::Schema.execute(mutation_str, variables: {name: "Miles Davis Quartet"})
       new_id = res["data"]["addEnsemble"]["id"]
 
-      res2 = Jazz::Schema.execute(query_str, variables: { id: new_id })
+      res2 = Jazz::Schema.execute(query_str, variables: {id: new_id})
       assert_equal "Miles Davis Quartet", res2["data"]["find"]["name"]
     end
 
@@ -236,7 +235,7 @@ describe GraphQL::Schema::Object do
     it "skips fields properly" do
       query_str = "{ find(id: \"MagicalSkipId\") { __typename } }"
       res = Jazz::Schema.execute(query_str)
-      assert_equal({"data" => nil }, res.to_h)
+      assert_equal({"data" => nil}, res.to_h)
     end
   end
 end

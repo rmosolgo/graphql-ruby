@@ -4,7 +4,8 @@ require "spec_helper"
 describe GraphQL::ExecutionError do
   let(:result) { Dummy::Schema.execute(query_string) }
   describe "when returned from a field" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
     {
       cheese(id: 1) {
         id
@@ -51,98 +52,100 @@ describe GraphQL::ExecutionError do
     fragment similarCheeseFields on Cheese {
       id, flavor
     }
-    |}
+    |
+    }
     it "the error is inserted into the errors key and the rest of the query is fulfilled" do
       expected_result = {
-        "data"=>{
-          "cheese"=>{
+        "data" => {
+          "cheese" => {
             "id" => 1,
-            "error1"=> nil,
-            "error2"=> nil,
-            "nonError"=> {
+            "error1" => nil,
+            "error2" => nil,
+            "nonError" => {
               "id" => 3,
               "flavor" => "Manchego",
             },
             "flavor" => "Brie",
-            },
-            "allDairy" => [
-              { "flavor" => "Brie" },
-              { "flavor" => "Gouda" },
-              { "flavor" => "Manchego" },
-              { "source" => "COW", "executionError" => nil }
-            ],
-            "dairyErrors" => [
-              { "__typename" => "Cheese" },
-              nil,
-              { "__typename" => "Cheese" },
-              { "__typename" => "Milk" }
-            ],
-            "dairy" => {
-              "milks" => [
-                {
-                  "source" => "COW",
-                  "executionError" => nil,
-                  "allDairy" => [
-                    { "__typename" => "Cheese" },
-                    { "__typename" => "Cheese" },
-                    { "__typename" => "Cheese" },
-                    { "__typename" => "Milk", "origin" => "Antiquity", "executionError" => nil }
-                  ]
-                }
-              ]
-            },
-            "executionError" => nil,
-            "valueWithExecutionError" => 0
           },
-          "errors"=>[
-            {
-              "message"=>"No cheeses are made from Yak milk!",
-              "locations"=>[{"line"=>5, "column"=>9}],
-              "path"=>["cheese", "error1"]
-            },
-            {
-              "message"=>"No cheeses are made from Yak milk!",
-              "locations"=>[{"line"=>8, "column"=>9}],
-              "path"=>["cheese", "error2"]
-            },
-            {
-              "message"=>"There was an execution error",
-              "locations"=>[{"line"=>22, "column"=>11}],
-              "path"=>["allDairy", 3, "executionError"]
-            },
-            {
-              "message"=>"missing dairy",
-              "locations"=>[{"line"=>25, "column"=>7}],
-              "path"=>["dairyErrors", 1]
-            },
-            {
-              "message"=>"There was an execution error",
-              "locations"=>[{"line"=>31, "column"=>11}],
-              "path"=>["dairy", "milks", 0, "executionError"]
-            },
-            {
-              "message"=>"There was an execution error",
-              "locations"=>[{"line"=>36, "column"=>15}],
-              "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
-            },
-            {
-              "message"=>"There was an execution error",
-              "locations"=>[{"line"=>41, "column"=>7}],
-              "path"=>["executionError"]
-            },
-            {
-              "message"=>"Could not fetch latest value",
-              "locations"=>[{"line"=>42, "column"=>7}],
-              "path"=>["valueWithExecutionError"]
-            },
-          ]
-        }
+          "allDairy" => [
+            {"flavor" => "Brie"},
+            {"flavor" => "Gouda"},
+            {"flavor" => "Manchego"},
+            {"source" => "COW", "executionError" => nil},
+          ],
+          "dairyErrors" => [
+            {"__typename" => "Cheese"},
+            nil,
+            {"__typename" => "Cheese"},
+            {"__typename" => "Milk"},
+          ],
+          "dairy" => {
+            "milks" => [
+              {
+                "source" => "COW",
+                "executionError" => nil,
+                "allDairy" => [
+                  {"__typename" => "Cheese"},
+                  {"__typename" => "Cheese"},
+                  {"__typename" => "Cheese"},
+                  {"__typename" => "Milk", "origin" => "Antiquity", "executionError" => nil},
+                ],
+              },
+            ],
+          },
+          "executionError" => nil,
+          "valueWithExecutionError" => 0,
+        },
+        "errors" => [
+          {
+            "message" => "No cheeses are made from Yak milk!",
+            "locations" => [{"line" => 5, "column" => 9}],
+            "path" => ["cheese", "error1"],
+          },
+          {
+            "message" => "No cheeses are made from Yak milk!",
+            "locations" => [{"line" => 8, "column" => 9}],
+            "path" => ["cheese", "error2"],
+          },
+          {
+            "message" => "There was an execution error",
+            "locations" => [{"line" => 22, "column" => 11}],
+            "path" => ["allDairy", 3, "executionError"],
+          },
+          {
+            "message" => "missing dairy",
+            "locations" => [{"line" => 25, "column" => 7}],
+            "path" => ["dairyErrors", 1],
+          },
+          {
+            "message" => "There was an execution error",
+            "locations" => [{"line" => 31, "column" => 11}],
+            "path" => ["dairy", "milks", 0, "executionError"],
+          },
+          {
+            "message" => "There was an execution error",
+            "locations" => [{"line" => 36, "column" => 15}],
+            "path" => ["dairy", "milks", 0, "allDairy", 3, "executionError"],
+          },
+          {
+            "message" => "There was an execution error",
+            "locations" => [{"line" => 41, "column" => 7}],
+            "path" => ["executionError"],
+          },
+          {
+            "message" => "Could not fetch latest value",
+            "locations" => [{"line" => 42, "column" => 7}],
+            "path" => ["valueWithExecutionError"],
+          },
+        ],
+      }
       assert_equal(expected_result, result.to_h)
     end
   end
 
   describe "named query when returned from a field" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
     query MilkQuery {
       dairy {
         milks {
@@ -158,44 +161,46 @@ describe GraphQL::ExecutionError do
         }
       }
     }
-    |}
+    |
+    }
     it "the error is inserted into the errors key and the rest of the query is fulfilled" do
       expected_result = {
-        "data"=>{
-            "dairy" => {
-              "milks" => [
-                {
-                  "source" => "COW",
-                  "executionError" => nil,
-                  "allDairy" => [
-                    { "__typename" => "Cheese" },
-                    { "__typename" => "Cheese" },
-                    { "__typename" => "Cheese" },
-                    { "__typename" => "Milk", "origin" => "Antiquity", "executionError" => nil }
-                  ]
-                }
-              ]
-            }
+        "data" => {
+          "dairy" => {
+            "milks" => [
+              {
+                "source" => "COW",
+                "executionError" => nil,
+                "allDairy" => [
+                  {"__typename" => "Cheese"},
+                  {"__typename" => "Cheese"},
+                  {"__typename" => "Cheese"},
+                  {"__typename" => "Milk", "origin" => "Antiquity", "executionError" => nil},
+                ],
+              },
+            ],
           },
-          "errors"=>[
-            {
-              "message"=>"There was an execution error",
-              "locations"=>[{"line"=>6, "column"=>11}],
-              "path"=>["dairy", "milks", 0, "executionError"]
-            },
-            {
-              "message"=>"There was an execution error",
-              "locations"=>[{"line"=>11, "column"=>15}],
-              "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
-            }
-          ]
-        }
+        },
+        "errors" => [
+          {
+            "message" => "There was an execution error",
+            "locations" => [{"line" => 6, "column" => 11}],
+            "path" => ["dairy", "milks", 0, "executionError"],
+          },
+          {
+            "message" => "There was an execution error",
+            "locations" => [{"line" => 11, "column" => 15}],
+            "path" => ["dairy", "milks", 0, "allDairy", 3, "executionError"],
+          },
+        ],
+      }
       assert_equal(expected_result, result)
     end
   end
 
   describe "fragment query when returned from a field" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
     query MilkQuery {
       dairy {
         ...Dairy
@@ -217,95 +222,96 @@ describe GraphQL::ExecutionError do
       origin
       executionError
     }
-    |}
+    |
+    }
     it "the error is inserted into the errors key and the rest of the query is fulfilled" do
       expected_result = {
-        "data"=>{
-            "dairy" => {
-              "milks" => [
-                {
-                  "source" => "COW",
-                  "executionError" => nil,
-                  "allDairy" => [
-                    { "__typename" => "Cheese" },
-                    { "__typename" => "Cheese" },
-                    { "__typename" => "Cheese" },
-                    { "__typename" => "Milk", "origin" => "Antiquity", "executionError" => nil }
-                  ]
-                }
-              ]
-            }
+        "data" => {
+          "dairy" => {
+            "milks" => [
+              {
+                "source" => "COW",
+                "executionError" => nil,
+                "allDairy" => [
+                  {"__typename" => "Cheese"},
+                  {"__typename" => "Cheese"},
+                  {"__typename" => "Cheese"},
+                  {"__typename" => "Milk", "origin" => "Antiquity", "executionError" => nil},
+                ],
+              },
+            ],
           },
-          "errors"=>[
-            {
-              "message"=>"There was an execution error",
-              "locations"=>[{"line"=>11, "column"=>9}],
-              "path"=>["dairy", "milks", 0, "executionError"]
-            },
-            {
-              "message"=>"There was an execution error",
-              "locations"=>[{"line"=>21, "column"=>7}],
-              "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
-            }
-          ]
-        }
+        },
+        "errors" => [
+          {
+            "message" => "There was an execution error",
+            "locations" => [{"line" => 11, "column" => 9}],
+            "path" => ["dairy", "milks", 0, "executionError"],
+          },
+          {
+            "message" => "There was an execution error",
+            "locations" => [{"line" => 21, "column" => 7}],
+            "path" => ["dairy", "milks", 0, "allDairy", 3, "executionError"],
+          },
+        ],
+      }
       assert_equal(expected_result, result)
     end
   end
 
   describe "options in ExecutionError" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
     {
       executionErrorWithOptions
     }
-    |}
+    |
+    }
     it "the error is inserted into the errors key and the rest of the query is fulfilled" do
       expected_result = {
-        "data"=>{"executionErrorWithOptions"=>nil},
-        "errors"=>
-            [{"message"=>"Permission Denied!",
-              "locations"=>[{"line"=>3, "column"=>7}],
-              "path"=>["executionErrorWithOptions"],
-              "code"=>"permission_denied"}]
+        "data" => {"executionErrorWithOptions" => nil},
+        "errors" => [{"message" => "Permission Denied!",
+                      "locations" => [{"line" => 3, "column" => 7}],
+                      "path" => ["executionErrorWithOptions"],
+                      "code" => "permission_denied"}],
       }
       assert_equal(expected_result, result)
     end
   end
 
   describe "extensions in ExecutionError" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
     {
       executionErrorWithExtensions
     }
-    |}
+    |
+    }
     it "the error is inserted into the errors key with custom data set in `extensions`" do
       expected_result = {
-        "data"=>{"executionErrorWithExtensions"=>nil},
-        "errors"=>
-            [{"message"=>"Permission Denied!",
-              "locations"=>[{"line"=>3, "column"=>7}],
-              "path"=>["executionErrorWithExtensions"],
-              "extensions"=>{"code"=>"permission_denied"}}]
+        "data" => {"executionErrorWithExtensions" => nil},
+        "errors" => [{"message" => "Permission Denied!",
+                      "locations" => [{"line" => 3, "column" => 7}],
+                      "path" => ["executionErrorWithExtensions"],
+                      "extensions" => {"code" => "permission_denied"}}],
       }
       assert_equal(expected_result, result)
     end
   end
 
   describe "more than one ExecutionError" do
-    let(:query_string) { %|{ multipleErrorsOnNonNullableField} |}
+    let(:query_string) { %|{ multipleErrorsOnNonNullableField} | }
     it "the errors are inserted into the errors key and the data is nil even for a NonNullable field " do
       expected_result = {
-          "data"=>nil,
-          "errors"=>
-              [{"message"=>"This is an error message for some error.",
-                "locations"=>[{"line"=>1, "column"=>3}],
-                "path"=>["multipleErrorsOnNonNullableField", 0]},
-               {"message"=>"This is another error message for a different error.",
-                "locations"=>[{"line"=>1, "column"=>3}],
-                "path"=>["multipleErrorsOnNonNullableField", 1]}]
+        "data" => nil,
+        "errors" => [{"message" => "This is an error message for some error.",
+                      "locations" => [{"line" => 1, "column" => 3}],
+                      "path" => ["multipleErrorsOnNonNullableField", 0]},
+                     {"message" => "This is another error message for a different error.",
+                      "locations" => [{"line" => 1, "column" => 3}],
+                      "path" => ["multipleErrorsOnNonNullableField", 1]}],
       }
       assert_equal(expected_result, result)
     end
   end
-
 end

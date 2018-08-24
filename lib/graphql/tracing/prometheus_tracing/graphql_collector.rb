@@ -6,18 +6,18 @@ module GraphQL
       class GraphQLCollector < ::PrometheusExporter::Server::TypeCollector
         def initialize
           @graphql_gauge = PrometheusExporter::Metric::Summary.new(
-            'graphql_duration_seconds',
-            'Time spent in GraphQL operations, in seconds'
+            "graphql_duration_seconds",
+            "Time spent in GraphQL operations, in seconds"
           )
         end
 
         def type
-          'graphql'
+          "graphql"
         end
 
         def collect(object)
-          labels = { key: object['key'], platform_key: object['platform_key'] }
-          @graphql_gauge.observe object['duration'], labels
+          labels = {key: object["key"], platform_key: object["platform_key"]}
+          @graphql_gauge.observe object["duration"], labels
         end
 
         def metrics

@@ -33,6 +33,7 @@ module GraphQL
 
       class << self
         private
+
         # Call the before_ hooks of each query,
         # Then yield if no errors.
         # `call_hooks` takes care of appropriate cleanup.

@@ -3,6 +3,7 @@ require "graphql/backtrace/inspect_result"
 require "graphql/backtrace/table"
 require "graphql/backtrace/traced_error"
 require "graphql/backtrace/tracer"
+
 module GraphQL
   # Wrap unhandled errors with {TracedError}.
   #

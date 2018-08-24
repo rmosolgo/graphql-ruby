@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require './lib/graphql/upgrader/schema.rb'
+require "./lib/graphql/upgrader/schema.rb"
 
 describe GraphQL::Upgrader::Schema do
   def upgrade(old)
     GraphQL::Upgrader::Schema.new(old).upgrade
   end
 
-  it 'updates the definition' do
+  it "updates the definition" do
     old = %{
       StarWarsSchema = GraphQL::Schema.define do
       end
@@ -21,7 +21,7 @@ describe GraphQL::Upgrader::Schema do
     assert_equal upgrade(old), new
   end
 
-  it 'updates the resolve_type' do
+  it "updates the resolve_type" do
     old = %{
       StarWarsSchema = GraphQL::Schema.define do
         resolve_type ->(obj, ctx) do
@@ -40,7 +40,7 @@ describe GraphQL::Upgrader::Schema do
     assert_equal upgrade(old), new
   end
 
-  it 'updates the object_from_id' do
+  it "updates the object_from_id" do
     old = %{
       StarWarsSchema = GraphQL::Schema.define do
         object_from_id ->(id, ctx) do
@@ -59,7 +59,7 @@ describe GraphQL::Upgrader::Schema do
     assert_equal upgrade(old), new
   end
 
-  it 'updates the id_from_object' do
+  it "updates the id_from_object" do
     old = %{
       StarWarsSchema = GraphQL::Schema.define do
         id_from_object -> (object, type_definition, ctx) do
@@ -77,6 +77,4 @@ describe GraphQL::Upgrader::Schema do
 
     assert_equal upgrade(old), new
   end
-
-
 end

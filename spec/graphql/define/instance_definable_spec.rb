@@ -151,7 +151,7 @@ describe GraphQL::Define::InstanceDefinable do
 
       def use(defn)
         @target = defn.target
-        defn.name('Arugula')
+        defn.name("Arugula")
       end
     end
 
@@ -170,16 +170,16 @@ describe GraphQL::Define::InstanceDefinable do
         use plugin
       end
 
-      assert_equal 'Arugula', arugula.name
+      assert_equal "Arugula", arugula.name
       assert_equal arugula, plugin.target
     end
 
     it "passes kwargs to plugin's `use` method" do
       arugula = Garden::Vegetable.define do
-        use TestPluginWithKwargs, name: 'Arugula'
+        use TestPluginWithKwargs, name: "Arugula"
       end
 
-      assert_equal 'Arugula', arugula.name
+      assert_equal "Arugula", arugula.name
     end
   end
 

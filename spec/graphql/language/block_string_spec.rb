@@ -21,7 +21,7 @@ describe GraphQL::Language::BlockString do
           Yours,
             GraphQL.
           ",
-          "Hello,\n  World!\n\nYours,\n  GraphQL."
+          "Hello,\n  World!\n\nYours,\n  GraphQL.",
         ],
         [
           # Removes leading and trailing newlines:
@@ -34,7 +34,7 @@ describe GraphQL::Language::BlockString do
             GraphQL.
 
           ",
-          "Hello,\n  World!\n\nYours,\n  GraphQL."
+          "Hello,\n  World!\n\nYours,\n  GraphQL.",
         ],
         [
           # Removes blank lines (with whitespace _and_ newlines:)
@@ -46,7 +46,7 @@ describe GraphQL::Language::BlockString do
             GraphQL.
 
           \n     \n",
-          "Hello,\n  World!\n\nYours,\n  GraphQL."
+          "Hello,\n  World!\n\nYours,\n  GraphQL.",
         ],
         [
           # Retains indentation from the first line

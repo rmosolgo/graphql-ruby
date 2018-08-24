@@ -212,6 +212,7 @@ module GraphQL
 
       class Definition
         attr_reader :define_keywords, :define_proc
+
         def initialize(define_keywords, define_proc)
           @define_keywords = define_keywords
           @define_proc = define_proc
@@ -234,10 +235,10 @@ module GraphQL
         # The last entry in accepts may be a hash of name-proc pairs for custom definitions.
         def accepts_definitions(*accepts)
           new_assignments = if accepts.last.is_a?(Hash)
-            accepts.pop.dup
-          else
-            {}
-          end
+                              accepts.pop.dup
+                            else
+                              {}
+                            end
 
           accepts.each do |key|
             new_assignments[key] = AssignAttribute.new(key)

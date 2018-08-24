@@ -38,7 +38,7 @@ module GraphQL
           {
             "line" => ast_node.line,
             "column" => ast_node.col,
-          }
+          },
         ]
       end
       if path

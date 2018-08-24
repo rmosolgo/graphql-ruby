@@ -24,7 +24,7 @@ module GraphQL
 
       def platform_trace(platform_key, key, data)
         if key == "execute_query"
-          set_this_txn_name =  data[:query].context[:set_new_relic_transaction_name]
+          set_this_txn_name = data[:query].context[:set_new_relic_transaction_name]
           if set_this_txn_name == true || (set_this_txn_name.nil? && @set_transaction_name)
             query = data[:query]
             # Set the transaction name based on the operation type and name

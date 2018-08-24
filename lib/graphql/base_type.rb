@@ -9,13 +9,13 @@ module GraphQL
     include GraphQL::Relay::TypeExtensions
 
     accepts_definitions :name, :description,
-        :introspection,
-        :default_scalar,
-        :default_relay,
-        {
-          connection: GraphQL::Define::AssignConnection,
-          global_id_field: GraphQL::Define::AssignGlobalIdField,
-        }
+                        :introspection,
+                        :default_scalar,
+                        :default_relay,
+                        {
+                          connection: GraphQL::Define::AssignConnection,
+                          global_id_field: GraphQL::Define::AssignGlobalIdField,
+                        }
 
     ensure_defined(:graphql_name, :name, :description, :introspection?, :default_scalar?)
 

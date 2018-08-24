@@ -17,10 +17,10 @@ module GraphQL
         callable
       elsif arity == from
         # It has the old arity, so wrap it with an arity converter
-        message ="#{name} with #{from} arguments is deprecated, it now accepts #{to} arguments, see:"
+        message = "#{name} with #{from} arguments is deprecated, it now accepts #{to} arguments, see:"
         backtrace = caller(0, 20)
         # Find the first line in the trace that isn't library internals:
-        user_line = backtrace.find {|l| l !~ /lib\/graphql/ }
+        user_line = backtrace.find { |l| l !~ /lib\/graphql/ }
         warn(message + "\n" + user_line + "\n")
         wrapper = last ? LastArgumentsWrapper : FirstArgumentsWrapper
         wrapper.new(callable, from)

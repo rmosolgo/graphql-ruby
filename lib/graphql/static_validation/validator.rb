@@ -22,7 +22,7 @@ module GraphQL
       # @param query [GraphQL::Query]
       # @return [Array<Hash>]
       def validate(query, validate: true)
-        query.trace("validate", { validate: validate, query: query }) do
+        query.trace("validate", {validate: validate, query: query}) do
           context = GraphQL::StaticValidation::ValidationContext.new(query)
           rewrite = GraphQL::InternalRepresentation::Rewrite.new
 

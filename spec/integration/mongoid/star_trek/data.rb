@@ -1,35 +1,36 @@
 # frozen_string_literal: true
-require 'ostruct'
+require "ostruct"
 
 module StarTrek
   names = [
-    'USS Enterprise',
-    'USS Excelsior',
-    'USS Reliant',
-    'IKS Koraga',
-    'IKS Kronos One',
-    'IRW Khazara',
-    'IRW Praetus',
+    "USS Enterprise",
+    "USS Excelsior",
+    "USS Reliant",
+    "IKS Koraga",
+    "IKS Kronos One",
+    "IRW Khazara",
+    "IRW Praetus",
   ]
 
   MONGOID_CONFIG = {
     clients: {
       default: {
-        database: 'graphql_ruby_test',
-        hosts: ['localhost:27017']
-      }
+        database: "graphql_ruby_test",
+        hosts: ["localhost:27017"],
+      },
     },
     sessions: {
       default: {
-        database: 'graphql_ruby_test',
-        hosts: ['localhost:27017']
-      }
-    }
+        database: "graphql_ruby_test",
+        hosts: ["localhost:27017"],
+      },
+    },
   }.freeze
 
   def db_name
     MONGOID_CONFIG[:clients][:default][:database]
   end
+
   module_function :db_name
 
   # Set up "Bases" in MongoDB
@@ -40,13 +41,13 @@ module StarTrek
     field :name, type: String
     field :sector, type: String
     field :faction_id, type: Integer
-    has_many :residents, class_name: 'StarTrek::Resident', inverse_of: :base
+    has_many :residents, class_name: "StarTrek::Resident", inverse_of: :base
   end
 
   class Resident
     include Mongoid::Document
     field :name, type: String
-    belongs_to :base, class_name: 'StarTrek::Base'
+    belongs_to :base, class_name: "StarTrek::Base"
   end
 
   Base.collection.drop
@@ -66,9 +67,9 @@ module StarTrek
   Base.create!(name: "Ganalda Space Station", sector: "Archanis", faction_id: 2)
   Base.create!(name: "Rh'Ihho Station", sector: "Rator", faction_id: 3)
 
-
   class FactionRecord
     attr_reader :id, :name, :ships, :bases, :bases_clone
+
     def initialize(id:, name:, ships:, bases:, bases_clone:)
       @id = id
       @name = name
@@ -79,25 +80,25 @@ module StarTrek
   end
 
   federation = FactionRecord.new({
-    id: '1',
-    name: 'United Federation of Planets',
-    ships:  ['1', '2', '3'],
+    id: "1",
+    name: "United Federation of Planets",
+    ships: ["1", "2", "3"],
     bases: Base.where(faction_id: 1),
     bases_clone: Base.where(faction_id: 1),
   })
 
   klingon = FactionRecord.new({
-    id: '2',
-    name: 'Klingon Empire',
-    ships: ['4', '5'],
+    id: "2",
+    name: "Klingon Empire",
+    ships: ["4", "5"],
     bases: Base.where(faction_id: 2),
     bases_clone: Base.where(faction_id: 2),
   })
 
   romulan = FactionRecord.new({
-    id: '2',
-    name: 'Romulan Star Empire',
-    ships: ['6', '7'],
+    id: "2",
+    name: "Romulan Star Empire",
+    ships: ["6", "7"],
     bases: Base.where(faction_id: 3),
     bases_clone: Base.where(faction_id: 3),
   })
@@ -113,7 +114,7 @@ module StarTrek
       memo[id] = OpenStruct.new(name: name, id: id)
       memo
     end,
-    "Base" => Hash.new { |h, k| h[k] = Base.find(k) }
+    "Base" => Hash.new { |h, k| h[k] = Base.find(k) },
   }
 
   def DATA.create_ship(name, faction_id)

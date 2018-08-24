@@ -5,8 +5,8 @@ describe GraphQL::ScalarType do
   let(:custom_scalar) {
     GraphQL::ScalarType.define do
       name "BigInt"
-      coerce_input ->(value, _ctx) { value =~ /\d+/ ? Integer(value) : nil }
-      coerce_result ->(value, _ctx) { value.to_s }
+      coerce_input -> (value, _ctx) { value =~ /\d+/ ? Integer(value) : nil }
+      coerce_result -> (value, _ctx) { value.to_s }
     end
   }
   let(:bignum) { 2 ** 128 }

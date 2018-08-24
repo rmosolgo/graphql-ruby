@@ -4,7 +4,8 @@ require "spec_helper"
 describe GraphQL::Relay::ConnectionType do
   describe ".create_type" do
     describe "connections with custom Edge classes / EdgeTypes" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         {
           rebels {
             basesWithCustomEdge {
@@ -22,23 +23,25 @@ describe GraphQL::Relay::ConnectionType do
             }
           }
         }
-      |}
+      |
+      }
 
       it "uses the custom edge and custom connection" do
         result = star_wars_query(query_string)
         bases = result["data"]["rebels"]["basesWithCustomEdge"]
         assert_equal 300, bases["totalCountTimes100"]
-        assert_equal 'basesWithCustomEdge', bases["fieldName"]
-        assert_equal ["YAVIN", "ECHO BASE", "SECRET HIDEOUT"] , bases["edges"].map { |e| e["upcasedName"] }
-        assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases["edges"].map { |e| e["node"]["name"] }
-        assert_equal ["StarWars::CustomBaseEdge"] , bases["edges"].map { |e| e["edgeClassName"] }.uniq
+        assert_equal "basesWithCustomEdge", bases["fieldName"]
+        assert_equal ["YAVIN", "ECHO BASE", "SECRET HIDEOUT"], bases["edges"].map { |e| e["upcasedName"] }
+        assert_equal ["Yavin", "Echo Base", "Secret Hideout"], bases["edges"].map { |e| e["node"]["name"] }
+        assert_equal ["StarWars::CustomBaseEdge"], bases["edges"].map { |e| e["edgeClassName"] }.uniq
         upcased_rebels_name = "ALLIANCE TO RESTORE THE REPUBLIC"
-        assert_equal [upcased_rebels_name] , bases["edges"].map { |e| e["upcasedParentName"] }.uniq
+        assert_equal [upcased_rebels_name], bases["edges"].map { |e| e["upcasedParentName"] }.uniq
       end
     end
 
     describe "connections with nodes field" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         {
           rebels {
             bases {
@@ -53,19 +56,21 @@ describe GraphQL::Relay::ConnectionType do
             }
           }
         }
-      |}
+      |
+      }
 
       it "uses the custom edge and custom connection" do
         result = star_wars_query(query_string)
         bases = result["data"]["rebels"]["bases"]
-        assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases["nodes"].map { |e| e["name"] }
+        assert_equal ["Yavin", "Echo Base", "Secret Hideout"], bases["nodes"].map { |e| e["name"] }
         bases_with_custom_edge = result["data"]["rebels"]["basesWithCustomEdge"]
-        assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases_with_custom_edge["nodes"].map { |e| e["name"] }
+        assert_equal ["Yavin", "Echo Base", "Secret Hideout"], bases_with_custom_edge["nodes"].map { |e| e["name"] }
       end
     end
 
     describe "connections without nodes field" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         {
           rebels {
             basesWithoutNodes {
@@ -75,7 +80,8 @@ describe GraphQL::Relay::ConnectionType do
             }
           }
         }
-      |}
+      |
+      }
 
       it "raises error" do
         result = star_wars_query(query_string)
@@ -84,7 +90,8 @@ describe GraphQL::Relay::ConnectionType do
     end
 
     describe "when an execution error is raised" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         {
           basesWithNullName {
             edges {
@@ -94,7 +101,8 @@ describe GraphQL::Relay::ConnectionType do
             }
           }
         }
-      |}
+      |
+      }
 
       it "nullifies the parent and adds an error" do
         result = star_wars_query(query_string)

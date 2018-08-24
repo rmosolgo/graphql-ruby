@@ -134,7 +134,7 @@ module GraphQL
 
             assert_equal nil, failure, "It propagates nulls to the next nullable field"
             assert_equal({"name" => "SNCC"}, success, "It serves the same object if no invalid null is encountered")
-            assert_equal 1, res["errors"].length , "It returns an error for the invalid null"
+            assert_equal 1, res["errors"].length, "It returns an error for the invalid null"
           end
 
           def test_it_propages_nulls_to_operation
@@ -175,34 +175,34 @@ module GraphQL
 
             expected_errors = [
               {
-                "message"=>"This error was returned",
-                "locations"=>[{"line"=>5, "column"=>19}],
-                "path"=>["organization", "returnedError"]
+                "message" => "This error was returned",
+                "locations" => [{"line" => 5, "column" => 19}],
+                "path" => ["organization", "returnedError"],
               },
               {
-                "message"=>"This error was raised",
-                "locations"=>[{"line"=>6, "column"=>19}],
-                "path"=>["organization", "raisedError"]
+                "message" => "This error was raised",
+                "locations" => [{"line" => 6, "column" => 19}],
+                "path" => ["organization", "raisedError"],
               },
               {
-                "message"=>"This error was raised",
-                "locations"=>[{"line"=>10, "column"=>19}],
-                "path"=>["organizations", 0, "raisedError"]
+                "message" => "This error was raised",
+                "locations" => [{"line" => 10, "column" => 19}],
+                "path" => ["organizations", 0, "raisedError"],
               },
               {
-                "message"=>"This error was raised",
-                "locations"=>[{"line"=>10, "column"=>19}],
-                "path"=>["organizations", 1, "raisedError"]
+                "message" => "This error was raised",
+                "locations" => [{"line" => 10, "column" => 19}],
+                "path" => ["organizations", 1, "raisedError"],
               },
               {
-                "message"=>"This error was returned",
-                "locations"=>[{"line"=>9, "column"=>19}],
-                "path"=>["organizations", 0, "returnedError"]
+                "message" => "This error was returned",
+                "locations" => [{"line" => 9, "column" => 19}],
+                "path" => ["organizations", 0, "returnedError"],
               },
               {
-                "message"=>"This error was returned",
-                "locations"=>[{"line"=>9, "column"=>19}],
-                "path"=>["organizations", 1, "returnedError"]
+                "message" => "This error was returned",
+                "locations" => [{"line" => 9, "column" => 19}],
+                "path" => ["organizations", 1, "returnedError"],
               },
             ]
 
@@ -212,7 +212,7 @@ module GraphQL
           end
 
           def test_it_applies_masking
-            no_org = ->(member, ctx) { member.name == "Organization" }
+            no_org = -> (member, ctx) { member.name == "Organization" }
             query_string = %|
             {
               node(id: "2001") {
@@ -315,7 +315,7 @@ module GraphQL
             ")
 
             expected_data = {
-              "counter" => { "count" => 1 }
+              "counter" => {"count" => 1},
             }
             assert_equal expected_data, res["data"]
             assert_equal 1, self.class.counter_schema.metadata[:count]
@@ -335,7 +335,7 @@ module GraphQL
             ")
 
             expected_data = {
-              "counter" => { "counter" => { "count" => 2 } }
+              "counter" => {"counter" => {"count" => 2}},
             }
             assert_equal expected_data, res["data"]
           end
@@ -368,7 +368,7 @@ module GraphQL
               }
             }|
 
-            res = execute_query(query_string, context: { type_errors: log })
+            res = execute_query(query_string, context: {type_errors: log})
             assert_equal nil, res["data"]["node"]
             assert_equal [nil], log
           end
@@ -383,7 +383,7 @@ module GraphQL
             }|
 
             assert_raises(GraphQL::UnresolvedTypeError) {
-              execute_query(query_string, context: { type_errors: log })
+              execute_query(query_string, context: {type_errors: log})
             }
 
             assert_equal [SpecificationSchema::BOGUS_NODE], log
@@ -391,7 +391,7 @@ module GraphQL
 
           def test_it_treats_failed_type_resolution_like_nil
             log = []
-            ctx = { type_errors: log, gobble: true }
+            ctx = {type_errors: log, gobble: true}
             query_string = %|
             {
               node(id: "2003") {
@@ -422,7 +422,7 @@ module GraphQL
           def test_it_skips_connections
             query_type = GraphQL::ObjectType.define do
               name "Query"
-              connection :skipped, types[query_type], resolve: ->(o,a,c) { c.skip }
+              connection :skipped, types[query_type], resolve: -> (o, a, c) { c.skip }
             end
             schema = GraphQL::Schema.define(query: query_type)
             res = schema.execute("{ skipped { __typename } }")

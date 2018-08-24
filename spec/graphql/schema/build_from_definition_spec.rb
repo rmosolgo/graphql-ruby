@@ -11,8 +11,8 @@ describe GraphQL::Schema::BuildFromDefinition do
     built_schema
   end
 
-  describe '.build' do
-    it 'can build a schema with a simple type' do
+  describe ".build" do
+    it "can build a schema with a simple type" do
       schema = <<-SCHEMA
 schema {
   query: HelloScalars
@@ -30,7 +30,7 @@ type HelloScalars {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'can build a schema with default input object values' do
+    it "can build a schema with default input object values" do
       schema = <<-SCHEMA
 input InputObject {
   a: Int
@@ -44,7 +44,7 @@ type Query {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'can build a schema with directives' do
+    it "can build a schema with directives" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -60,7 +60,7 @@ type Hello {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports descriptions' do
+    it "supports descriptions" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -93,7 +93,7 @@ type Hello {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'maintains built-in directives' do
+    it "maintains built-in directives" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -105,10 +105,10 @@ type Hello {
       SCHEMA
 
       built_schema = GraphQL::Schema.from_definition(schema)
-      assert_equal ['deprecated', 'include', 'skip'], built_schema.directives.keys.sort
+      assert_equal ["deprecated", "include", "skip"], built_schema.directives.keys.sort
     end
 
-    it 'supports overriding built-in directives' do
+    it "supports overriding built-in directives" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -125,12 +125,12 @@ type Hello {
 
       built_schema = GraphQL::Schema.from_definition(schema)
 
-      refute built_schema.directives['skip'] == GraphQL::Directive::SkipDirective
-      refute built_schema.directives['include'] == GraphQL::Directive::IncludeDirective
-      refute built_schema.directives['deprecated'] == GraphQL::Directive::DeprecatedDirective
+      refute built_schema.directives["skip"] == GraphQL::Directive::SkipDirective
+      refute built_schema.directives["include"] == GraphQL::Directive::IncludeDirective
+      refute built_schema.directives["deprecated"] == GraphQL::Directive::DeprecatedDirective
     end
 
-    it 'supports adding directives while maintaining built-in directives' do
+    it "supports adding directives while maintaining built-in directives" do
       schema = <<-SCHEMA
 schema @custom(thing: true) {
   query: Hello
@@ -146,13 +146,13 @@ type Hello {
 
       built_schema = GraphQL::Schema.from_definition(schema)
 
-      assert built_schema.directives.keys.include?('skip')
-      assert built_schema.directives.keys.include?('include')
-      assert built_schema.directives.keys.include?('deprecated')
-      assert built_schema.directives.keys.include?('foo')
+      assert built_schema.directives.keys.include?("skip")
+      assert built_schema.directives.keys.include?("include")
+      assert built_schema.directives.keys.include?("deprecated")
+      assert built_schema.directives.keys.include?("foo")
     end
 
-    it 'supports type modifiers' do
+    it "supports type modifiers" do
       schema = <<-SCHEMA
 schema {
   query: HelloScalars
@@ -170,7 +170,7 @@ type HelloScalars {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports recursive type' do
+    it "supports recursive type" do
       schema = <<-SCHEMA
 schema {
   query: Recurse
@@ -185,7 +185,7 @@ type Recurse {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports two types circular' do
+    it "supports two types circular" do
       schema = <<-SCHEMA
 schema {
   query: TypeOne
@@ -205,7 +205,7 @@ type TypeTwo {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports single argument fields' do
+    it "supports single argument fields" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -223,7 +223,7 @@ type Hello {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'properly understands connections' do
+    it "properly understands connections" do
       schema = <<-SCHEMA
 schema {
   query: Type
@@ -302,7 +302,7 @@ type Type {
       assert obj.fields["organizations"].connection?
     end
 
-    it 'supports simple type with multiple arguments' do
+    it "supports simple type with multiple arguments" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -316,7 +316,7 @@ type Hello {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports simple type with interface' do
+    it "supports simple type with interface" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -334,7 +334,7 @@ interface WorldInterface {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports simple output enum' do
+    it "supports simple output enum" do
       schema = <<-SCHEMA
 schema {
   query: OutputEnumRoot
@@ -352,7 +352,7 @@ type OutputEnumRoot {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports simple input enum' do
+    it "supports simple input enum" do
       schema = <<-SCHEMA
 schema {
   query: InputEnumRoot
@@ -370,7 +370,7 @@ type InputEnumRoot {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports multiple value enum' do
+    it "supports multiple value enum" do
       schema = <<-SCHEMA
 schema {
   query: OutputEnumRoot
@@ -389,7 +389,7 @@ type OutputEnumRoot {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports simple union' do
+    it "supports simple union" do
       schema = <<-SCHEMA
 schema {
   query: Root
@@ -409,7 +409,7 @@ type World {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports multiple union' do
+    it "supports multiple union" do
       schema = <<-SCHEMA
 schema {
   query: Root
@@ -433,7 +433,7 @@ type WorldTwo {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports custom scalar' do
+    it "supports custom scalar" do
       schema = <<-SCHEMA
 schema {
   query: Root
@@ -452,7 +452,7 @@ type Root {
       assert_equal true, custom_scalar.valid_isolated_input?(12345)
     end
 
-    it 'supports input object' do
+    it "supports input object" do
       schema = <<-SCHEMA
 schema {
   query: Root
@@ -471,7 +471,7 @@ type Root {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports simple argument field with default value' do
+    it "supports simple argument field with default value" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -492,7 +492,7 @@ type Hello {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports simple type with mutation' do
+    it "supports simple type with mutation" do
       schema = <<-SCHEMA
 schema {
   query: HelloScalars
@@ -513,7 +513,7 @@ type Mutation {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports simple type with mutation and default values' do
+    it "supports simple type with mutation and default values" do
       schema = <<-SCHEMA
 enum Color {
   BLUE
@@ -532,7 +532,7 @@ type Query {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports simple type with subscription' do
+    it "supports simple type with subscription" do
       schema = <<-SCHEMA
 schema {
   query: HelloScalars
@@ -553,7 +553,7 @@ type Subscription {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports unreferenced type implementing referenced interface' do
+    it "supports unreferenced type implementing referenced interface" do
       schema = <<-SCHEMA
 type Concrete implements Iface {
   key: String
@@ -571,7 +571,7 @@ type Query {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports unreferenced type implementing referenced union' do
+    it "supports unreferenced type implementing referenced union" do
       schema = <<-SCHEMA
 type Concrete {
   key: String
@@ -587,7 +587,7 @@ union Union = Concrete
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports @deprecated' do
+    it "supports @deprecated" do
       schema = <<-SCHEMA
 enum MyEnum {
   OLD_VALUE @deprecated
@@ -605,7 +605,7 @@ type Query {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports empty types' do
+    it "supports empty types" do
       schema = <<-SCHEMA
 type Query {
 }
@@ -675,8 +675,8 @@ type Type implements Interface {
     end
   end
 
-  describe 'Failures' do
-    it 'Requires a schema definition or Query type' do
+  describe "Failures" do
+    it "Requires a schema definition or Query type" do
       schema = <<-SCHEMA
 type Hello {
   bar: Bar
@@ -685,10 +685,10 @@ SCHEMA
       err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
         GraphQL::Schema.from_definition(schema)
       end
-      assert_equal 'Must provide schema definition with query type or a type named Query.', err.message
+      assert_equal "Must provide schema definition with query type or a type named Query.", err.message
     end
 
-    it 'Allows only a single schema definition' do
+    it "Allows only a single schema definition" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -706,10 +706,10 @@ SCHEMA
       err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
         GraphQL::Schema.from_definition(schema)
       end
-      assert_equal 'Must provide only one schema definition.', err.message
+      assert_equal "Must provide only one schema definition.", err.message
     end
 
-    it 'Requires a query type' do
+    it "Requires a query type" do
       schema = <<-SCHEMA
 schema {
   mutation: Hello
@@ -723,10 +723,10 @@ SCHEMA
       err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
         GraphQL::Schema.from_definition(schema)
       end
-      assert_equal 'Must provide schema definition with query type or a type named Query.', err.message
+      assert_equal "Must provide schema definition with query type or a type named Query.", err.message
     end
 
-    it 'Unknown type referenced' do
+    it "Unknown type referenced" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -743,7 +743,7 @@ SCHEMA
       assert_equal 'Type "Bar" not found in document.', err.message
     end
 
-    it 'Unknown type in interface list' do
+    it "Unknown type in interface list" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -760,7 +760,7 @@ SCHEMA
       assert_equal 'Type "Bar" not found in document.', err.message
     end
 
-    it 'Unknown type in union list' do
+    it "Unknown type in union list" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -777,7 +777,7 @@ SCHEMA
       assert_equal 'Type "Bar" not found in document.', err.message
     end
 
-    it 'Unknown query type' do
+    it "Unknown query type" do
       schema = <<-SCHEMA
 schema {
   query: Wat
@@ -794,7 +794,7 @@ SCHEMA
       assert_equal 'Specified query type "Wat" not found in document.', err.message
     end
 
-    it 'Unknown mutation type' do
+    it "Unknown mutation type" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -812,7 +812,7 @@ SCHEMA
       assert_equal 'Specified mutation type "Wat" not found in document.', err.message
     end
 
-    it 'Unknown subscription type' do
+    it "Unknown subscription type" do
       schema = <<-SCHEMA
 schema {
   query: Hello
@@ -835,7 +835,7 @@ SCHEMA
       assert_equal 'Specified subscription type "Awesome" not found in document.', err.message
     end
 
-    it 'Does not consider operation names' do
+    it "Does not consider operation names" do
       schema = <<-SCHEMA
 schema {
   query: Foo
@@ -850,7 +850,7 @@ SCHEMA
       assert_equal 'Specified query type "Foo" not found in document.', err.message
     end
 
-    it 'Does not consider fragment names' do
+    it "Does not consider fragment names" do
       schema = <<-SCHEMA
 schema {
   query: Foo
@@ -893,49 +893,49 @@ SCHEMA
     let(:resolvers) {
       {
         Date: {
-          coerce_input: ->(val, ctx) {
+          coerce_input: -> (val, ctx) {
             Time.at(Float(val))
           },
-          coerce_result: ->(val, ctx) {
+          coerce_result: -> (val, ctx) {
             val.to_f
-          }
+          },
         },
-        resolve_type: ->(type, obj, ctx) {
-          return ctx.schema.types['A']
+        resolve_type: -> (type, obj, ctx) {
+          return ctx.schema.types["A"]
         },
         Query: {
-          add_week: ->(o,a,c) {
+          add_week: -> (o, a, c) {
             raise "No Time" unless a[:in].is_a? Time
             a[:in]
           },
-          hello: ->(o,a,c) {
+          hello: -> (o, a, c) {
             Something.new
           },
-          thing: ->(o,a,c) {
+          thing: -> (o, a, c) {
             OpenStruct.new({a: "a"})
           },
-          undefined_scalar: ->(o,a,c) {
+          undefined_scalar: -> (o, a, c) {
             a.values.first
-          }
-        }
+          },
+        },
       }
     }
 
     let(:schema) { GraphQL::Schema.from_definition(definition, default_resolve: resolvers) }
 
-    it "resolves unions"  do
+    it "resolves unions" do
       result = schema.execute("query { thing { ... on A { a } } }")
-      assert_equal(result.to_json,'{"data":{"thing":{"a":"a"}}}')
+      assert_equal(result.to_json, '{"data":{"thing":{"a":"a"}}}')
     end
 
     it "resolves scalars" do
       result = schema.execute("query { add_week(in: 392277600.0) }")
-      assert_equal(result.to_json,'{"data":{"add_week":392277600.0}}')
+      assert_equal(result.to_json, '{"data":{"add_week":392277600.0}}')
     end
 
-    it "passes args from graphql to the object"  do
+    it "passes args from graphql to the object" do
       result = schema.execute("query { hello { capitalize(word: \"hello\") }}")
-      assert_equal(result.to_json,'{"data":{"hello":{"capitalize":"HELLO"}}}')
+      assert_equal(result.to_json, '{"data":{"hello":{"capitalize":"HELLO"}}}')
     end
 
     it "handles undefined scalar resolution with identity function" do
@@ -946,7 +946,7 @@ SCHEMA
         }
       GRAPHQL
 
-      assert_equal({ "str" => "abc", "int" => 123 }, result["data"])
+      assert_equal({"str" => "abc", "int" => 123}, result["data"])
     end
   end
 
@@ -993,9 +993,9 @@ SCHEMA
       let(:resolve_hash) {
         h = base_hash
         h["Query"] ||= {}
-        h["Query"]["all_todos"] = ->(obj, args, ctx) { obj }
+        h["Query"]["all_todos"] = -> (obj, args, ctx) { obj }
         h["Mutation"] ||= {}
-        h["Mutation"]["todo_add"] = ->(obj, args, ctx) {
+        h["Mutation"]["todo_add"] = -> (obj, args, ctx) {
           todo = Todo.new(args[:text], ctx[:context_value])
           obj << todo
           todo
@@ -1005,7 +1005,7 @@ SCHEMA
 
       let(:base_hash) {
         # Fallback is to resolve by sending the field name
-        Hash.new { |h, k| h[k] = Hash.new { |h2, k2| ->(obj, args, ctx) { obj.public_send(k2) } } }
+        Hash.new { |h, k| h[k] = Hash.new { |h2, k2| -> (obj, args, ctx) { obj.public_send(k2) } } }
       }
 
       it "accepts a hash of resolve functions" do
@@ -1021,19 +1021,19 @@ SCHEMA
           @todos = [Todo.new("Pay the bills.")]
           @resolves = {
             "Query" => {
-              "all_todos" => ->(obj, args, ctx) { @todos },
+              "all_todos" => -> (obj, args, ctx) { @todos },
             },
             "Mutation" => {
-              "todo_add" => ->(obj, args, ctx) {
+              "todo_add" => -> (obj, args, ctx) {
                 todo = Todo.new(args[:text], ctx[:context_value])
                 @todos << todo
                 todo
               },
             },
             "Todo" => {
-              "text" => ->(obj, args, ctx) { obj.text },
-              "from_context" => ->(obj, args, ctx) { obj.from_context },
-            }
+              "text" => -> (obj, args, ctx) { obj.text },
+              "from_context" => -> (obj, args, ctx) { obj.from_context },
+            },
           }
         end
 
@@ -1062,7 +1062,7 @@ SCHEMA
         end
       end
 
-      it 'accepts a parser callable' do
+      it "accepts a parser callable" do
         assert_raises(BadParser::ParseError) do
           GraphQL::Schema.from_definition(schema_defn, parser: BadParser)
         end

@@ -113,7 +113,7 @@ describe GraphQL::Backtrace do
 
       # The message includes the GraphQL context
       rendered_table = [
-        'Loc  | Field                         | Object     | Arguments           | Result',
+        "Loc  | Field                         | Object     | Arguments           | Result",
         '3:13 | Thing.raiseField as boomError | :something | {"message"=>"Boom"} | #<RuntimeError: This is broken: Boom>',
         '2:11 | Query.field1                  | "Root"     | {}                  | {}',
         '1:9  | query                         | "Root"     | {"msg"=>"Boom"}     | ',
@@ -128,7 +128,7 @@ describe GraphQL::Backtrace do
 
     it "annotates errors from Query#result" do
       query_str = "query StrField { field2 { strField } __typename }"
-      context = { backtrace: true }
+      context = {backtrace: true}
       query = GraphQL::Query.new(schema, query_str, context: context)
       err = assert_raises(GraphQL::Backtrace::TracedError) {
         query.result
@@ -139,7 +139,7 @@ describe GraphQL::Backtrace do
     it "annotates errors inside lazy resolution" do
       # Test context-based flag
       err = assert_raises(GraphQL::Backtrace::TracedError) {
-        schema.execute("query StrField { field2 { strField } __typename }", context: { backtrace: true })
+        schema.execute("query StrField { field2 { strField } __typename }", context: {backtrace: true})
       }
       assert_instance_of RuntimeError, err.cause
       b = err.cause.backtrace
@@ -156,9 +156,9 @@ describe GraphQL::Backtrace do
       assert_equal(expected_graphql_backtrace, err.graphql_backtrace)
 
       rendered_table = [
-        'Loc  | Field               | Object     | Arguments | Result',
-        '1:27 | OtherThing.strField | :something | {}        | #<RuntimeError: Lazy Boom>',
-        '1:18 | Query.field2        | nil        | {}        | {strField: (unresolved)}',
+        "Loc  | Field               | Object     | Arguments | Result",
+        "1:27 | OtherThing.strField | :something | {}        | #<RuntimeError: Lazy Boom>",
+        "1:18 | Query.field2        | nil        | {}        | {strField: (unresolved)}",
         '1:1  | query StrField      | nil        | {}        | {field2: {...}, __typename: "Query"}',
       ].join("\n")
       assert_includes err.message, rendered_table
@@ -176,15 +176,14 @@ describe GraphQL::Backtrace do
       }
 
       rendered_table = [
-        'Loc  | Field            | Object | Arguments           | Result',
+        "Loc  | Field            | Object | Arguments           | Result",
         '1:22 | Thing.raiseField |        | {"message"=>"pop!"} | #<RuntimeError: This is broken: pop!>',
-        '1:9  | Query.nilInspect | nil    | {}                  | {}',
-        '1:1  | query            | nil    | {}                  | {}',
+        "1:9  | Query.nilInspect | nil    | {}                  | {}",
+        "1:1  | query            | nil    | {}                  | {}",
       ].join("\n")
 
       assert_includes(err.message, rendered_table)
     end
-
 
     it "raises original exception instead of a TracedError when error does not occur during resolving" do
       instrumentation_schema = schema.redefine do
@@ -192,7 +191,7 @@ describe GraphQL::Backtrace do
       end
 
       assert_raises(RuntimeError) {
-        instrumentation_schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY, context: { backtrace: true })
+        instrumentation_schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY, context: {backtrace: true})
       }
     end
   end

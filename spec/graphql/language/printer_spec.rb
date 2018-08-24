@@ -3,7 +3,8 @@ require "spec_helper"
 
 describe GraphQL::Language::Printer do
   let(:document) { GraphQL::Language::Parser.parse(query_string) }
-  let(:query_string) {%|
+  let(:query_string) {
+    %|
     query getStuff($someVar: Int = 1, $anotherVar: [String!], $skipNested: Boolean! = false) @skip(if: false) {
       myField: someField(someArg: $someVar, ok: 1.4) @skip(if: $anotherVar) @thing(or: "Whatever")
       anotherField(someArg: [1, 2, 3]) {
@@ -22,7 +23,8 @@ describe GraphQL::Language::Printer do
     fragment moreNestedFields on NestedType @or(something: "ok") {
       anotherNestedField
     }
-  |}
+  |
+  }
 
   let(:printer) { GraphQL::Language::Printer.new }
 
@@ -32,11 +34,13 @@ describe GraphQL::Language::Printer do
     end
 
     describe "inputs" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query {
           field(null_value: null, null_in_array: [1, null, 3], int: 3, float: 4.7e-24, bool: false, string: "☀︎🏆\\n escaped \\" unicode ¶ /", enum: ENUM_NAME, array: [7, 8, 9], object: {a: [1, 2, 3], b: {c: "4"}}, unicode_bom: "\xef\xbb\xbfquery")
         }
-      |}
+      |
+      }
 
       it "prints the query string" do
         assert_equal query_string.gsub(/^        /, "").strip, printer.print(document)
@@ -45,7 +49,8 @@ describe GraphQL::Language::Printer do
 
     describe "schema" do
       describe "schema with convention names for root types" do
-        let(:query_string) {<<-schema
+        let(:query_string) {
+          <<-schema
           schema {
             query: Query
             mutation: Mutation
@@ -54,13 +59,14 @@ describe GraphQL::Language::Printer do
         schema
         }
 
-        it 'omits schema definition' do
+        it "omits schema definition" do
           refute printer.print(document) =~ /schema/
         end
       end
 
       describe "schema with custom query root name" do
-        let(:query_string) {<<-schema
+        let(:query_string) {
+          <<-schema
           schema {
             query: MyQuery
             mutation: Mutation
@@ -69,13 +75,14 @@ describe GraphQL::Language::Printer do
         schema
         }
 
-        it 'includes schema definition' do
+        it "includes schema definition" do
           assert_equal query_string.gsub(/^          /, "").strip, printer.print(document)
         end
       end
 
       describe "schema with custom mutation root name" do
-        let(:query_string) {<<-schema
+        let(:query_string) {
+          <<-schema
           schema {
             query: Query
             mutation: MyMutation
@@ -84,13 +91,14 @@ describe GraphQL::Language::Printer do
         schema
         }
 
-        it 'includes schema definition' do
+        it "includes schema definition" do
           assert_equal query_string.gsub(/^          /, "").strip, printer.print(document)
         end
       end
 
       describe "schema with custom subscription root name" do
-        let(:query_string) {<<-schema
+        let(:query_string) {
+          <<-schema
           schema {
             query: Query
             mutation: Mutation
@@ -99,14 +107,15 @@ describe GraphQL::Language::Printer do
         schema
         }
 
-        it 'includes schema definition' do
+        it "includes schema definition" do
           assert_equal query_string.gsub(/^          /, "").strip, printer.print(document)
         end
       end
 
       describe "full featured schema" do
         # Based on: https://github.com/graphql/graphql-js/blob/bc96406ab44453a120da25a0bd6e2b0237119ddf/src/language/__tests__/schema-kitchen-sink.graphql
-        let(:query_string) {<<-schema
+        let(:query_string) {
+          <<-schema
           schema {
             query: QueryType
             mutation: MutationType

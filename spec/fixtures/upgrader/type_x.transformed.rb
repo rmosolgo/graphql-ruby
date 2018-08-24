@@ -24,12 +24,12 @@ module Platform
         Class1.new(
           a: Class2.new(
             b: object.b_1,
-            c: object.c_1
+            c: object.c_1,
           ),
           d: Class3.new(
             b: object.b_2,
             c: object.c_3,
-          )
+          ),
         )
       end
 

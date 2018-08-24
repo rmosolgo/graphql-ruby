@@ -123,11 +123,11 @@ module GraphQL
 
       # If a relation contains a `.group` clause, a `.count` will return a Hash.
       def relation_count(relation)
-        count_or_hash = if(defined?(ActiveRecord::Relation) && relation.is_a?(ActiveRecord::Relation))
-          relation.count(:all)
-        else # eg, Sequel::Dataset, don't mess up others
-          relation.count
-        end
+        count_or_hash = if (defined?(ActiveRecord::Relation) && relation.is_a?(ActiveRecord::Relation))
+                          relation.count(:all)
+                        else # eg, Sequel::Dataset, don't mess up others
+                          relation.count
+                        end
         count_or_hash.is_a?(Integer) ? count_or_hash : count_or_hash.length
       end
 
@@ -144,11 +144,10 @@ module GraphQL
 
         if before && after
           if offset_from_cursor(after) < offset_from_cursor(before)
-            @sliced_nodes = limit_nodes(@sliced_nodes,  offset_from_cursor(before) - offset_from_cursor(after) - 1)
+            @sliced_nodes = limit_nodes(@sliced_nodes, offset_from_cursor(before) - offset_from_cursor(after) - 1)
           else
             @sliced_nodes = limit_nodes(@sliced_nodes, 0)
           end
-
         elsif before
           @sliced_nodes = limit_nodes(@sliced_nodes, offset_from_cursor(before) - 1)
         end

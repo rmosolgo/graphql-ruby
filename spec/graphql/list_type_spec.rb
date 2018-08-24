@@ -50,7 +50,7 @@ describe GraphQL::ListType do
     let(:input_object_list) { input_object.to_list_type }
 
     it "converts hashes into lists of hashes" do
-      hash = { 'float' => 1.0 }
+      hash = {"float" => 1.0}
       assert_equal([hash].inspect, input_object_list.coerce_isolated_input(hash).map(&:to_h).inspect)
     end
   end

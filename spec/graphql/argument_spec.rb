@@ -66,7 +66,7 @@ describe GraphQL::Argument do
         :foo,
         GraphQL::STRING_TYPE,
         "A Description",
-        default_value: "Bar"
+        default_value: "Bar",
       )
 
       assert_equal "foo", arg.name
@@ -94,8 +94,8 @@ describe GraphQL::Argument do
   end
 
   it "accepts a default_value" do
-    argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE, default_value: 'Default')
-    assert_equal 'Default', argument.default_value
+    argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE, default_value: "Default")
+    assert_equal "Default", argument.default_value
     assert argument.default_value?
   end
 

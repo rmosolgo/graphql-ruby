@@ -103,6 +103,7 @@ module GraphQL
         end
 
         private
+
         # Find the magic module for holding super methods,
         # and add a field named `method_name` for implementing the field
         # called `field_name`.

@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Schema do
   let(:schema) { Dummy::Schema }
-  let(:relay_schema)  { StarWars::Schema }
+  let(:relay_schema) { StarWars::Schema }
   let(:empty_schema) { GraphQL::Schema.define }
 
   describe "#graphql_definition" do
@@ -49,7 +49,7 @@ describe GraphQL::Schema do
         [
           Dummy::DairyAppQueryType,
           Dummy::DairyAppMutationType.graphql_definition,
-          Dummy::SubscriptionType
+          Dummy::SubscriptionType,
         ],
         schema.root_types
       )
@@ -186,11 +186,11 @@ describe GraphQL::Schema do
       it "contains built-in directives" do
         schema = GraphQL::Schema.define
 
-        assert_equal ['deprecated', 'include', 'skip'], schema.directives.keys.sort
+        assert_equal ["deprecated", "include", "skip"], schema.directives.keys.sort
 
-        assert_equal GraphQL::Directive::DeprecatedDirective, schema.directives['deprecated']
-        assert_equal GraphQL::Directive::IncludeDirective, schema.directives['include']
-        assert_equal GraphQL::Directive::SkipDirective, schema.directives['skip']
+        assert_equal GraphQL::Directive::DeprecatedDirective, schema.directives["deprecated"]
+        assert_equal GraphQL::Directive::IncludeDirective, schema.directives["include"]
+        assert_equal GraphQL::Directive::SkipDirective, schema.directives["skip"]
       end
     end
 
@@ -200,8 +200,8 @@ describe GraphQL::Schema do
           directives [GraphQL::Directive::DeprecatedDirective]
         end
 
-        assert_equal ['deprecated'], schema.directives.keys.sort
-        assert_equal GraphQL::Directive::DeprecatedDirective, schema.directives['deprecated']
+        assert_equal ["deprecated"], schema.directives.keys.sort
+        assert_equal GraphQL::Directive::DeprecatedDirective, schema.directives["deprecated"]
       end
     end
   end
@@ -221,7 +221,7 @@ type Query {
     it "builds from a file" do
       schema = GraphQL::Schema.from_definition("spec/support/magic_cards/schema.graphql")
       assert_instance_of GraphQL::Schema, schema
-      expected_types =  ["Card", "Color", "Expansion", "Printing"]
+      expected_types = ["Card", "Color", "Expansion", "Printing"]
       assert_equal expected_types, (expected_types & schema.types.keys)
     end
   end
@@ -229,7 +229,7 @@ type Query {
   describe ".from_introspection" do
     let(:schema) {
       query_root = GraphQL::ObjectType.define do
-        name 'Query'
+        name "Query"
         field :str, types.String
       end
 
@@ -255,7 +255,7 @@ type Query {
       def instrument(type_defn, field_defn)
         if type_defn.name == "Query" && field_defn.name == "int"
           prev_proc = field_defn.resolve_proc
-          new_resolve_proc = ->(obj, args, ctx) {
+          new_resolve_proc = -> (obj, args, ctx) {
             inner_value = prev_proc.call(obj, args, ctx)
             inner_value * @multiplier
           }
@@ -271,6 +271,7 @@ type Query {
 
     class VariableCountInstrumenter
       attr_reader :counts
+
       def initialize
         @counts = []
       end
@@ -307,7 +308,7 @@ type Query {
         name "Query"
         field :int, types.Int do
           argument :value, types.Int
-          resolve ->(obj, args, ctx) { args[:value] == 13 ? raise("13 is unlucky") : args[:value] }
+          resolve -> (obj, args, ctx) { args[:value] == 13 ? raise("13 is unlucky") : args[:value] }
         end
       end
     }
@@ -409,7 +410,7 @@ type Query {
       refute schema_2.middleware.equal?(schema_1.middleware)
       assert_equal schema_2.middleware, schema_1.middleware
 
-      schema_2.middleware << ->(*args) { :noop }
+      schema_2.middleware << -> (*args) { :noop }
       refute_equal schema_2.middleware, schema_1.middleware
     end
   end

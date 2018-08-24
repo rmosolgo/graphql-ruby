@@ -5,8 +5,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-
-        context.visitor[GraphQL::Language::Nodes::InlineFragment] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::InlineFragment] << -> (node, parent) {
           fragment_parent = context.object_types[-2]
           fragment_child = context.object_types.last
           if fragment_child
@@ -16,12 +15,12 @@ module GraphQL
 
         spreads_to_validate = []
 
-        context.visitor[GraphQL::Language::Nodes::FragmentSpread] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::FragmentSpread] << -> (node, parent) {
           fragment_parent = context.object_types.last
           spreads_to_validate << FragmentSpread.new(node: node, parent_type: fragment_parent, path: context.path)
         }
 
-        context.visitor[GraphQL::Language::Nodes::Document].leave << ->(doc_node, parent) {
+        context.visitor[GraphQL::Language::Nodes::Document].leave << -> (doc_node, parent) {
           spreads_to_validate.each do |frag_spread|
             frag_node = context.fragments[frag_spread.node.name]
             if frag_node
@@ -54,6 +53,7 @@ module GraphQL
 
       class FragmentSpread
         attr_reader :node, :parent_type, :path
+
         def initialize(node:, parent_type:, path:)
           @node = node
           @parent_type = parent_type

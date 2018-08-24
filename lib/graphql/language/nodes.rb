@@ -23,7 +23,7 @@ module GraphQL
         # Initialize a node by extracting its position,
         # then calling the class's `initialize_node` method.
         # @param options [Hash] Initial attributes for this node
-        def initialize(options={})
+        def initialize(options = {})
           if options.key?(:position_source)
             position_source = options.delete(:position_source)
             @line, @col = position_source.line_and_column
@@ -35,7 +35,7 @@ module GraphQL
         end
 
         # This is called with node-specific options
-        def initialize_node(options={})
+        def initialize_node(options = {})
           raise NotImplementedError
         end
 
@@ -286,7 +286,7 @@ module GraphQL
         end
 
         # @return [Hash<String, Any>] Recursively turn this input object into a Ruby Hash
-        def to_h(options={})
+        def to_h(options = {})
           arguments.inject({}) do |memo, pair|
             v = pair.value
             memo[pair.name] = serialize_value_for_hash v
@@ -313,7 +313,6 @@ module GraphQL
           end
         end
       end
-
 
       # A list type definition, denoted with `[...]` (used for variable type definitions)
       class ListType < WrapperType; end
@@ -477,7 +476,7 @@ module GraphQL
       end
 
       class InputValueDefinition < AbstractNode
-        attr_accessor :name, :type, :default_value, :directives,:description
+        attr_accessor :name, :type, :default_value, :directives, :description
         alias :children :directives
 
         def initialize_node(name:, type:, default_value: nil, directives: [], description: nil)

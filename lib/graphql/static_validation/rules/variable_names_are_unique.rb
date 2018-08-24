@@ -5,7 +5,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << -> (node, parent) {
           var_defns = node.variables
           if var_defns.any?
             vars_by_name = Hash.new { |h, k| h[k] = [] }

@@ -19,12 +19,11 @@ end
 RUBY
 
     run_generator(["Family",
-      "NIGHTSHADE",
-      "BRASSICA:Family::COLE",
-      "UMBELLIFER::umbellifer",
-      'LEGUME:"bean & friends"',
-      "CURCURBITS:5"
-    ])
+                   "NIGHTSHADE",
+                   "BRASSICA:Family::COLE",
+                   "UMBELLIFER::umbellifer",
+                   'LEGUME:"bean & friends"',
+                   "CURCURBITS:5"])
     assert_file "app/graphql/types/family_type.rb", expected_content
   end
 end

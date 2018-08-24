@@ -5,7 +5,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        context.visitor[GraphQL::Language::Nodes::Document].leave << ->(_n, _p) do
+        context.visitor[GraphQL::Language::Nodes::Document].leave << -> (_n, _p) do
           dependency_map = context.dependencies
           dependency_map.unmet_dependencies.each do |op_defn, spreads|
             spreads.each do |fragment_spread|

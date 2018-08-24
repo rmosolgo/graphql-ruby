@@ -3,7 +3,7 @@ module GraphQL
   module Compatibility
     module ExecutionSpecification
       module SpecificationSchema
-        BOGUS_NODE = OpenStruct.new({ bogus: true })
+        BOGUS_NODE = OpenStruct.new({bogus: true})
 
         DATA = {
           "1001" => OpenStruct.new({
@@ -61,8 +61,8 @@ module GraphQL
 
           timestamp_type = GraphQL::ScalarType.define do
             name "Timestamp"
-            coerce_input ->(value, _ctx) { Time.at(value.to_i) }
-            coerce_result ->(value, _ctx) { value.to_i }
+            coerce_input -> (value, _ctx) { Time.at(value.to_i) }
+            coerce_result -> (value, _ctx) { value.to_i }
           end
 
           named_entity_interface_type = GraphQL::InterfaceType.define do
@@ -77,29 +77,29 @@ module GraphQL
             field :birthdate, timestamp_type
             field :age, types.Int do
               argument :on, !timestamp_type
-              resolve ->(obj, args, ctx) {
-                if obj.birthdate.nil?
-                  nil
-                else
-                  age_on = args[:on]
-                  age_years = age_on.year - obj.birthdate.year
-                  this_year_birthday = Time.new(age_on.year, obj.birthdate.month, obj.birthdate.day)
-                  if this_year_birthday > age_on
-                    age_years -= 1
-                  end
-                end
-                age_years
-              }
+              resolve -> (obj, args, ctx) {
+                        if obj.birthdate.nil?
+                          nil
+                        else
+                          age_on = args[:on]
+                          age_years = age_on.year - obj.birthdate.year
+                          this_year_birthday = Time.new(age_on.year, obj.birthdate.month, obj.birthdate.day)
+                          if this_year_birthday > age_on
+                            age_years -= 1
+                          end
+                        end
+                        age_years
+                      }
             end
             field :organizations, types[organization_type] do
-              resolve ->(obj, args, ctx) {
-                CustomCollection.new(obj.organization_ids.map { |id| DATA[id] })
-              }
+              resolve -> (obj, args, ctx) {
+                        CustomCollection.new(obj.organization_ids.map { |id| DATA[id] })
+                      }
             end
             field :first_organization, !organization_type do
-              resolve ->(obj, args, ctx) {
-                DATA[obj.organization_ids.first]
-              }
+              resolve -> (obj, args, ctx) {
+                        DATA[obj.organization_ids.first]
+                      }
             end
           end
 
@@ -108,29 +108,29 @@ module GraphQL
             interfaces [named_entity_interface_type]
             field :name, !types.String
             field :leader, !person_type do
-              resolve ->(obj, args, ctx) {
-                DATA[obj.leader_id] || (ctx[:return_error] ? ExecutionError.new("Error on Nullable") : nil)
-              }
+              resolve -> (obj, args, ctx) {
+                        DATA[obj.leader_id] || (ctx[:return_error] ? ExecutionError.new("Error on Nullable") : nil)
+                      }
             end
             field :returnedError, types.String do
-              resolve ->(o, a, c) {
-                GraphQL::ExecutionError.new("This error was returned")
-              }
+              resolve -> (o, a, c) {
+                        GraphQL::ExecutionError.new("This error was returned")
+                      }
             end
             field :raisedError, types.String do
-              resolve ->(o, a, c) {
-                raise GraphQL::ExecutionError.new("This error was raised")
-              }
+              resolve -> (o, a, c) {
+                        raise GraphQL::ExecutionError.new("This error was raised")
+                      }
             end
 
             field :nodePresence, !types[!types.Boolean] do
-              resolve ->(o, a, ctx) {
-                [
-                  ctx.irep_node.is_a?(GraphQL::InternalRepresentation::Node),
-                  ctx.ast_node.is_a?(GraphQL::Language::Nodes::AbstractNode),
-                  false, # just testing
-                ]
-              }
+              resolve -> (o, a, ctx) {
+                        [
+                          ctx.irep_node.is_a?(GraphQL::InternalRepresentation::Node),
+                          ctx.ast_node.is_a?(GraphQL::Language::Nodes::AbstractNode),
+                          false, # just testing
+                        ]
+                      }
             end
           end
 
@@ -143,34 +143,34 @@ module GraphQL
             name "Query"
             field :node, node_union_type do
               argument :id, !types.ID
-              resolve ->(obj, args, ctx) {
-                obj[args[:id]]
-              }
+              resolve -> (obj, args, ctx) {
+                        obj[args[:id]]
+                      }
             end
 
             field :requiredNode, node_union_type.to_non_null_type do
               argument :id, !types.ID
-              resolve ->(obj, args, ctx) {
-                obj[args[:id]]
-              }
+              resolve -> (obj, args, ctx) {
+                        obj[args[:id]]
+                      }
             end
 
             field :organization, !organization_type do
               argument :id, !types.ID
-              resolve ->(obj, args, ctx) {
-                if args[:id].start_with?("2")
-                  obj[args[:id]]
-                else
-                  # test context.skip
-                  ctx.skip
-                end
-              }
+              resolve -> (obj, args, ctx) {
+                        if args[:id].start_with?("2")
+                          obj[args[:id]]
+                        else
+                          # test context.skip
+                          ctx.skip
+                        end
+                      }
             end
 
             field :organizations, types[organization_type] do
-              resolve ->(obj, args, ctx) {
-                [obj["2001"], obj["2002"]]
-              }
+              resolve -> (obj, args, ctx) {
+                        [obj["2001"], obj["2002"]]
+                      }
             end
           end
 
@@ -178,20 +178,20 @@ module GraphQL
             query_execution_strategy execution_strategy
             query query_type
 
-            resolve_type ->(type, obj, ctx) {
-              if obj.respond_to?(:birthdate)
-                person_type
-              elsif obj.respond_to?(:leader_id)
-                organization_type
-              else
-                nil
-              end
-            }
+            resolve_type -> (type, obj, ctx) {
+                           if obj.respond_to?(:birthdate)
+                             person_type
+                           elsif obj.respond_to?(:leader_id)
+                             organization_type
+                           else
+                             nil
+                           end
+                         }
 
-            type_error ->(err, ctx) {
-              ctx[:type_errors] && (ctx[:type_errors] << err.value)
-              ctx[:gobble] || GraphQL::Schema::DefaultTypeError.call(err, ctx)
-            }
+            type_error -> (err, ctx) {
+                         ctx[:type_errors] && (ctx[:type_errors] << err.value)
+                         ctx[:gobble] || GraphQL::Schema::DefaultTypeError.call(err, ctx)
+                       }
             middleware(TestMiddleware)
           end
         end

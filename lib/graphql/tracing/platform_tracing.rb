@@ -66,6 +66,7 @@ module GraphQL
       end
 
       private
+
       attr_reader :options
     end
   end

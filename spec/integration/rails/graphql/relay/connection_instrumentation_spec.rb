@@ -31,7 +31,7 @@ describe GraphQL::Relay::ConnectionInstrumentation do
 
     [
       test_field,
-      GraphQL::Schema.define(query: test_type, raise_definition_error: true)
+      GraphQL::Schema.define(query: test_type, raise_definition_error: true),
     ]
   }
 
@@ -71,7 +71,7 @@ describe GraphQL::Relay::ConnectionInstrumentation do
         }
       }
       GRAPHQL
-      ctx = { before_built_ins: [], after_built_ins: [] }
+      ctx = {before_built_ins: [], after_built_ins: []}
       star_wars_query(query_str, {}, context: ctx)
       # The second item is different here:
       # Before the object is wrapped in a connection, the instrumentation sees `Array`

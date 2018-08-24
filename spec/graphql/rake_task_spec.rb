@@ -16,9 +16,9 @@ GraphQL::RakeTask.new(schema_name: "RakeTaskSchema")
 # Configured task
 GraphQL::RakeTask.new(idl_outfile: "tmp/configured_schema.graphql") do |t|
   t.namespace = "graphql_custom"
-  t.load_context = ->(task) { {filtered: true} }
-  t.only = ->(member, ctx) { member.is_a?(GraphQL::ScalarType) || (ctx[:filtered] && ["Query", "allowed"].include?(member.name)) }
-  t.load_schema = ->(task) { RakeTaskSchema }
+  t.load_context = -> (task) { {filtered: true} }
+  t.only = -> (member, ctx) { member.is_a?(GraphQL::ScalarType) || (ctx[:filtered] && ["Query", "allowed"].include?(member.name)) }
+  t.load_schema = -> (task) { RakeTaskSchema }
 end
 
 describe GraphQL::RakeTask do

@@ -142,6 +142,7 @@ module GraphQL
       ensure_defined(*ATTRIBUTES)
 
       undef name=
+
       def name=(new_name)
         # Validate that the name is correct
         GraphQL::NameValidator.validate!(new_name)
@@ -180,7 +181,7 @@ module GraphQL
       matching_value = allowed_values.find { |v| v.name == value_name }
 
       if matching_value.nil?
-        result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:name).join(', ')}")
+        result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:name).join(", ")}")
       end
 
       result

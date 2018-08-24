@@ -2,6 +2,7 @@
 module GraphQL
   class InvalidNameError < GraphQL::ExecutionError
     attr_reader :name, :valid_regex
+
     def initialize(name, valid_regex)
       @name = name
       @valid_regex = valid_regex

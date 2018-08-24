@@ -14,12 +14,12 @@ describe GraphQL::InputObjectType do
   describe "on a type unused by the schema" do
     it "has input fields" do
       UnreachedInputType = GraphQL::InputObjectType.define do
-        name 'UnreachedInputType'
-        description 'An input object type not directly used in the schema.'
+        name "UnreachedInputType"
+        description "An input object type not directly used in the schema."
 
         input_field :field, types.String
       end
-      assert(UnreachedInputType.input_fields['field'])
+      assert(UnreachedInputType.input_fields["field"])
     end
   end
 
@@ -43,7 +43,8 @@ describe GraphQL::InputObjectType do
     end
 
     describe "validate_input with null" do
-      let(:schema) { GraphQL::Schema.from_definition(%|
+      let(:schema) {
+        GraphQL::Schema.from_definition(%|
         type Query {
           a: Int
         }
@@ -52,8 +53,9 @@ describe GraphQL::InputObjectType do
           a: String
           b: Int!
         }
-      |) }
-      let(:input_type) { schema.types['ExampleInputObject'] }
+      |)
+      }
+      let(:input_type) { schema.types["ExampleInputObject"] }
 
       it "returns an invalid result when value is null for non-null argument" do
         invalid_input = MinimumInputObject.new({"a" => "Test", "b" => nil})
@@ -73,7 +75,7 @@ describe GraphQL::InputObjectType do
         let(:input) do
           {
             "source" => "COW",
-            "fatContent" => 0.4
+            "fatContent" => 0.4,
           }
         end
         let(:result) { input_object.validate_isolated_input(input) }
@@ -122,7 +124,7 @@ describe GraphQL::InputObjectType do
         end
       end
 
-      describe 'with a string as input' do
+      describe "with a string as input" do
         let(:result) { input_object.validate_isolated_input("just a string") }
 
         it "returns an invalid result" do
@@ -139,7 +141,7 @@ describe GraphQL::InputObjectType do
         end
       end
 
-      describe 'with an array as input' do
+      describe "with an array as input" do
         let(:result) { input_object.validate_isolated_input(["string array"]) }
 
         it "returns an invalid result" do
@@ -156,7 +158,7 @@ describe GraphQL::InputObjectType do
         end
       end
 
-      describe 'with a int as input' do
+      describe "with a int as input" do
         let(:result) { input_object.validate_isolated_input(10) }
 
         it "returns an invalid result" do
@@ -194,8 +196,8 @@ describe GraphQL::InputObjectType do
         let(:list_type) { GraphQL::ListType.new(of_type: Dummy::DairyProductInputType) }
         let(:result) do
           list_type.validate_isolated_input([
-            { "source" => "COW", "fatContent" => 0.4 },
-            { "source" => "KOALA", "fatContent" => 0.4 }
+            {"source" => "COW", "fatContent" => 0.4},
+            {"source" => "KOALA", "fatContent" => 0.4},
           ])
         end
 
@@ -219,8 +221,8 @@ describe GraphQL::InputObjectType do
         end
       end
 
-      describe 'with invalid name' do
-        it 'raises the correct error' do
+      describe "with invalid name" do
+        it "raises the correct error" do
           assert_raises(GraphQL::InvalidNameError) do
             InvalidInputTest = GraphQL::InputObjectType.define do
               name "Some::Invalid Name"
@@ -243,7 +245,8 @@ describe GraphQL::InputObjectType do
   end
 
   describe "coercion of null inputs" do
-    let(:schema) { GraphQL::Schema.from_definition(%|
+    let(:schema) {
+      GraphQL::Schema.from_definition(%|
       type Query {
         a: Int
       }
@@ -258,53 +261,54 @@ describe GraphQL::InputObjectType do
       input SecondLevelInputObject {
         example: ExampleInputObject = {b: 42, d: true}
       }
-    |) }
-    let(:input_type) { schema.types['ExampleInputObject'] }
+    |)
+    }
+    let(:input_type) { schema.types["ExampleInputObject"] }
 
     it "null values are returned in coerced input" do
-      input = MinimumInputObject.new({"a" => "Test", "b" => nil,"c" => "Test"})
+      input = MinimumInputObject.new({"a" => "Test", "b" => nil, "c" => "Test"})
       result = input_type.coerce_isolated_input(input)
 
-      assert_equal 'Test', result['a']
+      assert_equal "Test", result["a"]
 
-      assert result.key?('b')
-      assert_nil result['b']
+      assert result.key?("b")
+      assert_nil result["b"]
 
-      assert_equal "Test", result['c']
+      assert_equal "Test", result["c"]
     end
 
     it "null values are preserved when argument has a default value" do
       input = MinimumInputObject.new({"a" => "Test", "b" => 1, "c" => nil})
       result = input_type.coerce_isolated_input(input)
 
-      assert_equal 'Test', result['a']
-      assert_equal 1, result['b']
+      assert_equal "Test", result["a"]
+      assert_equal 1, result["b"]
 
-      assert result.key?('c')
-      assert_nil result['c']
+      assert result.key?("c")
+      assert_nil result["c"]
     end
 
     it "omitted arguments are not returned" do
       input = MinimumInputObject.new({"b" => 1, "c" => "Test"})
       result = input_type.coerce_isolated_input(input)
 
-      assert !result.key?('a')
-      assert_equal 1, result['b']
-      assert_equal 'Test', result['c']
+      assert !result.key?("a")
+      assert_equal 1, result["b"]
+      assert_equal "Test", result["c"]
     end
 
     it "false default values are returned" do
       input = MinimumInputObject.new({"b" => 1})
       result = input_type.coerce_isolated_input(input)
 
-      assert_equal false, result['d']
+      assert_equal false, result["d"]
     end
 
     it "merges defaults of nested input objects" do
-      result = schema.types['SecondLevelInputObject'].coerce_isolated_input({})
-      assert_equal 42, result['example']['b']
-      assert_equal "Default", result['example']['c']
-      assert_equal true, result['example']['d']
+      result = schema.types["SecondLevelInputObject"].coerce_isolated_input({})
+      assert_equal 42, result["example"]["b"]
+      assert_equal "Default", result["example"]["c"]
+      assert_equal true, result["example"]["d"]
     end
   end
 
@@ -314,7 +318,8 @@ describe GraphQL::InputObjectType do
 
     describe "list inputs" do
       let(:variables) { {"search" => [MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})]} }
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getCheeses($search: [DairyProductInput]!){
             sheep: searchDairy(product: [{source: SHEEP, fatContent: 0.1}]) {
               ... cheeseFields
@@ -327,7 +332,8 @@ describe GraphQL::InputObjectType do
         fragment cheeseFields on Cheese {
           flavor
         }
-      |}
+      |
+      }
 
       it "converts items to plain values" do
         sheep_value = result["data"]["sheep"]["flavor"]
@@ -338,13 +344,15 @@ describe GraphQL::InputObjectType do
     end
 
     describe "scalar inputs" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         {
           cheese(id: 1.4) {
             flavor
           }
         }
-      |}
+      |
+      }
 
       it "converts them to the correct type" do
         cheese_name = result["data"]["cheese"]["flavor"]

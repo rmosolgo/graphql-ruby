@@ -27,7 +27,7 @@ module GraphQL
           end
 
           args = node.ast_nodes.map { |n| n.arguments.map(&:to_query_string).join(",") }.uniq
-          query_str << args.map { |a| "(#{a})"}.join("|")
+          query_str << args.map { |a| "(#{a})" }.join("|")
         end
 
         if node.typed_children.any?

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql"
 require_relative "./data"
+
 module Dummy
   class NoSuchDairyError < StandardError; end
 
@@ -18,13 +19,13 @@ module Dummy
     description "Something you can eat, yum"
     field :fatContent, !types.Float, "Percentage which is fat"
     field :origin, !types.String, "Place the edible comes from"
-    field :selfAsEdible, EdibleInterface, resolve: ->(o, a, c) { o }
+    field :selfAsEdible, EdibleInterface, resolve: -> (o, a, c) { o }
   end
 
   EdibleAsMilkInterface = EdibleInterface.redefine do
     name "EdibleAsMilk"
     description "Milk :+1:"
-    resolve_type ->(obj, ctx) { MilkType }
+    resolve_type -> (obj, ctx) { MilkType }
   end
 
   AnimalProductInterface = GraphQL::InterfaceType.define do
@@ -42,12 +43,12 @@ module Dummy
   DairyAnimalEnum = GraphQL::EnumType.define do
     name "DairyAnimal"
     description "An animal which can yield milk"
-    value("COW",      "Animal with black and white spots", value: 1)
-    value("DONKEY",   "Animal with fur", value: :donkey)
-    value("GOAT",     "Animal with horns")
-    value("REINDEER", "Animal with horns", value: 'reindeer')
-    value("SHEEP",    "Animal with wool")
-    value("YAK",      "Animal with long hair", deprecation_reason: "Out of fashion")
+    value("COW", "Animal with black and white spots", value: 1)
+    value("DONKEY", "Animal with fur", value: :donkey)
+    value("GOAT", "Animal with horns")
+    value("REINDEER", "Animal with horns", value: "reindeer")
+    value("SHEEP", "Animal with wool")
+    value("YAK", "Animal with long hair", deprecation_reason: "Out of fashion")
   end
 
   CheeseType = GraphQL::ObjectType.define do
@@ -65,30 +66,30 @@ module Dummy
       "Animal which produced the milk for this cheese"
 
     # Or can define by block, `resolve ->` should override `property:`
-    field :similarCheese, CheeseType, "Cheeses like this one", property: :this_should_be_overriden  do
+    field :similarCheese, CheeseType, "Cheeses like this one", property: :this_should_be_overriden do
       # metadata test
       joins [:cheeses, :milks]
       argument :source, !types[!DairyAnimalEnum]
       argument :nullableSource, types[!DairyAnimalEnum], default_value: [1]
-      resolve ->(t, a, c) {
-        # get the strings out:
-        sources = a["source"]
-        if sources.include?("YAK")
-          raise NoSuchDairyError.new("No cheeses are made from Yak milk!")
-        else
-          CHEESES.values.find { |cheese| sources.include?(cheese.source) }
-        end
-      }
+      resolve -> (t, a, c) {
+                # get the strings out:
+                sources = a["source"]
+                if sources.include?("YAK")
+                  raise NoSuchDairyError.new("No cheeses are made from Yak milk!")
+                else
+                  CHEESES.values.find { |cheese| sources.include?(cheese.source) }
+                end
+              }
     end
 
     field :nullableCheese, CheeseType, "Cheeses like this one" do
       argument :source, types[!DairyAnimalEnum]
-      resolve ->(t, a, c) { raise("NotImplemented") }
+      resolve -> (t, a, c) { raise("NotImplemented") }
     end
 
     field :deeplyNullableCheese, CheeseType, "Cheeses like this one" do
       argument :source, types[types[DairyAnimalEnum]]
-      resolve ->(t, a, c) { raise("NotImplemented") }
+      resolve -> (t, a, c) { raise("NotImplemented") }
     end
 
     # Keywords can be used for definition methods
@@ -108,17 +109,17 @@ module Dummy
     field :origin, !types.String, "Place the milk comes from"
     field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
       argument :limit, types.Int
-      resolve ->(milk, args, ctx) {
-        args[:limit] ? milk.flavors.first(args.limit) : milk.flavors
-      }
+      resolve -> (milk, args, ctx) {
+                args[:limit] ? milk.flavors.first(args.limit) : milk.flavors
+              }
     end
     field :executionError do
       type GraphQL::STRING_TYPE
-      resolve ->(t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
+      resolve -> (t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
     end
 
     field :allDairy, -> { types[DairyProductUnion] } do
-      resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
+      resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
     end
   end
 
@@ -174,12 +175,12 @@ module Dummy
 
     field :cantBeNullButIs do
       type !GraphQL::STRING_TYPE
-      resolve ->(t, a, c) { nil }
+      resolve -> (t, a, c) { nil }
     end
 
     field :cantBeNullButRaisesExecutionError do
       type !GraphQL::STRING_TYPE
-      resolve ->(t, a, c) { raise GraphQL::ExecutionError, "BOOM" }
+      resolve -> (t, a, c) { raise GraphQL::ExecutionError, "BOOM" }
     end
   end
 
@@ -201,9 +202,9 @@ module Dummy
     name "AnimalAsCow"
     description "All animals go mooooo!"
     possible_types [CowType]
-    resolve_type ->(obj, ctx) {
-      CowType
-    }
+    resolve_type -> (obj, ctx) {
+                   CowType
+                 }
   end
 
   ResourceOrderType = GraphQL::InputObjectType.define {
@@ -233,18 +234,18 @@ module Dummy
     # ensure default can be false
     input_field :organic, types.Boolean, default_value: false
 
-    input_field :order_by, -> { ResourceOrderType }, default_value: { direction: 'ASC' }
+    input_field :order_by, -> { ResourceOrderType }, default_value: {direction: "ASC"}
   }
 
   DeepNonNullType = GraphQL::ObjectType.define do
     name "DeepNonNull"
     field :nonNullInt, !types.Int do
       argument :returning, types.Int
-      resolve ->(obj, args, ctx) { args.returning }
+      resolve -> (obj, args, ctx) { args.returning }
     end
 
     field :deepNonNull, DeepNonNullType.to_non_null_type do
-      resolve ->(obj, args, ctx) { :deepNonNull }
+      resolve -> (obj, args, ctx) { :deepNonNull }
     end
   end
 
@@ -252,15 +253,15 @@ module Dummy
     name "Time"
     description "Time since epoch in seconds"
 
-    coerce_input ->(value, ctx) do
-      begin
-        Time.at(Float(value))
-      rescue ArgumentError
-        raise GraphQL::CoercionError, 'cannot coerce to Float'
-      end
-    end
+    coerce_input -> (value, ctx) do
+                   begin
+                     Time.at(Float(value))
+                   rescue ArgumentError
+                     raise GraphQL::CoercionError, "cannot coerce to Float"
+                   end
+                 end
 
-    coerce_result ->(value, ctx) { value.to_f }
+    coerce_result -> (value, ctx) { value.to_f }
   end
 
   class FetchItem < GraphQL::Function
@@ -298,23 +299,23 @@ module Dummy
     type GraphQL::ListType.new(of_type: CheeseType)
     description "Cheese from source"
     argument :source, DairyAnimalEnum, default_value: 1
-    resolve ->(target, arguments, context) {
-      CHEESES.values.select{ |c| c.source == arguments["source"] }
-    }
+    resolve -> (target, arguments, context) {
+              CHEESES.values.select { |c| c.source == arguments["source"] }
+            }
   }
 
   FavoriteFieldDefn = GraphQL::Field.define do
     name "favoriteEdible"
     description "My favorite food"
     type EdibleInterface
-    resolve ->(t, a, c) { MILKS[1] }
+    resolve -> (t, a, c) { MILKS[1] }
   end
 
   DairyAppQueryType = GraphQL::ObjectType.define do
     name "Query"
     description "Query root of the system"
     field :root, types.String do
-      resolve ->(root_value, args, c) { root_value }
+      resolve -> (root_value, args, c) { root_value }
     end
     field :cheese, function: FetchItem.new(type: CheeseType, data: CHEESES)
     field :milk, function: FetchItem.new(type: MilkType, data: MILKS, id_type: !types.ID)
@@ -328,99 +329,99 @@ module Dummy
       # This is a list just for testing 😬
       argument :product, types[DairyProductInputType], default_value: [{"source" => "SHEEP"}]
       argument :expiresAfter, TimeType
-      resolve ->(t, args, c) {
-        source = args["product"][0][:source] # String or Sym is ok
-        products = CHEESES.values + MILKS.values
-        if !source.nil?
-          products = products.select { |pr| pr.source == source }
-        end
-        products.first
-      }
+      resolve -> (t, args, c) {
+                source = args["product"][0][:source] # String or Sym is ok
+                products = CHEESES.values + MILKS.values
+                if !source.nil?
+                  products = products.select { |pr| pr.source == source }
+                end
+                products.first
+              }
     end
 
     field :allAnimal, !types[AnimalUnion] do
-      resolve ->(obj, args, ctx) { COWS.values + GOATS.values }
+      resolve -> (obj, args, ctx) { COWS.values + GOATS.values }
     end
 
     field :allAnimalAsCow, !types[AnimalAsCowUnion] do
-      resolve ->(obj, args, ctx) { COWS.values + GOATS.values }
+      resolve -> (obj, args, ctx) { COWS.values + GOATS.values }
     end
 
     field :allDairy, types[DairyProductUnion] do
       argument :executionErrorAtIndex, types.Int
-      resolve ->(obj, args, ctx) {
-        result = CHEESES.values + MILKS.values
-        result[args.executionErrorAtIndex] = GraphQL::ExecutionError.new("missing dairy") if args.executionErrorAtIndex
-        result
-      }
+      resolve -> (obj, args, ctx) {
+                result = CHEESES.values + MILKS.values
+                result[args.executionErrorAtIndex] = GraphQL::ExecutionError.new("missing dairy") if args.executionErrorAtIndex
+                result
+              }
     end
 
     field :allEdible, types[EdibleInterface] do
-      resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
+      resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
     end
 
     field :allEdibleAsMilk, types[EdibleAsMilkInterface] do
-      resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
+      resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
     end
 
     field :error do
       description "Raise an error"
       type GraphQL::STRING_TYPE
-      resolve ->(t, a, c) { raise("This error was raised on purpose") }
+      resolve -> (t, a, c) { raise("This error was raised on purpose") }
     end
 
     field :executionError do
       type GraphQL::STRING_TYPE
-      resolve ->(t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
+      resolve -> (t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
     end
 
     field :valueWithExecutionError do
       type !GraphQL::INT_TYPE
-      resolve ->(t, a, c) {
-        c.add_error(GraphQL::ExecutionError.new("Could not fetch latest value"))
-        return 0
-      }
+      resolve -> (t, a, c) {
+                c.add_error(GraphQL::ExecutionError.new("Could not fetch latest value"))
+                return 0
+              }
     end
 
     field :multipleErrorsOnNonNullableField do
       type !GraphQL::STRING_TYPE
-      resolve ->(t, a, c) {
-        [GraphQL::ExecutionError.new("This is an error message for some error."),
-         GraphQL::ExecutionError.new("This is another error message for a different error.")]
-      }
+      resolve -> (t, a, c) {
+                [GraphQL::ExecutionError.new("This is an error message for some error."),
+                 GraphQL::ExecutionError.new("This is another error message for a different error.")]
+              }
     end
 
     field :executionErrorWithOptions do
       type GraphQL::INT_TYPE
-      resolve ->(t, a, c) {
-        GraphQL::ExecutionError.new("Permission Denied!", options: { "code" => "permission_denied" })
-      }
+      resolve -> (t, a, c) {
+                GraphQL::ExecutionError.new("Permission Denied!", options: {"code" => "permission_denied"})
+              }
     end
 
     field :executionErrorWithExtensions do
       type GraphQL::INT_TYPE
-      resolve ->(t, a, c) {
-        GraphQL::ExecutionError.new("Permission Denied!", extensions: { "code" => "permission_denied" })
-      }
+      resolve -> (t, a, c) {
+                GraphQL::ExecutionError.new("Permission Denied!", extensions: {"code" => "permission_denied"})
+              }
     end
 
     # To test possibly-null fields
     field :maybeNull, MaybeNullType do
-      resolve ->(t, a, c) { OpenStruct.new(cheese: nil) }
+      resolve -> (t, a, c) { OpenStruct.new(cheese: nil) }
     end
 
     field :tracingScalar, TracingScalarType do
-      resolve ->(o, a, c) do
-        OpenStruct.new(
-          traceNil: 2,
-          traceFalse: 3,
-          tracetrue: 5,
-        )
-      end
+      resolve -> (o, a, c) do
+                OpenStruct.new(
+                  traceNil: 2,
+                  traceFalse: 3,
+                  tracetrue: 5,
+                )
+              end
     end
 
     field :deepNonNull, !DeepNonNullType do
-      resolve ->(o, a, c) { :deepNonNull }
+      resolve -> (o, a, c) { :deepNonNull }
     end
   end
 
@@ -436,10 +437,10 @@ module Dummy
     type !types[!types.Int]
     description("Push a value onto a global array :D")
     argument :value, !types.Int, as: :val
-    resolve ->(o, args, ctx) {
-      GLOBAL_VALUES << args.val
-      GLOBAL_VALUES
-    }
+    resolve -> (o, args, ctx) {
+              GLOBAL_VALUES << args.val
+              GLOBAL_VALUES
+            }
   end
 
   class DairyAppMutationType < GraphQL::Schema::Object
@@ -462,7 +463,7 @@ module Dummy
   SubscriptionType = GraphQL::ObjectType.define do
     name "Subscription"
     field :test, types.String do
-      resolve ->(o, a, c) { "Test" }
+      resolve -> (o, a, c) { "Test" }
     end
   end
 
@@ -473,7 +474,7 @@ module Dummy
     max_depth 5
     orphan_types [HoneyType, BeverageUnion]
 
-    rescue_from(NoSuchDairyError) { |err| err.message  }
+    rescue_from(NoSuchDairyError) { |err| err.message }
 
     def self.resolve_type(type, obj, ctx)
       Schema.types[obj.class.name.split("::").last]

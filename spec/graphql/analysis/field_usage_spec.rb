@@ -9,14 +9,16 @@ describe GraphQL::Analysis::FieldUsage do
   let(:variables) { {} }
 
   describe "query with deprecated fields" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query {
         cheese(id: 1) {
           id
           fatContent
         }
       }
-    |}
+    |
+    }
 
     it "returns query in reduced result" do
       reduce_result
@@ -25,17 +27,18 @@ describe GraphQL::Analysis::FieldUsage do
 
     it "keeps track of used fields" do
       reduce_result
-      assert_equal ['Cheese.id', 'Cheese.fatContent', 'Query.cheese'], result[1]
+      assert_equal ["Cheese.id", "Cheese.fatContent", "Query.cheese"], result[1]
     end
 
     it "keeps track of deprecated fields" do
       reduce_result
-      assert_equal ['Cheese.fatContent'], result[2]
+      assert_equal ["Cheese.fatContent"], result[2]
     end
   end
 
   describe "query with deprecated fields used more than once" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query {
         cheese1: cheese(id: 1) {
           id
@@ -47,16 +50,17 @@ describe GraphQL::Analysis::FieldUsage do
           fatContent
         }
       }
-    |}
+    |
+    }
 
     it "omits duplicate usage of a field" do
       reduce_result
-      assert_equal ['Cheese.id', 'Cheese.fatContent', 'Query.cheese'], result[1]
+      assert_equal ["Cheese.id", "Cheese.fatContent", "Query.cheese"], result[1]
     end
 
     it "omits duplicate usage of a deprecated field" do
       reduce_result
-      assert_equal ['Cheese.fatContent'], result[2]
+      assert_equal ["Cheese.fatContent"], result[2]
     end
   end
 end

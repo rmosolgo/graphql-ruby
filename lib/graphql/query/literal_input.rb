@@ -52,13 +52,13 @@ module GraphQL
         defaults_used = Set.new
 
         indexed_arguments = case ast_arguments
-        when Hash
-          ast_arguments
-        when Array
-          ast_arguments.each_with_object({}) { |a, memo| memo[a.name] = a }
-        else
-          raise ArgumentError, "Unexpected ast_arguments: #{ast_arguments}"
-        end
+                            when Hash
+                              ast_arguments
+                            when Array
+                              ast_arguments.each_with_object({}) { |a, memo| memo[a.name] = a }
+                            else
+                              raise ArgumentError, "Unexpected ast_arguments: #{ast_arguments}"
+                            end
 
         argument_defns = argument_owner.arguments
         argument_defns.each do |arg_name, arg_defn|
@@ -76,7 +76,6 @@ module GraphQL
             value_is_a_variable = arg_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
 
             if (!value_is_a_variable || (value_is_a_variable && variables.key?(arg_value.name)))
-
               value = coerce(arg_defn.type, arg_value, variables)
               value = arg_defn.prepare(value, context)
 

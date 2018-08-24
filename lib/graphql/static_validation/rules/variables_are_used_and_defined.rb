@@ -16,6 +16,7 @@ module GraphQL
 
       class VariableUsage
         attr_accessor :ast_node, :used_by, :declared_by, :path
+
         def used?
           !!@used_by
         end
@@ -26,29 +27,28 @@ module GraphQL
       end
 
       def variable_hash
-        Hash.new {|h, k| h[k] = VariableUsage.new }
+        Hash.new { |h, k| h[k] = VariableUsage.new }
       end
 
       def validate(context)
-        variable_usages_for_context = Hash.new {|hash, key| hash[key] = variable_hash }
-        spreads_for_context = Hash.new {|hash, key| hash[key] = [] }
+        variable_usages_for_context = Hash.new { |hash, key| hash[key] = variable_hash }
+        spreads_for_context = Hash.new { |hash, key| hash[key] = [] }
         variable_context_stack = []
 
         # OperationDefinitions and FragmentDefinitions
         # both push themselves onto the context stack (and pop themselves off)
-        push_variable_context_stack = ->(node, parent) {
+        push_variable_context_stack = -> (node, parent) {
           # initialize the hash of vars for this context:
           variable_usages_for_context[node]
           variable_context_stack.push(node)
         }
 
-        pop_variable_context_stack = ->(node, parent) {
+        pop_variable_context_stack = -> (node, parent) {
           variable_context_stack.pop
         }
 
-
         context.visitor[GraphQL::Language::Nodes::OperationDefinition] << push_variable_context_stack
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << -> (node, parent) {
           # mark variables as defined:
           var_hash = variable_usages_for_context[node]
           node.variables.each { |var|
@@ -65,7 +65,7 @@ module GraphQL
         # For FragmentSpreads:
         #  - find the context on the stack
         #  - mark the context as containing this spread
-        context.visitor[GraphQL::Language::Nodes::FragmentSpread] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::FragmentSpread] << -> (node, parent) {
           variable_context = variable_context_stack.last
           spreads_for_context[variable_context] << node.name
         }
@@ -73,7 +73,7 @@ module GraphQL
         # For VariableIdentifiers:
         #  - mark the variable as used
         #  - assign its AST node
-        context.visitor[GraphQL::Language::Nodes::VariableIdentifier] << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::VariableIdentifier] << -> (node, parent) {
           usage_context = variable_context_stack.last
           declared_variables = variable_usages_for_context[usage_context]
           usage = declared_variables[node.name]
@@ -82,8 +82,7 @@ module GraphQL
           usage.path = context.path
         }
 
-
-        context.visitor[GraphQL::Language::Nodes::Document].leave << ->(node, parent) {
+        context.visitor[GraphQL::Language::Nodes::Document].leave << -> (node, parent) {
           fragment_definitions = variable_usages_for_context.select { |key, value| key.is_a?(GraphQL::Language::Nodes::FragmentDefinition) }
           operation_definitions = variable_usages_for_context.select { |key, value| key.is_a?(GraphQL::Language::Nodes::OperationDefinition) }
 
@@ -118,9 +117,9 @@ module GraphQL
           variables.each do |name, child_usage|
             parent_usage = parent_variables[name]
             if child_usage.used?
-              parent_usage.ast_node   = child_usage.ast_node
-              parent_usage.used_by    = child_usage.used_by
-              parent_usage.path       = child_usage.path
+              parent_usage.ast_node = child_usage.ast_node
+              parent_usage.used_by = child_usage.used_by
+              parent_usage.path = child_usage.path
             end
           end
           follow_spreads(def_node, parent_variables, spreads_for_context, fragment_definitions, visited_fragments)

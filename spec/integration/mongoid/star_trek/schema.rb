@@ -20,15 +20,15 @@ module StarTrek
     graphql_name "Base"
     implements GraphQL::Relay::Node.interface
     global_id_field :id
-    field :name, String, null: false, resolve: ->(obj, args, ctx) {
-      LazyWrapper.new {
-        if obj.id.nil?
-          raise GraphQL::ExecutionError, "Boom!"
-        else
-          obj.name
-        end
-      }
-    }
+    field :name, String, null: false, resolve: -> (obj, args, ctx) {
+                           LazyWrapper.new {
+                             if obj.id.nil?
+                               raise GraphQL::ExecutionError, "Boom!"
+                             else
+                               obj.name
+                             end
+                           }
+                         }
     field :sector, String, null: true
     field :residents, ResidentType.connection_type, null: true
   end
@@ -69,11 +69,13 @@ module StarTrek
     edge_type(CustomBaseEdgeType, edge_class: CustomBaseEdge)
 
     field :total_count_times_100, Integer, null: true
+
     def total_count_times_100
       obj.nodes.count * 100
     end
 
     field :field_name, String, null: true
+
     def field_name
       object.field.name
     end
@@ -82,10 +84,11 @@ module StarTrek
   # Example of GraphQL::Function used with the connection helper:
   class ShipsWithMaxPageSize < GraphQL::Function
     argument :nameIncludes, GraphQL::STRING_TYPE
+
     def call(obj, args, ctx)
       all_ships = obj.ships.map { |ship_id| StarTrek::DATA["Ship"][ship_id] }
       if args[:nameIncludes]
-        all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
+        all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes]) }
       end
       all_ships
     end
@@ -97,6 +100,7 @@ module StarTrek
     edge_type(Ship.edge_type)
     graphql_name "ShipConnectionWithParent"
     field :parent_class_name, String, null: false
+
     def parent_class_name
       object.parent.class.name
     end
@@ -107,42 +111,42 @@ module StarTrek
 
     field :id, ID, null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
     field :name, String, null: true
-    field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true, resolve: ->(obj, args, ctx) {
-      all_ships = obj.ships.map {|ship_id| StarTrek::DATA["Ship"][ship_id] }
-      if args[:nameIncludes]
-        case args[:nameIncludes]
-        when "error"
-          all_ships = GraphQL::ExecutionError.new("error from within connection")
-        when "raisedError"
-          raise GraphQL::ExecutionError.new("error raised from within connection")
-        when "lazyError"
-          all_ships = LazyWrapper.new { GraphQL::ExecutionError.new("lazy error from within connection") }
-        when "lazyRaisedError"
-          all_ships = LazyWrapper.new { raise GraphQL::ExecutionError.new("lazy raised error from within connection") }
-        when "null"
-          all_ships = nil
-        when "lazyObject"
-          prev_all_ships = all_ships
-          all_ships = LazyWrapper.new { prev_all_ships }
-        else
-          all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
-        end
-      end
-      all_ships
-    } do
+    field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true, resolve: -> (obj, args, ctx) {
+                                                  all_ships = obj.ships.map { |ship_id| StarTrek::DATA["Ship"][ship_id] }
+                                                  if args[:nameIncludes]
+                                                    case args[:nameIncludes]
+                                                    when "error"
+                                                      all_ships = GraphQL::ExecutionError.new("error from within connection")
+                                                    when "raisedError"
+                                                      raise GraphQL::ExecutionError.new("error raised from within connection")
+                                                    when "lazyError"
+                                                      all_ships = LazyWrapper.new { GraphQL::ExecutionError.new("lazy error from within connection") }
+                                                    when "lazyRaisedError"
+                                                      all_ships = LazyWrapper.new { raise GraphQL::ExecutionError.new("lazy raised error from within connection") }
+                                                    when "null"
+                                                      all_ships = nil
+                                                    when "lazyObject"
+                                                      prev_all_ships = all_ships
+                                                      all_ships = LazyWrapper.new { prev_all_ships }
+                                                    else
+                                                      all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes]) }
+                                                    end
+                                                  end
+                                                  all_ships
+                                                } do
       # You can define arguments here and use them in the connection
       argument :nameIncludes, String, required: false
     end
 
     field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, function: ShipsWithMaxPageSize.new
 
-    field :bases, BaseConnectionWithTotalCountType, null: true, connection: true, resolve: ->(obj, args, ctx) {
-      all_bases = obj.bases
-      if args[:nameIncludes]
-        all_bases = all_bases.where(name: Regexp.new(args[:nameIncludes]))
-      end
-      all_bases
-    } do
+    field :bases, BaseConnectionWithTotalCountType, null: true, connection: true, resolve: -> (obj, args, ctx) {
+                                                      all_bases = obj.bases
+                                                      if args[:nameIncludes]
+                                                        all_bases = all_bases.where(name: Regexp.new(args[:nameIncludes]))
+                                                      end
+                                                      all_bases
+                                                    } do
       argument :nameIncludes, String, required: false
     end
 
@@ -150,6 +154,7 @@ module StarTrek
     field :basesByName, BaseType.connection_type, null: true do
       argument :order, String, default_value: "name", required: false
     end
+
     def bases_by_name(order: nil)
       if order.present?
         @object.bases.order_by(name: order)
@@ -158,13 +163,13 @@ module StarTrek
       end
     end
 
-    field :basesWithMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 2, resolve: Proc.new { Base.all}
+    field :basesWithMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 2, resolve: Proc.new { Base.all }
     field :basesWithMaxLimitArray, BaseType.connection_type, null: true, max_page_size: 2, resolve: Proc.new { Base.all.to_a }
     field :basesWithDefaultMaxLimitRelation, BaseType.connection_type, null: true, resolve: Proc.new { Base.all }
     field :basesWithDefaultMaxLimitArray, BaseType.connection_type, null: true, resolve: Proc.new { Base.all.to_a }
     field :basesWithLargeMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 1000, resolve: Proc.new { Base.all }
 
-    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, resolve: ->(o, a, c) { LazyNodesWrapper.new(o.bases) }
+    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, resolve: -> (o, a, c) { LazyNodesWrapper.new(o.bases) }
   end
 
   class IntroduceShipMutation < GraphQL::Schema::RelayClassicMutation
@@ -200,12 +205,12 @@ module StarTrek
       # support old and new args
       ship_name = args["shipName"] || args[:ship_name]
       faction_id = args["factionId"] || args[:faction_id]
-      if ship_name == 'USS Voyager'
+      if ship_name == "USS Voyager"
         GraphQL::ExecutionError.new("Sorry, USS Voyager ship is reserved")
-      elsif ship_name == 'IKS Korinar'
+      elsif ship_name == "IKS Korinar"
         raise GraphQL::ExecutionError.new("🔥")
-      elsif ship_name == 'Scimitar'
-        LazyWrapper.new { raise GraphQL::ExecutionError.new("💥")}
+      elsif ship_name == "Scimitar"
+        LazyWrapper.new { raise GraphQL::ExecutionError.new("💥") }
       else
         ship = DATA.create_ship(ship_name, faction_id)
         faction = DATA["Faction"][faction_id]
@@ -252,7 +257,7 @@ module StarTrek
       if loaded.empty?
         ids = @context.namespace(:loading)[@model]
         # Example custom tracing
-        @context.trace("lazy_loader", { ids: ids, model: @model}) do
+        @context.trace("lazy_loader", {ids: ids, model: @model}) do
           records = @model.where(id: ids)
           records.each do |record|
             loaded[record.id.to_s] = record
@@ -279,6 +284,7 @@ module StarTrek
   end
 
   LazyNodesWrapper = Struct.new(:relation)
+
   class LazyNodesRelationConnection < GraphQL::Relay::RelationConnection
     def initialize(wrapper, *args)
       super(wrapper.relation, *args)
@@ -294,41 +300,41 @@ module StarTrek
   class QueryType < GraphQL::Schema::Object
     graphql_name "Query"
 
-    field :federation, Faction, null: true, resolve: ->(obj, args, ctx) { StarTrek::DATA["Faction"]["1"]}
+    field :federation, Faction, null: true, resolve: -> (obj, args, ctx) { StarTrek::DATA["Faction"]["1"] }
 
-    field :klingons, Faction, null: true, resolve: ->(obj, args, ctx) { StarTrek::DATA["Faction"]["2"]}
+    field :klingons, Faction, null: true, resolve: -> (obj, args, ctx) { StarTrek::DATA["Faction"]["2"] }
 
-    field :romulans, Faction, null: true, resolve: ->(obj, args, ctx) { StarTrek::DATA["Faction"]["3"]}
+    field :romulans, Faction, null: true, resolve: -> (obj, args, ctx) { StarTrek::DATA["Faction"]["3"] }
 
-    field :largestBase, BaseType, null: true, resolve: ->(obj, args, ctx) { Base.find(3) }
+    field :largestBase, BaseType, null: true, resolve: -> (obj, args, ctx) { Base.find(3) }
 
-    field :newestBasesGroupedByFaction, BaseType.connection_type, null: true, resolve: ->(obj, args, ctx) {
-      agg = Base.collection.aggregate([{
-        "$group" => {
-          "_id" => "$faction_id",
-          "baseId" => { "$max" => "$_id" }
-        }
-      }])
-      Base.
-        in(id: agg.map { |doc| doc['baseId'] }).
-        order_by(faction_id: -1)
-    }
+    field :newestBasesGroupedByFaction, BaseType.connection_type, null: true, resolve: -> (obj, args, ctx) {
+                                                                    agg = Base.collection.aggregate([{
+                                                                      "$group" => {
+                                                                        "_id" => "$faction_id",
+                                                                        "baseId" => {"$max" => "$_id"},
+                                                                      },
+                                                                    }])
+                                                                    Base.
+                                                                      in(id: agg.map { |doc| doc["baseId"] }).
+                                                                      order_by(faction_id: -1)
+                                                                  }
 
-    field :basesWithNullName, BaseType.connection_type, null: false, resolve: ->(obj, args, ctx) {
-      [OpenStruct.new(id: nil)]
-    }
+    field :basesWithNullName, BaseType.connection_type, null: false, resolve: -> (obj, args, ctx) {
+                                                          [OpenStruct.new(id: nil)]
+                                                        }
 
     field :node, field: GraphQL::Relay::Node.field
 
     custom_node_field = GraphQL::Relay::Node.field do
-      resolve ->(_, _, _) { StarTrek::DATA["Faction"]["1"] }
+      resolve -> (_, _, _) { StarTrek::DATA["Faction"]["1"] }
     end
     field :nodeWithCustomResolver, field: custom_node_field
 
     field :nodes, field: GraphQL::Relay::Node.plural_field
     field :nodesWithCustomResolver, field: GraphQL::Relay::Node.plural_field(
-      resolve: ->(_, _, _) { [StarTrek::DATA["Faction"]["1"], StarTrek::DATA["Faction"]["2"]] }
-    )
+                                resolve: -> (_, _, _) { [StarTrek::DATA["Faction"]["1"], StarTrek::DATA["Faction"]["2"]] },
+                              )
 
     field :batchedBase, BaseType, null: true do
       argument :id, ID, required: true
@@ -355,13 +361,13 @@ module StarTrek
       inner_resolve = field.resolve_proc
       key = @context_key
       field.redefine {
-        resolve ->(o, a, c) {
-          res = inner_resolve.call(o, a, c)
-          if c[key]
-            c[key] << res.class.name
-          end
-          res
-        }
+        resolve -> (o, a, c) {
+                  res = inner_resolve.call(o, a, c)
+                  if c[key]
+                    c[key] << res.class.name
+                  end
+                  res
+                }
       }
     end
   end

@@ -12,15 +12,15 @@ module Platform
         argument :preceedsConnectionMethod, types.Boolean
         description "Returns a boolean indicating whether the viewing user has starred this starrable."
 
-        resolve ->(object, arguments, context) do
-          if context[:viewer]
-            ->(test_inner_proc) do
-              context[:viewer].starred?(object)
-            end
-          else
-            false
-          end
-        end
+        resolve -> (object, arguments, context) do
+                  if context[:viewer]
+                    -> (test_inner_proc) do
+                      context[:viewer].starred?(object)
+                    end
+                  else
+                    false
+                  end
+                end
       end
 
       connection :stargazers, -> { !Connections::Stargazer } do
@@ -28,21 +28,21 @@ module Platform
 
         argument :orderBy, Inputs::StarOrder, "Order for connection"
 
-        resolve ->(object, arguments, context) do
-          scope = case object
-          when Repository
-            object.stars
-          when Gist
-            GistStar.where(gist_id: object.id)
-          end
+        resolve -> (object, arguments, context) do
+                  scope = case object
+                          when Repository
+                            object.stars
+                          when Gist
+                            GistStar.where(gist_id: object.id)
+                          end
 
-          table = scope.table_name
-          if order_by = arguments["orderBy"]
-            scope = scope.order("#{table}.#{order_by["field"]} #{order_by["direction"]}")
-          end
+                  table = scope.table_name
+                  if order_by = arguments["orderBy"]
+                    scope = scope.order("#{table}.#{order_by["field"]} #{order_by["direction"]}")
+                  end
 
-          scope
-        end
+                  scope
+                end
       end
     end
   end

@@ -5,7 +5,8 @@ describe GraphQL::Directive do
   let(:variables) { {"t" => true, "f" => false} }
   let(:result) { Dummy::Schema.execute(query_string, variables: variables) }
   describe "on fields" do
-    let(:query_string) { %|query directives($t: Boolean!, $f: Boolean!) {
+    let(:query_string) {
+      %|query directives($t: Boolean!, $f: Boolean!) {
       cheese(id: 1) {
         # plain fields:
         skipFlavor: flavor @skip(if: true)
@@ -29,7 +30,8 @@ describe GraphQL::Directive do
     }
 
     describe "child fields" do
-      let(:query_string) { <<-GRAPHQL
+      let(:query_string) {
+        <<-GRAPHQL
       {
         __type(name: """
         Cheese
@@ -50,7 +52,8 @@ describe GraphQL::Directive do
 
     describe "when directive uses argument with default value" do
       describe "with false" do
-        let(:query_string) { <<-GRAPHQL
+        let(:query_string) {
+          <<-GRAPHQL
           query($f: Boolean = false) {
             cheese(id: 1) {
               dontIncludeFlavor: flavor @include(if: $f)
@@ -70,7 +73,8 @@ describe GraphQL::Directive do
       end
 
       describe "with true" do
-        let(:query_string) { <<-GRAPHQL
+        let(:query_string) {
+          <<-GRAPHQL
           query($t: Boolean = true) {
             cheese(id: 1) {
               includeFlavor: flavor @include(if: $t)
@@ -91,7 +95,7 @@ describe GraphQL::Directive do
     end
 
     it "intercepts fields" do
-      expected = { "data" =>{
+      expected = {"data" => {
         "cheese" => {
           "dontSkipFlavor" => "Brie",
           "includeFlavor" => "Brie",
@@ -103,7 +107,8 @@ describe GraphQL::Directive do
     end
   end
   describe "on fragments spreads and inline fragments" do
-    let(:query_string) { %|query directives {
+    let(:query_string) {
+      %|query directives {
       cheese(id: 1) {
         ... skipFlavorField @skip(if: true)
         ... dontSkipFlavorField @skip(if: false)
@@ -123,10 +128,11 @@ describe GraphQL::Directive do
       fragment dontIncludeFlavorField on Cheese { dontIncludeFlavor: flavor  }
       fragment skipFlavorField on Cheese { skipFlavor: flavor  }
       fragment dontSkipFlavorField on Cheese { dontSkipFlavor: flavor }
-    |}
+    |
+    }
 
     it "intercepts fragment spreads" do
-      expected = { "data" => {
+      expected = {"data" => {
         "cheese" => {
           "dontSkipFlavor" => "Brie",
           "includeFlavor" => "Brie",
@@ -139,18 +145,20 @@ describe GraphQL::Directive do
     end
   end
   describe "merging @skip and @include" do
-    let(:field_included?) { r = result["data"]["cheese"]; r.has_key?('flavor') && r.has_key?('withVariables') }
+    let(:field_included?) { r = result["data"]["cheese"]; r.has_key?("flavor") && r.has_key?("withVariables") }
     let(:skip?) { false }
     let(:include?) { true }
     let(:variables) { {"skip" => skip?, "include" => include?} }
-    let(:query_string) {"
+    let(:query_string) {
+      "
       query getCheese ($include: Boolean!, $skip: Boolean!) {
         cheese(id: 1) {
           flavor @include(if: #{include?}) @skip(if: #{skip?}),
           withVariables: flavor @include(if: $include) @skip(if: $skip)
         }
       }
-    "}
+    "
+    }
     # behavior as defined in
     # https://github.com/facebook/graphql/blob/master/spec/Section%203%20--%20Type%20System.md#include
     describe "when @skip=false and @include=true" do
@@ -175,7 +183,8 @@ describe GraphQL::Directive do
     end
     describe "when evaluating skip on query selection and fragment" do
       describe "with @skip" do
-        let(:query_string) {"
+        let(:query_string) {
+          "
           query getCheese ($skip: Boolean!) {
             cheese(id: 1) {
               flavor,
@@ -187,7 +196,8 @@ describe GraphQL::Directive do
             flavor @skip(if: #{skip?})
             withVariables: flavor @skip(if: $skip)
           }
-        "}
+        "
+        }
         describe "and @skip=false" do
           let(:skip?) { false }
           it "is included" do assert field_included? end
@@ -199,7 +209,8 @@ describe GraphQL::Directive do
       end
     end
     describe "when evaluating conflicting @skip and @include on query selection and fragment" do
-      let(:query_string) {"
+      let(:query_string) {
+        "
         query getCheese ($include: Boolean!, $skip: Boolean!) {
           cheese(id: 1) {
             ... on Cheese @include(if: #{include?}) {
@@ -213,7 +224,8 @@ describe GraphQL::Directive do
           flavor @skip(if: #{skip?}),
           withVariables: flavor @skip(if: $skip)
         }
-      "}
+      "
+      }
       describe "when @skip=false and @include=true" do
         let(:skip?) { false }
         let(:include?) { true }
@@ -240,7 +252,8 @@ describe GraphQL::Directive do
 
     describe "when handling multiple fields at the same level" do
       describe "when at least one occurrence would be included" do
-        let(:query_string) {"
+        let(:query_string) {
+          "
           query getCheese ($include: Boolean!, $skip: Boolean!) {
             cheese(id: 1) {
               ... on Cheese {
@@ -253,13 +266,15 @@ describe GraphQL::Directive do
               withVariables: flavor @skip(if: $skip)
             }
           }
-        "}
+        "
+        }
         let(:skip?) { true }
         let(:include?) { false }
         it "is included" do assert field_included? end
       end
       describe "when no occurrence would be included" do
-        let(:query_string) {"
+        let(:query_string) {
+          "
           query getCheese ($include: Boolean!, $skip: Boolean!) {
             cheese(id: 1) {
               flavor @include(if: #{include?}),
@@ -268,7 +283,8 @@ describe GraphQL::Directive do
               withVariables: flavor @skip(if: $skip)
             }
           }
-        "}
+        "
+        }
         let(:skip?) { true }
         let(:include?) { false }
         it "is not included" do assert !field_included? end
@@ -279,13 +295,13 @@ describe GraphQL::Directive do
   describe "defining a directive" do
     let(:directive) {
       GraphQL::Directive.define do
-        arguments [GraphQL::Argument.define(name: 'skip')]
+        arguments [GraphQL::Argument.define(name: "skip")]
       end
     }
 
     it "can accept an array of arguments" do
       assert_equal 1, directive.arguments.length
-      assert_equal 'skip', directive.arguments.first.name
+      assert_equal "skip", directive.arguments.first.name
     end
 
     it "is not default" do

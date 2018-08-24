@@ -2,7 +2,8 @@
 require "spec_helper"
 
 describe GraphQL::Query do
-  let(:query_string) { %|
+  let(:query_string) {
+    %|
     query getFlavor($cheeseId: Int!) {
       brie: cheese(id: 1)   { ...cheeseFields, taste: flavor },
       cheese(id: $cheeseId)  {
@@ -28,20 +29,23 @@ describe GraphQL::Query do
        ... on Cheese { flavor }
        ... on Milk   { source }
     }
-  |}
+  |
+  }
   let(:operation_name) { nil }
   let(:max_depth) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
   let(:schema) { Dummy::Schema }
   let(:document) { GraphQL.parse(query_string) }
 
-  let(:query) { GraphQL::Query.new(
-    schema,
-    query_string,
-    variables: query_variables,
-    operation_name: operation_name,
-    max_depth: max_depth,
-  )}
+  let(:query) {
+    GraphQL::Query.new(
+      schema,
+      query_string,
+      variables: query_variables,
+      operation_name: operation_name,
+      max_depth: max_depth,
+    )
+  }
   let(:result) { query.result }
 
   describe "when passed both a query string and a document" do
@@ -50,7 +54,7 @@ describe GraphQL::Query do
         GraphQL::Query.new(
           schema,
           query: "{ fromSource(source: COW) { id } }",
-          document: document
+          document: document,
         )
       end
     end
@@ -60,14 +64,14 @@ describe GraphQL::Query do
         GraphQL::Query.new(
           schema,
           "{ fromSource(source: COW) { id } }",
-          document: document
+          document: document,
         )
       end
     end
   end
 
   describe "when passed no query string or document" do
-    it 'returns an error to the client' do
+    it "returns an error to the client" do
       res = GraphQL::Query.new(
         schema,
         variables: query_variables,
@@ -78,7 +82,7 @@ describe GraphQL::Query do
       assert_equal "No query string was present", res["errors"][0]["message"]
     end
 
-    it 'can be assigned later' do
+    it "can be assigned later" do
       query = GraphQL::Query.new(
         schema,
         variables: query_variables,
@@ -86,13 +90,14 @@ describe GraphQL::Query do
         max_depth: max_depth,
       )
       query.query_string = '{ __type(name: """Cheese""") { name } }'
-      assert_equal "Cheese", query.result["data"] ["__type"]["name"]
+      assert_equal "Cheese", query.result["data"]["__type"]["name"]
     end
   end
 
   describe "#operation_name" do
     describe "when provided" do
-      let(:query_string) { <<-GRAPHQL
+      let(:query_string) {
+        <<-GRAPHQL
         query q1 { cheese(id: 1) { flavor } }
         query q2 { cheese(id: 2) { flavor } }
       GRAPHQL
@@ -105,7 +110,8 @@ describe GraphQL::Query do
     end
 
     describe "when inferred" do
-      let(:query_string) { <<-GRAPHQL
+      let(:query_string) {
+        <<-GRAPHQL
         query q3 { cheese(id: 3) { flavor } }
       GRAPHQL
       }
@@ -117,7 +123,8 @@ describe GraphQL::Query do
 
     describe "#selected_operation_name" do
       describe "when an operation isprovided" do
-        let(:query_string) { <<-GRAPHQL
+        let(:query_string) {
+          <<-GRAPHQL
           query q1 { cheese(id: 1) { flavor } }
           query q2 { cheese(id: 2) { flavor } }
         GRAPHQL
@@ -130,7 +137,8 @@ describe GraphQL::Query do
       end
 
       describe "when operation is inferred" do
-        let(:query_string) { <<-GRAPHQL
+        let(:query_string) {
+          <<-GRAPHQL
           query q3 { cheese(id: 3) { flavor } }
         GRAPHQL
         }
@@ -141,7 +149,8 @@ describe GraphQL::Query do
       end
 
       describe "when there are no operations" do
-        let(:query_string) { <<-GRAPHQL
+        let(:query_string) {
+          <<-GRAPHQL
           # Only Comments
           # In this Query
         GRAPHQL
@@ -154,7 +163,8 @@ describe GraphQL::Query do
     end
 
     describe "assigning operation_name=" do
-      let(:query_string) { <<-GRAPHQL
+      let(:query_string) {
+        <<-GRAPHQL
           query q3 { manchego: cheese(id: 3) { flavor } }
           query q2 { gouda: cheese(id: 2) { flavor } }
         GRAPHQL
@@ -170,17 +180,19 @@ describe GraphQL::Query do
   end
 
   describe "when passed a document instance" do
-    let(:query) { GraphQL::Query.new(
-      schema,
-      document: document,
-      variables: query_variables,
-      operation_name: operation_name,
-      max_depth: max_depth,
-    )}
+    let(:query) {
+      GraphQL::Query.new(
+        schema,
+        document: document,
+        variables: query_variables,
+        operation_name: operation_name,
+        max_depth: max_depth,
+      )
+    }
 
     it "runs the query using the already parsed document" do
-      expected = {"data"=> {
-        "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
+      expected = {"data" => {
+        "brie" => {"flavor" => "Brie", "taste" => "Brie"},
         "cheese" => {
           "__typename" => "Cheese",
           "id" => 2,
@@ -188,36 +200,37 @@ describe GraphQL::Query do
           "fatContent" => 0.3,
           "cheeseKind" => "Gouda",
         },
-        "fromSource" => [{ "id" => 1 }, {"id" => 2}],
-        "fromSheep"=>[{"id"=>3}],
-        "firstSheep" => { "__typename" => "Cheese", "flavor" => "Manchego" },
-        "favoriteEdible"=>{"__typename"=>"Milk", "fatContent"=>0.04},
-    }}
-    assert_equal(expected, result)
+        "fromSource" => [{"id" => 1}, {"id" => 2}],
+        "fromSheep" => [{"id" => 3}],
+        "firstSheep" => {"__typename" => "Cheese", "flavor" => "Manchego"},
+        "favoriteEdible" => {"__typename" => "Milk", "fatContent" => 0.04},
+      }}
+      assert_equal(expected, result)
     end
   end
 
-  describe '#result' do
+  describe "#result" do
     it "returns fields on objects" do
-      expected = {"data"=> {
-          "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
-          "cheese" => {
-            "__typename" => "Cheese",
-            "id" => 2,
-            "flavor" => "Gouda",
-            "fatContent" => 0.3,
-            "cheeseKind" => "Gouda",
-          },
-          "fromSource" => [{ "id" => 1 }, {"id" => 2}],
-          "fromSheep"=>[{"id"=>3}],
-          "firstSheep" => { "__typename" => "Cheese", "flavor" => "Manchego" },
-          "favoriteEdible"=>{"__typename"=>"Milk", "fatContent"=>0.04},
+      expected = {"data" => {
+        "brie" => {"flavor" => "Brie", "taste" => "Brie"},
+        "cheese" => {
+          "__typename" => "Cheese",
+          "id" => 2,
+          "flavor" => "Gouda",
+          "fatContent" => 0.3,
+          "cheeseKind" => "Gouda",
+        },
+        "fromSource" => [{"id" => 1}, {"id" => 2}],
+        "fromSheep" => [{"id" => 3}],
+        "firstSheep" => {"__typename" => "Cheese", "flavor" => "Manchego"},
+        "favoriteEdible" => {"__typename" => "Milk", "fatContent" => 0.04},
       }}
       assert_equal(expected, result)
     end
 
     describe "when it hits null objects" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         {
           maybeNull {
             cheese {
@@ -226,11 +239,12 @@ describe GraphQL::Query do
             }
           }
         }
-      |}
+      |
+      }
 
       it "skips null objects" do
-        expected = {"data"=> {
-          "maybeNull" => { "cheese" => nil }
+        expected = {"data" => {
+          "maybeNull" => {"cheese" => nil},
         }}
         assert_equal(expected, result)
       end
@@ -239,8 +253,8 @@ describe GraphQL::Query do
     describe "after_query hooks" do
       module Instrumenter
         ERROR_LOG = []
-        def self.before_query(q); end;
-        def self.after_query(q); ERROR_LOG << q.result["errors"]; end;
+        def self.before_query(q); end
+        def self.after_query(q); ERROR_LOG << q.result["errors"]; end
       end
 
       let(:schema) {
@@ -257,10 +271,10 @@ describe GraphQL::Query do
     describe "when an error propagated through execution" do
       module ExtensionsInstrumenter
         LOG = []
-        def self.before_query(q); end;
+        def self.before_query(q); end
 
         def self.after_query(q)
-          q.result["extensions"] = { "a" => 1 }
+          q.result["extensions"] = {"a" => 1}
           LOG << :ok
         end
       end
@@ -282,8 +296,8 @@ describe GraphQL::Query do
   end
 
   it "uses root_value as the object for the root type" do
-    result = GraphQL::Query.new(schema, '{ root }', root_value: "I am root").result
-    assert_equal 'I am root', result.fetch('data').fetch('root')
+    result = GraphQL::Query.new(schema, "{ root }", root_value: "I am root").result
+    assert_equal "I am root", result.fetch("data").fetch("root")
   end
 
   it "exposes fragments" do
@@ -295,7 +309,8 @@ describe GraphQL::Query do
   end
 
   describe "merging fragments with different keys" do
-    let(:query_string) { %|
+    let(:query_string) {
+      %|
       query getCheeseFieldsThroughDairy {
         ... cheeseFrag3
         dairy {
@@ -334,25 +349,26 @@ describe GraphQL::Query do
         ... cheeseFrag2
         ... cheeseFrag1
       }
-    |}
+    |
+    }
 
     it "should include keys from each fragment" do
       expected = {"data" => {
         "dairy" => {
           "cheese" => {
             "flavor" => "Brie",
-            "fatContent" => 0.19
+            "fatContent" => 0.19,
           },
           "milks" => [
             {
               "id" => "1",
               "fatContent" => 0.04,
-            }
+            },
           ],
         },
         "cheese" => {
           "id" => 1,
-          "flavor" => "Brie"
+          "flavor" => "Brie",
         },
       }}
       assert_equal(expected, result)
@@ -360,7 +376,8 @@ describe GraphQL::Query do
   end
 
   describe "field argument default values" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getCheeses(
         $search: [DairyProductInput]
         $searchWithDefault: [DairyProductInput] = [{source: COW}]
@@ -379,7 +396,8 @@ describe GraphQL::Query do
         }
       }
       fragment cheeseFields on Cheese { flavor }
-    |}
+    |
+    }
 
     it "has a default value" do
       default_source = schema.query.fields["searchDairy"].arguments["product"].default_value[0]["source"]
@@ -412,11 +430,13 @@ describe GraphQL::Query do
   end
 
   describe "query variables" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query getCheese($cheeseId: Int!){
         cheese(id: $cheeseId) { flavor }
       }
-    |}
+    |
+    }
 
     describe "when they can be coerced" do
       let(:query_variables) { {"cheeseId" => 2.0} }
@@ -434,11 +454,11 @@ describe GraphQL::Query do
           "errors" => [
             {
               "message" => "Variable cheeseId of type Int! was provided invalid value",
-              "locations"=>[{ "line" => 2, "column" => 23 }],
+              "locations" => [{"line" => 2, "column" => 23}],
               "value" => "2",
-              "problems" => [{ "path" => [], "explanation" => 'Could not coerce value "2" to Int' }]
-            }
-          ]
+              "problems" => [{"path" => [], "explanation" => 'Could not coerce value "2" to Int'}],
+            },
+          ],
         }
         assert_equal(expected, result)
       end
@@ -454,16 +474,16 @@ describe GraphQL::Query do
               "message" => "Variable cheeseId of type Int! was provided invalid value",
               "locations" => [{"line" => 2, "column" => 23}],
               "value" => nil,
-              "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
-            }
-          ]
+              "problems" => [{"path" => [], "explanation" => "Expected value to not be null"}],
+            },
+          ],
         }
         assert_equal(expected, result)
       end
     end
 
     describe "when they are non-null and provided a null value" do
-      let(:query_variables) { { "cheeseId" => nil } }
+      let(:query_variables) { {"cheeseId" => nil} }
 
       it "raises an error" do
         expected = {
@@ -472,9 +492,9 @@ describe GraphQL::Query do
               "message" => "Variable cheeseId of type Int! was provided invalid value",
               "locations" => [{"line" => 2, "column" => 23}],
               "value" => nil,
-              "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
-            }
-          ]
+              "problems" => [{"path" => [], "explanation" => "Expected value to not be null"}],
+            },
+          ],
         }
         assert_equal(expected, result)
       end
@@ -488,11 +508,13 @@ describe GraphQL::Query do
     end
 
     describe "default values" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         query getCheese($cheeseId: Int = 3){
           cheese(id: $cheeseId) { id, flavor }
         }
-      |}
+      |
+      }
 
       describe "when no value is provided" do
         let(:query_variables) { {} }
@@ -512,7 +534,8 @@ describe GraphQL::Query do
 
       describe "when complex values" do
         let(:query_variables) { {"search" => [{"source" => "COW"}]} }
-        let(:query_string) {%|
+        let(:query_string) {
+          %|
           query getCheeses($search: [DairyProductInput]!){
             cow: searchDairy(product: $search) {
               ... on Cheese {
@@ -520,7 +543,8 @@ describe GraphQL::Query do
               }
             }
           }
-        |}
+        |
+        }
 
         it "coerces recursively" do
           assert_equal("Brie", result["data"]["cow"]["flavor"])
@@ -592,7 +616,7 @@ describe GraphQL::Query do
     end
 
     it "can be configured to raise" do
-      raise_schema = schema.redefine(parse_error: ->(err, ctx) { raise err })
+      raise_schema = schema.redefine(parse_error: -> (err, ctx) { raise err })
       assert_raises(GraphQL::ParseError) {
         raise_schema.execute(invalid_query_string)
       }
@@ -600,7 +624,8 @@ describe GraphQL::Query do
   end
 
   describe "#mutation?" do
-    let(:query_string) { <<-GRAPHQL
+    let(:query_string) {
+      <<-GRAPHQL
     query Q { __typename }
     mutation M { pushValue(value: 1) }
     GRAPHQL
@@ -652,7 +677,7 @@ describe GraphQL::Query do
     end
   end
 
-  describe 'NullValue type arguments' do
+  describe "NullValue type arguments" do
     let(:schema_definition) {
       <<-GRAPHQL
         type Query {
@@ -663,12 +688,12 @@ describe GraphQL::Query do
     let(:expected_args) { [] }
     let(:default_resolver) do
       {
-        'Query' => { 'foo' => ->(_obj, args, _ctx) { expected_args.push(args); 1 } },
+        "Query" => {"foo" => -> (_obj, args, _ctx) { expected_args.push(args); 1 }},
       }
     end
     let(:schema) { GraphQL::Schema.from_definition(schema_definition, default_resolve: default_resolver) }
 
-    it 'sets argument to nil when null is passed' do
+    it "sets argument to nil when null is passed" do
       query = <<-GRAPHQL
         {
           foo(id: null)
@@ -677,24 +702,24 @@ describe GraphQL::Query do
 
       schema.execute(query)
 
-      assert(expected_args.first.key?('id'))
-      assert_nil(expected_args.first['id'])
+      assert(expected_args.first.key?("id"))
+      assert_nil(expected_args.first["id"])
     end
 
-    it 'sets argument to nil when nil is passed via variable' do
+    it "sets argument to nil when nil is passed via variable" do
       query = <<-GRAPHQL
         query baz($id: [ID]) {
           foo(id: $id)
         }
       GRAPHQL
 
-      schema.execute(query, variables: { 'id' => nil })
+      schema.execute(query, variables: {"id" => nil})
 
-      assert(expected_args.first.key?('id'))
-      assert([nil], expected_args.first['id'])
+      assert(expected_args.first.key?("id"))
+      assert([nil], expected_args.first["id"])
     end
 
-    it 'sets argument to [nil] when [null] is passed' do
+    it "sets argument to [nil] when [null] is passed" do
       query = <<-GRAPHQL
         {
           foo(id: [null])
@@ -703,25 +728,25 @@ describe GraphQL::Query do
 
       schema.execute(query)
 
-      assert(expected_args.first.key?('id'))
-      assert_equal([nil], expected_args.first['id'])
+      assert(expected_args.first.key?("id"))
+      assert_equal([nil], expected_args.first["id"])
     end
 
-    it 'sets argument to [nil] when [nil] is passed via variable' do
+    it "sets argument to [nil] when [nil] is passed via variable" do
       query = <<-GRAPHQL
         query baz($id: [ID]) {
           foo(id: $id)
         }
       GRAPHQL
 
-      schema.execute(query, variables: { 'id' => [nil] })
+      schema.execute(query, variables: {"id" => [nil]})
 
-      assert(expected_args.first.key?('id'))
-      assert_equal([nil], expected_args.first['id'])
+      assert(expected_args.first.key?("id"))
+      assert_equal([nil], expected_args.first["id"])
     end
   end
 
-  describe '#internal_representation' do
+  describe "#internal_representation" do
     it "includes all definition roots" do
       assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.operation_definitions["getFlavor"]
       assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["cheeseFields"]
@@ -731,14 +756,14 @@ describe GraphQL::Query do
     end
   end
 
-  describe '#irep_selection' do
+  describe "#irep_selection" do
     it "returns the irep for the selected operation" do
       assert_kind_of GraphQL::InternalRepresentation::Node, query.irep_selection
-      assert_equal 'getFlavor', query.irep_selection.name
+      assert_equal "getFlavor", query.irep_selection.name
     end
 
     it "returns nil when there is no selected operation" do
-      query = GraphQL::Query.new(schema, '# Only a comment')
+      query = GraphQL::Query.new(schema, "# Only a comment")
       assert_nil query.irep_selection
     end
   end
@@ -753,7 +778,7 @@ describe GraphQL::Query do
 
     class DummyStrategy
       def execute(ast_operation, root_type, query_object)
-        { "dummy" => true }
+        {"dummy" => true}
       end
     end
 
@@ -768,10 +793,10 @@ describe GraphQL::Query do
 
     it "is used for running a query, if it's present and not the default" do
       result = custom_execution_schema.execute(" { __typename }")
-      assert_equal({"data"=>{"dummy"=>true}}, result)
+      assert_equal({"data" => {"dummy" => true}}, result)
 
       result = custom_execution_schema.execute(" mutation { __typename } ")
-      assert_equal({"data"=>{"__typename" => "Mutation"}}, result)
+      assert_equal({"data" => {"__typename" => "Mutation"}}, result)
     end
 
     it "treats the query as a one-item multiplex" do

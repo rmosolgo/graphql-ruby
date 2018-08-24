@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'generators/graphql/type_generator'
+require "generators/graphql/type_generator"
 
 module Graphql
   module Generators
@@ -11,7 +11,7 @@ module Graphql
     # ```
     class InterfaceGenerator < TypeGeneratorBase
       desc "Create a GraphQL::InterfaceType with the given name and fields"
-      source_root File.expand_path('../templates', __FILE__)
+      source_root File.expand_path("../templates", __FILE__)
 
       argument :fields,
         type: :array,

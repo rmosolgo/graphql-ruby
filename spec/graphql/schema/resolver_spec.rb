@@ -51,6 +51,7 @@ describe GraphQL::Schema::Resolver do
       type Integer, null: false
 
       extras [:ast_node]
+
       def resolve(ast_node:)
         object.value + ast_node.name.size
       end
@@ -77,6 +78,7 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver1 < BaseResolver
       argument :int, Integer, required: true
       undef_method :load_int
+
       def load_int(i)
         i * 10
       end
@@ -147,14 +149,14 @@ describe GraphQL::Schema::Resolver do
 
       def ready?(int:)
         if int == 13
-          return false, { errors: ["Bad number!"] }
+          return false, {errors: ["Bad number!"]}
         else
           true
         end
       end
 
       def resolve(int:)
-        { int: int }
+        {int: int}
       end
     end
 
@@ -179,6 +181,7 @@ describe GraphQL::Schema::Resolver do
       argument :int_id, ID, required: true, loads: HasValue
       # Make sure the lazy object is resolved properly:
       type HasValue, null: false
+
       def object_from_id(type, id, ctx)
         # Make sure a lazy object is handled appropriately
         LazyBlock.new {
@@ -196,6 +199,7 @@ describe GraphQL::Schema::Resolver do
       argument :int1, Integer, required: true
       argument :int2, Integer, required: true, as: :integer_2
       type Integer, null: true
+
       def authorized?(int1:, integer_2:)
         if int1 + integer_2 > context[:max_int]
           raise GraphQL::ExecutionError, "Inputs too big"
@@ -222,16 +226,17 @@ describe GraphQL::Schema::Resolver do
       argument :int2, Integer, required: true
       field :error_messages, [String], null: true
       field :value, Integer, null: true
+
       def authorized?(int1:, int2:)
         if int1 + int2 > context[:max_int]
-          return false, { error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"] }
+          return false, {error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"]}
         else
           true
         end
       end
 
       def resolve(int1:, int2:)
-        { value: int1 + int2 }
+        {value: int1 + int2}
       end
     end
 
@@ -250,7 +255,7 @@ describe GraphQL::Schema::Resolver do
       end
 
       def resolve
-        { number: 1 }
+        {number: 1}
       end
     end
 
@@ -447,41 +452,41 @@ describe GraphQL::Schema::Resolver do
     describe "validating arguments" do
       describe ".authorized?" do
         it "can raise an error to halt" do
-          res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: { max_int: 9 })
+          res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: {max_int: 9})
           assert_equal ["Inputs too big"], res["errors"].map { |e| e["message"] }
 
-          res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: { max_int: 90 })
+          res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: {max_int: 90})
           assert_equal 11, res["data"]["prepResolver10"]
         end
 
         it "uses the argument name provided in `as:`" do
-          res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: { max_int: 90 })
+          res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: {max_int: 90})
           assert_equal 11, res["data"]["prepResolver10"]
         end
 
         it "can return a lazy object" do
           # This is too big because it's modified in the overridden authorized? hook:
-          res = exec_query("{ prepResolver11(int1: 3, int2: 5) }", context: { max_int: 9 })
+          res = exec_query("{ prepResolver11(int1: 3, int2: 5) }", context: {max_int: 9})
           assert_equal ["Inputs too big"], res["errors"].map { |e| e["message"] }
 
-          res = exec_query("{ prepResolver11(int1: 3, int2: 5) }", context: { max_int: 90 })
+          res = exec_query("{ prepResolver11(int1: 3, int2: 5) }", context: {max_int: 90})
           assert_equal 8, res["data"]["prepResolver11"]
         end
 
         it "can return data early" do
-          res = exec_query("{ prepResolver12(int1: 9, int2: 5) { errorMessages } }", context: { max_int: 9 })
+          res = exec_query("{ prepResolver12(int1: 9, int2: 5) { errorMessages } }", context: {max_int: 9})
           assert_equal ["Inputs must be less than 9 (but you provided 14)"], res["data"]["prepResolver12"]["errorMessages"]
           # This works
-          res = exec_query("{ prepResolver12(int1: 2, int2: 5) { value } }", context: { max_int: 9 })
+          res = exec_query("{ prepResolver12(int1: 2, int2: 5) { value } }", context: {max_int: 9})
           assert_equal 7, res["data"]["prepResolver12"]["value"]
         end
 
         it "can return data early in a promise" do
           # This is too big because it's modified in the overridden authorized? hook:
-          res = exec_query("{ prepResolver13(int1: 4, int2: 4) { errorMessages } }", context: { max_int: 9 })
+          res = exec_query("{ prepResolver13(int1: 4, int2: 4) { errorMessages } }", context: {max_int: 9})
           assert_equal ["Inputs must be less than 9 (but you provided 10)"], res["data"]["prepResolver13"]["errorMessages"]
           # This works
-          res = exec_query("{ prepResolver13(int1: 2, int2: 5) { value } }", context: { max_int: 9 })
+          res = exec_query("{ prepResolver13(int1: 2, int2: 5) { value } }", context: {max_int: 9})
           assert_equal 7, res["data"]["prepResolver13"]["value"]
         end
 
@@ -492,8 +497,8 @@ describe GraphQL::Schema::Resolver do
             prepResolver11(int1: 3, int2: 5)
           }
           GRAPHQL
-          res = exec_query(str, context: { max_int: 100, min_int: 20 })
-          assert_equal({ "prepResolver10" => nil, "prepResolver11" => nil }, res["data"])
+          res = exec_query(str, context: {max_int: 100, min_int: 20})
+          assert_equal({"prepResolver10" => nil, "prepResolver11" => nil}, res["data"])
         end
 
         it "works with no arguments for RelayClassicMutation" do

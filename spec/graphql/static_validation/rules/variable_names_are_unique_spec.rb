@@ -4,7 +4,8 @@ require "spec_helper"
 describe GraphQL::StaticValidation::VariableNamesAreUnique do
   include StaticValidationHelpers
 
-  let(:query_string) { <<-GRAPHQL
+  let(:query_string) {
+    <<-GRAPHQL
   query GetStuff($var1: Int!, $var2: Int!, $var1: Int!, $var2: Int!, $var3: Int!) {
     c1: cheese(id: $var1) { flavor }
     c2: cheese(id: $var2) { flavor }

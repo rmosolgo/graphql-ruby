@@ -27,7 +27,7 @@ module GraphQL
     accepts_definitions(
       :arguments, :mutation,
       input_field: GraphQL::Define::AssignArgument,
-      argument: GraphQL::Define::AssignArgument
+      argument: GraphQL::Define::AssignArgument,
     )
 
     attr_accessor :mutation, :arguments, :arguments_class
@@ -39,7 +39,6 @@ module GraphQL
 
     # @!attribute arguments
     # @return [Hash<String => GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
-
 
     def initialize
       super
@@ -70,10 +69,10 @@ module GraphQL
         input_value = value[input_key]
         if value.key?(input_key)
           result[input_key] = if input_value.nil?
-            nil
-          else
-            input_field_defn.type.coerce_result(input_value, ctx)
-          end
+                                nil
+                              else
+                                input_field_defn.type.coerce_result(input_value, ctx)
+                              end
         end
       end
 
@@ -110,7 +109,7 @@ module GraphQL
       result = GraphQL::Query::InputValidationResult.new
 
       if input.is_a?(Array)
-        result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+        result.add_problem(INVALID_OBJECT_MESSAGE % {object: JSON.generate(input, quirks_mode: true)})
         return result
       end
 
@@ -125,12 +124,12 @@ module GraphQL
           input.to_unsafe_h
         rescue
           # We're not sure it'll act like a hash, so reject it:
-          result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+          result.add_problem(INVALID_OBJECT_MESSAGE % {object: JSON.generate(input, quirks_mode: true)})
           return result
         end
       end
 
-      visible_arguments_map = warden.arguments(self).reduce({}) { |m, f| m[f.name] = f; m}
+      visible_arguments_map = warden.arguments(self).reduce({}) { |m, f| m[f.name] = f; m }
 
       # Items in the input that are unexpected
       input.each do |name, value|

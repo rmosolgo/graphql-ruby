@@ -91,7 +91,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:prepared_arg=>15}', res["data"]["field"]
+      assert_equal "{:prepared_arg=>15}", res["data"]["field"]
     end
   end
 end

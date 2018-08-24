@@ -6,7 +6,8 @@ describe GraphQL::Execution::Multiplex do
     LazyHelpers::LazySchema.multiplex(*a)
   end
 
-  let(:q1) { <<-GRAPHQL
+  let(:q1) {
+    <<-GRAPHQL
     query Q1 {
       nestedSum(value: 3) {
         value
@@ -17,7 +18,8 @@ describe GraphQL::Execution::Multiplex do
     }
     GRAPHQL
   }
-  let(:q2) { <<-GRAPHQL
+  let(:q2) {
+    <<-GRAPHQL
     query Q2 {
       nestedSum(value: 2) {
         value
@@ -28,7 +30,8 @@ describe GraphQL::Execution::Multiplex do
     }
     GRAPHQL
   }
-  let(:q3) { <<-GRAPHQL
+  let(:q3) {
+    <<-GRAPHQL
     query Q3 {
       listSum(values: [1,2]) {
         nestedSum(value: 3) {
@@ -44,9 +47,9 @@ describe GraphQL::Execution::Multiplex do
   describe "multiple queries in the same lazy context" do
     it "runs multiple queries in the same lazy context" do
       expected_data = [
-        {"data"=>{"nestedSum"=>{"value"=>14, "nestedSum"=>{"value"=>46}}}},
-        {"data"=>{"nestedSum"=>{"value"=>14, "nestedSum"=>{"value"=>46}}}},
-        {"data"=>{"listSum"=>[{"nestedSum"=>{"value"=>14}}, {"nestedSum"=>{"value"=>14}}]}},
+        {"data" => {"nestedSum" => {"value" => 14, "nestedSum" => {"value" => 46}}}},
+        {"data" => {"nestedSum" => {"value" => 14, "nestedSum" => {"value" => 46}}}},
+        {"data" => {"listSum" => [{"nestedSum" => {"value" => 14}}, {"nestedSum" => {"value" => 14}}]}},
       ]
 
       res = multiplex(queries)
@@ -57,7 +60,8 @@ describe GraphQL::Execution::Multiplex do
   describe "when some have validation errors or runtime errors" do
     let(:q1) { " { success: nullableNestedSum(value: 1) { value } }" }
     let(:q2) { " { runtimeError: nullableNestedSum(value: 13) { value } }" }
-    let(:q3) { "{
+    let(:q3) {
+      "{
       invalidNestedNull: nullableNestedSum(value: 1) {
         value
         nullableNestedSum(value: 2) {
@@ -70,32 +74,33 @@ describe GraphQL::Execution::Multiplex do
           }
         }
       }
-    }" }
-    let(:q4) { " { validationError: nullableNestedSum(value: true) }"}
+    }"
+    }
+    let(:q4) { " { validationError: nullableNestedSum(value: true) }" }
 
     it "returns a mix of errors and values" do
       expected_res = [
         {
-          "data"=>{"success"=>{"value"=>2}}
+          "data" => {"success" => {"value" => 2}},
         },
         {
-          "data"=>{"runtimeError"=>nil},
-          "errors"=>[{
-            "message"=>"13 is unlucky",
-            "locations"=>[{"line"=>1, "column"=>4}],
-            "path"=>["runtimeError"]
-          }]
+          "data" => {"runtimeError" => nil},
+          "errors" => [{
+            "message" => "13 is unlucky",
+            "locations" => [{"line" => 1, "column" => 4}],
+            "path" => ["runtimeError"],
+          }],
         },
         {
-          "data"=>{"invalidNestedNull"=>{"value" => 2,"nullableNestedSum" => nil}},
-          "errors"=>[{"message"=>"Cannot return null for non-nullable field LazySum.nestedSum"}],
+          "data" => {"invalidNestedNull" => {"value" => 2, "nullableNestedSum" => nil}},
+          "errors" => [{"message" => "Cannot return null for non-nullable field LazySum.nestedSum"}],
         },
         {
           "errors" => [{
-            "message"=>"Field must have selections (field 'nullableNestedSum' returns LazySum but has no selections. Did you mean 'nullableNestedSum { ... }'?)",
-            "locations"=>[{"line"=>1, "column"=>4}],
-            "fields"=>["query", "validationError"]
-          }]
+            "message" => "Field must have selections (field 'nullableNestedSum' returns LazySum but has no selections. Did you mean 'nullableNestedSum { ... }'?)",
+            "locations" => [{"line" => 1, "column" => 4}],
+            "fields" => ["query", "validationError"],
+          }],
         },
       ]
 
@@ -112,7 +117,7 @@ describe GraphQL::Execution::Multiplex do
   describe "context shared by a multiplex run" do
     it "is provided as context:" do
       checks = []
-      multiplex(queries, context: { instrumentation_checks: checks })
+      multiplex(queries, context: {instrumentation_checks: checks})
       assert_equal ["before multiplex 1", "before multiplex 2", "after multiplex 2", "after multiplex 1"], checks
     end
   end
@@ -120,8 +125,8 @@ describe GraphQL::Execution::Multiplex do
   describe "instrumenting a multiplex run" do
     it "runs query instrumentation for each query and multiplex-level instrumentation" do
       checks = []
-      queries_with_context = queries.map { |q| q.merge(context: { instrumentation_checks: checks }) }
-      multiplex(queries_with_context, context: { instrumentation_checks: checks })
+      queries_with_context = queries.map { |q| q.merge(context: {instrumentation_checks: checks}) }
+      multiplex(queries_with_context, context: {instrumentation_checks: checks})
       assert_equal [
         "before multiplex 1",
         "before multiplex 2",
@@ -137,6 +142,7 @@ describe GraphQL::Execution::Multiplex do
     class InspectQueryInstrumentation
       class << self
         attr_reader :last_json
+
         def before_query(query)
         end
 
@@ -150,15 +156,15 @@ describe GraphQL::Execution::Multiplex do
       name "Query"
 
       field :raiseExecutionError, types.String do
-        resolve ->(object, args, ctx) {
-          raise GraphQL::ExecutionError, "Whoops"
-        }
+        resolve -> (object, args, ctx) {
+                  raise GraphQL::ExecutionError, "Whoops"
+                }
       end
 
       field :raiseError, types.String do
-        resolve ->(object, args, ctx) {
-          raise GraphQL::Error, "Crash"
-        }
+        resolve -> (object, args, ctx) {
+                  raise GraphQL::Error, "Crash"
+                }
       end
     end
 
@@ -172,11 +178,10 @@ describe GraphQL::Execution::Multiplex do
       handled_err_json = '{"data":{"raiseExecutionError":null},"errors":[{"message":"Whoops","locations":[{"line":1,"column":3}],"path":["raiseExecutionError"]}]}'
       assert_equal handled_err_json, InspectQueryInstrumentation.last_json
 
-
       assert_raises(GraphQL::Error) do
         InspectSchema.execute("{ raiseError }")
       end
-      unhandled_err_json = '{}'
+      unhandled_err_json = "{}"
       assert_equal unhandled_err_json, InspectQueryInstrumentation.last_json
     end
   end

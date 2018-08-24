@@ -1,7 +1,7 @@
 # frozen_string_literal: true
-require 'thread'
+require "thread"
 begin
-  require 'concurrent'
+  require "concurrent"
 rescue LoadError
   # no problem, we'll fallback to our own map
 end

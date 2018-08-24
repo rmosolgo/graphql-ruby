@@ -7,6 +7,7 @@ describe GraphQL::Schema do
     # or raises an error if instructed to do so
     class InstrumenterError < StandardError
       attr_reader :key
+
       def initialize(key)
         @key = key
         super()
@@ -56,7 +57,7 @@ describe GraphQL::Schema do
         name "Query"
         field :int, types.Int do
           argument :value, types.Int
-          resolve ->(obj, args, ctx) { args.value }
+          resolve -> (obj, args, ctx) { args.value }
         end
       end
     }
@@ -115,7 +116,7 @@ describe GraphQL::Schema do
               {query: "{int(value: 1)}", context: query_1_ctx},
               {query: "{int(value: 2)}", context: query_2_ctx},
             ],
-            context: multiplex_ctx
+            context: multiplex_ctx,
           )
         end
 
@@ -135,10 +136,10 @@ describe GraphQL::Schema do
         assert_raises InstrumenterError do
           multiplex_schema.multiplex(
             [
-              { query: " { int(value: 2) } ", context: query_1_ctx },
-              { query: " { int(value: 2) } ", context: query_2_ctx },
+              {query: " { int(value: 2) } ", context: query_1_ctx},
+              {query: " { int(value: 2) } ", context: query_2_ctx},
             ],
-            context: multiplex_ctx
+            context: multiplex_ctx,
           )
         end
 

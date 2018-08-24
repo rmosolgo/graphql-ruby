@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require './lib/graphql/upgrader/member.rb'
+require "./lib/graphql/upgrader/member.rb"
 
 describe GraphQL::Upgrader::Member do
   def upgrade(old)
     GraphQL::Upgrader::Member.new(old).upgrade
   end
 
-  describe 'field arguments' do
-    it 'upgrades' do
+  describe "field arguments" do
+    it "upgrades" do
       old = %{argument :status, !TodoStatus, "Restrict items to this status"}
       new = %{argument :status, TodoStatus, "Restrict items to this status", required: true}
 
@@ -18,14 +18,14 @@ describe GraphQL::Upgrader::Member do
   end
 
   describe "property / method upgrade" do
-    it 'upgrades the property definition to method' do
+    it "upgrades the property definition to method" do
       old = %{field :name, String, property: :full_name}
       new = %{field :name, String, method: :full_name, null: true}
 
       assert_equal new, upgrade(old)
     end
 
-    it 'upgrades the property definition in a block to method' do
+    it "upgrades the property definition in a block to method" do
       old = %{field :name, String do\n  property :full_name\nend}
       new = %{field :name, String, method: :full_name, null: true}
       assert_equal new, upgrade(old)
@@ -39,12 +39,11 @@ describe GraphQL::Upgrader::Member do
       old = %{field :name, String, property: :name}
       new = %{field :name, String, null: true}
       assert_equal new, upgrade(old)
-
     end
   end
 
   describe "hash_key" do
-    it "it moves configuration to kwarg"  do
+    it "it moves configuration to kwarg" do
       old = %{field :name, String do\n  hash_key :full_name\nend}
       new = %{field :name, String, hash_key: :full_name, null: true}
       assert_equal new, upgrade(old)
@@ -65,8 +64,8 @@ describe GraphQL::Upgrader::Member do
     end
   end
 
-  describe 'name' do
-    it 'removes the name field if it can be inferred from the class' do
+  describe "name" do
+    it "removes the name field if it can be inferred from the class" do
       old = %{
         UserType = GraphQL::ObjectType.define do
           name "User"
@@ -79,7 +78,7 @@ describe GraphQL::Upgrader::Member do
       assert_equal new, upgrade(old)
     end
 
-    it 'removes the name field if it can be inferred from the class and under a module' do
+    it "removes the name field if it can be inferred from the class and under a module" do
       old = %{
         Types::UserType = GraphQL::ObjectType.define do
           name "User"
@@ -133,8 +132,8 @@ describe GraphQL::Upgrader::Member do
     end
   end
 
-  describe 'definition' do
-    it 'upgrades the .define into class based definition' do
+  describe "definition" do
+    it "upgrades the .define into class based definition" do
       old = %{UserType = GraphQL::ObjectType.define do
       end}
       new = %{class UserType < Types::BaseObject
@@ -178,7 +177,7 @@ RUBY
       assert_equal new, upgrade(old)
     end
 
-    it 'upgrades including the module' do
+    it "upgrades including the module" do
       old = %{Module::UserType = GraphQL::ObjectType.define do
       end}
       new = %{class Module::UserType < Types::BaseObject
@@ -187,8 +186,8 @@ RUBY
     end
   end
 
-  describe 'fields' do
-    it 'underscorizes field name' do
+  describe "fields" do
+    it "underscorizes field name" do
       old = %{field :firstName, !types.String}
       new = %{field :first_name, String, null: false}
       assert_equal new, upgrade(old)
@@ -286,8 +285,7 @@ RUBY
       end
     end
 
-
-    it 'upgrades to the new definition' do
+    it "upgrades to the new definition" do
       old = %{field :name, !types.String}
       new = %{field :name, String, null: false}
       assert_equal new, upgrade(old)
@@ -475,8 +473,8 @@ RUBY
     end
   end
 
-  describe 'multi-line field with property/method' do
-    it 'upgrades without breaking syntax' do
+  describe "multi-line field with property/method" do
+    it "upgrades without breaking syntax" do
       old = %{
         field :is_example_field, types.Boolean,
           property: :example_field?
@@ -489,8 +487,8 @@ RUBY
     end
   end
 
-  describe 'multi-line connection with property/method' do
-    it 'upgrades without breaking syntax' do
+  describe "multi-line connection with property/method" do
+    it "upgrades without breaking syntax" do
       old = %{
         connection :example_connection, -> { ExampleConnectionType },
           property: :example_connections
@@ -503,16 +501,16 @@ RUBY
     end
   end
 
-  describe 'input_field' do
-    it 'upgrades to argument' do
+  describe "input_field" do
+    it "upgrades to argument" do
       old = %{input_field :id, !types.ID}
       new = %{argument :id, ID, required: true}
       assert_equal new, upgrade(old)
     end
   end
 
-  describe 'implements' do
-    it 'upgrades interfaces to implements' do
+  describe "implements" do
+    it "upgrades interfaces to implements" do
       old = %{
         interfaces [Types::SearchableType, Types::CommentableType]
         interfaces [Types::ShareableType]

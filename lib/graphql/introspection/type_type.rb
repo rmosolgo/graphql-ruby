@@ -3,12 +3,12 @@ module GraphQL
   module Introspection
     class TypeType < Introspection::BaseObject
       graphql_name "__Type"
-      description "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in "\
-                  "GraphQL as represented by the `__TypeKind` enum.\n\n"\
-                  "Depending on the kind of a type, certain fields describe information about that type. "\
-                  "Scalar types provide no information beyond a name and description, while "\
-                  "Enum types provide their values. Object and Interface types provide the fields "\
-                  "they describe. Abstract types, Union and Interface, provide the Object types "\
+      description "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in " \
+                  "GraphQL as represented by the `__TypeKind` enum.\n\n" \
+                  "Depending on the kind of a type, certain fields describe information about that type. " \
+                  "Scalar types provide no information beyond a name and description, while " \
+                  "Enum types provide their values. Object and Interface types provide the fields " \
+                  "they describe. Abstract types, Union and Interface, provide the Object types " \
                   "possible at runtime. List and NonNull types compose other types."
 
       field :kind, GraphQL::Schema::LateBoundType.new("__TypeKind"), null: false
@@ -36,7 +36,7 @@ module GraphQL
           enum_values = @context.warden.enum_values(@object)
 
           if !include_deprecated
-            enum_values = enum_values.select {|f| !f.deprecation_reason }
+            enum_values = enum_values.select { |f| !f.deprecation_reason }
           end
 
           enum_values
@@ -73,7 +73,7 @@ module GraphQL
         else
           fields = @context.warden.fields(@object)
           if !include_deprecated
-            fields = fields.select {|f| !f.deprecation_reason }
+            fields = fields.select { |f| !f.deprecation_reason }
           end
           fields.sort_by(&:name)
         end

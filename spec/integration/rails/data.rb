@@ -1,22 +1,22 @@
 # frozen_string_literal: true
-require_relative 'spec_helper'
-require 'ostruct'
+require_relative "spec_helper"
+require "ostruct"
 
 # platform helper
 def jruby?
-  RUBY_ENGINE == 'jruby'
+  RUBY_ENGINE == "jruby"
 end
 
 module StarWars
   names = [
-    'X-Wing',
-    'Y-Wing',
-    'A-Wing',
-    'Millenium Falcon',
-    'Home One',
-    'TIE Fighter',
-    'TIE Interceptor',
-    'Executor',
+    "X-Wing",
+    "Y-Wing",
+    "A-Wing",
+    "Millenium Falcon",
+    "Home One",
+    "TIE Fighter",
+    "TIE Interceptor",
+    "Executor",
   ]
 
   `rm -f ./_test_.db`
@@ -24,14 +24,14 @@ module StarWars
 
   if jruby?
     ActiveRecord::Base.establish_connection(adapter: "jdbcsqlite3", database: "./_test_.db")
-    DB = Sequel.connect('jdbc:sqlite:./_test_.db')
-  elsif ENV['DATABASE'] == 'POSTGRESQL'
+    DB = Sequel.connect("jdbc:sqlite:./_test_.db")
+  elsif ENV["DATABASE"] == "POSTGRESQL"
     ActiveRecord::Base.establish_connection(
       adapter: "postgresql",
       username: "postgres",
-      database: "graphql_ruby_test"
+      database: "graphql_ruby_test",
     )
-    DB = Sequel.connect('postgres://postgres:@localhost:5432/graphql_ruby_test')
+    DB = Sequel.connect("postgres://postgres:@localhost:5432/graphql_ruby_test")
   else
     ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: "./_test_.db")
     DB = Sequel.sqlite("./_test_.db")
@@ -61,6 +61,7 @@ module StarWars
 
   class FactionRecord
     attr_reader :id, :name, :ships, :bases, :bases_clone
+
     def initialize(id:, name:, ships:, bases:, bases_clone:)
       @id = id
       @name = name
@@ -70,19 +71,18 @@ module StarWars
     end
   end
 
-  rebels  = FactionRecord.new({
-    id: '1',
-    name: 'Alliance to Restore the Republic',
-    ships:  ['1', '2', '3', '4', '5'],
+  rebels = FactionRecord.new({
+    id: "1",
+    name: "Alliance to Restore the Republic",
+    ships: ["1", "2", "3", "4", "5"],
     bases: Base.where(faction_id: 1),
     bases_clone: Base.where(faction_id: 1),
   })
 
-
   empire = FactionRecord.new({
-    id: '2',
-    name: 'Galactic Empire',
-    ships: ['6', '7', '8'],
+    id: "2",
+    name: "Galactic Empire",
+    ships: ["6", "7", "8"],
     bases: Base.where(faction_id: 2),
     bases_clone: Base.where(faction_id: 2),
   })
@@ -97,7 +97,7 @@ module StarWars
       memo[id] = OpenStruct.new(name: name, id: id)
       memo
     end,
-    "Base" => Hash.new { |h, k| h[k] = Base.find(k) }
+    "Base" => Hash.new { |h, k| h[k] = Base.find(k) },
   }
 
   def DATA.create_ship(name, faction_id)

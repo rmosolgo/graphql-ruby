@@ -10,7 +10,7 @@ module GraphQL
         @of_type.graphql_definition.to_non_null_type
       end
 
-       # @return [GraphQL::TypeKinds::NON_NULL]
+      # @return [GraphQL::TypeKinds::NON_NULL]
       def kind
         GraphQL::TypeKinds::NON_NULL
       end
@@ -24,7 +24,7 @@ module GraphQL
       def list?
         @of_type.list?
       end
-      
+
       def to_type_signature
         "#{@of_type.to_type_signature}!"
       end

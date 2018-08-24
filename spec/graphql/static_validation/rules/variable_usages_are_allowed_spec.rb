@@ -4,7 +4,8 @@ require "spec_helper"
 describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
   include StaticValidationHelpers
 
-  let(:query_string) {'
+  let(:query_string) {
+    "
     query getCheese(
         $goodInt: Int = 1,
         $okInt: Int!,
@@ -35,37 +36,39 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
         ... on Cheese { id }
       }
     }
-  '}
+  "
+  }
 
   it "finds variables used as arguments but don't match the argument's type" do
     assert_equal(4, errors.length)
     expected = [
       {
-        "message"=>"Nullability mismatch on variable $badInt and argument id (Int / Int!)",
-        "locations"=>[{"line"=>14, "column"=>28}],
-        "fields"=>["query getCheese", "badCheese", "id"],
+        "message" => "Nullability mismatch on variable $badInt and argument id (Int / Int!)",
+        "locations" => [{"line" => 14, "column" => 28}],
+        "fields" => ["query getCheese", "badCheese", "id"],
       },
       {
-        "message"=>"Type mismatch on variable $badStr and argument id (String! / Int!)",
-        "locations"=>[{"line"=>15, "column"=>28}],
-        "fields"=>["query getCheese", "badStrCheese", "id"],
+        "message" => "Type mismatch on variable $badStr and argument id (String! / Int!)",
+        "locations" => [{"line" => 15, "column" => 28}],
+        "fields" => ["query getCheese", "badStrCheese", "id"],
       },
       {
-        "message"=>"Nullability mismatch on variable $badAnimals and argument source ([DairyAnimal]! / [DairyAnimal!]!)",
-        "locations"=>[{"line"=>18, "column"=>30}],
-        "fields"=>["query getCheese", "cheese", "other", "source"],
+        "message" => "Nullability mismatch on variable $badAnimals and argument source ([DairyAnimal]! / [DairyAnimal!]!)",
+        "locations" => [{"line" => 18, "column" => 30}],
+        "fields" => ["query getCheese", "cheese", "other", "source"],
       },
       {
-        "message"=>"List dimension mismatch on variable $deepAnimals and argument source ([[DairyAnimal!]!]! / [DairyAnimal!]!)",
-        "locations"=>[{"line"=>19, "column"=>32}],
-        "fields"=>["query getCheese", "cheese", "tooDeep", "source"],
-      }
+        "message" => "List dimension mismatch on variable $deepAnimals and argument source ([[DairyAnimal!]!]! / [DairyAnimal!]!)",
+        "locations" => [{"line" => 19, "column" => 32}],
+        "fields" => ["query getCheese", "cheese", "tooDeep", "source"],
+      },
     ]
     assert_equal(expected, errors)
   end
 
   describe "input objects that are out of place" do
-    let(:query_string) { <<-GRAPHQL
+    let(:query_string) {
+      <<-GRAPHQL
       query getCheese($id: ID!) {
         cheese(id: {blah: $id} ) {
           __typename @nonsense(id: {blah: $id})
@@ -130,7 +133,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       end
     end
 
-    describe 'list is in the argument' do
+    describe "list is in the argument" do
       let(:query_string) {
         <<-GRAPHQL
         query ($size: ImageSize!) {
@@ -186,7 +189,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       end
     end
 
-    describe 'argument contains a list with literal values' do
+    describe "argument contains a list with literal values" do
       let(:query_string) {
         <<-GRAPHQL
         query  {
@@ -200,7 +203,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       end
     end
 
-    describe 'argument contains a list with both literal and variable values' do
+    describe "argument contains a list with both literal and variable values" do
       let(:query_string) {
         <<-GRAPHQL
         query($size1: ImageSize!, $size2: ImageSize!)  {

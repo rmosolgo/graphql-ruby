@@ -6,6 +6,7 @@ module GraphQL
     # @api Private
     class LateBoundType
       attr_reader :name
+
       def initialize(local_name)
         @name = local_name
       end

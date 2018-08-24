@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'generators/graphql/type_generator'
+require "generators/graphql/type_generator"
 
 module Graphql
   module Generators
@@ -11,7 +11,7 @@ module Graphql
     # ```
     class EnumGenerator < TypeGeneratorBase
       desc "Create a GraphQL::EnumType with the given name and values"
-      source_root File.expand_path('../templates', __FILE__)
+      source_root File.expand_path("../templates", __FILE__)
 
       argument :values,
         type: :array,

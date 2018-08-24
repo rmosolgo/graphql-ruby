@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'rails/generators/base'
+require "rails/generators/base"
 
 module Graphql
   module Generators
@@ -10,7 +10,7 @@ module Graphql
           :directory,
           type: :string,
           default: "app/graphql",
-          desc: "Directory where generated files should be saved"
+          desc: "Directory where generated files should be saved",
         )
       end
 
@@ -25,8 +25,8 @@ module Graphql
 
       def create_mutation_root_type
         create_dir("#{options[:directory]}/mutations")
-        template("mutation_type.erb", "#{options[:directory]}/types/mutation_type.rb", { skip: true })
-        insert_root_type('mutation', 'MutationType')
+        template("mutation_type.erb", "#{options[:directory]}/types/mutation_type.rb", {skip: true})
+        insert_root_type("mutation", "MutationType")
       end
 
       def schema_file_path

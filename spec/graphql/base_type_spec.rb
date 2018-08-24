@@ -44,7 +44,7 @@ describe GraphQL::BaseType do
         name "Some::Invalid::Name"
       end
 
-      it 'is invalid' do
+      it "is invalid" do
         assert_raises(GraphQL::InvalidNameError) { BaseNameColonsTest.name }
       end
     end
@@ -105,7 +105,7 @@ describe GraphQL::BaseType do
 
       field :post do
         type post_type
-        resolve ->(obj, args, ctx) { Post.find(args["id"]) }
+        resolve -> (obj, args, ctx) { Post.find(args["id"]) }
       end
     end
 
@@ -125,11 +125,11 @@ TYPE
     end
   end
 
-  describe 'non_null?' do
+  describe "non_null?" do
     let(:type) do
       GraphQL::EnumType.define do
         name "Hello"
-        value 'WORLD'
+        value "WORLD"
       end
     end
 
@@ -146,11 +146,11 @@ TYPE
     end
   end
 
-  describe 'list?' do
+  describe "list?" do
     let(:type) do
       GraphQL::EnumType.define do
         name "Hello"
-        value 'WORLD'
+        value "WORLD"
       end
     end
 

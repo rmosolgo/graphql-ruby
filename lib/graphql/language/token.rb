@@ -19,6 +19,7 @@ module GraphQL
       end
 
       alias to_s value
+
       def to_i; @value.to_i; end
       def to_f; @value.to_f; end
 

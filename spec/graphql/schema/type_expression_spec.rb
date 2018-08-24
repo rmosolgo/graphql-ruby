@@ -18,9 +18,9 @@ describe GraphQL::Schema::TypeExpression do
     end
 
     describe "non-null types" do
-      let(:type_name) { "String!"}
+      let(:type_name) { "String!" }
       it "makes non-null types" do
-        assert_equal(GraphQL::STRING_TYPE.to_non_null_type,type_expression_result)
+        assert_equal(GraphQL::STRING_TYPE.to_non_null_type, type_expression_result)
       end
     end
 

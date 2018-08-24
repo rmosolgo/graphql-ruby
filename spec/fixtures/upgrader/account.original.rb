@@ -10,10 +10,10 @@ module Platform
       possible_types [
         Objects::User,
         Objects::Organization,
-        Objects::Bot
+        Objects::Bot,
       ]
 
-      resolve_type ->(obj, ctx) { :stand_in }
+      resolve_type -> (obj, ctx) { :stand_in }
     end
   end
 end

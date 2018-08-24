@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require_relative "./query_depth"
+
 module GraphQL
   module Analysis
     # Used under the hood to implement depth validation,
@@ -12,7 +13,7 @@ module GraphQL
     #
     class MaxQueryDepth < GraphQL::Analysis::QueryDepth
       def initialize(max_depth)
-        disallow_excessive_depth = ->(query, depth) {
+        disallow_excessive_depth = -> (query, depth) {
           if depth > max_depth
             GraphQL::AnalysisError.new("Query has depth of #{depth}, which exceeds max depth of #{max_depth}")
           else

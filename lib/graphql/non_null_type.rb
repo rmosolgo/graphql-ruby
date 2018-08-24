@@ -36,6 +36,7 @@ module GraphQL
     extend Forwardable
 
     attr_reader :of_type
+
     def initialize(of_type:)
       if of_type.is_a?(GraphQL::NonNullType)
         raise(
@@ -71,6 +72,7 @@ module GraphQL
     def to_s
       "#{of_type.to_s}!"
     end
+
     alias_method :inspect, :to_s
     alias :to_type_signature :to_s
 

@@ -22,6 +22,7 @@ describe GraphQL::Schema::Interface do
 
     module NewInterface2
       include Jazz::GloballyIdentifiableType
+
       def new_method
       end
     end
@@ -91,10 +92,10 @@ describe GraphQL::Schema::Interface do
     end
   end
 
-  it 'supports global_id_field' do
+  it "supports global_id_field" do
     object = Module.new do
       include GraphQL::Schema::Interface
-      graphql_name 'GlobalIdFieldTest'
+      graphql_name "GlobalIdFieldTest"
       global_id_field :uuid
     end.to_graphql
 
@@ -158,13 +159,13 @@ describe GraphQL::Schema::Interface do
       res = Jazz::Schema.execute(query_str)
       expected_data = {
         "upcasedId" => "ENSEMBLE/BELA FLECK AND THE FLECKTONES",
-        "name" => "Bela Fleck and the Flecktones"
+        "name" => "Bela Fleck and the Flecktones",
       }
       assert_equal(expected_data, res["data"]["find"])
     end
   end
 
-  describe ':DefinitionMethods' do
+  describe ":DefinitionMethods" do
     module InterfaceA
       include GraphQL::Schema::Interface
 
@@ -188,7 +189,7 @@ describe GraphQL::Schema::Interface do
 
       definition_methods do
         def some_method
-          'not 42'
+          "not 42"
         end
       end
     end
@@ -209,7 +210,7 @@ describe GraphQL::Schema::Interface do
     end
 
     it "follows the normal Ruby ancestor chain when including other interfaces" do
-      assert_equal('not 42', InterfaceE.some_method)
+      assert_equal("not 42", InterfaceE.some_method)
     end
   end
 end

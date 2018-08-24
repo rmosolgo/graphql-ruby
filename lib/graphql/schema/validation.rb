@@ -25,8 +25,8 @@ module GraphQL
         # @return [Proc] A proc which will validate the input by calling `property_name` and asserting it is an instance of one of `allowed_classes`
         def self.assert_property(property_name, *allowed_classes)
           # Hide LateBoundType from user-facing errors
-          allowed_classes_message = allowed_classes.map(&:name).reject {|n| n.include?("LateBoundType") }.join(" or ")
-          ->(obj) {
+          allowed_classes_message = allowed_classes.map(&:name).reject { |n| n.include?("LateBoundType") }.join(" or ")
+          -> (obj) {
             property_value = obj.public_send(property_name)
             is_valid_value = allowed_classes.any? { |allowed_class| property_value.is_a?(allowed_class) }
             is_valid_value ? nil : "#{property_name} must return #{allowed_classes_message}, not #{property_value.class.name} (#{property_value.inspect})"
@@ -38,7 +38,7 @@ module GraphQL
         # @param to_class [Class] The class for values in the return value
         # @return [Proc] A proc to validate that validates the input by calling `property_name` and asserting that the return value is a Hash of `{from_class => to_class}` pairs
         def self.assert_property_mapping(property_name, from_class, to_class)
-          ->(obj) {
+          -> (obj) {
             property_value = obj.public_send(property_name)
             if !property_value.is_a?(Hash)
               "#{property_name} must be a hash of {#{from_class.name} => #{to_class.name}}, not a #{property_value.class.name} (#{property_value.inspect})"
@@ -57,7 +57,7 @@ module GraphQL
         # @param list_member_class [Class] The class which each member of the returned array should be an instance of
         # @return [Proc] A proc to validate the input by calling `property_name` and asserting that the return is an Array of `list_member_class` instances
         def self.assert_property_list_of(property_name, list_member_class)
-          ->(obj) {
+          -> (obj) {
             property_value = obj.public_send(property_name)
             if !property_value.is_a?(Array)
               "#{property_name} must be an Array of #{list_member_class.name}, not a #{property_value.class.name} (#{property_value.inspect})"
@@ -73,7 +73,7 @@ module GraphQL
         end
 
         def self.assert_named_items_are_valid(item_name, get_items_proc)
-          ->(type) {
+          -> (type) {
             items = get_items_proc.call(type)
             error_message = nil
             items.each do |item|
@@ -87,28 +87,28 @@ module GraphQL
           }
         end
 
-        FIELDS_ARE_VALID = Rules.assert_named_items_are_valid("field", ->(type) { type.all_fields })
+        FIELDS_ARE_VALID = Rules.assert_named_items_are_valid("field", -> (type) { type.all_fields })
 
-        HAS_ONE_OR_MORE_POSSIBLE_TYPES = ->(type) {
+        HAS_ONE_OR_MORE_POSSIBLE_TYPES = -> (type) {
           type.possible_types.length >= 1 ? nil : "must have at least one possible type"
         }
 
         NAME_IS_STRING = Rules.assert_property(:name, String)
         DESCRIPTION_IS_STRING_OR_NIL = Rules.assert_property(:description, String, NilClass)
         ARGUMENTS_ARE_STRING_TO_ARGUMENT = Rules.assert_property_mapping(:arguments, String, GraphQL::Argument)
-        ARGUMENTS_ARE_VALID =  Rules.assert_named_items_are_valid("argument", ->(type) { type.arguments.values })
+        ARGUMENTS_ARE_VALID = Rules.assert_named_items_are_valid("argument", -> (type) { type.arguments.values })
 
-        DEFAULT_VALUE_IS_VALID_FOR_TYPE = ->(type) {
+        DEFAULT_VALUE_IS_VALID_FOR_TYPE = -> (type) {
           if !type.default_value.nil? && type.type.is_a?(NonNullType)
             return %Q(Variable #{type.name} of type "#{type.type}" is required and will not use the default value. Perhaps you meant to use type "#{type.type.of_type}".)
           end
 
           if !type.default_value.nil?
             coerced_value = begin
-              type.type.coerce_isolated_result(type.default_value)
-            rescue => ex
-              ex
-            end
+                              type.type.coerce_isolated_result(type.default_value)
+                            rescue => ex
+                              ex
+                            end
 
             if coerced_value.nil? || coerced_value.is_a?(StandardError)
               msg = "default value #{type.default_value.inspect} is not valid for type #{type.type}"
@@ -118,7 +118,7 @@ module GraphQL
           end
         }
 
-        TYPE_IS_VALID_INPUT_TYPE = ->(type) {
+        TYPE_IS_VALID_INPUT_TYPE = -> (type) {
           outer_type = type.type
           inner_type = outer_type.is_a?(GraphQL::BaseType) ? outer_type.unwrap : nil
 
@@ -130,7 +130,7 @@ module GraphQL
           end
         }
 
-        SCHEMA_CAN_RESOLVE_TYPES = ->(schema) {
+        SCHEMA_CAN_RESOLVE_TYPES = -> (schema) {
           if schema.types.values.any? { |type| type.kind.abstract? } && schema.resolve_type_proc.nil?
             "schema contains Interfaces or Unions, so you must define a `resolve_type -> (obj, ctx) { ... }` function"
           else
@@ -138,7 +138,7 @@ module GraphQL
           end
         }
 
-        SCHEMA_CAN_FETCH_IDS = ->(schema) {
+        SCHEMA_CAN_FETCH_IDS = -> (schema) {
           has_node_field = schema.query && schema.query.all_fields.any?(&:relay_node_field)
           if has_node_field && schema.object_from_id_proc.nil?
             "schema contains `node(id:...)` field, so you must define a `object_from_id -> (id, ctx) { ... }` function"
@@ -147,7 +147,7 @@ module GraphQL
           end
         }
 
-        SCHEMA_CAN_GENERATE_IDS = ->(schema) {
+        SCHEMA_CAN_GENERATE_IDS = -> (schema) {
           has_id_field = schema.types.values.any? { |t| t.kind.fields? && t.all_fields.any? { |f| f.resolve_proc.is_a?(GraphQL::Relay::GlobalIdResolve) } }
           if has_id_field && schema.id_from_object_proc.nil?
             "schema contains `global_id_field`, so you must define a `id_from_object -> (obj, type, ctx) { ... }` function"
@@ -156,7 +156,7 @@ module GraphQL
           end
         }
 
-        SCHEMA_INSTRUMENTERS_ARE_VALID = ->(schema) {
+        SCHEMA_INSTRUMENTERS_ARE_VALID = -> (schema) {
           errs = []
           schema.instrumenters[:query].each do |inst|
             if !inst.respond_to?(:before_query) || !inst.respond_to?(:after_query)
@@ -177,8 +177,8 @@ module GraphQL
           end
         }
 
-        RESERVED_TYPE_NAME = ->(type) {
-          if type.name.start_with?('__') && !type.introspection?
+        RESERVED_TYPE_NAME = -> (type) {
+          if type.name.start_with?("__") && !type.introspection?
             # TODO: make this a hard failure in a later version
             warn("Name #{type.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
             nil
@@ -187,8 +187,8 @@ module GraphQL
           end
         }
 
-        RESERVED_NAME = ->(named_thing) {
-          if named_thing.name.start_with?('__')
+        RESERVED_NAME = -> (named_thing) {
+          if named_thing.name.start_with?("__")
             # TODO: make this a hard failure in a later version
             warn("Name #{named_thing.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
             nil
@@ -197,7 +197,7 @@ module GraphQL
           end
         }
 
-        INTERFACES_ARE_IMPLEMENTED = ->(obj_type) {
+        INTERFACES_ARE_IMPLEMENTED = -> (obj_type) {
           field_errors = []
           obj_type.interfaces.each do |interface_type|
             interface_type.fields.each do |field_name, field_defn|

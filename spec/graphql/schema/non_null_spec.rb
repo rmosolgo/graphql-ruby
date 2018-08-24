@@ -33,7 +33,7 @@ describe GraphQL::Schema::NonNull do
     it "will return true if list types 'of_type' are the same" do
       new_of_type = Jazz::Musician
       new_non_null_type = GraphQL::Schema::NonNull.new(new_of_type)
-      
+
       assert_equal non_null_type, new_non_null_type
     end
   end

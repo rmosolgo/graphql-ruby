@@ -5,7 +5,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        context.visitor[GraphQL::Language::Nodes::FragmentDefinition] << ->(node, parent) { validate_name_exists(node, context) }
+        context.visitor[GraphQL::Language::Nodes::FragmentDefinition] << -> (node, parent) { validate_name_exists(node, context) }
       end
 
       private

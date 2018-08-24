@@ -38,10 +38,10 @@ describe GraphQL::Tracing::NewRelicTracing do
 
   it "can override the transaction name per query" do
     # Override with `false`
-    NewRelicTest::SchemaWithTransactionName.execute "{ int }", context: { set_new_relic_transaction_name: false }
+    NewRelicTest::SchemaWithTransactionName.execute "{ int }", context: {set_new_relic_transaction_name: false}
     assert_equal [], NewRelic::TRANSACTION_NAMES
     # Override with `true`
-    NewRelicTest::SchemaWithoutTransactionName.execute "{ int }", context: { set_new_relic_transaction_name: true }
+    NewRelicTest::SchemaWithoutTransactionName.execute "{ int }", context: {set_new_relic_transaction_name: true}
     assert_equal ["GraphQL/query.anonymous"], NewRelic::TRANSACTION_NAMES
   end
 end

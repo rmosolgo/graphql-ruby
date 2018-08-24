@@ -29,8 +29,8 @@ module GraphQL
       namespace: "graphql",
       dependencies: nil,
       schema_name: nil,
-      load_schema: ->(task) { Object.const_get(task.schema_name) },
-      load_context: ->(task) { {} },
+      load_schema: -> (task) { Object.const_get(task.schema_name) },
+      load_context: -> (task) { {} },
       only: nil,
       except: nil,
       directory: ".",
@@ -77,10 +77,10 @@ module GraphQL
     # or assigning attributes inside the block
     def initialize(options = {})
       default_dependencies = if Rake::Task.task_defined?("environment")
-        [:environment]
-      else
-        []
-      end
+                               [:environment]
+                             else
+                               []
+                             end
 
       all_options = DEFAULT_OPTIONS
         .merge(dependencies: default_dependencies)

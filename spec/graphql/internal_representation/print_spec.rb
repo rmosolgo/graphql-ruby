@@ -3,7 +3,8 @@ require "spec_helper"
 
 describe GraphQL::InternalRepresentation::Print do
   describe "printing queries" do
-    let(:query_str) { <<-GRAPHQL
+    let(:query_str) {
+      <<-GRAPHQL
     {
       cheese(id: 1) {
         flavor
@@ -18,7 +19,7 @@ describe GraphQL::InternalRepresentation::Print do
       o: origin
     }
     GRAPHQL
-  }
+    }
     it "prints the rewritten query" do
       query_plan = GraphQL::InternalRepresentation::Print.print(Dummy::Schema, query_str)
       expected_plan = <<-GRAPHQL

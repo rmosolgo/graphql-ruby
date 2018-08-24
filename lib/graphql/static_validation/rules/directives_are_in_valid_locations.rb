@@ -8,7 +8,7 @@ module GraphQL
       def validate(context)
         directives = context.schema.directives
 
-        context.visitor[Nodes::Directive] << ->(node, parent) {
+        context.visitor[Nodes::Directive] << -> (node, parent) {
           validate_location(node, parent, directives, context)
         }
       end
@@ -16,20 +16,20 @@ module GraphQL
       private
 
       LOCATION_MESSAGE_NAMES = {
-        GraphQL::Directive::QUERY =>               "queries",
-        GraphQL::Directive::MUTATION =>            "mutations",
-        GraphQL::Directive::SUBSCRIPTION =>        "subscriptions",
-        GraphQL::Directive::FIELD =>               "fields",
+        GraphQL::Directive::QUERY => "queries",
+        GraphQL::Directive::MUTATION => "mutations",
+        GraphQL::Directive::SUBSCRIPTION => "subscriptions",
+        GraphQL::Directive::FIELD => "fields",
         GraphQL::Directive::FRAGMENT_DEFINITION => "fragment definitions",
-        GraphQL::Directive::FRAGMENT_SPREAD =>     "fragment spreads",
-        GraphQL::Directive::INLINE_FRAGMENT =>     "inline fragments",
+        GraphQL::Directive::FRAGMENT_SPREAD => "fragment spreads",
+        GraphQL::Directive::INLINE_FRAGMENT => "inline fragments",
       }
 
       SIMPLE_LOCATIONS = {
-        Nodes::Field =>               GraphQL::Directive::FIELD,
-        Nodes::InlineFragment =>      GraphQL::Directive::INLINE_FRAGMENT,
-        Nodes::FragmentSpread =>      GraphQL::Directive::FRAGMENT_SPREAD,
-        Nodes::FragmentDefinition =>  GraphQL::Directive::FRAGMENT_DEFINITION,
+        Nodes::Field => GraphQL::Directive::FIELD,
+        Nodes::InlineFragment => GraphQL::Directive::INLINE_FRAGMENT,
+        Nodes::FragmentSpread => GraphQL::Directive::FRAGMENT_SPREAD,
+        Nodes::FragmentDefinition => GraphQL::Directive::FRAGMENT_DEFINITION,
       }
 
       SIMPLE_LOCATION_NODES = SIMPLE_LOCATIONS.keys

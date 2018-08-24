@@ -14,8 +14,8 @@ describe GraphQL::Tracing do
     it "delivers the metadata to send_trace, with result and key" do
       returned_value = nil
       traceable = DummyTraceable.new(TestTracing)
-      traces = TestTracing.with_trace  do
-        returned_value = traceable.trace("something", { some_stuff: true }) do
+      traces = TestTracing.with_trace do
+        returned_value = traceable.trace("something", {some_stuff: true}) do
           "do stuff"
         end
       end
@@ -42,7 +42,7 @@ describe GraphQL::Tracing do
 
       traceable = DummyTraceable.new(TestTracing, OtherRandomTracer)
       traces = TestTracing.with_trace do
-        traceable.trace("stuff", { }) { :stuff }
+        traceable.trace("stuff", {}) { :stuff }
       end
 
       assert_equal ["stuff"], traces.map { |t| t[:key] }

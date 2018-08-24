@@ -26,15 +26,12 @@ describe GraphQL::Types::ISO8601DateTime do
       end
     end
 
-
     class Schema < GraphQL::Schema
       query(Query)
     end
   end
 
-
   describe "as an input" do
-
     def parse_date(date_str)
       query_str = <<-GRAPHQL
       query($date: ISO8601DateTime!){
@@ -49,7 +46,7 @@ describe GraphQL::Types::ISO8601DateTime do
         }
       }
       GRAPHQL
-      full_res = DateTimeTest::Schema.execute(query_str, variables: { date: date_str })
+      full_res = DateTimeTest::Schema.execute(query_str, variables: {date: date_str})
       full_res["errors"] || full_res["data"]["parseDate"]
     end
 
@@ -87,7 +84,7 @@ describe GraphQL::Types::ISO8601DateTime do
       GRAPHQL
 
       date_str = "2010-02-02T22:30:30-06:00"
-      full_res = DateTimeTest::Schema.execute(query_str, variables: { date: date_str })
+      full_res = DateTimeTest::Schema.execute(query_str, variables: {date: date_str})
       assert_equal date_str, full_res["data"]["parseDate"]["iso8601"]
     end
   end
@@ -103,7 +100,7 @@ describe GraphQL::Types::ISO8601DateTime do
       }
       GRAPHQL
 
-      expected_res = { "name" => "ISO8601DateTime", "kind" => "SCALAR"}
+      expected_res = {"name" => "ISO8601DateTime", "kind" => "SCALAR"}
       assert_equal expected_res, introspection_res["data"]["__type"]
     end
   end

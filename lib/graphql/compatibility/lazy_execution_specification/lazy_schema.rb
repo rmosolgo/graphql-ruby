@@ -5,6 +5,7 @@ module GraphQL
       module LazySchema
         class LazyPush
           attr_reader :value
+
           def initialize(ctx, value)
             if value == 13
               @value = nil
@@ -57,11 +58,11 @@ module GraphQL
           def self.instrument(type, field)
             prev_lazy_resolve = field.lazy_resolve_proc
             field.redefine {
-              lazy_resolve ->(o, a, c) {
-                result = prev_lazy_resolve.call(o, a, c)
-                c[:lazy_instrumentation] && c[:lazy_instrumentation].push("#{type.name}.#{field.name}: #{o.value}")
-                result
-              }
+              lazy_resolve -> (o, a, c) {
+                             result = prev_lazy_resolve.call(o, a, c)
+                             c[:lazy_instrumentation] && c[:lazy_instrumentation].push("#{type.name}.#{field.name}: #{o.value}")
+                             result
+                           }
             }
           end
         end
@@ -72,9 +73,9 @@ module GraphQL
             field :value, !types.Int
             field :push, !lazy_push_type do
               argument :value, types.Int
-              resolve ->(o, a, c) {
-                LazyPush.new(c, a[:value])
-              }
+              resolve -> (o, a, c) {
+                        LazyPush.new(c, a[:value])
+                      }
             end
           end
 
@@ -82,16 +83,16 @@ module GraphQL
             name "Query"
             field :push, !lazy_push_type do
               argument :value, types.Int
-              resolve ->(o, a, c) {
-                LazyPush.new(c, a[:value])
-              }
+              resolve -> (o, a, c) {
+                        LazyPush.new(c, a[:value])
+                      }
             end
 
             connection :pushes, lazy_push_type.connection_type do
               argument :values, types[types.Int]
-              resolve ->(o, a, c) {
-                LazyPushCollection.new(c, a[:values])
-              }
+              resolve -> (o, a, c) {
+                        LazyPushCollection.new(c, a[:values])
+                      }
             end
           end
 

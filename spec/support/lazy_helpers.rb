@@ -30,7 +30,7 @@ module LazyHelpers
     def value
       @value ||= begin
         total_value = all.map(&:own_value).reduce(&:+)
-        all.each { |v| v.value = total_value}
+        all.each { |v| v.value = total_value }
         all.clear
         total_value
       end
@@ -47,7 +47,7 @@ module LazyHelpers
   end
 
   class LazySum < GraphQL::Schema::Object
-    field :value, Integer, null: true, resolve: ->(o, a, c) { o == 13 ? nil : o }
+    field :value, Integer, null: true, resolve: -> (o, a, c) { o == 13 ? nil : o }
     field :nestedSum, LazySum, null: false do
       argument :value, Integer, required: true
     end
@@ -77,28 +77,28 @@ module LazyHelpers
     field :int, !types.Int do
       argument :value, !types.Int
       argument :plus, types.Int, default_value: 0
-      resolve ->(o, a, c) { Wrapper.new(a[:value] + a[:plus])}
+      resolve -> (o, a, c) { Wrapper.new(a[:value] + a[:plus]) }
     end
 
     field :nestedSum, !LazySum do
       argument :value, !types.Int
-      resolve ->(o, args, c) { SumAll.new(c, args[:value]) }
+      resolve -> (o, args, c) { SumAll.new(c, args[:value]) }
     end
 
     field :nullableNestedSum, LazySum do
       argument :value, types.Int
-      resolve ->(o, args, c) {
-        if args[:value] == 13
-          Wrapper.new { raise GraphQL::ExecutionError.new("13 is unlucky") }
-        else
-          SumAll.new(c, args[:value])
-        end
-      }
+      resolve -> (o, args, c) {
+                if args[:value] == 13
+                  Wrapper.new { raise GraphQL::ExecutionError.new("13 is unlucky") }
+                else
+                  SumAll.new(c, args[:value])
+                end
+              }
     end
 
     field :listSum, types[LazySum] do
       argument :values, types[types.Int]
-      resolve ->(o, args, c) { args[:values] }
+      resolve -> (o, args, c) { args[:values] }
     end
   end
 

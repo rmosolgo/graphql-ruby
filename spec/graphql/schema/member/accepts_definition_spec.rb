@@ -10,6 +10,7 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
       class BaseField < GraphQL::Schema::Argument
         accepts_definition :metadata
       end
+
       argument_class BaseField
       accepts_definition :metadata
     end
@@ -33,6 +34,7 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
       class EnumValue < GraphQL::Schema::EnumValue
         accepts_definition :metadata
       end
+
       enum_value_class EnumValue
       accepts_definition :metadata
       metadata :a, 123

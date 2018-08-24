@@ -3,6 +3,7 @@
 module GraphQL
   class ParseError < GraphQL::Error
     attr_reader :line, :col, :query
+
     def initialize(message, line, col, query, filename: nil)
       if filename
         message += " (#{filename})"
@@ -15,7 +16,7 @@ module GraphQL
     end
 
     def to_h
-      locations = line ? [{ "line" => line, "column" => col }] : []
+      locations = line ? [{"line" => line, "column" => col}] : []
       {
         "message" => message,
         "locations" => locations,

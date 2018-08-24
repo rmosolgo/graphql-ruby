@@ -54,7 +54,7 @@ module GraphQL
       # A field resolve for finding an object by ID
       module FindNode
         def self.call(obj, args, ctx)
-          ctx.query.schema.object_from_id(args[:id], ctx )
+          ctx.query.schema.object_from_id(args[:id], ctx)
         end
       end
     end

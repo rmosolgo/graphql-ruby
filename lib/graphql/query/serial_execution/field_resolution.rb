@@ -26,7 +26,7 @@ module GraphQL
           if raw_value.is_a?(GraphQL::Execution::Execute::Skip)
             {}
           else
-            { result_name => get_finished_value(raw_value) }
+            {result_name => get_finished_value(raw_value)}
           end
         end
 

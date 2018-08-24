@@ -6,11 +6,13 @@ describe GraphQL::Language::Parser do
 
   describe "anonymous fragment extension" do
     let(:document) { GraphQL.parse(query_string) }
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       fragment on NestedType @or(something: "ok") {
         anotherNestedField
       }
-    |}
+    |
+    }
 
     let(:fragment) { document.definitions.first }
 
@@ -153,7 +155,6 @@ describe GraphQL::Language::Parser do
 
       assert_includes err_2.message, error_filename_2
       assert_includes err_2.message, "3, 11"
-
     end
   end
 

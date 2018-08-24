@@ -33,7 +33,7 @@ describe GraphQL::Schema::List do
     it "will return true if list types 'of_type' are the same" do
       new_of_type = Jazz::Musician
       new_list_type = GraphQL::Schema::List.new(new_of_type)
-      
+
       assert_equal list_type, new_list_type
     end
   end

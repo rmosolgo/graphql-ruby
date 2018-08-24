@@ -55,7 +55,7 @@ module GraphQL
         visitor[Nodes::FragmentDefinition].enter << visit_frag.method(:enter)
         visitor[Nodes::FragmentDefinition].leave << visit_frag.method(:leave)
 
-        visitor[Nodes::InlineFragment].enter << ->(ast_node, ast_parent) {
+        visitor[Nodes::InlineFragment].enter << -> (ast_node, ast_parent) {
           # Inline fragments provide two things to the rewritten tree:
           # - They _may_ narrow the scope by their type condition
           # - They _may_ apply their directives to their children
@@ -68,7 +68,7 @@ module GraphQL
           end
         }
 
-        visitor[Nodes::InlineFragment].leave << ->(ast_node, ast_parent) {
+        visitor[Nodes::InlineFragment].leave << -> (ast_node, ast_parent) {
           if skip_nodes.none?
             scopes_stack.pop
           end
@@ -78,7 +78,7 @@ module GraphQL
           end
         }
 
-        visitor[Nodes::Field].enter << ->(ast_node, ast_parent) {
+        visitor[Nodes::Field].enter << -> (ast_node, ast_parent) {
           if skip?(ast_node, query)
             skip_nodes.add(ast_node)
           end
@@ -116,7 +116,7 @@ module GraphQL
           end
         }
 
-        visitor[Nodes::Field].leave << ->(ast_node, ast_parent) {
+        visitor[Nodes::Field].leave << -> (ast_node, ast_parent) {
           if skip_nodes.none?
             nodes_stack.pop
             scopes_stack.pop
@@ -127,7 +127,7 @@ module GraphQL
           end
         }
 
-        visitor[Nodes::FragmentSpread].enter << ->(ast_node, ast_parent) {
+        visitor[Nodes::FragmentSpread].enter << -> (ast_node, ast_parent) {
           if skip_nodes.none? && !skip?(ast_node, query)
             # Register the irep nodes that depend on this AST node:
             spread_parents[ast_node].merge(nodes_stack.last)

@@ -24,16 +24,16 @@ module GraphQL
             else
               method_arity = obj.method(method_name).arity
               resolver = case method_arity
-              when 0, -1
-                # -1 Handles method_missing, eg openstruct
-                ->(o, a, c) { o.public_send(method_name) }
-              when 1
-                ->(o, a, c) { o.public_send(method_name, a) }
-              when 2
-                ->(o, a, c) { o.public_send(method_name, a, c) }
-              else
-                raise "Unexpected resolve arity: #{method_arity}. Must be 0, 1, 2"
-              end
+                         when 0, -1
+                           # -1 Handles method_missing, eg openstruct
+                           -> (o, a, c) { o.public_send(method_name) }
+                         when 1
+                           -> (o, a, c) { o.public_send(method_name, a) }
+                         when 2
+                           -> (o, a, c) { o.public_send(method_name, a, c) }
+                         else
+                           raise "Unexpected resolve arity: #{method_arity}. Must be 0, 1, 2"
+                         end
               # Call the resolver directly next time
               @field_map[method_name] = resolver
               # Call through this time

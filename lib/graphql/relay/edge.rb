@@ -6,6 +6,7 @@ module GraphQL
     # Wraps an object as a `node`, and exposes a connection-specific `cursor`.
     class Edge
       attr_reader :node, :connection
+
       def initialize(node, connection)
         @node = node
         @connection = connection

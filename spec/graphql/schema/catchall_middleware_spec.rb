@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Schema::CatchallMiddleware do
   let(:result) { Dummy::Schema.execute(query_string) }
-  let(:query_string) {%| query noMilk { error }|}
+  let(:query_string) { %| query noMilk { error }| }
 
   before do
     Dummy::Schema.middleware << GraphQL::Schema::CatchallMiddleware
@@ -18,17 +18,16 @@ describe GraphQL::Schema::CatchallMiddleware do
 
     it "turns into error messages" do
       expected = {
-        "data" => { "error" => nil },
-        "errors"=> [
+        "data" => {"error" => nil},
+        "errors" => [
           {
-            "message"=>"Internal error",
-            "locations"=>[{"line"=>1, "column"=>17}],
-            "path"=>["error"]
+            "message" => "Internal error",
+            "locations" => [{"line" => 1, "column" => 17}],
+            "path" => ["error"],
           },
-        ]
+        ],
       }
       assert_equal(expected, result)
     end
   end
-
 end

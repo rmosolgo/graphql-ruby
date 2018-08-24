@@ -8,7 +8,6 @@ module Platform
 
       scopeless_tokens_as_minimum
 
-
       interfaces [
         Interfaces::A,
         Interfaces::B,
@@ -17,17 +16,17 @@ module Platform
       field :startingLine, !types.Int do
         description "The starting line for the range"
 
-        resolve ->(range, args, context) {
-          range.lines.first[:lineno]
-        }
+        resolve -> (range, args, context) {
+                  range.lines.first[:lineno]
+                }
       end
 
       field :endingLine, !types.Int do
         description "The ending line for the range"
 
-        resolve ->(range, args, context) {
-          range.lines.first[:lineno] + (range.lines.length - 1)
-        }
+        resolve -> (range, args, context) {
+                  range.lines.first[:lineno] + (range.lines.length - 1)
+                }
       end
 
       field :commit, -> { !Objects::Commit } do

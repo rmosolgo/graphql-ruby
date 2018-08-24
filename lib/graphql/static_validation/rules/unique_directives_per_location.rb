@@ -5,12 +5,12 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       NODES_WITH_DIRECTIVES = GraphQL::Language::Nodes.constants
-        .map{|c| GraphQL::Language::Nodes.const_get(c)}
-        .select{|c| c.is_a?(Class) && c.instance_methods.include?(:directives)}
+        .map { |c| GraphQL::Language::Nodes.const_get(c) }
+        .select { |c| c.is_a?(Class) && c.instance_methods.include?(:directives) }
 
       def validate(context)
         NODES_WITH_DIRECTIVES.each do |node_class|
-          context.visitor[node_class] << ->(node, _) {
+          context.visitor[node_class] << -> (node, _) {
             validate_directives(node, context) unless node.directives.empty?
           }
         end
@@ -27,7 +27,7 @@ module GraphQL
             context.errors << message(
               "The directive \"#{directive_name}\" can only be used once at this location.",
               [used_directives[directive_name], ast_directive],
-              context: context
+              context: context,
             )
           else
             used_directives[directive_name] = ast_directive

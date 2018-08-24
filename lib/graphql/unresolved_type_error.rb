@@ -25,10 +25,10 @@ module GraphQL
       @resolved_type = resolved_type
       @possible_types = possible_types
       message = "The value from \"#{field.name}\" on \"#{parent_type}\" could not be resolved to \"#{field.type}\". " \
-        "(Received: `#{resolved_type.inspect}`, Expected: [#{possible_types.map(&:inspect).join(", ")}]) " \
-        "Make sure you have defined a `resolve_type` proc on your schema and that value `#{value.inspect}` " \
-        "gets resolved to a valid type. You may need to add your type to `orphan_types` if it implements an " \
-        "interface but isn't a return type of any other field."
+      "(Received: `#{resolved_type.inspect}`, Expected: [#{possible_types.map(&:inspect).join(", ")}]) " \
+      "Make sure you have defined a `resolve_type` proc on your schema and that value `#{value.inspect}` " \
+      "gets resolved to a valid type. You may need to add your type to `orphan_types` if it implements an " \
+      "interface but isn't a return type of any other field."
       super(message)
     end
   end

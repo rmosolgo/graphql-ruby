@@ -14,7 +14,7 @@ module Platform
 
       def viewer_has_starred(**arguments)
         if context[:viewer]
-          ->(test_inner_proc) do
+          -> (test_inner_proc) do
             context[:viewer].starred?(object)
           end
         else
@@ -28,11 +28,11 @@ module Platform
 
       def stargazers(**arguments)
         scope = case object
-        when Repository
-          object.stars
-        when Gist
-          GistStar.where(gist_id: object.id)
-        end
+                when Repository
+                  object.stars
+                when Gist
+                  GistStar.where(gist_id: object.id)
+                end
 
         table = scope.table_name
         if order_by = arguments[:order_by]

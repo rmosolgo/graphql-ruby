@@ -16,7 +16,7 @@ module GraphQL
         schema = introspection_result.fetch("data").fetch("__schema")
 
         types = {}
-        type_resolver = ->(type) { -> { resolve_type(types, type) } }
+        type_resolver = -> (type) { -> { resolve_type(types, type) } }
 
         schema.fetch("types").each do |type|
           next if type.fetch("name").start_with?("__")
@@ -24,7 +24,7 @@ module GraphQL
           types[type_object.name] = type_object
         end
 
-        kargs = { orphan_types: types.values, resolve_type: NullResolveType }
+        kargs = {orphan_types: types.values, resolve_type: NullResolveType}
         [:query, :mutation, :subscription].each do |root|
           type = schema["#{root}Type"]
           kargs[root] = types.fetch(type.fetch("name")) if type
@@ -33,11 +33,11 @@ module GraphQL
         Schema.define(**kargs, raise_definition_error: true)
       end
 
-      NullResolveType = ->(type, obj, ctx) {
+      NullResolveType = -> (type, obj, ctx) {
         raise(NotImplementedError, "This schema was loaded from string, so it can't resolve types for objects")
       }
 
-      NullScalarCoerce = ->(val, _ctx) { val }
+      NullScalarCoerce = -> (val, _ctx) { val }
 
       class << self
         private
@@ -66,24 +66,25 @@ module GraphQL
                   name: enum["name"],
                   description: enum["description"],
                   deprecation_reason: enum["deprecationReason"],
-                  value: enum["name"]
+                  value: enum["name"],
                 )
-              })
+              },
+            )
           when "INTERFACE"
             InterfaceType.define(
               name: type["name"],
               description: type["description"],
               fields: Hash[(type["fields"] || []).map { |field|
-                [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
-              }]
+                             [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
+                           }],
             )
           when "INPUT_OBJECT"
             InputObjectType.define(
               name: type["name"],
               description: type["description"],
               arguments: Hash[type["inputFields"].map { |arg|
-                [arg["name"], define_type(arg.merge("kind" => "ARGUMENT"), type_resolver)]
-              }]
+                                [arg["name"], define_type(arg.merge("kind" => "ARGUMENT"), type_resolver)]
+                              }],
             )
           when "OBJECT"
             ObjectType.define(
@@ -93,8 +94,8 @@ module GraphQL
                 type_resolver.call(interface)
               },
               fields: Hash[type["fields"].map { |field|
-                [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
-              }]
+                             [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
+                           }],
             )
           when "FIELD"
             GraphQL::Field.define(
@@ -102,8 +103,8 @@ module GraphQL
               type: type_resolver.call(type["type"]),
               description: type["description"],
               arguments: Hash[type["args"].map { |arg|
-                [arg["name"], define_type(arg.merge("kind" => "ARGUMENT"), type_resolver)]
-              }]
+                                [arg["name"], define_type(arg.merge("kind" => "ARGUMENT"), type_resolver)]
+                              }],
             )
           when "ARGUMENT"
             kwargs = {}
@@ -130,8 +131,8 @@ module GraphQL
                   input_value_ast.to_h
                 else
                   raise(
-                    "Encountered unexpected type when loading default value. "\
-                    "input_value_ast.class is #{input_value_ast.class} "\
+                    "Encountered unexpected type when loading default value. " \
+                    "input_value_ast.class is #{input_value_ast.class} " \
                     "default_value is #{default_value_str}"
                   )
                 end
@@ -142,7 +143,7 @@ module GraphQL
               name: type["name"],
               type: type_resolver.call(type["type"]),
               description: type["description"],
-              **kwargs
+              **kwargs,
             )
           when "SCALAR"
             type_name = type.fetch("name")
@@ -161,7 +162,7 @@ module GraphQL
               description: type["description"],
               possible_types: type["possibleTypes"].map { |possible_type|
                 type_resolver.call(possible_type)
-              }
+              },
             )
           else
             fail NotImplementedError, "#{type["kind"]} not implemented"

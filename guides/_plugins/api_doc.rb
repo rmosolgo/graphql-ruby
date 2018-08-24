@@ -13,8 +13,8 @@ module GraphQLSite
       end
 
       doc_path = ruby_ident
-        .gsub("::", "/")                        # namespaces
-        .sub(/#(.+)$/, "#\\1-instance_method")  # instance methods
+        .gsub("::", "/") # namespaces
+        .sub(/#(.+)$/, "#\\1-instance_method") # instance methods
         .sub(/\.(.+)$/, "#\\1-class_method")    # class methods
 
       %|<a href="#{API_DOC_ROOT}#{doc_path}" target="_blank" title="API docs for #{ruby_ident}"><code>#{input}</code></a>|
@@ -75,7 +75,7 @@ module GraphQLSite
 
     def render(context)
       <<~HTML.chomp
-      <a href="#{context["site"]["baseurl"]}/#{@path}">#{@text}</a>
+        <a href="#{context["site"]["baseurl"]}/#{@path}">#{@text}</a>
       HTML
     end
 
@@ -86,15 +86,14 @@ module GraphQLSite
     end
 
     POSSIBLE_EXTENSIONS = [".html", ".md"]
+
     def exist?(path)
-      filepath =  GUIDES_ROOT + path.split("#").first
+      filepath = GUIDES_ROOT + path.split("#").first
       filepath = filepath.sub(".html", "")
       POSSIBLE_EXTENSIONS.any? { |ext| File.exist?(filepath + ext) }
     end
   end
 end
-
-
 
 Liquid::Template.register_filter(GraphQLSite::APIDoc)
 Liquid::Template.register_tag("api_doc_root", GraphQLSite::APIDocRoot)

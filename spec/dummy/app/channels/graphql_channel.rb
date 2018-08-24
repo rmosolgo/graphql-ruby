@@ -61,7 +61,7 @@ class GraphqlChannel < ActionCable::Channel::Base
       query: query,
       context: context,
       variables: variables,
-      operation_name: operation_name
+      operation_name: operation_name,
     })
 
     payload = {
@@ -91,6 +91,7 @@ class GraphqlChannel < ActionCable::Channel::Base
   # This is to make sure that GlobalID is used to load and dump this object
   class ExamplePayload
     include GlobalID::Identification
+
     def initialize(value)
       @value = value
     end

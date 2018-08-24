@@ -3,13 +3,14 @@ require "spec_helper"
 
 describe GraphQL::Analysis::QueryComplexity do
   let(:complexities) { [] }
-  let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |this_query, complexity|  complexities << this_query << complexity } }
+  let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |this_query, complexity| complexities << this_query << complexity } }
   let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [query_complexity]) }
   let(:variables) { {} }
   let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
 
   describe "simple queries" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       query cheeses($isSkipped: Boolean = false){
         # complexity of 3
         cheese1: cheese(id: 1) {
@@ -28,7 +29,8 @@ describe GraphQL::Analysis::QueryComplexity do
           }
         }
       }
-    |}
+    |
+    }
 
     it "sums the complexity" do
       reduce_result
@@ -36,7 +38,7 @@ describe GraphQL::Analysis::QueryComplexity do
     end
 
     describe "when skipped by directives" do
-      let(:variables) { { "isSkipped" => true } }
+      let(:variables) { {"isSkipped" => true} }
       it "doesn't include skipped fields" do
         reduce_result
         assert_equal complexities, [query, 3]
@@ -45,7 +47,8 @@ describe GraphQL::Analysis::QueryComplexity do
   end
 
   describe "query with fragments" do
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         # complexity of 3
         cheese1: cheese(id: 1) {
@@ -72,7 +75,8 @@ describe GraphQL::Analysis::QueryComplexity do
           id
         }
       }
-    |}
+    |
+    }
 
     it "counts all fragment usages, not the definitions" do
       reduce_result
@@ -80,7 +84,8 @@ describe GraphQL::Analysis::QueryComplexity do
     end
 
     describe "mutually exclusive types" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         {
           favoriteEdible {
             # 1 for everybody
@@ -129,7 +134,8 @@ describe GraphQL::Analysis::QueryComplexity do
             flavors
           }
         }
-      |}
+      |
+      }
 
       it "gets the max among options" do
         reduce_result
@@ -137,9 +143,9 @@ describe GraphQL::Analysis::QueryComplexity do
       end
     end
 
-
     describe "when there are no selections on any object types" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
         {
           # 1 for everybody
           favoriteEdible {
@@ -153,7 +159,8 @@ describe GraphQL::Analysis::QueryComplexity do
             ... on Sweetener { sweetness }
           }
         }
-      |}
+      |
+      }
 
       it "gets the max among interface types" do
         reduce_result
@@ -162,7 +169,8 @@ describe GraphQL::Analysis::QueryComplexity do
     end
 
     describe "redundant fields" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
       {
         favoriteEdible {
           fatContent
@@ -180,7 +188,8 @@ describe GraphQL::Analysis::QueryComplexity do
       fragment edibleFields on Edible {
         fatContent
       }
-      |}
+      |
+      }
 
       it "only counts them once" do
         reduce_result
@@ -191,7 +200,8 @@ describe GraphQL::Analysis::QueryComplexity do
 
   describe "relay types" do
     let(:query) { GraphQL::Query.new(StarWars::Schema, query_string) }
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
     {
       rebels {
         ships {
@@ -206,7 +216,8 @@ describe GraphQL::Analysis::QueryComplexity do
         }
       }
     }
-    |}
+    |
+    }
 
     it "gets the complexity" do
       reduce_result
@@ -225,12 +236,12 @@ describe GraphQL::Analysis::QueryComplexity do
       single_complexity_type = GraphQL::ObjectType.define do
         name "SingleComplexity"
         field :value, types.Int, complexity: 0.1 do
-          resolve ->(obj, args, ctx) { obj }
+          resolve -> (obj, args, ctx) { obj }
         end
         field :complexity, single_complexity_type do
           argument :value, types.Int
-          complexity ->(ctx, args, child_complexity) { args[:value] + child_complexity }
-          resolve ->(obj, args, ctx) { args[:value] }
+          complexity -> (ctx, args, child_complexity) { args[:value] + child_complexity }
+          resolve -> (obj, args, ctx) { args[:value] }
         end
         interfaces [complexity_interface]
       end
@@ -238,7 +249,7 @@ describe GraphQL::Analysis::QueryComplexity do
       double_complexity_type = GraphQL::ObjectType.define do
         name "DoubleComplexity"
         field :value, types.Int, complexity: 4 do
-          resolve ->(obj, args, ctx) { obj }
+          resolve -> (obj, args, ctx) { obj }
         end
         interfaces [complexity_interface]
       end
@@ -247,23 +258,24 @@ describe GraphQL::Analysis::QueryComplexity do
         name "Query"
         field :complexity, single_complexity_type do
           argument :value, types.Int
-          complexity ->(ctx, args, child_complexity) { args[:value] + child_complexity }
-          resolve ->(obj, args, ctx) { args[:value] }
+          complexity -> (ctx, args, child_complexity) { args[:value] + child_complexity }
+          resolve -> (obj, args, ctx) { args[:value] }
         end
 
         field :innerComplexity, complexity_interface do
           argument :value, types.Int
-          resolve ->(obj, args, ctx) { args[:value] }
+          resolve -> (obj, args, ctx) { args[:value] }
         end
       end
 
       GraphQL::Schema.define(
         query: query_type,
         orphan_types: [double_complexity_type],
-        resolve_type: ->(a,b,c) { :pass }
+        resolve_type: -> (a, b, c) { :pass },
       )
     }
-    let(:query_string) {%|
+    let(:query_string) {
+      %|
       {
         a: complexity(value: 3) { value }
         b: complexity(value: 6) {
@@ -273,7 +285,8 @@ describe GraphQL::Analysis::QueryComplexity do
           }
         }
       }
-    |}
+    |
+    }
 
     it "sums the complexity" do
       reduce_result
@@ -282,14 +295,16 @@ describe GraphQL::Analysis::QueryComplexity do
     end
 
     describe "same field on multiple types" do
-      let(:query_string) {%|
+      let(:query_string) {
+        %|
       {
         innerComplexity(value: 2) {
           ... on SingleComplexity { value }
           ... on DoubleComplexity { value }
         }
       }
-      |}
+      |
+      }
 
       it "picks them max for those fields" do
         reduce_result
