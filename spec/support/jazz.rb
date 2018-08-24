@@ -545,7 +545,7 @@ module Jazz
   module Introspection
     class TypeType < GraphQL::Introspection::TypeType
       def name
-        object.name.upcase
+        object.name&.upcase
       end
     end
 

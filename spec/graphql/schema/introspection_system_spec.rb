@@ -35,5 +35,10 @@ describe GraphQL::Schema::IntrospectionSystem do
       res = Dummy::Schema.execute("{ ensembles { __typenameLength } }")
       assert_equal 1, res["errors"].length
     end
+
+    it "runs the introspection query" do
+      res = Jazz::Schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+      assert res
+    end
   end
 end
