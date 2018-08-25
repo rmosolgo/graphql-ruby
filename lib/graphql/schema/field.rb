@@ -425,7 +425,11 @@ module GraphQL
 
           @extras.each do |extra_arg|
             # TODO: provide proper tests for `:ast_node`, `:irep_node`, `:parent`, others?
-            ruby_kwargs[extra_arg] = field_ctx.public_send(extra_arg)
+            if respond_to? extra_arg
+              ruby_kwargs[extra_arg] = send(extra_arg) 
+            else
+              ruby_kwargs[extra_arg] = field_ctx.public_send(extra_arg)
+            end
           end
         else
           ruby_kwargs = NO_ARGS
