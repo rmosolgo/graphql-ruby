@@ -88,6 +88,11 @@ module GraphQL
       @expose_as ||= (@as || @name).to_s
     end
 
+    # Backport this to support legacy-style directives
+    def keyword
+      @keyword ||= GraphQL::Schema::Member::BuildType.underscore(expose_as).to_sym
+    end
+
     # @param value [Object] The incoming value from variables or query string literal
     # @param ctx [GraphQL::Query::Context]
     # @return [Object] The prepared `value` for this argument or `value` itself if no `prepare` function exists.

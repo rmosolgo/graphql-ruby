@@ -105,8 +105,11 @@ module GraphQL
                      rescue GraphQL::ExecutionError => err
                        err
                      end
-            continue_field(field_defn.type, result) do
-              super
+
+            trace.after_lazy(result) do |visitor, inner_result|
+              visitor.continue_field(field_defn.type, inner_result) do
+                visitor.on_abstract_node(node, _parent)
+              end
             end
           end
         end
@@ -173,8 +176,13 @@ module GraphQL
 
       def evaluate
         trace = Trace.new(query: @query)
-        visitor = Visitor.new(@query.document, trace: trace)
-        visitor.visit
+        trace.visitor.visit
+        while trace.lazies.any?
+          next_wave = trace.lazies.dup
+          trace.lazies.clear
+          # This will cause a side-effect with Trace#write
+          next_wave.each(&:value)
+        end
         trace.result
       rescue
         puts $!.message
@@ -214,14 +222,30 @@ module GraphQL
       class Trace
         extend Forwardable
         def_delegators :query, :schema, :context
-        attr_reader :query, :path, :objects, :result, :types
+        attr_reader :query, :path, :objects, :result, :types, :visitor, :lazies, :parent_trace
 
         def initialize(query:)
           @query = query
           @path = []
-          @result = nil
+          @result = {}
           @objects = []
           @types = []
+          @lazies = []
+          @parent_trace = nil
+          @visitor = Visitor.new(@query.document, trace: self)
+        end
+
+        # Copy bits of state that should be independent:
+        # - @path, @objects, @types, @visitor
+        # Leave in place those that can be shared:
+        # - @query, @result, @lazies
+        def initialize_copy(original_trace)
+          super
+          @parent_trace = original_trace
+          @path = @path.dup
+          @objects = @objects.dup
+          @types = @types.dup
+          @visitor = Visitor.new(@query.document, trace: self)
         end
 
         def with_path(part)
@@ -269,12 +293,23 @@ TRACE
           nil
         end
 
+        def after_lazy(obj)
+          if schema.lazy?(obj)
+            # Dup it now so that `path` etc are correct
+            next_trace = self.dup
+            @lazies << schema.after_lazy(obj) do |inner_obj|
+              yield(next_trace.visitor, inner_obj)
+            end
+          else
+            yield(visitor, obj)
+          end
+        end
+
         def arguments(arg_owner, ast_node)
           kwarg_arguments = {}
           ast_node.arguments.each do |arg|
             arg_defn = arg_owner.arguments[arg.name]
             value = arg_to_value(arg_defn.type, arg.value)
-
             kwarg_arguments[arg_defn.keyword] = value
           end
           kwarg_arguments

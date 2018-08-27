@@ -3,6 +3,14 @@ require "spec_helper"
 
 describe GraphQL::Execution::Interpreter do
   module InterpreterTest
+    class Box
+      attr_reader :value
+
+      def initialize(value:)
+        @value = value
+      end
+    end
+
     class Expansion < GraphQL::Schema::Object
       field :sym, String, null: false
       field :name, String, null: false
@@ -45,7 +53,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       def card(name:)
-        CARDS.find { |c| c.name == name }
+        Box.new(value: CARDS.find { |c| c.name == name })
       end
 
       field :expansion, Expansion, null: true do
@@ -78,7 +86,9 @@ describe GraphQL::Execution::Interpreter do
 
     class Schema < GraphQL::Schema
       query(Query)
+      lazy_resolve(Box, :value)
     end
+
     # TODO encapsulate this in `use` ?
     Schema.graphql_definition.query_execution_strategy = GraphQL::Execution::Interpreter
     # Don't want this wrapping automatically
@@ -121,8 +131,8 @@ describe GraphQL::Execution::Interpreter do
     }
     GRAPHQL
 
-    vars = { expansion: "RAV", id1: "Dark Confidant", id2: "RAV" }
-    result = InterpreterTest::Schema.execute(query_string, variables: vars )
+    vars = {expansion: "RAV", id1: "Dark Confidant", id2: "RAV"}
+    result = InterpreterTest::Schema.execute(query_string, variables: vars)
     assert_equal ["BLACK"], result["data"]["card"]["colors"]
     assert_equal "Ravnica, City of Guilds", result["data"]["card"]["expansion"]["name"]
     assert_equal [{"name" => "Dark Confidant"}], result["data"]["card"]["expansion"]["cards"]
@@ -146,12 +156,12 @@ describe GraphQL::Execution::Interpreter do
     }
     GRAPHQL
 
-    vars = { truthy: true, falsey: false }
+    vars = {truthy: true, falsey: false}
     result = InterpreterTest::Schema.execute(query_str, variables: vars)
     expected_data = {
-      "exp2" => { "name" => "Ravnica, City of Guilds" },
-      "exp3" => { "name" => "Ravnica, City of Guilds" },
-      "exp5" => { "name" => "Ravnica, City of Guilds" },
+      "exp2" => {"name" => "Ravnica, City of Guilds"},
+      "exp3" => {"name" => "Ravnica, City of Guilds"},
+      "exp5" => {"name" => "Ravnica, City of Guilds"},
     }
     assert_equal expected_data, result["data"]
   end
