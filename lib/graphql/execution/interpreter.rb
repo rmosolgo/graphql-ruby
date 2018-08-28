@@ -106,9 +106,9 @@ module GraphQL
                        err
                      end
 
-            trace.after_lazy(result) do |visitor, inner_result|
-              visitor.continue_field(field_defn.type, inner_result) do
-                visitor.on_abstract_node(node, _parent)
+            trace.after_lazy(result) do |trace, inner_result|
+              trace.visitor.continue_field(field_defn.type, inner_result) do |final_trace|
+                final_trace.visitor.on_abstract_node(node, _parent)
               end
             end
           end
@@ -123,6 +123,8 @@ module GraphQL
             context.errors << value
             trace.write(nil)
             return
+          elsif value.is_a?(GraphQL::UnauthorizedError)
+            return schema.unauthorized_object(value)
           elsif GraphQL::Execution::Execute::SKIP == value
             return
           end
@@ -139,27 +141,35 @@ module GraphQL
             obj_type = schema.resolve_type(type, value, query.context)
             obj_type = obj_type.metadata[:type_class]
             object_proxy = obj_type.authorized_new(value, query.context)
-            trace.with_type(obj_type) do
-              trace.with_object(object_proxy) do
-                yield
+            trace.after_lazy(object_proxy) do |inner_trace, inner_obj|
+              if inner_obj.is_a?(GraphQL::UnauthorizedError)
+                yield(schema.unauthorized_object(inner_obj))
+              else
+                inner_trace.with_type(obj_type) do
+                  inner_trace.with_object(inner_obj) do
+                    yield(inner_trace)
+                  end
+                end
               end
             end
           when TypeKinds::OBJECT
             object_proxy = type.authorized_new(value, query.context)
             trace.with_type(type) do
               trace.with_object(object_proxy) do
-                yield
+                yield(trace)
               end
             end
           when TypeKinds::LIST
             trace.write([])
             value.each_with_index.map do |inner_value, idx|
               trace.with_path(idx) do
-                continue_field(type.of_type, inner_value) { yield }
+                trace.after_lazy(inner_value) do |inner_trace, inner_v|
+                  inner_trace.visitor.continue_field(type.of_type, inner_v) { |t| yield(t) }
+                end
               end
             end
           when TypeKinds::NON_NULL
-            continue_field(type.of_type, value) { yield }
+            continue_field(type.of_type, value) { |t| yield(t) }
           else
             raise "Invariant: Unhandled type kind #{type.kind} (#{type})"
           end
@@ -297,11 +307,19 @@ TRACE
           if schema.lazy?(obj)
             # Dup it now so that `path` etc are correct
             next_trace = self.dup
-            @lazies << schema.after_lazy(obj) do |inner_obj|
-              yield(next_trace.visitor, inner_obj)
+            @lazies << GraphQL::Execution::Lazy.new do
+              method_name = schema.lazy_method_name(obj)
+              begin
+                inner_obj = obj.public_send(method_name)
+                after_lazy(inner_obj) do |really_next_trace, really_inner_obj|
+                  yield(really_next_trace, really_inner_obj)
+                end
+              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                yield(next_trace, err)
+              end
             end
           else
-            yield(visitor, obj)
+            yield(self, obj)
           end
         end
 
@@ -311,6 +329,11 @@ TRACE
             arg_defn = arg_owner.arguments[arg.name]
             value = arg_to_value(arg_defn.type, arg.value)
             kwarg_arguments[arg_defn.keyword] = value
+          end
+          arg_owner.arguments.each do |name, arg_defn|
+            if arg_defn.default_value? && !kwarg_arguments.key?(arg_defn.keyword)
+              kwarg_arguments[arg_defn.keyword] = arg_defn.default_value
+            end
           end
           kwarg_arguments
         end

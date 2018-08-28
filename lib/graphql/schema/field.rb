@@ -325,15 +325,22 @@ module GraphQL
 
       # Called by interpreter
       # TODO rename this, make it public-ish
-      def resolve_field_2(obj, args, ctx)
-        if @resolver_class
-          obj = @resolver_class.new(object: obj, context: ctx)
-        end
+      def resolve_field_2(obj_or_lazy, args, ctx)
+        ctx.schema.after_lazy(obj_or_lazy) do |obj|
+          application_object = obj.object
+          if self.authorized?(application_object, ctx)
+            field_receiver = if @resolver_class
+                               @resolver_class.new(object: obj, context: ctx)
+                             else
+                               obj
+                             end
 
-        if args.any?
-          obj.public_send(method_sym, args)
-        else
-          obj.public_send(method_sym)
+            if args.any?
+              field_receiver.public_send(method_sym, args)
+            else
+              field_receiver.public_send(method_sym)
+            end
+          end
         end
       end
 

@@ -39,7 +39,7 @@ module GraphQL
             if is_authorized
               self.new(object, context)
             else
-              raise GraphQL::UnauthorizedError.new(object: object, type: self, context: context)
+              GraphQL::UnauthorizedError.new(object: object, type: self, context: context)
             end
           end
         end

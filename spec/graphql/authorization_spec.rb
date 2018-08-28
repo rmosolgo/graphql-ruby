@@ -5,6 +5,7 @@ describe GraphQL::Authorization do
   module AuthTest
     class Box
       attr_reader :value
+
       def initialize(value:)
         @value = value
       end
@@ -39,6 +40,7 @@ describe GraphQL::Authorization do
       end
 
       argument_class BaseArgument
+
       def visible?(context)
         super && (context[:hide] ? @name != "hidden" : true)
       end
@@ -248,6 +250,7 @@ describe GraphQL::Authorization do
       end
 
       def empty_array; []; end
+
       field :hidden_object, HiddenObject, null: false, method: :itself
       field :hidden_interface, HiddenInterface, null: false, method: :itself
       field :hidden_default_interface, HiddenDefaultInterface, null: false, method: :itself
@@ -267,11 +270,14 @@ describe GraphQL::Authorization do
       field :unauthorized_lazy_box, UnauthorizedBox, null: true do
         argument :value, String, required: true
       end
+
       def unauthorized_lazy_box(value:)
         # Make it extra nested, just for good measure.
         Box.new(value: Box.new(value: value))
       end
+
       field :unauthorized_list_items, [UnauthorizedObject], null: true
+
       def unauthorized_list_items
         [self, self]
       end
@@ -293,13 +299,13 @@ describe GraphQL::Authorization do
       field :integers, IntegerObjectConnection, null: false
 
       def integers
-        [1,2,3]
+        [1, 2, 3]
       end
 
       field :lazy_integers, IntegerObjectConnection, null: false
 
       def lazy_integers
-        Box.new(value: Box.new(value: [1,2,3]))
+        Box.new(value: Box.new(value: [1, 2, 3]))
       end
     end
 
@@ -346,6 +352,13 @@ describe GraphQL::Authorization do
 
       # use GraphQL::Backtrace
     end
+
+    # TODO encapsulate this in `use` ?
+    Schema.graphql_definition.query_execution_strategy = GraphQL::Execution::Interpreter
+    Schema.graphql_definition.mutation_execution_strategy = GraphQL::Execution::Interpreter
+    # Don't want this wrapping automatically
+    Schema.instrumenters[:field].delete(GraphQL::Schema::Member::Instrumentation)
+    Schema.instrumenters[:query].delete(GraphQL::Schema::Member::Instrumentation)
   end
 
   def auth_execute(*args)
@@ -354,7 +367,7 @@ describe GraphQL::Authorization do
 
   describe "applying the visible? method" do
     it "works in queries" do
-      res = auth_execute(" { int int2 } ", context: { hide: true })
+      res = auth_execute(" { int int2 } ", context: {hide: true})
       assert_equal 1, res["errors"].size
     end
 
@@ -366,7 +379,7 @@ describe GraphQL::Authorization do
       }
 
       error_queries.each do |name, q|
-        hidden_res = auth_execute(q, context: { hide: true})
+        hidden_res = auth_execute(q, context: {hide: true})
         assert_equal ["Field '#{name}' doesn't exist on type 'Query'"], hidden_res["errors"].map { |e| e["message"] }
 
         visible_res = auth_execute(q)
@@ -377,7 +390,7 @@ describe GraphQL::Authorization do
 
     it "uses the mutation for derived fields, inputs and outputs" do
       query = "mutation { doHiddenStuff(input: {}) { __typename } }"
-      res = auth_execute(query, context: { hidden_mutation: true })
+      res = auth_execute(query, context: {hidden_mutation: true})
       assert_equal ["Field 'doHiddenStuff' doesn't exist on type 'Mutation'"], res["errors"].map { |e| e["message"] }
 
       # `#resolve` isn't implemented, so this errors out:
@@ -391,7 +404,7 @@ describe GraphQL::Authorization do
           t2: __type(name: "DoHiddenStuffPayload") { name }
         }
       GRAPHQL
-      hidden_introspection_res = auth_execute(introspection_q, context: { hidden_mutation: true })
+      hidden_introspection_res = auth_execute(introspection_q, context: {hidden_mutation: true})
       assert_nil hidden_introspection_res["data"]["t1"]
       assert_nil hidden_introspection_res["data"]["t2"]
 
@@ -402,7 +415,7 @@ describe GraphQL::Authorization do
 
     it "works with Schema::Mutation" do
       query = "mutation { doHiddenStuff2 { __typename } }"
-      res = auth_execute(query, context: { hidden_mutation: true })
+      res = auth_execute(query, context: {hidden_mutation: true})
       assert_equal ["Field 'doHiddenStuff2' doesn't exist on type 'Mutation'"], res["errors"].map { |e| e["message"] }
 
       # `#resolve` isn't implemented, so this errors out:
@@ -419,7 +432,7 @@ describe GraphQL::Authorization do
       }
       GRAPHQL
 
-      hidden_res = auth_execute(query, context: { hidden_relay: true })
+      hidden_res = auth_execute(query, context: {hidden_relay: true})
       assert_equal 2, hidden_res["errors"].size
 
       visible_res = auth_execute(query)
@@ -428,7 +441,7 @@ describe GraphQL::Authorization do
     end
 
     it "treats hidden enum values as non-existant, even in lists" do
-      hidden_res_1 = auth_execute <<-GRAPHQL, context: { hide: true }
+      hidden_res_1 = auth_execute <<-GRAPHQL, context: {hide: true}
       {
         landscapeFeature(enum: TAR_PIT)
       }
@@ -436,7 +449,7 @@ describe GraphQL::Authorization do
 
       assert_equal ["Argument 'enum' on Field 'landscapeFeature' has an invalid value. Expected type 'LandscapeFeature'."], hidden_res_1["errors"].map { |e| e["message"] }
 
-      hidden_res_2 = auth_execute <<-GRAPHQL, context: { hide: true }
+      hidden_res_2 = auth_execute <<-GRAPHQL, context: {hide: true}
       {
         landscapeFeatures(enums: [STREAM, TAR_PIT])
       }
@@ -444,7 +457,7 @@ describe GraphQL::Authorization do
 
       assert_equal ["Argument 'enums' on Field 'landscapeFeatures' has an invalid value. Expected type '[LandscapeFeature!]'."], hidden_res_2["errors"].map { |e| e["message"] }
 
-      success_res = auth_execute <<-GRAPHQL, context: { hide: false }
+      success_res = auth_execute <<-GRAPHQL, context: {hide: false}
       {
         landscapeFeature(enum: TAR_PIT)
         landscapeFeatures(enums: [STREAM, TAR_PIT])
@@ -457,7 +470,7 @@ describe GraphQL::Authorization do
 
     it "refuses to resolve to hidden enum values" do
       assert_raises(GraphQL::EnumType::UnresolvedValueError) do
-        auth_execute <<-GRAPHQL, context: { hide: true }
+        auth_execute <<-GRAPHQL, context: {hide: true}
         {
           landscapeFeature(string: "TAR_PIT")
         }
@@ -465,7 +478,7 @@ describe GraphQL::Authorization do
       end
 
       assert_raises(GraphQL::EnumType::UnresolvedValueError) do
-        auth_execute <<-GRAPHQL, context: { hide: true }
+        auth_execute <<-GRAPHQL, context: {hide: true}
         {
           landscapeFeatures(strings: ["STREAM", "TAR_PIT"])
         }
@@ -474,7 +487,7 @@ describe GraphQL::Authorization do
     end
 
     it "works in introspection" do
-      res = auth_execute <<-GRAPHQL, context: { hide: true, hidden_mutation: true }
+      res = auth_execute <<-GRAPHQL, context: {hide: true, hidden_mutation: true}
         {
           query: __type(name: "Query") {
             fields {
@@ -509,10 +522,10 @@ describe GraphQL::Authorization do
       }
 
       queries.each do |query_str, errors|
-        res = auth_execute(query_str, context: { hide: true })
+        res = auth_execute(query_str, context: {hide: true})
         assert_equal errors, res.fetch("errors").map { |e| e["message"] }
 
-        res = auth_execute(query_str, context: { hide: false })
+        res = auth_execute(query_str, context: {hide: false})
         refute res.key?("errors")
       end
     end
@@ -525,17 +538,17 @@ describe GraphQL::Authorization do
       }
 
       queries.each do |query_str, errors|
-        res = auth_execute(query_str, context: { hide: true })
+        res = auth_execute(query_str, context: {hide: true})
         assert_equal errors, res["errors"].map { |e| e["message"] }
 
-        res = auth_execute(query_str, context: { hide: false })
+        res = auth_execute(query_str, context: {hide: false})
         refute res.key?("errors")
       end
     end
 
     it "works with mutations" do
       query = "mutation { doInaccessibleStuff(input: {}) { __typename } }"
-      res = auth_execute(query, context: { inaccessible_mutation: true })
+      res = auth_execute(query, context: {inaccessible_mutation: true})
       assert_equal ["Some fields in this query are not accessible: doInaccessibleStuff"], res["errors"].map { |e| e["message"] }
 
       assert_raises NotImplementedError do
@@ -551,7 +564,7 @@ describe GraphQL::Authorization do
       }
       GRAPHQL
 
-      inaccessible_res = auth_execute(query, context: { inaccessible_relay: true })
+      inaccessible_res = auth_execute(query, context: {inaccessible_relay: true})
       assert_equal ["Some fields in this query are not accessible: inaccessibleConnection, inaccessibleEdge"], inaccessible_res["errors"].map { |e| e["message"] }
 
       accessible_res = auth_execute(query)
@@ -562,15 +575,15 @@ describe GraphQL::Authorization do
   describe "applying the authorized? method" do
     it "halts on unauthorized objects" do
       query = "{ unauthorizedObject { __typename } }"
-      hidden_response = auth_execute(query, context: { hide: true })
+      hidden_response = auth_execute(query, context: {hide: true})
       assert_nil hidden_response["data"].fetch("unauthorizedObject")
       visible_response = auth_execute(query, context: {})
-      assert_equal({ "__typename" => "UnauthorizedObject" }, visible_response["data"]["unauthorizedObject"])
+      assert_equal({"__typename" => "UnauthorizedObject"}, visible_response["data"]["unauthorizedObject"])
     end
 
     it "halts on unauthorized mutations" do
       query = "mutation { doUnauthorizedStuff(input: {}) { __typename } }"
-      res = auth_execute(query, context: { unauthorized_mutation: true })
+      res = auth_execute(query, context: {unauthorized_mutation: true})
       assert_nil res["data"].fetch("doUnauthorizedStuff")
       assert_raises NotImplementedError do
         auth_execute(query)
@@ -605,7 +618,7 @@ describe GraphQL::Authorization do
       }
       GRAPHQL
 
-      unauthorized_res = auth_execute(query, context: { unauthorized_relay: true })
+      unauthorized_res = auth_execute(query, context: {unauthorized_relay: true})
       assert_nil unauthorized_res["data"].fetch("unauthorizedConnection")
       assert_nil unauthorized_res["data"].fetch("unauthorizedEdge")
 
@@ -634,10 +647,10 @@ describe GraphQL::Authorization do
       }
       GRAPHQL
 
-      unauthorized_res = auth_execute(query, context: { hide: true })
+      unauthorized_res = auth_execute(query, context: {hide: true})
 
       assert_nil unauthorized_res["data"]["unauthorizedListItems"]
-      authorized_res = auth_execute(query, context: { hide: false })
+      authorized_res = auth_execute(query, context: {hide: false})
       assert_equal 2, authorized_res["data"]["unauthorizedListItems"].size
     end
 
@@ -663,7 +676,7 @@ describe GraphQL::Authorization do
       }
       GRAPHQL
       res = auth_execute(query)
-      assert_equal [1,2,3], res["data"]["lazyIntegers"]["edges"].map { |e| e["node"]["value"] }
+      assert_equal [1, 2, 3], res["data"]["lazyIntegers"]["edges"].map { |e| e["node"]["value"] }
     end
 
     it "Works for eager connections" do
@@ -673,7 +686,7 @@ describe GraphQL::Authorization do
       }
       GRAPHQL
       res = auth_execute(query)
-      assert_equal [1,2,3], res["data"]["integers"]["edges"].map { |e| e["node"]["value"] }
+      assert_equal [1, 2, 3], res["data"]["integers"]["edges"].map { |e| e["node"]["value"] }
     end
 
     it "filters out individual nodes by value" do
@@ -682,8 +695,8 @@ describe GraphQL::Authorization do
         integers { edges { node { value } } }
       }
       GRAPHQL
-      res = auth_execute(query, context: { exclude_integer: 1 })
-      assert_equal [nil,2,3], res["data"]["integers"]["edges"].map { |e| e["node"] && e["node"]["value"] }
+      res = auth_execute(query, context: {exclude_integer: 1})
+      assert_equal [nil, 2, 3], res["data"]["integers"]["edges"].map { |e| e["node"] && e["node"]["value"] }
       assert_equal ["Unauthorized IntegerObject: 1"], res["errors"].map { |e| e["message"] }
     end
 
@@ -698,10 +711,10 @@ describe GraphQL::Authorization do
       }
       GRAPHQL
 
-      res = auth_execute(query, variables: { value: "a"})
+      res = auth_execute(query, variables: {value: "a"})
       assert_nil res["data"]["unauthorizedInterface"]
 
-      res2 = auth_execute(query, variables: { value: "b"})
+      res2 = auth_execute(query, variables: {value: "b"})
       assert_equal "b", res2["data"]["unauthorizedInterface"]["value"]
     end
 
