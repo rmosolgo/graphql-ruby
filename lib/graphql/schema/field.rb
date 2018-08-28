@@ -368,11 +368,13 @@ MSG
       end
 
       def authorized?(object, context)
-        if @resolver_class
+        self_auth = if @resolver_class
           @resolver_class.authorized?(object, context)
         else
           true
         end
+
+        self_auth && arguments.each_value.all? { |a| a.authorized?(object, context) }
       end
 
       # Implement {GraphQL::Field}'s resolve API.
@@ -383,7 +385,7 @@ MSG
           # First, apply auth ...
           query_ctx = ctx.query.context
           inner_obj = after_obj && after_obj.object
-          if authorized?(inner_obj, query_ctx) && arguments.each_value.all? { |a| a.authorized?(inner_obj, query_ctx) }
+          if authorized?(inner_obj, query_ctx)
             # Then if it passed, resolve the field
             if @resolve_proc
               # Might be nil, still want to call the func in that case
@@ -400,22 +402,35 @@ MSG
       # Called by interpreter
       # TODO rename this, make it public-ish
       def resolve_field_2(obj_or_lazy, args, ctx)
-        ctx.schema.after_lazy(obj_or_lazy) do |obj|
-          application_object = obj.object
-          if self.authorized?(application_object, ctx)
-            field_receiver = if @resolver_class
-                               @resolver_class.new(object: obj, context: ctx)
-                             else
-                               obj
-                             end
+        begin
+          ctx.schema.after_lazy(obj_or_lazy) do |obj|
+            application_object = obj.object
+            if self.authorized?(application_object, ctx)
+              with_extensions(obj, args, ctx) do |extended_obj, extended_args|
+                field_receiver = if @resolver_class
+                  resolver_obj = if extended_obj.is_a?(GraphQL::Schema::Object)
+                    extended_obj.object
+                  else
+                    extended_obj
+                  end
+                  @resolver_class.new(object: resolver_obj, context: ctx)
+                else
+                  extended_obj
+                end
 
-            if args.any?
-              field_receiver.public_send(method_sym, args)
-            else
-              field_receiver.public_send(method_sym)
+                if extended_args.any?
+                  field_receiver.public_send(method_sym, extended_args)
+                else
+                  field_receiver.public_send(method_sym)
+                end
+              end
             end
           end
+        rescue GraphQL::UnauthorizedError => err
+          schema.unauthorized_object(err)
         end
+      rescue GraphQL::ExecutionError => err
+        err
       end
 
       # Find a way to resolve this field, checking:

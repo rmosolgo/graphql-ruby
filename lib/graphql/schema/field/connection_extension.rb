@@ -43,7 +43,6 @@ module GraphQL
             )
           end
         end
-
       end
     end
   end

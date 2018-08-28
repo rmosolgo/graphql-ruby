@@ -672,7 +672,8 @@ describe GraphQL::Authorization do
       unauthorized_res = auth_execute(query, context: {unauthorized_relay: true})
       conn = unauthorized_res["data"].fetch("unauthorizedConnection")
       assert_equal "RelayObjectConnection", conn.fetch("__typename")
-      assert_equal nil, conn.fetch("nodes")
+      # TODO should a single list failure continue to fail the whole list?
+      assert_equal [nil], conn.fetch("nodes")
       assert_equal [{"node" => nil, "__typename" => "RelayObjectEdge"}], conn.fetch("edges")
 
       edge = unauthorized_res["data"].fetch("unauthorizedEdge")
@@ -681,7 +682,7 @@ describe GraphQL::Authorization do
 
       unauthorized_object_paths = [
         ["unauthorizedConnection", "edges", 0, "node"],
-        ["unauthorizedConnection", "nodes"],
+        ["unauthorizedConnection", "nodes", 0],
         ["unauthorizedEdge", "node"],
       ]
 

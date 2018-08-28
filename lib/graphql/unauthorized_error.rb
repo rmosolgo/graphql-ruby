@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 module GraphQL
+  # When an `authorized?` hook returns false, this error is used to communicate the failure.
+  # It's passed to {Schema.unauthorized_object}.
+  #
+  # Alternatively, custom code in `authorized?` may raise this error. It will be routed the same way.
   class UnauthorizedError < GraphQL::Error
     # @return [Object] the application object that failed the authorization check
     attr_reader :object
