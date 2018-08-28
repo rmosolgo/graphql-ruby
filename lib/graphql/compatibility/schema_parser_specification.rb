@@ -595,31 +595,27 @@ module GraphQL
 
             assert_equal 6, document.definitions.size
 
-            schema_definition = document.definitions.shift
+            schema_definition, directive_definition, enum_type_definition, object_type_definition, input_object_type_definition, interface_type_definition = document.definitions
+
             assert_equal GraphQL::Language::Nodes::SchemaDefinition, schema_definition.class
 
-            directive_definition = document.definitions.shift
             assert_equal GraphQL::Language::Nodes::DirectiveDefinition, directive_definition.class
             assert_equal 'This is a directive', directive_definition.description
 
-            enum_type_definition = document.definitions.shift
             assert_equal GraphQL::Language::Nodes::EnumTypeDefinition, enum_type_definition.class
             assert_equal "Multiline comment\n\nWith an enum", enum_type_definition.description
 
             assert_nil enum_type_definition.values[0].description
             assert_equal 'Not a creative color', enum_type_definition.values[1].description
 
-            object_type_definition = document.definitions.shift
             assert_equal GraphQL::Language::Nodes::ObjectTypeDefinition, object_type_definition.class
             assert_equal 'Comment without preceding space', object_type_definition.description
             assert_equal 'And a field to boot', object_type_definition.fields[0].description
 
-            input_object_type_definition = document.definitions.shift
             assert_equal GraphQL::Language::Nodes::InputObjectTypeDefinition, input_object_type_definition.class
             assert_equal 'Comment for input object types', input_object_type_definition.description
             assert_equal 'Color of the car', input_object_type_definition.fields[0].description
 
-            interface_type_definition = document.definitions.shift
             assert_equal GraphQL::Language::Nodes::InterfaceTypeDefinition, interface_type_definition.class
             assert_equal 'Comment for interface definitions', interface_type_definition.description
             assert_equal 'Amount of wheels', interface_type_definition.fields[0].description

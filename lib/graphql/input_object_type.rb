@@ -93,7 +93,8 @@ module GraphQL
           coerced_value = input_field_defn.type.coerce_input(field_value, ctx)
           input_values[input_key] = input_field_defn.prepare(coerced_value, ctx)
         elsif input_field_defn.default_value?
-          input_values[input_key] = input_field_defn.default_value
+          coerced_value = input_field_defn.type.coerce_input(input_field_defn.default_value, ctx)
+          input_values[input_key] = coerced_value
           defaults_used << input_key
         end
       end

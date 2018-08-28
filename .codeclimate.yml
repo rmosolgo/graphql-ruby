@@ -1,5 +1,6 @@
 version: "2"
 exclude_patterns:
+  - "spec/"
   - "lib/graphql/language/lexer.rb"
   - "lib/graphql/language/parser.rb"
   # plugin - duplication - is failing on these

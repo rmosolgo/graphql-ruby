@@ -493,6 +493,14 @@ module Jazz
     end
   end
 
+  class RenameEnsembleAsBand < RenameEnsemble
+    argument :ensemble_id, ID, required: true, loads: Ensemble, as: :band
+
+    def resolve(band:, new_name:)
+      super(ensemble: band, new_name: new_name)
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
@@ -501,6 +509,7 @@ module Jazz
     field :add_instrument, mutation: AddInstrument
     field :add_sitar, mutation: AddSitar
     field :rename_ensemble, mutation: RenameEnsemble
+    field :rename_ensemble_as_band, mutation: RenameEnsembleAsBand
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)

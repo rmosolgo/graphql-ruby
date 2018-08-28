@@ -245,6 +245,8 @@ end
 
 ## Pundit
 
+__NOTE:__ A new {% internal_link "Pundit integration", "/authorization/pundit_integration" %} is available. It leverages GraphQL-Ruby's new {% internal_link "built-in auth", "/authorization/overview" %} system and has better support for inheritance and customization. If possible, use that one instead!
+
 `GraphQL::Pro` includes built-in support for [Pundit](https://github.com/elabs/pundit):
 
 ```ruby

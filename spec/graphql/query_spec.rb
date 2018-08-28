@@ -638,6 +638,20 @@ describe GraphQL::Query do
     end
   end
 
+  describe "validating with optional arguments and variables: nil" do
+    it "works" do
+      query_str = <<-GRAPHQL
+      query($expiresAfter: Time) {
+        searchDairy(expiresAfter: $expiresAfter) {
+          __typename
+        }
+      }
+      GRAPHQL
+      query = GraphQL::Query.new(schema, query_str, variables: nil)
+      assert query.valid?
+    end
+  end
+
   describe 'NullValue type arguments' do
     let(:schema_definition) {
       <<-GRAPHQL

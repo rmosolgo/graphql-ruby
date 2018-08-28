@@ -3,6 +3,17 @@ require "spec_helper"
 
 describe GraphQL::Schema::InputObject do
   let(:input_object) { Jazz::EnsembleInput }
+
+  describe ".path" do
+    it "is the name" do
+      assert_equal "EnsembleInput", input_object.path
+    end
+
+    it "is used in argument paths" do
+      assert_equal "EnsembleInput.name", input_object.arguments["name"].path
+    end
+  end
+
   describe "type info" do
     it "has it" do
       assert_equal "EnsembleInput", input_object.graphql_name

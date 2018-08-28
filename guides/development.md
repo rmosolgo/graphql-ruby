@@ -17,6 +17,7 @@ So, you want to hack on GraphQL Ruby! Here are some tips for getting started.
 - Special tools for building the [lexer and parser](#lexer-and-parser)
 - Building and publishing the [GraphQL Ruby website](#website)
 - [Versioning](#versioning) describes how changes are managed and released
+- [Releasing](#releasing) Gem versions
 
 ### Setup
 
@@ -100,12 +101,6 @@ You can specify a gemfile with `BUNDLE_GEMFILE`, eg:
 
 ```
 BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake
-```
-
-You can test without Rails using `WITHOUT_RAILS=yes`, eg:
-
-```
-WITHOUT_RAILS=yes bundle exec rake
 ```
 
 ### Debugging with Pry
@@ -239,3 +234,23 @@ This policy is inspired by the [Ruby 2.1.0+ version policy](https://www.ruby-lan
 Pull requests and issues may be tagged with a [GitHub milestone](https://github.com/rmosolgo/graphql-ruby/milestones) to denote when they'll be released.
 
 The [changelog](https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md) should always contain accurate and thorough information so that users can upgrade. If you have trouble upgrading based on the changelog, please open an issue on GitHub.
+
+### Releasing
+
+GraphQL-Ruby doesn't have a strict release schedule. If you think it should, consider opening an issue to share your thoughts.
+
+To cut a release:
+
+- Update `CHANGELOG.md` for the new version:
+  - Add a new heading for the new version, and paste the four categories of changes into the new section
+  - Open the GitHub milestone corresponding to the new version
+  - Check each pull request and put it in the category (or categories) that it belongs in
+    - If a change affects the default behavior of GraphQL-Ruby in a disruptive way, add it to `### Breaking Changes` and include migration notes if possible
+    - Include the PR number beside the change description for future reference
+- Update `lib/graphql/version.rb` with the new version number
+- Commit changes to master
+- Release to RubyGems with `bundle exec rake release`
+- Update the website:
+  - Generate new API docs with `bundle exec rake apidocs:gen_version[<your.version.number>]`
+  - Push them to the website with `bundle exec rake site:publish`
+- Celebrate 🎊  !

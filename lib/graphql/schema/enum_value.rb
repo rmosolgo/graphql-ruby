@@ -27,11 +27,15 @@ module GraphQL
     #   end
     class EnumValue < GraphQL::Schema::Member
       include GraphQL::Schema::Member::AcceptsDefinition
+      include GraphQL::Schema::Member::HasPath
 
       attr_reader :graphql_name
 
       # @return [Class] The enum type that owns this value
       attr_reader :owner
+
+      # @return [String] Explains why this value was deprecated (if present, this will be marked deprecated in introspection)
+      attr_accessor :deprecation_reason
 
       def initialize(graphql_name, desc = nil, owner:, description: nil, value: nil, deprecation_reason: nil, &block)
         @graphql_name = graphql_name.to_s

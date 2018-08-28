@@ -197,27 +197,13 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
 
-if defined?(GlobalID)
-  GlobalID.app = "graphql-ruby-test"
-
-  class GlobalIDUser
-    include GlobalID::Identification
-
-    attr_reader :id
-
-    def initialize(id)
-      @id = id
-    end
+class ToParamUser
+  def initialize(id)
+    @id = id
   end
 
-  class ToParamUser
-    def initialize(id)
-      @id = id
-    end
-
-    def to_param
-      @id
-    end
+  def to_param
+    @id
   end
 end
 
@@ -286,6 +272,18 @@ describe GraphQL::Subscriptions do
       end
 
       describe "trigger" do
+        let(:error_payload_class) {
+          Class.new {
+            def int
+              raise "Boom!"
+            end
+
+            def str
+              raise GraphQL::ExecutionError.new("This is handled")
+            end
+          }
+        }
+
         it "uses the provided queue" do
           query_str = <<-GRAPHQL
         subscription ($id: ID!){
@@ -406,16 +404,6 @@ describe GraphQL::Subscriptions do
         end
 
         describe "errors" do
-          class ErrorPayload
-            def int
-              raise "Boom!"
-            end
-
-            def str
-              raise GraphQL::ExecutionError.new("This is handled")
-            end
-          end
-
           it "avoid subscription on resolver error" do
             res = schema.execute(<<-GRAPHQL, context: { socket: "1" }, variables: { "id" => "100" })
           subscription ($id: ID!){
@@ -439,7 +427,7 @@ describe GraphQL::Subscriptions do
 
             schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
             err = assert_raises(RuntimeError) {
-              schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, ErrorPayload.new, scope: "1")
+              schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, error_payload_class.new, scope: "1")
             }
             assert_equal "Boom!", err.message
           end
@@ -453,7 +441,7 @@ describe GraphQL::Subscriptions do
           GRAPHQL
 
           schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
-          schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, ErrorPayload.new, scope: "1")
+          schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, error_payload_class.new, scope: "1")
           res = deliveries["1"].first
           assert_equal "This is handled", res["errors"][0]["message"]
         end

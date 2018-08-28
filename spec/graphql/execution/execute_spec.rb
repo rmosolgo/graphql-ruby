@@ -236,7 +236,7 @@ describe GraphQL::Execution::Execute do
   end
 
   describe "tracing" do
-    if rails_should_be_installed?
+    if defined?(Rails)
       it "emits traces" do
         query_string = <<-GRAPHQL
         query Bases($id1: ID!, $id2: ID!){

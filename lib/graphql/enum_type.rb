@@ -141,6 +141,7 @@ module GraphQL
       attr_accessor :ast_node
       ensure_defined(*ATTRIBUTES)
 
+      undef name=
       def name=(new_name)
         # Validate that the name is correct
         GraphQL::NameValidator.validate!(new_name)

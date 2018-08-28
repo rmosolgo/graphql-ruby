@@ -31,7 +31,7 @@ module GraphQL
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only
-      def_delegators :@ruby_style_hash, :keys, :values, :each, :any?
+      def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
 
       def to_h
         @ruby_style_hash.inject({}) do |h, (key, value)|

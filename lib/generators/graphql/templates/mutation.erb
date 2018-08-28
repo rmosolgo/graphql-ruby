@@ -1,11 +1,14 @@
-class Mutations::<%= mutation_name %> < GraphQL::Schema::RelayClassicMutation
-  # TODO: define return fields
-  # return_field :post, Types::PostType
+module Mutations
+  class <%= mutation_name %> < GraphQL::Schema::RelayClassicMutation
+    # TODO: define return fields
+    # field :post, Types::PostType, null: false
 
-  # TODO: define arguments
-  # input_field :name, !types.String
+    # TODO: define arguments
+    # argument :name, String, required: true
 
-  def resolve(**inputs)
     # TODO: define resolve method
+    # def resolve(name:)
+    #   { post: ... }
+    # end
   end
 end
