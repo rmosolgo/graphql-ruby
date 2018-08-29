@@ -56,7 +56,11 @@
 
 <h1 class="guide-header">Authorization Framework</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">GraphQL::Pro</code> provides a comprehensive, unified authorization framework for the GraphQL runtime.</p>
+  <p><strong>NOTE:</strong> A new <a href="/authorization/pundit_integration">Pundit integration</a> and <a href="/authorization/can_can_integration">CanCan integration</a> are available. They leverage GraphQL-Ruby’s new <a href="/authorization/overview">built-in auth</a> system and has better support for inheritance and customization. If possible, use those instead!</p>
+
+<hr />
+
+<p><code class="highlighter-rouge">GraphQL::Pro</code> provides a comprehensive, unified authorization framework for the GraphQL runtime.</p>
 
 <p>Fields and types can be <a href="#runtime-authorization">authorized at runtime</a>, <a href="#access-authorization">rejected during validation</a>, or <a href="#visibility-authorization">hidden entirely</a>. Default authorization can be <a href="#fallback-authorization">applied at schema-level</a></p>
 
@@ -351,6 +355,8 @@
 <p>See <a href="#scoping">Scoping</a> for details.</p>
 
 <h2 id="cancan">CanCan</h2>
+
+<p><strong>NOTE:</strong> A new <a href="/authorization/can_can_integration">CanCan integration</a> is available. It leverages GraphQL-Ruby’s new <a href="/authorization/overview">built-in auth</a> system and has better support for inheritance and customization. If possible, use that one instead!</p>
 
 <p><code class="highlighter-rouge">GraphQL::Pro</code> includes built-in support for <a href="https://github.com/CanCanCommunity/cancancan">CanCan</a>:</p>
 
