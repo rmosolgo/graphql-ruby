@@ -8,7 +8,15 @@
 
 ### Bug Fix
 
+## 1.7.12 (29 Aug 2018)
+
+### New Features
+
+- Add `GraphQL::Pro::CanCanIntegration` which leverages GraphQL-Ruby's built-in auth
+
 ## 1.7.11 (21 Aug 2018)
+
+### Bug Fix
 
 - `PunditIntegration`: Don't try to authorize loaded objects when they're `nil`
 
