@@ -35,6 +35,7 @@ module GraphQL
             rescue GraphQL::CoercionError => ex
               validation_result = GraphQL::Query::InputValidationResult.new
               validation_result.add_problem(ex.message)
+              validation_result.add_extensions(ex.extensions) if ex.extensions
             end
 
             if !validation_result.valid?

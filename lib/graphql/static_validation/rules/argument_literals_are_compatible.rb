@@ -7,10 +7,12 @@ module GraphQL
         arg_defn = defn.arguments[node.name]
         return unless arg_defn
 
+        error_extensions = nil
         begin
           valid = context.valid_literal?(node.value, arg_defn.type)
         rescue GraphQL::CoercionError => err
           error_message = err.message
+          error_extensions = err.extensions
         end
 
         return if valid
@@ -21,7 +23,7 @@ module GraphQL
           "Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value. Expected type '#{arg_defn.type}'."
         end
 
-        context.errors << message(error_message, parent, context: context)
+        context.errors << message(error_message, parent, context: context, extensions: error_extensions)
       end
     end
   end
