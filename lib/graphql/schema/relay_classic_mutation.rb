@@ -28,11 +28,15 @@ module GraphQL
 
       # Override {GraphQL::Schema::Resolver#resolve_with_support} to
       # delete `client_mutation_id` from the kwargs.
-      def resolve_with_support(input)
+      def resolve_with_support(input:)
         # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
         input_kwargs = input.to_h
         input_kwargs.delete(:client_mutation_id)
-        super(input_kwargs)
+        if input_kwargs.any?
+          super(input_kwargs)
+        else
+          super()
+        end
       end
 
       class << self

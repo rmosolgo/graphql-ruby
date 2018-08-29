@@ -69,10 +69,12 @@ Result: #{@result.inspect}
 TRACE
         end
 
+        # TODO delegate to a collector which does as it pleases with patches
         def write(value)
           write_target = @result ||= {}
           @path.each_with_index do |path_part, idx|
             next_part = @path[idx + 1]
+            debug [write_target, path_part, next_part]
             if next_part.nil?
               write_target[path_part] = value
             elsif next_part.is_a?(Integer)

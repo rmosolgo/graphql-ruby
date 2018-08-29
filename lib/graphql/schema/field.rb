@@ -384,6 +384,8 @@ MSG
         ctx.schema.after_lazy(obj) do |after_obj|
           # First, apply auth ...
           query_ctx = ctx.query.context
+          # TODO this is for introspection, since it doesn't self-wrap anymore
+          # inner_obj = after_obj.respond_to?(:object) ? after_obj.object : after_obj
           inner_obj = after_obj && after_obj.object
           if authorized?(inner_obj, query_ctx)
             # Then if it passed, resolve the field
@@ -427,7 +429,7 @@ MSG
             end
           end
         rescue GraphQL::UnauthorizedError => err
-          schema.unauthorized_object(err)
+          ctx.schema.unauthorized_object(err)
         end
       rescue GraphQL::ExecutionError => err
         err

@@ -42,6 +42,7 @@ module GraphQL
               visit_node(selection, fragment_def)
             end
           end
+          return node, _parent
         end
 
         def on_inline_fragment(node, _parent)
@@ -57,7 +58,7 @@ module GraphQL
           end
         end
 
-        def on_field(node, _parent)
+        def on_field(node, parent)
           # TODO call out to directive here
           node.directives.each do |dir|
             dir_defn = schema.directives.fetch(dir.name)
@@ -102,10 +103,11 @@ module GraphQL
             trace.after_lazy(result) do |trace, inner_result|
               trace.visitor.continue_field(field_defn.type, inner_result) do |final_trace|
                 final_trace.debug("Visiting children at #{final_trace.path}")
-                final_trace.visitor.on_abstract_node(node, _parent)
+                final_trace.visitor.on_abstract_node(node, parent)
               end
             end
           end
+          return node, parent
         end
 
         def continue_value(value)

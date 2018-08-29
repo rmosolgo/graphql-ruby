@@ -169,6 +169,10 @@ module GraphQL
       @introspection_system = nil
     end
 
+    def inspect
+      "#<#{self.class.name} ...>"
+    end
+
     def initialize_copy(other)
       super
       @orphan_types = other.orphan_types.dup
