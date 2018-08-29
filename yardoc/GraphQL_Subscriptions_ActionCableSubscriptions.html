@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.7/GraphQL/Subscriptions/ActionCableSubscriptions" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.8/GraphQL/Subscriptions/ActionCableSubscriptions" />
   </head>
   <body>
     <p>Class: GraphQL::Subscriptions::ActionCableSubscriptions &lt; GraphQL::S…
@@ -39,7 +39,7 @@ variables: variables,
 operation_name: operation_name
 })
 payload = {
-result: result.subscription? ? nil : result.to_h,
+result: result.subscription? ? { data: nil } : result.to_h,
 more: result.subscription?,
 }</p>
     <h1 id="track-the-subscription-here-so-we-can-remove-it">Track the subscription here so we can remove it</h1>
@@ -51,8 +51,25 @@ transmit(payload)
 end
 def unsubscribed
 @subscription_ids.each { |sid|
-CardsSchema.subscriptions.delete_subscription(sid)
+MySchema.subscriptions.delete_subscription(sid)
 }
+end
+private
+def ensure_hash(ambiguous_param)
+case ambiguous_param
+when String
+if ambiguous_param.present?
+ensure_hash(JSON.parse(ambiguous_param))
+else
+{}
+end
+when Hash, ActionController::Parameters
+ambiguous_param
+when nil
+{}
+else
+raise ArgumentError, “Unexpected parameter: #{ambiguous_param}”
+end
 end
 end
 Instance methods:

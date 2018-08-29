@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.7/">API</a>
+          <a href="/api-doc/1.8.8/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -79,8 +79,8 @@
 <p>GraphQL-Ruby includes two classes to help you write mutations:</p>
 
 <ul>
-  <li><a href="/api-doc/1.8.7/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a>, a bare-bones base class</li>
-  <li><a href="/api-doc/1.8.7/GraphQL/Schema/RelayClassicMutation" target="_blank" title="API docs for GraphQL::Schema::RelayClassicMutation"><code>GraphQL::Schema::RelayClassicMutation</code></a>, a base class with a set of nice conventions that also supports the Relay Classic mutation specification.</li>
+  <li><a href="/api-doc/1.8.8/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a>, a bare-bones base class</li>
+  <li><a href="/api-doc/1.8.8/GraphQL/Schema/RelayClassicMutation" target="_blank" title="API docs for GraphQL::Schema::RelayClassicMutation"><code>GraphQL::Schema::RelayClassicMutation</code></a>, a base class with a set of nice conventions that also supports the Relay Classic mutation specification.</li>
 </ul>
 
 <p>Besides those, you can also use the plain <a href="/type_definitions/objects#fields">field API</a> to write mutation fields.</p>
@@ -136,6 +136,67 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Mutation</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:create_comment</span><span class="p">,</span> <span class="ss">mutation: </span><span class="no">Mutations</span><span class="o">::</span><span class="no">CreateComment</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="auto-loading-arguments">Auto-loading arguments</h2>
+
+<p>In most cases, a GraphQL mutation will act against a given global relay ID. Loading objects from these global relay IDs can require a lot of boilerplate code in the mutation’s resolver.</p>
+
+<p>An alternative approach is to use the <code class="highlighter-rouge">loads:</code> argument when defining the argument:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">AddStar</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
+
+  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+
+  <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">post</span><span class="p">:)</span>
+    <span class="n">post</span><span class="p">.</span><span class="nf">star</span>
+
+    <span class="p">{</span>
+      <span class="ss">post: </span><span class="n">post</span><span class="p">,</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>By specifying that the <code class="highlighter-rouge">post_id</code> argument loads a <code class="highlighter-rouge">Types::Post</code> object type, a <code class="highlighter-rouge">Post</code> object will be loaded via <a href="/schema/definition.html#object-identification-hooks"><code class="highlighter-rouge">Schema#object_from_id</code></a> with the provided <code class="highlighter-rouge">post_id</code>.</p>
+
+<p>All arguments that end in <code class="highlighter-rouge">_id</code> and use the <code class="highlighter-rouge">loads:</code> method will have their <code class="highlighter-rouge">_id</code> suffix removed. For example, the mutation resolver above receives a <code class="highlighter-rouge">post</code> argument which contains the loaded object, instead of a <code class="highlighter-rouge">post_id</code> argument.</p>
+
+<p>The <code class="highlighter-rouge">loads:</code> option also works with list of IDs, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">AddStars</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="n">argument</span> <span class="ss">:post_ids</span><span class="p">,</span> <span class="p">[</span><span class="no">ID</span><span class="p">],</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
+
+  <span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>
+
+  <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">posts</span><span class="p">:)</span>
+    <span class="n">posts</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:star</span><span class="p">)</span>
+
+    <span class="p">{</span>
+      <span class="ss">posts: </span><span class="n">posts</span><span class="p">,</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>All arguments that end in <code class="highlighter-rouge">_ids</code> and use the <code class="highlighter-rouge">loads:</code> method will have their <code class="highlighter-rouge">_ids</code> suffix removed and an <code class="highlighter-rouge">s</code> appended to their name. For example, the mutation resolver above receives a <code class="highlighter-rouge">posts</code> argument which contains all the loaded objects, instead of a <code class="highlighter-rouge">post_ids</code> argument.</p>
+
+<p>In some cases, you may want to control the resulting argument name. This can be done using the <code class="highlighter-rouge">as:</code> argument, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">AddStar</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">as: :something</span>
+
+  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+
+  <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">something</span><span class="p">:)</span>
+    <span class="n">something</span><span class="p">.</span><span class="nf">star</span>
+
+    <span class="p">{</span>
+      <span class="ss">post: </span><span class="n">something</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 

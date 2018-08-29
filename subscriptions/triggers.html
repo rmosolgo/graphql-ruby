@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.7/">API</a>
+          <a href="/api-doc/1.8.8/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -68,7 +68,7 @@
 
 <p>To send updates to <em>certain clients only</em>, you can use <code class="highlighter-rouge">scope:</code> to narrow the trigger’s reach.</p>
 
-<p>Scopes are based on query context: a value in <code class="highlighter-rouge">context:</code> is used as the scope; an equivalent value must be passed with <code class="highlighter-rouge">.trigger(... scope:)</code> to update that client. (The value is serialized with <a href="/api-doc/1.8.7/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>)</p>
+<p>Scopes are based on query context: a value in <code class="highlighter-rouge">context:</code> is used as the scope; an equivalent value must be passed with <code class="highlighter-rouge">.trigger(... scope:)</code> to update that client. (The value is serialized with <a href="/api-doc/1.8.8/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>)</p>
 
 <p>To specify that a topic is scoped, edit the field definition on your root <code class="highlighter-rouge">Subscription</code> type. Use the <code class="highlighter-rouge">subscription_scope:</code> option to name a <code class="highlighter-rouge">context:</code> key, for example:</p>
 

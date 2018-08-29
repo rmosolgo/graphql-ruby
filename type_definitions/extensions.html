@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.7/">API</a>
+          <a href="/api-doc/1.8.8/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -82,7 +82,7 @@
   <li>Non-type objects (fields, arguments, enum values) have a slightly different process:
     <ul>
       <li>During a type’s <code class="highlighter-rouge">.to_graphql</code> method, definition objects are initialized (eg <code class="highlighter-rouge">GraphQL::Schema::Field.new(...)</code>)</li>
-      <li>Then, the initialized object receives <code class="highlighter-rouge">.to_graphql</code> (eg <a href="/api-doc/1.8.7/GraphQL/Schema/Field#to_graphql-instance_method" target="_blank" title="API docs for GraphQL::Schema::Field#to_graphql"><code>GraphQL::Schema::Field#to_graphql</code></a>)</li>
+      <li>Then, the initialized object receives <code class="highlighter-rouge">.to_graphql</code> (eg <a href="/api-doc/1.8.8/GraphQL/Schema/Field#to_graphql-instance_method" target="_blank" title="API docs for GraphQL::Schema::Field#to_graphql"><code>GraphQL::Schema::Field#to_graphql</code></a>)</li>
       <li><code class="highlighter-rouge">.to_graphql</code> a “legacy” GraphQL object (eg <code class="highlighter-rouge">GraphQL::Field</code>)</li>
     </ul>
   </li>
@@ -188,7 +188,7 @@
 
 <ul>
   <li><code class="highlighter-rouge">#initialize(name, type, desc = nil, **kwargs)</code> to take input from the DSL</li>
-  <li><code class="highlighter-rouge">#to_graphql</code> to modify the conversion to a <a href="/api-doc/1.8.7/GraphQL/Argument" target="_blank" title="API docs for GraphQL::Argument"><code>GraphQL::Argument</code></a></li>
+  <li><code class="highlighter-rouge">#to_graphql</code> to modify the conversion to a <a href="/api-doc/1.8.8/GraphQL/Argument" target="_blank" title="API docs for GraphQL::Argument"><code>GraphQL::Argument</code></a></li>
 </ul>
 
 <h3 id="customizing-enum-values">Customizing Enum Values</h3>
@@ -204,7 +204,7 @@
 
 <ul>
   <li><code class="highlighter-rouge">#initialize(name, desc = nil, **kwargs)</code> to take input from the DSL</li>
-  <li><code class="highlighter-rouge">#to_graphql</code> to modify the conversion to a <a href="/api-doc/1.8.7/GraphQL/EnumType/EnumValue" target="_blank" title="API docs for GraphQL::EnumType::EnumValue"><code>GraphQL::EnumType::EnumValue</code></a></li>
+  <li><code class="highlighter-rouge">#to_graphql</code> to modify the conversion to a <a href="/api-doc/1.8.8/GraphQL/EnumType/EnumValue" target="_blank" title="API docs for GraphQL::EnumType::EnumValue"><code>GraphQL::EnumType::EnumValue</code></a></li>
 </ul>
 
 <h3 id="customization-compatibility">Customization compatibility</h3>
@@ -231,7 +231,7 @@
 <span class="c1"># =&gt; 1</span>
 </code></pre></div></div>
 
-<p>See <a href="/api-doc/1.8.7/GraphQL/Schema/Member/AcceptsDefinition" target="_blank" title="API docs for GraphQL::Schema::Member::AcceptsDefinition"><code>GraphQL::Schema::Member::AcceptsDefinition</code></a> for the implementation.</p>
+<p>See <a href="/api-doc/1.8.8/GraphQL/Schema/Member/AcceptsDefinition" target="_blank" title="API docs for GraphQL::Schema::Member::AcceptsDefinition"><code>GraphQL::Schema::Member::AcceptsDefinition</code></a> for the implementation.</p>
 
 <p><strong>Invoke <code class="highlighter-rouge">.call</code> directly</strong>. If you defined a module with a <code class="highlighter-rouge">.call</code> method, you can invoke that method during <code class="highlighter-rouge">.to_graphql</code>. For example:</p>
 
