@@ -94,7 +94,7 @@ module GraphQL
         # fragments spread in the second fragment.
         fragment_names1.each do |fragment_name|
           find_conflicts_between_fragments(
-            fragment_name1,
+            fragment_name2,
             fragment_name,
             mutually_exclusive: mutually_exclusive,
           )
