@@ -60,13 +60,52 @@ module GraphQL
             context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: [node1, node2])
           end
         end
+
+        find_conflicts_between_sub_selection_sets(
+          field1,
+          field2,
+          mutually_exclusive: are_mutually_exclusive
+        )
+      end
+
+      def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
+        selections = field1[:node].selections
+        selections2 = field2[:node].selections
+        fields = find_fields(selections, parent_type: field1[:defn].type.unwrap )
+        fields2 = find_fields(selections2, parent_type: field2[:defn].type.unwrap)
+        fragment_names = find_fragment_names(selections)
+        fragment_names_2 = find_fragment_names(selections2)
+
+        collect_conflicts_between(fields, fields2, mutually_exclusive: mutually_exclusive)
+      end
+
+      def collect_conflicts_between(response_keys, response_keys_2, mutually_exclusive:)
+        response_keys.each do |key, fields|
+          fields2 = response_keys_2[key]
+          if fields2
+            fields.each do |field|
+              fields2.each do |field2|
+                find_conflict(
+                  key,
+                  field,
+                  field2,
+                  mutually_exclusive: mutually_exclusive
+                )
+              end
+            end
+          end
+        end
       end
 
       def find_fields(selections, parent_type:)
         fields = selections.map do |node|
           case node
           when GraphQL::Language::Nodes::Field
-            { node: node, parent_type: parent_type }
+            {
+              node: node,
+              parent_type: parent_type,
+              defn: context.schema.get_field(parent_type, node.name)
+            }
           when GraphQL::Language::Nodes::InlineFragment
             find_fields(node.selections, parent_type: node.type || parent_type)
           end

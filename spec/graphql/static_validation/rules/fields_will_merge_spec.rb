@@ -373,6 +373,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
+    focus
     it "fails rule" do
       expected_errors = [
         {
