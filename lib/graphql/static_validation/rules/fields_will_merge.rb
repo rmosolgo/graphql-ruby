@@ -245,7 +245,7 @@ module GraphQL
       end
 
       def find_fields(selections, parent_type:)
-        fields = selections.map do |node|
+        selections.map do |node|
           case node
           when GraphQL::Language::Nodes::Field
             {
