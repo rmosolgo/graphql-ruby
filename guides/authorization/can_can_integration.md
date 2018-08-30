@@ -56,7 +56,7 @@ For each object type, you can assign a required action for Ruby objects of that 
 # app/graphql/types/base_object.rb
 class Types::BaseObject < GraphQL::Schema::Object
   # Add the CanCan integration:
-  include GraphQL::Pro::CanCan::ObjectIntegration
+  include GraphQL::Pro::CanCanIntegration::ObjectIntegration
   # By default, require `can :read, ...`
   can_can_action(:read)
   # Or, to require no permissions by default:
