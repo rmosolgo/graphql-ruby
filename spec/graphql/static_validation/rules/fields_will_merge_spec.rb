@@ -353,8 +353,8 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
     it "fails rule" do
       assert_equal [
-        "Field 'name' has a field conflict: name or nickname?",
         "Field 'x' has a field conflict: name or nickname?",
+        "Field 'name' has a field conflict: name or nickname?"
       ], error_messages
     end
   end
@@ -373,7 +373,6 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
-    focus
     it "fails rule" do
       expected_errors = [
         {
@@ -607,7 +606,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
           }
         }
         fragment X on SomeBox {
-          scalar: deepBox { unreleatedField }
+          scalar: deepBox { unrelatedField }
         }
         fragment Y on SomeBox {
           scalar: unrelatedField

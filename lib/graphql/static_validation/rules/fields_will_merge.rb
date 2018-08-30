@@ -4,6 +4,12 @@ module GraphQL
     module FieldsWillMerge
       NO_ARGS = {}.freeze
 
+      def initialize(*)
+        super
+        @visited_fragments = {}
+        @compared_fragments = {}
+      end
+
       def on_operation_definition(node, _parent)
         conflicts_within_selection_set(node, type_definition)
         super
@@ -17,14 +23,117 @@ module GraphQL
       private
 
       def conflicts_within_selection_set(node, type_definition)
-        fields = find_fields(node.selections, parent_type: type_definition)
+        fields = response_keys_in_selection(node.selections, parent_type: type_definition)
         fragment_names = find_fragment_names(node.selections)
 
         # (A) Find find all conflicts "within" the fields of this selection set.
-        collect_conflicts_within(fields)
+        find_conflicts_within(fields)
+
+        fragment_names.each_with_index do |fragment_name, i|
+          # (B) Then find conflicts between these fields and those represented by
+          # each spread fragment name found.
+          find_conflicts_between_fields_and_fragment(
+            fragment_name,
+            fields,
+            mutually_exclusive: false
+          )
+
+          # (C) Then compare this fragment with all other fragments found in this
+          # selection set to collect conflicts between fragments spread together.
+          # This compares each item in the list of fragment names to every other
+          # item in that same list (except for itself).
+          fragment_names[i+1..-1].each do |fragment_name2|
+            find_conflicts_between_fragments(
+              fragment_name,
+              fragment_name2,
+              mutually_exclusive: false
+            )
+          end
+        end
       end
 
-      def collect_conflicts_within(response_keys)
+      def find_conflicts_between_fragments(fragment_name1, fragment_name2, mutually_exclusive:)
+        return if fragment_name1 == fragment_name2
+
+        cache_key = compared_fragments_key(fragment_name1, fragment_name2)
+        return if @compared_fragments.key?(cache_key)
+        @compared_fragments[cache_key] = true
+
+        fragment1 = context.fragments[fragment_name1]
+        fragment2 = context.fragments[fragment_name2]
+
+        return if fragment1.nil? || fragment2.nil?
+
+        fragment_type1 = context.schema.types[fragment1.type.name]
+        fragment_type2 = context.schema.types[fragment2.type.name]
+
+        fragment_fields1 = response_keys_in_selection(fragment1.selections, parent_type: fragment_type1)
+        fragment_names1 = find_fragment_names(fragment1.selections)
+
+        fragment_fields2 = response_keys_in_selection(fragment2.selections, parent_type: fragment_type2)
+        fragment_names2 = find_fragment_names(fragment2.selections)
+
+        # (F) First, find all conflicts between these two collections of fields
+        # (not including any nested fragments).
+        find_conflicts_between(
+          fragment_fields1,
+          fragment_fields2,
+          mutually_exclusive: mutually_exclusive
+        )
+
+        # (G) Then collect conflicts between the first fragment and any nested
+        # fragments spread in the second fragment.
+        fragment_names2.each do |fragment_name|
+          find_conflicts_between_fragments(
+            fragment_name1,
+            fragment_name,
+            mutually_exclusive: mutually_exclusive
+          )
+        end
+
+        # (G) Then collect conflicts between the first fragment and any nested
+        # fragments spread in the second fragment.
+        fragment_names1.each do |fragment_name|
+          find_conflicts_between_fragments(
+            fragment_name1,
+            fragment_name,
+            mutually_exclusive: mutually_exclusive
+          )
+        end
+      end
+
+      def find_conflicts_between_fields_and_fragment(fragment_name, fields, mutually_exclusive:)
+        return if @visited_fragments.key?(fragment_name)
+        @visited_fragments[fragment_name] = true
+
+        fragment = context.fragments[fragment_name]
+        return if fragment.nil?
+
+        fragment_type = context.schema.types[fragment.type.name]
+
+        fragment_fields = response_keys_in_selection(fragment.selections, parent_type: fragment_type)
+        fragment_fragment_names = find_fragment_names(fragment.selections)
+
+        # (D) First find any conflicts between the provided collection of fields
+        # and the collection of fields represented by the given fragment.
+        find_conflicts_between(
+          fields,
+          fragment_fields,
+          mutually_exclusive: mutually_exclusive
+        )
+
+        # (E) Then collect any conflicts between the provided collection of fields
+        # and any fragment names found in the given fragment.
+        fragment_fragment_names.each do |fragment_name|
+          find_conflicts_between_fields_and_fragment(
+            fragment_name,
+            fields,
+            mutually_exclusive: mutually_exclusive
+          )
+        end
+      end
+
+      def find_conflicts_within(response_keys)
         response_keys.each do |key, fields|
           next if fields.size < 2
           # find conflicts within nodes
@@ -50,7 +159,8 @@ module GraphQL
 
         if !are_mutually_exclusive
           if node1.name != node2.name
-            msg = "Field '#{response_key}' has a field conflict: #{node1.name} or #{node2.name}?"
+            errored_nodes = [node1.name, node2.name].sort.join(" or ")
+            msg = "Field '#{response_key}' has a field conflict: #{errored_nodes}?"
             context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: [node1, node2])
           end
 
@@ -71,15 +181,49 @@ module GraphQL
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
         selections = field1[:node].selections
         selections2 = field2[:node].selections
-        fields = find_fields(selections, parent_type: field1[:defn].type.unwrap )
-        fields2 = find_fields(selections2, parent_type: field2[:defn].type.unwrap)
+        fields = response_keys_in_selection(selections, parent_type: field1[:defn].type.unwrap)
+        fields2 = response_keys_in_selection(selections2, parent_type: field2[:defn].type.unwrap)
         fragment_names = find_fragment_names(selections)
         fragment_names_2 = find_fragment_names(selections2)
 
-        collect_conflicts_between(fields, fields2, mutually_exclusive: mutually_exclusive)
+        # (H) First, collect all conflicts between these two collections of field.
+        find_conflicts_between(fields, fields2, mutually_exclusive: mutually_exclusive)
+
+        # (I) Then collect conflicts between the first collection of fields and
+        # those referenced by each fragment name associated with the second.
+        fragment_names_2.each do |fragment_name|
+          find_conflicts_between_fields_and_fragment(
+            fields,
+            fragment_name,
+            mutually_exclusive: mutually_exclusive
+          )
+        end
+
+        # (I) Then collect conflicts between the second collection of fields and
+        # those referenced by each fragment name associated with the first.
+        fragment_names.each do |fragment_name|
+          find_conflicts_between_fields_and_fragment(
+            fields2,
+            fragment_name,
+            mutually_exclusive: mutually_exclusive
+          )
+        end
+
+        # (J) Also collect conflicts between any fragment names by the first and
+        # fragment names by the second. This compares each item in the first set of
+        # names to each item in the second set of names.
+        fragment_names.each do |frag1|
+          fragment_names_2.each do |frag2|
+            find_conflicts_between_fragments(
+              frag1,
+              frag2,
+              mutually_exclusive: mutually_exclusive
+            )
+          end
+        end
       end
 
-      def collect_conflicts_between(response_keys, response_keys_2, mutually_exclusive:)
+      def find_conflicts_between(response_keys, response_keys_2, mutually_exclusive:)
         response_keys.each do |key, fields|
           fields2 = response_keys_2[key]
           if fields2
@@ -107,10 +251,14 @@ module GraphQL
               defn: context.schema.get_field(parent_type, node.name)
             }
           when GraphQL::Language::Nodes::InlineFragment
-            find_fields(node.selections, parent_type: node.type || parent_type)
+            fragment_type = context.schema.types[node.type.name]
+            find_fields(node.selections, parent_type: fragment_type || parent_type)
           end
-        end.flatten
+        end.compact.flatten
+      end
 
+      def response_keys_in_selection(selections, parent_type:)
+        fields = find_fields(selections, parent_type: parent_type)
         fields.group_by { |f| f[:node].alias || f[:node].name }
       end
 
@@ -118,6 +266,10 @@ module GraphQL
         selections
           .select { |s| s.is_a?(GraphQL::Language::Nodes::FragmentSpread) }
           .map(&:name)
+      end
+
+      def compared_fragments_key(frag1, frag2)
+        [frag1, frag2].sort.join('_')
       end
 
       def possible_arguments(field1, field2)
