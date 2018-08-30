@@ -36,18 +36,18 @@ module GraphQL
           find_conflicts_between_fields_and_fragment(
             fragment_name,
             fields,
-            mutually_exclusive: false
+            mutually_exclusive: false,
           )
 
           # (C) Then compare this fragment with all other fragments found in this
           # selection set to collect conflicts between fragments spread together.
           # This compares each item in the list of fragment names to every other
           # item in that same list (except for itself).
-          fragment_names[i+1..-1].each do |fragment_name2|
+          fragment_names[i + 1..-1].each do |fragment_name2|
             find_conflicts_between_fragments(
               fragment_name,
               fragment_name2,
-              mutually_exclusive: false
+              mutually_exclusive: false,
             )
           end
         end
@@ -77,7 +77,7 @@ module GraphQL
         find_conflicts_between(
           fragment_fields1,
           fragment_fields2,
-          mutually_exclusive: mutually_exclusive
+          mutually_exclusive: mutually_exclusive,
         )
 
         # (G) Then collect conflicts between the first fragment and any nested
@@ -86,7 +86,7 @@ module GraphQL
           find_conflicts_between_fragments(
             fragment_name1,
             fragment_name,
-            mutually_exclusive: mutually_exclusive
+            mutually_exclusive: mutually_exclusive,
           )
         end
 
@@ -96,7 +96,7 @@ module GraphQL
           find_conflicts_between_fragments(
             fragment_name1,
             fragment_name,
-            mutually_exclusive: mutually_exclusive
+            mutually_exclusive: mutually_exclusive,
           )
         end
       end
@@ -119,7 +119,7 @@ module GraphQL
         find_conflicts_between(
           fields,
           fragment_fields,
-          mutually_exclusive: mutually_exclusive
+          mutually_exclusive: mutually_exclusive,
         )
 
         # (E) Then collect any conflicts between the provided collection of fields
@@ -128,7 +128,7 @@ module GraphQL
           find_conflicts_between_fields_and_fragment(
             fragment_name,
             fields,
-            mutually_exclusive: mutually_exclusive
+            mutually_exclusive: mutually_exclusive,
           )
         end
       end
@@ -137,8 +137,8 @@ module GraphQL
         response_keys.each do |key, fields|
           next if fields.size < 2
           # find conflicts within nodes
-          for i in 0..fields.size-1
-            for j in i+1..fields.size-1
+          for i in 0..fields.size - 1
+            for j in i + 1..fields.size - 1
               find_conflict(key, fields[i], fields[j])
             end
           end
@@ -166,7 +166,7 @@ module GraphQL
 
           args = possible_arguments(node1, node2)
           if args.size > 1
-            msg = "Field '#{response_key}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?"
+            msg = "Field '#{response_key}' has an argument conflict: #{args.map { |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?"
             context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: [node1, node2])
           end
         end
@@ -174,7 +174,7 @@ module GraphQL
         find_conflicts_between_sub_selection_sets(
           field1,
           field2,
-          mutually_exclusive: are_mutually_exclusive
+          mutually_exclusive: are_mutually_exclusive,
         )
       end
 
@@ -198,7 +198,7 @@ module GraphQL
           find_conflicts_between_fields_and_fragment(
             fields,
             fragment_name,
-            mutually_exclusive: mutually_exclusive
+            mutually_exclusive: mutually_exclusive,
           )
         end
 
@@ -208,7 +208,7 @@ module GraphQL
           find_conflicts_between_fields_and_fragment(
             fields2,
             fragment_name,
-            mutually_exclusive: mutually_exclusive
+            mutually_exclusive: mutually_exclusive,
           )
         end
 
@@ -220,7 +220,7 @@ module GraphQL
             find_conflicts_between_fragments(
               frag1,
               frag2,
-              mutually_exclusive: mutually_exclusive
+              mutually_exclusive: mutually_exclusive,
             )
           end
         end
@@ -236,7 +236,7 @@ module GraphQL
                   key,
                   field,
                   field2,
-                  mutually_exclusive: mutually_exclusive
+                  mutually_exclusive: mutually_exclusive,
                 )
               end
             end
@@ -251,7 +251,7 @@ module GraphQL
             {
               node: node,
               parent_type: parent_type,
-              defn: context.schema.get_field(parent_type, node.name)
+              defn: context.schema.get_field(parent_type, node.name),
             }
           when GraphQL::Language::Nodes::InlineFragment
             fragment_type = node.type ? context.schema.types[node.type.name] : parent_type
@@ -285,11 +285,11 @@ module GraphQL
             n.arguments.reduce({}) do |memo, a|
               arg_value = a.value
               memo[a.name] = case arg_value
-              when GraphQL::Language::Nodes::AbstractNode
-                arg_value.to_query_string
-              else
-                GraphQL::Language.serialize(arg_value)
-              end
+                             when GraphQL::Language::Nodes::AbstractNode
+                               arg_value.to_query_string
+                             else
+                               GraphQL::Language.serialize(arg_value)
+                             end
               memo
             end
           else
