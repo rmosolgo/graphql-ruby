@@ -7,7 +7,6 @@ module GraphQL
       def initialize(*)
         super
         @visited_fragments = {}
-        @compared_fragments = {}
       end
 
       def on_operation_definition(node, _parent)
@@ -23,6 +22,8 @@ module GraphQL
       private
 
       def conflicts_within_selection_set(node, type_definition)
+        return if type_definition.nil?
+
         fields = response_keys_in_selection(node.selections, parent_type: type_definition)
         fragment_names = find_fragment_names(node.selections)
 
@@ -55,10 +56,6 @@ module GraphQL
       def find_conflicts_between_fragments(fragment_name1, fragment_name2, mutually_exclusive:)
         return if fragment_name1 == fragment_name2
 
-        cache_key = compared_fragments_key(fragment_name1, fragment_name2)
-        return if @compared_fragments.key?(cache_key)
-        @compared_fragments[cache_key] = true
-
         fragment1 = context.fragments[fragment_name1]
         fragment2 = context.fragments[fragment_name2]
 
@@ -66,6 +63,8 @@ module GraphQL
 
         fragment_type1 = context.schema.types[fragment1.type.name]
         fragment_type2 = context.schema.types[fragment2.type.name]
+
+        return if fragment_type1.nil? || fragment_type2.nil?
 
         fragment_fields1 = response_keys_in_selection(fragment1.selections, parent_type: fragment_type1)
         fragment_names1 = find_fragment_names(fragment1.selections)
@@ -110,6 +109,7 @@ module GraphQL
         return if fragment.nil?
 
         fragment_type = context.schema.types[fragment.type.name]
+        return if fragment_type.nil?
 
         fragment_fields = response_keys_in_selection(fragment.selections, parent_type: fragment_type)
         fragment_fragment_names = find_fragment_names(fragment.selections)
@@ -181,6 +181,9 @@ module GraphQL
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
         selections = field1[:node].selections
         selections2 = field2[:node].selections
+
+        return if field1[:defn].nil? || field2[:defn].nil?
+
         fields = response_keys_in_selection(selections, parent_type: field1[:defn].type.unwrap)
         fields2 = response_keys_in_selection(selections2, parent_type: field2[:defn].type.unwrap)
         fragment_names = find_fragment_names(selections)
@@ -251,8 +254,15 @@ module GraphQL
               defn: context.schema.get_field(parent_type, node.name)
             }
           when GraphQL::Language::Nodes::InlineFragment
-            fragment_type = context.schema.types[node.type.name]
-            find_fields(node.selections, parent_type: fragment_type || parent_type)
+            fragment_type = node.type ? context.schema.types[node.type.name] : parent_type
+
+            if fragment_type
+              find_fields(node.selections, parent_type: fragment_type)
+            else
+              # A bad fragment name was provided, let it go and it will be
+              # caught by another rule
+              nil
+            end
           end
         end.compact.flatten
       end
@@ -266,10 +276,6 @@ module GraphQL
         selections
           .select { |s| s.is_a?(GraphQL::Language::Nodes::FragmentSpread) }
           .map(&:name)
-      end
-
-      def compared_fragments_key(frag1, frag2)
-        [frag1, frag2].sort.join('_')
       end
 
       def possible_arguments(field1, field2)
