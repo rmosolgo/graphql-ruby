@@ -56,7 +56,7 @@ For each object type, you can assign a required action for Ruby objects of that 
 # app/graphql/types/base_object.rb
 class Types::BaseObject < GraphQL::Schema::Object
   # Add the CanCan integration:
-  include GraphQL::Pro::CanCan::ObjectIntegration
+  include GraphQL::Pro::CanCanIntegration::ObjectIntegration
   # By default, require `can :read, ...`
   can_can_action(:read)
   # Or, to require no permissions by default:
@@ -140,14 +140,14 @@ module Types::BaseInterface
 end
 ```
 
-Then, you can add `can_can_ability:` options to your fields:
+Then, you can add `can_can_action:` options to your fields:
 
 ```ruby
 class Types::JobPosting < Types::BaseObject
   # Only allow `can :review_applications, JobPosting` users
   # to see who has applied
   field :applicants, [Types::User], null: true,
-    can_can_ability: :review_applicants
+    can_can_action: :review_applicants
 end
 ```
 
@@ -161,7 +161,7 @@ Similar to field-level checks, you can require certain permissions to _use_ cert
 class Types::BaseArgument < GraphQL::Schema::Argument
   # Include the integration and default to no permissions required
   include GraphQL::Pro::CanCanIntegration::ArgumentIntegration
-  can_can_ability nil
+  can_can_action nil
 end
 ```
 
@@ -178,13 +178,13 @@ class Types::BaseInputObject < GraphQL::Schema::InputObject
 end
 ```
 
-Now, arguments accept a `can_can_ability:` option, for example:
+Now, arguments accept a `can_can_action:` option, for example:
 
 ```ruby
 class Types::Company < Types::BaseObject
   field :employees, Types::Employee.connection_type, null: true do
     # Only admins can filter employees by email:
-    argument :email, String, required: false, can_can_ability: :admin
+    argument :email, String, required: false, can_can_action: :admin
   end
 end
 ```
