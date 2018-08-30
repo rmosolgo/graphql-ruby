@@ -246,6 +246,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
+    focus
     it "fails rule" do
       assert_equal ["Field 'fido' has a field conflict: name or nickname?"], error_messages
     end
@@ -276,6 +277,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
+    focus
     it "fails rule" do
       assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {} or {dogCommand:"HEEL"}?)], error_messages
     end
@@ -291,6 +293,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
+    focus
     it "fails rule" do
       assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {dogCommand:"SIT"} or {}?)], error_messages
     end
@@ -306,6 +309,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
+    focus
     it "fails rule" do
       assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {dogCommand:"SIT"} or {dogCommand:"HEEL"}?)], error_messages
     end
@@ -321,6 +325,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
+    focus
     it "fails rule" do
       assert_equal [%q(Field 'image' has an argument conflict: {maxWidth:"10"} or {maxWidth:"20"}?)], error_messages
     end
@@ -353,6 +358,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       ], error_messages
     end
   end
+
 
   describe "deep conflict" do
     let(:query_string) {%|
@@ -428,6 +434,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       ], error_messages
     end
   end
+
 
   describe "same aliases allowed on non-overlapping fields" do
     let(:query_string) {%|

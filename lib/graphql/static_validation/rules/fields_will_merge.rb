@@ -2,48 +2,103 @@
 module GraphQL
   module StaticValidation
     module FieldsWillMerge
-      # Special handling for fields without arguments
       NO_ARGS = {}.freeze
 
-      def initialize(*)
+      def on_operation_definition(node, _parent)
+        conflicts_within_selection_set(node, type_definition)
         super
+      end
 
-        context.each_irep_node do |node|
-          if node.ast_nodes.size > 1
-            defn_names = Set.new(node.ast_nodes.map(&:name))
+      def on_field(node, _parent)
+        conflicts_within_selection_set(node, type_definition)
+        super
+      end
 
-            # Check for more than one GraphQL::Field backing this node:
-            if defn_names.size > 1
-              defn_names = defn_names.sort.join(" or ")
-              msg = "Field '#{node.name}' has a field conflict: #{defn_names}?"
-              context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: node.ast_nodes.to_a)
-            end
+      private
 
-            # Check for incompatible / non-identical arguments on this node:
-            args = node.ast_nodes.map do |n|
-              if n.arguments.any?
-                n.arguments.reduce({}) do |memo, a|
-                  arg_value = a.value
-                  memo[a.name] = case arg_value
-                  when GraphQL::Language::Nodes::AbstractNode
-                    arg_value.to_query_string
-                  else
-                    GraphQL::Language.serialize(arg_value)
-                  end
-                  memo
-                end
-              else
-                NO_ARGS
-              end
-            end
-            args.uniq!
+      def conflicts_within_selection_set(node, type_definition)
+        fields = find_fields(node.selections, parent_type: type_definition)
+        fragment_names = find_fragment_names(node.selections)
 
-            if args.length > 1
-              msg = "Field '#{node.name}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?"
-              context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: node.ast_nodes.to_a)
+        # (A) Find find all conflicts "within" the fields of this selection set.
+        collect_conflicts_within(fields)
+      end
+
+      def collect_conflicts_within(response_keys)
+        response_keys.each do |key, fields|
+          next if fields.size < 2
+          # find conflicts within nodes
+          for i in 0..fields.size-1
+            for j in i+1..fields.size-1
+              find_conflict(key, fields[i], fields[j])
             end
           end
         end
+      end
+
+      def find_conflict(response_key, field1, field2, mutually_exclusive: false)
+        parent_type_1 = field1[:parent_type]
+        parent_type_2 = field2[:parent_type]
+
+        node1 = field1[:node]
+        node2 = field2[:node]
+
+        are_mutually_exclusive = mutually_exclusive ||
+                                 (parent_type_1 != parent_type_2 &&
+                                  parent_type_1.kind.object? &&
+                                  parent_type_2.kind.object?)
+
+        if !are_mutually_exclusive
+          if node1.name != node2.name
+            msg = "Field '#{response_key}' has a field conflict: #{node1.name} or #{node2.name}?"
+            context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: [node1, node2])
+          end
+
+          args = possible_arguments(node1, node2)
+          if args.size > 1
+            msg = "Field '#{response_key}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?"
+            context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: [node1, node2])
+          end
+        end
+      end
+
+      def find_fields(selections, parent_type:)
+        fields = selections.map do |node|
+          case node
+          when GraphQL::Language::Nodes::Field
+            { node: node, parent_type: parent_type }
+          when GraphQL::Language::Nodes::InlineFragment
+            find_fields(node.selections, parent_type: node.type || parent_type)
+          end
+        end.flatten
+
+        fields.group_by { |f| f[:node].alias || f[:node].name }
+      end
+
+      def find_fragment_names(selections)
+        selections
+          .select { |s| s.is_a?(GraphQL::Language::Nodes::FragmentSpread) }
+          .map(&:name)
+      end
+
+      def possible_arguments(field1, field2)
+        # Check for incompatible / non-identical arguments on this node:
+        [field1, field2].map do |n|
+          if n.arguments.any?
+            n.arguments.reduce({}) do |memo, a|
+              arg_value = a.value
+              memo[a.name] = case arg_value
+              when GraphQL::Language::Nodes::AbstractNode
+                arg_value.to_query_string
+              else
+                GraphQL::Language.serialize(arg_value)
+              end
+              memo
+            end
+          else
+            NO_ARGS
+          end
+        end.uniq
       end
     end
   end
