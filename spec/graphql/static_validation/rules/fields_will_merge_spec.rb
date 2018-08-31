@@ -477,7 +477,35 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
-    focus
+    it "passes rule" do
+      assert_equal [], errors
+    end
+  end
+
+  describe "allows different args where no conflict is possible deep" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Dog {
+            ...X
+          }
+        }
+        pet {
+          ... on Cat {
+            ...Y
+          }
+        }
+      }
+
+      fragment X on Pet {
+        name(surname: true)
+      }
+
+      fragment Y on Pet {
+        name
+      }
+    |}
+
     it "passes rule" do
       assert_equal [], errors
     end

@@ -39,9 +39,10 @@ module GraphQL
         find_conflicts_within(fields)
 
         fragment_spreads.each_with_index do |fragment_spread, i|
-          are_mutually_exclusive = fragment_spread.parent_type != parent_type &&
-            parent_type.kind.object? &&
-            fragment_spread.parent_type.kind.object?
+          are_mutually_exclusive = mutually_exclusive?(
+            fragment_spread.parent_type,
+            parent_type
+          )
 
           # (B) Then find conflicts between these fields and those represented by
           # each spread fragment name found.
@@ -56,9 +57,10 @@ module GraphQL
           # This compares each item in the list of fragment names to every other
           # item in that same list (except for itself).
           fragment_spreads[i + 1..-1].each do |fragment_spread2|
-            are_mutually_exclusive = fragment_spread.parent_type != fragment_spread2.parent_type &&
-              fragment_spread.parent_type.kind.object? &&
-              fragment_spread2.parent_type.kind.object?
+            are_mutually_exclusive = mutually_exclusive?(
+              fragment_spread.parent_type,
+              fragment_spread2.parent_type
+            )
 
             find_conflicts_between_fragments(
               fragment_spread,
@@ -152,7 +154,7 @@ module GraphQL
         # and any fragment names found in the given fragment.
         fragment_spreads.each do |fragment_spread|
           find_conflicts_between_fields_and_fragment(
-            fragment_spreads,
+            fragment_spread,
             fields,
             mutually_exclusive: mutually_exclusive,
           )
@@ -179,9 +181,7 @@ module GraphQL
         node2 = field2.node
 
         are_mutually_exclusive = mutually_exclusive ||
-                                 (parent_type1 != parent_type2 &&
-                                  parent_type1.kind.object? &&
-                                  parent_type2.kind.object?)
+                                 mutually_exclusive?(parent_type1, parent_type2)
 
         if !are_mutually_exclusive
           if node1.name != node2.name
@@ -207,8 +207,11 @@ module GraphQL
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
         return if field1.definition.nil? || field2.definition.nil?
 
-        fields, fragment_spreads = fields_and_fragments_from_selection(field1.node, parent_type: field1.definition.type.unwrap)
-        fields2, fragment_spreads2 = fields_and_fragments_from_selection(field2.node, parent_type: field2.definition.type.unwrap)
+        parent_type1 = field1.definition.type.unwrap
+        parent_type2 = field2.definition.type.unwrap
+
+        fields, fragment_spreads = fields_and_fragments_from_selection(field1.node, parent_type: parent_type1)
+        fields2, fragment_spreads2 = fields_and_fragments_from_selection(field2.node, parent_type: parent_type2)
 
         # (H) First, collect all conflicts between these two collections of field.
         find_conflicts_between(fields, fields2, mutually_exclusive: mutually_exclusive)
@@ -216,20 +219,30 @@ module GraphQL
         # (I) Then collect conflicts between the first collection of fields and
         # those referenced by each fragment name associated with the second.
         fragment_spreads2.each do |fragment_spread|
+          fragment_is_mutually_exclusive = mutually_exclusive?(
+            parent_type1,
+            fragment_spread.parent_type
+          )
+
           find_conflicts_between_fields_and_fragment(
-            fields,
             fragment_spread,
-            mutually_exclusive: mutually_exclusive,
+            fields,
+            mutually_exclusive: mutually_exclusive || fragment_is_mutually_exclusive,
           )
         end
 
         # (I) Then collect conflicts between the second collection of fields and
         # those referenced by each fragment name associated with the first.
         fragment_spreads.each do |fragment_spread|
+          fragment_is_mutually_exclusive = mutually_exclusive?(
+            parent_type2,
+            fragment_spread.parent_type
+          )
+
           find_conflicts_between_fields_and_fragment(
-            fields2,
             fragment_spread,
-            mutually_exclusive: mutually_exclusive,
+            fields2,
+            mutually_exclusive: mutually_exclusive || fragment_is_mutually_exclusive,
           )
         end
 
@@ -237,11 +250,16 @@ module GraphQL
         # fragment names by the second. This compares each item in the first set of
         # names to each item in the second set of names.
         fragment_spreads.each do |frag1|
-          fragment_spread2.each do |frag2|
+          fragment_spreads2.each do |frag2|
+            fragments_are_mutually_exclusive = mutually_exclusive?(
+              frag1.parent_type,
+              frag2.parent_type
+            )
+
             find_conflicts_between_fragments(
               frag1,
               frag2,
-              mutually_exclusive: mutually_exclusive,
+              mutually_exclusive: mutually_exclusive || fragments_are_mutually_exclusive,
             )
           end
         end
@@ -316,6 +334,10 @@ module GraphQL
         # avoid computing "A vs B" and "B vs A"). It also includes
         # "exclusive" since the result may change depending on the parent_type
         "#{[frag1, frag2].sort.join('-')}-#{exclusive}"
+      end
+
+      def mutually_exclusive?(type1, type2)
+        type1 != type2 && type1.kind.object? && type2.kind.object?
       end
     end
   end
