@@ -9,6 +9,7 @@ module GraphQL
       # Original Algorithm: https://github.com/graphql/graphql-js/blob/master/src/validation/rules/OverlappingFieldsCanBeMerged.js
       NO_ARGS = {}.freeze
       Field = Struct.new(:node, :definition, :parent_type)
+      FragmentSpread = Struct.new(:name, :parent_type)
 
       def initialize(*)
         super
@@ -32,35 +33,45 @@ module GraphQL
       def conflicts_within_selection_set(node, parent_type)
         return if parent_type.nil?
 
-        fields, fragment_names = fields_and_fragments_from_selection(node, parent_type: parent_type)
+        fields, fragment_spreads = fields_and_fragments_from_selection(node, parent_type: parent_type)
 
         # (A) Find find all conflicts "within" the fields of this selection set.
         find_conflicts_within(fields)
 
-        fragment_names.each_with_index do |fragment_name, i|
+        fragment_spreads.each_with_index do |fragment_spread, i|
+          are_mutually_exclusive = fragment_spread.parent_type != parent_type &&
+            parent_type.kind.object? &&
+            fragment_spread.parent_type.kind.object?
+
           # (B) Then find conflicts between these fields and those represented by
           # each spread fragment name found.
           find_conflicts_between_fields_and_fragment(
-            fragment_name,
+            fragment_spread,
             fields,
-            mutually_exclusive: false,
+            mutually_exclusive: are_mutually_exclusive,
           )
 
           # (C) Then compare this fragment with all other fragments found in this
           # selection set to collect conflicts between fragments spread together.
           # This compares each item in the list of fragment names to every other
           # item in that same list (except for itself).
-          fragment_names[i + 1..-1].each do |fragment_name2|
+          fragment_spreads[i + 1..-1].each do |fragment_spread2|
+            are_mutually_exclusive = fragment_spread.parent_type != fragment_spread2.parent_type &&
+              fragment_spread.parent_type.kind.object? &&
+              fragment_spread2.parent_type.kind.object?
+
             find_conflicts_between_fragments(
-              fragment_name,
-              fragment_name2,
-              mutually_exclusive: false,
+              fragment_spread,
+              fragment_spread2,
+              mutually_exclusive: are_mutually_exclusive,
             )
           end
         end
       end
 
-      def find_conflicts_between_fragments(fragment_name1, fragment_name2, mutually_exclusive:)
+      def find_conflicts_between_fragments(fragment_spread1, fragment_spread2, mutually_exclusive:)
+        fragment_name1 = fragment_spread1.name
+        fragment_name2 = fragment_spread2.name
         return if fragment_name1 == fragment_name2
 
         cache_key = compared_fragments_key(
@@ -84,8 +95,8 @@ module GraphQL
 
         return if fragment_type1.nil? || fragment_type2.nil?
 
-        fragment_fields1, fragment_names1 = fields_and_fragments_from_selection(fragment1, parent_type: fragment_type1)
-        fragment_fields2, fragment_names2 = fields_and_fragments_from_selection(fragment2, parent_type: fragment_type2)
+        fragment_fields1, fragment_spreads1 = fields_and_fragments_from_selection(fragment1, parent_type: fragment_type1)
+        fragment_fields2, fragment_spreads2 = fields_and_fragments_from_selection(fragment2, parent_type: fragment_type2)
 
         # (F) First, find all conflicts between these two collections of fields
         # (not including any nested fragments).
@@ -97,26 +108,27 @@ module GraphQL
 
         # (G) Then collect conflicts between the first fragment and any nested
         # fragments spread in the second fragment.
-        fragment_names2.each do |fragment_name|
+        fragment_spreads2.each do |fragment_spread|
           find_conflicts_between_fragments(
-            fragment_name1,
-            fragment_name,
+            fragment_spread1,
+            fragment_spread,
             mutually_exclusive: mutually_exclusive,
           )
         end
 
         # (G) Then collect conflicts between the first fragment and any nested
         # fragments spread in the second fragment.
-        fragment_names1.each do |fragment_name|
+        fragment_spreads1.each do |fragment_spread|
           find_conflicts_between_fragments(
-            fragment_name2,
-            fragment_name,
+            fragment_spread2,
+            fragment_spread,
             mutually_exclusive: mutually_exclusive,
           )
         end
       end
 
-      def find_conflicts_between_fields_and_fragment(fragment_name, fields, mutually_exclusive:)
+      def find_conflicts_between_fields_and_fragment(fragment_spread, fields, mutually_exclusive:)
+        fragment_name = fragment_spread.name
         return if @visited_fragments.key?(fragment_name)
         @visited_fragments[fragment_name] = true
 
@@ -126,7 +138,7 @@ module GraphQL
         fragment_type = context.schema.types[fragment.type.name]
         return if fragment_type.nil?
 
-        fragment_fields, fragment_fragment_names = fields_and_fragments_from_selection(fragment, parent_type: fragment_type)
+        fragment_fields, fragment_spreads = fields_and_fragments_from_selection(fragment, parent_type: fragment_type)
 
         # (D) First find any conflicts between the provided collection of fields
         # and the collection of fields represented by the given fragment.
@@ -138,9 +150,9 @@ module GraphQL
 
         # (E) Then collect any conflicts between the provided collection of fields
         # and any fragment names found in the given fragment.
-        fragment_fragment_names.each do |fragment_name|
+        fragment_spreads.each do |fragment_spread|
           find_conflicts_between_fields_and_fragment(
-            fragment_name,
+            fragment_spreads,
             fields,
             mutually_exclusive: mutually_exclusive,
           )
@@ -160,7 +172,6 @@ module GraphQL
       end
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
-        binding.pry
         parent_type1 = field1.parent_type
         parent_type2 = field2.parent_type
 
@@ -196,28 +207,28 @@ module GraphQL
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
         return if field1.definition.nil? || field2.definition.nil?
 
-        fields, fragment_names = fields_and_fragments_from_selection(field1.node, parent_type: field1.definition.type.unwrap)
-        fields2, fragment_names2 = fields_and_fragments_from_selection(field2.node, parent_type: field2.definition.type.unwrap)
+        fields, fragment_spreads = fields_and_fragments_from_selection(field1.node, parent_type: field1.definition.type.unwrap)
+        fields2, fragment_spreads2 = fields_and_fragments_from_selection(field2.node, parent_type: field2.definition.type.unwrap)
 
         # (H) First, collect all conflicts between these two collections of field.
         find_conflicts_between(fields, fields2, mutually_exclusive: mutually_exclusive)
 
         # (I) Then collect conflicts between the first collection of fields and
         # those referenced by each fragment name associated with the second.
-        fragment_names2.each do |fragment_name|
+        fragment_spreads2.each do |fragment_spread|
           find_conflicts_between_fields_and_fragment(
             fields,
-            fragment_name,
+            fragment_spread,
             mutually_exclusive: mutually_exclusive,
           )
         end
 
         # (I) Then collect conflicts between the second collection of fields and
         # those referenced by each fragment name associated with the first.
-        fragment_names.each do |fragment_name|
+        fragment_spreads.each do |fragment_spread|
           find_conflicts_between_fields_and_fragment(
             fields2,
-            fragment_name,
+            fragment_spread,
             mutually_exclusive: mutually_exclusive,
           )
         end
@@ -225,8 +236,8 @@ module GraphQL
         # (J) Also collect conflicts between any fragment names by the first and
         # fragment names by the second. This compares each item in the first set of
         # names to each item in the second set of names.
-        fragment_names.each do |frag1|
-          fragment_names2.each do |frag2|
+        fragment_spreads.each do |frag1|
+          fragment_spread2.each do |frag2|
             find_conflicts_between_fragments(
               frag1,
               frag2,
@@ -256,13 +267,13 @@ module GraphQL
 
       def fields_and_fragments_from_selection(node, parent_type:)
         @fields_and_fragments_from_node[node] ||= begin
-          fields, fragment_names = find_fields_and_fragments(node.selections, parent_type: parent_type)
+          fields, fragment_spreads = find_fields_and_fragments(node.selections, parent_type: parent_type)
           response_keys = fields.group_by { |f| f.node.alias || f.node.name }
-          [response_keys, fragment_names]
+          [response_keys, fragment_spreads]
         end
       end
 
-      def find_fields_and_fragments(selections, parent_type:, fields: [], fragment_names: [])
+      def find_fields_and_fragments(selections, parent_type:, fields: [], fragment_spreads: [])
         selections.each do |node|
           case node
           when GraphQL::Language::Nodes::Field
@@ -270,13 +281,13 @@ module GraphQL
             fields << Field.new(node, definition, parent_type)
           when GraphQL::Language::Nodes::InlineFragment
             fragment_type = node.type ? context.schema.types[node.type.name] : parent_type
-            find_fields_and_fragments(node.selections, parent_type: fragment_type, fields: fields, fragment_names: fragment_names) if fragment_type
+            find_fields_and_fragments(node.selections, parent_type: fragment_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
           when GraphQL::Language::Nodes::FragmentSpread
-            fragment_names << node.name
+            fragment_spreads << FragmentSpread.new(node.name, parent_type)
           end
         end
 
-        [fields, fragment_names]
+        [fields, fragment_spreads]
       end
 
       def possible_arguments(field1, field2)
