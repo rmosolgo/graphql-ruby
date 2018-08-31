@@ -3,6 +3,7 @@ module GraphQL
   module StaticValidation
     module FieldsWillMerge
       NO_ARGS = {}.freeze
+      Field = Struct.new(:node, :definition, :parent_type)
 
       def initialize(*)
         super
@@ -146,11 +147,11 @@ module GraphQL
       end
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
-        parent_type_1 = field1[:parent_type]
-        parent_type_2 = field2[:parent_type]
+        parent_type_1 = field1.parent_type
+        parent_type_2 = field2.parent_type
 
-        node1 = field1[:node]
-        node2 = field2[:node]
+        node1 = field1.node
+        node2 = field2.node
 
         are_mutually_exclusive = mutually_exclusive ||
                                  (parent_type_1 != parent_type_2 &&
@@ -179,13 +180,13 @@ module GraphQL
       end
 
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
-        selections = field1[:node].selections
-        selections2 = field2[:node].selections
+        selections = field1.node.selections
+        selections2 = field2.node.selections
 
-        return if field1[:defn].nil? || field2[:defn].nil?
+        return if field1.definition.nil? || field2.definition.nil?
 
-        fields = response_keys_in_selection(selections, parent_type: field1[:defn].type.unwrap)
-        fields2 = response_keys_in_selection(selections2, parent_type: field2[:defn].type.unwrap)
+        fields = response_keys_in_selection(selections, parent_type: field1.definition.type.unwrap)
+        fields2 = response_keys_in_selection(selections2, parent_type: field2.definition.type.unwrap)
         fragment_names = find_fragment_names(selections)
         fragment_names_2 = find_fragment_names(selections2)
 
@@ -245,31 +246,23 @@ module GraphQL
       end
 
       def find_fields(selections, parent_type:)
-        selections.map do |node|
+        fields = selections.map do |node|
           case node
           when GraphQL::Language::Nodes::Field
-            {
-              node: node,
-              parent_type: parent_type,
-              defn: context.schema.get_field(parent_type, node.name),
-            }
+            definition = context.schema.get_field(parent_type, node.name)
+            Field.new(node, definition, parent_type)
           when GraphQL::Language::Nodes::InlineFragment
             fragment_type = node.type ? context.schema.types[node.type.name] : parent_type
-
-            if fragment_type
-              find_fields(node.selections, parent_type: fragment_type)
-            else
-              # A bad fragment name was provided, let it go and it will be
-              # caught by another rule
-              nil
-            end
+            find_fields(node.selections, parent_type: fragment_type) if fragment_type
           end
-        end.compact.flatten
+        end
+
+        fields.compact.flatten
       end
 
       def response_keys_in_selection(selections, parent_type:)
         fields = find_fields(selections, parent_type: parent_type)
-        fields.group_by { |f| f[:node].alias || f[:node].name }
+        fields.group_by { |f| f.node.alias || f.node.name }
       end
 
       def find_fragment_names(selections)
