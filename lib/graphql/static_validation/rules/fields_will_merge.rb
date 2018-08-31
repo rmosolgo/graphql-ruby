@@ -13,6 +13,7 @@ module GraphQL
       def initialize(*)
         super
         @visited_fragments = {}
+        @compared_fragments = {}
       end
 
       def on_operation_definition(node, _parent)
@@ -61,6 +62,17 @@ module GraphQL
 
       def find_conflicts_between_fragments(fragment_name1, fragment_name2, mutually_exclusive:)
         return if fragment_name1 == fragment_name2
+
+        cache_key = compared_fragments_key(
+          fragment_name1,
+          fragment_name2,
+          mutually_exclusive,
+        )
+        if @compared_fragments.key?(cache_key)
+          return
+        else
+          @compared_fragments[cache_key] = true
+        end
 
         fragment1 = context.fragments[fragment_name1]
         fragment2 = context.fragments[fragment_name2]
@@ -294,6 +306,14 @@ module GraphQL
             NO_ARGS
           end
         end.uniq
+      end
+
+      def compared_fragments_key(frag1, frag2, exclusive)
+        # Cache key to not compare two fragments more than once.
+        # The key includes both fragment names sorted (this way we
+        # avoid computing "A vs B" and "B vs A"). It also includes
+        # "exclusive" since the result may change depending on the parent_type
+        "#{[frag1, frag2].sort.join('-')}-#{exclusive}"
       end
     end
   end
