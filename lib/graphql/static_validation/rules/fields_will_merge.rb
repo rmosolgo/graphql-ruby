@@ -2,6 +2,11 @@
 module GraphQL
   module StaticValidation
     module FieldsWillMerge
+      # Validates that a selection set is valid if all fields (including spreading any
+      # fragments) either correspond to distinct response names or can be merged
+      # without ambiguity.
+      #
+      # Original Algorithm: https://github.com/graphql/graphql-js/blob/master/src/validation/rules/OverlappingFieldsCanBeMerged.js
       NO_ARGS = {}.freeze
       Field = Struct.new(:node, :definition, :parent_type)
 
@@ -22,10 +27,10 @@ module GraphQL
 
       private
 
-      def conflicts_within_selection_set(node, type_definition)
-        return if type_definition.nil?
+      def conflicts_within_selection_set(node, parent_type)
+        return if parent_type.nil?
 
-        fields = response_keys_in_selection(node.selections, parent_type: type_definition)
+        fields = response_keys_in_selection(node.selections, parent_type: parent_type)
         fragment_names = find_fragment_names(node.selections)
 
         # (A) Find find all conflicts "within" the fields of this selection set.
@@ -147,16 +152,16 @@ module GraphQL
       end
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
-        parent_type_1 = field1.parent_type
-        parent_type_2 = field2.parent_type
+        parent_type1 = field1.parent_type
+        parent_type2 = field2.parent_type
 
         node1 = field1.node
         node2 = field2.node
 
         are_mutually_exclusive = mutually_exclusive ||
-                                 (parent_type_1 != parent_type_2 &&
-                                  parent_type_1.kind.object? &&
-                                  parent_type_2.kind.object?)
+                                 (parent_type1 != parent_type2 &&
+                                  parent_type1.kind.object? &&
+                                  parent_type2.kind.object?)
 
         if !are_mutually_exclusive
           if node1.name != node2.name
@@ -188,14 +193,14 @@ module GraphQL
         fields = response_keys_in_selection(selections, parent_type: field1.definition.type.unwrap)
         fields2 = response_keys_in_selection(selections2, parent_type: field2.definition.type.unwrap)
         fragment_names = find_fragment_names(selections)
-        fragment_names_2 = find_fragment_names(selections2)
+        fragment_names2 = find_fragment_names(selections2)
 
         # (H) First, collect all conflicts between these two collections of field.
         find_conflicts_between(fields, fields2, mutually_exclusive: mutually_exclusive)
 
         # (I) Then collect conflicts between the first collection of fields and
         # those referenced by each fragment name associated with the second.
-        fragment_names_2.each do |fragment_name|
+        fragment_names2.each do |fragment_name|
           find_conflicts_between_fields_and_fragment(
             fields,
             fragment_name,
@@ -217,7 +222,7 @@ module GraphQL
         # fragment names by the second. This compares each item in the first set of
         # names to each item in the second set of names.
         fragment_names.each do |frag1|
-          fragment_names_2.each do |frag2|
+          fragment_names2.each do |frag2|
             find_conflicts_between_fragments(
               frag1,
               frag2,
@@ -227,9 +232,9 @@ module GraphQL
         end
       end
 
-      def find_conflicts_between(response_keys, response_keys_2, mutually_exclusive:)
+      def find_conflicts_between(response_keys, response_keys2, mutually_exclusive:)
         response_keys.each do |key, fields|
-          fields2 = response_keys_2[key]
+          fields2 = response_keys2[key]
           if fields2
             fields.each do |field|
               fields2.each do |field2|
