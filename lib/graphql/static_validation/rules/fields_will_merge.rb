@@ -14,8 +14,7 @@ module GraphQL
         super
         @visited_fragments = {}
         @compared_fragments = {}
-        @selections_for_node = {}
-        @fragment_names_for_node = {}
+        @fields_and_fragments_from_node = {}
       end
 
       def on_operation_definition(node, _parent)
@@ -33,8 +32,7 @@ module GraphQL
       def conflicts_within_selection_set(node, parent_type)
         return if parent_type.nil?
 
-        fields = response_keys_in_selection(node, parent_type: parent_type)
-        fragment_names = find_fragment_names(node)
+        fields, fragment_names = fields_and_fragments_from_selection(node, parent_type: parent_type)
 
         # (A) Find find all conflicts "within" the fields of this selection set.
         find_conflicts_within(fields)
@@ -86,11 +84,8 @@ module GraphQL
 
         return if fragment_type1.nil? || fragment_type2.nil?
 
-        fragment_fields1 = response_keys_in_selection(fragment1, parent_type: fragment_type1)
-        fragment_names1 = find_fragment_names(fragment1)
-
-        fragment_fields2 = response_keys_in_selection(fragment2, parent_type: fragment_type2)
-        fragment_names2 = find_fragment_names(fragment2)
+        fragment_fields1, fragment_names1 = fields_and_fragments_from_selection(fragment1, parent_type: fragment_type1)
+        fragment_fields2, fragment_names2 = fields_and_fragments_from_selection(fragment2, parent_type: fragment_type2)
 
         # (F) First, find all conflicts between these two collections of fields
         # (not including any nested fragments).
@@ -131,8 +126,7 @@ module GraphQL
         fragment_type = context.schema.types[fragment.type.name]
         return if fragment_type.nil?
 
-        fragment_fields = response_keys_in_selection(fragment, parent_type: fragment_type)
-        fragment_fragment_names = find_fragment_names(fragment)
+        fragment_fields, fragment_fragment_names = fields_and_fragments_from_selection(fragment, parent_type: fragment_type)
 
         # (D) First find any conflicts between the provided collection of fields
         # and the collection of fields represented by the given fragment.
@@ -166,6 +160,7 @@ module GraphQL
       end
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
+        binding.pry
         parent_type1 = field1.parent_type
         parent_type2 = field2.parent_type
 
@@ -201,10 +196,8 @@ module GraphQL
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
         return if field1.definition.nil? || field2.definition.nil?
 
-        fields = response_keys_in_selection(field1.node, parent_type: field1.definition.type.unwrap)
-        fields2 = response_keys_in_selection(field2.node, parent_type: field2.definition.type.unwrap)
-        fragment_names = find_fragment_names(field1.node)
-        fragment_names2 = find_fragment_names(field2.node)
+        fields, fragment_names = fields_and_fragments_from_selection(field1.node, parent_type: field1.definition.type.unwrap)
+        fields2, fragment_names2 = fields_and_fragments_from_selection(field2.node, parent_type: field2.definition.type.unwrap)
 
         # (H) First, collect all conflicts between these two collections of field.
         find_conflicts_between(fields, fields2, mutually_exclusive: mutually_exclusive)
@@ -261,34 +254,29 @@ module GraphQL
         end
       end
 
-      def find_fields(selections, parent_type:)
-        fields = selections.map do |node|
+      def fields_and_fragments_from_selection(node, parent_type:)
+        @fields_and_fragments_from_node[node] ||= begin
+          fields, fragment_names = find_fields_and_fragments(node.selections, parent_type: parent_type)
+          response_keys = fields.group_by { |f| f.node.alias || f.node.name }
+          [response_keys, fragment_names]
+        end
+      end
+
+      def find_fields_and_fragments(selections, parent_type:, fields: [], fragment_names: [])
+        selections.each do |node|
           case node
           when GraphQL::Language::Nodes::Field
             definition = context.schema.get_field(parent_type, node.name)
-            Field.new(node, definition, parent_type)
+            fields << Field.new(node, definition, parent_type)
           when GraphQL::Language::Nodes::InlineFragment
             fragment_type = node.type ? context.schema.types[node.type.name] : parent_type
-            find_fields(node.selections, parent_type: fragment_type) if fragment_type
+            find_fields_and_fragments(node.selections, parent_type: fragment_type, fields: fields, fragment_names: fragment_names) if fragment_type
+          when GraphQL::Language::Nodes::FragmentSpread
+            fragment_names << node.name
           end
         end
 
-        fields.compact.flatten
-      end
-
-      def response_keys_in_selection(node, parent_type:)
-        @selections_for_node[node] ||= begin
-          fields = find_fields(node.selections, parent_type: parent_type)
-          fields.group_by { |f| f.node.alias || f.node.name }
-        end
-      end
-
-      def find_fragment_names(node)
-        @fragment_names_for_node[node] ||= begin
-          node.selections
-            .select { |s| s.is_a?(GraphQL::Language::Nodes::FragmentSpread) }
-            .map(&:name)
-        end
+        [fields, fragment_names]
       end
 
       def possible_arguments(field1, field2)

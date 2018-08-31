@@ -477,6 +477,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
+    focus
     it "passes rule" do
       assert_equal [], errors
     end
