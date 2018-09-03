@@ -15,16 +15,16 @@ module GraphQL
             @@parse_fn.call(query_string)
           end
 
-          def assert_directive(schema_extension, object, value, name)
-            assert_equal value, schema_extension.directives.length
-            assert_equal object, schema_extension.directives.first.class
-            assert_equal name, schema_extension.directives.first.name
+          def assert_directive(extension, object, value, name)
+            assert_equal value, extension.directives.length
+            assert_equal object, extension.directives.first.class
+            assert_equal name, extension.directives.first.name
           end
 
-          def assert_object_type_extension(object_type_extension, object, extension_name)
-            assert_equal object, object_type_extension.class
-            assert_equal extension_name, object_type_extension.name
-            assert_equal [2, 15], object_type_extension.position
+          def assert_object_type_extension(type_extension, object, extension_name)
+            assert_equal object, type_extension.class
+            assert_equal extension_name, type_extension.name
+            assert_equal [2, 15], type_extension.position
           end
 
           def assert_schema(schema, query, mutation, subscription)
