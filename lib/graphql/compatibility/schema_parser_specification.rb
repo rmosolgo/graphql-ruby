@@ -15,13 +15,13 @@ module GraphQL
             @@parse_fn.call(query_string)
           end
 
-          def assert_directive(extension, object, value, name)
-            assert_equal value, extension.directives.length
-            assert_equal object, extension.directives.first.class
-            assert_equal name, extension.directives.first.name
+          def assert_extension(extension_object, object, value, name)
+            assert_equal value, extension_object.length
+            assert_equal object, extension_object.first.class
+            assert_equal name, extension_object.first.name
           end
 
-          def assert_object_type_extension(type_extension, object, extension_name)
+          def assert_type_extension(type_extension, object, extension_name)
             assert_equal object, type_extension.class
             assert_equal extension_name, type_extension.name
             assert_equal [2, 15], type_extension.position
@@ -234,7 +234,7 @@ module GraphQL
             schema_extension = document.definitions.first
             assert_equal GraphQL::Language::Nodes::SchemaExtension, schema_extension.class
 
-            assert_directive(schema_extension, GraphQL::Language::Nodes::Directive, 1, 'something')
+            assert_extension(schema_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'something')
             assert_schema(schema_extension, 'QueryRoot', nil, nil)
           end
 
@@ -246,7 +246,7 @@ module GraphQL
             schema_extension = document.definitions.first
             assert_equal GraphQL::Language::Nodes::SchemaExtension, schema_extension.class
 
-            assert_directive(schema_extension, GraphQL::Language::Nodes::Directive, 1, 'something')
+            assert_extension(schema_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'something')
             assert_schema(schema_extension, nil, nil, nil)
           end
 
@@ -260,7 +260,7 @@ module GraphQL
             assert_equal 'Date', scalar_extension.name
             assert_equal [2, 15], scalar_extension.position
 
-            assert_directive(scalar_extension, GraphQL::Language::Nodes::Directive, 2, 'something')
+            assert_extension(scalar_extension.directives, GraphQL::Language::Nodes::Directive, 2, 'something')
             assert_equal GraphQL::Language::Nodes::Directive, scalar_extension.directives.last.class
             assert_equal 'somethingElse', scalar_extension.directives.last.name
           end
@@ -273,7 +273,7 @@ module GraphQL
             ')
 
             object_type_extension = document.definitions.first
-            assert_object_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
+            assert_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
 
             assert_equal 1, object_type_extension.fields.length
             assert_equal GraphQL::Language::Nodes::FieldDefinition, object_type_extension.fields.first.class
@@ -287,7 +287,7 @@ module GraphQL
             ')
 
             object_type_extension = document.definitions.first
-            assert_object_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
+            assert_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
 
             assert_equal 1, object_type_extension.fields.length
             assert_equal GraphQL::Language::Nodes::FieldDefinition, object_type_extension.fields.first.class
@@ -304,7 +304,7 @@ module GraphQL
             ')
 
             object_type_extension = document.definitions.first
-            assert_object_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
+            assert_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
 
             assert_equal 1, object_type_extension.fields.length
             assert_equal GraphQL::Language::Nodes::FieldDefinition, object_type_extension.fields.first.class
@@ -319,8 +319,8 @@ module GraphQL
             ')
 
             object_type_extension = document.definitions.first
-            assert_object_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
-            assert_directive(object_type_extension, GraphQL::Language::Nodes::Directive, 1, 'deprecated')
+            assert_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
+            assert_extension(object_type_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'deprecated')
           end
 
           def test_it_parses_object_type_extensions_with_implements_and_directives
@@ -329,13 +329,10 @@ module GraphQL
             ')
 
             object_type_extension = document.definitions.first
-            assert_object_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
+            assert_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
 
-            assert_directive(object_type_extension, GraphQL::Language::Nodes::Directive, 1, 'deprecated')
-
-            assert_equal 1, object_type_extension.interfaces.length
-            assert_equal GraphQL::Language::Nodes::TypeName, object_type_extension.interfaces.first.class
-            assert_equal 'Node', object_type_extension.interfaces.first.name
+            assert_extension(object_type_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'deprecated')
+            assert_extension(object_type_extension.interfaces, GraphQL::Language::Nodes::TypeName, 1, 'Node')
           end
 
           def test_it_parses_object_type_extensions_with_only_implements
@@ -344,11 +341,8 @@ module GraphQL
             ')
 
             object_type_extension = document.definitions.first
-            assert_object_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
-
-            assert_equal 1, object_type_extension.interfaces.length
-            assert_equal GraphQL::Language::Nodes::TypeName, object_type_extension.interfaces.first.class
-            assert_equal 'Node', object_type_extension.interfaces.first.name
+            assert_type_extension(object_type_extension, GraphQL::Language::Nodes::ObjectTypeExtension, 'User')
+            assert_extension(object_type_extension.interfaces, GraphQL::Language::Nodes::TypeName, 1, 'Node')
           end
 
           def test_it_parses_interface_type_extensions_with_directives_and_fields
@@ -359,13 +353,9 @@ module GraphQL
             ')
 
             interface_type_extension = document.definitions.first
-            assert_object_type_extension(interface_type_extension, GraphQL::Language::Nodes::InterfaceTypeExtension, 'Node')
-
-            assert_directive(interface_type_extension, GraphQL::Language::Nodes::Directive, 1, 'directive')
-
-            assert_equal 1, interface_type_extension.fields.length
-            assert_equal GraphQL::Language::Nodes::FieldDefinition, interface_type_extension.fields.first.class
-            assert_equal 'field', interface_type_extension.fields.first.name
+            assert_type_extension(interface_type_extension, GraphQL::Language::Nodes::InterfaceTypeExtension, 'Node')
+            assert_extension(interface_type_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'directive')
+            assert_extension(interface_type_extension.fields, GraphQL::Language::Nodes::FieldDefinition, 1, 'field')
           end
 
           def test_it_parses_interface_type_extensions_with_fields
@@ -376,12 +366,10 @@ module GraphQL
             ')
 
             interface_type_extension = document.definitions.first
-            assert_object_type_extension(interface_type_extension, GraphQL::Language::Nodes::InterfaceTypeExtension, 'Node')
+            assert_type_extension(interface_type_extension, GraphQL::Language::Nodes::InterfaceTypeExtension, 'Node')
 
             assert_equal 0, interface_type_extension.directives.length
-            assert_equal 1, interface_type_extension.fields.length
-            assert_equal GraphQL::Language::Nodes::FieldDefinition, interface_type_extension.fields.first.class
-            assert_equal 'field', interface_type_extension.fields.first.name
+            assert_extension(interface_type_extension.fields, GraphQL::Language::Nodes::FieldDefinition, 1, 'field')
           end
 
           def test_it_parses_interface_type_extensions_with_directives
@@ -390,8 +378,8 @@ module GraphQL
             ')
 
             interface_type_extension = document.definitions.first
-            assert_object_type_extension(interface_type_extension, GraphQL::Language::Nodes::InterfaceTypeExtension, 'Node')
-            assert_directive(interface_type_extension, GraphQL::Language::Nodes::Directive, 1, 'directive')
+            assert_type_extension(interface_type_extension, GraphQL::Language::Nodes::InterfaceTypeExtension, 'Node')
+            assert_extension(interface_type_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'directive')
           end
 
           def test_it_parses_union_type_extension_with_union_members
@@ -400,13 +388,10 @@ module GraphQL
             ')
 
             union_type_extension = document.definitions.first
-            assert_object_type_extension(union_type_extension, GraphQL::Language::Nodes::UnionTypeExtension, 'BagOfThings')
+            assert_type_extension(union_type_extension, GraphQL::Language::Nodes::UnionTypeExtension, 'BagOfThings')
+            assert_extension(union_type_extension.types, GraphQL::Language::Nodes::TypeName, 2, 'A') 
 
             assert_equal 0, union_type_extension.directives.length
-
-            assert_equal 2, union_type_extension.types.length
-            assert_equal GraphQL::Language::Nodes::TypeName, union_type_extension.types.first.class
-            assert_equal 'A', union_type_extension.types.first.name
           end
 
           def test_it_parses_union_type_extension_with_directives_and_union_members
@@ -415,12 +400,9 @@ module GraphQL
             ')
 
             union_type_extension = document.definitions.first
-            assert_object_type_extension(union_type_extension, GraphQL::Language::Nodes::UnionTypeExtension, 'BagOfThings')
-            assert_directive(union_type_extension, GraphQL::Language::Nodes::Directive, 1, 'directive')
-
-            assert_equal 2, union_type_extension.types.length
-            assert_equal GraphQL::Language::Nodes::TypeName, union_type_extension.types.first.class
-            assert_equal 'A', union_type_extension.types.first.name
+            assert_type_extension(union_type_extension, GraphQL::Language::Nodes::UnionTypeExtension, 'BagOfThings')
+            assert_extension(union_type_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'directive')
+            assert_extension(union_type_extension.types, GraphQL::Language::Nodes::TypeName, 2, 'A')  
           end
 
           def test_it_parses_union_type_extension_with_directives
@@ -429,8 +411,8 @@ module GraphQL
             ')
 
             union_type_extension = document.definitions.first
-            assert_object_type_extension(union_type_extension, GraphQL::Language::Nodes::UnionTypeExtension, 'BagOfThings')
-            assert_directive(union_type_extension, GraphQL::Language::Nodes::Directive, 1, 'directive')
+            assert_type_extension(union_type_extension, GraphQL::Language::Nodes::UnionTypeExtension, 'BagOfThings')
+            assert_extension(union_type_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'directive')
 
             assert_equal 0, union_type_extension.types.length
           end
@@ -444,12 +426,12 @@ module GraphQL
             ')
 
             enum_type_extension = document.definitions.first
-            assert_object_type_extension(enum_type_extension, GraphQL::Language::Nodes::EnumTypeExtension, 'Status')
+            assert_type_extension(enum_type_extension, GraphQL::Language::Nodes::EnumTypeExtension, 'Status')
 
+            assert_equal GraphQL::Language::Nodes::EnumTypeExtension, enum_type_extension.class
+            assert_equal 'Status', enum_type_extension.name
+            assert_equal [2, 15], enum_type_extension.position
             assert_equal 0, enum_type_extension.directives.length
-            assert_equal 2, enum_type_extension.values.length
-            assert_equal GraphQL::Language::Nodes::EnumValueDefinition, enum_type_extension.values.first.class
-            assert_equal 'DRAFT', enum_type_extension.values.first.name
           end
 
           def test_it_parses_enum_type_extension_with_directives_and_values
@@ -461,12 +443,9 @@ module GraphQL
             ')
 
             enum_type_extension = document.definitions.first
-            assert_object_type_extension(enum_type_extension, GraphQL::Language::Nodes::EnumTypeExtension, 'Status')
-            assert_directive(enum_type_extension, GraphQL::Language::Nodes::Directive, 1, 'directive')
-
-            assert_equal 2, enum_type_extension.values.length
-            assert_equal GraphQL::Language::Nodes::EnumValueDefinition, enum_type_extension.values.first.class
-            assert_equal 'DRAFT', enum_type_extension.values.first.name
+            assert_type_extension(enum_type_extension, GraphQL::Language::Nodes::EnumTypeExtension, 'Status')
+            assert_extension(enum_type_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'directive')
+            assert_extension(enum_type_extension.values, GraphQL::Language::Nodes::EnumValueDefinition, 2, 'DRAFT')
           end
 
           def test_it_parses_enum_type_extension_with_directives
@@ -475,8 +454,8 @@ module GraphQL
             ')
 
             enum_type_extension = document.definitions.first
-            assert_object_type_extension(enum_type_extension, GraphQL::Language::Nodes::EnumTypeExtension, 'Status')
-            assert_directive(enum_type_extension, GraphQL::Language::Nodes::Directive, 1, 'directive')
+            assert_type_extension(enum_type_extension, GraphQL::Language::Nodes::EnumTypeExtension, 'Status')
+            assert_extension(enum_type_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'directive')
 
             assert_equal 0, enum_type_extension.values.length
           end
@@ -489,12 +468,9 @@ module GraphQL
             ')
 
             input_object_type_extension = document.definitions.first
-            assert_object_type_extension(input_object_type_extension, GraphQL::Language::Nodes::InputObjectTypeExtension, 'UserInput')
-
-            assert_equal 1, input_object_type_extension.fields.length
-            assert_equal GraphQL::Language::Nodes::InputValueDefinition, input_object_type_extension.fields.first.class
-            assert_equal 'login', input_object_type_extension.fields.first.name
-
+            assert_type_extension(input_object_type_extension, GraphQL::Language::Nodes::InputObjectTypeExtension, 'UserInput')
+            assert_extension(input_object_type_extension.fields, GraphQL::Language::Nodes::InputValueDefinition, 1, 'login')
+    
             assert_equal 0, input_object_type_extension.directives.length
           end
 
@@ -506,13 +482,9 @@ module GraphQL
             ')
 
             input_object_type_extension = document.definitions.first
-            assert_object_type_extension(input_object_type_extension, GraphQL::Language::Nodes::InputObjectTypeExtension, 'UserInput')
-
-            assert_equal 1, input_object_type_extension.fields.length
-            assert_equal GraphQL::Language::Nodes::InputValueDefinition, input_object_type_extension.fields.first.class
-            assert_equal 'login', input_object_type_extension.fields.first.name
-
-            assert_directive(input_object_type_extension, GraphQL::Language::Nodes::Directive, 1, 'deprecated')
+            assert_type_extension(input_object_type_extension, GraphQL::Language::Nodes::InputObjectTypeExtension, 'UserInput')
+            assert_extension(input_object_type_extension.fields, GraphQL::Language::Nodes::InputValueDefinition, 1, 'login')
+            assert_extension(input_object_type_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'deprecated')
           end
 
           def test_it_parses_input_object_type_extension_with_directives
@@ -521,11 +493,11 @@ module GraphQL
             ')
 
             input_object_type_extension = document.definitions.first
-            assert_object_type_extension(input_object_type_extension, GraphQL::Language::Nodes::InputObjectTypeExtension, 'UserInput')
+            assert_type_extension(input_object_type_extension, GraphQL::Language::Nodes::InputObjectTypeExtension, 'UserInput')
 
             assert_equal 0, input_object_type_extension.fields.length
 
-            assert_directive(input_object_type_extension, GraphQL::Language::Nodes::Directive, 1, 'deprecated')
+            assert_extension(input_object_type_extension.directives, GraphQL::Language::Nodes::Directive, 1, 'deprecated')
           end
 
           def test_it_parses_whole_definition_with_descriptions
