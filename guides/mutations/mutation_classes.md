@@ -153,3 +153,5 @@ class Mutations::AddStar < Mutations::BaseMutation
   end
 end
 ```
+
+In the above examples, `loads:` is provided a concrete type, but it also supports abstract types (i.e. interfaces and unions).
