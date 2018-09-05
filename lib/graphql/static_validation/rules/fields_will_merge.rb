@@ -349,8 +349,8 @@ module GraphQL
             return true
           end
 
-          i = i + 1 if i < parents1.size - 1
-          j = j + 1 if j < parents2.size - 1
+          i = i + 1 if i <= parents1.size - 1
+          j = j + 1 if j <= parents2.size - 1
         end
 
         false
