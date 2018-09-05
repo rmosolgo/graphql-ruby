@@ -105,9 +105,13 @@ module GraphQL
           @object.edge_nodes
         end
 
-        # TODO this will probably be wrapped with instrumentation which will break non-interpreters
         def edges
-          @object.edge_nodes.map { |n| self.class.edge_class.new(n, @object) }
+          if context[:__temp_running_interpreter]
+            @object.edge_nodes.map { |n| p [n, self.class.edge_class, @object]; self.class.edge_class.new(n, @object) }
+          else
+            # This is done by edges_instrumentation
+            @object.edge_nodes
+          end
         end
       end
     end

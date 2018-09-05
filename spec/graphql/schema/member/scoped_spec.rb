@@ -118,6 +118,19 @@ describe GraphQL::Schema::Member::Scoped do
       res = ScopeSchema.execute(query_str, context: {english: true})
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
       assert_equal ["Paperclip"], names
+
+      query_str = "
+      {
+        itemsConnection {
+          nodes {
+            name
+          }
+        }
+      }
+      "
+      res = ScopeSchema.execute(query_str, context: {english: true})
+      names = res["data"]["itemsConnection"]["nodes"].map { |e| e["name"] }
+      assert_equal ["Paperclip"], names
     end
 
     it "is called for abstract types" do

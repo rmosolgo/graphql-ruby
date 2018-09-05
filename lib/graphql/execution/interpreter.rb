@@ -9,6 +9,7 @@ module GraphQL
       # This method is the Executor API
       # TODO revisit Executor's reason for living.
       def execute(_ast_operation, _root_type, query)
+        query.context[:__temp_running_interpreter] = true
         @query = query
         @schema = query.schema
         evaluate
