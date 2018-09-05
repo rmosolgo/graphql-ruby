@@ -40,8 +40,8 @@ module GraphQL
 
         fragment_spreads.each_with_index do |fragment_spread, i|
           are_mutually_exclusive = mutually_exclusive?(
-            fragment_spread.parents.last,
-            parent_type
+            fragment_spread.parents,
+            [parent_type]
           )
 
           # (B) Then find conflicts between these fields and those represented by
@@ -58,8 +58,8 @@ module GraphQL
           # item in that same list (except for itself).
           fragment_spreads[i + 1..-1].each do |fragment_spread2|
             are_mutually_exclusive = mutually_exclusive?(
-              fragment_spread.parents.last,
-              fragment_spread2.parents.last
+              fragment_spread.parents,
+              fragment_spread2.parents
             )
 
             find_conflicts_between_fragments(
@@ -103,7 +103,7 @@ module GraphQL
         )
         fragment_fields2, fragment_spreads2 = fields_and_fragments_from_selection(
           fragment2,
-          parents: [*fragment_spread2, fragment_type2]
+          parents: [*fragment_spread2.parents, fragment_type2]
         )
 
         # (F) First, find all conflicts between these two collections of fields
@@ -187,7 +187,7 @@ module GraphQL
         node2 = field2.node
 
         are_mutually_exclusive = mutually_exclusive ||
-                                 mutually_exclusive?(parent_type1, parent_type2)
+                                 mutually_exclusive?(field1.parents, field2.parents)
 
         if !are_mutually_exclusive
           if node1.name != node2.name
@@ -215,14 +215,17 @@ module GraphQL
 
         return_type1 = field1.definition.type.unwrap
         return_type2 = field2.definition.type.unwrap
+        parents1 = [*field1.parents, return_type1]
+        parents2 = [*field2.parents, return_type2]
 
         fields, fragment_spreads = fields_and_fragments_from_selection(
           field1.node,
-          parents: [*field1.parents, return_type1])
+          parents: parents1
+        )
 
         fields2, fragment_spreads2 = fields_and_fragments_from_selection(
           field2.node,
-          parents: [*field2.parents, return_type2]
+          parents: parents2
         )
 
         # (H) First, collect all conflicts between these two collections of field.
@@ -231,30 +234,20 @@ module GraphQL
         # (I) Then collect conflicts between the first collection of fields and
         # those referenced by each fragment name associated with the second.
         fragment_spreads2.each do |fragment_spread|
-          fragment_is_mutually_exclusive = mutually_exclusive?(
-            return_type1,
-            fragment_spread.parents.last
-          )
-
           find_conflicts_between_fields_and_fragment(
             fragment_spread,
             fields,
-            mutually_exclusive: mutually_exclusive || fragment_is_mutually_exclusive,
+            mutually_exclusive: mutually_exclusive,
           )
         end
 
         # (I) Then collect conflicts between the second collection of fields and
         # those referenced by each fragment name associated with the first.
         fragment_spreads.each do |fragment_spread|
-          fragment_is_mutually_exclusive = mutually_exclusive?(
-            return_type2,
-            fragment_spread.parents.last
-          )
-
           find_conflicts_between_fields_and_fragment(
             fragment_spread,
             fields2,
-            mutually_exclusive: mutually_exclusive || fragment_is_mutually_exclusive,
+            mutually_exclusive: mutually_exclusive,
           )
         end
 
@@ -263,15 +256,10 @@ module GraphQL
         # names to each item in the second set of names.
         fragment_spreads.each do |frag1|
           fragment_spreads2.each do |frag2|
-            fragments_are_mutually_exclusive = mutually_exclusive?(
-              frag1.parents.last,
-              frag2.parents.last
-            )
-
             find_conflicts_between_fragments(
               frag1,
               frag2,
-              mutually_exclusive: mutually_exclusive || fragments_are_mutually_exclusive,
+              mutually_exclusive: mutually_exclusive
             )
           end
         end
@@ -296,11 +284,9 @@ module GraphQL
       end
 
       def fields_and_fragments_from_selection(node, parents:)
-        @fields_and_fragments_from_node[node] ||= begin
-          fields, fragment_spreads = find_fields_and_fragments(node.selections, parents: parents)
-          response_keys = fields.group_by { |f| f.node.alias || f.node.name }
-          [response_keys, fragment_spreads]
-        end
+        fields, fragment_spreads = find_fields_and_fragments(node.selections, parents: parents)
+        response_keys = fields.group_by { |f| f.node.alias || f.node.name }
+        [response_keys, fragment_spreads]
       end
 
       def find_fields_and_fragments(selections, parents:, fields: [], fragment_spreads: [])
@@ -348,8 +334,26 @@ module GraphQL
         "#{[frag1, frag2].sort.join('-')}-#{exclusive}"
       end
 
-      def mutually_exclusive?(type1, type2)
-        type1 != type2 && type1.kind.object? && type2.kind.object?
+      # Given two list of parents, find out if they are mutually exclusive
+      def mutually_exclusive?(parents1, parents2)
+        i = 0
+        j = 0
+
+        while i <= parents1.size - 1 && j <= parents2.size - 1 do
+          type1 = parents1[i]
+          type2 = parents2[j]
+
+          # If the types we're comparing are both different object types,
+          # they have to be mutually exclusive.
+          if type1 != type2 && type1.kind.object? && type2.kind.object?
+            return true
+          end
+
+          i = i + 1 if i < parents1.size - 1
+          j = j + 1 if j < parents2.size - 1
+        end
+
+        false
       end
     end
   end
