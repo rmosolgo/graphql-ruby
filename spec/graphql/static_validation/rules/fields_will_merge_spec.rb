@@ -39,13 +39,18 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         species: PetSpecies!
       }
 
+      interface Mammal {
+        name(surname: Boolean = false): String!
+        nickname: String
+      }
+
       interface Pet {
         name(surname: Boolean = false): String!
         nickname: String
         toys: [Toy!]!
       }
 
-      type Dog implements Pet {
+      type Dog implements Pet & Mammal {
         name(surname: Boolean = false): String!
         nickname: String
         doesKnowCommand(dogCommand: PetCommand): Boolean!
@@ -53,7 +58,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         toys: [Toy!]!
       }
 
-      type Cat implements Pet {
+      type Cat implements Pet & Mammal {
         name(surname: Boolean = false): String!
         nickname: String
         doesKnowCommand(catCommand: PetCommand): Boolean!
@@ -447,6 +452,53 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
             name: nickname
           }
         }
+      }
+    |}
+
+    it "passes rule" do
+      assert_equal [], errors
+    end
+  end
+
+  describe "same aliases not allowed on different interfaces" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Pet {
+            name
+          }
+          ... on Mammal {
+            name: nickname
+          }
+        }
+      }
+    |}
+
+    it "fails rule" do
+      assert_equal [
+        "Field 'name' has a field conflict: name or nickname?",
+      ], error_messages
+    end
+  end
+
+  describe "same aliases allowed on different parent interfaces and different concrete types" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Pet {
+            ...X
+          }
+          ... on Mammal {
+            ...Y
+          }
+        }
+      }
+
+      fragment X on Dog {
+        name
+      }
+      fragment Y on Cat {
+        name: nickname
       }
     |}
 

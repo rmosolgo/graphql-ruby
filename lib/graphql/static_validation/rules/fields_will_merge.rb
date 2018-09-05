@@ -180,9 +180,6 @@ module GraphQL
       end
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
-        parent_type1 = field1.parents.last
-        parent_type2 = field2.parents.last
-
         node1 = field1.node
         node2 = field2.node
 
