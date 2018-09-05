@@ -472,6 +472,40 @@ module Jazz
     end
   end
 
+  class RenameNamedEntity < GraphQL::Schema::RelayClassicMutation
+    argument :named_entity_id, ID, required: true, loads: NamedEntity
+    argument :new_name, String, required: true
+
+    field :named_entity, NamedEntity, null: false
+
+    def resolve(named_entity:, new_name:)
+      # doesn't actually update the "database"
+      dup_named_entity = named_entity.dup
+      dup_named_entity.name = new_name
+
+      {
+        named_entity: dup_named_entity
+      }
+    end
+  end
+
+  class RenamePerformingAct < GraphQL::Schema::RelayClassicMutation
+    argument :performing_act_id, ID, required: true, loads: PerformingAct
+    argument :new_name, String, required: true
+
+    field :performing_act, PerformingAct, null: false
+
+    def resolve(performing_act:, new_name:)
+      # doesn't actually update the "database"
+      dup_performing_act = performing_act.dup
+      dup_performing_act.name = new_name
+
+      {
+        performing_act: dup_performing_act
+      }
+    end
+  end
+
   class RenameEnsemble < GraphQL::Schema::RelayClassicMutation
     argument :ensemble_id, ID, required: true, loads: Ensemble
     argument :new_name, String, required: true
@@ -540,6 +574,8 @@ module Jazz
     field :add_instrument, mutation: AddInstrument
     field :add_sitar, mutation: AddSitar
     field :rename_ensemble, mutation: RenameEnsemble
+    field :rename_named_entity, mutation: RenameNamedEntity
+    field :rename_performing_act, mutation: RenamePerformingAct
     field :upvote_ensembles, mutation: UpvoteEnsembles
     field :upvote_ensembles_as_bands, mutation: UpvoteEnsemblesAsBands
     field :upvote_ensembles_ids, mutation: UpvoteEnsemblesIds

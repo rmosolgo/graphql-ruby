@@ -135,6 +135,42 @@ describe GraphQL::Schema::RelayClassicMutation do
       assert_equal "August Greene", res["data"]["renameEnsemble"]["ensemble"]["name"]
     end
 
+    it "loads arguments as objects when provided an interface type" do
+      query = <<-GRAPHQL
+        mutation($id: ID!, $newName: String!) {
+          renameNamedEntity(input: {namedEntityId: $id, newName: $newName}) {
+            namedEntity {
+              __typename
+              name
+            }
+          }
+        }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query, variables: { id: "Ensemble/Robert Glasper Experiment", newName: "August Greene"})
+      assert_equal "August Greene", res["data"]["renameNamedEntity"]["namedEntity"]["name"]
+      assert_equal "Ensemble", res["data"]["renameNamedEntity"]["namedEntity"]["__typename"]
+    end
+
+    it "loads arguments as objects when provided an union type" do
+      query = <<-GRAPHQL
+        mutation($id: ID!, $newName: String!) {
+          renamePerformingAct(input: {performingActId: $id, newName: $newName}) {
+            performingAct {
+              __typename
+              ... on Ensemble {
+                name
+              }
+            }
+          }
+        }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query, variables: { id: "Ensemble/Robert Glasper Experiment", newName: "August Greene"})
+      assert_equal "August Greene", res["data"]["renamePerformingAct"]["performingAct"]["name"]
+      assert_equal "Ensemble", res["data"]["renamePerformingAct"]["performingAct"]["__typename"]
+    end
+
     it "uses the `as:` name when loading" do
       band_query_str = query_str.sub("renameEnsemble", "renameEnsembleAsBand")
       res = Jazz::Schema.execute(band_query_str, variables: { id: "Ensemble/Robert Glasper Experiment", newName: "August Greene"})
