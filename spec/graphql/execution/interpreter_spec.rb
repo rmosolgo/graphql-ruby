@@ -13,11 +13,16 @@ describe GraphQL::Execution::Interpreter do
 
     class Expansion < GraphQL::Schema::Object
       field :sym, String, null: false
+      field :lazy_sym, String, null: false
       field :name, String, null: false
       field :cards, ["InterpreterTest::Card"], null: false
 
       def cards
         Query::CARDS.select { |c| c.expansion_sym == @object.sym }
+      end
+
+      def lazy_sym
+        Box.new(value: sym)
       end
     end
 
@@ -64,12 +69,19 @@ describe GraphQL::Execution::Interpreter do
         EXPANSIONS.find { |e| e.sym == sym }
       end
 
+      field :expansions, [Expansion], null: false
+      def expansions
+        EXPANSIONS
+      end
+
       CARDS = [
         OpenStruct.new(name: "Dark Confidant", colors: ["BLACK"], expansion_sym: "RAV"),
       ]
 
       EXPANSIONS = [
         OpenStruct.new(name: "Ravnica, City of Guilds", sym: "RAV"),
+        # This data has an error, for testing null propagation
+        OpenStruct.new(name: nil, sym: "XYZ"),
       ]
 
       field :find, [Entity], null: false do
@@ -164,5 +176,40 @@ describe GraphQL::Execution::Interpreter do
       "exp5" => {"name" => "Ravnica, City of Guilds"},
     }
     assert_equal expected_data, result["data"]
+  end
+
+  describe "null propagation" do
+    it "propagates nulls" do
+      query_str = <<-GRAPHQL
+      {
+        expansion(sym: "XYZ") {
+          name
+          sym
+          lazySym
+        }
+      }
+      GRAPHQL
+
+      res = InterpreterTest::Schema.execute(query_str)
+      # Although the expansion was found, its name of `nil`
+      # propagated to here
+      assert_nil res["data"].fetch("expansion")
+    end
+
+    it "propagates nulls in lists" do
+      query_str = <<-GRAPHQL
+      {
+        expansions {
+          name
+          sym
+          lazySym
+        }
+      }
+      GRAPHQL
+
+      res = InterpreterTest::Schema.execute(query_str)
+      # A null in one of the list items removed the whole list
+      assert_nil(res["data"])
+    end
   end
 end

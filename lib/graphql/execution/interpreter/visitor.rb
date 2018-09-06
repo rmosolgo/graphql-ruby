@@ -70,7 +70,7 @@ module GraphQL
           end
 
           field_name = node.name
-          field_defn = trace.types.last.fields[field_name]
+          field_defn = trace.types.last.unwrap.fields[field_name]
           is_introspection = false
           if field_defn.nil?
             field_defn = if trace.types.last == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
@@ -85,28 +85,31 @@ module GraphQL
           end
 
           trace.with_path(node.alias || node.name) do
-            object = trace.objects.last
-            if is_introspection
-              object = field_defn.owner.authorized_new(object, context)
-            end
-            kwarg_arguments = trace.arguments(field_defn, node)
-            # TODO: very shifty that these cached Hashes are being modified
-            if field_defn.extras.include?(:ast_node)
-              kwarg_arguments[:ast_node] = node
-            end
-            if field_defn.extras.include?(:execution_errors)
-              kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, node, trace.path.dup)
-            end
+            trace.with_type(field_defn.type) do
+              object = trace.objects.last
+              if is_introspection
+                object = field_defn.owner.authorized_new(object, context)
+              end
+              kwarg_arguments = trace.arguments(field_defn, node)
+              # TODO: very shifty that these cached Hashes are being modified
+              if field_defn.extras.include?(:ast_node)
+                kwarg_arguments[:ast_node] = node
+              end
+              if field_defn.extras.include?(:execution_errors)
+                kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, node, trace.path.dup)
+              end
 
-            result = field_defn.resolve_field_2(object, kwarg_arguments, context)
+              result = field_defn.resolve_field_2(object, kwarg_arguments, context)
 
-            trace.after_lazy(result) do |trace, inner_result|
-              trace.visitor.continue_field(field_defn.type, inner_result) do |final_trace|
-                final_trace.debug("Visiting children at #{final_trace.path}")
-                final_trace.visitor.on_abstract_node(node, parent)
+              trace.after_lazy(result) do |trace, inner_result|
+                trace.visitor.continue_field(field_defn.type, inner_result) do |final_trace|
+                  final_trace.debug("Visiting children at #{final_trace.path}")
+                  final_trace.visitor.on_abstract_node(node, parent)
+                end
               end
             end
           end
+
           return node, parent
         end
 
@@ -158,10 +161,13 @@ module GraphQL
             end
           when TypeKinds::LIST
             trace.write([])
+            inner_type = type.of_type
             value.each_with_index.map do |inner_value, idx|
               trace.with_path(idx) do
                 trace.after_lazy(inner_value) do |inner_trace, inner_v|
-                  inner_trace.visitor.continue_field(type.of_type, inner_v) { |t| yield(t) }
+                  trace.with_type(inner_type) do
+                    inner_trace.visitor.continue_field(inner_type, inner_v) { |t| yield(t) }
+                  end
                 end
               end
             end

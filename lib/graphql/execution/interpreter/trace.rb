@@ -13,17 +13,29 @@ module GraphQL
       class Trace
         extend Forwardable
         def_delegators :query, :schema, :context
-        attr_reader :query, :path, :objects, :result, :types, :visitor, :lazies, :parent_trace
+        attr_reader :query, :path, :objects, :types, :visitor, :lazies, :parent_trace
 
         def initialize(query:)
+          # shared by the parent and all children:
           @query = query
-          @path = []
+          @debug = query.context[:debug_interpreter]
           @result = {}
+          @parent_trace = nil
+          @lazies = []
+          @types_at_paths = Hash.new { |h, k| h[k] = {} }
+          # Dup'd when the parent forks:
+          @path = []
           @objects = []
           @types = []
-          @lazies = []
-          @parent_trace = nil
           @visitor = Visitor.new(@query.document, trace: self)
+        end
+
+        def result
+          if @result[:__completely_nulled]
+            nil
+          else
+            @result
+          end
         end
 
         # Copy bits of state that should be independent:
@@ -48,6 +60,8 @@ module GraphQL
 
         def with_type(type)
           @types << type
+          # TODO this seems janky
+          set_type_at_path(type)
           r = yield
           @types.pop
           r
@@ -71,16 +85,49 @@ TRACE
 
         # TODO delegate to a collector which does as it pleases with patches
         def write(value)
-          write_target = @result ||= {}
-          @path.each_with_index do |path_part, idx|
-            next_part = @path[idx + 1]
-            debug [write_target, path_part, next_part]
-            if next_part.nil?
-              write_target[path_part] = value
-            elsif next_part.is_a?(Integer)
-              write_target = write_target[path_part] ||= []
+          if @result[:__completely_nulled]
+            nil
+          else
+            res = @result ||= {}
+            write_into_result(res, @path, value)
+          end
+        end
+
+        def write_into_result(result, path, value)
+          if result == false
+            # The whole response was nulled out, whoa
+            nil
+          elsif value.nil? && type_at(path).kind.non_null?
+            # This nil is invalid, try writing it at the previous spot
+            propagate_path = path[0..-2]
+            debug "propagating_nil at #{path} (#{type_at(path).inspect})"
+            if propagate_path.empty?
+              # TODO this is a hack, but we need
+              # some way for child traces to communicate
+              # this to the parent.
+              @result[:__completely_nulled] = true
             else
-              write_target = write_target[path_part] ||= {}
+              write_into_result(result, propagate_path, value)
+            end
+          else
+            write_target = result
+            path.each_with_index do |path_part, idx|
+              next_part = path[idx + 1]
+              # debug "path: #{[write_target, path_part, next_part]}"
+              if next_part.nil?
+                debug "writing: (#{result.object_id}) #{path} -> #{value.inspect} (#{type_at(path).inspect})"
+                write_target[path_part] = value
+              elsif write_target.fetch(path_part, :x).nil?
+                # TODO how can we _halt_ execution when this happens?
+                # rather than calculating the value but failing to write it,
+                # can we just not resolve those lazy things?
+                debug "Breaking #{path} on propagated `nil`"
+                break
+              elsif next_part.is_a?(Integer)
+                write_target = write_target[path_part] ||= []
+              else
+                write_target = write_target[path_part] ||= {}
+              end
             end
           end
           nil
@@ -171,7 +218,45 @@ TRACE
         end
 
         def debug(str)
-          # puts "[T#{trace_id}] #{str}"
+          @debug && (puts "[T#{trace_id}] #{str}")
+        end
+
+        # TODO this is kind of a hack.
+        # To propagate nulls, we have to know what the field type was
+        # at previous parts of the response.
+        # This hash matches the response
+        def type_at(path)
+          t = @types_at_paths
+          path.each do |part|
+            if part.is_a?(Integer)
+              part = 0
+            end
+            t = t[part] || (raise("Invariant: #{part.inspect} not found in #{t}"))
+          end
+          t = t[:__type]
+          t
+        end
+
+        def set_type_at_path(type)
+          if type.is_a?(GraphQL::Schema::LateBoundType)
+            # TODO need a general way for handling these in the interpreter,
+            # since they aren't removed during the cache-building stage.
+            type = schema.types[type.name]
+          end
+
+          types = @types_at_paths
+          @path.each do |part|
+            if part.is_a?(Integer)
+              part = 0
+            end
+
+            types = types[part] ||= {}
+          end
+          # Use this magic key so that the hash contains:
+          # - string keys for nested fields
+          # - :__type for the object type of a selection
+          types[:__type] ||= type
+          nil
         end
       end
     end
