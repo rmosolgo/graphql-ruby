@@ -110,7 +110,7 @@ describe GraphQL::Query::Executor do
       DummyQueryType = GraphQL::ObjectType.define do
         name "Query"
         field :dairy do
-          type Dummy::DairyType
+          type Dummy::Dairy.graphql_definition
           resolve ->(t, a, c) {
             raise if resolved
             resolved = true
@@ -119,7 +119,7 @@ describe GraphQL::Query::Executor do
         end
       end
 
-      GraphQL::Schema.define(query: DummyQueryType, mutation: Dummy::DairyAppMutationType, resolve_type: ->(a,b,c) { :pass }, id_from_object: :pass)
+      GraphQL::Schema.define(query: DummyQueryType, mutation: Dummy::DairyAppMutation.graphql_definition, resolve_type: ->(a,b,c) { :pass }, id_from_object: :pass)
     }
     let(:variables) { nil }
     let(:query_string) { %|

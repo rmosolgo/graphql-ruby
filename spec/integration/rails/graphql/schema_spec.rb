@@ -47,9 +47,9 @@ describe GraphQL::Schema do
     it "returns a list of the schema's root types" do
       assert_equal(
         [
-          Dummy::DairyAppQueryType,
-          Dummy::DairyAppMutationType.graphql_definition,
-          Dummy::SubscriptionType
+          Dummy::DairyAppQuery.graphql_definition,
+          Dummy::DairyAppMutation.graphql_definition.graphql_definition,
+          Dummy::Subscription.graphql_definition
         ],
         schema.root_types
       )
@@ -58,7 +58,8 @@ describe GraphQL::Schema do
 
   describe "#references_to" do
     it "returns a list of Field and Arguments of that type" do
-      assert_equal [schema.types["Query"].fields["cow"]], schema.references_to("Cow")
+      cow_field = schema.get_field("Query", "cow")
+      assert_equal [cow_field], schema.references_to("Cow")
     end
 
     it "returns an empty list when type is not referenced by any field or argument" do
@@ -450,7 +451,7 @@ type Query {
     it "returns fields by type or type name" do
       field = schema.get_field("Cheese", "id")
       assert_instance_of GraphQL::Field, field
-      field_2 = schema.get_field(Dummy::CheeseType, "id")
+      field_2 = schema.get_field(Dummy::Cheese.graphql_definition, "id")
       assert_equal field, field_2
     end
   end
