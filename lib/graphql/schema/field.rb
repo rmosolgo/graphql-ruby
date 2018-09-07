@@ -186,7 +186,7 @@ module GraphQL
 
         if definition_block
           if definition_block.arity == 1
-            instance_exec(self, &definition_block)
+            yield self
           else
             instance_eval(&definition_block)
           end
