@@ -116,7 +116,7 @@ describe GraphQL::Field do
 
   describe "#metadata" do
     it "accepts user-defined metadata" do
-      similar_cheese_field = Dummy::CheeseType.get_field("similarCheese")
+      similar_cheese_field = Dummy::Cheese.graphql_definition.get_field("similarCheese")
       assert_equal [:cheeses, :milks], similar_cheese_field.metadata[:joins]
     end
   end

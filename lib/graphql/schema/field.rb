@@ -126,7 +126,7 @@ module GraphQL
       # @param complexity [Numeric] When provided, set the complexity for this field
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, trace: nil, complexity: 1, extras: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
 
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
@@ -170,6 +170,7 @@ module GraphQL
         @extras = extras
         @resolver_class = resolver_class
         @scope = scope
+        @trace = trace
 
         # Override the default from HasArguments
         @own_arguments = {}
@@ -256,6 +257,10 @@ module GraphQL
             field_defn.mutation = @resolver_class
           end
           field_defn.metadata[:resolver] = @resolver_class
+        end
+
+        if !@trace.nil?
+          field_defn.trace = @trace
         end
 
         field_defn.resolve = self.method(:resolve_field)

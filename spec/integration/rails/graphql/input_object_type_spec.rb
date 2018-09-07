@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::InputObjectType do
-  let(:input_object) { Dummy::DairyProductInputType }
+  let(:input_object) { Dummy::DairyProductInput.graphql_definition }
   it "has a description" do
     assert(input_object.description)
   end
@@ -113,7 +113,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has correct problem explanation" do
-          expected = Dummy::DairyAnimalEnum.validate_isolated_input("KOALA").problems[0]["explanation"]
+          expected = Dummy::DairyAnimal.graphql_definition.validate_isolated_input("KOALA").problems[0]["explanation"]
 
           source_problem = result.problems.detect { |p| p["path"] == ["source"] }
           actual = source_problem["explanation"]
@@ -191,7 +191,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe "list with one invalid element" do
-        let(:list_type) { GraphQL::ListType.new(of_type: Dummy::DairyProductInputType) }
+        let(:list_type) { GraphQL::ListType.new(of_type: Dummy::DairyProductInput.graphql_definition) }
         let(:result) do
           list_type.validate_isolated_input([
             { "source" => "COW", "fatContent" => 0.4 },
@@ -213,7 +213,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has problem with correct explanation" do
-          expected = Dummy::DairyAnimalEnum.validate_isolated_input("KOALA").problems[0]["explanation"]
+          expected = Dummy::DairyAnimal.graphql_definition.validate_isolated_input("KOALA").problems[0]["explanation"]
           actual = result.problems[0]["explanation"]
           assert_equal(expected, actual)
         end

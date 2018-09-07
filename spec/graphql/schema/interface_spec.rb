@@ -83,11 +83,11 @@ describe GraphQL::Schema::Interface do
       interface = Module.new do
         include GraphQL::Schema::Interface
         graphql_name "MyInterface"
-        orphan_types Dummy::CheeseType, Dummy::HoneyType
+        orphan_types Dummy::Cheese, Dummy::Honey
       end
 
       interface_type = interface.to_graphql
-      assert_equal [Dummy::CheeseType, Dummy::HoneyType], interface_type.orphan_types
+      assert_equal [Dummy::Cheese, Dummy::Honey], interface_type.orphan_types
     end
   end
 
