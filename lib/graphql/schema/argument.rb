@@ -97,12 +97,11 @@ module GraphQL
       # Used by the runtime.
       # @api private
       def prepare_value(obj, value)
-        case @prepare
-        when nil
+        if @prepare.nil?
           value
-        when Symbol, String
+        elsif @prepare.is_a?(String) || @prepare.is_a?(Symbol)
           obj.public_send(@prepare, value)
-        when ->(p) { p.respond_to? :call }
+        elsif @prepare.respond_to?(:call)
           @prepare.call(value, obj.context)
         else
           raise "Invalid prepare for #{@owner.name}.name: #{@prepare.inspect}"
