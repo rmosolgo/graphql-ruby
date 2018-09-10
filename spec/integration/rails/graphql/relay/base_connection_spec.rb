@@ -77,11 +77,11 @@ describe GraphQL::Relay::BaseConnection do
       assert_equal "Person/1", conn.decode("1/nosreP")
     end
 
-    it "defaults to base64" do
+    it "defaults to base64 (urlsafe_base64 without padding)" do
       conn = GraphQL::Relay::BaseConnection.new([], {}, context: nil)
 
-      assert_equal "UGVyc29uLzE=", conn.encode("Person/1")
-      assert_equal "Person/1", conn.decode("UGVyc29uLzE=")
+      assert_equal "UGVyc29uLzE", conn.encode("Person/1")
+      assert_equal "Person/1", conn.decode("UGVyc29uLzE=") # can decode with padding
     end
 
     it "handles trimmed base64" do
