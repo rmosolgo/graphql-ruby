@@ -186,7 +186,6 @@ module GraphQL
     attr_accessor :arguments_class
 
     attr_writer :connection
-    attr_writer :introspection
 
     # @return [nil, String] Prefix for subscription names from this field
     attr_accessor :subscription_scope
@@ -235,6 +234,11 @@ module GraphQL
     # @return [Boolean] Is this field a predefined introspection field?
     def introspection?
       @introspection
+    end
+
+    def introspection=(new_introspection_value)
+      @introspection = new_introspection_value
+      @complexity = 0 if introspection?
     end
 
     # Get a value for this field

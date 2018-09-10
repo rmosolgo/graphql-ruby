@@ -243,4 +243,13 @@ describe GraphQL::Field do
       assert_respond_to field_with_class.resolve_proc, :call
     end
   end
+
+  describe "#introspection" do
+    it "sets complexity to 0 when introspection" do
+      field = GraphQL::Field.define do
+        introspection true
+      end
+      assert_equal 0, field.complexity
+    end
+  end
 end
