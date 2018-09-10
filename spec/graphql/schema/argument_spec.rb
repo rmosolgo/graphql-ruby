@@ -13,6 +13,15 @@ describe GraphQL::Schema::Argument do
 
         argument :aliased_arg, String, required: false, as: :renamed
         argument :prepared_arg, Int, required: false, prepare: :multiply
+        argument :prepared_by_proc_arg, Int, required: false, prepare: ->(val, context) { context[:multiply_by] * val }
+
+        class Multiply
+          def call(val, context)
+            context[:multiply_by] * val
+          end
+        end
+
+        argument :prepared_by_callable_arg, Int, required: false, prepare: Multiply.new
       end
 
       def field(**args)
@@ -92,6 +101,24 @@ describe GraphQL::Schema::Argument do
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
       assert_equal '{:prepared_arg=>15}', res["data"]["field"]
+    end
+    it "calls the method on the provided Proc" do
+      query_str = <<-GRAPHQL
+      { field(preparedByProcArg: 5) }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
+      # Make sure it's getting the renamed symbol:
+      assert_equal '{:prepared_by_proc_arg=>15}', res["data"]["field"]
+    end
+    it "calls the method on the provided callable object" do
+      query_str = <<-GRAPHQL
+      { field(preparedByCallableArg: 5) }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
+      # Make sure it's getting the renamed symbol:
+      assert_equal '{:prepared_by_callable_arg=>15}', res["data"]["field"]
     end
   end
 end
