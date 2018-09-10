@@ -79,12 +79,12 @@ module GraphQL
         }
 
         visitor[Nodes::Field].enter << ->(ast_node, ast_parent) {
-          if skip?(ast_node, query)
-            skip_nodes.add(ast_node)
-          end
+          rewritten_ast_node = rewrite_ast_node(ast_node, query)
 
-          if skip_nodes.none?
-            node_name = ast_node.alias || ast_node.name
+          if rewritten_ast_node.nil?
+            skip_nodes.add(ast_node)
+          else
+            node_name = rewritten_ast_node.alias || rewritten_ast_node.name
             parent_nodes = nodes_stack.last
             next_nodes = []
 
@@ -103,7 +103,7 @@ module GraphQL
                     query: query,
                     return_type: field_return_type,
                   )
-                  node.ast_nodes << ast_node
+                  node.ast_nodes << rewritten_ast_node
                   node.definitions << field_defn
                   next_nodes << node
                 end
@@ -154,6 +154,23 @@ module GraphQL
             end
           end
         end
+      end
+
+      def rewrite_ast_node(ast_node, query)
+        rewritten_node = ast_node
+        directives = ast_node.directives.select do |n|
+          n.respond_to?(:resolve_field_rewrite) && !n.resolve_field_rewrite.nil?
+        end
+        directives.each do |directive_ast_node|
+          name = directive_ast_node.name
+          directive_defn = query.schema.directives[name]
+          directive_args = query.arguments_for(directive_ast_node, directive_defn)
+          rewritten_node = directive_defn.resolve_field_rewrite.call(directive_args, ast_node, query)
+          if rewritten_node.nil?
+            return nil
+          end
+        end
+        return rewritten_node
       end
 
       def skip?(ast_node, query)
