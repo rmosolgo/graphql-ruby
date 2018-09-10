@@ -90,6 +90,31 @@ describe GraphQL::Types::ISO8601DateTime do
       full_res = DateTimeTest::Schema.execute(query_str, variables: { date: date_str })
       assert_equal date_str, full_res["data"]["parseDate"]["iso8601"]
     end
+
+    describe "with time_precision = 3 (i.e. 'with milliseconds')" do
+      before do
+        @tp = GraphQL::Types::ISO8601DateTime.time_precision
+        GraphQL::Types::ISO8601DateTime.time_precision = 3
+      end
+
+      after do
+        GraphQL::Types::ISO8601DateTime.time_precision = @tp
+      end
+
+      it "returns a string" do
+        query_str = <<-GRAPHQL
+        query($date: ISO8601DateTime!){
+          parseDate(date: $date) {
+            iso8601
+          }
+        }
+        GRAPHQL
+
+        date_str = "2010-02-02T22:30:30.123-06:00"
+        full_res = DateTimeTest::Schema.execute(query_str, variables: { date: date_str })
+        assert_equal date_str, full_res["data"]["parseDate"]["iso8601"]
+      end
+    end
   end
 
   describe "structure" do
