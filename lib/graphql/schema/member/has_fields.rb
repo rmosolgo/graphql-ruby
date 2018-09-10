@@ -119,7 +119,8 @@ ERR
           end
           default_resolve_module.module_eval <<-RUBY, __FILE__, __LINE__ + 1
             def #{method_name}(**args)
-              field_inst = self.class.fields[#{field_key}] || raise(%|Failed to find field #{field_key} for \#{self.class} among \#{self.class.fields.keys}|)
+              @field_instances ||= self.class.fields
+              field_inst = @field_instances[#{field_key}] || raise(%|Failed to find field #{field_key} for \#{self.class} among \#{@field_instances.keys}|)
               field_inst.resolve_field_method(self, args, context)
             end
           RUBY
