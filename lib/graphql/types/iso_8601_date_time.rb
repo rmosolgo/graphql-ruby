@@ -15,10 +15,24 @@ module GraphQL
     class ISO8601DateTime < GraphQL::Schema::Scalar
       description "An ISO 8601-encoded datetime"
 
+      # It's not compatible with Rails' default,
+      # i.e. ActiveSupport::JSON::Encoder.time_precision (3 by default)
+      DEFAULT_TIME_PRECISION = 0
+
+      # @return [Integer]
+      def self.time_precision
+        @time_precision || DEFAULT_TIME_PRECISION
+      end
+
+      # @param [Integer] value
+      def self.time_precision=(value)
+        @time_precision = value
+      end
+
       # @param value [DateTime]
       # @return [String]
       def self.coerce_result(value, _ctx)
-        value.iso8601
+        value.iso8601(time_precision)
       end
 
       # @param str_value [String]
