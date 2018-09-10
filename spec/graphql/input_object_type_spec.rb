@@ -16,9 +16,9 @@ describe GraphQL::InputObjectType do
           argument :foo, TestEnum, 'TestEnum', required: false, default_value: 'a'
         end
 
-        test = TestInput.to_graphql
-
-        assert_equal test.coerce_input({})[:foo], 'a'
+        test_input_type = TestInput.to_graphql
+        default_test_input_value = test_input_type.coerce_isolated_input({})
+        assert_equal default_test_input_value[:foo], 'a'
       end
     end
   end
