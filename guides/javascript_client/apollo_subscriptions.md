@@ -36,7 +36,7 @@ For example:
 import { ApolloLink } from 'apollo-link';
 import { ApolloClient } from 'apollo-client';
 import { HttpLink } from 'apollo-link-http';
-import Cache from 'apollo-cache-inmemory';
+import { InMemoryCache } from 'apollo-cache-inmemory';
 // Load Pusher and create a client
 import Pusher from "pusher-js"
 var pusherClient = new Pusher("your-app-key", { cluster: "us2" })
@@ -56,7 +56,7 @@ const link = ApolloLink.from([pusherLink, httpLink])
 // Initialize the client
 const client = new ApolloClient({
   link: link,
-  cache: new Cache()
+  cache: new InMemoryCache()
 });
 ```
 
@@ -77,7 +77,7 @@ For example:
 import { ApolloLink } from 'apollo-link';
 import { ApolloClient } from 'apollo-client';
 import { HttpLink } from 'apollo-link-http';
-import Cache from 'apollo-cache-inmemory';
+import { InMemoryCache } from 'apollo-cache-inmemory';
 import ActionCable from 'actioncable';
 import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink';
 
@@ -102,7 +102,7 @@ const link = ApolloLink.split(
 
 const client = new ApolloClient({
   link: link,
-  cache: new Cache()
+  cache: new InMemoryCache()
 });
 ```
 

@@ -49,8 +49,7 @@ module GraphQL
         end
 
         module TestMiddleware
-          # TODO: Once deprecated `next_middleware` argument becomes unsupported, add `&` to the argument
-          def self.call(parent_type, parent_object, field_definition, field_args, query_context, next_middleware)
+          def self.call(parent_type, parent_object, field_definition, field_args, query_context, &next_middleware)
             query_context[:middleware_log] && query_context[:middleware_log] << field_definition.name
             next_middleware.call
           end

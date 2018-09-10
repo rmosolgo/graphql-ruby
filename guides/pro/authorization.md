@@ -9,6 +9,11 @@ index: 2
 pro: true
 ---
 
+__NOTE:__ A new {% internal_link "Pundit integration", "/authorization/pundit_integration" %} and {% internal_link "CanCan integration",
+"/authorization/can_can_integration" %} are available. They leverage GraphQL-Ruby's new {% internal_link "built-in auth", "/authorization/overview" %} system and has better support for inheritance and customization. If possible, use those instead!
+
+------
+
 `GraphQL::Pro` provides a comprehensive, unified authorization framework for the GraphQL runtime.
 
 Fields and types can be [authorized at runtime](#runtime-authorization), [rejected during validation](#access-authorization), or [hidden entirely](#visibility-authorization). Default authorization can be [applied at schema-level](#fallback-authorization)
@@ -310,6 +315,8 @@ When a resolve function returns an `ActiveRecord::Relation`, the policy's [`Scop
 See [Scoping](#scoping) for details.
 
 ## CanCan
+
+__NOTE:__ A new {% internal_link "CanCan integration", "/authorization/can_can_integration" %} is available. It leverages GraphQL-Ruby's new {% internal_link "built-in auth", "/authorization/overview" %} system and has better support for inheritance and customization. If possible, use that one instead!
 
 `GraphQL::Pro` includes built-in support for [CanCan](https://github.com/CanCanCommunity/cancancan):
 

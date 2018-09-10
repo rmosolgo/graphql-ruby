@@ -89,3 +89,69 @@ class Types::Mutation < Types::BaseObject
   field :create_comment, mutation: Mutations::CreateComment
 end
 ```
+
+## Auto-loading arguments
+
+In most cases, a GraphQL mutation will act against a given global relay ID. Loading objects from these global relay IDs can require a lot of boilerplate code in the mutation's resolver.
+
+An alternative approach is to use the `loads:` argument when defining the argument:
+
+```ruby
+class Mutations::AddStar < Mutations::BaseMutation
+  argument :post_id, ID, required: true, loads: Types::Post
+
+  field :post, Types::Post, null: true
+
+  def resolve(post:)
+    post.star
+
+    {
+      post: post,
+    }
+  end
+end
+```
+
+By specifying that the `post_id` argument loads a `Types::Post` object type, a `Post` object will be loaded via {% internal_link "`Schema#object_from_id`", "/schema/definition.html#object-identification-hooks" %} with the provided `post_id`.
+
+All arguments that end in `_id` and use the `loads:` method will have their `_id` suffix removed. For example, the mutation resolver above receives a `post` argument which contains the loaded object, instead of a `post_id` argument.
+
+The `loads:` option also works with list of IDs, for example:
+
+```ruby
+class Mutations::AddStars < Mutations::BaseMutation
+  argument :post_ids, [ID], required: true, loads: Types::Post
+
+  field :posts, [Types::Post], null: true
+
+  def resolve(posts:)
+    posts.map(&:star)
+
+    {
+      posts: posts,
+    }
+  end
+end
+```
+
+All arguments that end in `_ids` and use the `loads:` method will have their `_ids` suffix removed and an `s` appended to their name. For example, the mutation resolver above receives a `posts` argument which contains all the loaded objects, instead of a `post_ids` argument.
+
+In some cases, you may want to control the resulting argument name. This can be done using the `as:` argument, for example:
+
+```ruby
+class Mutations::AddStar < Mutations::BaseMutation
+  argument :post_id, ID, required: true, loads: Types::Post, as: :something
+
+  field :post, Types::Post, null: true
+
+  def resolve(something:)
+    something.star
+
+    {
+      post: something
+    }
+  end
+end
+```
+
+In the above examples, `loads:` is provided a concrete type, but it also supports abstract types (i.e. interfaces and unions).

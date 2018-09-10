@@ -8,6 +8,21 @@
 
 ### Bug fixes
 
+## 1.8.8 (27 Aug 2018)
+
+### Bug fixes
+
+- When using `RelayClassicMutation`, `client_mutation_id` will no longer be passed to `authorized?` method #1771
+- Fix issue in schema upgrader script which would cause `.to_non_null_type` calls in type definition to be ignored #1783
+- Ensure enum values respond to `graphql_name` #1792
+- Fix infinite resolution bug that could occur when an exception not inheriting from `StandardError` is thrown #1804
+
+### New features
+
+- Add `#path` method to schema members #1766
+- Add `as:` argument to allow overriding the name of the argument when using `loads:` #1773
+- Add support for list of IDs when using `loads:` in an argument definition #1797
+
 ## 1.8.7 (9 Aug 2018)
 
 ### Breaking changes

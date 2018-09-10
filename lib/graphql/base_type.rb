@@ -187,7 +187,7 @@ module GraphQL
         resolve_related_type(type_arg.call)
       when String
         # Get a constant by this name
-        Object.const_get(type_arg)
+        resolve_related_type(Object.const_get(type_arg))
       else
         if type_arg.respond_to?(:graphql_definition)
           type_arg.graphql_definition

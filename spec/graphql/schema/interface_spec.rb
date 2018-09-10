@@ -4,6 +4,12 @@ require "spec_helper"
 describe GraphQL::Schema::Interface do
   let(:interface) { Jazz::GloballyIdentifiableType }
 
+  describe ".path" do
+    it "is the name" do
+      assert_equal "GloballyIdentifiable", interface.path
+    end
+  end
+
   describe "type info" do
     it "tells its type info" do
       assert_equal "GloballyIdentifiable", interface.graphql_name
@@ -77,11 +83,11 @@ describe GraphQL::Schema::Interface do
       interface = Module.new do
         include GraphQL::Schema::Interface
         graphql_name "MyInterface"
-        orphan_types Dummy::CheeseType, Dummy::HoneyType
+        orphan_types Dummy::Cheese, Dummy::Honey
       end
 
       interface_type = interface.to_graphql
-      assert_equal [Dummy::CheeseType, Dummy::HoneyType], interface_type.orphan_types
+      assert_equal [Dummy::Cheese, Dummy::Honey], interface_type.orphan_types
     end
   end
 

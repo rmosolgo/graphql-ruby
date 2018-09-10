@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::EnumType do
-  let(:enum) { Dummy::DairyAnimalEnum }
+  let(:enum) { Dummy::DairyAnimal.graphql_definition }
 
   it "coerces names to underlying values" do
     assert_equal("YAK", enum.coerce_isolated_input("YAK"))
@@ -128,6 +128,11 @@ describe GraphQL::EnumType do
     goat = GraphQL::EnumType::EnumValue.define(name: "GOAT")
     enum = GraphQL::EnumType.define(name: "DairyAnimal", values: [cow, goat])
     assert_equal({ "COW" => cow, "GOAT" => goat }, enum.values)
+  end
+
+  it "values respond to graphql_name" do
+    cow = GraphQL::EnumType::EnumValue.define(name: "COW")
+    assert_equal("COW", cow.graphql_name)
   end
 
   describe "#dup" do

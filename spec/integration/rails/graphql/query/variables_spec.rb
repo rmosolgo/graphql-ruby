@@ -69,21 +69,21 @@ describe GraphQL::Query::Variables do
       it "checks for string matches" do
         # These get merged into all the values above
         default_values = {
-          "originDairy"=>"Sugar Hollow Dairy",
-          "organic"=>false,
-          "order_by"=>{"direction"=>"ASC"}
+          origin_dairy: "Sugar Hollow Dairy",
+          organic: false,
+          order_by: { direction: "ASC" },
         }
 
         expected_input_1 = {
-          "source" => 1,
-          "fatContent" => 0.99,
+          source: 1,
+          fat_content: 0.99,
         }.merge(default_values)
 
         assert_equal(expected_input_1, variables["dairy_product_1"].to_h)
 
         expected_input_2 = {
-          "source" => :donkey,
-          "fatContent" => 0.89,
+          source: :donkey,
+          fat_content: 0.89,
         }.merge(default_values)
         assert_equal(expected_input_2, variables["dairy_product_2"].to_h)
       end

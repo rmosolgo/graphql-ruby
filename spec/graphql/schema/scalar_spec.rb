@@ -2,6 +2,12 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Scalar do
+  describe ".path" do
+    it "is the name" do
+      assert_equal "String", GraphQL::Types::String.path
+    end
+  end
+
   describe "in queries" do
     it "becomes output" do
       query_str = <<-GRAPHQL

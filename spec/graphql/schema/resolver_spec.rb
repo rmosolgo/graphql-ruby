@@ -192,28 +192,45 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class PrepResolver9Array < BaseResolver
+      argument :int_ids, [ID], required: true, loads: HasValue, as: :ints
+      # Make sure the lazy object is resolved properly:
+      type [HasValue], null: false
+      def object_from_id(type, id, ctx)
+        # Make sure a lazy object is handled appropriately
+        LazyBlock.new {
+          # Make sure that the right type ends up here
+          id.to_i + type.graphql_name.length
+        }
+      end
+
+      def resolve(ints:)
+        ints.map { |int| int * 3}
+      end
+    end
+
     class PrepResolver10 < BaseResolver
       argument :int1, Integer, required: true
-      argument :int2, Integer, required: true
+      argument :int2, Integer, required: true, as: :integer_2
       type Integer, null: true
-      def authorized?(int1:, int2:)
-        if int1 + int2 > context[:max_int]
+      def authorized?(int1:, integer_2:)
+        if int1 + integer_2 > context[:max_int]
           raise GraphQL::ExecutionError, "Inputs too big"
-        elsif context[:min_int] && (int1 + int2 < context[:min_int])
+        elsif context[:min_int] && (int1 + integer_2 < context[:min_int])
           false
         else
           true
         end
       end
 
-      def resolve(int1:, int2:)
-        int1 + int2
+      def resolve(int1:, integer_2:)
+        int1 + integer_2
       end
     end
 
     class PrepResolver11 < PrepResolver10
-      def authorized?(int1:, int2:)
-        LazyBlock.new { super(int1: int1 * 2, int2: int2) }
+      def authorized?(int1:, integer_2:)
+        LazyBlock.new { super(int1: int1 * 2, integer_2: integer_2) }
       end
     end
 
@@ -242,6 +259,17 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class PrepResolver14 < GraphQL::Schema::RelayClassicMutation
+      field :number, Integer, null: false
+
+      def authorized?
+        true
+      end
+
+      def resolve
+        { number: 1 }
+      end
+    end
 
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
@@ -274,10 +302,12 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_6, resolver: PrepResolver6
       field :prep_resolver_7, resolver: PrepResolver7
       field :prep_resolver_9, resolver: PrepResolver9
+      field :prep_resolver_9_array, resolver: PrepResolver9Array
       field :prep_resolver_10, resolver: PrepResolver10
       field :prep_resolver_11, resolver: PrepResolver11
       field :prep_resolver_12, resolver: PrepResolver12
       field :prep_resolver_13, resolver: PrepResolver13
+      field :prep_resolver_14, resolver: PrepResolver14
     end
 
     class Schema < GraphQL::Schema
@@ -289,6 +319,22 @@ describe GraphQL::Schema::Resolver do
 
   def exec_query(*args)
     ResolverTest::Schema.execute(*args)
+  end
+
+  describe ".path" do
+    it "is the name" do
+      assert_equal "Resolver1", ResolverTest::Resolver1.path
+    end
+
+    it "is used for arguments and fields" do
+      assert_equal "Resolver1.value", ResolverTest::Resolver1.arguments["value"].path
+      assert_equal "PrepResolver7.int", ResolverTest::PrepResolver7.fields["int"].path
+    end
+
+    it "works on instances" do
+      r = ResolverTest::Resolver1.new(object: nil, context: nil)
+      assert_equal "Resolver1", r.path
+    end
   end
 
   it "gets initialized for each resolution" do
@@ -426,6 +472,11 @@ describe GraphQL::Schema::Resolver do
           assert_equal 11, res["data"]["prepResolver10"]
         end
 
+        it "uses the argument name provided in `as:`" do
+          res = exec_query("{ prepResolver10(int1: 5, int2: 6) }", context: { max_int: 90 })
+          assert_equal 11, res["data"]["prepResolver10"]
+        end
+
         it "can return a lazy object" do
           # This is too big because it's modified in the overridden authorized? hook:
           res = exec_query("{ prepResolver11(int1: 3, int2: 5) }", context: { max_int: 9 })
@@ -462,6 +513,11 @@ describe GraphQL::Schema::Resolver do
           res = exec_query(str, context: { max_int: 100, min_int: 20 })
           assert_equal({ "prepResolver10" => nil, "prepResolver11" => nil }, res["data"])
         end
+
+        it "works with no arguments for RelayClassicMutation" do
+          res = exec_query("{ prepResolver14(input: {}) { number } }")
+          assert_equal 1, res["data"]["prepResolver14"]["number"]
+        end
       end
     end
 
@@ -470,6 +526,14 @@ describe GraphQL::Schema::Resolver do
         res = exec_query('{ prepResolver9(intId: "5") { value } }')
         # (5 + 8) * 3
         assert_equal 39, res["data"]["prepResolver9"]["value"]
+      end
+
+      it "supports loading array of ids" do
+        res = exec_query('{ prepResolver9Array(intIds: ["1", "10", "100"]) { value } }')
+        # (1 + 8) * 3
+        # (10 + 8) * 3
+        # (100 + 8) * 3
+        assert_equal [27, 54, 324], res["data"]["prepResolver9Array"].map { |v| v["value"] }
       end
     end
   end

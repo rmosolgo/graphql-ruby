@@ -20,24 +20,24 @@ describe GraphQL::Schema::Traversal do
   it "finds types from a single type and its fields" do
     expected = {
       "Boolean" => GraphQL::BOOLEAN_TYPE,
-      "Cheese" => Dummy::CheeseType,
+      "Cheese" => Dummy::Cheese.graphql_definition,
       "Float" => GraphQL::FLOAT_TYPE,
       "String" => GraphQL::STRING_TYPE,
-      "Edible" => Dummy::EdibleInterface,
-      "EdibleAsMilk" => Dummy::EdibleAsMilkInterface,
-      "DairyAnimal" => Dummy::DairyAnimalEnum,
+      "Edible" => Dummy::Edible.graphql_definition,
+      "EdibleAsMilk" => Dummy::EdibleAsMilk.graphql_definition,
+      "DairyAnimal" => Dummy::DairyAnimal.graphql_definition,
       "Int" => GraphQL::INT_TYPE,
-      "AnimalProduct" => Dummy::AnimalProductInterface,
-      "LocalProduct" => Dummy::LocalProductInterface,
+      "AnimalProduct" => Dummy::AnimalProduct.graphql_definition,
+      "LocalProduct" => Dummy::LocalProduct.graphql_definition,
     }
-    result = traversal([Dummy::CheeseType]).type_map
+    result = traversal([Dummy::Cheese.graphql_definition]).type_map
     assert_equal(expected.keys.sort, result.keys.sort)
     assert_equal(expected, result.to_h)
   end
 
   it "finds type from arguments" do
-    result = traversal([Dummy::DairyAppQueryType]).type_map
-    assert_equal(Dummy::DairyProductInputType, result["DairyProductInput"])
+    result = traversal([Dummy::DairyAppQuery.graphql_definition]).type_map
+    assert_equal(Dummy::DairyProductInput.graphql_definition, result["DairyProductInput"])
   end
 
   it "finds types from field instrumentation" do
@@ -126,7 +126,7 @@ describe GraphQL::Schema::Traversal do
 
   describe "when a field is only accessible through an interface" do
     it "is found through Schema.define(types:)" do
-      assert_equal Dummy::HoneyType, Dummy::Schema.types["Honey"]
+      assert_equal Dummy::Honey.graphql_definition, Dummy::Schema.types["Honey"]
     end
   end
 

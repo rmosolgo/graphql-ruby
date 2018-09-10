@@ -169,7 +169,7 @@ describe GraphQL::UnionType do
     |}
 
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
-    let(:union) { Dummy::BeverageUnion }
+    let(:union) { Dummy::Beverage.graphql_definition }
 
     it "returns the type definition if the type exists and is a possible type of the union" do
       assert union.get_possible_type("Milk", query.context)
@@ -194,7 +194,7 @@ describe GraphQL::UnionType do
     |}
 
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
-    let(:union) { Dummy::BeverageUnion }
+    let(:union) { Dummy::Beverage.graphql_definition }
 
     it "returns true if the type exists and is a possible type of the union" do
       assert union.possible_type?("Milk", query.context)
