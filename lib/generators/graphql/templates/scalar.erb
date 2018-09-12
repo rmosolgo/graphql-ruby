@@ -1,0 +1,13 @@
+module Types
+  class <%= type_ruby_name.split('::')[-1] %> < Types::BaseScalar
+    def self.coerce_input(input_value, context)
+      # TODO: implement me
+      raise NotImplementedError
+    end
+
+    def self.coerce_result(ruby_value, context)
+      # TODO: implement me
+      raise NotImplementedError
+    end
+  end
+end
