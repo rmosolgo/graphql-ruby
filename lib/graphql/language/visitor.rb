@@ -140,10 +140,6 @@ module GraphQL
       make_visit_method :on_variable_definition, :on_abstract_node
       make_visit_method :on_variable_identifier, :on_abstract_node
 
-      def on_field(node, parent)
-        on_abstract_node(node, parent)
-      end
-
       private
 
       # Run the hooks for `node`, and if the hooks return a copy of `node`,

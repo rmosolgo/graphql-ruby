@@ -14,88 +14,57 @@ module GraphQL
           raise NotImplementedError
         end
 
-        def on_enter_argument(node, parent, visitor)
+        # Don't use make_visit_method becuase it breaks `super`
+        def self.build_visitor_hooks(member_name)
+          class_eval(<<-EOS, __FILE__, __LINE__ + 1)
+            def on_enter_#{member_name}(node, parent, visitor)
+            end
+
+            def on_leave_#{member_name}(node, parent, visitor)
+            end
+          EOS
         end
 
-        def on_leave_argument(node, parent, visitor)
-        end
-
-        def on_enter_directive(node, parent, visitor)
-        end
-
-        def on_leave_directive(node, parent, visitor)
-        end
-
-        def on_enter_directive_definition(node, parent, visitor)
-        end
-
-        def on_leave_directive_definition(node, parent, visitor)
-        end
-
-        def on_enter_directive_location(node, parent, visitor)
-        end
-
-        def on_leave_directive_location(node, parent, visitor)
-        end
-
-        def on_enter_document(node, parent, visitor)
-        end
-
-        def on_leave_document(node, parent, visitor)
-        end
-
-        def on_enter_field(node, parent, visitor)
-        end
-
-        def on_leave_field(node, parent, visitor)
-        end
-
-        def on_enter_operation_definition(node, parent, visitor)
-        end
-
-        def on_leave_operation_definition(node, parent, visitor)
-        end
-
-        def on_enter_abstract_node(node, parent, visitor)
-          # TODO: convert all aliases to proper methods
-        end
-
-        def on_leave_abstract_node(node, parent, visitor)
-          # TODO: convert all aliases to proper methods
-        end
-
-        alias :on_document :on_enter_abstract_node
-        alias :on_enum :on_enter_abstract_node
-        alias :on_enum_type_definition :on_enter_abstract_node
-        alias :on_enum_type_extension :on_enter_abstract_node
-        alias :on_enum_value_definition :on_enter_abstract_node
-        alias :on_fragment_definition :on_enter_abstract_node
-        alias :on_fragment_spread :on_enter_abstract_node
-        alias :on_inline_fragment :on_enter_abstract_node
-        alias :on_input_object :on_enter_abstract_node
-        alias :on_input_object_type_definition :on_enter_abstract_node
-        alias :on_input_object_type_extension :on_enter_abstract_node
-        alias :on_input_value_definition :on_enter_abstract_node
-        alias :on_interface_type_definition :on_enter_abstract_node
-        alias :on_interface_type_extension :on_enter_abstract_node
-        alias :on_list_type :on_enter_abstract_node
-        alias :on_non_null_type :on_enter_abstract_node
-        alias :on_null_value :on_enter_abstract_node
-        alias :on_object_type_definition :on_enter_abstract_node
-        alias :on_object_type_extension :on_enter_abstract_node
-        alias :on_scalar_type_definition :on_enter_abstract_node
-        alias :on_scalar_type_extension :on_enter_abstract_node
-        alias :on_schema_definition :on_enter_abstract_node
-        alias :on_schema_extension :on_enter_abstract_node
-        alias :on_type_name :on_enter_abstract_node
-        alias :on_union_type_definition :on_enter_abstract_node
-        alias :on_union_type_extension :on_enter_abstract_node
-        alias :on_variable_definition :on_enter_abstract_node
-        alias :on_variable_identifier :on_enter_abstract_node
+        build_visitor_hooks :argument
+        build_visitor_hooks :directive
+        build_visitor_hooks :directive_definition
+        build_visitor_hooks :directive_location
+        build_visitor_hooks :document
+        build_visitor_hooks :enum
+        build_visitor_hooks :enum_type_definition
+        build_visitor_hooks :enum_type_extension
+        build_visitor_hooks :enum_value_definition
+        build_visitor_hooks :field
+        build_visitor_hooks :field_definition
+        build_visitor_hooks :fragment_definition
+        build_visitor_hooks :fragment_spread
+        build_visitor_hooks :inline_fragment
+        build_visitor_hooks :input_object
+        build_visitor_hooks :input_object_type_definition
+        build_visitor_hooks :input_object_type_extension
+        build_visitor_hooks :input_value_definition
+        build_visitor_hooks :interface_type_definition
+        build_visitor_hooks :interface_type_extension
+        build_visitor_hooks :list_type
+        build_visitor_hooks :non_null_type
+        build_visitor_hooks :null_value
+        build_visitor_hooks :object_type_definition
+        build_visitor_hooks :object_type_extension
+        build_visitor_hooks :operation_definition
+        build_visitor_hooks :scalar_type_definition
+        build_visitor_hooks :scalar_type_extension
+        build_visitor_hooks :schema_definition
+        build_visitor_hooks :schema_extension
+        build_visitor_hooks :type_name
+        build_visitor_hooks :union_type_definition
+        build_visitor_hooks :union_type_extension
+        build_visitor_hooks :variable_definition
+        build_visitor_hooks :variable_identifier
+        build_visitor_hooks :abstract_node
 
         protected
 
-        attr_reader :query, :visitor
+        attr_reader :query
       end
     end
   end
