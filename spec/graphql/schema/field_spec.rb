@@ -107,6 +107,22 @@ describe GraphQL::Schema::Field do
         assert_equal ["find", "addError"], err["path"]
         assert_equal [{"line"=>4, "column"=>15}], err["locations"]
       end
+
+      it "can get methods from the field instance" do
+        query_str = <<-GRAPHQL
+        {
+          upcaseCheck1
+          upcaseCheck2
+          upcaseCheck3
+          upcaseCheck4
+        }
+        GRAPHQL
+        res = Jazz::Schema.execute(query_str)
+        assert_equal "nil", res["data"].fetch("upcaseCheck1")
+        assert_equal "false", res["data"]["upcaseCheck2"]
+        assert_equal "TRUE", res["data"]["upcaseCheck3"]
+        assert_equal "\"WHY NOT?\"", res["data"]["upcaseCheck4"]
+      end
     end
 
     it "is the #owner of its arguments" do

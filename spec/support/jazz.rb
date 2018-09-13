@@ -61,6 +61,7 @@ module Jazz
   # A custom field class that supports the `upcase:` option
   class BaseField < GraphQL::Schema::Field
     argument_class BaseArgument
+    attr_reader :upcase
     def initialize(*args, **options, &block)
       @upcase = options.delete(:upcase)
       super(*args, **options, &block)
@@ -348,6 +349,14 @@ module Jazz
 
     field :echo_first_json, RawJson, null: false do
       argument :input, [RawJson], required: true
+    end
+
+    field :upcase_check_1, String, null: true, method: :upcase_check, extras: [:upcase]
+    field :upcase_check_2, String, null: false, upcase: false, method: :upcase_check, extras: [:upcase]
+    field :upcase_check_3, String, null: false, upcase: true, method: :upcase_check, extras: [:upcase]
+    field :upcase_check_4, String, null: false, upcase: "why not?", method: :upcase_check, extras: [:upcase]
+    def upcase_check(upcase:)
+      upcase.inspect
     end
 
     def ensembles
