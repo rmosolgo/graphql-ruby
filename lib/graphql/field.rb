@@ -323,7 +323,7 @@ module GraphQL
 
     module DefaultLazyResolve
       def self.call(obj, args, ctx)
-        ctx.schema.sync_lazy(obj)
+        ctx.schema.sync_lazy(obj, ctx.query.context)
       end
     end
   end

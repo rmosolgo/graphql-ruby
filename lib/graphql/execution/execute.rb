@@ -146,7 +146,7 @@ module GraphQL
             field_ctx.value = Execution::Lazy.new {
               inner_value = begin
                   begin
-                    field_ctx.schema.sync_lazy(raw_value)
+                    field_ctx.schema.sync_lazy(raw_value, field_ctx.query.context)
                   rescue GraphQL::UnauthorizedError => err
                     field_ctx.schema.unauthorized_object(err)
                   end
