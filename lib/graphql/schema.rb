@@ -1015,6 +1015,9 @@ module GraphQL
       end
     end
 
+    # Override this method to handle lazy objects in a custom way.
+    # @param value [Object] an instance of a class registered with {.lazy_resolve}
+    # @return [Object] A GraphQL-ready (non-lazy) object
     def sync_lazy(value)
       lazy_method = lazy_method_name(value)
       if lazy_method

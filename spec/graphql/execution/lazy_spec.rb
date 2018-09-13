@@ -155,6 +155,23 @@ describe GraphQL::Execution::Lazy do
     end
   end
 
+  describe "Schema#sync_lazy(object)" do
+    it "Passes objects to that hook at runtime" do
+      res = run_query <<-GRAPHQL
+      {
+        a: nullableNestedSum(value: 1001) { value }
+        b: nullableNestedSum(value: 1013) { value }
+        c: nullableNestedSum(value: 1002) { value }
+      }
+      GRAPHQL
+
+      # This odd, non-adding behavior is hacked into `#sync_lazy`
+      assert_equal 101, res["data"]["a"]["value"]
+      assert_equal 113, res["data"]["b"]["value"]
+      assert_equal 102, res["data"]["c"]["value"]
+    end
+  end
+
   describe "LazyMethodMap" do
     class SubWrapper < LazyHelpers::Wrapper; end
 
@@ -165,7 +182,7 @@ describe GraphQL::Execution::Lazy do
       map.set(LazyHelpers::SumAll, :value)
       b = LazyHelpers::Wrapper.new(1)
       sub_b = LazyHelpers::Wrapper.new(2)
-      s = LazyHelpers::SumAll.new({}, 3)
+      s = LazyHelpers::SumAll.new(3)
       assert_equal(:item, map.get(b))
       assert_equal(:item, map.get(sub_b))
       assert_equal(:value, map.get(s))
