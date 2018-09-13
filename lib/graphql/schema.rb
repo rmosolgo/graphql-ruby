@@ -1019,20 +1019,22 @@ module GraphQL
     # @param value [Object] an instance of a class registered with {.lazy_resolve}
     # @param ctx [GraphQL::Query::Context] the context for this query
     # @return [Object] A GraphQL-ready (non-lazy) object
-    def self.sync_lazy(value, ctx)
-      lazy_method = ctx.schema.lazy_method_name(value)
-      if lazy_method
-        synced_value = value.public_send(lazy_method)
-        sync_lazy(synced_value)
-      else
-        value
-      end
+    def self.sync_lazy(value)
+      yield(value)
     end
 
     # @see Schema.sync_lazy for a hook to override
     # @api private
-    def sync_lazy(value, ctx)
-      self.class.sync_lazy(value, ctx)
+    def sync_lazy(value)
+      self.class.sync_lazy(value) { |v|
+        lazy_method = lazy_method_name(v)
+        if lazy_method
+          synced_value = value.public_send(lazy_method)
+          sync_lazy(synced_value)
+        else
+          v
+        end
+      }
     end
 
     protected
