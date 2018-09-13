@@ -69,7 +69,7 @@ module GraphQL
 
       # The default implementation for visiting an AST node.
       # It doesn't _do_ anything, but it continues to visiting the node's children.
-      # To customize this hook, override one of its aliases (or the base method?)
+      # To customize this hook, override one of its make_visit_methodes (or the base method?)
       # in your subclasses.
       #
       # For compatibility, it calls hook procs, too.
@@ -95,41 +95,54 @@ module GraphQL
         end
       end
 
-      alias :on_argument :on_abstract_node
-      alias :on_directive :on_abstract_node
-      alias :on_directive_definition :on_abstract_node
-      alias :on_directive_location :on_abstract_node
-      alias :on_document :on_abstract_node
-      alias :on_enum :on_abstract_node
-      alias :on_enum_type_definition :on_abstract_node
-      alias :on_enum_type_extension :on_abstract_node
-      alias :on_enum_value_definition :on_abstract_node
-      alias :on_field :on_abstract_node
-      alias :on_field_definition :on_abstract_node
-      alias :on_fragment_definition :on_abstract_node
-      alias :on_fragment_spread :on_abstract_node
-      alias :on_inline_fragment :on_abstract_node
-      alias :on_input_object :on_abstract_node
-      alias :on_input_object_type_definition :on_abstract_node
-      alias :on_input_object_type_extension :on_abstract_node
-      alias :on_input_value_definition :on_abstract_node
-      alias :on_interface_type_definition :on_abstract_node
-      alias :on_interface_type_extension :on_abstract_node
-      alias :on_list_type :on_abstract_node
-      alias :on_non_null_type :on_abstract_node
-      alias :on_null_value :on_abstract_node
-      alias :on_object_type_definition :on_abstract_node
-      alias :on_object_type_extension :on_abstract_node
-      alias :on_operation_definition :on_abstract_node
-      alias :on_scalar_type_definition :on_abstract_node
-      alias :on_scalar_type_extension :on_abstract_node
-      alias :on_schema_definition :on_abstract_node
-      alias :on_schema_extension :on_abstract_node
-      alias :on_type_name :on_abstract_node
-      alias :on_union_type_definition :on_abstract_node
-      alias :on_union_type_extension :on_abstract_node
-      alias :on_variable_definition :on_abstract_node
-      alias :on_variable_identifier :on_abstract_node
+      # Don't use make_visit_method becuase it breaks `super`
+      def self.make_visit_method(node_method, super_method)
+        class_eval(<<-EOS, __FILE__, __LINE__ + 1)
+          def #{node_method}(node, parent)
+            #{super_method}(node, parent)
+          end
+        EOS
+      end
+
+      make_visit_method :on_argument, :on_abstract_node
+      make_visit_method :on_directive, :on_abstract_node
+      make_visit_method :on_directive_definition, :on_abstract_node
+      make_visit_method :on_directive_location, :on_abstract_node
+      make_visit_method :on_document, :on_abstract_node
+      make_visit_method :on_enum, :on_abstract_node
+      make_visit_method :on_enum_type_definition, :on_abstract_node
+      make_visit_method :on_enum_type_extension, :on_abstract_node
+      make_visit_method :on_enum_value_definition, :on_abstract_node
+      make_visit_method :on_field, :on_abstract_node
+      make_visit_method :on_field_definition, :on_abstract_node
+      make_visit_method :on_fragment_definition, :on_abstract_node
+      make_visit_method :on_fragment_spread, :on_abstract_node
+      make_visit_method :on_inline_fragment, :on_abstract_node
+      make_visit_method :on_input_object, :on_abstract_node
+      make_visit_method :on_input_object_type_definition, :on_abstract_node
+      make_visit_method :on_input_object_type_extension, :on_abstract_node
+      make_visit_method :on_input_value_definition, :on_abstract_node
+      make_visit_method :on_interface_type_definition, :on_abstract_node
+      make_visit_method :on_interface_type_extension, :on_abstract_node
+      make_visit_method :on_list_type, :on_abstract_node
+      make_visit_method :on_non_null_type, :on_abstract_node
+      make_visit_method :on_null_value, :on_abstract_node
+      make_visit_method :on_object_type_definition, :on_abstract_node
+      make_visit_method :on_object_type_extension, :on_abstract_node
+      make_visit_method :on_operation_definition, :on_abstract_node
+      make_visit_method :on_scalar_type_definition, :on_abstract_node
+      make_visit_method :on_scalar_type_extension, :on_abstract_node
+      make_visit_method :on_schema_definition, :on_abstract_node
+      make_visit_method :on_schema_extension, :on_abstract_node
+      make_visit_method :on_type_name, :on_abstract_node
+      make_visit_method :on_union_type_definition, :on_abstract_node
+      make_visit_method :on_union_type_extension, :on_abstract_node
+      make_visit_method :on_variable_definition, :on_abstract_node
+      make_visit_method :on_variable_identifier, :on_abstract_node
+
+      def on_field(node, parent)
+        on_abstract_node(node, parent)
+      end
 
       private
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
-require "graphql/analysis/visitor"
-require "graphql/analysis/analyzer"
 require "graphql/analysis/ast"
+require "graphql/analysis/ast/visitor"
+require "graphql/analysis/ast/analyzer"
 require "graphql/analysis/max_query_complexity"
 require "graphql/analysis/max_query_depth"
 require "graphql/analysis/query_complexity"
