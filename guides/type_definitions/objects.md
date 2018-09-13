@@ -294,19 +294,21 @@ end
 
 At runtime, the requested runtime object will be passed to the field.
 
-### Field Parameter Default Values 
+__Custom extras__ are also possible. Any method on your field class can be passed to `extras: [...]`, and the value will be injected into the method. For example, `extras: [:owner]` will inject the object type who owns the field. Any new methods on your custom field class may be used, too.
 
-The field method requires you to pass `null:` keyword argument to determine whether the field is nullable or not. Another field you may want to overrid is `camelize`, which is `true` by default. You can override this behavior by adding a custom field. 
+### Field Parameter Default Values
+
+The field method requires you to pass `null:` keyword argument to determine whether the field is nullable or not. Another field you may want to overrid is `camelize`, which is `true` by default. You can override this behavior by adding a custom field.
 
 ```ruby
 class CustomField < GraphQL::Schema::Field
-  # Add `null: false` and `camelize: false` which provide default values 
-  # in case the caller doesn't pass anything for those arguments. 
-  # **kwargs is a catch-all that will get everything else 
+  # Add `null: false` and `camelize: false` which provide default values
+  # in case the caller doesn't pass anything for those arguments.
+  # **kwargs is a catch-all that will get everything else
   def initialize(*args, null: false, camelize: false, **kwargs, &block)
-    # Then, call super _without_ any args, where Ruby will take 
+    # Then, call super _without_ any args, where Ruby will take
     # _all_ the args originally passed to this method and pass it to the super method.
-    super 
+    super
   end
 end
 ```
