@@ -15,7 +15,6 @@ module GraphQL
         super
         @visited_fragments = {}
         @compared_fragments = {}
-        @fields_and_fragments_from_node = {}
       end
 
       def on_operation_definition(node, _parent)
