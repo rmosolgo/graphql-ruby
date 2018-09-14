@@ -8,6 +8,23 @@
 
 ### Bug fixes
 
+## 1.8.9 (13 Sep 2018)
+
+### Breaking changes
+
+- When `field ... ` is called with a block and the block has one argument, the field is yielded, but `self` inside the block is _not_ changed to the field. #1843
+
+### New features
+
+- `extras: [...]` can inject values from the field instance #1808
+- Add `ISO8601DateTime.time_precision` for customization #1845
+- Fix input objects with default values of enum #1827
+- `Schema.sync_lazy(value)` hook for intercepting lazy-resolved objects #1784
+
+### Bug fixes
+
+- When a field block is provided with an arity of `1`, yield the field #1843
+
 ## 1.8.8 (27 Aug 2018)
 
 ### Bug fixes
