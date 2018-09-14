@@ -32,6 +32,7 @@ module GraphQL
           if visit_type == :enter
             memo[:complexities_on_type].push(TypeComplexity.new)
           else
+
             type_complexities = memo[:complexities_on_type].pop
             child_complexity = type_complexities.max_possible_complexity
             own_complexity = get_complexity(irep_node, child_complexity)

@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Analysis::QueryComplexity do
-  let(:complexities) { [] }
-  let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |this_query, complexity|  complexities << this_query << complexity } }
-  let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [query_complexity]) }
+describe GraphQL::Analysis::AST::QueryComplexity do
+  let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::QueryComplexity]) }
   let(:variables) { {} }
   let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
 
@@ -30,16 +28,18 @@ describe GraphQL::Analysis::QueryComplexity do
       }
     |}
 
+    focus
     it "sums the complexity" do
-      reduce_result
-      assert_equal complexities, [query, 7]
+      complexities = reduce_result.first
+      assert_equal 7, complexities
     end
 
     describe "when skipped by directives" do
       let(:variables) { { "isSkipped" => true } }
+      focus
       it "doesn't include skipped fields" do
-        reduce_result
-        assert_equal complexities, [query, 3]
+        complexity = reduce_result.first
+        assert_equal 3, complexity
       end
     end
   end
@@ -74,9 +74,10 @@ describe GraphQL::Analysis::QueryComplexity do
       }
     |}
 
+    focus
     it "counts all fragment usages, not the definitions" do
-      reduce_result
-      assert_equal complexities, [query, 10]
+      complexity = reduce_result.first
+      assert_equal 10, complexity
     end
 
     describe "mutually exclusive types" do
@@ -133,8 +134,8 @@ describe GraphQL::Analysis::QueryComplexity do
 
       focus
       it "gets the max among options" do
-        reduce_result
-        assert_equal 6, complexities.last
+        complexity = reduce_result.first
+        assert_equal 6, complexity
       end
     end
 
@@ -156,9 +157,10 @@ describe GraphQL::Analysis::QueryComplexity do
         }
       |}
 
+      focus
       it "gets the max among interface types" do
-        reduce_result
-        assert_equal 4, complexities.last
+        complexity = reduce_result.first
+        assert_equal 4, complexity
       end
     end
 
@@ -183,9 +185,10 @@ describe GraphQL::Analysis::QueryComplexity do
       }
       |}
 
+      focus
       it "only counts them once" do
-        reduce_result
-        assert_equal 3, complexities.last
+        complexity = reduce_result.first
+        assert_equal 3, complexity
       end
     end
   end

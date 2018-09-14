@@ -67,6 +67,11 @@ module GraphQL
         @result, _nil_parent = on_node_with_modifications(@document, nil)
       end
 
+      def visit_node(node, parent)
+        public_send(node.visit_method, node, parent)
+      end
+
+
       # The default implementation for visiting an AST node.
       # It doesn't _do_ anything, but it continues to visiting the node's children.
       # To customize this hook, override one of its make_visit_methodes (or the base method?)
@@ -146,7 +151,7 @@ module GraphQL
       # copy `parent` so that it contains the copy of that node as a child,
       # then return the copies
       def on_node_with_modifications(node, parent)
-        new_node, new_parent = public_send(node.visit_method, node, parent)
+        new_node, new_parent = visit_node(node, parent)
         if new_node.is_a?(Nodes::AbstractNode) && !node.equal?(new_node)
           # The user-provided hook returned a new node.
           new_parent = new_parent && new_parent.replace_child(node, new_node)

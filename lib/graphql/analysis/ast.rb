@@ -1,3 +1,8 @@
+require "graphql/analysis/ast/visitor"
+require "graphql/analysis/ast/analyzer"
+require "graphql/analysis/ast/query_complexity"
+require "graphql/analysis/ast/query_depth"
+
 # frozen_string_literal: true
 module GraphQL
   module Analysis

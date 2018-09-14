@@ -14,6 +14,8 @@ module GraphQL
     #
     # @api private
     class ValidationPipeline
+      attr_reader :max_depth, :max_complexity
+
       def initialize(query:, validate:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
         @validation_errors = []
         @internal_representation = nil

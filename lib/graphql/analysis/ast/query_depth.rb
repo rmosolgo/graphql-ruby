@@ -45,8 +45,8 @@ module GraphQL
           end
         end
 
-        def on_analysis_end
-          nil
+        def result
+          raise NotImplementedError
         end
       end
     end

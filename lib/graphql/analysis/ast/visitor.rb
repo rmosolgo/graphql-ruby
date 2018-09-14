@@ -77,9 +77,9 @@ module GraphQL
         def on_directive(node, parent)
           directive_defn = @schema.directives[node.name]
           @directive_definitions.push(directive_defn)
-          call_analyzers(:on_enter_field, node, parent)
+          call_analyzers(:on_enter_directive, node, parent)
           super
-          call_analyzers(:on_leave_field, node, parent)
+          call_analyzers(:on_leave_directive, node, parent)
           @directive_definitions.pop
         end
 
@@ -163,6 +163,7 @@ module GraphQL
           else
             @object_types.last
           end
+          @object_types.push(object_type)
           yield(node)
           @object_types.pop
           @path.pop
