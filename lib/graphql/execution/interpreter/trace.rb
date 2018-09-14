@@ -5,9 +5,8 @@ module GraphQL
     class Interpreter
       # The center of execution state.
       # It's mutable as a performance consideration.
-      # (TODO provide explicit APIs for providing stuff to user code)
-      # It can be "branched" to create a divergent, parallel execution state.
-      # (TODO create branching API and prove its value)
+      #
+      # @see dup It can be "branched" to create a divergent, parallel execution state.
       #
       # TODO: merge this with `Visitor`? Why distribute this state?
       class Trace

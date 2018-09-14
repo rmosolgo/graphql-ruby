@@ -33,32 +33,37 @@ module GraphQL
         end
 
         def on_fragment_spread(node, _parent)
-          fragment_def = query.fragments[node.name]
-          type_defn = schema.types[fragment_def.type.name]
-          type_defn = type_defn.metadata[:type_class]
-          possible_types = schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
-          if possible_types.include?(trace.types.last)
-            fragment_def.selections.each do |selection|
-              visit_node(selection, fragment_def)
-            end
-          end
-          return node, _parent
-        end
-
-        def on_inline_fragment(node, _parent)
-          if node.type
-            type_defn = schema.types[node.type.name]
+          wrap_with_directives(node, _parent) do |node, _parent|
+            fragment_def = query.fragments[node.name]
+            type_defn = schema.types[fragment_def.type.name]
             type_defn = type_defn.metadata[:type_class]
             possible_types = schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
             if possible_types.include?(trace.types.last)
-              super
+              fragment_def.selections.each do |selection|
+                visit_node(selection, fragment_def)
+              end
             end
-          else
             super
           end
         end
 
-        def on_field(node, parent)
+        def on_inline_fragment(node, _parent)
+          wrap_with_directives(node, _parent) do |node, _parent|
+            if node.type
+              type_defn = schema.types[node.type.name]
+              type_defn = type_defn.metadata[:type_class]
+              possible_types = schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
+              if possible_types.include?(trace.types.last)
+                super
+              end
+            else
+              super
+            end
+          end
+        end
+
+        # TODO: make sure this can support what we need to do
+        def wrap_with_directives(node, parent)
           # TODO call out to directive here
           node.directives.each do |dir|
             dir_defn = schema.directives.fetch(dir.name)
@@ -68,43 +73,48 @@ module GraphQL
               return
             end
           end
+          yield(node, parent)
+        end
 
-          field_name = node.name
-          field_defn = trace.types.last.unwrap.fields[field_name]
-          is_introspection = false
-          if field_defn.nil?
-            field_defn = if trace.types.last == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
-              is_introspection = true
-              entry_point_field.metadata[:type_class]
-            elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
-              is_introspection = true
-              dynamic_field.metadata[:type_class]
-            else
-              raise "Invariant: no field for #{trace.types.last}.#{field_name}"
+        def on_field(node, parent)
+          wrap_with_directives(node, parent) do |node, parent|
+            field_name = node.name
+            field_defn = trace.types.last.unwrap.fields[field_name]
+            is_introspection = false
+            if field_defn.nil?
+              field_defn = if trace.types.last == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
+                is_introspection = true
+                entry_point_field.metadata[:type_class]
+              elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
+                is_introspection = true
+                dynamic_field.metadata[:type_class]
+              else
+                raise "Invariant: no field for #{trace.types.last}.#{field_name}"
+              end
             end
-          end
 
-          trace.with_path(node.alias || node.name) do
-            trace.with_type(field_defn.type) do
-              object = trace.objects.last
-              if is_introspection
-                object = field_defn.owner.authorized_new(object, context)
-              end
-              kwarg_arguments = trace.arguments(field_defn, node)
-              # TODO: very shifty that these cached Hashes are being modified
-              if field_defn.extras.include?(:ast_node)
-                kwarg_arguments[:ast_node] = node
-              end
-              if field_defn.extras.include?(:execution_errors)
-                kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, node, trace.path.dup)
-              end
+            trace.with_path(node.alias || node.name) do
+              trace.with_type(field_defn.type) do
+                object = trace.objects.last
+                if is_introspection
+                  object = field_defn.owner.authorized_new(object, context)
+                end
+                kwarg_arguments = trace.arguments(field_defn, node)
+                # TODO: very shifty that these cached Hashes are being modified
+                if field_defn.extras.include?(:ast_node)
+                  kwarg_arguments[:ast_node] = node
+                end
+                if field_defn.extras.include?(:execution_errors)
+                  kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, node, trace.path.dup)
+                end
 
-              result = field_defn.resolve_field_2(object, kwarg_arguments, context)
+                result = field_defn.resolve_field_2(object, kwarg_arguments, context)
 
-              trace.after_lazy(result) do |trace, inner_result|
-                trace.visitor.continue_field(field_defn.type, inner_result) do |final_trace|
-                  final_trace.debug("Visiting children at #{final_trace.path}")
-                  final_trace.visitor.on_abstract_node(node, parent)
+                trace.after_lazy(result) do |trace, inner_result|
+                  trace.visitor.continue_field(field_defn.type, inner_result) do |final_trace|
+                    final_trace.debug("Visiting children at #{final_trace.path}")
+                    final_trace.visitor.on_abstract_node(node, parent)
+                  end
                 end
               end
             end
@@ -152,6 +162,7 @@ module GraphQL
             object_proxy = type.authorized_new(value, query.context)
             trace.after_lazy(object_proxy) do |inner_trace, inner_obj|
               if inner_trace.visitor.continue_value(inner_obj)
+                inner_trace.write({})
                 inner_trace.with_type(type) do
                   inner_trace.with_object(inner_obj) do
                     yield(inner_trace)
