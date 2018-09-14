@@ -14,9 +14,8 @@ module GraphQL
     class ValidationContext
       extend Forwardable
 
-      attr_reader :query, :schema,
-        :document, :errors, :visitor,
-        :warden, :on_dependency_resolve_handlers, :each_irep_node_handlers
+      attr_reader :query, :errors, :visitor,
+        :on_dependency_resolve_handlers
 
       def_delegators :@query, :schema, :document, :fragments, :operations, :warden
 
@@ -24,9 +23,6 @@ module GraphQL
         @query = query
         @literal_validator = LiteralValidator.new(context: query.context)
         @errors = []
-        # TODO it will take some finegalling but I think all this state could
-        # be moved to `Visitor`
-        @each_irep_node_handlers = []
         @on_dependency_resolve_handlers = []
         @visitor = visitor_class.new(document, self)
       end
@@ -37,10 +33,6 @@ module GraphQL
 
       def on_dependency_resolve(&handler)
         @on_dependency_resolve_handlers << handler
-      end
-
-      def each_irep_node(&handler)
-        @each_irep_node_handlers << handler
       end
 
       def valid_literal?(ast_value, type)

@@ -24,6 +24,8 @@ In other guides, you can read more about:
 - {% internal_link "Authentication","/operation_store/access_control" %} for the sync API
 - {% internal_link "Server Management","/operation_store/server_management" %} after your system is running
 
+Also, you can find a [demo app on GitHub](https://github.com/rmosolgo/graphql-pro-operation-store-example).
+
 ### What are Persisted Queries?
 
 _Persisted queries_ are GraphQL queries (`query`, `mutation`, or `subscription`) that are saved on the server and invoked by clients by _reference_. In this arrangement, clients don't send GraphQL queries over the network. Instead, clients send:

@@ -51,19 +51,19 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal(2, get_names(result).length)
       assert_equal(true, get_page_info(result)["hasNextPage"])
       assert_equal(false, get_page_info(result)["hasPreviousPage"])
-      assert_equal("MQ==", get_page_info(result)["startCursor"])
-      assert_equal("Mg==", get_page_info(result)["endCursor"])
-      assert_equal("MQ==", get_first_cursor(result))
-      assert_equal("Mg==", get_last_cursor(result))
+      assert_equal("MQ", get_page_info(result)["startCursor"])
+      assert_equal("Mg", get_page_info(result)["endCursor"])
+      assert_equal("MQ", get_first_cursor(result))
+      assert_equal("Mg", get_last_cursor(result))
 
       result = star_wars_query(query_string, "first" => 3)
       assert_equal(3, get_names(result).length)
       assert_equal(false, get_page_info(result)["hasNextPage"])
       assert_equal(false, get_page_info(result)["hasPreviousPage"])
-      assert_equal("MQ==", get_page_info(result)["startCursor"])
-      assert_equal("Mw==", get_page_info(result)["endCursor"])
-      assert_equal("MQ==", get_first_cursor(result))
-      assert_equal("Mw==", get_last_cursor(result))
+      assert_equal("MQ", get_page_info(result)["startCursor"])
+      assert_equal("Mw", get_page_info(result)["endCursor"])
+      assert_equal("MQ", get_first_cursor(result))
+      assert_equal("Mw", get_last_cursor(result))
     end
 
     it 'provides custom fields on the connection type' do
@@ -288,7 +288,7 @@ describe GraphQL::Relay::RelationConnection do
         assert_equal(first_and_second_names, get_names(result))
         assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
 
-        third_cursor = "Mw=="
+        third_cursor = "Mw"
         result = star_wars_query(query_string, "last" => 100, "before" => third_cursor)
         assert_equal(first_and_second_names, get_names(result))
 
@@ -528,19 +528,19 @@ describe GraphQL::Relay::RelationConnection do
         assert_equal(2, get_names(result).length)
         assert_equal(true, get_page_info(result)["hasNextPage"])
         assert_equal(false, get_page_info(result)["hasPreviousPage"])
-        assert_equal("MQ==", get_page_info(result)["startCursor"])
-        assert_equal("Mg==", get_page_info(result)["endCursor"])
-        assert_equal("MQ==", get_first_cursor(result))
-        assert_equal("Mg==", get_last_cursor(result))
+        assert_equal("MQ", get_page_info(result)["startCursor"])
+        assert_equal("Mg", get_page_info(result)["endCursor"])
+        assert_equal("MQ", get_first_cursor(result))
+        assert_equal("Mg", get_last_cursor(result))
 
         result = star_wars_query(query_string, "first" => 3)
         assert_equal(3, get_names(result).length)
         assert_equal(false, get_page_info(result)["hasNextPage"])
         assert_equal(false, get_page_info(result)["hasPreviousPage"])
-        assert_equal("MQ==", get_page_info(result)["startCursor"])
-        assert_equal("Mw==", get_page_info(result)["endCursor"])
-        assert_equal("MQ==", get_first_cursor(result))
-        assert_equal("Mw==", get_last_cursor(result))
+        assert_equal("MQ", get_page_info(result)["startCursor"])
+        assert_equal("Mw", get_page_info(result)["endCursor"])
+        assert_equal("MQ", get_first_cursor(result))
+        assert_equal("Mw", get_last_cursor(result))
       end
 
       it 'provides custom fields on the connection type' do
@@ -635,8 +635,8 @@ describe GraphQL::Relay::RelationConnection do
     let(:connection) { GraphQL::Relay::RelationConnection.new(StarWars::Base.where(faction_id: 1), {}) }
 
     it "returns the cursor for a node in the connection" do
-      assert_equal "MQ==", connection.cursor_from_node(StarWars::Base.all[0])
-      assert_equal "Mg==", connection.cursor_from_node(StarWars::Base.all[1])
+      assert_equal "MQ", connection.cursor_from_node(StarWars::Base.all[0])
+      assert_equal "Mg", connection.cursor_from_node(StarWars::Base.all[1])
     end
 
     it "raises when the node isn't found" do

@@ -276,6 +276,7 @@ Here is a working plan for rolling out this feature:
   - ☐ Update all GraphQL-Ruby docs to reflect this new API
 - graphql 1.10:
   - ☐ Begin sunsetting `.define`: isolate it in its own module
+- graphql 2.0:
   - ☐ Remove `.define`
 
 ## Common Type Configurations

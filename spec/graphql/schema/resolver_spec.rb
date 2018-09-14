@@ -192,6 +192,23 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class PrepResolver9Array < BaseResolver
+      argument :int_ids, [ID], required: true, loads: HasValue, as: :ints
+      # Make sure the lazy object is resolved properly:
+      type [HasValue], null: false
+      def object_from_id(type, id, ctx)
+        # Make sure a lazy object is handled appropriately
+        LazyBlock.new {
+          # Make sure that the right type ends up here
+          id.to_i + type.graphql_name.length
+        }
+      end
+
+      def resolve(ints:)
+        ints.map { |int| int * 3}
+      end
+    end
+
     class PrepResolver10 < BaseResolver
       argument :int1, Integer, required: true
       argument :int2, Integer, required: true, as: :integer_2
@@ -285,6 +302,7 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_6, resolver: PrepResolver6
       field :prep_resolver_7, resolver: PrepResolver7
       field :prep_resolver_9, resolver: PrepResolver9
+      field :prep_resolver_9_array, resolver: PrepResolver9Array
       field :prep_resolver_10, resolver: PrepResolver10
       field :prep_resolver_11, resolver: PrepResolver11
       field :prep_resolver_12, resolver: PrepResolver12
@@ -508,6 +526,14 @@ describe GraphQL::Schema::Resolver do
         res = exec_query('{ prepResolver9(intId: "5") { value } }')
         # (5 + 8) * 3
         assert_equal 39, res["data"]["prepResolver9"]["value"]
+      end
+
+      it "supports loading array of ids" do
+        res = exec_query('{ prepResolver9Array(intIds: ["1", "10", "100"]) { value } }')
+        # (1 + 8) * 3
+        # (10 + 8) * 3
+        # (100 + 8) * 3
+        assert_equal [27, 54, 324], res["data"]["prepResolver9Array"].map { |v| v["value"] }
       end
     end
   end

@@ -2,11 +2,11 @@
 require "spec_helper"
 
 describe GraphQL::InterfaceType do
-  let(:interface) { Dummy::EdibleInterface }
+  let(:interface) { Dummy::Edible.graphql_definition }
   let(:dummy_query_context) { OpenStruct.new(schema: Dummy::Schema) }
 
   it "has possible types" do
-    assert_equal([Dummy::CheeseType, Dummy::HoneyType, Dummy::MilkType], Dummy::Schema.possible_types(interface))
+    assert_equal([Dummy::Cheese.graphql_definition, Dummy::Honey.graphql_definition, Dummy::Milk.graphql_definition], Dummy::Schema.possible_types(interface))
   end
 
   describe "query evaluation" do
@@ -96,11 +96,11 @@ describe GraphQL::InterfaceType do
     it "copies orphan types without affecting the original" do
       interface = GraphQL::InterfaceType.define do
         name "AInterface"
-        orphan_types [Dummy::HoneyType]
+        orphan_types [Dummy::Honey]
       end
 
       interface_2 = interface.dup
-      interface_2.orphan_types << Dummy::CheeseType
+      interface_2.orphan_types << Dummy::Cheese
       assert_equal 1, interface.orphan_types.size
       assert_equal 2, interface_2.orphan_types.size
     end

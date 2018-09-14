@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::ObjectType do
-  let(:type) { Dummy::CheeseType }
+  let(:type) { Dummy::Cheese.graphql_definition }
 
   it "doesn't allow double non-null constraints" do
     assert_raises(GraphQL::DoubleNonNullTypeError) {
@@ -45,10 +45,10 @@ describe GraphQL::ObjectType do
   describe "interfaces" do
     it "may have interfaces" do
       assert_equal([
-        Dummy::EdibleInterface,
-        Dummy::EdibleAsMilkInterface,
-        Dummy::AnimalProductInterface,
-        Dummy::LocalProductInterface
+        Dummy::Edible.graphql_definition,
+        Dummy::EdibleAsMilk.graphql_definition,
+        Dummy::AnimalProduct.graphql_definition,
+        Dummy::LocalProduct.graphql_definition
       ], type.interfaces)
     end
 
@@ -85,7 +85,7 @@ describe GraphQL::ObjectType do
   end
 
   it "accepts fields definition" do
-    last_produced_dairy = GraphQL::Field.define(name: :last_produced_dairy, type: Dummy::DairyProductUnion)
+    last_produced_dairy = GraphQL::Field.define(name: :last_produced_dairy, type: Dummy::DairyProduct)
     cow_type = GraphQL::ObjectType.define(name: "Cow", fields: [last_produced_dairy])
     assert_equal([last_produced_dairy], cow_type.fields)
   end
@@ -94,54 +94,54 @@ describe GraphQL::ObjectType do
     it "adds an interface" do
       type = GraphQL::ObjectType.define do
         name 'Hello'
-        implements Dummy::EdibleInterface
-        implements Dummy::AnimalProductInterface
+        implements Dummy::Edible
+        implements Dummy::AnimalProduct
 
         field :hello, types.String
       end
 
-      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+      assert_equal([Dummy::Edible.graphql_definition, Dummy::AnimalProduct.graphql_definition], type.interfaces)
     end
 
     it "adds many interfaces" do
       type = GraphQL::ObjectType.define do
         name 'Hello'
-        implements Dummy::EdibleInterface, Dummy::AnimalProductInterface
+        implements Dummy::Edible, Dummy::AnimalProduct
 
         field :hello, types.String
       end
 
-      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+      assert_equal([Dummy::Edible.graphql_definition, Dummy::AnimalProduct.graphql_definition], type.interfaces)
     end
 
     it "preserves existing interfaces and appends a new one" do
       type = GraphQL::ObjectType.define do
         name 'Hello'
-        interfaces [Dummy::EdibleInterface]
-        implements Dummy::AnimalProductInterface
+        interfaces [Dummy::Edible]
+        implements Dummy::AnimalProduct
 
         field :hello, types.String
       end
 
-      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+      assert_equal([Dummy::Edible.graphql_definition, Dummy::AnimalProduct.graphql_definition], type.interfaces)
     end
 
     it "can be used to inherit fields from the interface" do
       type_1 = GraphQL::ObjectType.define do
         name 'Hello'
-        implements Dummy::EdibleInterface
-        implements Dummy::AnimalProductInterface
+        implements Dummy::Edible
+        implements Dummy::AnimalProduct
       end
 
       type_2 = GraphQL::ObjectType.define do
         name 'Hello'
-        implements Dummy::EdibleInterface
-        implements Dummy::AnimalProductInterface, inherit: true
+        implements Dummy::Edible
+        implements Dummy::AnimalProduct, inherit: true
       end
 
       type_3 = GraphQL::ObjectType.define do
         name 'Hello'
-        implements Dummy::EdibleInterface, Dummy::AnimalProductInterface, inherit: true
+        implements Dummy::Edible, Dummy::AnimalProduct, inherit: true
       end
 
       assert_equal [], type_1.all_fields.map(&:name)
@@ -158,16 +158,18 @@ describe GraphQL::ObjectType do
     end
 
     it "exposes defined field property" do
-      field_without_prop = Dummy::CheeseType.get_field("flavor")
-      field_with_prop = Dummy::CheeseType.get_field("fatContent")
+      field_without_prop = Dummy::Cheese.graphql_definition.get_field("flavor")
+      field_with_prop = Dummy::Cheese.graphql_definition.get_field("fatContent")
       assert_equal(field_without_prop.property, nil)
-      assert_equal(field_with_prop.property, :fat_content)
+      # This used to lookup `:fat_content`, but not since migrating to class-based
+      assert_equal(field_with_prop.property, nil)
     end
 
     it "looks up from interfaces" do
-      field_from_self = Dummy::CheeseType.get_field("fatContent")
-      field_from_iface = Dummy::MilkType.get_field("fatContent")
-      assert_equal(field_from_self.property, :fat_content)
+      field_from_self = Dummy::Cheese.graphql_definition.get_field("fatContent")
+      field_from_iface = Dummy::Milk.graphql_definition.get_field("fatContent")
+      # This used to lookup `:fat_content`, but not since migrating to class-based
+      assert_equal(field_from_self.property, nil)
       assert_equal(field_from_iface.property, nil)
     end
   end
@@ -175,6 +177,9 @@ describe GraphQL::ObjectType do
   describe "#dup" do
     it "copies fields and interfaces without altering the original" do
       type.interfaces # load the internal cache
+      assert_equal 4, type.interfaces.size
+      assert_equal 9, type.fields.size
+
       type_2 = type.dup
 
       # IRL, use `+=`, not this
@@ -185,8 +190,8 @@ describe GraphQL::ObjectType do
 
       assert_equal 4, type.interfaces.size
       assert_equal 5, type_2.interfaces.size
-      assert_equal 8, type.fields.size
-      assert_equal 9, type_2.fields.size
+      assert_equal 9, type.fields.size
+      assert_equal 10, type_2.fields.size
     end
   end
 end

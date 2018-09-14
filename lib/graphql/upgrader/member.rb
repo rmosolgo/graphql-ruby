@@ -19,6 +19,7 @@ module GraphQL
       # Recursively transform a `.define`-DSL-based type expression into a class-ready expression, for example:
       #
       # - `types[X]` -> `[X, null: true]`
+      # - `types[X.to_non_null_type]` -> `[X]`
       # - `Int` -> `Integer`
       # - `X!` -> `X`
       #
@@ -37,6 +38,9 @@ module GraphQL
           if inner_type.start_with?("!")
             nullable = false
             inner_type = inner_type[1..-1]
+          elsif inner_type.end_with?(".to_non_null_type")
+            nullable = false
+            inner_type = inner_type[0...-17]
           else
             nullable = true
           end
@@ -647,6 +651,7 @@ module GraphQL
 
             if return_type
               non_nullable = return_type.sub! /(^|[^\[])!/, '\1'
+              non_nullable ||= return_type.sub! /([^\[])\.to_non_null_type([^\]]|$)/, '\1'
               nullable = !non_nullable
               return_type = normalize_type_expression(return_type)
             else
