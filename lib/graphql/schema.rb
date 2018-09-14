@@ -657,7 +657,7 @@ module GraphQL
         :static_validator, :introspection_system,
         :query_analyzers, :tracers, :instrumenters,
         :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-        :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy,
+        :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
         :metadata,
@@ -1001,9 +1001,9 @@ module GraphQL
     # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
     # @api private
     def after_lazy(value)
-      if (lazy_method = lazy_method_name(value))
+      if lazy?(value)
         GraphQL::Execution::Lazy.new do
-          result = value.public_send(lazy_method)
+          result = sync_lazy(value)
           # The returned result might also be lazy, so check it, too
           after_lazy(result) do |final_result|
             yield(final_result) if block_given?
@@ -1012,6 +1012,28 @@ module GraphQL
       else
         yield(value) if block_given?
       end
+    end
+
+    # Override this method to handle lazy objects in a custom way.
+    # @param value [Object] an instance of a class registered with {.lazy_resolve}
+    # @param ctx [GraphQL::Query::Context] the context for this query
+    # @return [Object] A GraphQL-ready (non-lazy) object
+    def self.sync_lazy(value)
+      yield(value)
+    end
+
+    # @see Schema.sync_lazy for a hook to override
+    # @api private
+    def sync_lazy(value)
+      self.class.sync_lazy(value) { |v|
+        lazy_method = lazy_method_name(v)
+        if lazy_method
+          synced_value = value.public_send(lazy_method)
+          sync_lazy(synced_value)
+        else
+          v
+        end
+      }
     end
 
     protected

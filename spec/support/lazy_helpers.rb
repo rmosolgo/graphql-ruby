@@ -22,7 +22,7 @@ module LazyHelpers
     attr_reader :own_value
     attr_writer :value
 
-    def initialize(ctx, own_value)
+    def initialize(own_value)
       @own_value = own_value
       all << self
     end
@@ -56,7 +56,7 @@ module LazyHelpers
       if value == 13
         Wrapper.new(nil)
       else
-        SumAll.new(@context, @object + value)
+        SumAll.new(@object + value)
       end
     end
 
@@ -82,7 +82,7 @@ module LazyHelpers
 
     field :nestedSum, !LazySum do
       argument :value, !types.Int
-      resolve ->(o, args, c) { SumAll.new(c, args[:value]) }
+      resolve ->(o, args, c) { SumAll.new(args[:value]) }
     end
 
     field :nullableNestedSum, LazySum do
@@ -91,7 +91,7 @@ module LazyHelpers
         if args[:value] == 13
           Wrapper.new { raise GraphQL::ExecutionError.new("13 is unlucky") }
         else
-          SumAll.new(c, args[:value])
+          SumAll.new(args[:value])
         end
       }
     end
@@ -142,6 +142,15 @@ module LazyHelpers
     instrument(:query, SumAllInstrumentation.new(counter: nil))
     instrument(:multiplex, SumAllInstrumentation.new(counter: 1))
     instrument(:multiplex, SumAllInstrumentation.new(counter: 2))
+
+    def self.sync_lazy(lazy)
+      if lazy.is_a?(SumAll) && lazy.own_value > 1000
+        lazy.value # clear the previous set
+        lazy.own_value - 900
+      else
+        super
+      end
+    end
   end
 
   def run_query(query_str)
