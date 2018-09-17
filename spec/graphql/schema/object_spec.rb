@@ -144,7 +144,7 @@ describe GraphQL::Schema::Object do
       }
       GRAPHQL
 
-      res = Jazz::Schema.execute(query_str, context: { debug_interpreter: true })
+      res = Jazz::Schema.execute(query_str)
       expected_items = [{"name" => "Bela Fleck and the Flecktones"}, nil]
       assert_equal expected_items, res["data"]["namedEntities"]
     end

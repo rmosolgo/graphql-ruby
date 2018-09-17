@@ -336,7 +336,7 @@ module Dummy
     field :search_dairy, DairyProduct, null: false do
       description "Find dairy products matching a description"
       # This is a list just for testing 😬
-      argument :product, [DairyProductInput, null: true], required: false, default_value: [{"source" => "SHEEP"}]
+      argument :product, [DairyProductInput, null: true], required: false, default_value: [{source: "SHEEP"}]
       argument :expires_after, Time, required: false
     end
 

@@ -115,7 +115,19 @@ TRACE
               # debug "path: #{[write_target, path_part, next_part]}"
               if next_part.nil?
                 debug "writing: (#{result.object_id}) #{path} -> #{value.inspect} (#{type_at(path).inspect})"
-                write_target[path_part] = value
+                if write_target[path_part].nil?
+                  write_target[path_part] = value
+                elsif value == {} || value == [] || value.nil?
+                  # TODO: can we eliminate _all_ duplicate writes?
+                  # Maybe not, since propagating `nil` can remove already-written parts
+                  # of the response.
+                  # But we should have a more explicit check that the incoming
+                  # overwrite is a propagated `nil`, not some random `nil`.
+                  # And as for lists / objects, maybe they need some method other than `write`
+                  # to signify entering that list.
+                else
+                  raise "Invariant: Duplicate write to #{path} (previous: #{write_target[path_part].inspect}, new: #{value.inspect})"
+                end
               elsif write_target.fetch(path_part, :x).nil?
                 # TODO how can we _halt_ execution when this happens?
                 # rather than calculating the value but failing to write it,
@@ -159,8 +171,11 @@ TRACE
           kwarg_arguments = {}
           ast_node.arguments.each do |arg|
             arg_defn = arg_owner.arguments[arg.name]
-            value = arg_to_value(arg_defn.type, arg.value)
-            kwarg_arguments[arg_defn.keyword] = value
+            # TODO not this
+            catch(:skip) do
+              value = arg_to_value(arg_defn.type, arg.value)
+              kwarg_arguments[arg_defn.keyword] = value
+            end
           end
           arg_owner.arguments.each do |name, arg_defn|
             if arg_defn.default_value? && !kwarg_arguments.key?(arg_defn.keyword)
@@ -172,11 +187,18 @@ TRACE
 
         def arg_to_value(arg_defn, ast_value)
           if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-            query.variables[ast_value.name]
+            # If it's not here, it will get added later
+            if query.variables.key?(ast_value.name)
+              query.variables[ast_value.name]
+            else
+              throw :skip
+            end
           elsif arg_defn.is_a?(GraphQL::Schema::NonNull)
             arg_to_value(arg_defn.of_type, ast_value)
           elsif arg_defn.is_a?(GraphQL::Schema::List)
-            ast_value.map do |inner_v|
+            # Treat a single value like a list
+            arg_value = Array(ast_value)
+            arg_value.map do |inner_v|
               arg_to_value(arg_defn.of_type, inner_v)
             end
           elsif arg_defn.is_a?(Class) && arg_defn < GraphQL::Schema::InputObject

@@ -63,6 +63,10 @@ module GraphQL
         end
 
         # TODO: make sure this can support what we need to do
+        # - conditionally skip continuation
+        # - skip continuation; resume later
+        # - continue on a different AST (turning graphql into JSON API)
+        # - Add the result of the field to query.variables
         def wrap_with_directives(node, parent)
           # TODO call out to directive here
           node.directives.each do |dir|
@@ -95,6 +99,8 @@ module GraphQL
 
             trace.with_path(node.alias || node.name) do
               trace.with_type(field_defn.type) do
+                # TODO: check if this field was resolved by some other part of the query.
+                # Don't re-evaluate it if so?
                 object = trace.objects.last
                 if is_introspection
                   object = field_defn.owner.authorized_new(object, context)
@@ -111,7 +117,7 @@ module GraphQL
                 result = field_defn.resolve_field_2(object, kwarg_arguments, context)
 
                 trace.after_lazy(result) do |trace, inner_result|
-                  trace.visitor.continue_field(field_defn.type, inner_result) do |final_trace|
+                  trace.visitor.continue_field(field_defn.type, inner_result, node) do |final_trace|
                     final_trace.debug("Visiting children at #{final_trace.path}")
                     final_trace.visitor.on_abstract_node(node, parent)
                   end
@@ -123,13 +129,14 @@ module GraphQL
           return node, parent
         end
 
-        def continue_value(value)
+        def continue_value(value, ast_node)
           if value.nil?
             trace.write(nil)
             false
           elsif value.is_a?(GraphQL::ExecutionError)
             # TODO this probably needs the node added somewhere
             value.path ||= trace.path.dup
+            value.ast_node ||= ast_node
             context.errors << value
             trace.write(nil)
             false
@@ -140,8 +147,8 @@ module GraphQL
           end
         end
 
-        def continue_field(type, value)
-          if !continue_value(value)
+        def continue_field(type, value, ast_node)
+          if !continue_value(value, ast_node)
             return
           end
 
@@ -157,11 +164,11 @@ module GraphQL
           when TypeKinds::UNION, TypeKinds::INTERFACE
             obj_type = schema.resolve_type(type, value, query.context)
             obj_type = obj_type.metadata[:type_class]
-            continue_field(obj_type, value) { |t| yield(t) }
+            continue_field(obj_type, value, ast_node) { |t| yield(t) }
           when TypeKinds::OBJECT
             object_proxy = type.authorized_new(value, query.context)
             trace.after_lazy(object_proxy) do |inner_trace, inner_obj|
-              if inner_trace.visitor.continue_value(inner_obj)
+              if inner_trace.visitor.continue_value(inner_obj, ast_node)
                 inner_trace.write({})
                 inner_trace.with_type(type) do
                   inner_trace.with_object(inner_obj) do
@@ -177,13 +184,13 @@ module GraphQL
               trace.with_path(idx) do
                 trace.after_lazy(inner_value) do |inner_trace, inner_v|
                   trace.with_type(inner_type) do
-                    inner_trace.visitor.continue_field(inner_type, inner_v) { |t| yield(t) }
+                    inner_trace.visitor.continue_field(inner_type, inner_v, ast_node) { |t| yield(t) }
                   end
                 end
               end
             end
           when TypeKinds::NON_NULL
-            continue_field(type.of_type, value) { |t| yield(t) }
+            continue_field(type.of_type, value, ast_node) { |t| yield(t) }
           else
             raise "Invariant: Unhandled type kind #{type.kind} (#{type})"
           end

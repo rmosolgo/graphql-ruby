@@ -26,9 +26,9 @@ module GraphQL
         end
         trace.result
       rescue
-        puts $!.message
-        puts trace.inspect
-        puts $!.backtrace
+        # puts $!.message
+        # puts trace.inspect
+        # puts $!.backtrace
         raise
       end
     end

@@ -107,7 +107,7 @@ module GraphQL
 
         def edges
           if context[:__temp_running_interpreter]
-            @object.edge_nodes.map { |n| p [n, self.class.edge_class, @object]; self.class.edge_class.new(n, @object) }
+            @object.edge_nodes.map { |n| self.class.edge_class.new(n, @object) }
           else
             # This is done by edges_instrumentation
             @object.edge_nodes

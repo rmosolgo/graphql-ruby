@@ -660,6 +660,7 @@ module GraphQL
         :static_validator, :introspection_system,
         :query_analyzers, :tracers, :instrumenters,
         :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
+        :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
