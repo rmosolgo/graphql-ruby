@@ -286,5 +286,20 @@ describe GraphQL::Relay::ArrayConnection do
         assert_equal(first_second_and_third_names, get_names(result))
       end
     end
+
+    it "raises an execution error when an invalid 'after' cursor is given" do
+      res = star_wars_query(query_string, "after" => "0")
+      errors = res["errors"]
+      assert_equal 3, errors.size, "should have some query errors"
+      assert_equal ["Invalid cursor '0'"], errors.map { |error| error["message"] }.uniq
+    end
+
+    it "raises an execution error when an invalid 'before' cursor is given" do
+      res = star_wars_query(query_string, "before" => "something something")
+      errors = res["errors"]
+      assert_equal 3, errors.size, "should have some query errors"
+      assert_equal ["Invalid cursor 'something something'"],
+        errors.map { |error| error["message"] }.uniq
+    end
   end
 end
