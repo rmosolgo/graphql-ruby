@@ -139,10 +139,14 @@ module GraphQL
         args.each do |key, value|
           arg_defn = @arguments_by_keyword[key]
           if arg_defn
-            prepped_value = prepared_args[key] = load_argument(key, value)
-            if context.schema.lazy?(prepped_value)
-              prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
-                prepared_args[key] = finished_prepped_value
+            if value.nil?
+              prepared_args[key] = value
+            else
+              prepped_value = prepared_args[key] = load_argument(key, value)
+              if context.schema.lazy?(prepped_value)
+                prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
+                  prepared_args[key] = finished_prepped_value
+                end
               end
             end
           else
