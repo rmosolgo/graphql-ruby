@@ -71,7 +71,7 @@ module GraphQL
       def decode(data)
         @encoder.decode(data, nonce: true)
       rescue ArgumentError
-        raise GraphQL::ExecutionError, "Invalid cursor '#{data}'"
+        raise GraphQL::ExecutionError, "Invalid cursor: #{data.inspect}"
       end
 
       # The value passed as `first:`, if there was one. Negative numbers become `0`.
