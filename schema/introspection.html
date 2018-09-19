@@ -268,7 +268,7 @@
 
 <p>The GraphQL spec describes a field which may be added to <em>any</em> selection: <code class="highlighter-rouge">__typename</code>. It returns the name of the current GraphQL type.</p>
 
-<p>You can add fields like this (or override <code class="highlighter-rouge">__typename</code>) by creating a custom <code class="highlighter-rouge">DynmaicFields</code> defintion:</p>
+<p>You can add fields like this (or override <code class="highlighter-rouge">__typename</code>) by creating a custom <code class="highlighter-rouge">DynamicFields</code> defintion:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Introspection</span>
   <span class="k">class</span> <span class="nc">DynamicFields</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Introspection</span><span class="o">::</span><span class="no">DynamicFields</span>

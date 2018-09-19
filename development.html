@@ -112,6 +112,14 @@ bundle exec rake test   # tests only
 
 <p>When a file in <code class="highlighter-rouge">lib/</code> is modified, <code class="highlighter-rouge">guard</code> will run the corresponding file in <code class="highlighter-rouge">spec</code>. Guard also respects <code class="highlighter-rouge"># test_via:</code> comments, so it will run that test when the file changes (if there is no corresponding file by name).</p>
 
+<h4 id="integration-tests">Integration tests</h4>
+
+<p>You need to pick a specific gemfile from gemfiles/ to run integration tests. For example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle install
+BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle exec rake test TEST=spec/integration/rails/graphql/relay/array_connection_spec.rb
+</code></pre></div></div>
+
 <h4 id="other-tests">Other tests</h4>
 
 <p>There are system tests for checking ActionCable behavior, use:</p>
