@@ -6,7 +6,11 @@ function ActionCableLink(options) {
   var cable = options.cable
   var channelName = options.channelName || "GraphqlChannel"
   var actionName = options.actionName || "execute"
-  var connectionParams = options.connectionParams || {}
+  var connectionParams = options.connectionParams
+
+  if (typeof connectionParams !== "object") {
+    connectionParams = {}
+  }
 
   return new ApolloLink(function(operation) {
     return new Observable(function(observer) {
