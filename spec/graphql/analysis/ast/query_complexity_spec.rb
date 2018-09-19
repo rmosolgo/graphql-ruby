@@ -28,7 +28,6 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       }
     |}
 
-    focus
     it "sums the complexity" do
       complexities = reduce_result.first
       assert_equal 7, complexities
@@ -36,7 +35,6 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
     describe "when skipped by directives" do
       let(:variables) { { "isSkipped" => true } }
-      focus
       it "doesn't include skipped fields" do
         complexity = reduce_result.first
         assert_equal 3, complexity
@@ -74,7 +72,6 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       }
     |}
 
-    focus
     it "counts all fragment usages, not the definitions" do
       complexity = reduce_result.first
       assert_equal 10, complexity
@@ -132,7 +129,6 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         }
       |}
 
-      focus
       it "gets the max among options" do
         complexity = reduce_result.first
         assert_equal 6, complexity
@@ -157,7 +153,6 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         }
       |}
 
-      focus
       it "gets the max among interface types" do
         complexity = reduce_result.first
         assert_equal 4, complexity
@@ -185,7 +180,6 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       }
       |}
 
-      focus
       it "only counts them once" do
         complexity = reduce_result.first
         assert_equal 3, complexity
@@ -213,8 +207,8 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     |}
 
     it "gets the complexity" do
-      reduce_result
-      assert_equal 7, complexities.last
+      complexity = reduce_result.first
+      assert_equal 7, complexity
     end
   end
 
@@ -280,9 +274,9 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     |}
 
     it "sums the complexity" do
-      reduce_result
+      complexity = reduce_result.first
       # 10 from `complexity`, `0.3` from `value`
-      assert_equal complexities, [query, 10.3]
+      assert_equal 10.3, complexity
     end
 
     describe "same field on multiple types" do
@@ -296,9 +290,9 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       |}
 
       it "picks them max for those fields" do
-        reduce_result
+        complexity = reduce_result.first
         # 1 for innerComplexity + 4 for DoubleComplexity.value
-        assert_equal complexities, [query, 5]
+        assert_equal 5, complexity
       end
     end
   end

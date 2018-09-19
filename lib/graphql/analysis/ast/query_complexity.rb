@@ -11,16 +11,12 @@ module GraphQL
           @complexities_on_type = [TypeComplexity.new]
           @skip_stack = [false]
           @in_fragment_def = false
-          @selection_sets = [Set.new]
         end
 
         def on_enter_field(node, parent, visitor)
           # We don't want to visit fragment definitions,
           # we'll visit them when we hit the spreads instead
           return if @in_fragment_def
-
-          @visited_fields.last.add(node.alias || node.name)
-          @visited_fields.push(Set.new)
 
           should_skip = @skip_stack.last || skip?(node)
           @skip_stack << should_skip
@@ -37,9 +33,10 @@ module GraphQL
           skipping = @skip_stack.pop
           return if skipping
 
+
           type_complexities = @complexities_on_type.pop
           child_complexity = type_complexities.max_possible_complexity
-          own_complexity = get_complexity(visitor.field_definition, child_complexity)
+          own_complexity = get_complexity(node, visitor.field_definition, child_complexity, visitor)
 
           parent_type = visitor.parent_type_definition
           possible_types = if parent_type.kind.abstract?
@@ -48,8 +45,10 @@ module GraphQL
             [parent_type]
           end
 
+          key = selection_key(visitor.response_path)
+
           possible_types.each do |type|
-            @complexities_on_type.last.merge(type, own_complexity)
+            @complexities_on_type.last.merge(type, key, own_complexity)
           end
         end
 
@@ -59,7 +58,7 @@ module GraphQL
           object_type = if fragment_def.type
             query.schema.types.fetch(fragment_def.type.name, nil)
           else
-            visitor.last
+            visitor.object_types.last
           end
 
           visitor.object_types << object_type
@@ -92,13 +91,21 @@ module GraphQL
           dir.any? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
         end
 
+        def selection_key(response_path)
+          response_path.join(".")
+        end
+
         # Get a complexity value for a field,
         # by getting the number or calling its proc
-        def get_complexity(field_defn, child_complexity)
+        def get_complexity(ast_node, field_defn, child_complexity, visitor)
+        # Return if we've visited this response path before (not counting duplicates)
           defined_complexity = field_defn.complexity
+
+          arguments = query.arguments_for(ast_node, field_defn)
+
           case defined_complexity
           when Proc
-            defined_complexity.call(irep_node.query.context, irep_node.arguments, child_complexity)
+            defined_complexity.call(query.context, arguments, child_complexity)
           when Numeric
             defined_complexity + (child_complexity || 0)
           else
@@ -110,18 +117,20 @@ module GraphQL
         # Find the maximum possible complexity among those combinations.
         class TypeComplexity
           def initialize
-            @types = Hash.new(0)
+            @types = Hash.new { |h, k| h[k] = {} }
           end
 
           # Return the max possible complexity for types in this selection
           def max_possible_complexity
-            @types.each_value.max || 0
+            @types.map do |type, fields|
+              fields.values.inject(:+)
+            end.max
           end
 
           # Store the complexity for the branch on `type_defn`.
           # Later we will see if this is the max complexity among branches.
-          def merge(type_defn, complexity)
-            @types[type_defn] += complexity
+          def merge(type_defn, key, complexity)
+            @types[type_defn][key] = complexity
           end
         end
       end

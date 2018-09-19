@@ -13,6 +13,7 @@ module GraphQL
           @directive_definitions = []
           @query = query
           @schema = query.schema
+          @response_path = []
           super(query.document)
         end
 
@@ -56,6 +57,7 @@ module GraphQL
         end
 
         def on_field(node, parent)
+          @response_path.push(node.alias || node.name)
           parent_type = @object_types.last
           field_definition = @schema.get_field(parent_type, node.name)
           @field_definitions.push(field_definition)
@@ -69,6 +71,7 @@ module GraphQL
           call_analyzers(:on_enter_field, node, parent)
           super
           call_analyzers(:on_leave_field, node, parent)
+          @response_path.pop
           @field_definitions.pop
           @object_types.pop
           @path.pop
@@ -120,6 +123,10 @@ module GraphQL
           call_analyzers(:on_enter_abstract_node, node, parent)
           super
           call_analyzers(:on_leave_abstract_node, node, parent)
+        end
+
+        def response_path
+          @response_path.dup
         end
 
         # @return [GraphQL::BaseType] The current object type
