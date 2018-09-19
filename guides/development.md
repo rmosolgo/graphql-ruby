@@ -73,6 +73,15 @@ bundle exec guard
 
 When a file in `lib/` is modified, `guard` will run the corresponding file in `spec`. Guard also respects `# test_via:` comments, so it will run that test when the file changes (if there is no corresponding file by name).
 
+#### Integration tests
+
+You need to pick a specific gemfile from gemfiles/ to run integration tests. For example:
+
+```
+BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle install
+BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle exec rake test TEST=spec/integration/rails/graphql/relay/array_connection_spec.rb
+```
+
 #### Other tests
 
 There are system tests for checking ActionCable behavior, use:
