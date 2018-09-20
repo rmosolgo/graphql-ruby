@@ -13,12 +13,13 @@ module GraphQL
         extend Forwardable
         def_delegators :query, :schema, :context
         attr_reader :query, :path, :objects, :types, :visitor, :lazies, :parent_trace
-
+        attr_reader :result, :response_nodes
         def initialize(query:)
           # shared by the parent and all children:
           @query = query
           @debug = query.context[:debug_interpreter]
-          @result = {}
+          @result = Interpreter::ResponseNode.new(trace: self, parent: nil)
+          @response_nodes = [@result]
           @parent_trace = nil
           @lazies = []
           @types_at_paths = Hash.new { |h, k| h[k] = {} }
@@ -29,16 +30,16 @@ module GraphQL
           @visitor = Visitor.new(@query.document, trace: self)
         end
 
-        def result
-          if @result[:__completely_nulled]
+        def final_value
+          if @result.omitted?
             nil
           else
-            @result
+            @result.to_result
           end
         end
 
         # Copy bits of state that should be independent:
-        # - @path, @objects, @types, @visitor
+        # - @path, @objects, @types, @visitor, @result_nodes
         # Leave in place those that can be shared:
         # - @query, @result, @lazies
         def initialize_copy(original_trace)
@@ -46,30 +47,27 @@ module GraphQL
           @parent_trace = original_trace
           @path = @path.dup
           @objects = @objects.dup
+          @response_nodes = @response_nodes.dup
           @types = @types.dup
           @visitor = Visitor.new(@query.document, trace: self)
         end
 
-        def with_path(part)
+        def within(part, ast_node, static_type)
+          next_response_node = @response_nodes.last.get_part(part)
+          if next_response_node.nil?
+            return
+          end
+
+          next_response_node.static_type ||= static_type
+          next_response_node.dynamic_type ||= static_type
+          next_response_node.ast_node ||= ast_node
           @path << part
-          r = yield
+          @types << static_type
+          @response_nodes << next_response_node
+          r = yield(next_response_node)
           @path.pop
-          r
-        end
-
-        def with_type(type)
-          @types << type
-          # TODO this seems janky
-          set_type_at_path(type)
-          r = yield
           @types.pop
-          r
-        end
-
-        def with_object(obj)
-          @objects << obj
-          r = yield
-          @objects.pop
+          @response_nodes.pop
           r
         end
 
@@ -80,68 +78,6 @@ Objects: #{@objects.map(&:inspect).join(",")}
 Types: #{@types.map(&:inspect).join(",")}
 Result: #{@result.inspect}
 TRACE
-        end
-
-        # TODO delegate to a collector which does as it pleases with patches
-        def write(value)
-          if @result[:__completely_nulled]
-            nil
-          else
-            res = @result ||= {}
-            write_into_result(res, @path, value)
-          end
-        end
-
-        def write_into_result(result, path, value)
-          if result == false
-            # The whole response was nulled out, whoa
-            nil
-          elsif value.nil? && type_at(path).kind.non_null?
-            # This nil is invalid, try writing it at the previous spot
-            propagate_path = path[0..-2]
-            debug "propagating_nil at #{path} (#{type_at(path).inspect})"
-            if propagate_path.empty?
-              # TODO this is a hack, but we need
-              # some way for child traces to communicate
-              # this to the parent.
-              @result[:__completely_nulled] = true
-            else
-              write_into_result(result, propagate_path, value)
-            end
-          else
-            write_target = result
-            path.each_with_index do |path_part, idx|
-              next_part = path[idx + 1]
-              # debug "path: #{[write_target, path_part, next_part]}"
-              if next_part.nil?
-                debug "writing: (#{result.object_id}) #{path} -> #{value.inspect} (#{type_at(path).inspect})"
-                if write_target[path_part].nil?
-                  write_target[path_part] = value
-                elsif value == {} || value == [] || value.nil?
-                  # TODO: can we eliminate _all_ duplicate writes?
-                  # Maybe not, since propagating `nil` can remove already-written parts
-                  # of the response.
-                  # But we should have a more explicit check that the incoming
-                  # overwrite is a propagated `nil`, not some random `nil`.
-                  # And as for lists / objects, maybe they need some method other than `write`
-                  # to signify entering that list.
-                else
-                  raise "Invariant: Duplicate write to #{path} (previous: #{write_target[path_part].inspect}, new: #{value.inspect})"
-                end
-              elsif write_target.fetch(path_part, :x).nil?
-                # TODO how can we _halt_ execution when this happens?
-                # rather than calculating the value but failing to write it,
-                # can we just not resolve those lazy things?
-                debug "Breaking #{path} on propagated `nil`"
-                break
-              elsif next_part.is_a?(Integer)
-                write_target = write_target[path_part] ||= []
-              else
-                write_target = write_target[path_part] ||= {}
-              end
-            end
-          end
-          nil
         end
 
         def after_lazy(obj)

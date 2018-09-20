@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/execution/interpreter/execution_errors"
+require "graphql/execution/interpreter/response_node"
 require "graphql/execution/interpreter/trace"
 require "graphql/execution/interpreter/visitor"
 
@@ -24,7 +25,7 @@ module GraphQL
           # This will cause a side-effect with Trace#write
           next_wave.each(&:value)
         end
-        trace.result
+        trace.final_value
       rescue
         # puts $!.message
         # puts trace.inspect

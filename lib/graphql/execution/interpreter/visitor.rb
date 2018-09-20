@@ -20,11 +20,11 @@ module GraphQL
             root_type = schema.root_type_for_operation(node.operation_type || "query")
             root_type = root_type.metadata[:type_class]
             object_proxy = root_type.authorized_new(query.root_value, query.context)
-            trace.with_type(root_type) do
-              trace.with_object(object_proxy) do
-                super
-              end
-            end
+            @trace.result.ruby_value = object_proxy
+            @trace.result.static_type = root_type
+            @trace.result.dynamic_type = root_type
+            @trace.result.write({})
+            super
           end
         end
 
@@ -38,7 +38,8 @@ module GraphQL
             type_defn = schema.types[fragment_def.type.name]
             type_defn = type_defn.metadata[:type_class]
             possible_types = schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
-            if possible_types.include?(trace.types.last)
+            owner_type = trace.response_nodes.last.dynamic_type
+            if possible_types.include?(owner_type)
               fragment_def.selections.each do |selection|
                 visit_node(selection, fragment_def)
               end
@@ -83,25 +84,26 @@ module GraphQL
         def on_field(node, parent)
           wrap_with_directives(node, parent) do |node, parent|
             field_name = node.name
-            field_defn = trace.types.last.unwrap.fields[field_name]
+            owner_type = trace.response_nodes.last.dynamic_type.unwrap
+            field_defn = owner_type.fields[field_name]
             is_introspection = false
             if field_defn.nil?
-              field_defn = if trace.types.last == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
+              field_defn = if owner_type == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
                 is_introspection = true
                 entry_point_field.metadata[:type_class]
               elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
                 is_introspection = true
                 dynamic_field.metadata[:type_class]
               else
-                raise "Invariant: no field for #{trace.types.last}.#{field_name}"
+                raise "Invariant: no field for #{owner_type}.#{field_name}"
               end
             end
 
-            trace.with_path(node.alias || node.name) do
-              trace.with_type(field_defn.type) do
-                # TODO: check if this field was resolved by some other part of the query.
-                # Don't re-evaluate it if so?
-                object = trace.objects.last
+            response_key = node.alias || node.name
+            object = trace.response_nodes.last.ruby_value
+            trace.within(response_key, node, field_defn.type) do |response_node|
+              response_node.call_ruby_value do
+                puts "Eval #{response_node.trace.path} (#{response_key}, #{response_node.ruby_value.inspect})"
                 if is_introspection
                   object = field_defn.owner.authorized_new(object, context)
                 end
@@ -114,13 +116,12 @@ module GraphQL
                   kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, node, trace.path.dup)
                 end
 
-                result = field_defn.resolve_field_2(object, kwarg_arguments, context)
+                field_defn.resolve_field_2(object, kwarg_arguments, context)
+              end
 
-                trace.after_lazy(result) do |trace, inner_result|
-                  trace.visitor.continue_field(field_defn.type, inner_result, node) do |final_trace|
-                    final_trace.debug("Visiting children at #{final_trace.path}")
-                    final_trace.visitor.on_abstract_node(node, parent)
-                  end
+              response_node.after_lazy do
+                continue_field(response_node) do
+                  response_node.trace.visitor.on_abstract_node(node, parent)
                 end
               end
             end
@@ -129,26 +130,30 @@ module GraphQL
           return node, parent
         end
 
-        def continue_value(value, ast_node)
-          if value.nil?
-            trace.write(nil)
+        def continue_value(response_node)
+          if response_node.ruby_value.nil?
+            response_node.write(nil)
             false
-          elsif value.is_a?(GraphQL::ExecutionError)
-            # TODO this probably needs the node added somewhere
-            value.path ||= trace.path.dup
-            value.ast_node ||= ast_node
+          elsif response_node.ruby_value.is_a?(GraphQL::ExecutionError)
+            value.path ||= response_node.trace.path.dup
+            value.ast_node ||= response_node.ast_node
             context.errors << value
-            trace.write(nil)
+            response_node.write(nil)
             false
-          elsif GraphQL::Execution::Execute::SKIP == value
+          elsif GraphQL::Execution::Execute::SKIP == response_node.ruby_value
+            response_node.omitted = true
             false
           else
             true
           end
         end
 
-        def continue_field(type, value, ast_node)
-          if !continue_value(value, ast_node)
+        def continue_field(response_node)
+          type = response_node.dynamic_type
+          value = response_node.ruby_value
+          ast_node = response_node.ast_node
+
+          if !continue_value(response_node)
             return
           end
 
@@ -159,38 +164,35 @@ module GraphQL
           case type.kind
           when TypeKinds::SCALAR, TypeKinds::ENUM
             r = type.coerce_result(value, query.context)
-            trace.debug("Writing #{r.inspect} at #{trace.path}")
-            trace.write(r)
+            response_node.write(r)
           when TypeKinds::UNION, TypeKinds::INTERFACE
             obj_type = schema.resolve_type(type, value, query.context)
             obj_type = obj_type.metadata[:type_class]
-            continue_field(obj_type, value, ast_node) { |t| yield(t) }
+            response_node.dynamic_type = obj_type
+            continue_field(response_node) { yield }
           when TypeKinds::OBJECT
             object_proxy = type.authorized_new(value, query.context)
-            trace.after_lazy(object_proxy) do |inner_trace, inner_obj|
-              if inner_trace.visitor.continue_value(inner_obj, ast_node)
-                inner_trace.write({})
-                inner_trace.with_type(type) do
-                  inner_trace.with_object(inner_obj) do
-                    yield(inner_trace)
-                  end
-                end
+            response_node.ruby_value = object_proxy
+            response_node.write({})
+            response_node.after_lazy do
+              if continue_value(response_node)
+                yield
               end
             end
           when TypeKinds::LIST
-            trace.write([])
-            inner_type = type.of_type
-            value.each_with_index.map do |inner_value, idx|
-              trace.with_path(idx) do
-                trace.after_lazy(inner_value) do |inner_trace, inner_v|
-                  trace.with_type(inner_type) do
-                    inner_trace.visitor.continue_field(inner_type, inner_v, ast_node) { |t| yield(t) }
-                  end
+            response_node.write([])
+            inner_type = response_node.dynamic_type.of_type
+            response_node.ruby_value.each_with_index.each do |inner_value, idx|
+              response_node.trace.within(idx, ast_node, inner_type) do |response_node|
+                response_node.ruby_value = inner_value
+                response_node.after_lazy do
+                  continue_field(response_node) { yield }
                 end
               end
             end
           when TypeKinds::NON_NULL
-            continue_field(type.of_type, value, ast_node) { |t| yield(t) }
+            response_node.dynamic_type = response_node.dynamic_type.of_type
+            continue_field(response_node) { yield }
           else
             raise "Invariant: Unhandled type kind #{type.kind} (#{type})"
           end

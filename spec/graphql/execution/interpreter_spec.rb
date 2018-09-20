@@ -52,6 +52,23 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
+    class FieldCounter < GraphQL::Schema::Object
+      field :field_counter, FieldCounter, null: false
+      def field_counter; :field_counter; end
+
+      field :calls, Integer, null: false do
+        argument :expected, Integer, required: true
+      end
+      def calls(expected:)
+        c = context[:calls] += 1
+        if c != expected
+          raise "Expected #{expected} calls but had #{c} so far"
+        else
+          c
+        end
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       field :card, Card, null: true do
         argument :name, String, required: true
@@ -94,6 +111,9 @@ describe GraphQL::Execution::Interpreter do
             Query::CARDS.find { |c| c.name == ent_id }
         end
       end
+
+      field :field_counter, FieldCounter, null: false
+      def field_counter; :field_counter; end
     end
 
     class Schema < GraphQL::Schema
@@ -210,6 +230,37 @@ describe GraphQL::Execution::Interpreter do
       res = InterpreterTest::Schema.execute(query_str)
       # A null in one of the list items removed the whole list
       assert_nil(res["data"])
+    end
+  end
+
+  describe "duplicated fields" do
+    focus
+    it "doesn't run them multiple times" do
+      query_str = <<-GRAPHQL
+      {
+        fieldCounter {
+          calls(expected: 1)
+          # This should not be called since it matches the above
+          calls(expected: 1)
+          fieldCounter {
+            calls(expected: 2)
+          }
+          ...ExtraFields
+        }
+      }
+      fragment ExtraFields on FieldCounter {
+        fieldCounter {
+          # This should not be called since it matches the inline field:
+          calls(expected: 2)
+          # This _should_ be called
+          c3: calls(expected: 3)
+        }
+      }
+      GRAPHQL
+
+      # It will raise an error if it doesn't match the expectation
+      res = InterpreterTest::Schema.execute(query_str, context: { calls: 0 })
+      assert_equal 3, res["data"]["fieldCounter"]["fieldCounter"]["c3"]
     end
   end
 end
