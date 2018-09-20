@@ -306,6 +306,45 @@
 
 <p>In the example above, <code class="highlighter-rouge">PromoteEmployeePolicy#admin?</code> will be checked before running the mutation.</p>
 
+<h4 id="custom-policy-class">Custom Policy Class</h4>
+
+<p>By default, Pundit uses the mutation’s class name to look up a policy. You can override this by defining <code class="highlighter-rouge">self.policy_class</code> on your mutation:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">policy_class</span>
+    <span class="o">::</span><span class="no">UserPolicy</span>
+  <span class="k">end</span>
+
+  <span class="n">pundit_role</span> <span class="ss">:admin</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, the mutation will check <code class="highlighter-rouge">UserPolicy#admin?</code> before running.</p>
+
+<p>Another good approach is to have one policy per mutation. You can implement <code class="highlighter-rouge">self.policy_class</code> to look up a class <em>within</em> the mutation, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">policy_class</span>
+    <span class="c1"># Look up a nested `Policy` constant:</span>
+    <span class="nb">self</span><span class="p">.</span><span class="nf">const_get</span><span class="p">(</span><span class="ss">:Policy</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, each mutation can define its policy inline, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="c1"># This will be found by `BaseMutation.policy_class`, defined above:</span>
+  <span class="k">class</span> <span class="nc">Policy</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+
+  <span class="n">pundit_role</span> <span class="ss">:admin</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, <code class="highlighter-rouge">Mutations::PromoteEmployee::Policy#admin</code> will be checked before running the mutation.</p>
+
 <h4 id="authorizing-loaded-objects">Authorizing Loaded Objects</h4>
 
 <p>Mutations can automatically load and authorize objects by ID using the <code class="highlighter-rouge">loads:</code> option.</p>
