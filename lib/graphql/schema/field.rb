@@ -407,8 +407,9 @@ module GraphQL
       end
 
       # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
+      CONTEXT_EXTRAS = [:path]
       def fetch_extra(extra_name, ctx)
-        if respond_to?(extra_name)
+        if !CONTEXT_EXTRAS.include?(extra_name) && respond_to?(extra_name)
           self.public_send(extra_name)
         elsif ctx.respond_to?(extra_name)
           ctx.public_send(extra_name)
