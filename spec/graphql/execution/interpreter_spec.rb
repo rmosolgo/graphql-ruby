@@ -234,7 +234,6 @@ describe GraphQL::Execution::Interpreter do
   end
 
   describe "duplicated fields" do
-    focus
     it "doesn't run them multiple times" do
       query_str = <<-GRAPHQL
       {

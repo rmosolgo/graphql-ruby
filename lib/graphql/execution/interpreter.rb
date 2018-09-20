@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "graphql/execution/interpreter/execution_errors"
-require "graphql/execution/interpreter/response_node"
 require "graphql/execution/interpreter/trace"
 require "graphql/execution/interpreter/visitor"
 
@@ -18,7 +17,8 @@ module GraphQL
 
       def evaluate
         trace = Trace.new(query: @query)
-        trace.visitor.visit
+        Visitor.new.visit(trace)
+
         while trace.lazies.any?
           next_wave = trace.lazies.dup
           trace.lazies.clear
@@ -27,9 +27,8 @@ module GraphQL
         end
         trace.final_value
       rescue
-        # puts $!.message
-        # puts trace.inspect
-        # puts $!.backtrace
+        puts $!.message
+        puts trace.inspect
         raise
       end
     end
