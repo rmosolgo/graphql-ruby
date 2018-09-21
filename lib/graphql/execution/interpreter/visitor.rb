@@ -108,7 +108,7 @@ module GraphQL
                 end
 
                 app_result = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
-                return_type = field_defn.type
+                return_type = resolve_if_late_bound_type(field_defn.type, trace)
 
                 trace.after_lazy(app_result) do |inner_trace, inner_result|
                   if continue_value(inner_result, field_defn, return_type, ast_node, inner_trace)
@@ -154,6 +154,7 @@ module GraphQL
 
         def continue_field(value, field, type, ast_node, trace)
           type = resolve_if_late_bound_type(type, trace)
+
           case type.kind
           when TypeKinds::SCALAR, TypeKinds::ENUM
             r = type.coerce_result(value, trace.query.context)
