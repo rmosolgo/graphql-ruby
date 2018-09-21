@@ -8,8 +8,6 @@ module GraphQL
       include GraphQL::Schema::Member::HasArguments
       include GraphQL::Schema::Member::HasPath
 
-      CONTEXT_EXTRAS = [:path]
-
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
       alias :graphql_name :name
@@ -407,6 +405,8 @@ module GraphQL
           value
         end
       end
+
+      CONTEXT_EXTRAS = [:path]
 
       # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
       def fetch_extra(extra_name, ctx)
