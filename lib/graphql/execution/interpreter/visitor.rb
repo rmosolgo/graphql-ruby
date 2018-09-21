@@ -6,8 +6,6 @@ module GraphQL
       # The visitor itself is stateless,
       # it delegates state to the `trace`
       class Visitor
-        @@depth = 0
-        @@has_been_1 = false
         def visit(trace)
           root_operation = trace.query.selected_operation
           root_type = trace.schema.root_type_for_operation(root_operation.operation_type || "query")

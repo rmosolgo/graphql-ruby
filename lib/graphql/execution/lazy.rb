@@ -32,14 +32,14 @@ module GraphQL
         if !@resolved
           @resolved = true
           @value = begin
-                     v = @get_value_func.call
-                     if v.is_a?(Lazy)
-                       v = v.value
-                     end
-                     v
-                   rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                     err
-                   end
+            v = @get_value_func.call
+            if v.is_a?(Lazy)
+              v = v.value
+            end
+            v
+          rescue GraphQL::ExecutionError => err
+            err
+          end
         end
 
         if @value.is_a?(StandardError)
@@ -66,7 +66,7 @@ module GraphQL
 
       # This can be used for fields which _had no_ lazy results
       # @api private
-      NullResult = Lazy.new() { }
+      NullResult = Lazy.new(){}
       NullResult.value
     end
   end
