@@ -197,7 +197,7 @@ describe GraphQL::Execution::Interpreter do
     it "is set" do
       # This can be removed later, just a sanity check during migration
       res = InterpreterTest::Schema.execute("{ __typename }")
-      assert_equal true, res.context[:__temp_running_interpreter]
+      assert_equal true, res.context.interpreter?
     end
   end
 

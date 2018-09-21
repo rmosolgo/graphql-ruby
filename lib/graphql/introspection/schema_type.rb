@@ -15,7 +15,7 @@ module GraphQL
 
       def types
         types = @context.warden.types
-        if context[:__temp_running_interpreter]
+        if context.interpreter?
           types.map { |t| t.metadata[:type_class] }
         else
           types

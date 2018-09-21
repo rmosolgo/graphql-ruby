@@ -7,7 +7,6 @@ module GraphQL
   module Execution
     class Interpreter
       def run_query(query)
-        query.context[:__temp_running_interpreter] = true
         @query = query
         @schema = query.schema
         evaluate
@@ -45,10 +44,10 @@ module GraphQL
           # TODO This is to satisfy Execution::Flatten, which should be removed
           @query.context.value = trace.final_value
         end
-      rescue
-        puts $!.message
-        puts trace.inspect
-        raise
+      # rescue
+      #   puts $!.message
+      #   puts trace.inspect
+      #   raise
       end
     end
   end

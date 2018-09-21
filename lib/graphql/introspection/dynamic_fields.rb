@@ -6,7 +6,7 @@ module GraphQL
 
       # `irep_node:` will be nil for the interpreter, since there is no such thing
       def __typename(irep_node: nil)
-        if context[:__temp_running_interpreter]
+        if context.interpreter?
           object.class.graphql_name
         else
           irep_node.owner_type.name

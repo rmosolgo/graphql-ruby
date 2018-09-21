@@ -29,7 +29,8 @@ module GraphQL
       # Override {GraphQL::Schema::Resolver#resolve_with_support} to
       # delete `client_mutation_id` from the kwargs.
       def resolve_with_support(**inputs)
-        if context[:__temp_running_interpreter]
+        # TODO why is this needed?
+        if context.interpreter?
           input = inputs[:input]
         else
           input = inputs

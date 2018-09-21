@@ -149,6 +149,13 @@ module GraphQL
         @path = []
         @value = nil
         @context = self # for SharedMethods
+        # It's applied as all-or-nothing, so checking this one is ok:
+        @interpreter = @schema.query_execution_strategy == GraphQL::Execution::Interpreter
+      end
+
+      # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
+      def interpreter?
+        @interpreter
       end
 
       # @api private
@@ -222,7 +229,7 @@ module GraphQL
         def_delegators :@context,
           :[], :[]=, :key?, :fetch, :to_h, :namespace,
           :spawn, :warden, :errors,
-          :execution_strategy, :strategy
+          :execution_strategy, :strategy, :interpreter?
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node
