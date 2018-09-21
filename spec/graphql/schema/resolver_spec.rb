@@ -56,6 +56,15 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class ResolverWithPath < BaseResolver
+      type String, null: false
+
+      extras [:path]
+      def resolve(path:)
+        path.inspect
+      end
+    end
+
     class Resolver5 < Resolver4
     end
 
@@ -323,6 +332,7 @@ describe GraphQL::Schema::Resolver do
       field :resolver_6, resolver: Resolver6
       field :resolver_7, resolver: Resolver7
       field :resolver_8, resolver: Resolver8
+      field :resolver_with_path, resolver: ResolverWithPath
 
       field :prep_resolver_1, resolver: PrepResolver1
       field :prep_resolver_2, resolver: PrepResolver2
@@ -404,6 +414,11 @@ describe GraphQL::Schema::Resolver do
     it "gets extras" do
       res = exec_query " { resolver4 } ", root_value: OpenStruct.new(value: 0)
       assert_equal 9, res["data"]["resolver4"]
+    end
+
+    it "gets path from extras" do
+      res = exec_query " { resolverWithPath } ", root_value: OpenStruct.new(value: 0)
+      assert_equal '["resolverWithPath"]', res["data"]["resolverWithPath"]
     end
   end
 
