@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+TESTING_INTERPRETER = true
 require "graphql"
 require "jazz"
 require "benchmark/ips"
@@ -45,8 +46,8 @@ module GraphQLBenchmark
       res = SCHEMA.execute(document: DOCUMENT)
     end
     # printer = RubyProf::FlatPrinter.new(result)
-    printer = RubyProf::GraphHtmlPrinter.new(result)
-    # printer = RubyProf::FlatPrinterWithLineNumbers.new(result)
+    # printer = RubyProf::GraphHtmlPrinter.new(result)
+    printer = RubyProf::FlatPrinterWithLineNumbers.new(result)
 
     printer.print(STDOUT, {})
   end

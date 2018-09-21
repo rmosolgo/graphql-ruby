@@ -82,7 +82,6 @@ TRACE
           elsif value.nil? && type_at(path).non_null?
             # This nil is invalid, try writing it at the previous spot
             propagate_path = path[0..-2]
-            debug "propagating_nil at #{path} (#{type_at(path).inspect})"
 
             if propagate_path.empty?
               # TODO this is a hack, but we need
@@ -97,7 +96,6 @@ TRACE
             path.each_with_index do |path_part, idx|
               next_part = path[idx + 1]
               if next_part.nil?
-                debug "writing: (#{result.object_id}) #{path} -> #{value.inspect} (#{type_at(path).inspect})"
                 if write_target[path_part].nil? || (propagating_nil)
                   write_target[path_part] = value
                 else
@@ -109,13 +107,11 @@ TRACE
                   # TODO how can we _halt_ execution when this happens?
                   # rather than calculating the value but failing to write it,
                   # can we just not resolve those lazy things?
-                  debug "Breaking #{path} on propagated `nil`"
                   break
                 end
               end
             end
           end
-          debug result.inspect
           nil
         end
 
@@ -123,11 +119,8 @@ TRACE
           if schema.lazy?(obj)
             # Dup it now so that `path` etc are correct
             next_trace = self.dup
-            next_trace.debug "Forked at #{next_trace.path} from #{trace_id} (#{obj.inspect})"
             @lazies << GraphQL::Execution::Lazy.new do
               next_trace.query.trace("execute_field_lazy", {trace: next_trace}) do
-
-                next_trace.debug "Resumed at #{next_trace.path} #{obj.inspect}"
                 method_name = schema.lazy_method_name(obj)
                 begin
                   inner_obj = obj.public_send(method_name)
