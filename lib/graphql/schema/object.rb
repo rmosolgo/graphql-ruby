@@ -68,10 +68,6 @@ module GraphQL
         @context = context
       end
 
-      def __typename
-        self.class.graphql_name
-      end
-
       class << self
         def implements(*new_interfaces)
           new_interfaces.each do |int|

@@ -91,13 +91,13 @@ module GraphQL
         if @connection.nil?
           # Provide default based on type name
           return_type_name = if (contains_type = @field || @function)
-                               Member::BuildType.to_type_name(contains_type.type)
-                             elsif @return_type_expr
-                               Member::BuildType.to_type_name(@return_type_expr)
-                             else
-                               # As a last ditch, try to force loading the return type:
-                               type.unwrap.name
-                             end
+            Member::BuildType.to_type_name(contains_type.type)
+          elsif @return_type_expr
+            Member::BuildType.to_type_name(@return_type_expr)
+          else
+            # As a last ditch, try to force loading the return type:
+            type.unwrap.name
+          end
           @connection = return_type_name.end_with?("Connection")
         else
           @connection
@@ -250,10 +250,10 @@ MSG
 
           # Normalize to a Hash of {name => options}
           extensions_with_options = if new_extensions.last.is_a?(Hash)
-                                      new_extensions.pop
-                                    else
-                                      {}
-                                    end
+            new_extensions.pop
+          else
+            {}
+          end
           new_extensions.each do |f|
             extensions_with_options[f] = nil
           end
@@ -277,7 +277,7 @@ MSG
         when Proc
           if new_complexity.parameters.size != 3
             fail(
-              "A complexity proc should always accept 3 parameters: ctx, args, child_complexity. " \
+              "A complexity proc should always accept 3 parameters: ctx, args, child_complexity. "\
               "E.g.: complexity ->(ctx, args, child_complexity) { child_complexity * args[:limit] }"
             )
           else
@@ -296,12 +296,12 @@ MSG
       # @return [GraphQL::Field]
       def to_graphql
         field_defn = if @field
-                       @field.dup
-                     elsif @function
-                       GraphQL::Function.build_field(@function)
-                     else
-                       GraphQL::Field.new
-                     end
+          @field.dup
+        elsif @function
+          GraphQL::Function.build_field(@function)
+        else
+          GraphQL::Field.new
+        end
 
         field_defn.name = @name
         if @return_type_expr
@@ -341,12 +341,12 @@ MSG
 
         # Support a passed-in proc, one way or another
         @resolve_proc = if @resolve
-                          @resolve
-                        elsif @function
-                          @function
-                        elsif @field
-                          @field.resolve_proc
-                        end
+          @resolve
+        elsif @function
+          @function
+        elsif @field
+          @field.resolve_proc
+        end
 
         # Ok, `self` isn't a class, but this is for consistency with the classes
         field_defn.metadata[:type_class] = self
