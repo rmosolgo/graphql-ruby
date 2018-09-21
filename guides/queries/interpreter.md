@@ -63,7 +63,7 @@ The internals aren't clean enough to build on yet. Stay tuned.
 
 ## Implementation Notes
 
-Instead of a tree of `irep_nodes`, the interpreter consumes the AST directly. This removes a complicated concept from GraphQL-Ruby (`irep_node`s) and simplifies the query lifecycle.
+Instead of a tree of `irep_nodes`, the interpreter consumes the AST directly. This removes a complicated concept from GraphQL-Ruby (`irep_node`s) and simplifies the query lifecycle. The main difference relates to how fragment spreads are resolved. In the previous runtime, the possible combinations of fields for a given object were calculated ahead of time, then some of those combinations were used during runtime, but many of them may not have been. In the new runtime, no precalculation is made; instead each object is checked against each fragment at runtime.
 
 Instead of creating a `GraphQL::Query::Context::FieldResolutionContext` for _every_ field in the response, the interpreter uses long-lived, mutable objects for execution bookkeeping. This is more complicated to manage, since the changes to those objects can be hard to predict, but it's worth it for the performance gain. When needed, those bookkeeping objects can be "forked", so that two parts of an operation can be resolved independently.
 
