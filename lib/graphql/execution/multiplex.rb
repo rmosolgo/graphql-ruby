@@ -56,17 +56,17 @@ module GraphQL
         def run_queries(schema, queries, context: {}, max_complexity: schema.max_complexity)
           multiplex = self.new(schema: schema, queries: queries, context: context)
           multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
-            if has_custom_strategy?(schema)
+            if supports_multiplexing?(schema)
+              instrument_and_analyze(multiplex, max_complexity: max_complexity) do
+                run_as_multiplex(multiplex)
+              end
+            else
               if queries.length != 1
                 raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
               else
                 instrument_and_analyze(multiplex, max_complexity: max_complexity) do
                   [run_one_legacy(schema, queries.first)]
                 end
-              end
-            else
-              instrument_and_analyze(multiplex, max_complexity: max_complexity) do
-                run_as_multiplex(multiplex)
               end
             end
           end
@@ -82,7 +82,7 @@ module GraphQL
           end
 
           # Then, work through lazy results in a breadth-first way
-          GraphQL::Execution::Execute::ExecutionFunctions.lazy_resolve_root_selection(results, { multiplex: multiplex })
+          multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
 
           # Then, find all errors and assign the result to the query object
           results.each_with_index.map do |data_result, idx|
@@ -105,7 +105,8 @@ module GraphQL
             NO_OPERATION
           else
             begin
-              GraphQL::Execution::Execute::ExecutionFunctions.resolve_root_selection(query)
+              # These were checked to be the same in `#supports_multiplexing?`
+              query.schema.query_execution_strategy.begin_multiplex(query)
             rescue GraphQL::ExecutionError => err
               query.context.errors << err
               NO_OPERATION
@@ -127,6 +128,7 @@ module GraphQL
           else
             # Use `context.value` which was assigned during execution
             result = {
+              # TODO: this is good for execution_functions, but not interpreter, refactor it out.
               "data" => Execution::Flatten.call(query.context)
             }
 
@@ -153,10 +155,15 @@ module GraphQL
           end
         end
 
-        def has_custom_strategy?(schema)
-          schema.query_execution_strategy != GraphQL::Execution::Execute ||
-            schema.mutation_execution_strategy != GraphQL::Execution::Execute ||
-            schema.subscription_execution_strategy != GraphQL::Execution::Execute
+        DEFAULT_STRATEGIES = [
+          GraphQL::Execution::Execute,
+          GraphQL::Execution::Interpreter
+        ]
+        # @return [Boolean] True if the schema is only using one strategy, and it's one that supports multiplexing.
+        def supports_multiplexing?(schema)
+          schema_strategies = [schema.query_execution_strategy, schema.mutation_execution_strategy, schema.subscription_execution_strategy]
+          schema_strategies.uniq!
+          schema_strategies.size == 1 && DEFAULT_STRATEGIES.include?(schema_strategies.first)
         end
 
         # Apply multiplex & query instrumentation to `queries`.

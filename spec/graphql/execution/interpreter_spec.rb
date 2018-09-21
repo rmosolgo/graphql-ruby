@@ -198,6 +198,14 @@ describe GraphQL::Execution::Interpreter do
     assert_equal expected_data, result["data"]
   end
 
+  describe "temporary interpreter flag" do
+    it "is set" do
+      # This can be removed later, just a sanity check during migration
+      res = InterpreterTest::Schema.execute("{ __typename }")
+      assert_equal true, res.context[:__temp_running_interpreter]
+    end
+  end
+
   describe "null propagation" do
     it "propagates nulls" do
       query_str = <<-GRAPHQL

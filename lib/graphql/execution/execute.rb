@@ -24,6 +24,14 @@ module GraphQL
         GraphQL::Execution::Flatten.call(query.context)
       end
 
+      def self.begin_multiplex(query)
+        ExecutionFunctions.resolve_root_selection(query)
+      end
+
+      def self.finish_multiplex(results, multiplex)
+        ExecutionFunctions.lazy_resolve_root_selection(results, multiplex: multiplex)
+      end
+
       # @api private
       module ExecutionFunctions
         module_function
