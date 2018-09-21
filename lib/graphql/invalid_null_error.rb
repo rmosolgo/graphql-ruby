@@ -16,7 +16,7 @@ module GraphQL
       @parent_type = parent_type
       @field = field
       @value = value
-      super("Cannot return null for non-nullable field #{@parent_type.name}.#{@field.name}")
+      super("Cannot return null for non-nullable field #{@parent_type.graphql_name}.#{@field.graphql_name}")
     end
 
     # @return [Hash] An entry for the response's "errors" key

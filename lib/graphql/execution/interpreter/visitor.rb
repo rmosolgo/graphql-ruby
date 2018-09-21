@@ -67,9 +67,7 @@ module GraphQL
           gather_selections(selections, trace, selections_by_name)
           selections_by_name.each do |result_name, fields|
             owner_type = trace.types.last
-            if owner_type.is_a?(Schema::LateBoundType)
-              owner_type = trace.schema.types[owner_type.name]
-            end
+            owner_type = resolve_if_late_bound_type(owner_type, trace)
             ast_node = fields.first
             field_name = ast_node.name
             field_defn = owner_type.fields[field_name]
@@ -84,6 +82,11 @@ module GraphQL
               else
                 raise "Invariant: no field for #{owner_type}.#{field_name}"
               end
+            end
+
+            # TODO: this support is required for introspection types.
+            if !field_defn.respond_to?(:extras)
+              field_defn = field_defn.metadata[:type_class]
             end
 
             trace.with_path(result_name) do
@@ -105,10 +108,11 @@ module GraphQL
                 end
 
                 app_result = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
+                return_type = field_defn.type
 
                 trace.after_lazy(app_result) do |inner_trace, inner_result|
-                  if continue_value(inner_result, ast_node, inner_trace)
-                    continue_field(inner_result, field_defn.type, ast_node, inner_trace) do |final_trace|
+                  if continue_value(inner_result, field_defn, return_type, ast_node, inner_trace)
+                    continue_field(inner_result, field_defn, return_type, ast_node, inner_trace) do |final_trace|
                       all_selections = fields.map(&:selections).inject(&:+)
                       evaluate_selections(all_selections, final_trace)
                     end
@@ -119,15 +123,27 @@ module GraphQL
           end
         end
 
-        def continue_value(value, ast_node, trace)
-          if value.nil?
-            trace.write(nil)
+        def continue_value(value, field, as_type, ast_node, trace)
+          if value.nil? || value.is_a?(GraphQL::ExecutionError)
+            if value.nil?
+              if as_type.non_null?
+                err = GraphQL::InvalidNullError.new(field.owner, field, value)
+                trace.write(err, propagating_nil: true)
+              else
+                trace.write(nil)
+              end
+            else
+              value.path ||= trace.path.dup
+              value.ast_node ||= ast_node
+              trace.write(value, propagating_nil: as_type.non_null?)
+            end
             false
-          elsif value.is_a?(GraphQL::ExecutionError)
-            value.path ||= trace.path.dup
-            value.ast_node ||= ast_node
-            trace.context.errors << value
-            trace.write(nil)
+          elsif value.is_a?(Array) && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
+            value.each do |v|
+              v.path ||= trace.path.dup
+              v.ast_node ||= ast_node
+            end
+            trace.write(value, propagating_nil: as_type.non_null?)
             false
           elsif GraphQL::Execution::Execute::SKIP == value
             false
@@ -136,10 +152,8 @@ module GraphQL
           end
         end
 
-        def continue_field(value, type, ast_node, trace)
-          if type.is_a?(GraphQL::Schema::LateBoundType)
-            type = trace.query.warden.get_type(type.name).metadata[:type_class]
-          end
+        def continue_field(value, field, type, ast_node, trace)
+          type = resolve_if_late_bound_type(type, trace)
           case type.kind
           when TypeKinds::SCALAR, TypeKinds::ENUM
             r = type.coerce_result(value, trace.query.context)
@@ -148,7 +162,7 @@ module GraphQL
             obj_type = trace.schema.resolve_type(type, value, trace.query.context)
             obj_type = obj_type.metadata[:type_class]
             trace.with_type(obj_type) do
-              continue_field(value, obj_type, ast_node, trace) { |t| yield(t) }
+              continue_field(value, field, obj_type, ast_node, trace) { |t| yield(t) }
             end
           when TypeKinds::OBJECT
             object_proxy = type.authorized_new(value, trace.query.context)
@@ -165,8 +179,8 @@ module GraphQL
               trace.with_path(idx) do
                 trace.with_type(inner_type) do
                   trace.after_lazy(inner_value) do |inner_trace, inner_inner_value|
-                    if continue_value(inner_inner_value, ast_node, inner_trace)
-                      continue_field(inner_inner_value, inner_type, ast_node, inner_trace) { |t| yield(t) }
+                    if continue_value(inner_inner_value, field, inner_type, ast_node, inner_trace)
+                      continue_field(inner_inner_value, field, inner_type, ast_node, inner_trace) { |t| yield(t) }
                     end
                   end
                 end
@@ -175,7 +189,7 @@ module GraphQL
           when TypeKinds::NON_NULL
             inner_type = type.of_type
             trace.with_type(inner_type) do
-              continue_field(value, inner_type, ast_node, trace) { |t| yield(t) }
+              continue_field(value, field, inner_type, ast_node, trace) { |t| yield(t) }
             end
           else
             raise "Invariant: Unhandled type kind #{type.kind} (#{type})"
@@ -193,6 +207,14 @@ module GraphQL
             end
           end
           yield
+        end
+
+        def resolve_if_late_bound_type(type, trace)
+          if type.is_a?(GraphQL::Schema::LateBoundType)
+            trace.query.warden.get_type(type.name).metadata[:type_class]
+          else
+            type
+          end
         end
       end
     end

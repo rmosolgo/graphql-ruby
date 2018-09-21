@@ -79,20 +79,29 @@ TRACE
         end
 
         # TODO delegate to a collector which does as it pleases with patches
-        def write(value)
+        def write(value, propagating_nil: false)
           if @result[:__completely_nulled]
             nil
           else
             res = @result ||= {}
-            write_into_result(res, @path, value)
+            write_into_result(res, @path, value, propagating_nil: propagating_nil)
           end
         end
 
-        def write_into_result(result, path, value, propagating_nil: false)
-          if value.nil? && type_at(path).kind.non_null?
+        def write_into_result(result, path, value, propagating_nil:)
+          if value.is_a?(GraphQL::ExecutionError) || (value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError)})
+            Array(value).each do |v|
+              context.errors << v
+            end
+            write_into_result(result, path, nil, propagating_nil: propagating_nil)
+          elsif value.is_a?(GraphQL::InvalidNullError)
+            schema.type_error(value, context)
+            write_into_result(result, path, nil, propagating_nil: true)
+          elsif value.nil? && type_at(path).non_null?
             # This nil is invalid, try writing it at the previous spot
             propagate_path = path[0..-2]
             debug "propagating_nil at #{path} (#{type_at(path).inspect})"
+
             if propagate_path.empty?
               # TODO this is a hack, but we need
               # some way for child traces to communicate

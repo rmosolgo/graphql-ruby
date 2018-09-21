@@ -53,6 +53,7 @@ describe GraphQL::ExecutionError do
     }
     |}
     it "the error is inserted into the errors key and the rest of the query is fulfilled" do
+      # TODO this uses a rescue_from handler which is not supported yet
       expected_result = {
         "data"=>{
           "cheese"=>{
@@ -294,15 +295,27 @@ describe GraphQL::ExecutionError do
   describe "more than one ExecutionError" do
     let(:query_string) { %|{ multipleErrorsOnNonNullableField} |}
     it "the errors are inserted into the errors key and the data is nil even for a NonNullable field " do
+
+      # I Think the path here is _wrong_, since this is not an array field:
+      # expected_result = {
+      #     "data"=>nil,
+      #     "errors"=>
+      #         [{"message"=>"This is an error message for some error.",
+      #           "locations"=>[{"line"=>1, "column"=>3}],
+      #           "path"=>["multipleErrorsOnNonNullableField", 0]},
+      #          {"message"=>"This is another error message for a different error.",
+      #           "locations"=>[{"line"=>1, "column"=>3}],
+      #           "path"=>["multipleErrorsOnNonNullableField", 1]}]
+      # }
       expected_result = {
-          "data"=>nil,
-          "errors"=>
-              [{"message"=>"This is an error message for some error.",
-                "locations"=>[{"line"=>1, "column"=>3}],
-                "path"=>["multipleErrorsOnNonNullableField", 0]},
-               {"message"=>"This is another error message for a different error.",
-                "locations"=>[{"line"=>1, "column"=>3}],
-                "path"=>["multipleErrorsOnNonNullableField", 1]}]
+        "data"=>nil,
+        "errors"=>
+          [{"message"=>"This is an error message for some error.",
+            "locations"=>[{"line"=>1, "column"=>3}],
+            "path"=>["multipleErrorsOnNonNullableField"]},
+           {"message"=>"This is another error message for a different error.",
+            "locations"=>[{"line"=>1, "column"=>3}],
+            "path"=>["multipleErrorsOnNonNullableField"]}],
       }
       assert_equal(expected_result, result)
     end
