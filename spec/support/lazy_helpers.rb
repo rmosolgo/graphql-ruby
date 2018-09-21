@@ -142,6 +142,10 @@ module LazyHelpers
     instrument(:query, SumAllInstrumentation.new(counter: nil))
     instrument(:multiplex, SumAllInstrumentation.new(counter: 1))
     instrument(:multiplex, SumAllInstrumentation.new(counter: 2))
+    # TODO test this
+    # if TESTING_INTERPRETER
+    #   use GraphQL::Execution::Interpreter
+    # end
   end
 
   def run_query(query_str)

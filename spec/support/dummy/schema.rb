@@ -473,16 +473,8 @@ module Dummy
     def self.resolve_type(type, obj, ctx)
       Schema.types[obj.class.name.split("::").last]
     end
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
   end
-
-  # TODO only activate this conditionally;
-  # we need to also test the previous execution here.
-  # TODO encapsulate this in `use` ?
-  Schema.graphql_definition.query_execution_strategy = GraphQL::Execution::Interpreter
-  Schema.graphql_definition.mutation_execution_strategy = GraphQL::Execution::Interpreter
-  Schema.graphql_definition.subscription_execution_strategy = GraphQL::Execution::Interpreter
-  # Don't want this wrapping automatically
-  Schema.instrumenters[:field].delete(GraphQL::Schema::Member::Instrumentation)
-  Schema.instrumenters[:query].delete(GraphQL::Schema::Member::Instrumentation)
-
 end

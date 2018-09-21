@@ -376,6 +376,9 @@ describe GraphQL::Authorization do
     end
 
     class Schema < GraphQL::Schema
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
       query(Query)
       mutation(Mutation)
 
@@ -391,14 +394,6 @@ describe GraphQL::Authorization do
 
       # use GraphQL::Backtrace
     end
-
-    # TODO encapsulate this in `use` ?
-    Schema.graphql_definition.query_execution_strategy = GraphQL::Execution::Interpreter
-    Schema.graphql_definition.mutation_execution_strategy = GraphQL::Execution::Interpreter
-    Schema.graphql_definition.subscription_execution_strategy = GraphQL::Execution::Interpreter
-    # Don't want this wrapping automatically
-    Schema.instrumenters[:field].delete(GraphQL::Schema::Member::Instrumentation)
-    Schema.instrumenters[:query].delete(GraphQL::Schema::Member::Instrumentation)
   end
 
   def auth_execute(*args)

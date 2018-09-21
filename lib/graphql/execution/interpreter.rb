@@ -13,6 +13,13 @@ module GraphQL
         evaluate
       end
 
+      def self.use(schema_defn)
+        # TODO encapsulate this in `use` ?
+        schema_defn.query_execution_strategy(GraphQL::Execution::Interpreter)
+        schema_defn.mutation_execution_strategy(GraphQL::Execution::Interpreter)
+        schema_defn.subscription_execution_strategy(GraphQL::Execution::Interpreter)
+      end
+
       def self.begin_multiplex(query)
         self.new.run_query(query)
       end

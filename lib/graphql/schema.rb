@@ -718,7 +718,6 @@ module GraphQL
             schema_defn.instrumenters[step] << inst
           end
         end
-        schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         lazy_classes.each do |lazy_class, value_method|
           schema_defn.lazy_methods.set(lazy_class, value_method)
         end
@@ -740,6 +739,10 @@ module GraphQL
               end
             end
           end
+        end
+        # Do this after `plugins` since Interpreter is a plugin
+        if schema_defn.query_execution_strategy != GraphQL::Execution::Interpreter
+          schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         end
         schema_defn.send(:rebuild_artifacts)
 

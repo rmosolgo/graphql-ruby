@@ -117,17 +117,10 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class Schema < GraphQL::Schema
+      use GraphQL::Execution::Interpreter
       query(Query)
       lazy_resolve(Box, :value)
     end
-
-    # TODO encapsulate this in `use` ?
-    Schema.graphql_definition.query_execution_strategy = GraphQL::Execution::Interpreter
-    Schema.graphql_definition.mutation_execution_strategy = GraphQL::Execution::Interpreter
-    Schema.graphql_definition.subscription_execution_strategy = GraphQL::Execution::Interpreter
-    # Don't want this wrapping automatically
-    Schema.instrumenters[:field].delete(GraphQL::Schema::Member::Instrumentation)
-    Schema.instrumenters[:query].delete(GraphQL::Schema::Member::Instrumentation)
   end
 
   it "runs a query" do
@@ -208,6 +201,17 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
+  describe "CI setup" do
+    it "sets interpreter based on a constant" do
+      if TESTING_INTERPRETER
+        assert_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
+        assert_equal GraphQL::Execution::Interpreter, Dummy::Schema.query_execution_strategy
+      else
+        refute_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
+        refute_equal GraphQL::Execution::Interpreter, Dummy::Schema.query_execution_strategy
+      end
+    end
+  end
   describe "null propagation" do
     it "propagates nulls" do
       query_str = <<-GRAPHQL
