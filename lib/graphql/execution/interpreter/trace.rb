@@ -51,29 +51,6 @@ module GraphQL
           @fields = @fields.dup
         end
 
-        def with_path(part)
-          @path << part
-          r = yield
-          @path.pop
-          r
-        end
-
-        def with_type(type)
-          @types << type
-          # TODO this seems janky
-          set_type_at_path(type)
-          r = yield
-          @types.pop
-          r
-        end
-
-        def with_object(obj)
-          @objects << obj
-          r = yield
-          @objects.pop
-          r
-        end
-
         def inspect
           <<-TRACE
 Path: #{@path.join(", ")}
