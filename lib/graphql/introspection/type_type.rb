@@ -25,6 +25,10 @@ module GraphQL
       field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: true
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type"), null: true
 
+      def name
+        object.graphql_name
+      end
+
       def kind
         @object.kind.name
       end

@@ -14,7 +14,12 @@ module GraphQL
       field :directives, [GraphQL::Schema::LateBoundType.new("__Directive")], "A list of all directives supported by this server.", null: false
 
       def types
-        @context.warden.types
+        types = @context.warden.types
+        if context[:__temp_running_interpreter]
+          types.map { |t| t.metadata[:type_class] }
+        else
+          types
+        end
       end
 
       def query_type

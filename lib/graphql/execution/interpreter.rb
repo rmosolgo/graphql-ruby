@@ -6,12 +6,6 @@ require "graphql/execution/interpreter/visitor"
 module GraphQL
   module Execution
     class Interpreter
-      # This method is the Executor API
-      # TODO revisit Executor's reason for living.
-      def execute(_ast_operation, _root_type, query)
-        run_query(query)
-      end
-
       def run_query(query)
         query.context[:__temp_running_interpreter] = true
         @query = query

@@ -392,7 +392,7 @@ module GraphQL
     # Fields for this type, after instrumentation is applied
     # @return [Hash<String, GraphQL::Field>]
     def get_fields(type)
-      @instrumented_field_map[type.name]
+      @instrumented_field_map[type.graphql_name]
     end
 
     def type_from_ast(ast_node)

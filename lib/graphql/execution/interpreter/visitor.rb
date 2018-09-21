@@ -36,7 +36,7 @@ module GraphQL
                   type_defn = trace.schema.types[node.type.name]
                   type_defn = type_defn.metadata[:type_class]
                   possible_types = trace.schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
-                  owner_type = trace.types.last
+                  owner_type = resolve_if_late_bound_type(trace.types.last, trace)
                   possible_types.include?(owner_type)
                 else
                   true
@@ -51,7 +51,7 @@ module GraphQL
                 type_defn = trace.schema.types[fragment_def.type.name]
                 type_defn = type_defn.metadata[:type_class]
                 possible_types = trace.schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
-                owner_type = trace.types.last
+                owner_type = resolve_if_late_bound_type(trace.types.last, trace)
                 if possible_types.include?(owner_type)
                   gather_selections(fragment_def.selections, trace, selections_by_name)
                 end
@@ -171,9 +171,11 @@ module GraphQL
           when TypeKinds::OBJECT
             object_proxy = type.authorized_new(value, trace.query.context)
             trace.after_lazy(object_proxy) do |inner_trace, inner_object|
-              inner_trace.write({})
-              inner_trace.with_object(inner_object) do
-                yield(inner_trace)
+              if continue_value(inner_object, field, type, ast_node, inner_trace)
+                inner_trace.write({})
+                inner_trace.with_object(inner_object) do
+                  yield(inner_trace)
+                end
               end
             end
           when TypeKinds::LIST

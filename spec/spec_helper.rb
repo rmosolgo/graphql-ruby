@@ -5,6 +5,9 @@ Bundler.require
 
 # Print full backtrace for failiures:
 ENV["BACKTRACE"] = "1"
+# TODO: use an environment variable to switch this
+# _AND_ TESTING_INTERPRETER
+TESTING_RESCUE_FROM = false
 
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
