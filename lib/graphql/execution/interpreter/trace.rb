@@ -6,11 +6,14 @@ module GraphQL
       # The center of execution state.
       # It's mutable as a performance consideration.
       #
+      # TODO rename so it doesn't conflict with `GraphQL::Tracing`.
+      #
       # @see dup It can be "branched" to create a divergent, parallel execution state.
       class Trace
         extend Forwardable
         def_delegators :query, :schema, :context
-        attr_reader :query, :path, :objects, :result, :types, :lazies, :parent_trace
+        # TODO document these methods
+        attr_reader :query, :path, :objects, :result, :types, :lazies, :parent_trace, :fields
 
         def initialize(query:)
           # shared by the parent and all children:
@@ -24,6 +27,7 @@ module GraphQL
           @path = []
           @objects = []
           @types = []
+          @fields = []
         end
 
         def final_value
@@ -44,6 +48,7 @@ module GraphQL
           @path = @path.dup
           @objects = @objects.dup
           @types = @types.dup
+          @fields = @fields.dup
         end
 
         def with_path(part)
@@ -143,16 +148,19 @@ TRACE
             next_trace = self.dup
             next_trace.debug "Forked at #{next_trace.path} from #{trace_id} (#{obj.inspect})"
             @lazies << GraphQL::Execution::Lazy.new do
-              next_trace.debug "Resumed at #{next_trace.path} #{obj.inspect}"
-              method_name = schema.lazy_method_name(obj)
-              begin
-                inner_obj = obj.public_send(method_name)
-                next_trace.after_lazy(inner_obj) do |really_next_trace, really_inner_obj|
+              next_trace.query.trace("execute_field_lazy", {trace: next_trace}) do
 
-                  yield(really_next_trace, really_inner_obj)
+                next_trace.debug "Resumed at #{next_trace.path} #{obj.inspect}"
+                method_name = schema.lazy_method_name(obj)
+                begin
+                  inner_obj = obj.public_send(method_name)
+                  next_trace.after_lazy(inner_obj) do |really_next_trace, really_inner_obj|
+
+                    yield(really_next_trace, really_inner_obj)
+                  end
+                rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                  yield(next_trace, err)
                 end
-              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                yield(next_trace, err)
               end
             end
           else

@@ -17,15 +17,20 @@ module GraphQL
 
       def evaluate
         trace = Trace.new(query: @query)
-        Visitor.new.visit(trace)
-
-        while trace.lazies.any?
-          next_wave = trace.lazies.dup
-          trace.lazies.clear
-          # This will cause a side-effect with Trace#write
-          next_wave.each(&:value)
+        @query.trace("execute_query", {query: @query}) do
+          Visitor.new.visit(trace)
         end
-        trace.final_value
+
+        @query.trace("execute_query_lazy", {query: @query}) do
+          while trace.lazies.any?
+            next_wave = trace.lazies.dup
+            trace.lazies.clear
+            # This will cause a side-effect with Trace#write
+            next_wave.each(&:value)
+          end
+
+          trace.final_value
+        end
       rescue
         puts $!.message
         puts trace.inspect

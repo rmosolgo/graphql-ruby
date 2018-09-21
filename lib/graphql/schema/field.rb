@@ -39,6 +39,9 @@ module GraphQL
       # @return [Array<Symbol>]
       attr_reader :extras
 
+      # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
+      attr_reader :trace
+
       # Create a field instance from a list of arguments, keyword arguments, and a block.
       #
       # This method implements prioritization between the `resolver` or `mutation` defaults

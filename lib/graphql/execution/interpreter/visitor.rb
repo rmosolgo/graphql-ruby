@@ -89,34 +89,37 @@ module GraphQL
               field_defn = field_defn.metadata[:type_class]
             end
 
+            trace.fields.push(field_defn)
             trace.with_path(result_name) do
               trace.with_type(field_defn.type) do
+                trace.query.trace("execute_field", {trace: trace}) do
+                  object = trace.objects.last
 
-                object = trace.objects.last
+                  if is_introspection
+                    object = field_defn.owner.authorized_new(object, trace.context)
+                  end
 
-                if is_introspection
-                  object = field_defn.owner.authorized_new(object, trace.context)
-                end
+                  kwarg_arguments = trace.arguments(field_defn, ast_node)
+                  # TODO: very shifty that these cached Hashes are being modified
+                  if field_defn.extras.include?(:ast_node)
+                    kwarg_arguments[:ast_node] = ast_node
+                  end
+                  if field_defn.extras.include?(:execution_errors)
+                    kwarg_arguments[:execution_errors] = ExecutionErrors.new(trace.context, ast_node, trace.path.dup)
+                  end
 
-                kwarg_arguments = trace.arguments(field_defn, ast_node)
-                # TODO: very shifty that these cached Hashes are being modified
-                if field_defn.extras.include?(:ast_node)
-                  kwarg_arguments[:ast_node] = ast_node
-                end
-                if field_defn.extras.include?(:execution_errors)
-                  kwarg_arguments[:execution_errors] = ExecutionErrors.new(trace.context, ast_node, trace.path.dup)
-                end
+                  app_result = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
+                  return_type = resolve_if_late_bound_type(field_defn.type, trace)
 
-                app_result = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
-                return_type = resolve_if_late_bound_type(field_defn.type, trace)
-
-                trace.after_lazy(app_result) do |inner_trace, inner_result|
-                  if continue_value(inner_result, field_defn, return_type, ast_node, inner_trace)
-                    continue_field(inner_result, field_defn, return_type, ast_node, inner_trace) do |final_trace|
-                      all_selections = fields.map(&:selections).inject(&:+)
-                      evaluate_selections(all_selections, final_trace)
+                  trace.after_lazy(app_result) do |inner_trace, inner_result|
+                    if continue_value(inner_result, field_defn, return_type, ast_node, inner_trace)
+                      continue_field(inner_result, field_defn, return_type, ast_node, inner_trace) do |final_trace|
+                        all_selections = fields.map(&:selections).inject(&:+)
+                        evaluate_selections(all_selections, final_trace)
+                      end
                     end
                   end
+                  trace.fields.pop
                 end
               end
             end

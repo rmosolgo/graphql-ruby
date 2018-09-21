@@ -17,7 +17,7 @@ describe GraphQL::Tracing::PlatformTracing do
     }
 
     def platform_field_key(type, field)
-      "#{type.name[0]}.#{field.name[0]}"
+      "#{type.graphql_name[0]}.#{field.graphql_name[0]}"
     end
 
     def platform_trace(platform_key, key, data)
