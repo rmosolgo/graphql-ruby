@@ -8,6 +8,19 @@
 
 ### Bug fixes
 
+## 1.8.10 (21 Sep 2018)
+
+### Bug fixes
+
+- When using `loads:` with a nullable mutation input field, allow `null` values to be provided. #1851
+- When an invalid Base64 encoded cursor is provided, raise a `GraphQL::ExecutionError` instead of `ArgumentError`. #1855
+- Fix an issue with `extras: [:path]` would use the field's `path` instead of the `context`. #1859
+
+### New features
+
+- Add scalar type generator `rails g graphql:scalar` #1847
+- Add `#dig` method to `Query::Context` #1861
+
 ## 1.8.9 (13 Sep 2018)
 
 ### Breaking changes
