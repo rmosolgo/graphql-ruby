@@ -67,6 +67,9 @@ module GraphQL
           gather_selections(selections, trace, selections_by_name)
           selections_by_name.each do |result_name, fields|
             owner_type = trace.types.last
+            if owner_type.is_a?(Schema::LateBoundType)
+              owner_type = trace.schema.types[owner_type.name]
+            end
             ast_node = fields.first
             field_name = ast_node.name
             field_defn = owner_type.fields[field_name]

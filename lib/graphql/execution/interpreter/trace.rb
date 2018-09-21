@@ -88,11 +88,8 @@ TRACE
           end
         end
 
-        def write_into_result(result, path, value)
-          if result == false
-            # The whole response was nulled out, whoa
-            nil
-          elsif value.nil? && type_at(path).kind.non_null?
+        def write_into_result(result, path, value, propagating_nil: false)
+          if value.nil? && type_at(path).kind.non_null?
             # This nil is invalid, try writing it at the previous spot
             propagate_path = path[0..-2]
             debug "propagating_nil at #{path} (#{type_at(path).inspect})"
@@ -102,41 +99,32 @@ TRACE
               # this to the parent.
               @result[:__completely_nulled] = true
             else
-              write_into_result(result, propagate_path, value)
+              write_into_result(result, propagate_path, value, propagating_nil: true)
             end
           else
             write_target = result
             path.each_with_index do |path_part, idx|
               next_part = path[idx + 1]
-              # debug "path: #{[write_target, path_part, next_part]}"
               if next_part.nil?
                 debug "writing: (#{result.object_id}) #{path} -> #{value.inspect} (#{type_at(path).inspect})"
-                if write_target[path_part].nil?
+                if write_target[path_part].nil? || (propagating_nil)
                   write_target[path_part] = value
-                elsif value == {} || value == [] || value.nil?
-                  # TODO: can we eliminate _all_ duplicate writes?
-                  # Maybe not, since propagating `nil` can remove already-written parts
-                  # of the response.
-                  # But we should have a more explicit check that the incoming
-                  # overwrite is a propagated `nil`, not some random `nil`.
-                  # And as for lists / objects, maybe they need some method other than `write`
-                  # to signify entering that list.
                 else
                   raise "Invariant: Duplicate write to #{path} (previous: #{write_target[path_part].inspect}, new: #{value.inspect})"
                 end
-              elsif write_target.fetch(path_part, :x).nil?
-                # TODO how can we _halt_ execution when this happens?
-                # rather than calculating the value but failing to write it,
-                # can we just not resolve those lazy things?
-                debug "Breaking #{path} on propagated `nil`"
-                break
-              elsif next_part.is_a?(Integer)
-                write_target = write_target[path_part] ||= []
               else
-                write_target = write_target[path_part] ||= {}
+                write_target = write_target.fetch(path_part, :__unset)
+                if write_target.nil?
+                  # TODO how can we _halt_ execution when this happens?
+                  # rather than calculating the value but failing to write it,
+                  # can we just not resolve those lazy things?
+                  debug "Breaking #{path} on propagated `nil`"
+                  break
+                end
               end
             end
           end
+          debug result.inspect
           nil
         end
 
