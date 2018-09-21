@@ -154,7 +154,7 @@ module GraphQL
       # @api private
       attr_writer :value
 
-      def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch
+      def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch, :dig
       def_delegators :@query, :trace
 
       # @!method [](key)
@@ -220,7 +220,7 @@ module GraphQL
         end
 
         def_delegators :@context,
-          :[], :[]=, :key?, :fetch, :to_h, :namespace,
+          :[], :[]=, :key?, :fetch, :to_h, :namespace, :dig,
           :spawn, :warden, :errors,
           :execution_strategy, :strategy
 
