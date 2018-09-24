@@ -37,15 +37,19 @@ module GraphQL
         end
 
         def trampoline(result)
-          case result
-          when Bounce
-            trampoline(result.continue)
-          when Array
-            result.map { |r| trampoline(r) }
-          when GraphQL::Execution::Lazy
-            trampoline result.value
-          else
-            result
+          bounces = [result]
+          while bounces.any?
+            next_bounce = bounces.shift
+            case next_bounce
+            when Bounce
+              bounces << next_bounce.continue
+            when Array
+              bounces.concat(next_bounce)
+            when GraphQL::Execution::Lazy
+              bounces << next_bounce.value
+            else
+              # nothing
+            end
           end
         end
 
