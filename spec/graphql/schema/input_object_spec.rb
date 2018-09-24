@@ -55,8 +55,8 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-  describe "prepare: / as:" do
-    module InputObjectPrepareTest
+  describe "prepare: / as: (argument)" do
+    module InputObjectPrepareArgumentTest
       class InputObj < GraphQL::Schema::InputObject
         argument :a, Integer, required: true
         argument :b, Integer, required: true, as: :b2
@@ -89,9 +89,78 @@ describe GraphQL::Schema::InputObject do
       { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5 }) }
       GRAPHQL
 
-      res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
+      res = InputObjectPrepareArgumentTest::Schema.execute(query_str, context: { multiply_by: 3 })
       expected_obj = { a: 1, b2: 2, c: 9, d2: 12, e2: 30 }.inspect
       assert_equal expected_obj, res["data"]["inputs"]
+    end
+  end
+
+  describe "prepare (entire input object)" do
+    module InputObjectPrepareTest
+      class InputObj < GraphQL::Schema::InputObject
+        argument :min, Integer, required: true
+        argument :max, Integer, required: false
+
+        def prepare
+          return unless min <= max
+          min..max
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :inputs, String, null: false do
+          argument :input, InputObj, required: true
+        end
+
+        def inputs(input:)
+          input.inspect
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query(Query)
+      end
+    end
+
+    it "calls prepare on the input object (literal)" do
+      query_str = <<-GRAPHQL
+      { inputs(input: { min: 5, max: 10 }) }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(query_str)
+      expected_obj = (5..10).inspect
+      assert_equal expected_obj, res["data"]["inputs"]
+    end
+
+    it "calls prepare on the input object (variable)" do
+      query_str = <<-GRAPHQL
+      query ($input: InputObj!){ inputs(input: $input) }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(query_str, variables: { input: { min: 5, max: 10 } })
+      expected_obj = (5..10).inspect
+      assert_equal expected_obj, res["data"]["inputs"]
+    end
+    
+    it "gives an error if prepare returns nil (literal)" do
+      query_str = <<-GRAPHQL
+      { inputs(input: { min: 10, max: 5 }) }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(query_str)
+      err_msg = "Could not coerce value {min:10,max:5} to InputObj"
+      puts res.to_h.inspect
+      assert_equal err_msg, res["errors"][0]["message"]
+    end
+
+    it "gives an error if prepare returns nil (variable)" do
+      query_str = <<-GRAPHQL
+      query ($input: InputObj!){ inputs(input: $input) }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(query_str, variables: { input: { min: 10, max: 5 } })
+      err_msg = "Variable input of type InputObj! was provided invalid value"
+      assert_equal err_msg, res["errors"][0]["message"]
     end
   end
 

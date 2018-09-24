@@ -99,7 +99,13 @@ module GraphQL
         end
       end
 
-      arguments_class.new(input_values, context: ctx, defaults_used: defaults_used)
+      result = arguments_class.new(input_values, context: ctx, defaults_used: defaults_used)
+
+      if result.respond_to?(:prepare)
+        result = result.prepare
+      end
+
+      result
     end
 
     # @api private
@@ -145,6 +151,11 @@ module GraphQL
         if !field_result.valid?
           result.merge_result!(name, field_result)
         end
+      end
+
+      # Better way to do this, perhaps keeping the coerced value around?
+      if coerce_non_null_input(input, ctx).nil?
+        result.add_problem("Could not coerce value #{GraphQL::Language.serialize(input)} to #{name}")
       end
 
       result
