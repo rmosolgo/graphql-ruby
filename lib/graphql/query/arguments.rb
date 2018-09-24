@@ -153,7 +153,13 @@ module GraphQL
             wrap_value(value, arg_defn_type.of_type, context)
           when GraphQL::InputObjectType
             if value.is_a?(Hash)
-              arg_defn_type.arguments_class.new(value, context: context, defaults_used: Set.new)
+              result = arg_defn_type.arguments_class.new(value, context: context, defaults_used: Set.new)
+              
+              if result.respond_to?(:prepare)
+                result = result.prepare
+              end
+              
+              result
             else
               value
             end

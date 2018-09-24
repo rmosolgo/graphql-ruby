@@ -127,7 +127,10 @@ module GraphQL
             ruby_kwargs
           end
         else
-          argument_owner.arguments_class.new(values_hash, context: context, defaults_used: defaults_used)
+          result = argument_owner.arguments_class.new(values_hash, context: context, defaults_used: defaults_used)
+          if result.respond_to?(:prepare)
+            result = result.prepare
+          end
         end
       end
     end
