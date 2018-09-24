@@ -14,7 +14,7 @@ module GraphQL
       class Visitor
 
         class Bounce
-          def initialize(object, method, arguments)
+          def initialize(object, method, *arguments)
             @object = object
             @method = method
             @arguments = arguments
@@ -32,7 +32,21 @@ module GraphQL
           root_type = root_type.metadata[:type_class]
           object_proxy = root_type.authorized_new(trace.query.root_value, trace.query.context)
 
-          evaluate_selections(path, object_proxy, root_type, root_operation.selections, trace)
+          res = evaluate_selections(path, object_proxy, root_type, root_operation.selections, trace)
+          trampoline(res)
+        end
+
+        def trampoline(result)
+          case result
+          when Bounce
+            trampoline(result.continue)
+          when Array
+            result.map { |r| trampoline(r) }
+          when GraphQL::Execution::Lazy
+            trampoline result.value
+          else
+            result
+          end
         end
 
         def gather_selections(selections, owner_type, trace, selections_by_name)
@@ -78,7 +92,7 @@ module GraphQL
           selections_by_name = {}
           owner_type = resolve_if_late_bound_type(owner_type, trace)
           gather_selections(selections, owner_type, trace, selections_by_name)
-          selections_by_name.each do |result_name, fields|
+          selections_by_name.map do |result_name, fields|
             # Maybe overriden with dynamic_field object
             object = owner_object
             ast_node = fields.first
@@ -172,24 +186,24 @@ module GraphQL
           when TypeKinds::UNION, TypeKinds::INTERFACE
             obj_type = trace.schema.resolve_type(type, value, trace.query.context)
             obj_type = obj_type.metadata[:type_class]
-            continue_field(path, value, field, obj_type, ast_node, trace, next_selections)
+            Bounce.new(self, :continue_field, path, value, field, obj_type, ast_node, trace, next_selections)
           when TypeKinds::OBJECT
             object_proxy = type.authorized_new(value, trace.query.context)
             trace.after_lazy(object_proxy) do |inner_trace, inner_object|
               if continue_value(path, inner_object, field, type, ast_node, inner_trace)
                 inner_trace.write(path, {}, field)
-                evaluate_selections(path, inner_object, type, next_selections, inner_trace)
+                Bounce.new(self, :evaluate_selections, path, inner_object, type, next_selections, inner_trace)
               end
             end
           when TypeKinds::LIST
             trace.write(path, [], field)
             inner_type = type.of_type
-            value.each_with_index.each do |inner_value, idx|
+            value.each_with_index.map do |inner_value, idx|
               # TODO no new object?
               next_path = path + [idx]
               trace.after_lazy(inner_value) do |inner_trace, inner_inner_value|
                 if continue_value(next_path, inner_inner_value, field, inner_type, ast_node, inner_trace)
-                  continue_field(next_path, inner_inner_value, field, inner_type, ast_node, inner_trace, next_selections)
+                  Bounce.new(self, :continue_field, next_path, inner_inner_value, field, inner_type, ast_node, inner_trace, next_selections)
                 end
               end
             end
@@ -197,7 +211,7 @@ module GraphQL
             inner_type = type.of_type
             # Don't `set_type_at_path` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
-            continue_field(path, value, field, inner_type, ast_node, trace, next_selections)
+            Bounce.new(self, :continue_field, path, value, field, inner_type, ast_node, trace, next_selections)
           else
             raise "Invariant: Unhandled type kind #{type.kind} (#{type})"
           end
