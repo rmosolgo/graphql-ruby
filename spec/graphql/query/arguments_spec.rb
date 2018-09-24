@@ -121,6 +121,33 @@ describe GraphQL::Query::Arguments do
     end
   end
 
+  describe "#dig" do
+    it "returns the value at that key" do
+      assert_equal 1, arguments.dig("a")
+      assert_equal 1, arguments.dig(:a)
+      assert arguments.dig("inputObject").is_a?(GraphQL::Query::Arguments)
+    end
+
+    it "works with nested keys" do
+      assert_equal 3, arguments.dig("inputObject", "d")
+      assert_equal 3, arguments.dig(:inputObject, :d)
+      assert_equal 3, arguments.dig("inputObject", :d)
+      assert_equal 3, arguments.dig(:inputObject, "d")
+    end
+
+    it "returns nil for missing keys" do
+      assert_nil arguments.dig("z")
+      assert_nil arguments.dig(7)
+    end
+
+    it "handles underscored keys" do
+      # TODO shouldn't either of these work?
+      # assert_equal 3, arguments.dig('input_object', 'd')
+      # assert_equal 3, arguments.dig(:input_object, :d)
+    end
+  end
+
+
   describe "#key?" do
     let(:arg_values) { [] }
     let(:schema) {
