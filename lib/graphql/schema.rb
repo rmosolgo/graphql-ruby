@@ -83,19 +83,19 @@ module GraphQL
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
-      directives: -> (schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
-      instrument: -> (schema, type, instrumenter, after_built_ins: false) {
+      directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
+      instrument: ->(schema, type, instrumenter, after_built_ins: false) {
         if type == :field && after_built_ins
           type = :field_after_built_ins
         end
         schema.instrumenters[type] << instrumenter
       },
-      query_analyzer: -> (schema, analyzer) { schema.query_analyzers << analyzer },
-      multiplex_analyzer: -> (schema, analyzer) { schema.multiplex_analyzers << analyzer },
-      middleware: -> (schema, middleware) { schema.middleware << middleware },
-      lazy_resolve: -> (schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
-      rescue_from: -> (schema, err_class, &block) { schema.rescue_from(err_class, &block) },
-      tracer: -> (schema, tracer) { schema.tracers.push(tracer) }
+      query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
+      multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
+      middleware: ->(schema, middleware) { schema.middleware << middleware },
+      lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
+      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block) },
+      tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
 
     attr_accessor \
       :query, :mutation, :subscription,
@@ -373,7 +373,7 @@ module GraphQL
         when String
           parent_type
         else
-         raise "Unexpected parent_type: #{parent_type}"
+          raise "Unexpected parent_type: #{parent_type}"
         end
 
         defined_field = @instrumented_field_map[parent_type_name][field_name]

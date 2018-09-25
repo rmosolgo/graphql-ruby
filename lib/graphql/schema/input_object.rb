@@ -68,7 +68,7 @@ module GraphQL
       end
 
       def key?(key)
-        @ruby_style_hash.key?(key) || @arguments&.key?(key)
+        @ruby_style_hash.key?(key) || (@arguments && @arguments.key?(key))
       end
 
       # A copy of the Ruby-style hash
