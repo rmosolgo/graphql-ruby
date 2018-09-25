@@ -44,7 +44,7 @@ class MySchema < GraphQL::Schema
 
   def self.object_from_id(id, query_ctx)
     type_name, item_id = GraphQL::Schema::UniqueWithinType.decode(id)
-    # Now, based on `type_name` and `id`
+    # Now, based on `type_name` and `item_id`
     # find an object in your application
     # ....
   end
@@ -58,7 +58,7 @@ One requirement for Relay's object management is implementing the `"Node"` inter
 To implement the node interface, add {{ "GraphQL::Relay::Node.interface" | api_doc }} to your definition:
 
 ```ruby
-class Types::PostType < GraphQL::Schema::object
+class Types::PostType < GraphQL::Schema::Object
   # Implement the "Node" interface for Relay
   implements GraphQL::Relay::Node.interface
   # ...
