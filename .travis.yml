@@ -42,7 +42,7 @@ matrix:
       - cd spec/dummy && bundle exec rails test:system
   - env:
       - TESTING_INTERPRETER=yes
-    rvm: 2.4.8
+    rvm: 2.4.3
     gemfile: gemfiles/rails_5.2.gemfile
   - rvm: 2.2.8
     gemfile: Gemfile
