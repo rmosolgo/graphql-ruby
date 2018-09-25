@@ -39,7 +39,7 @@ module GraphQL
                 include_fragmment = if node.type
                   type_defn = trace.schema.types[node.type.name]
                   type_defn = type_defn.metadata[:type_class]
-                  possible_types = trace.schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
+                  possible_types = trace.query.warden.possible_types(type_defn).map { |t| t.metadata[:type_class] }
                   owner_type = resolve_if_late_bound_type(trace.types.last, trace)
                   possible_types.include?(owner_type)
                 else
@@ -174,11 +174,20 @@ module GraphQL
             r = type.coerce_result(value, trace.query.context)
             trace.write(r)
           when TypeKinds::UNION, TypeKinds::INTERFACE
-            obj_type = trace.schema.resolve_type(type, value, trace.query.context)
-            obj_type = obj_type.metadata[:type_class]
-            trace.types.push(obj_type)
-            continue_field(value, field, obj_type, ast_node, trace, next_selections)
-            trace.types.pop
+            resolved_type = trace.query.resolve_type(type, value)
+            possible_types = trace.query.possible_types(type)
+
+            if !possible_types.include?(resolved_type)
+              parent_type = field.owner
+              type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
+              trace.schema.type_error(type_error, trace.query.context)
+              trace.write(nil, propagating_nil: field.type.non_null?)
+            else
+              resolved_type = resolved_type.metadata[:type_class]
+              trace.types.push(resolved_type)
+              continue_field(value, field, resolved_type, ast_node, trace, next_selections)
+              trace.types.pop
+            end
           when TypeKinds::OBJECT
             object_proxy = type.authorized_new(value, trace.query.context)
             trace.after_lazy(object_proxy) do |inner_trace, inner_object|

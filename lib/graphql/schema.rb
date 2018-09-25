@@ -969,7 +969,7 @@ module GraphQL
       # @see {.accessible?}
       # @see {.authorized?}
       def call_on_type_class(member, method_name, *args, default:)
-        member = if member.respond_to?(:metadata)
+        member = if member.respond_to?(:metadata) && member.metadata
           member.metadata[:type_class] || member
         else
           member

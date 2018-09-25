@@ -37,7 +37,7 @@ module GraphQL
         if !@object.kind.enum?
           nil
         else
-          enum_values = @context.warden.enum_values(@object)
+          enum_values = @context.warden.enum_values(@object.graphql_definition)
 
           if !include_deprecated
             enum_values = enum_values.select {|f| !f.deprecation_reason }
