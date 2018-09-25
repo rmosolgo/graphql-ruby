@@ -61,25 +61,29 @@ TRACE
         end
 
         # TODO delegate to a collector which does as it pleases with patches
-        def write(value, propagating_nil: false)
+        def write(path, value, field, propagating_nil: false)
           if @result[:__completely_nulled]
             nil
           else
             res = @result ||= {}
-            write_into_result(res, @path, value, propagating_nil: propagating_nil)
+            type = field.type
+            if type.is_a?(Schema::LateBoundType)
+              type = schema.types[type.name]
+            end
+            write_into_result(res, path, type, value, propagating_nil: propagating_nil)
           end
         end
 
-        def write_into_result(result, path, value, propagating_nil:)
+        def write_into_result(result, path, type, value, propagating_nil:)
           if value.is_a?(GraphQL::ExecutionError) || (value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError)})
             Array(value).each do |v|
               context.errors << v
             end
-            write_into_result(result, path, nil, propagating_nil: propagating_nil)
+            write_into_result(result, path, type, nil, propagating_nil: propagating_nil)
           elsif value.is_a?(GraphQL::InvalidNullError)
             schema.type_error(value, context)
-            write_into_result(result, path, nil, propagating_nil: true)
-          elsif value.nil? && type_at(path).non_null?
+            write_into_result(result, path, type, nil, propagating_nil: true)
+          elsif value.nil? && type.non_null?
             # This nil is invalid, try writing it at the previous spot
             propagate_path = path[0..-2]
 
@@ -89,15 +93,17 @@ TRACE
               # this to the parent.
               @result[:__completely_nulled] = true
             else
-              write_into_result(result, propagate_path, value, propagating_nil: true)
+              propagate_type = type_at(propagate_path)
+              write_into_result(result, propagate_path, propagate_type, value, propagating_nil: true)
             end
           else
             write_target = result
             path.each_with_index do |path_part, idx|
               next_part = path[idx + 1]
               if next_part.nil?
-                if write_target[path_part].nil? || (propagating_nil)
+                if write_target[path_part].nil? || propagating_nil
                   write_target[path_part] = value
+                  set_type_at_path(path, type)
                 else
                   raise "Invariant: Duplicate write to #{path} (previous: #{write_target[path_part].inspect}, new: #{value.inspect})"
                 end
@@ -229,7 +235,7 @@ TRACE
           t
         end
 
-        def set_type_at_path(type)
+        def set_type_at_path(type_path, type)
           if type.is_a?(GraphQL::Schema::LateBoundType)
             # TODO need a general way for handling these in the interpreter,
             # since they aren't removed during the cache-building stage.
@@ -237,7 +243,7 @@ TRACE
           end
 
           types = @types_at_paths
-          @path.each do |part|
+          type_path.each do |part|
             if part.is_a?(Integer)
               part = 0
             end
