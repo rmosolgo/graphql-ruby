@@ -278,7 +278,7 @@ module Dummy
     def self.build(type:, data:, id_type: "Int")
       Class.new(self) do
         self.data = data
-        type(type, null: false)
+        type(type, null: true)
         description("Find a #{type.name} by id")
         argument :id, id_type, required: true
       end
