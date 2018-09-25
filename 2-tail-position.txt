@@ -1,0 +1,6 @@
+ef6e94283ecf280b14fe5417a4ee6896a06ebe69
+{"backtraceSize"=>301, "objectCount"=>869, "objectCountBaseline"=>45893}
+Warming up --------------------------------------
+                        10.000  i/100ms
+Calculating -------------------------------------
+                        107.206  (±13.1%) i/s -    520.000  in   5.000888s
