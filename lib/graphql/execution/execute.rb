@@ -187,7 +187,7 @@ module GraphQL
               if list_errors.any?
                 list_errors.each do |error, index|
                   error.ast_node = field_ctx.ast_node
-                  error.path = field_ctx.path + [index]
+                  error.path = field_ctx.path + (field_ctx.type.list? ? [index] : [])
                   query.context.errors.push(error)
                 end
               end

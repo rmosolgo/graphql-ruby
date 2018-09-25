@@ -67,6 +67,15 @@ module Jazz
       super(*args, **options, &block)
     end
 
+    def resolve_field(*)
+      result = super
+      if @upcase && result
+        result.upcase
+      else
+        result
+      end
+    end
+
     def resolve_field_2(*)
       result = super
       if @upcase && result
@@ -644,11 +653,11 @@ module Jazz
     end
 
     class DynamicFields < GraphQL::Introspection::DynamicFields
-      field :__typename_length, Int, null: false
+      field :__typename_length, Int, null: false, extras: [:irep_node]
       field :__ast_node_class, String, null: false, extras: [:ast_node]
 
-      def __typename_length
-        __typename.length
+      def __typename_length(irep_node: nil)
+        __typename(irep_node: irep_node).length
       end
 
       def __ast_node_class(ast_node:)
@@ -660,7 +669,11 @@ module Jazz
       field :__classname, String, "The Ruby class name of the root object", null: false
 
       def __classname
-        object.object.class.name
+        if context.interpreter?
+          object.object.class.name
+        else
+          object.class.name
+        end
       end
     end
   end

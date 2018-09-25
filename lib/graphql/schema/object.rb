@@ -37,8 +37,8 @@ module GraphQL
         def authorized_new(object, context)
           auth_val = begin
             authorized?(object, context)
-          rescue GraphQL::UnauthorizedError => err
-            context.schema.unauthorized_object(err)
+          # rescue GraphQL::UnauthorizedError => err
+          #   context.schema.unauthorized_object(err)
           end
 
           context.schema.after_lazy(auth_val) do |is_authorized|
@@ -53,13 +53,13 @@ module GraphQL
                 if new_obj
                   self.new(new_obj, context)
                 end
-              rescue GraphQL::ExecutionError => err
-                err
+              # rescue GraphQL::ExecutionError => err
+              #   err
               end
             end
           end
-        rescue GraphQL::ExecutionError => err
-          err
+        # rescue GraphQL::ExecutionError => err
+        #   err
         end
       end
 

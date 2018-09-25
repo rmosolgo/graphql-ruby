@@ -6,52 +6,52 @@ describe GraphQL::ExecutionError do
   if TESTING_RESCUE_FROM
     describe "when returned from a field" do
       let(:query_string) {%|
-      {
-        cheese(id: 1) {
-          id
-          error1: similarCheese(source: [YAK]) {
-            ... similarCheeseFields
-          }
-          error2: similarCheese(source: [YAK]) {
-            ... similarCheeseFields
-          }
-          nonError: similarCheese(source: [SHEEP]) {
-            ... similarCheeseFields
-          }
+    {
+      cheese(id: 1) {
+        id
+        error1: similarCheese(source: [YAK]) {
+          ... similarCheeseFields
+        }
+        error2: similarCheese(source: [YAK]) {
+          ... similarCheeseFields
+        }
+        nonError: similarCheese(source: [SHEEP]) {
+          ... similarCheeseFields
+        }
+        flavor
+      }
+      allDairy {
+        ... on Cheese {
           flavor
         }
-        allDairy {
-          ... on Cheese {
-            flavor
-          }
-          ... on Milk {
-            source
-            executionError
-          }
+        ... on Milk {
+          source
+          executionError
         }
-        dairyErrors: allDairy(executionErrorAtIndex: 1) {
-          __typename
-        }
-        dairy {
-          milks {
-            source
-            executionError
-            allDairy {
-              __typename
-              ... on Milk {
-                origin
-                executionError
-              }
+      }
+      dairyErrors: allDairy(executionErrorAtIndex: 1) {
+        __typename
+      }
+      dairy {
+        milks {
+          source
+          executionError
+          allDairy {
+            __typename
+            ... on Milk {
+              origin
+              executionError
             }
           }
         }
-        executionError
-        valueWithExecutionError
       }
+      executionError
+      valueWithExecutionError
+    }
 
-      fragment similarCheeseFields on Cheese {
-        id, flavor
-      }
+    fragment similarCheeseFields on Cheese {
+      id, flavor
+    }
       |}
       it "the error is inserted into the errors key and the rest of the query is fulfilled" do
         expected_result = {

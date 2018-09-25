@@ -39,17 +39,23 @@ describe GraphQL::Tracing::PlatformTracing do
 
     it "calls the platform's own method with its own keys" do
       schema.execute(" { cheese(id: 1) { flavor } }")
-      expected_trace = [
-        "em",
-        "am",
-        "l",
-        "p",
-        "v",
-        "aq",
-        "eq",
-        "Q.c", # notice that the flavor is skipped
-        "eql",
-      ]
+      # TODO This should probably be unified
+      expected_trace = if TESTING_INTERPRETER
+        [
+          "em",
+          "am",
+          "l",
+          "p",
+          "v",
+          "aq",
+          "eq",
+          "Q.c", # notice that the flavor is skipped
+          "eql",
+        ]
+      else
+        ["em", "l", "p", "v", "am", "aq", "eq", "Q.c", "eql"]
+      end
+
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
   end
@@ -67,18 +73,23 @@ describe GraphQL::Tracing::PlatformTracing do
 
     it "only traces traceTrue, not traceFalse or traceNil" do
       schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
-      expected_trace = [
-        "em",
-        "am",
-        "l",
-        "p",
-        "v",
-        "aq",
-        "eq",
-        "Q.t",
-        "T.t",
-        "eql",
-      ]
+      # TODO unify this
+      expected_trace = if TESTING_INTERPRETER
+        [
+          "em",
+          "am",
+          "l",
+          "p",
+          "v",
+          "aq",
+          "eq",
+          "Q.t",
+          "T.t",
+          "eql",
+        ]
+      else
+        ["em", "l", "p", "v", "am", "aq", "eq", "Q.t", "T.t", "eql"]
+      end
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
   end
@@ -96,19 +107,24 @@ describe GraphQL::Tracing::PlatformTracing do
 
     it "traces traceTrue and traceNil but not traceFalse" do
       schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
-      expected_trace = [
-        "em",
-        "am",
-        "l",
-        "p",
-        "v",
-        "aq",
-        "eq",
-        "Q.t",
-        "T.t",
-        "T.t",
-        "eql",
-      ]
+      # TODO unify these
+      expected_trace = if TESTING_INTERPRETER
+        [
+          "em",
+          "am",
+          "l",
+          "p",
+          "v",
+          "aq",
+          "eq",
+          "Q.t",
+          "T.t",
+          "T.t",
+          "eql",
+        ]
+      else
+        ["em", "l", "p", "v", "am", "aq", "eq", "Q.t", "T.t", "T.t", "eql"]
+      end
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
   end
