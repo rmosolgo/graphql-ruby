@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 class GraphqlChannel < ActionCable::Channel::Base
-  QueryType = GraphQL::ObjectType.define do
-    name "Query"
-    field :value, types.Int, resolve: Proc.new { 3 }
-  end
-
-  SubscriptionType = GraphQL::ObjectType.define do
-    name "Subscription"
-    field :payload, PayloadType do
-      argument :id, !types.ID
+  class QueryType < GraphQL::Schema::Object
+    field :value, Integer, null: false
+    def value
+      3
     end
   end
 
-  PayloadType = GraphQL::ObjectType.define do
-    name "Payload"
-    field :value, types.Int
+  class PayloadType < GraphQL::Schema::Object
+    field :value, Integer, null: false
+  end
+
+  class SubscriptionType < GraphQL::Schema::Object
+    field :payload, PayloadType, null: false do
+      argument :id, ID, required: true
+    end
   end
 
   # Wacky behavior around the number 4
