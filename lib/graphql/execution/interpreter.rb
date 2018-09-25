@@ -6,8 +6,14 @@ require "graphql/execution/interpreter/visitor"
 module GraphQL
   module Execution
     class Interpreter
+      # Support `Executor` :S
+      def execute(_operation, _root_type, query)
+        run_query(query)
+      end
+
       def run_query(query)
         @query = query
+        @query.context.interpreter = true
         @schema = query.schema
         evaluate
       end

@@ -149,14 +149,17 @@ module GraphQL
         @path = []
         @value = nil
         @context = self # for SharedMethods
-        # It's applied as all-or-nothing, so checking this one is ok:
-        @interpreter = @schema.query_execution_strategy == GraphQL::Execution::Interpreter
+        # The interpreter will set this
+        @interpreter = nil
       end
 
       # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
       def interpreter?
         @interpreter
       end
+
+      # @api private
+      attr_writer :interpreter
 
       # @api private
       attr_writer :value
