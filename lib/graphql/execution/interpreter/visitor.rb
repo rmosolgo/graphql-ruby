@@ -5,13 +5,19 @@ module GraphQL
     class Interpreter
       # The visitor itself is stateless,
       # it delegates state to the `trace`
-      #
-      # It sets up a lot of context with `push` and `pop`
-      # to keep noise out of the Ruby backtrace.
-      #
-      # I think it would be even better if we could somehow make
-      # `continue_field` not recursive. "Trampolining" it somehow.
       class Visitor
+        class Bounce
+          def initialize(object, method, *arguments)
+            @object = object
+            @method = method
+            @arguments = arguments
+          end
+
+          def continue
+            @object.send(@method, *@arguments)
+          end
+        end
+
         def visit(trace)
           path = []
           root_operation = trace.query.selected_operation
@@ -19,7 +25,25 @@ module GraphQL
           root_type = root_type.metadata[:type_class]
           object_proxy = root_type.authorized_new(trace.query.root_value, trace.query.context)
 
-          evaluate_selections(path, object_proxy, root_type, root_operation.selections, trace)
+          res = evaluate_selections(path, object_proxy, root_type, root_operation.selections, trace)
+          trampoline(res)
+        end
+
+        def trampoline(result)
+          bounces = [result]
+          while bounces.any?
+            next_bounce = bounces.shift
+            case next_bounce
+            when Bounce
+              bounces << next_bounce.continue
+            when Array
+              bounces.concat(next_bounce)
+            when GraphQL::Execution::Lazy
+              bounces << next_bounce.value
+            else
+              # nothing
+            end
+          end
         end
 
         def gather_selections(selections, owner_type, trace, selections_by_name)
@@ -113,7 +137,7 @@ module GraphQL
                 if continue_value(next_path, inner_result, field_defn, return_type, ast_node, inner_trace)
                   # TODO will this be a perf issue for scalar fields?
                   next_selections = fields.map(&:selections).inject(&:+)
-                  continue_field(next_path, inner_result, field_defn, return_type, ast_node, inner_trace, next_selections)
+                  Bounce.new(self, :continue_field, next_path, inner_result, field_defn, return_type, ast_node, inner_trace, next_selections)
                 end
               end
             end
