@@ -74,6 +74,9 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     query(Query)
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
   end
 
   describe ".scope_items(items, ctx)" do

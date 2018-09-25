@@ -42,6 +42,9 @@ class GraphqlChannel < ActionCable::Channel::Base
     subscription(SubscriptionType)
     use GraphQL::Subscriptions::ActionCableSubscriptions,
       serializer: CustomSerializer
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
   end
 
   def subscribed

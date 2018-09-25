@@ -146,6 +146,9 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     query(Query)
     subscription(Subscription)
     use InMemoryBackend::Subscriptions, extra: 123
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
   end
 end
 

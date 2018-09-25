@@ -314,6 +314,9 @@ describe GraphQL::Schema::Resolver do
       query(Query)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
     end
   end
 
