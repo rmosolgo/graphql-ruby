@@ -1,7 +1,8 @@
 # Add the GraphQL-Ruby library in my local directory
 $LOAD_PATH << "./lib"
 require "graphql"
-require "benchmark"
+require "benchmark/ips"
+
 class NestedMetric < GraphQL::Schema::Object
   class << self
     attr_accessor :object_count_baseline
@@ -60,7 +61,7 @@ GC.start
 starting_objects = GC.stat[:heap_live_slots]
 NestedMetric.object_count_baseline = starting_objects
 
-query_str_tmpl = <<-GRAPHQL
+query_str = <<-GRAPHQL
 {
   metric {
     metric {
@@ -80,7 +81,9 @@ query_str_tmpl = <<-GRAPHQL
                                 metric {
                                   metric {
                                     metric {
-                                      %{fields}
+                                      backtraceSize
+                                      objectCount
+                                      objectCountBaseline
                                     }
                                   }
                                 }
@@ -102,25 +105,9 @@ query_str_tmpl = <<-GRAPHQL
 }
 GRAPHQL
 
-metric_query_str = query_str_tmpl % { fields: "backtraceSize objectCount objectCountBaseline" }
-benchmark_query_str = ((((((((((((((query_str_tmpl % { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: query_str_tmpl }) %
-  { fields: "__typename" })
-
 # For posterity
 puts `git rev-parse HEAD`
-res = Schema.execute(metric_query_str)
+res = Schema.execute(query_str)
 
 data = res["data"]
 # Find the leaf values:
@@ -130,4 +117,7 @@ end
 # Print the leaf values
 p data
 
-puts Benchmark.measure { Schema.execute(benchmark_query_str) }
+Benchmark.ips do |x|
+  x.report { Schema.execute(query_str) }
+  x.compare!
+end

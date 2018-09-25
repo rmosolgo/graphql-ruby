@@ -144,7 +144,7 @@ module GraphQL
                 if continue_value(next_path, inner_result, field_defn, return_type, ast_node, inner_trace)
                   # TODO will this be a perf issue for scalar fields?
                   next_selections = fields.map(&:selections).inject(&:+)
-                  continue_field(next_path, inner_result, field_defn, return_type, ast_node, inner_trace, next_selections)
+                  Bounce.new(self, :continue_field, next_path, inner_result, field_defn, return_type, ast_node, inner_trace, next_selections)
                 end
               end
             end
@@ -190,13 +190,13 @@ module GraphQL
           when TypeKinds::UNION, TypeKinds::INTERFACE
             obj_type = trace.schema.resolve_type(type, value, trace.query.context)
             obj_type = obj_type.metadata[:type_class]
-            Bounce.new(self, :continue_field, path, value, field, obj_type, ast_node, trace, next_selections)
+            continue_field(path, value, field, obj_type, ast_node, trace, next_selections)
           when TypeKinds::OBJECT
             object_proxy = type.authorized_new(value, trace.query.context)
             trace.after_lazy(object_proxy) do |inner_trace, inner_object|
               if continue_value(path, inner_object, field, type, ast_node, inner_trace)
                 inner_trace.write(path, {}, field)
-                Bounce.new(self, :evaluate_selections, path, inner_object, type, next_selections, inner_trace)
+                evaluate_selections(path, inner_object, type, next_selections, inner_trace)
               end
             end
           when TypeKinds::LIST
@@ -207,15 +207,13 @@ module GraphQL
               next_path = path + [idx]
               trace.after_lazy(inner_value) do |inner_trace, inner_inner_value|
                 if continue_value(next_path, inner_inner_value, field, inner_type, ast_node, inner_trace)
-                  Bounce.new(self, :continue_field, next_path, inner_inner_value, field, inner_type, ast_node, inner_trace, next_selections)
+                  continue_field(next_path, inner_inner_value, field, inner_type, ast_node, inner_trace, next_selections)
                 end
               end
             end
           when TypeKinds::NON_NULL
             inner_type = type.of_type
-            # Don't `set_type_at_path` because we want the static type,
-            # we're going to use that to determine whether a `nil` should be propagated or not.
-            Bounce.new(self, :continue_field, path, value, field, inner_type, ast_node, trace, next_selections)
+            continue_field(path, value, field, inner_type, ast_node, trace, next_selections)
           else
             raise "Invariant: Unhandled type kind #{type.kind} (#{type})"
           end
