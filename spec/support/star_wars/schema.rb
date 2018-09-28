@@ -15,15 +15,16 @@ module StarWars
     graphql_name "Base"
     implements GraphQL::Relay::Node.interface
     global_id_field :id
-    field :name, String, null: false, resolve: ->(obj, args, ctx) {
+    field :name, String, null: false
+    def name
       LazyWrapper.new {
-        if obj.id.nil?
+        if object.id.nil?
           raise GraphQL::ExecutionError, "Boom!"
         else
-          obj.name
+          object.name
         end
       }
-    }
+    end
     field :planet, String, null: true
   end
 
@@ -338,11 +339,21 @@ module StarWars
   class QueryType < GraphQL::Schema::Object
     graphql_name "Query"
 
-    field :rebels, Faction, null: true, resolve: ->(obj, args, ctx) { StarWars::DATA["Faction"]["1"]}
+    field :rebels, Faction, null: true
+    def rebels
+      StarWars::DATA["Faction"]["1"]
+    end
 
-    field :empire, Faction, null: true, resolve: ->(obj, args, ctx) { StarWars::DATA["Faction"]["2"]}
+    field :empire, Faction, null: true
+    def empire
+      StarWars::DATA["Faction"]["2"]
+    end
 
-    field :largestBase, BaseType, null: true, resolve: ->(obj, args, ctx) { Base.find(3) }
+    field :largestBase, BaseType, null: true
+
+    def largest_base
+      Base.find(3)
+    end
 
     field :newestBasesGroupedByFaction, BaseConnection, null: true
 

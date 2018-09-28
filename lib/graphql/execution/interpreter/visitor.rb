@@ -17,8 +17,8 @@ module GraphQL
         def visit(trace)
           @trace = trace
           root_operation = trace.query.selected_operation
-          root_type = trace.schema.root_type_for_operation(root_operation.operation_type || "query")
-          root_type = root_type.metadata[:type_class]
+          legacy_root_type = trace.schema.root_type_for_operation(root_operation.operation_type || "query")
+          root_type = legacy_root_type.metadata[:type_class] || raise("Invariant: type must be class-based: #{legacy_root_type}")
           object_proxy = root_type.authorized_new(trace.query.root_value, trace.query.context)
 
           path = []

@@ -413,6 +413,9 @@ MSG
       # Called by interpreter
       # TODO rename this, make it public-ish
       def resolve_field_2(obj_or_lazy, args, ctx)
+        if @resolve_proc
+          raise "Can't run resolve proc for #{path} when using GraphQL::Execution::Interpreter"
+        end
         begin
           ctx.schema.after_lazy(obj_or_lazy) do |obj|
             application_object = obj.object
