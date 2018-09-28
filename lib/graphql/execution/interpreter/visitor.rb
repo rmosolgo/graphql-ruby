@@ -96,7 +96,6 @@ module GraphQL
             return_type = resolve_if_late_bound_type(field_defn.type, trace)
 
             # Setup trace context
-            trace.fields.push(field_defn)
             trace.path.push(result_name)
             trace.types.push(return_type)
             # TODO this seems janky, but we need to know
@@ -131,7 +130,6 @@ module GraphQL
             end
             # Teardown trace context,
             # if the trace needs any of it, it will have been capture via `Trace#dup`
-            trace.fields.pop
             trace.path.pop
             trace.types.pop
           end

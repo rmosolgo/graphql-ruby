@@ -13,7 +13,7 @@ module GraphQL
         extend Forwardable
         def_delegators :query, :schema, :context
         # TODO document these methods
-        attr_reader :query, :path, :objects, :result, :types, :lazies, :parent_trace, :fields
+        attr_reader :query, :path, :objects, :result, :types, :lazies, :parent_trace
 
         def initialize(query:)
           # shared by the parent and all children:
@@ -27,7 +27,6 @@ module GraphQL
           @path = []
           @objects = []
           @types = []
-          @fields = []
         end
 
         def final_value
@@ -48,7 +47,6 @@ module GraphQL
           @path = @path.dup
           @objects = @objects.dup
           @types = @types.dup
-          @fields = @fields.dup
         end
 
         def inspect
