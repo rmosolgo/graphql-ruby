@@ -42,6 +42,9 @@ module GraphQL
       # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
       attr_reader :trace
 
+      # @return [String, nil]
+      attr_reader :subscription_scope
+
       # Create a field instance from a list of arguments, keyword arguments, and a block.
       #
       # This method implements prioritization between the `resolver` or `mutation` defaults

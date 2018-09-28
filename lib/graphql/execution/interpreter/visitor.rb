@@ -17,12 +17,13 @@ module GraphQL
         def visit(trace)
           @trace = trace
           root_operation = trace.query.selected_operation
-          legacy_root_type = trace.schema.root_type_for_operation(root_operation.operation_type || "query")
+          root_op_type = root_operation.operation_type || "query"
+          legacy_root_type = trace.schema.root_type_for_operation(root_op_type)
           root_type = legacy_root_type.metadata[:type_class] || raise("Invariant: type must be class-based: #{legacy_root_type}")
           object_proxy = root_type.authorized_new(trace.query.root_value, trace.query.context)
 
           path = []
-          evaluate_selections(path, object_proxy, root_type, root_operation.selections)
+          evaluate_selections(path, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
         end
 
         def gather_selections(owner_type, selections, selections_by_name)
@@ -64,7 +65,7 @@ module GraphQL
           end
         end
 
-        def evaluate_selections(path, owner_object, owner_type, selections)
+        def evaluate_selections(path, owner_object, owner_type, selections, root_operation_type: nil)
           selections_by_name = {}
           owner_type = resolve_if_late_bound_type(owner_type)
           gather_selections(owner_type, selections, selections_by_name)
@@ -113,13 +114,41 @@ module GraphQL
                 kwarg_arguments[:execution_errors] = ExecutionErrors.new(trace.context, ast_node, trace.path.dup)
               end
 
-              app_result = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
+              # TODO:
+              # - extract and fix subscription handling
+              # - implement mutation handling
+              if root_operation_type == "subscription"
+                events = trace.context.namespace(:subscription)[:events]
+                subscription_topic = Subscriptions::Event.serialize(
+                  field_defn.name,
+                  kwarg_arguments,
+                  field_defn,
+                  scope: (field_defn.subscription_scope ? trace.context[field_defn.subscription_scope] : nil),
+                )
 
-              trace.after_lazy(app_result) do |inner_result|
-                if continue_value(next_path, inner_result, field_defn, return_type, ast_node)
-                  # TODO will this be a perf issue for scalar fields?
-                  next_selections = fields.map(&:selections).inject(&:+)
-                  continue_field(next_path, inner_result, field_defn, return_type, ast_node, next_selections)
+                if events
+                  # This is the first execution, so gather an Event
+                  # for the backend to register:
+                  events << Subscriptions::Event.new(
+                    name: field_defn.name,
+                    arguments: kwarg_arguments,
+                    context: trace.context,
+                  )
+                elsif subscription_topic == trace.query.subscription_topic
+                  # The root object is _already_ the subscription update:
+                  continue_field(next_path, object, field_defn, return_type, ast_node, next_selections)
+                else
+                  # This is a subscription update, but this event wasn't triggered.
+                end
+              else
+                app_result = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
+
+                trace.after_lazy(app_result) do |inner_result|
+                  if continue_value(next_path, inner_result, field_defn, return_type, ast_node)
+                    # TODO will this be a perf issue for scalar fields?
+                    next_selections = fields.map(&:selections).inject(&:+)
+                    continue_field(next_path, inner_result, field_defn, return_type, ast_node, next_selections)
+                  end
                 end
               end
             end

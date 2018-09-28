@@ -133,8 +133,12 @@ class ClassBasedInMemoryBackend < InMemoryBackend
       object
     end
 
-    field :failed_event, Payload, null: false, resolve: ->(o, a, c) { raise GraphQL::ExecutionError.new("unauthorized") }  do
+    field :failed_event, Payload, null: false  do
       argument :id, ID, required: true
+    end
+
+    def failed_event
+      raise GraphQL::ExecutionError.new("unauthorized")
     end
   end
 
