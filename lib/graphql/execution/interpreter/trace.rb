@@ -13,7 +13,7 @@ module GraphQL
         extend Forwardable
         def_delegators :query, :schema, :context
         # TODO document these methods
-        attr_reader :query, :result, :types, :lazies, :parent_trace
+        attr_reader :query, :result, :lazies, :parent_trace
 
         def initialize(query:)
           # shared by the parent and all children:
@@ -23,8 +23,6 @@ module GraphQL
           @parent_trace = nil
           @lazies = []
           @types_at_paths = Hash.new { |h, k| h[k] = {} }
-          # Dup'd when the parent forks:
-          @types = []
         end
 
         def final_value
@@ -35,21 +33,8 @@ module GraphQL
           end
         end
 
-        # Copy bits of state that should be independent:
-        # - @types
-        # Leave in place those that can be shared:
-        # - @query, @result, @lazies
-        def initialize_copy(original_trace)
-          super
-          @parent_trace = original_trace
-          @types = @types.dup
-        end
-
         def inspect
-          <<-TRACE
-Types: #{@types.map(&:inspect).join(",")}
-Result: #{@result.inspect}
-TRACE
+          "#<#{self.class.name} result=#{@result.inspect}>"
         end
 
         # TODO delegate to a collector which does as it pleases with patches
@@ -109,24 +94,21 @@ TRACE
 
         def after_lazy(obj)
           if schema.lazy?(obj)
-            # Dup it now so that `path` etc are correct
-            next_trace = self.dup
             @lazies << GraphQL::Execution::Lazy.new do
-              next_trace.query.trace("execute_field_lazy", {trace: next_trace}) do
+              query.trace("execute_field_lazy", {trace: self}) do
                 method_name = schema.lazy_method_name(obj)
                 begin
                   inner_obj = obj.public_send(method_name)
-                  next_trace.after_lazy(inner_obj) do |really_next_trace, really_inner_obj|
-
-                    yield(really_next_trace, really_inner_obj)
+                  after_lazy(inner_obj) do |really_inner_obj|
+                    yield(really_inner_obj)
                   end
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                  yield(next_trace, err)
+                  yield(err)
                 end
               end
             end
           else
-            yield(self, obj)
+            yield(obj)
           end
         end
 

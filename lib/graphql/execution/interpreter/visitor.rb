@@ -18,13 +18,11 @@ module GraphQL
           root_type = root_type.metadata[:type_class]
           object_proxy = root_type.authorized_new(trace.query.root_value, trace.query.context)
 
-          trace.types.push(root_type)
           path = []
-          evaluate_selections(path, object_proxy, root_operation.selections, trace)
-          trace.types.pop
+          evaluate_selections(path, object_proxy, root_type, root_operation.selections, trace)
         end
 
-        def gather_selections(selections, trace, selections_by_name)
+        def gather_selections(owner_type, selections, trace, selections_by_name)
           selections.each do |node|
             case node
             when GraphQL::Language::Nodes::Field
@@ -39,13 +37,12 @@ module GraphQL
                   type_defn = trace.schema.types[node.type.name]
                   type_defn = type_defn.metadata[:type_class]
                   possible_types = trace.query.warden.possible_types(type_defn).map { |t| t.metadata[:type_class] }
-                  owner_type = resolve_if_late_bound_type(trace.types.last, trace)
                   possible_types.include?(owner_type)
                 else
                   true
                 end
                 if include_fragmment
-                  gather_selections(node.selections, trace, selections_by_name)
+                  gather_selections(owner_type, node.selections, trace, selections_by_name)
                 end
               end
             when GraphQL::Language::Nodes::FragmentSpread
@@ -54,9 +51,8 @@ module GraphQL
                 type_defn = trace.schema.types[fragment_def.type.name]
                 type_defn = type_defn.metadata[:type_class]
                 possible_types = trace.schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
-                owner_type = resolve_if_late_bound_type(trace.types.last, trace)
                 if possible_types.include?(owner_type)
-                  gather_selections(fragment_def.selections, trace, selections_by_name)
+                  gather_selections(owner_type, fragment_def.selections, trace, selections_by_name)
                 end
               end
             else
@@ -65,12 +61,11 @@ module GraphQL
           end
         end
 
-        def evaluate_selections(path, owner_object, selections, trace)
+        def evaluate_selections(path, owner_object, owner_type, selections, trace)
           selections_by_name = {}
-          gather_selections(selections, trace, selections_by_name)
+          owner_type = resolve_if_late_bound_type(owner_type, trace)
+          gather_selections(owner_type, selections, trace, selections_by_name)
           selections_by_name.each do |result_name, fields|
-            owner_type = trace.types.last
-            owner_type = resolve_if_late_bound_type(owner_type, trace)
             ast_node = fields.first
             field_name = ast_node.name
             field_defn = owner_type.fields[field_name]
@@ -94,10 +89,7 @@ module GraphQL
 
             return_type = resolve_if_late_bound_type(field_defn.type, trace)
 
-            # Setup trace context
-
             next_path = [*path, result_name]
-            trace.types.push(return_type)
             # TODO this seems janky, but we need to know
             # the field's return type at this path in order
             # to propagate `null`
@@ -120,17 +112,14 @@ module GraphQL
 
               app_result = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
 
-              trace.after_lazy(app_result) do |inner_trace, inner_result|
-                if continue_value(next_path, inner_result, field_defn, return_type, ast_node, inner_trace)
+              trace.after_lazy(app_result) do |inner_result|
+                if continue_value(next_path, inner_result, field_defn, return_type, ast_node, trace)
                   # TODO will this be a perf issue for scalar fields?
                   next_selections = fields.map(&:selections).inject(&:+)
-                  continue_field(next_path, inner_result, field_defn, return_type, ast_node, inner_trace, next_selections)
+                  continue_field(next_path, inner_result, field_defn, return_type, ast_node, trace, next_selections)
                 end
               end
             end
-            # Teardown trace context,
-            # if the trace needs any of it, it will have been capture via `Trace#dup`
-            trace.types.pop
           end
         end
 
@@ -181,39 +170,33 @@ module GraphQL
               trace.write(path, nil, propagating_nil: field.type.non_null?)
             else
               resolved_type = resolved_type.metadata[:type_class]
-              trace.types.push(resolved_type)
               continue_field(path, value, field, resolved_type, ast_node, trace, next_selections)
-              trace.types.pop
             end
           when TypeKinds::OBJECT
             object_proxy = type.authorized_new(value, trace.query.context)
-            trace.after_lazy(object_proxy) do |inner_trace, inner_object|
-              if continue_value(path, inner_object, field, type, ast_node, inner_trace)
-                inner_trace.write(path, {})
-                evaluate_selections(path, inner_object, next_selections, inner_trace)
+            trace.after_lazy(object_proxy) do |inner_object|
+              if continue_value(path, inner_object, field, type, ast_node, trace)
+                trace.write(path, {})
+                evaluate_selections(path, inner_object, type, next_selections, trace)
               end
             end
           when TypeKinds::LIST
             trace.write(path, [])
             inner_type = type.of_type
             value.each_with_index.each do |inner_value, idx|
-              trace.types.push(inner_type)
               next_path = [*path, idx]
               trace.set_type_at_path(next_path, inner_type)
-              trace.after_lazy(inner_value) do |inner_trace, inner_inner_value|
-                if continue_value(next_path, inner_inner_value, field, inner_type, ast_node, inner_trace)
-                  continue_field(next_path, inner_inner_value, field, inner_type, ast_node, inner_trace, next_selections)
+              trace.after_lazy(inner_value) do |inner_inner_value|
+                if continue_value(next_path, inner_inner_value, field, inner_type, ast_node, trace)
+                  continue_field(next_path, inner_inner_value, field, inner_type, ast_node, trace, next_selections)
                 end
               end
-              trace.types.pop
             end
           when TypeKinds::NON_NULL
             inner_type = type.of_type
             # Don't `set_type_at_path` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
-            trace.types.push(inner_type)
             continue_field(path, value, field, inner_type, ast_node, trace, next_selections)
-            trace.types.pop
           else
             raise "Invariant: Unhandled type kind #{type.kind} (#{type})"
           end
