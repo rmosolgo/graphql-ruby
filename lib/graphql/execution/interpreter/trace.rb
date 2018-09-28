@@ -13,7 +13,7 @@ module GraphQL
         extend Forwardable
         def_delegators :query, :schema, :context
         # TODO document these methods
-        attr_reader :query, :path, :result, :types, :lazies, :parent_trace
+        attr_reader :query, :result, :types, :lazies, :parent_trace
 
         def initialize(query:)
           # shared by the parent and all children:
@@ -24,7 +24,6 @@ module GraphQL
           @lazies = []
           @types_at_paths = Hash.new { |h, k| h[k] = {} }
           # Dup'd when the parent forks:
-          @path = []
           @types = []
         end
 
@@ -37,31 +36,29 @@ module GraphQL
         end
 
         # Copy bits of state that should be independent:
-        # - @path, @types
+        # - @types
         # Leave in place those that can be shared:
         # - @query, @result, @lazies
         def initialize_copy(original_trace)
           super
           @parent_trace = original_trace
-          @path = @path.dup
           @types = @types.dup
         end
 
         def inspect
           <<-TRACE
-Path: #{@path.join(", ")}
 Types: #{@types.map(&:inspect).join(",")}
 Result: #{@result.inspect}
 TRACE
         end
 
         # TODO delegate to a collector which does as it pleases with patches
-        def write(value, propagating_nil: false)
+        def write(path, value, propagating_nil: false)
           if @result[:__completely_nulled]
             nil
           else
             res = @result ||= {}
-            write_into_result(res, @path, value, propagating_nil: propagating_nil)
+            write_into_result(res, path, value, propagating_nil: propagating_nil)
           end
         end
 
@@ -224,7 +221,7 @@ TRACE
           t
         end
 
-        def set_type_at_path(type)
+        def set_type_at_path(path, type)
           if type.is_a?(GraphQL::Schema::LateBoundType)
             # TODO need a general way for handling these in the interpreter,
             # since they aren't removed during the cache-building stage.
@@ -232,7 +229,7 @@ TRACE
           end
 
           types = @types_at_paths
-          @path.each do |part|
+          path.each do |part|
             if part.is_a?(Integer)
               part = 0
             end
