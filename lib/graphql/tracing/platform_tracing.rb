@@ -31,7 +31,7 @@ module GraphQL
             platform_key = field.metadata[:platform_key]
             trace_field = true # implemented with instrumenter
           else
-            field = data[:trace].fields.last
+            field = data[:field]
             # TODO lots of duplicated work here, can this be done ahead of time?
             platform_key = platform_field_key(field.owner, field)
             return_type = field.type.unwrap

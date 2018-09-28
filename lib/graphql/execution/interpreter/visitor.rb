@@ -94,7 +94,7 @@ module GraphQL
             # the field's return type at this path in order
             # to propagate `null`
             trace.set_type_at_path(next_path, return_type)
-            trace.query.trace("execute_field", {trace: trace}) do
+            trace.query.trace("execute_field", {field: field_defn}) do
               object = owner_object
 
               if is_introspection
