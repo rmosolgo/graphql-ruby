@@ -7,8 +7,6 @@ module GraphQL
       # It's mutable as a performance consideration.
       #
       # TODO rename so it doesn't conflict with `GraphQL::Tracing`.
-      #
-      # @see dup It can be "branched" to create a divergent, parallel execution state.
       class Trace
         extend Forwardable
         def_delegators :query, :schema, :context
@@ -20,7 +18,6 @@ module GraphQL
           @query = query
           @debug = query.context[:debug_interpreter]
           @result = {}
-          @parent_trace = nil
           @lazies = []
           @types_at_paths = Hash.new { |h, k| h[k] = {} }
         end
@@ -175,16 +172,8 @@ module GraphQL
           end
         end
 
-        def trace_id
-          if @parent_trace
-            "#{@parent_trace.trace_id}/#{object_id - @parent_trace.object_id}"
-          else
-            "0"
-          end
-        end
-
         def debug(str)
-          @debug && (puts "[T#{trace_id}] #{str}")
+          @debug && (puts "[Trace] #{str}")
         end
 
         # TODO this is kind of a hack.
