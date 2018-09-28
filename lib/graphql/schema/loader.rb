@@ -55,6 +55,27 @@ module GraphQL
           end
         end
 
+        def extract_default_value(default_value_str, input_value_ast)
+          case input_value_ast
+          when String, Integer, Float, TrueClass, FalseClass
+            input_value_ast
+          when GraphQL::Language::Nodes::Enum
+            input_value_ast.name
+          when GraphQL::Language::Nodes::NullValue
+            nil
+          when GraphQL::Language::Nodes::InputObject
+            input_value_ast.to_h
+          when Array
+            input_value_ast.map { |element| extract_default_value(default_value_str, element) }
+          else
+            raise(
+              "Encountered unexpected type when loading default value. "\
+                    "input_value_ast.class is #{input_value_ast.class} "\
+                    "default_value is #{default_value_str}"
+            )
+          end
+        end
+
         def define_type(type, type_resolver)
           case type.fetch("kind")
           when "ENUM"
@@ -119,22 +140,7 @@ module GraphQL
                 # Reach into the AST for the default value:
                 input_value_ast = dummy_query_ast.definitions.first.variables.first.default_value
 
-                case input_value_ast
-                when String, Integer, Float, TrueClass, FalseClass, Array
-                  input_value_ast
-                when GraphQL::Language::Nodes::Enum
-                  input_value_ast.name
-                when GraphQL::Language::Nodes::NullValue
-                  nil
-                when GraphQL::Language::Nodes::InputObject
-                  input_value_ast.to_h
-                else
-                  raise(
-                    "Encountered unexpected type when loading default value. "\
-                    "input_value_ast.class is #{input_value_ast.class} "\
-                    "default_value is #{default_value_str}"
-                  )
-                end
+                extract_default_value(default_value_str, input_value_ast)
               end
             end
 
