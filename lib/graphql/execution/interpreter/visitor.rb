@@ -19,10 +19,8 @@ module GraphQL
           object_proxy = root_type.authorized_new(trace.query.root_value, trace.query.context)
 
           trace.types.push(root_type)
-          trace.objects.push(object_proxy)
-          evaluate_selections(root_operation.selections, trace)
+          evaluate_selections(object_proxy, root_operation.selections, trace)
           trace.types.pop
-          trace.objects.pop
         end
 
         def gather_selections(selections, trace, selections_by_name)
@@ -66,7 +64,7 @@ module GraphQL
           end
         end
 
-        def evaluate_selections(selections, trace)
+        def evaluate_selections(owner_object, selections, trace)
           selections_by_name = {}
           gather_selections(selections, trace, selections_by_name)
           selections_by_name.each do |result_name, fields|
@@ -103,7 +101,7 @@ module GraphQL
             # to propagate `null`
             trace.set_type_at_path(return_type)
             trace.query.trace("execute_field", {trace: trace}) do
-              object = trace.objects.last
+              object = owner_object
 
               if is_introspection
                 object = field_defn.owner.authorized_new(object, trace.context)
@@ -191,9 +189,7 @@ module GraphQL
             trace.after_lazy(object_proxy) do |inner_trace, inner_object|
               if continue_value(inner_object, field, type, ast_node, inner_trace)
                 inner_trace.write({})
-                inner_trace.objects.push(inner_object)
-                evaluate_selections(next_selections, inner_trace)
-                inner_trace.objects.pop
+                evaluate_selections(inner_object, next_selections, inner_trace)
               end
             end
           when TypeKinds::LIST

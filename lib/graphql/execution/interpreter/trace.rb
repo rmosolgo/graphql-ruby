@@ -13,7 +13,7 @@ module GraphQL
         extend Forwardable
         def_delegators :query, :schema, :context
         # TODO document these methods
-        attr_reader :query, :path, :objects, :result, :types, :lazies, :parent_trace
+        attr_reader :query, :path, :result, :types, :lazies, :parent_trace
 
         def initialize(query:)
           # shared by the parent and all children:
@@ -25,7 +25,6 @@ module GraphQL
           @types_at_paths = Hash.new { |h, k| h[k] = {} }
           # Dup'd when the parent forks:
           @path = []
-          @objects = []
           @types = []
         end
 
@@ -38,21 +37,19 @@ module GraphQL
         end
 
         # Copy bits of state that should be independent:
-        # - @path, @objects, @types
+        # - @path, @types
         # Leave in place those that can be shared:
         # - @query, @result, @lazies
         def initialize_copy(original_trace)
           super
           @parent_trace = original_trace
           @path = @path.dup
-          @objects = @objects.dup
           @types = @types.dup
         end
 
         def inspect
           <<-TRACE
 Path: #{@path.join(", ")}
-Objects: #{@objects.map(&:inspect).join(",")}
 Types: #{@types.map(&:inspect).join(",")}
 Result: #{@result.inspect}
 TRACE
