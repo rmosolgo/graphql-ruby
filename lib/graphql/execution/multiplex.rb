@@ -75,10 +75,12 @@ module GraphQL
         private
 
         def run_as_multiplex(multiplex)
+
+          multiplex.schema.query_execution_strategy.begin_multiplex(multiplex)
           queries = multiplex.queries
           # Do as much eager evaluation of the query as possible
           results = queries.map do |query|
-            begin_query(query)
+            begin_query(query, multiplex)
           end
 
           # Then, work through lazy results in a breadth-first way
@@ -99,14 +101,15 @@ module GraphQL
 
         # @param query [GraphQL::Query]
         # @return [Hash] The initial result (may not be finished if there are lazy values)
-        def begin_query(query)
+        def begin_query(query, multiplex)
           operation = query.selected_operation
           if operation.nil? || !query.valid?
             NO_OPERATION
           else
             begin
               # These were checked to be the same in `#supports_multiplexing?`
-              query.schema.query_execution_strategy.begin_multiplex(query)
+              # TODO rename these hooks
+              query.schema.query_execution_strategy.begin_query(query, multiplex)
             rescue GraphQL::ExecutionError => err
               query.context.errors << err
               NO_OPERATION
@@ -127,10 +130,8 @@ module GraphQL
             end
           else
             # Use `context.value` which was assigned during execution
-            result = {
-              # TODO: this is good for execution_functions, but not interpreter, refactor it out.
-              "data" => Execution::Flatten.call(query.context)
-            }
+            # TODO should this be per-query instead of for the schema?
+            result = query.schema.query_execution_strategy.finish_query(query)
 
             if query.context.errors.any?
               error_result = query.context.errors.map(&:to_h)

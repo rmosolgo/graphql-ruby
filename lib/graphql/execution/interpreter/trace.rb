@@ -13,12 +13,12 @@ module GraphQL
         # TODO document these methods
         attr_reader :query, :result, :lazies, :parent_trace
 
-        def initialize(query:)
+        def initialize(query:, lazies:)
           # shared by the parent and all children:
           @query = query
           @debug = query.context[:debug_interpreter]
           @result = {}
-          @lazies = []
+          @lazies = lazies
           @types_at_paths = Hash.new { |h, k| h[k] = {} }
         end
 
@@ -40,10 +40,13 @@ module GraphQL
             nil
           else
             res = @result ||= {}
-            write_into_result(res, path, value, propagating_nil: propagating_nil)
+            if path_exists?(path)
+              write_into_result(res, path, value, propagating_nil: propagating_nil)
+            end
           end
         end
 
+        # TODO make this private
         def write_into_result(result, path, value, propagating_nil:)
           if value.is_a?(GraphQL::ExecutionError) || (value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError)})
             Array(value).each do |v|
@@ -104,6 +107,7 @@ module GraphQL
               yield(obj)
             else
               @lazies << GraphQL::Execution::Lazy.new do
+                # TODO this trace should get the field
                 query.trace("execute_field_lazy", {trace: self}) do
                   method_name = schema.lazy_method_name(obj)
                   begin
@@ -225,6 +229,18 @@ module GraphQL
           # - :__type for the object type of a selection
           types[:__type] ||= type
           nil
+        end
+
+        def path_exists?(path)
+          res = @result
+          path[0..-2].each do |part|
+            if res
+              res = res[part]
+            else
+              return false
+            end
+          end
+          !!res
         end
       end
     end
