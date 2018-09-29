@@ -16,7 +16,7 @@ module GraphQL
       def types
         types = @context.warden.types
         if context.interpreter?
-          types.map { |t| t.metadata[:type_class] }
+          types.map { |t| t.metadata[:type_class] || raise("Invariant: can't introspect non-class-based type: #{t}") }
         else
           types
         end
