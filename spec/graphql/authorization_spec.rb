@@ -601,7 +601,7 @@ describe GraphQL::Authorization do
   end
 
   describe "applying the authorized? method" do
-    it "halts on unauthorized objects" do
+    it "halts on unauthorized objects, replacing the object with nil" do
       query = "{ unauthorizedObject { __typename } }"
       hidden_response = auth_execute(query, context: { hide: true })
       assert_nil hidden_response["data"].fetch("unauthorizedObject")

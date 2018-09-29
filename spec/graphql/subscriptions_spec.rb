@@ -137,7 +137,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
       argument :id, ID, required: true
     end
 
-    def failed_event
+    def failed_event(id:)
       raise GraphQL::ExecutionError.new("unauthorized")
     end
   end
@@ -243,9 +243,16 @@ describe GraphQL::Subscriptions do
           res_1 = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
           res_2 = schema.execute(query_str, context: { socket: "2" }, variables: { "id" => "200" }, root_value: root_object)
 
+          # TODO this is because of skip.
+          empty_response = if TESTING_INTERPRETER && schema == ClassBasedInMemoryBackend::Schema
+            {}
+          else
+            nil
+          end
+
           # Initial response is nil, no broadcasts yet
-          assert_equal(nil, res_1["data"])
-          assert_equal(nil, res_2["data"])
+          assert_equal(empty_response, res_1["data"])
+          assert_equal(empty_response, res_2["data"])
           assert_equal [], deliveries["1"]
           assert_equal [], deliveries["2"]
 
@@ -417,12 +424,12 @@ describe GraphQL::Subscriptions do
             failedEvent(id: $id) { str, int }
           }
             GRAPHQL
-
             assert_equal nil, res["data"]
             assert_equal "unauthorized", res["errors"][0]["message"]
 
             # this is to make sure nothing actually got subscribed.. but I don't have any idea better than checking its instance variable
-            assert_equal 0, schema.subscriptions.instance_variable_get(:@subscriptions).size
+            subscriptions = schema.subscriptions.instance_variable_get(:@subscriptions)
+            assert_equal 0, subscriptions.size
           end
 
           it "lets unhandled errors crash" do

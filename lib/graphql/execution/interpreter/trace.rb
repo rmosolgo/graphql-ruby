@@ -89,18 +89,31 @@ module GraphQL
           nil
         end
 
-        def after_lazy(obj)
+        # @param eager [Boolean] Set to `true` for mutation root fields only
+        def after_lazy(obj, eager: false)
           if schema.lazy?(obj)
-            @lazies << GraphQL::Execution::Lazy.new do
-              query.trace("execute_field_lazy", {trace: self}) do
+            if eager
+              while schema.lazy?(obj)
                 method_name = schema.lazy_method_name(obj)
-                begin
-                  inner_obj = obj.public_send(method_name)
-                  after_lazy(inner_obj) do |really_inner_obj|
-                    yield(really_inner_obj)
-                  end
+                obj = begin
+                  obj.public_send(method_name)
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                  yield(err)
+                  err
+                end
+              end
+              yield(obj)
+            else
+              @lazies << GraphQL::Execution::Lazy.new do
+                query.trace("execute_field_lazy", {trace: self}) do
+                  method_name = schema.lazy_method_name(obj)
+                  begin
+                    inner_obj = obj.public_send(method_name)
+                    after_lazy(inner_obj, eager: eager) do |really_inner_obj|
+                      yield(really_inner_obj)
+                    end
+                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                    yield(err)
+                  end
                 end
               end
             end

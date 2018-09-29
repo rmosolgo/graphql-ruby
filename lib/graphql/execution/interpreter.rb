@@ -50,10 +50,6 @@ module GraphQL
           # TODO This is to satisfy Execution::Flatten, which should be removed
           @query.context.value = trace.final_value
         end
-      # rescue
-      #   puts $!.message
-      #   puts trace.inspect
-      #   raise
       end
     end
   end

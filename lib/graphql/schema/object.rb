@@ -52,6 +52,8 @@ module GraphQL
                 new_obj = context.schema.unauthorized_object(err)
                 if new_obj
                   self.new(new_obj, context)
+                else
+                  nil
                 end
               # rescue GraphQL::ExecutionError => err
               #   err

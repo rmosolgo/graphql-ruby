@@ -93,7 +93,7 @@ module GraphQL
 
             return_type = resolve_if_late_bound_type(field_defn.type)
 
-            next_path = [*path, result_name]
+            next_path = [*path, result_name].freeze
             # TODO this seems janky, but we need to know
             # the field's return type at this path in order
             # to propagate `null`
@@ -111,21 +111,30 @@ module GraphQL
                 kwarg_arguments[:ast_node] = ast_node
               end
               if field_defn.extras.include?(:execution_errors)
-                kwarg_arguments[:execution_errors] = ExecutionErrors.new(trace.context, ast_node, trace.path.dup)
+                kwarg_arguments[:execution_errors] = ExecutionErrors.new(trace.context, ast_node, next_path)
               end
+
+              # TODO will this be a perf issue for scalar fields?
+              next_selections = fields.map(&:selections).inject(&:+)
 
               # TODO:
               # - extract and fix subscription handling
               # - implement mutation handling
               if root_operation_type == "subscription"
-                events = trace.context.namespace(:subscription)[:events]
+                # TODO this should be better, maybe include something in the subscription root?
+                v = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
+                if v.is_a?(GraphQL::ExecutionError)
+                  continue_value(next_path, v, field_defn, return_type, ast_node)
+                  next
+                end
+
+                events = trace.context.namespace(:subscriptions)[:events]
                 subscription_topic = Subscriptions::Event.serialize(
                   field_defn.name,
                   kwarg_arguments,
                   field_defn,
                   scope: (field_defn.subscription_scope ? trace.context[field_defn.subscription_scope] : nil),
                 )
-
                 if events
                   # This is the first execution, so gather an Event
                   # for the backend to register:
@@ -133,9 +142,11 @@ module GraphQL
                     name: field_defn.name,
                     arguments: kwarg_arguments,
                     context: trace.context,
+                    field: field_defn,
                   )
                 elsif subscription_topic == trace.query.subscription_topic
                   # The root object is _already_ the subscription update:
+                  object = object.object
                   continue_field(next_path, object, field_defn, return_type, ast_node, next_selections)
                 else
                   # This is a subscription update, but this event wasn't triggered.
@@ -143,11 +154,11 @@ module GraphQL
               else
                 app_result = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
 
-                trace.after_lazy(app_result) do |inner_result|
-                  if continue_value(next_path, inner_result, field_defn, return_type, ast_node)
-                    # TODO will this be a perf issue for scalar fields?
-                    next_selections = fields.map(&:selections).inject(&:+)
-                    continue_field(next_path, inner_result, field_defn, return_type, ast_node, next_selections)
+                # TODO can we remove this and treat it as a bounce instead?
+                trace.after_lazy(app_result, eager: root_operation_type == "mutation") do |inner_result|
+                  should_continue, continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
+                  if should_continue
+                    continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections)
                   end
                 end
               end
@@ -165,22 +176,32 @@ module GraphQL
                 trace.write(path, nil)
               end
             else
-              value.path ||= path.dup
+              value.path ||= path
               value.ast_node ||= ast_node
               trace.write(path, value, propagating_nil: as_type.non_null?)
             end
             false
           elsif value.is_a?(Array) && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
             value.each do |v|
-              v.path ||= path.dup
+              v.path ||= path
               v.ast_node ||= ast_node
             end
             trace.write(path, value, propagating_nil: as_type.non_null?)
             false
+          elsif value.is_a?(GraphQL::UnauthorizedError)
+            # this hook might raise & crash, or it might return
+            # a replacement value
+            next_value = begin
+              trace.schema.unauthorized_object(value)
+            rescue GraphQL::ExecutionError => err
+              err
+            end
+
+            continue_value(path, next_value, field, as_type, ast_node)
           elsif GraphQL::Execution::Execute::SKIP == value
             false
           else
-            true
+            return true, value
           end
         end
 
@@ -205,22 +226,28 @@ module GraphQL
               continue_field(path, value, field, resolved_type, ast_node, next_selections)
             end
           when TypeKinds::OBJECT
-            object_proxy = type.authorized_new(value, trace.query.context)
+            object_proxy = begin
+               type.authorized_new(value, trace.query.context)
+            rescue GraphQL::ExecutionError => err
+              err
+            end
             trace.after_lazy(object_proxy) do |inner_object|
-              if continue_value(path, inner_object, field, type, ast_node)
+              should_continue, continue_value = continue_value(path, inner_object, field, type, ast_node)
+              if should_continue
                 trace.write(path, {})
-                evaluate_selections(path, inner_object, type, next_selections)
+                evaluate_selections(path, continue_value, type, next_selections)
               end
             end
           when TypeKinds::LIST
             trace.write(path, [])
             inner_type = type.of_type
             value.each_with_index.each do |inner_value, idx|
-              next_path = [*path, idx]
+              next_path = [*path, idx].freeze
               trace.set_type_at_path(next_path, inner_type)
               trace.after_lazy(inner_value) do |inner_inner_value|
-                if continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
-                  continue_field(next_path, inner_inner_value, field, inner_type, ast_node, next_selections)
+                should_continue, continue_value = continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
+                if should_continue
+                  continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections)
                 end
               end
             end

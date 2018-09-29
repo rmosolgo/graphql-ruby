@@ -280,6 +280,14 @@ describe GraphQL::Schema::Resolver do
           end
           value
         end
+
+        def resolve_field_2(*)
+          value = super
+          if @name == "resolver3"
+            value << -1
+          end
+          value
+        end
       end
 
       field_class(CustomField)
