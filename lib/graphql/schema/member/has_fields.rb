@@ -97,7 +97,7 @@ module GraphQL
           id_resolver = GraphQL::Relay::GlobalIdResolve.new(type: self)
           field field_name, "ID", null: false
           define_method(field_name) do
-            id_resolver.call
+            id_resolver.call(object, {}, context)
           end
         end
 

@@ -235,7 +235,7 @@ module StarWars
         ship = DATA.create_ship(ship_name, faction_id)
         faction = DATA["Faction"][faction_id]
         connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
-        ships_connection = connection_class.new(faction.ships, args)
+        ships_connection = connection_class.new(faction.ships, {ship_name: ship_name, faction: faction})
         ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
         result = {
           ship_edge: ship_edge, # support new-style, too
