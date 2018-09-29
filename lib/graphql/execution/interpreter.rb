@@ -12,12 +12,9 @@ module GraphQL
       end
       # Support `Executor` :S
       def execute(_operation, _root_type, query)
-        run_query(query)
-      end
-
-      def run_query(query)
-        query.context.interpreter = true
-        evaluate(query)
+        trace = evaluate(query)
+        sync_lazies(query: query)
+        trace.final_value
       end
 
       def self.use(schema_defn)
@@ -35,13 +32,13 @@ module GraphQL
         interpreter =
           query.context.namespace(:interpreter)[:interpreter_instance] =
           multiplex.context[:interpreter_instance]
-        interpreter.run_query(query)
+        interpreter.evaluate(query)
         query
       end
 
       def self.finish_multiplex(_results, multiplex)
         interpreter = multiplex.context[:interpreter_instance]
-        interpreter.sync_lazies
+        interpreter.sync_lazies(multiplex: multiplex)
       end
 
       def self.finish_query(query)
@@ -51,22 +48,25 @@ module GraphQL
       end
 
       def evaluate(query)
+        query.context.interpreter = true
         trace = Trace.new(query: query, lazies: @lazies)
         query.context.namespace(:interpreter)[:interpreter_trace] = trace
         query.trace("execute_query", {query: query}) do
           Visitor.new.visit(trace)
         end
+        trace
       end
 
-      def sync_lazies
-        # @query.trace("execute_query_lazy", {query: @query}) do
+      def sync_lazies(query: nil, multiplex: nil)
+        tracer = query || multiplex
+        tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
           while @lazies.any?
             next_wave = @lazies.dup
             @lazies.clear
             # This will cause a side-effect with Trace#write
             next_wave.each(&:value)
           end
-        # end
+        end
       end
     end
   end
