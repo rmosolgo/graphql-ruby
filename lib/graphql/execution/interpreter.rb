@@ -10,6 +10,7 @@ module GraphQL
         # A buffer shared by all queries running in this interpreter
         @lazies = []
       end
+
       # Support `Executor` :S
       def execute(_operation, _root_type, query)
         trace = evaluate(query)
@@ -18,12 +19,13 @@ module GraphQL
       end
 
       def self.use(schema_defn)
-        # TODO encapsulate this in `use` ?
         schema_defn.query_execution_strategy(GraphQL::Execution::Interpreter)
         schema_defn.mutation_execution_strategy(GraphQL::Execution::Interpreter)
         schema_defn.subscription_execution_strategy(GraphQL::Execution::Interpreter)
       end
 
+      # TODO rename and reconsider these hooks.
+      # Or, are they just temporary?
       def self.begin_multiplex(multiplex)
         multiplex.context[:interpreter_instance] ||= self.new
       end

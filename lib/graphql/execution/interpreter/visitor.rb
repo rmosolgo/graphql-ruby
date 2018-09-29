@@ -105,7 +105,7 @@ module GraphQL
                 object = field_defn.owner.authorized_new(object, trace.context)
               end
 
-              kwarg_arguments = trace.arguments(field_defn, ast_node)
+              kwarg_arguments = trace.arguments(object, field_defn, ast_node)
               # TODO: very shifty that these cached Hashes are being modified
               if field_defn.extras.include?(:ast_node)
                 kwarg_arguments[:ast_node] = ast_node
@@ -227,7 +227,7 @@ module GraphQL
             end
           when TypeKinds::OBJECT
             object_proxy = begin
-               type.authorized_new(value, trace.query.context)
+              type.authorized_new(value, trace.query.context)
             rescue GraphQL::ExecutionError => err
               err
             end
@@ -265,9 +265,9 @@ module GraphQL
           # TODO call out to directive here
           node.directives.each do |dir|
             dir_defn = trace.schema.directives.fetch(dir.name)
-            if dir.name == "skip" && trace.arguments(dir_defn, dir)[:if] == true
+            if dir.name == "skip" && trace.arguments(nil, dir_defn, dir)[:if] == true
               return false
-            elsif dir.name == "include" && trace.arguments(dir_defn, dir)[:if] == false
+            elsif dir.name == "include" && trace.arguments(nil, dir_defn, dir)[:if] == false
               return false
             end
           end

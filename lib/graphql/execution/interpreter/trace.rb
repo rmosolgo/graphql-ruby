@@ -126,13 +126,18 @@ module GraphQL
           end
         end
 
-        def arguments(arg_owner, ast_node)
+        def arguments(graphql_object, arg_owner, ast_node)
           kwarg_arguments = {}
           ast_node.arguments.each do |arg|
             arg_defn = arg_owner.arguments[arg.name]
             # TODO not this
             catch(:skip) do
-              value = arg_to_value(arg_defn.type, arg.value)
+              value = arg_to_value(graphql_object, arg_defn.type, arg.value)
+              # This doesn't apply to directives, which are legacy
+              # Can remove this when Skip and Include use classes or something.
+              if graphql_object
+                value = arg_defn.prepare_value(graphql_object, value)
+              end
               kwarg_arguments[arg_defn.keyword] = value
             end
           end
@@ -144,7 +149,7 @@ module GraphQL
           kwarg_arguments
         end
 
-        def arg_to_value(arg_defn, ast_value)
+        def arg_to_value(graphql_object, arg_defn, ast_value)
           if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
             # If it's not here, it will get added later
             if query.variables.key?(ast_value.name)
@@ -153,15 +158,18 @@ module GraphQL
               throw :skip
             end
           elsif arg_defn.is_a?(GraphQL::Schema::NonNull)
-            arg_to_value(arg_defn.of_type, ast_value)
+            arg_to_value(graphql_object, arg_defn.of_type, ast_value)
           elsif arg_defn.is_a?(GraphQL::Schema::List)
             # Treat a single value like a list
             arg_value = Array(ast_value)
             arg_value.map do |inner_v|
-              arg_to_value(arg_defn.of_type, inner_v)
+              arg_to_value(graphql_object, arg_defn.of_type, inner_v)
             end
           elsif arg_defn.is_a?(Class) && arg_defn < GraphQL::Schema::InputObject
-            args = arguments(arg_defn, ast_value)
+            # For these, `prepare` is applied during `#initialize`.
+            # Pass `nil` so it will be skipped in `#arguments`.
+            # What a mess.
+            args = arguments(nil, arg_defn, ast_value)
             # TODO still track defaults_used?
             arg_defn.new(ruby_kwargs: args, context: context, defaults_used: nil)
           else
