@@ -15,6 +15,10 @@ class GraphqlChannel < ActionCable::Channel::Base
     field :payload, PayloadType, null: false do
       argument :id, ID, required: true
     end
+
+    def payload(id:)
+      id
+    end
   end
 
   # Wacky behavior around the number 4
