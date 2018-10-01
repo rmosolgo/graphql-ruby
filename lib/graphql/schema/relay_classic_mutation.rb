@@ -39,17 +39,29 @@ module GraphQL
         if input
           # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
           input_kwargs = input.to_h
-          input_kwargs.delete(:client_mutation_id)
+          client_mutation_id = input_kwargs.delete(:client_mutation_id)
         else
           # Relay Classic Mutations with no `argument`s
           # don't require `input:`
           input_kwargs = {}
         end
 
-        if input_kwargs.any?
+        return_value = if input_kwargs.any?
           super(input_kwargs)
         else
           super()
+        end
+
+        if context.interpreter?
+          context.schema.after_lazy(return_value) do |return_hash|
+            # It might be an error
+            if return_hash.is_a?(Hash)
+              return_hash[:client_mutation_id] = client_mutation_id
+            end
+            return_hash
+          end
+        else
+          return_value
         end
       end
 
