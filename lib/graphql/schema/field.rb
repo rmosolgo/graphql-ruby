@@ -139,7 +139,7 @@ module GraphQL
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       # @param extensions [Array<Class>] Named extensions to apply to this field (see also {#extension})
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -183,6 +183,8 @@ module GraphQL
         @resolver_class = resolver_class
         @scope = scope
         @trace = trace
+        @relay_node_field = relay_node_field
+        @relay_nodes_field = relay_nodes_field
 
         # Override the default from HasArguments
         @own_arguments = {}
@@ -328,6 +330,14 @@ MSG
 
         if !@trace.nil?
           field_defn.trace = @trace
+        end
+
+        if @relay_node_field
+          field_defn.relay_node_field = @relay_node_field
+        end
+
+        if @relay_nodes_field
+          field_defn.relay_nodes_field = @relay_nodes_field
         end
 
         field_defn.resolve = self.method(:resolve_field)
