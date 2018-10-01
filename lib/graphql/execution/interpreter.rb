@@ -61,6 +61,9 @@ module GraphQL
 
       def sync_lazies(query: nil, multiplex: nil)
         tracer = query || multiplex
+        if query.nil? && multiplex.queries.length == 1
+          query = multiplex.queries[0]
+        end
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
           while @lazies.any?
             next_wave = @lazies.dup

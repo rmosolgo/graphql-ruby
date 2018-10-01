@@ -47,8 +47,8 @@ module GraphQL
   # execute_multiplex | `{ multiplex: GraphQL::Execution::Multiplex }`
   # execute_query | `{ query: GraphQL::Query }`
   # execute_query_lazy | `{ query: GraphQL::Query?, multiplex: GraphQL::Execution::Multiplex? }`
-  # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext?, trace: GraphQL::Execution::Interpreter::Trace? }`
-  # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext, trace: GraphQL::Execution::Interpreter::Trace? }`
+  # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext?, field: GraphQL::Schema::Field?, path: Array<String, Integer>?}`
+  # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext?, field: GraphQL::Schema::Field?, path: Array<String, Integer>?}`
   #
   module Tracing
     # Objects may include traceable to gain a `.trace(...)` method.

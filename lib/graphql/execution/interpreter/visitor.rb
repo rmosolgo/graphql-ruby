@@ -98,68 +98,68 @@ module GraphQL
             # the field's return type at this path in order
             # to propagate `null`
             trace.set_type_at_path(next_path, return_type)
-            trace.query.trace("execute_field", {field: field_defn}) do
-              object = owner_object
 
-              if is_introspection
-                object = field_defn.owner.authorized_new(object, trace.context)
+            object = owner_object
+
+            if is_introspection
+              object = field_defn.owner.authorized_new(object, trace.context)
+            end
+
+            kwarg_arguments = trace.arguments(object, field_defn, ast_node)
+            # TODO: very shifty that these cached Hashes are being modified
+            if field_defn.extras.include?(:ast_node)
+              kwarg_arguments[:ast_node] = ast_node
+            end
+            if field_defn.extras.include?(:execution_errors)
+              kwarg_arguments[:execution_errors] = ExecutionErrors.new(trace.context, ast_node, next_path)
+            end
+
+            # TODO will this be a perf issue for scalar fields?
+            next_selections = fields.map(&:selections).inject(&:+)
+
+            # TODO:
+            # - extract and fix subscription handling
+            if root_operation_type == "subscription"
+              # TODO this should be better, maybe include something in the subscription root?
+              v = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
+              if v.is_a?(GraphQL::ExecutionError)
+                continue_value(next_path, v, field_defn, return_type, ast_node)
+                next
               end
 
-              kwarg_arguments = trace.arguments(object, field_defn, ast_node)
-              # TODO: very shifty that these cached Hashes are being modified
-              if field_defn.extras.include?(:ast_node)
-                kwarg_arguments[:ast_node] = ast_node
-              end
-              if field_defn.extras.include?(:execution_errors)
-                kwarg_arguments[:execution_errors] = ExecutionErrors.new(trace.context, ast_node, next_path)
-              end
-
-              # TODO will this be a perf issue for scalar fields?
-              next_selections = fields.map(&:selections).inject(&:+)
-
-              # TODO:
-              # - extract and fix subscription handling
-              # - implement mutation handling
-              if root_operation_type == "subscription"
-                # TODO this should be better, maybe include something in the subscription root?
-                v = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
-                if v.is_a?(GraphQL::ExecutionError)
-                  continue_value(next_path, v, field_defn, return_type, ast_node)
-                  next
-                end
-
-                events = trace.context.namespace(:subscriptions)[:events]
-                subscription_topic = Subscriptions::Event.serialize(
-                  field_defn.name,
-                  kwarg_arguments,
-                  field_defn,
-                  scope: (field_defn.subscription_scope ? trace.context[field_defn.subscription_scope] : nil),
+              events = trace.context.namespace(:subscriptions)[:events]
+              subscription_topic = Subscriptions::Event.serialize(
+                field_defn.name,
+                kwarg_arguments,
+                field_defn,
+                scope: (field_defn.subscription_scope ? trace.context[field_defn.subscription_scope] : nil),
+              )
+              if events
+                # This is the first execution, so gather an Event
+                # for the backend to register:
+                events << Subscriptions::Event.new(
+                  name: field_defn.name,
+                  arguments: kwarg_arguments,
+                  context: trace.context,
+                  field: field_defn,
                 )
-                if events
-                  # This is the first execution, so gather an Event
-                  # for the backend to register:
-                  events << Subscriptions::Event.new(
-                    name: field_defn.name,
-                    arguments: kwarg_arguments,
-                    context: trace.context,
-                    field: field_defn,
-                  )
-                elsif subscription_topic == trace.query.subscription_topic
-                  # The root object is _already_ the subscription update:
-                  object = object.object
-                  continue_field(next_path, object, field_defn, return_type, ast_node, next_selections)
-                else
-                  # This is a subscription update, but this event wasn't triggered.
-                end
+              elsif subscription_topic == trace.query.subscription_topic
+                # The root object is _already_ the subscription update:
+                object = object.object
+                continue_field(next_path, object, field_defn, return_type, ast_node, next_selections)
               else
-                app_result = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
+                # This is a subscription update, but this event wasn't triggered.
+              end
+            else
+              app_result = trace.query.trace("execute_field", {field: field_defn, path: next_path}) do
+                field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
+              end
 
-                # TODO can we remove this and treat it as a bounce instead?
-                trace.after_lazy(app_result, eager: root_operation_type == "mutation") do |inner_result|
-                  should_continue, continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
-                  if should_continue
-                    continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections)
-                  end
+              # TODO can we remove this and treat it as a bounce instead?
+              trace.after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
+                should_continue, continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
+                if should_continue
+                  continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections)
                 end
               end
             end
@@ -231,7 +231,7 @@ module GraphQL
             rescue GraphQL::ExecutionError => err
               err
             end
-            trace.after_lazy(object_proxy) do |inner_object|
+            trace.after_lazy(object_proxy, path: path, field: field) do |inner_object|
               should_continue, continue_value = continue_value(path, inner_object, field, type, ast_node)
               if should_continue
                 trace.write(path, {})
@@ -244,7 +244,7 @@ module GraphQL
             value.each_with_index.each do |inner_value, idx|
               next_path = [*path, idx].freeze
               trace.set_type_at_path(next_path, inner_type)
-              trace.after_lazy(inner_value) do |inner_inner_value|
+              trace.after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
                 should_continue, continue_value = continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
                 if should_continue
                   continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections)

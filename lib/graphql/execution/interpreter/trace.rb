@@ -92,34 +92,31 @@ module GraphQL
           nil
         end
 
+        # TODO: isolate calls to this. Am I missing something?
+        # @param field [GraphQL::Schema::Field]
         # @param eager [Boolean] Set to `true` for mutation root fields only
-        def after_lazy(obj, eager: false)
+        def after_lazy(obj, field:, path:, eager: false)
           if schema.lazy?(obj)
-            if eager
-              while schema.lazy?(obj)
+            lazy = GraphQL::Execution::Lazy.new do
+              # Wrap the execution of _this_ method with tracing,
+              # but don't wrap the continuation below
+              inner_obj = query.trace("execute_field_lazy", {field: field, path: path}) do
                 method_name = schema.lazy_method_name(obj)
-                obj = begin
+                begin
                   obj.public_send(method_name)
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                  err
+                  yield(err)
                 end
               end
-              yield(obj)
+              after_lazy(inner_obj, field: field, path: path, eager: eager) do |really_inner_obj|
+                yield(really_inner_obj)
+              end
+            end
+
+            if eager
+              lazy.value
             else
-              @lazies << GraphQL::Execution::Lazy.new do
-                # TODO this trace should get the field
-                query.trace("execute_field_lazy", {trace: self}) do
-                  method_name = schema.lazy_method_name(obj)
-                  begin
-                    inner_obj = obj.public_send(method_name)
-                    after_lazy(inner_obj, eager: eager) do |really_inner_obj|
-                      yield(really_inner_obj)
-                    end
-                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                    yield(err)
-                  end
-                end
-              end
+              @lazies << lazy
             end
           else
             yield(obj)
