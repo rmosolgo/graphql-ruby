@@ -22,9 +22,9 @@ module GraphQL
           super
         end
 
-        def on_enter_field(node, parent)
+        def on_enter_field(node, parent, visitor)
           # Don't validate introspection fields or skipped nodes
-          if GraphQL::Schema::DYNAMIC_FIELDS.include?(irep_node.definition_name)
+          if GraphQL::Schema::DYNAMIC_FIELDS.include?(visitor.field_definition.name)
             @skip_depth += 1
           elsif @skip_depth > 0
             # we're inside an introspection query or skipped node
@@ -33,9 +33,9 @@ module GraphQL
           end
         end
 
-        def on_leave_field(node, parent)
+        def on_leave_field(node, parent, visitor)
           # Don't validate introspection fields or skipped nodes
-          if GraphQL::Schema::DYNAMIC_FIELDS.include?(irep_node.definition_name)
+          if GraphQL::Schema::DYNAMIC_FIELDS.include?(visitor.field_definition.name)
             @skip_depth -= 1
           else
             if @max_depth < @current_depth

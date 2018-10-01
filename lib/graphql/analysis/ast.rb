@@ -1,7 +1,9 @@
 require "graphql/analysis/ast/visitor"
 require "graphql/analysis/ast/analyzer"
 require "graphql/analysis/ast/query_complexity"
+require "graphql/analysis/ast/max_query_complexity"
 require "graphql/analysis/ast/query_depth"
+require "graphql/analysis/ast/max_query_depth"
 
 # frozen_string_literal: true
 module GraphQL
@@ -18,7 +20,7 @@ module GraphQL
             if query.valid?
               analyze_query(
                 query,
-                query.analyzers,
+                query.ast_analyzers,
                 multiplex_analyzers: multiplex_analyzers
               )
             else
@@ -26,7 +28,7 @@ module GraphQL
             end
           end
 
-          multiplex_results = analyzers.map(&:result)
+          multiplex_results = multiplex_analyzers.map(&:result)
           multiplex_errors = analysis_errors(multiplex_results)
 
           multiplex.queries.each_with_index do |query, idx|
@@ -41,11 +43,11 @@ module GraphQL
       # @return [Array<Any>] Results from those analyzers
       def analyze_query(query, analyzers, multiplex_analyzers: [])
         query.trace("analyze_query", { query: query }) do
-          analyzers_to_run = analyzers
+          query_analyzers = analyzers
             .map { |analyzer| analyzer.new(query) }
             .select { |analyzer| analyzer.analyze? }
 
-          analyzers_to_run = analyzers_to_run + multiplex_analyzers
+          analyzers_to_run = query_analyzers + multiplex_analyzers
           return unless analyzers_to_run.any?
 
           visitor = GraphQL::Analysis::AST::Visitor.new(
@@ -55,7 +57,7 @@ module GraphQL
 
           visitor.visit
 
-          analyzers_to_run.map(&:result)
+          query_analyzers.map(&:result)
         end
       end
 

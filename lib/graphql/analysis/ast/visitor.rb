@@ -17,7 +17,7 @@ module GraphQL
           super(query.document)
         end
 
-        attr_reader :context
+        attr_reader :context, :query
 
         # @return [Array<GraphQL::ObjectType>] Types whose scope we've entered
         attr_reader :object_types
@@ -25,6 +25,10 @@ module GraphQL
         # @return [Array<String>] The nesting of the current position in the AST
         def path
           @path.dup
+        end
+
+        def arguments_for(ast_node, field_definition)
+          @query.arguments_for(ast_node, field_definition)
         end
 
         def on_operation_definition(node, parent)

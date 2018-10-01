@@ -13,6 +13,11 @@ module GraphQL
           @in_fragment_def = false
         end
 
+        # Overide this method to use the complexity result
+        def result
+          raise NotImplementedError
+        end
+
         def on_enter_field(node, parent, visitor)
           # We don't want to visit fragment definitions,
           # we'll visit them when we hit the spreads instead
@@ -45,7 +50,7 @@ module GraphQL
             [parent_type]
           end
 
-          key = selection_key(visitor.response_path)
+          key = selection_key(visitor.response_path, visitor.query)
 
           possible_types.each do |type|
             @complexities_on_type.last.merge(type, key, own_complexity)
@@ -91,8 +96,11 @@ module GraphQL
           dir.any? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
         end
 
-        def selection_key(response_path)
-          response_path.join(".")
+        def selection_key(response_path, query)
+          # We add the query object id to support multiplex queries
+          # even if they have the same response path, they should
+          # always be added.
+          response_path.join(".") + "-#{query.object_id}"
         end
 
         # Get a complexity value for a field,
@@ -101,7 +109,7 @@ module GraphQL
         # Return if we've visited this response path before (not counting duplicates)
           defined_complexity = field_defn.complexity
 
-          arguments = query.arguments_for(ast_node, field_defn)
+          arguments = visitor.arguments_for(ast_node, field_defn)
 
           case defined_complexity
           when Proc
