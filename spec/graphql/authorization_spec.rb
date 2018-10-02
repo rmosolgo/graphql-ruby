@@ -661,7 +661,25 @@ describe GraphQL::Authorization do
       unauthorized_res = auth_execute(query, context: { unauthorized_relay: true })
       conn = unauthorized_res["data"].fetch("unauthorizedConnection")
       assert_equal "RelayObjectConnection", conn.fetch("__typename")
-      assert_equal nil, conn.fetch("nodes")
+      # This is tricky: the previous behavior was to replace the _whole_
+      # list with `nil`. This was due to an implementation detail:
+      # The list field's return value (an array of integers) was wrapped
+      # _before_ returning, and during this wrapping, a cascading error
+      # caused the entire field to be nilled out.
+      #
+      # In the interpreter, each list item is contained and the error doesn't propagate
+      # up to the whole list.
+      #
+      # Originally, I thought that this was a _feature_ that obscured list entries.
+      # But really, look at the test below: you don't get this "feature" if
+      # you use `edges { node }`, so it can't be relied on in any way.
+      #
+      # All that to say, in the interpreter, `nodes` and `edges { node }` behave
+      # the same.
+      #
+      # TODO revisit the docs for this.
+      failed_nodes_value = TESTING_INTERPRETER ? [nil] : nil
+      assert_equal failed_nodes_value, conn.fetch("nodes")
       assert_equal [{"node" => nil, "__typename" => "RelayObjectEdge"}], conn.fetch("edges")
 
       edge = unauthorized_res["data"].fetch("unauthorizedEdge")
@@ -670,7 +688,7 @@ describe GraphQL::Authorization do
 
       unauthorized_object_paths = [
         ["unauthorizedConnection", "edges", 0, "node"],
-        ["unauthorizedConnection", "nodes"],
+        TESTING_INTERPRETER ? ["unauthorizedConnection", "nodes", 0] : ["unauthorizedConnection", "nodes"],
         ["unauthorizedEdge", "node"]
       ]
 
