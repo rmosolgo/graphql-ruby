@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Analysis::AST::QueryComplexity do
-  ≈
+  let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::QueryComplexity]) }
   let(:variables) { {} }
   let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
 

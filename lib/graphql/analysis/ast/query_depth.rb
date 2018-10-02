@@ -23,6 +23,8 @@ module GraphQL
         end
 
         def on_enter_field(node, parent, visitor)
+          return if visitor.skipping? || visitor.visiting_fragment_definition?
+
           # Don't validate introspection fields or skipped nodes
           if GraphQL::Schema::DYNAMIC_FIELDS.include?(visitor.field_definition.name)
             @skip_depth += 1
@@ -34,6 +36,8 @@ module GraphQL
         end
 
         def on_leave_field(node, parent, visitor)
+          return if visitor.skipping? || visitor.visiting_fragment_definition?
+
           # Don't validate introspection fields or skipped nodes
           if GraphQL::Schema::DYNAMIC_FIELDS.include?(visitor.field_definition.name)
             @skip_depth -= 1
@@ -45,8 +49,16 @@ module GraphQL
           end
         end
 
+        def on_enter_fragment_spread(node, _, visitor)
+          visitor.enter_fragment_spread_inline(node)
+        end
+
+        def on_leave_fragment_spread(node, _, visitor)
+          visitor.leave_fragment_spread_inline(node)
+        end
+
         def result
-          raise NotImplementedError
+          @max_depth
         end
       end
     end

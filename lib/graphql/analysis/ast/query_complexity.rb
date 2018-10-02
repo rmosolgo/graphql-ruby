@@ -21,11 +21,8 @@ module GraphQL
         def on_enter_field(node, parent, visitor)
           # We don't want to visit fragment definitions,
           # we'll visit them when we hit the spreads instead
-          return if @in_fragment_def
-
-          should_skip = @skip_stack.last || skip?(node)
-          @skip_stack << should_skip
-          return if should_skip
+          return if visitor.visiting_fragment_definition?
+          return if visitor.skipping?
 
           @complexities_on_type.push(TypeComplexity.new)
         end
@@ -33,11 +30,8 @@ module GraphQL
         def on_leave_field(node, parent, visitor)
           # We don't want to visit fragment definitions,
           # we'll visit them when we hit the spreads instead
-          return if @in_fragment_def
-
-          skipping = @skip_stack.pop
-          return if skipping
-
+          return if visitor.visiting_fragment_definition?
+          return if visitor.skipping?
 
           type_complexities = @complexities_on_type.pop
           child_complexity = type_complexities.max_possible_complexity
@@ -57,32 +51,12 @@ module GraphQL
           end
         end
 
-        def on_enter_fragment_spread(node, parent, visitor)
-          fragment_def = query.fragments[node.name]
-
-          object_type = if fragment_def.type
-            query.schema.types.fetch(fragment_def.type.name, nil)
-          else
-            visitor.object_types.last
-          end
-
-          visitor.object_types << object_type
-
-          fragment_def.selections.each do |selection|
-            visitor.visit_node(selection, fragment_def)
-          end
+        def on_enter_fragment_spread(node, _, visitor)
+          visitor.enter_fragment_spread_inline(node)
         end
 
-        def on_leave_fragment_spread(_, _, visitor)
-          visitor.object_types.pop
-        end
-
-        def on_enter_fragment_definition(*)
-          @in_fragment_def = true
-        end
-
-        def on_leave_fragment_definition(*)
-          @in_fragment_def = false
+        def on_leave_fragment_spread(node, _, visitor)
+          visitor.leave_fragment_spread_inline(node)
         end
 
         def result
@@ -90,11 +64,6 @@ module GraphQL
         end
 
         private
-
-        def skip?(ast_node)
-          dir = ast_node.directives
-          dir.any? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
-        end
 
         def selection_key(response_path, query)
           # We add the query object id to support multiplex queries

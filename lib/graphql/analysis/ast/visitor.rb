@@ -14,6 +14,7 @@ module GraphQL
           @query = query
           @schema = query.schema
           @response_path = []
+          @skip_stack = [false]
           super(query.document)
         end
 
@@ -45,8 +46,10 @@ module GraphQL
         def on_fragment_definition(node, parent)
           on_fragment_with_type(node) do
             @path.push("fragment #{node.name}")
+            @in_fragment_def = false
             call_analyzers(:on_enter_fragment_definition, node, parent)
             super
+            @in_fragment_def = false
             call_analyzers(:on_leave_fragment_definition, node, parent)
           end
         end
@@ -72,8 +75,15 @@ module GraphQL
             @object_types.push(nil)
           end
           @path.push(node.alias || node.name)
+
+          @skipping = @skip_stack.last || skip?(node)
+          @skip_stack << @skipping
+
           call_analyzers(:on_enter_field, node, parent)
           super
+
+          @skipping = @skip_stack.pop
+
           call_analyzers(:on_leave_field, node, parent)
           @response_path.pop
           @field_definitions.pop
@@ -129,6 +139,34 @@ module GraphQL
           call_analyzers(:on_leave_abstract_node, node, parent)
         end
 
+        def enter_fragment_spread_inline(fragment_spread)
+          fragment_def = query.fragments[fragment_spread.name]
+
+          object_type = if fragment_def.type
+            query.schema.types.fetch(fragment_def.type.name, nil)
+          else
+            object_types.last
+          end
+
+          object_types << object_type
+
+          fragment_def.selections.each do |selection|
+            visit_node(selection, fragment_def)
+          end
+        end
+
+        def leave_fragment_spread_inline(_fragment_spread)
+          object_types.pop
+        end
+
+        def visiting_fragment_definition?
+          @in_fragment_def
+        end
+
+        def skipping?
+          @skipping
+        end
+
         def response_path
           @response_path.dup
         end
@@ -161,6 +199,11 @@ module GraphQL
         end
 
         private
+
+        def skip?(ast_node)
+          dir = ast_node.directives
+          dir.any? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
+        end
 
         def call_analyzers(method, node, parent)
           @analyzers.each do |analyzer|
