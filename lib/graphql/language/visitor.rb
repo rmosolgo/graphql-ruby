@@ -71,7 +71,6 @@ module GraphQL
         public_send(node.visit_method, node, parent)
       end
 
-
       # The default implementation for visiting an AST node.
       # It doesn't _do_ anything, but it continues to visiting the node's children.
       # To customize this hook, override one of its make_visit_methodes (or the base method?)

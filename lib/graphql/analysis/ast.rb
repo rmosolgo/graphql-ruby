@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "graphql/analysis/ast/visitor"
 require "graphql/analysis/ast/analyzer"
 require "graphql/analysis/ast/field_usage"
