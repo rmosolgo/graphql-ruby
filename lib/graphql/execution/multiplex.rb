@@ -30,7 +30,7 @@ module GraphQL
       include Tracing::Traceable
 
       attr_reader :context, :queries, :schema, :max_complexity
-      def initialize(schema:, queries:, context:, max_complexity: nil)
+      def initialize(schema:, queries:, context:, max_complexity:)
         @schema = schema
         @queries = queries
         @context = context
@@ -40,7 +40,7 @@ module GraphQL
         if context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
           @tracers << GraphQL::Backtrace::Tracer
         end
-        @max_complexity = max_complexity || schema.max_complexity
+        @max_complexity = max_complexity
       end
 
       class << self
@@ -61,7 +61,7 @@ module GraphQL
               if queries.length != 1
                 raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
               else
-                instrument_and_analyze(multiplex, max_complexity: max_complexity) do
+                instrument_and_analyze(multiplex) do
                   [run_one_legacy(schema, queries.first)]
                 end
               end

@@ -72,7 +72,7 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
     end
 
     it "doesn't add an error message" do
-      assert_nil result["errors"]
+      assert_nil result
     end
   end
 
@@ -108,7 +108,7 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
     "}
 
     it "adds an error message for a too-deep query" do
-      assert_equal 1, result["errors"].length
+      assert_equal "Query has depth of 7, which exceeds max depth of 4", result.message
     end
   end
 end

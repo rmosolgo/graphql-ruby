@@ -88,7 +88,6 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
       GraphQL::Analysis::AST.analyze_multiplex(multiplex, [GraphQL::Analysis::AST::MaxQueryComplexity])
     }
 
-    focus
     it "returns errors for all queries" do
       analyze_multiplex
       err_msg = "Query has complexity of 10, which exceeds max complexity of 9"
@@ -100,7 +99,6 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
     describe "with a local override" do
       let(:max_complexity) { 10 }
 
-      focus
       it "uses the override" do
         analyze_multiplex
 

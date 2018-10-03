@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Analysis::AST do
-  class TypeCollector < GraphQL::Analysis::AST::Analyzer
+  class AstTypeCollector < GraphQL::Analysis::AST::Analyzer
     def initialize(query)
       super
       @types = []
@@ -21,7 +21,7 @@ describe GraphQL::Analysis::AST do
     end
   end
 
-  class NodeCounter < GraphQL::Analysis::AST::Analyzer
+  class AstNodeCounter < GraphQL::Analysis::AST::Analyzer
     def initialize(query)
       super
       @nodes = Hash.new { |h,k| h[k] = 0 }
@@ -36,7 +36,7 @@ describe GraphQL::Analysis::AST do
     end
   end
 
-  class ConditionalAnalyzer < GraphQL::Analysis::AST::Analyzer
+  class AstConditionalAnalyzer < GraphQL::Analysis::AST::Analyzer
     def initialize(query)
       super
       @i_have_been_called = false
@@ -56,7 +56,7 @@ describe GraphQL::Analysis::AST do
   end
 
   describe ".analyze_query" do
-    let(:analyzers) { [TypeCollector, NodeCounter] }
+    let(:analyzers) { [AstTypeCollector, AstNodeCounter] }
     let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, analyzers) }
     let(:variables) { {} }
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
@@ -70,7 +70,7 @@ describe GraphQL::Analysis::AST do
     |}
 
     describe "conditional analysis" do
-      let(:analyzers) { [TypeCollector, ConditionalAnalyzer] }
+      let(:analyzers) { [AstTypeCollector, AstConditionalAnalyzer] }
 
       describe "when analyze? returns false" do
         let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: { analyze: false }) }
@@ -131,7 +131,7 @@ describe GraphQL::Analysis::AST do
       end
     end
 
-    class ConnectionCounter < GraphQL::Analysis::AST::Analyzer
+    class AstConnectionCounter < GraphQL::Analysis::AST::Analyzer
       def initialize(query)
         super
         @fields = 0
@@ -155,7 +155,7 @@ describe GraphQL::Analysis::AST do
     end
 
     describe "when processing fields" do
-      let(:analyzers) { [ConnectionCounter] }
+      let(:analyzers) { [AstConnectionCounter] }
       let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, analyzers) }
       let(:query) { GraphQL::Query.new(StarWars::Schema, query_string, variables: variables) }
       let(:query_string) {%|

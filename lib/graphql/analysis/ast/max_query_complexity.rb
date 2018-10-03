@@ -9,7 +9,6 @@ module GraphQL
         def result
           return if query.max_complexity.nil?
 
-
           total_complexity = super
 
           if total_complexity > query.max_complexity
