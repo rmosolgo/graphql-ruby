@@ -28,7 +28,14 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
     }
   "}
   let(:max_depth) { nil }
-  let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: {}, max_depth: max_depth) }
+  let(:query) {
+    GraphQL::Query.new(
+      Dummy::Schema.graphql_definition,
+      query_string,
+      variables: {},
+      max_depth: max_depth
+    )
+  }
   let(:result) {
     GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::MaxQueryDepth]).first
   }
