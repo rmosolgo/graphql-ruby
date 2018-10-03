@@ -1,5 +1,6 @@
 require "graphql/analysis/ast/visitor"
 require "graphql/analysis/ast/analyzer"
+require "graphql/analysis/ast/field_usage"
 require "graphql/analysis/ast/query_complexity"
 require "graphql/analysis/ast/max_query_complexity"
 require "graphql/analysis/ast/query_depth"
