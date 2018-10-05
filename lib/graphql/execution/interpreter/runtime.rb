@@ -154,26 +154,25 @@ module GraphQL
         end
 
         def continue_value(path, value, field, as_type, ast_node)
-          if value.nil? || value.is_a?(GraphQL::ExecutionError)
-            if value.nil?
-              if as_type.non_null?
-                err = GraphQL::InvalidNullError.new(field.owner, field, value)
-                write_in_response(path, err, propagating_nil: true)
-              else
-                write_in_response(path, nil)
-              end
+          if value.nil?
+            if as_type.non_null?
+              err = GraphQL::InvalidNullError.new(field.owner, field, value)
+              write_invalid_null_in_response(path, err)
             else
-              value.path ||= path
-              value.ast_node ||= ast_node
-              write_in_response(path, value, propagating_nil: as_type.non_null?)
+              write_in_response(path, nil)
             end
             false
-          elsif value.is_a?(Array) && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
+          elsif value.is_a?(GraphQL::ExecutionError)
+            value.path ||= path
+            value.ast_node ||= ast_node
+            write_execution_errors_in_response(path, [value])
+            false
+          elsif value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
             value.each do |v|
               v.path ||= path
               v.ast_node ||= ast_node
             end
-            write_in_response(path, value, propagating_nil: as_type.non_null?)
+            write_execution_errors_in_response(path, value)
             false
           elsif value.is_a?(GraphQL::UnauthorizedError)
             # this hook might raise & crash, or it might return
@@ -193,8 +192,6 @@ module GraphQL
         end
 
         def continue_field(path, value, field, type, ast_node, next_selections)
-          type = resolve_if_late_bound_type(type)
-
           case type.kind.name
           when "SCALAR", "ENUM"
             r = type.coerce_result(value, context)
@@ -207,7 +204,7 @@ module GraphQL
               parent_type = field.owner
               type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
               schema.type_error(type_error, context)
-              write_in_response(path, nil, propagating_nil: field.type.non_null?)
+              write_in_response(path, nil)
             else
               resolved_type = resolved_type.metadata[:type_class]
               continue_field(path, value, field, resolved_type, ast_node, next_selections)
@@ -228,7 +225,8 @@ module GraphQL
           when "LIST"
             write_in_response(path, [])
             inner_type = type.of_type
-            value.each_with_index do |inner_value, idx|
+            idx = 0
+            value.each do |inner_value|
               next_path = [*path, idx].freeze
               set_type_at_path(next_path, inner_type)
               after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
@@ -237,9 +235,12 @@ module GraphQL
                   continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections)
                 end
               end
+              idx += 1
             end
           when "NON_NULL"
             inner_type = type.of_type
+            # For fields like `__schema: __Schema!`
+            inner_type = resolve_if_late_bound_type(inner_type)
             # Don't `set_type_at_path` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
             continue_field(path, value, field, inner_type, ast_node, next_selections)
@@ -385,27 +386,35 @@ module GraphQL
           end
         end
 
-        def write_in_response(path, value, propagating_nil: false)
+        def write_invalid_null_in_response(path, invalid_null_error)
+          if !dead_path?(path)
+            schema.type_error(invalid_null_error, context)
+            write_in_response(path, nil)
+            add_dead_path(path)
+          end
+        end
+
+        def write_execution_errors_in_response(path, errors)
+          if !dead_path?(path)
+            errors.each do |v|
+              context.errors << v
+            end
+            write_in_response(path, nil)
+            add_dead_path(path)
+          end
+        end
+
+        def write_in_response(path, value)
           if dead_path?(path)
             return
           else
-            if value.is_a?(GraphQL::ExecutionError) || (value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError)})
-              Array(value).each do |v|
-                context.errors << v
-              end
-              write_in_response(path, nil, propagating_nil: propagating_nil)
-              add_dead_path(path)
-            elsif value.is_a?(GraphQL::InvalidNullError)
-              schema.type_error(value, context)
-              write_in_response(path, nil, propagating_nil: true)
-              add_dead_path(path)
-            elsif value.nil? && path.any? && type_at(path).non_null?
+            if value.nil? && path.any? && type_at(path).non_null?
               # This nil is invalid, try writing it at the previous spot
               propagate_path = path[0..-2]
-              write_in_response(propagate_path, value, propagating_nil: true)
+              write_in_response(propagate_path, value)
               add_dead_path(propagate_path)
             else
-              @response.write(path, value, propagating_nil: propagating_nil)
+              @response.write(path, value)
             end
           end
         end
