@@ -63,7 +63,7 @@ def search_posts(category:)
 end
 ```
 
-Use `as: :alternateName` to use a different key from within your resolvers while
+Use `as: :alternate_name` to use a different key from within your resolvers while
 exposing another key to clients.
 
 ```ruby
@@ -107,6 +107,14 @@ The corresponding GraphQL query will look like:
     id
   }
 }
+```
+
+To disable auto-camelization, pass `camelize: false` to the `argument` method.
+
+```ruby
+field :posts, [PostType], null: false do
+  argument :start_year, Int, required: true, camelize: false
+end
 ```
 
 Furthermore, if you're argument is already camelCased, then it will remain camelized in the GraphQL schema. However, the argument will be converted to snake_case when it is passed to the resolver method:
