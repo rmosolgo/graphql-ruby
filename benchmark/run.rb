@@ -63,12 +63,18 @@ module GraphQLBenchmark
     end
 
     result = RubyProf.profile do
-      schema.execute( document: document)
+      schema.execute(document: document)
     end
     printer = RubyProf::FlatPrinter.new(result)
     # printer = RubyProf::GraphHtmlPrinter.new(result)
     # printer = RubyProf::FlatPrinterWithLineNumbers.new(result)
     printer.print(STDOUT, {})
+
+    report = MemoryProfiler.report do
+      schema.execute(document: document)
+    end
+
+    report.pretty_print
   end
 
   module ProfileLargeResult
