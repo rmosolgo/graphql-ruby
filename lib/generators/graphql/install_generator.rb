@@ -17,6 +17,7 @@ module Graphql
     #       - base_input_object.rb
     #       - base_interface.rb
     #       - base_object.rb
+    #       - base_scalar.rb
     #       - base_union.rb
     #       - query_type.rb
     #     - loaders/
@@ -92,7 +93,7 @@ module Graphql
         create_dir("#{options[:directory]}/types")
         template("schema.erb", schema_file_path)
 
-        ["base_object", "base_enum", "base_input_object", "base_interface", "base_union"].each do |base_type|
+        ["base_object", "base_enum", "base_input_object", "base_interface", "base_scalar", "base_union"].each do |base_type|
           template("#{base_type}.erb", "#{options[:directory]}/types/#{base_type}.rb")
         end
 

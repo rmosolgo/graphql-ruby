@@ -1,6 +1,10 @@
 # graphql-ruby-client
 
-## 1.4.0 (12 Apr 2017)
+## 1.4.1 (19 Sept 2018)
+
+- Add `connectionOptions` to ActionCableLink #1857
+
+## 1.4.0 (12 Apr 2018)
 
 - Add `PusherLink` for Apollo 2 Subscriptions on Pusher
 - Add `OperationStoreLink` for Apollo 2 persisted queries

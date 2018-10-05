@@ -159,11 +159,11 @@ module GraphQL
         # If the returned object is finished, continue to coerce
         # and resolve child fields
         def continue_or_wait(raw_value, field_type, field_ctx)
-          if (lazy_method = field_ctx.schema.lazy_method_name(raw_value))
+          if field_ctx.schema.lazy?(raw_value)
             field_ctx.value = Execution::Lazy.new {
               inner_value = begin
                   begin
-                    raw_value.public_send(lazy_method)
+                    field_ctx.schema.sync_lazy(raw_value)
                   rescue GraphQL::UnauthorizedError => err
                     field_ctx.schema.unauthorized_object(err)
                   end

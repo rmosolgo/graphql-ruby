@@ -22,7 +22,7 @@ module LazyHelpers
     attr_reader :own_value
     attr_writer :value
 
-    def initialize(ctx, own_value)
+    def initialize(own_value)
       @own_value = own_value
       all << self
     end
@@ -60,7 +60,7 @@ module LazyHelpers
       if value == 13
         Wrapper.new(nil)
       else
-        SumAll.new(@context, @object + value)
+        SumAll.new(@object + value)
       end
     end
 
@@ -156,6 +156,15 @@ module LazyHelpers
 
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
+    end
+
+    def self.sync_lazy(lazy)
+      if lazy.is_a?(SumAll) && lazy.own_value > 1000
+        lazy.value # clear the previous set
+        lazy.own_value - 900
+      else
+        super
+      end
     end
   end
 

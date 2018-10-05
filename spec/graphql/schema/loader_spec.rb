@@ -103,6 +103,7 @@ describe GraphQL::Schema::Loader do
         argument :id, !types.ID
         argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
         argument :variedWithNull, variant_input_type_with_nulls, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil, bigint: nil, bool: nil }
+        argument :variedArray, types[variant_input_type], default_value: [{ id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }]
         argument :enum, choice_type, default_value: :foo
         argument :array, types[!types.String], default_value: ["foo", "bar"]
       end
@@ -228,6 +229,10 @@ describe GraphQL::Schema::Loader do
       varied = field.arguments['varied']
       assert_equal varied.default_value, { 'id' => "123", 'int' => 234, 'float' => 2.3, 'enum' => "FOO", 'sub' => [{ 'string' => "str" }] }
       assert !varied.default_value.key?('bool'), 'Omits default value for unspecified arguments'
+
+      variedArray = field.arguments['variedArray']
+      assert_equal variedArray.default_value, [{ 'id' => "123", 'int' => 234, 'float' => 2.3, 'enum' => "FOO", 'sub' => [{ 'string' => "str" }] }]
+      assert !variedArray.default_value.first.key?('bool'), 'Omits default value for unspecified arguments'
 
       array = field.arguments['array']
       assert_equal array.default_value, ["foo", "bar"]
