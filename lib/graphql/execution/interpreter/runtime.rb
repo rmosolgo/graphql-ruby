@@ -297,6 +297,7 @@ module GraphQL
             yield(obj)
           end
         end
+
         def arguments(graphql_object, arg_owner, ast_node)
           kwarg_arguments = {}
           ast_node.arguments.each do |arg|
