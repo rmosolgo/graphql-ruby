@@ -29,13 +29,21 @@ module GraphQL
       # @return [Class] The type that this field belongs to
       attr_reader :owner
 
-
       # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one
       def resolver
         @resolver_class
       end
 
       alias :mutation :resolver
+
+      # @return [Array<Symbol>]
+      attr_reader :extras
+
+      # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
+      attr_reader :trace
+
+      # @return [String, nil]
+      attr_reader :subscription_scope
 
       # Create a field instance from a list of arguments, keyword arguments, and a block.
       #
@@ -130,7 +138,8 @@ module GraphQL
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       # @param extensions [Array<Class>] Named extensions to apply to this field (see also {#extension})
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
+      # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -174,6 +183,8 @@ module GraphQL
         @resolver_class = resolver_class
         @scope = scope
         @trace = trace
+        @relay_node_field = relay_node_field
+        @relay_nodes_field = relay_nodes_field
 
         # Override the default from HasArguments
         @own_arguments = {}
@@ -282,7 +293,6 @@ MSG
         else
           raise("Invalid complexity: #{new_complexity.inspect} on #{@name}")
         end
-
       end
 
       # @return [Integer, nil] Applied to connections if present
@@ -320,6 +330,14 @@ MSG
 
         if !@trace.nil?
           field_defn.trace = @trace
+        end
+
+        if @relay_node_field
+          field_defn.relay_node_field = @relay_node_field
+        end
+
+        if @relay_nodes_field
+          field_defn.relay_nodes_field = @relay_nodes_field
         end
 
         field_defn.resolve = self.method(:resolve_field)
@@ -372,22 +390,25 @@ MSG
       end
 
       def authorized?(object, context)
-        if @resolver_class
+        self_auth = if @resolver_class
           @resolver_class.authorized?(object, context)
         else
           true
         end
+
+        self_auth && arguments.each_value.all? { |a| a.authorized?(object, context) }
       end
 
       # Implement {GraphQL::Field}'s resolve API.
       #
       # Eventually, we might hook up field instances to execution in another way. TBD.
+      # @see #resolve for how the interpreter hooks up to it
       def resolve_field(obj, args, ctx)
         ctx.schema.after_lazy(obj) do |after_obj|
           # First, apply auth ...
           query_ctx = ctx.query.context
           inner_obj = after_obj && after_obj.object
-          if authorized?(inner_obj, query_ctx) && arguments.each_value.all? { |a| a.authorized?(inner_obj, query_ctx) }
+          if authorized?(inner_obj, query_ctx)
             # Then if it passed, resolve the field
             if @resolve_proc
               # Might be nil, still want to call the func in that case
@@ -399,6 +420,47 @@ MSG
             nil
           end
         end
+      end
+
+      # This method is called by the interpreter for each field.
+      # You can extend it in your base field classes.
+      # @param object [GraphQL::Schema::Object] An instance of some type class, wrapping an application object
+      # @param args [Hash] A symbol-keyed hash of Ruby keyword arguments. (Empty if no args)
+      # @param ctx [GraphQL::Query::Context]
+      def resolve(object, args, ctx)
+        if @resolve_proc
+          raise "Can't run resolve proc for #{path} when using GraphQL::Execution::Interpreter"
+        end
+        begin
+          # Unwrap the GraphQL object to get the application object.
+          application_object = object.object
+          if self.authorized?(application_object, ctx)
+            # Apply field extensions
+            with_extensions(object, args, ctx) do |extended_obj, extended_args|
+              field_receiver = if @resolver_class
+                resolver_obj = if extended_obj.is_a?(GraphQL::Schema::Object)
+                  extended_obj.object
+                else
+                  extended_obj
+                end
+                @resolver_class.new(object: resolver_obj, context: ctx)
+              else
+                extended_obj
+              end
+
+              # Call the method with kwargs, if there are any
+              if extended_args.any?
+                field_receiver.public_send(method_sym, extended_args)
+              else
+                field_receiver.public_send(method_sym)
+              end
+            end
+          end
+        rescue GraphQL::UnauthorizedError => err
+          ctx.schema.unauthorized_object(err)
+        end
+      rescue GraphQL::ExecutionError => err
+        err
       end
 
       # Find a way to resolve this field, checking:
@@ -438,6 +500,17 @@ MSG
         end
       end
 
+      # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
+      def fetch_extra(extra_name, ctx)
+        if extra_name != :path && respond_to?(extra_name)
+          self.public_send(extra_name)
+        elsif ctx.respond_to?(extra_name)
+          ctx.public_send(extra_name)
+        else
+          raise NotImplementedError, "Unknown field extra for #{self.path}: #{extra_name.inspect}"
+        end
+      end
+
       private
 
       NO_ARGS = {}.freeze
@@ -455,8 +528,7 @@ MSG
           end
 
           @extras.each do |extra_arg|
-            # TODO: provide proper tests for `:ast_node`, `:irep_node`, `:parent`, others?
-            ruby_kwargs[extra_arg] = field_ctx.public_send(extra_arg)
+            ruby_kwargs[extra_arg] = fetch_extra(extra_arg, field_ctx)
           end
         else
           ruby_kwargs = NO_ARGS

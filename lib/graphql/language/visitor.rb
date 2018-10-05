@@ -37,6 +37,7 @@ module GraphQL
       SKIP = :_skip
 
       class DeleteNode; end
+
       # When this is returned from a visitor method,
       # Then the `node` passed into the method is removed from `parent`'s children.
       DELETE_NODE = DeleteNode.new
@@ -143,6 +144,10 @@ module GraphQL
       make_visit_method :on_union_type_extension, :on_abstract_node
       make_visit_method :on_variable_definition, :on_abstract_node
       make_visit_method :on_variable_identifier, :on_abstract_node
+
+      def visit_node(node, parent)
+        public_send(node.visit_method, node, parent)
+      end
 
       private
 

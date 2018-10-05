@@ -323,13 +323,7 @@ module GraphQL
 
     module DefaultLazyResolve
       def self.call(obj, args, ctx)
-        method_name = ctx.schema.lazy_method_name(obj)
-        next_obj = obj.public_send(method_name)
-        if ctx.schema.lazy?(next_obj)
-          call(next_obj, args, ctx)
-        else
-          next_obj
-        end
+        ctx.schema.sync_lazy(obj)
       end
     end
   end

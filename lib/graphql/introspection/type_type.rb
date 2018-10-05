@@ -25,6 +25,10 @@ module GraphQL
       field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: true
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type"), null: true
 
+      def name
+        object.graphql_name
+      end
+
       def kind
         @object.kind.name
       end
@@ -33,7 +37,7 @@ module GraphQL
         if !@object.kind.enum?
           nil
         else
-          enum_values = @context.warden.enum_values(@object)
+          enum_values = @context.warden.enum_values(@object.graphql_definition)
 
           if !include_deprecated
             enum_values = enum_values.select {|f| !f.deprecation_reason }

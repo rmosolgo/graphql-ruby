@@ -12,7 +12,14 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
     traces = []
 
     callback = ->(name, started, finished, id, data) {
-      traces << name
+      path_str = if data.key?(:field)
+        " (#{data[:field].path})"
+      elsif data.key?(:context)
+        " (#{data[:context].irep_node.owner_type}.#{data[:context].field.name})"
+      else
+        ""
+      end
+      traces << "#{name}#{path_str}"
     }
 
     query_string = <<-GRAPHQL
@@ -37,16 +44,16 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
       "graphql.validate",
       "graphql.analyze_query",
       "graphql.analyze_multiplex",
-      "graphql.execute_field",
-      "graphql.execute_field",
+      "graphql.execute_field (Query.batchedBase)",
+      "graphql.execute_field (Query.batchedBase)",
       "graphql.execute_query",
       "graphql.lazy_loader",
-      "graphql.execute_field_lazy",
-      "graphql.execute_field",
-      "graphql.execute_field_lazy",
-      "graphql.execute_field",
-      "graphql.execute_field_lazy",
-      "graphql.execute_field_lazy",
+      "graphql.execute_field_lazy (Query.batchedBase)",
+      "graphql.execute_field (Base.name)",
+      "graphql.execute_field_lazy (Query.batchedBase)",
+      "graphql.execute_field (Base.name)",
+      "graphql.execute_field_lazy (Base.name)",
+      "graphql.execute_field_lazy (Base.name)",
       "graphql.execute_query_lazy",
       "graphql.execute_multiplex",
     ]

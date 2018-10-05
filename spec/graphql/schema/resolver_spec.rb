@@ -56,6 +56,15 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class ResolverWithPath < BaseResolver
+      type String, null: false
+
+      extras [:path]
+      def resolve(path:)
+        path.inspect
+      end
+    end
+
     class Resolver5 < Resolver4
     end
 
@@ -271,9 +280,47 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class MutationWithNullableLoadsArgument < GraphQL::Schema::Mutation
+      argument :label_id, ID, required: false, loads: HasValue
+      argument :label_ids, [ID], required: false, loads: HasValue
+
+      field :inputs, String, null: false
+
+      def resolve(**inputs)
+        {
+          inputs: JSON.dump(inputs)
+        }
+      end
+    end
+
+    class MutationWithRequiredLoadsArgument < GraphQL::Schema::Mutation
+      argument :label_id, ID, required: true, loads: HasValue
+
+      field :inputs, String, null: false
+
+      def resolve(**inputs)
+        {
+          inputs: JSON.dump(inputs)
+        }
+      end
+    end
+
+    class Mutation < GraphQL::Schema::Object
+      field :mutation_with_nullable_loads_argument, mutation: MutationWithNullableLoadsArgument
+      field :mutation_with_required_loads_argument, mutation: MutationWithRequiredLoadsArgument
+    end
+
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
         def resolve_field(*args)
+          value = super
+          if @name == "resolver3"
+            value << -1
+          end
+          value
+        end
+
+        def resolve(*)
           value = super
           if @name == "resolver3"
             value << -1
@@ -293,6 +340,7 @@ describe GraphQL::Schema::Resolver do
       field :resolver_6, resolver: Resolver6
       field :resolver_7, resolver: Resolver7
       field :resolver_8, resolver: Resolver8
+      field :resolver_with_path, resolver: ResolverWithPath
 
       field :prep_resolver_1, resolver: PrepResolver1
       field :prep_resolver_2, resolver: PrepResolver2
@@ -312,8 +360,20 @@ describe GraphQL::Schema::Resolver do
 
     class Schema < GraphQL::Schema
       query(Query)
+      mutation(Mutation)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
+
+      def object_from_id(id, ctx)
+        if id == "invalid"
+          nil
+        else
+          1
+        end
+      end
     end
   end
 
@@ -365,6 +425,11 @@ describe GraphQL::Schema::Resolver do
     it "gets extras" do
       res = exec_query " { resolver4 } ", root_value: OpenStruct.new(value: 0)
       assert_equal 9, res["data"]["resolver4"]
+    end
+
+    it "gets path from extras" do
+      res = exec_query " { resolverWithPath } ", root_value: OpenStruct.new(value: 0)
+      assert_equal '["resolverWithPath"]', res["data"]["resolverWithPath"]
     end
   end
 
@@ -534,6 +599,41 @@ describe GraphQL::Schema::Resolver do
         # (10 + 8) * 3
         # (100 + 8) * 3
         assert_equal [27, 54, 324], res["data"]["prepResolver9Array"].map { |v| v["value"] }
+      end
+
+      it "preserves `nil` when nullable argument is provided `null`" do
+        res = exec_query("mutation { mutationWithNullableLoadsArgument(labelId: null) { inputs } }")
+
+        assert_equal nil, res["errors"]
+        assert_equal '{"label":null}', res["data"]["mutationWithNullableLoadsArgument"]["inputs"]
+      end
+
+      it "preserves `nil` when nullable list argument is provided `null`" do
+        res = exec_query("mutation { mutationWithNullableLoadsArgument(labelIds: null) { inputs } }")
+
+        assert_equal nil, res["errors"]
+        assert_equal '{"labels":null}', res["data"]["mutationWithNullableLoadsArgument"]["inputs"]
+      end
+
+      it "omits omitted nullable argument" do
+        res = exec_query("mutation { mutationWithNullableLoadsArgument { inputs } }")
+
+        assert_equal nil, res["errors"]
+        assert_equal "{}", res["data"]["mutationWithNullableLoadsArgument"]["inputs"]
+      end
+
+      it "returns an error when nullable argument is provided an invalid value" do
+        res = exec_query('mutation { mutationWithNullableLoadsArgument(labelId: "invalid") { inputs } }')
+
+        assert res["errors"]
+        assert_equal 'No object found for `labelId: "invalid"`', res["errors"][0]["message"]
+      end
+
+      it "returns an error when a non-nullable argument is provided an invalid value" do
+        res = exec_query('mutation { mutationWithRequiredLoadsArgument(labelId: "invalid") { inputs } }')
+
+        assert res["errors"]
+        assert_equal 'No object found for `labelId: "invalid"`', res["errors"][0]["message"]
       end
     end
   end

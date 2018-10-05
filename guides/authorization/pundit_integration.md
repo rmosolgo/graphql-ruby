@@ -270,6 +270,48 @@ end
 
 In the example above, `PromoteEmployeePolicy#admin?` will be checked before running the mutation.
 
+#### Custom Policy Class
+
+By default, Pundit uses the mutation's class name to look up a policy. You can override this by defining `self.policy_class` on your mutation:
+
+```ruby
+class Mutations::PromoteEmployee < Mutations::BaseMutation
+  def self.policy_class
+    ::UserPolicy
+  end
+
+  pundit_role :admin
+end
+```
+
+Now, the mutation will check `UserPolicy#admin?` before running.
+
+Another good approach is to have one policy per mutation. You can implement `self.policy_class` to look up a class _within_ the mutation, for example:
+
+```ruby
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
+  def self.policy_class
+    # Look up a nested `Policy` constant:
+    self.const_get(:Policy)
+  end
+end
+```
+
+Then, each mutation can define its policy inline, for example:
+
+```ruby
+class Mutations::PromoteEmployee < Mutations::BaseMutation
+  # This will be found by `BaseMutation.policy_class`, defined above:
+  class Policy
+    # ...
+  end
+
+  pundit_role :admin
+end
+```
+
+Now, `Mutations::PromoteEmployee::Policy#admin` will be checked before running the mutation.
+
 #### Authorizing Loaded Objects
 
 Mutations can automatically load and authorize objects by ID using the `loads:` option.

@@ -13,7 +13,7 @@ describe GraphQL::Schema::IntrospectionSystem do
       assert_equal "ENSEMBLE", res["data"]["__type"]["name"]
     end
 
-    it "serves custom entry points"  do
+    it "serves custom entry points" do
       res = Jazz::Schema.execute("{ __classname }", root_value: Set.new)
       assert_equal "Set", res["data"]["__classname"]
     end
@@ -34,6 +34,14 @@ describe GraphQL::Schema::IntrospectionSystem do
 
       res = Dummy::Schema.execute("{ ensembles { __typenameLength } }")
       assert_equal 1, res["errors"].length
+    end
+
+    it "runs the introspection query" do
+      res = Jazz::Schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+      assert res
+      query_type = res["data"]["__schema"]["types"].find { |t| t["name"] == "QUERY" }
+      ensembles_field = query_type["fields"].find { |f| f["name"] == "ensembles" }
+      assert_equal [], ensembles_field["args"]
     end
   end
 end

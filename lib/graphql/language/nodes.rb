@@ -375,6 +375,11 @@ module GraphQL
       class FragmentSpread < AbstractNode
         scalar_methods :name
         children_methods(directives: GraphQL::Language::Nodes::Directive)
+
+        def children_method_name
+          :selections
+        end
+
         # @!attribute name
         #   @return [String] The identifier of the fragment to apply, corresponds with {FragmentDefinition#name}
       end
@@ -386,6 +391,10 @@ module GraphQL
           selections: GraphQL::Language::Nodes::Field,
           directives: GraphQL::Language::Nodes::Directive,
         })
+
+        def children_method_name
+          :selections
+        end
 
         # @!attribute type
         #   @return [String, nil] Name of the type this fragment applies to, or `nil` if this fragment applies to any type

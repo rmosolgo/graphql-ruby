@@ -389,6 +389,10 @@ module StarTrek
     mutation(MutationType)
     default_max_page_size 3
 
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
+
     def self.resolve_type(type, object, ctx)
       if object == :test_error
         :not_a_type

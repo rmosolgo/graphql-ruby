@@ -149,12 +149,22 @@ module GraphQL
         @path = []
         @value = nil
         @context = self # for SharedMethods
+        # The interpreter will set this
+        @interpreter = nil
       end
+
+      # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
+      def interpreter?
+        @interpreter
+      end
+
+      # @api private
+      attr_writer :interpreter
 
       # @api private
       attr_writer :value
 
-      def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch
+      def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch, :dig
       def_delegators :@query, :trace
 
       # @!method [](key)
@@ -220,9 +230,9 @@ module GraphQL
         end
 
         def_delegators :@context,
-          :[], :[]=, :key?, :fetch, :to_h, :namespace,
+          :[], :[]=, :key?, :fetch, :to_h, :namespace, :dig,
           :spawn, :warden, :errors,
-          :execution_strategy, :strategy
+          :execution_strategy, :strategy, :interpreter?
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node

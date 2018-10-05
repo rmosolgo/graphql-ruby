@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql/execution/lazy/lazy_method_map"
 require "graphql/execution/lazy/resolve"
+
 module GraphQL
   module Execution
     # This wraps a value which is available, but not yet calculated, like a promise or future.

@@ -89,5 +89,13 @@ describe GraphQL::Relay::BaseConnection do
 
       assert_equal "Person/1", conn.decode("UGVyc29uLzE")
     end
+
+    it "raises an execution error when an invalid cursor is given" do
+      conn = GraphQL::Relay::BaseConnection.new([], {}, context: nil)
+
+      assert_raises(GraphQL::ExecutionError) do
+        conn.decode("0")
+      end
+    end
   end
 end

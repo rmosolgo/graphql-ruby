@@ -83,7 +83,7 @@ module GraphQL
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
-      directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
+      directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
         if type == :field && after_built_ins
           type = :field_after_built_ins
@@ -94,7 +94,7 @@ module GraphQL
       multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
-      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)},
+      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block) },
       tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
 
     attr_accessor \
@@ -135,8 +135,6 @@ module GraphQL
     # @see {Query#tracers} for query-specific tracers
     attr_reader :tracers
 
-    self.default_execution_strategy = GraphQL::Execution::Execute
-
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
@@ -161,14 +159,18 @@ module GraphQL
       @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
-      @query_execution_strategy = self.class.default_execution_strategy
-      @mutation_execution_strategy = self.class.default_execution_strategy
-      @subscription_execution_strategy = self.class.default_execution_strategy
+      @query_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
+      @mutation_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
+      @subscription_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
       @context_class = GraphQL::Query::Context
       @introspection_namespace = nil
       @introspection_system = nil
+    end
+
+    def inspect
+      "#<#{self.class.name} ...>"
     end
 
     def initialize_copy(other)
@@ -390,7 +392,7 @@ module GraphQL
     # Fields for this type, after instrumentation is applied
     # @return [Hash<String, GraphQL::Field>]
     def get_fields(type)
-      @instrumented_field_map[type.name]
+      @instrumented_field_map[type.graphql_name]
     end
 
     def type_from_ast(ast_node)
@@ -658,7 +660,8 @@ module GraphQL
         :static_validator, :introspection_system,
         :query_analyzers, :tracers, :instrumenters,
         :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-        :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy,
+        :execution_strategy_for_operation,
+        :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
         :metadata,
@@ -715,7 +718,6 @@ module GraphQL
             schema_defn.instrumenters[step] << inst
           end
         end
-        schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         lazy_classes.each do |lazy_class, value_method|
           schema_defn.lazy_methods.set(lazy_class, value_method)
         end
@@ -737,6 +739,10 @@ module GraphQL
               end
             end
           end
+        end
+        # Do this after `plugins` since Interpreter is a plugin
+        if schema_defn.query_execution_strategy != GraphQL::Execution::Interpreter
+          schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         end
         schema_defn.send(:rebuild_artifacts)
 
@@ -963,7 +969,7 @@ module GraphQL
       # @see {.accessible?}
       # @see {.authorized?}
       def call_on_type_class(member, method_name, *args, default:)
-        member = if member.respond_to?(:metadata)
+        member = if member.respond_to?(:metadata) && member.metadata
           member.metadata[:type_class] || member
         else
           member
@@ -1002,9 +1008,9 @@ module GraphQL
     # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
     # @api private
     def after_lazy(value)
-      if (lazy_method = lazy_method_name(value))
+      if lazy?(value)
         GraphQL::Execution::Lazy.new do
-          result = value.public_send(lazy_method)
+          result = sync_lazy(value)
           # The returned result might also be lazy, so check it, too
           after_lazy(result) do |final_result|
             yield(final_result) if block_given?
@@ -1013,6 +1019,28 @@ module GraphQL
       else
         yield(value) if block_given?
       end
+    end
+
+    # Override this method to handle lazy objects in a custom way.
+    # @param value [Object] an instance of a class registered with {.lazy_resolve}
+    # @param ctx [GraphQL::Query::Context] the context for this query
+    # @return [Object] A GraphQL-ready (non-lazy) object
+    def self.sync_lazy(value)
+      yield(value)
+    end
+
+    # @see Schema.sync_lazy for a hook to override
+    # @api private
+    def sync_lazy(value)
+      self.class.sync_lazy(value) { |v|
+        lazy_method = lazy_method_name(v)
+        if lazy_method
+          synced_value = value.public_send(lazy_method)
+          sync_lazy(synced_value)
+        else
+          v
+        end
+      }
     end
 
     protected

@@ -19,7 +19,7 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 
     assert_file "app/graphql/types/.keep"
     assert_file "app/graphql/mutations/.keep"
-    ["base_object", "base_input_object", "base_enum", "base_union", "base_interface"].each do |base_type|
+    ["base_object", "base_input_object", "base_enum", "base_scalar", "base_union", "base_interface"].each do |base_type|
       assert_file "app/graphql/types/#{base_type}.rb"
     end
     expected_query_route = %|post "/graphql", to: "graphql#execute"|
