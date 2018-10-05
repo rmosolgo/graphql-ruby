@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 require "graphql/execution/interpreter/execution_errors"
 require "graphql/execution/interpreter/hash_response"
-require "graphql/execution/interpreter/trace"
-require "graphql/execution/interpreter/visitor"
+require "graphql/execution/interpreter/runtime"
 
 module GraphQL
   module Execution
@@ -14,9 +13,9 @@ module GraphQL
 
       # Support `Executor` :S
       def execute(_operation, _root_type, query)
-        trace = evaluate(query)
+        runtime = evaluate(query)
         sync_lazies(query: query)
-        trace.final_value
+        runtime.final_value
       end
 
       def self.use(schema_defn)
@@ -48,7 +47,7 @@ module GraphQL
 
       def self.finish_query(query, _multiplex)
         {
-          "data" => query.context.namespace(:interpreter)[:interpreter_trace].final_value
+          "data" => query.context.namespace(:interpreter)[:runtime].final_value
         }
       end
 
@@ -57,12 +56,18 @@ module GraphQL
         # Although queries in a multiplex _share_ an Interpreter instance,
         # they also have another item of state, which is private to that query
         # in particular, assign it here:
-        trace = Trace.new(query: query, lazies: @lazies, response: HashResponse.new)
-        query.context.namespace(:interpreter)[:interpreter_trace] = trace
+        runtime = Runtime.new(
+          query: query,
+          lazies: @lazies,
+          response: HashResponse.new,
+        )
+        query.context.namespace(:interpreter)[:runtime] = runtime
+
         query.trace("execute_query", {query: query}) do
-          Visitor.new.visit(query, trace)
+          runtime.run_eager
         end
-        trace
+
+        runtime
       end
 
       def sync_lazies(query: nil, multiplex: nil)
@@ -74,7 +79,7 @@ module GraphQL
           while @lazies.any?
             next_wave = @lazies.dup
             @lazies.clear
-            # This will cause a side-effect with Trace#write
+            # This will cause a side-effect with `.write(...)`
             next_wave.each(&:value)
           end
         end
