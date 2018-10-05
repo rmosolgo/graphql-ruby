@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/execution/interpreter/execution_errors"
+require "graphql/execution/interpreter/hash_response"
 require "graphql/execution/interpreter/trace"
 require "graphql/execution/interpreter/visitor"
 
@@ -51,7 +52,7 @@ module GraphQL
 
       def evaluate(query)
         query.context.interpreter = true
-        trace = Trace.new(query: query, lazies: @lazies)
+        trace = Trace.new(query: query, lazies: @lazies, response: HashResponse.new)
         query.context.namespace(:interpreter)[:interpreter_trace] = trace
         query.trace("execute_query", {query: query}) do
           Visitor.new.visit(query, trace)

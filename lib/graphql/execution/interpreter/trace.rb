@@ -13,37 +13,22 @@ module GraphQL
         # TODO document these methods
         attr_reader :query, :result, :lazies
 
-        def initialize(query:, lazies:)
+        def initialize(query:, lazies:, response:)
           # shared by the parent and all children:
           @query = query
-          @result = {}
           @lazies = lazies
-          @completely_nulled = false
+          @response = response
+          @dead_paths = {}
+          @dead_root = false
           @types_at_paths = Hash.new { |h, k| h[k] = {} }
         end
 
         def final_value
-          if @completely_nulled
-            nil
-          else
-            @result
-          end
+          @response.final_value
         end
 
         def inspect
           "#<#{self.class.name} result=#{@result.inspect}>"
-        end
-
-        # TODO delegate to a collector which does as it pleases with patches
-        def write(path, value, propagating_nil: false)
-          if @completely_nulled
-            nil
-          else
-            res = @result ||= {}
-            if path_exists?(path)
-              write_into_result(res, path, value, propagating_nil: propagating_nil)
-            end
-          end
         end
 
         # TODO: isolate calls to this. Am I missing something?
@@ -157,6 +142,32 @@ module GraphQL
           end
         end
 
+        def write(path, value, propagating_nil: false)
+          if dead_path?(path)
+            return
+          else
+            if value.is_a?(GraphQL::ExecutionError) || (value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError)})
+              Array(value).each do |v|
+                context.errors << v
+              end
+              # TODO extract instead of recursive
+              write(path, nil, propagating_nil: propagating_nil)
+              add_dead_path(path)
+            elsif value.is_a?(GraphQL::InvalidNullError)
+              schema.type_error(value, context)
+              write(path, nil, propagating_nil: true)
+              add_dead_path(path)
+            elsif value.nil? && path.any? && type_at(path).non_null?
+              # This nil is invalid, try writing it at the previous spot
+              propagate_path = path[0..-2]
+              write(propagate_path, value, propagating_nil: true)
+              add_dead_path(propagate_path)
+            else
+              @response.write(path, value, propagating_nil: propagating_nil)
+            end
+          end
+        end
+
         # To propagate nulls, we have to know what the field type was
         # at previous parts of the response.
         # This hash matches the response
@@ -188,64 +199,30 @@ module GraphQL
           nil
         end
 
-        private
-
-        # @return [Boolean] True if `@result` contains a value at `path`
-        def path_exists?(path)
-          res = @result
-          path[0..-2].each do |part|
-            if res
-              res = res[part]
-            else
-              return false
+        def add_dead_path(path)
+          if path.none?
+            @dead_root = true
+          else
+            dead = @dead_paths
+            path.each do |part|
+              dead = dead[part] ||= {}
             end
           end
-          !!res
         end
 
-        # Write `value` at `path` in `result`. If `propagating_nil` is true, `nil` may override
-        # part of the already-written response.
-        # @return [void]
-        def write_into_result(result, path, value, propagating_nil:)
-          if value.is_a?(GraphQL::ExecutionError) || (value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError)})
-            Array(value).each do |v|
-              context.errors << v
-            end
-            write_into_result(result, path, nil, propagating_nil: propagating_nil)
-          elsif value.is_a?(GraphQL::InvalidNullError)
-            schema.type_error(value, context)
-            write_into_result(result, path, nil, propagating_nil: true)
-          elsif value.nil? && type_at(path).non_null?
-            # This nil is invalid, try writing it at the previous spot
-            propagate_path = path[0..-2]
-
-            if propagate_path.empty?
-              @completely_nulled = true
-            else
-              write_into_result(result, propagate_path, value, propagating_nil: true)
-            end
-          else
-            write_target = result
-            path.each_with_index do |path_part, idx|
-              next_part = path[idx + 1]
-              if next_part.nil?
-                if write_target[path_part].nil? || (propagating_nil)
-                  write_target[path_part] = value
-                else
-                  raise "Invariant: Duplicate write to #{path} (previous: #{write_target[path_part].inspect}, new: #{value.inspect})"
-                end
-              else
-                write_target = write_target.fetch(path_part, :__unset)
-                if write_target.nil?
-                  # TODO how can we _halt_ execution when this happens?
-                  # rather than calculating the value but failing to write it,
-                  # can we just not resolve those lazy things?
-                  break
-                end
+        def dead_path?(path)
+          is_dead = if @dead_root
+            true
+          elsif path.any?
+            res = @dead_paths
+            path.each do |part|
+              if res
+                res = res[part]
               end
             end
+            !!res
           end
-          nil
+          is_dead
         end
       end
     end
