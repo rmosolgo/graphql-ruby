@@ -91,7 +91,7 @@ module GraphQL
             return_type = resolve_if_late_bound_type(field_defn.type)
 
             next_path = [*path, result_name].freeze
-            # TODO this seems janky, but we need to know
+            # This seems janky, but we need to know
             # the field's return type at this path in order
             # to propagate `null`
             trace.set_type_at_path(next_path, return_type)
@@ -114,50 +114,15 @@ module GraphQL
 
             next_selections = fields.inject([]) { |memo, f| memo.concat(f.selections) }
 
-            # TODO:
-            # - extract and fix subscription handling
-            if root_operation_type == "subscription"
-              # TODO this should be better, maybe include something in the subscription root?
-              v = field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
-              if v.is_a?(GraphQL::ExecutionError)
-                continue_value(next_path, v, field_defn, return_type, ast_node)
-                next
-              end
+            app_result = trace.query.trace("execute_field", {field: field_defn, path: next_path}) do
+              field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
+            end
 
-              events = trace.context.namespace(:subscriptions)[:events]
-              subscription_topic = Subscriptions::Event.serialize(
-                field_defn.name,
-                kwarg_arguments,
-                field_defn,
-                scope: (field_defn.subscription_scope ? trace.context[field_defn.subscription_scope] : nil),
-              )
-              if events
-                # This is the first execution, so gather an Event
-                # for the backend to register:
-                events << Subscriptions::Event.new(
-                  name: field_defn.name,
-                  arguments: kwarg_arguments,
-                  context: trace.context,
-                  field: field_defn,
-                )
-              elsif subscription_topic == trace.query.subscription_topic
-                # The root object is _already_ the subscription update:
-                object = object.object
-                continue_field(next_path, object, field_defn, return_type, ast_node, next_selections)
-              else
-                # This is a subscription update, but this event wasn't triggered.
-              end
-            else
-              app_result = trace.query.trace("execute_field", {field: field_defn, path: next_path}) do
-                field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
-              end
-
-              # TODO can we remove this and treat it as a bounce instead?
-              trace.after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
-                should_continue, continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
-                if should_continue
-                  continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections)
-                end
+            # TODO can we remove this and treat it as a bounce instead?
+            trace.after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
+              should_continue, continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
+              if should_continue
+                continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections)
               end
             end
           end

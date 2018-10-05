@@ -109,6 +109,9 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class Subscription < GraphQL::Schema::Object
+    if TESTING_INTERPRETER
+      extend GraphQL::Subscriptions::SubscriptionRoot
+    end
     field :payload, Payload, null: false do
       argument :id, ID, required: true
     end

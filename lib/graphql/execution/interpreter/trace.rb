@@ -162,7 +162,6 @@ module GraphQL
           @debug && (puts "[Trace] #{str}")
         end
 
-        # TODO this is kind of a hack.
         # To propagate nulls, we have to know what the field type was
         # at previous parts of the response.
         # This hash matches the response

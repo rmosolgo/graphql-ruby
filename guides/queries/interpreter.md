@@ -29,6 +29,25 @@ The new runtime was added to address a few specific concerns:
 - __Runtime Performance__: For very large results, the previous runtime was slow because it allocated a new `ctx` object for every field, even very simple fields that didn't need any special tracking.
 - __Extensibility__: Although the GraphQL specification supports custom directives, GraphQL-Ruby didn't have a good way to build them.
 
+## Installation
+
+You can opt in to the interpreter in your schema class:
+
+```ruby
+class MySchema < GraphQL::Schema
+  use GraphQL::Execution::Interpreter
+end
+```
+
+If you have a subscription root type, it will also need an update. Extend this new module:
+
+```ruby
+class Types::Subscription < Types::BaseObject
+  # Extend this module to support subscription root fields with Interpreter
+  extend GraphQL::Subscriptions::SubscriptionRoot
+end
+```
+
 ## Compatibility
 
 The new runtime works with class-based schemas only. Several features are no longer supported:
@@ -44,6 +63,8 @@ The new runtime works with class-based schemas only. Several features are no lon
 - Query analyzers and `irep_node`s
 
   These depend on the now-removed `Rewrite` step, which wasted a lot of time making often-unneeded preparation. Most of the attributes you might need from an `irep_node` are available with `extras: [...]`. Query analyzers can be refactored to be static checks (custom validation rules) or dynamic checks, made at runtime. The built-in analyzers have been refactored to run as validators.
+
+  `irep_node`-based lookahead is not supported. Stay tuned for a replacement.
 
 - `rescue_from`
 
