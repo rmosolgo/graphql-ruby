@@ -29,7 +29,8 @@ module GraphQL
       # Override {GraphQL::Schema::Resolver#resolve_with_support} to
       # delete `client_mutation_id` from the kwargs.
       def resolve_with_support(**inputs)
-        # TODO why is this needed?
+        # Without the interpreter, the inputs are unwrapped by an instrumenter.
+        # But when using the interpreter, no instrumenters are applied.
         if context.interpreter?
           input = inputs[:input]
         else
@@ -52,6 +53,7 @@ module GraphQL
           super()
         end
 
+        # Again, this is done by an instrumenter when using non-interpreter execution.
         if context.interpreter?
           context.schema.after_lazy(return_value) do |return_hash|
             # It might be an error
