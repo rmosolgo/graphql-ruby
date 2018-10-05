@@ -110,7 +110,10 @@ module GraphQL
 
             return_type = resolve_if_late_bound_type(field_defn.type)
 
-            next_path = [*path, result_name].freeze
+            next_path = path.dup
+            next_path << result_name
+            next_path.freeze
+
             # This seems janky, but we need to know
             # the field's return type at this path in order
             # to propagate `null`
@@ -227,7 +230,9 @@ module GraphQL
             inner_type = type.of_type
             idx = 0
             value.each do |inner_value|
-              next_path = [*path, idx].freeze
+              next_path = path.dup
+              next_path << idx
+              next_path.freeze
               set_type_at_path(next_path, inner_type)
               after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
                 should_continue, continue_value = continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
