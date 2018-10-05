@@ -11,13 +11,25 @@ module GraphQL
       class Visitor
         attr_reader :trace
 
-        def visit(trace)
+        # @return [GraphQL::Query]
+        attr_reader :query
+
+        # @return [Class]
+        attr_reader :schema
+
+        # @return [GraphQL::Query::Context]
+        attr_reader :context
+
+        def visit(query, trace)
           @trace = trace
-          root_operation = trace.query.selected_operation
+          @query = query
+          @schema = query.schema
+          @context = query.context
+          root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
-          legacy_root_type = trace.schema.root_type_for_operation(root_op_type)
+          legacy_root_type = schema.root_type_for_operation(root_op_type)
           root_type = legacy_root_type.metadata[:type_class] || raise("Invariant: type must be class-based: #{legacy_root_type}")
-          object_proxy = root_type.authorized_new(trace.query.root_value, trace.query.context)
+          object_proxy = root_type.authorized_new(query.root_value, context)
 
           path = []
           evaluate_selections(path, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
@@ -35,9 +47,9 @@ module GraphQL
             when GraphQL::Language::Nodes::InlineFragment
               if passes_skip_and_include?(node)
                 include_fragmment = if node.type
-                  type_defn = trace.schema.types[node.type.name]
+                  type_defn = schema.types[node.type.name]
                   type_defn = type_defn.metadata[:type_class]
-                  possible_types = trace.query.warden.possible_types(type_defn).map { |t| t.metadata[:type_class] }
+                  possible_types = query.warden.possible_types(type_defn).map { |t| t.metadata[:type_class] }
                   possible_types.include?(owner_type)
                 else
                   true
@@ -48,10 +60,10 @@ module GraphQL
               end
             when GraphQL::Language::Nodes::FragmentSpread
               if passes_skip_and_include?(node)
-                fragment_def = trace.query.fragments[node.name]
-                type_defn = trace.schema.types[fragment_def.type.name]
+                fragment_def = query.fragments[node.name]
+                type_defn = schema.types[fragment_def.type.name]
                 type_defn = type_defn.metadata[:type_class]
-                possible_types = trace.schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
+                possible_types = schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
                 if possible_types.include?(owner_type)
                   gather_selections(owner_type, fragment_def.selections, selections_by_name)
                 end
@@ -72,10 +84,10 @@ module GraphQL
             field_defn = owner_type.fields[field_name]
             is_introspection = false
             if field_defn.nil?
-              field_defn = if owner_type == trace.schema.query.metadata[:type_class] && (entry_point_field = trace.schema.introspection_system.entry_point(name: field_name))
+              field_defn = if owner_type == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
                 is_introspection = true
                 entry_point_field.metadata[:type_class]
-              elsif (dynamic_field = trace.schema.introspection_system.dynamic_field(name: field_name))
+              elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
                 is_introspection = true
                 dynamic_field.metadata[:type_class]
               else
@@ -114,7 +126,7 @@ module GraphQL
 
             next_selections = fields.inject([]) { |memo, f| memo.concat(f.selections) }
 
-            app_result = trace.query.trace("execute_field", {field: field_defn, path: next_path}) do
+            app_result = query.trace("execute_field", {field: field_defn, path: next_path}) do
               field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
             end
 
@@ -154,7 +166,7 @@ module GraphQL
             # this hook might raise & crash, or it might return
             # a replacement value
             next_value = begin
-              trace.schema.unauthorized_object(value)
+              schema.unauthorized_object(value)
             rescue GraphQL::ExecutionError => err
               err
             end
@@ -172,16 +184,16 @@ module GraphQL
 
           case type.kind
           when TypeKinds::SCALAR, TypeKinds::ENUM
-            r = type.coerce_result(value, trace.query.context)
+            r = type.coerce_result(value, context)
             trace.write(path, r)
           when TypeKinds::UNION, TypeKinds::INTERFACE
-            resolved_type = trace.query.resolve_type(type, value)
-            possible_types = trace.query.possible_types(type)
+            resolved_type = query.resolve_type(type, value)
+            possible_types = query.possible_types(type)
 
             if !possible_types.include?(resolved_type)
               parent_type = field.owner
               type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
-              trace.schema.type_error(type_error, trace.query.context)
+              schema.type_error(type_error, context)
               trace.write(path, nil, propagating_nil: field.type.non_null?)
             else
               resolved_type = resolved_type.metadata[:type_class]
@@ -189,7 +201,7 @@ module GraphQL
             end
           when TypeKinds::OBJECT
             object_proxy = begin
-              type.authorized_new(value, trace.query.context)
+              type.authorized_new(value, context)
             rescue GraphQL::ExecutionError => err
               err
             end
@@ -226,7 +238,7 @@ module GraphQL
         def passes_skip_and_include?(node)
           # TODO call out to directive here
           node.directives.each do |dir|
-            dir_defn = trace.schema.directives.fetch(dir.name)
+            dir_defn = schema.directives.fetch(dir.name)
             if dir.name == "skip" && trace.arguments(nil, dir_defn, dir)[:if] == true
               return false
             elsif dir.name == "include" && trace.arguments(nil, dir_defn, dir)[:if] == false
@@ -238,7 +250,7 @@ module GraphQL
 
         def resolve_if_late_bound_type(type)
           if type.is_a?(GraphQL::Schema::LateBoundType)
-            trace.query.warden.get_type(type.name).metadata[:type_class]
+            query.warden.get_type(type.name).metadata[:type_class]
           else
             type
           end

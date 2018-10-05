@@ -11,12 +11,11 @@ module GraphQL
         extend Forwardable
         def_delegators :query, :schema, :context
         # TODO document these methods
-        attr_reader :query, :result, :lazies, :parent_trace
+        attr_reader :query, :result, :lazies
 
         def initialize(query:, lazies:)
           # shared by the parent and all children:
           @query = query
-          @debug = query.context[:debug_interpreter]
           @result = {}
           @lazies = lazies
           @completely_nulled = false
@@ -156,10 +155,6 @@ module GraphQL
           else
             v
           end
-        end
-
-        def debug(str)
-          @debug && (puts "[Trace] #{str}")
         end
 
         # To propagate nulls, we have to know what the field type was

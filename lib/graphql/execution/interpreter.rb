@@ -54,7 +54,7 @@ module GraphQL
         trace = Trace.new(query: query, lazies: @lazies)
         query.context.namespace(:interpreter)[:interpreter_trace] = trace
         query.trace("execute_query", {query: query}) do
-          Visitor.new.visit(trace)
+          Visitor.new.visit(query, trace)
         end
         trace
       end
