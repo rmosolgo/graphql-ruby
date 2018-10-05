@@ -19,11 +19,12 @@ module GraphQL
           @debug = query.context[:debug_interpreter]
           @result = {}
           @lazies = lazies
+          @completely_nulled = false
           @types_at_paths = Hash.new { |h, k| h[k] = {} }
         end
 
         def final_value
-          if @result[:__completely_nulled]
+          if @completely_nulled
             nil
           else
             @result
@@ -36,7 +37,7 @@ module GraphQL
 
         # TODO delegate to a collector which does as it pleases with patches
         def write(path, value, propagating_nil: false)
-          if @result[:__completely_nulled]
+          if @completely_nulled
             nil
           else
             res = @result ||= {}
@@ -46,51 +47,6 @@ module GraphQL
           end
         end
 
-        # TODO make this private
-        def write_into_result(result, path, value, propagating_nil:)
-          if value.is_a?(GraphQL::ExecutionError) || (value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError)})
-            Array(value).each do |v|
-              context.errors << v
-            end
-            write_into_result(result, path, nil, propagating_nil: propagating_nil)
-          elsif value.is_a?(GraphQL::InvalidNullError)
-            schema.type_error(value, context)
-            write_into_result(result, path, nil, propagating_nil: true)
-          elsif value.nil? && type_at(path).non_null?
-            # This nil is invalid, try writing it at the previous spot
-            propagate_path = path[0..-2]
-
-            if propagate_path.empty?
-              # TODO this is a hack, but we need
-              # some way for child traces to communicate
-              # this to the parent.
-              @result[:__completely_nulled] = true
-            else
-              write_into_result(result, propagate_path, value, propagating_nil: true)
-            end
-          else
-            write_target = result
-            path.each_with_index do |path_part, idx|
-              next_part = path[idx + 1]
-              if next_part.nil?
-                if write_target[path_part].nil? || (propagating_nil)
-                  write_target[path_part] = value
-                else
-                  raise "Invariant: Duplicate write to #{path} (previous: #{write_target[path_part].inspect}, new: #{value.inspect})"
-                end
-              else
-                write_target = write_target.fetch(path_part, :__unset)
-                if write_target.nil?
-                  # TODO how can we _halt_ execution when this happens?
-                  # rather than calculating the value but failing to write it,
-                  # can we just not resolve those lazy things?
-                  break
-                end
-              end
-            end
-          end
-          nil
-        end
 
         # TODO: isolate calls to this. Am I missing something?
         # @param field [GraphQL::Schema::Field]
@@ -236,6 +192,9 @@ module GraphQL
           nil
         end
 
+        private
+
+        # @return [Boolean] True if `@result` contains a value at `path`
         def path_exists?(path)
           res = @result
           path[0..-2].each do |part|
@@ -246,6 +205,51 @@ module GraphQL
             end
           end
           !!res
+        end
+
+        # Write `value` at `path` in `result`. If `propagating_nil` is true, `nil` may override
+        # part of the already-written response.
+        # @return [void]
+        def write_into_result(result, path, value, propagating_nil:)
+          if value.is_a?(GraphQL::ExecutionError) || (value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError)})
+            Array(value).each do |v|
+              context.errors << v
+            end
+            write_into_result(result, path, nil, propagating_nil: propagating_nil)
+          elsif value.is_a?(GraphQL::InvalidNullError)
+            schema.type_error(value, context)
+            write_into_result(result, path, nil, propagating_nil: true)
+          elsif value.nil? && type_at(path).non_null?
+            # This nil is invalid, try writing it at the previous spot
+            propagate_path = path[0..-2]
+
+            if propagate_path.empty?
+              @completely_nulled = true
+            else
+              write_into_result(result, propagate_path, value, propagating_nil: true)
+            end
+          else
+            write_target = result
+            path.each_with_index do |path_part, idx|
+              next_part = path[idx + 1]
+              if next_part.nil?
+                if write_target[path_part].nil? || (propagating_nil)
+                  write_target[path_part] = value
+                else
+                  raise "Invariant: Duplicate write to #{path} (previous: #{write_target[path_part].inspect}, new: #{value.inspect})"
+                end
+              else
+                write_target = write_target.fetch(path_part, :__unset)
+                if write_target.nil?
+                  # TODO how can we _halt_ execution when this happens?
+                  # rather than calculating the value but failing to write it,
+                  # can we just not resolve those lazy things?
+                  break
+                end
+              end
+            end
+          end
+          nil
         end
       end
     end
