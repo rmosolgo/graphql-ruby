@@ -23,12 +23,12 @@ module GraphQL
               field: field,
             )
             context.skip
-          elsif context.query.subscription_topic == (subscription_topic = Subscriptions::Event.serialize(
+          elsif context.query.subscription_topic == Subscriptions::Event.serialize(
               field.name,
               arguments,
               field,
               scope: (field.subscription_scope ? context[field.subscription_scope] : nil),
-            ))
+            )
             # The root object is _already_ the subscription update,
             # it was passed to `.trigger`
             object.object
