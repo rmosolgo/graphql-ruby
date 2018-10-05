@@ -311,8 +311,9 @@ module GraphQL
 
         def arguments(graphql_object, arg_owner, ast_node)
           kwarg_arguments = {}
+          arg_defns = arg_owner.arguments
           ast_node.arguments.each do |arg|
-            arg_defn = arg_owner.arguments[arg.name]
+            arg_defn = arg_defns[arg.name]
             # Need to distinguish between client-provided `nil`
             # and nothing-at-all
             is_present, value = arg_to_value(graphql_object, arg_defn.type, arg.value)
@@ -325,7 +326,7 @@ module GraphQL
               kwarg_arguments[arg_defn.keyword] = value
             end
           end
-          arg_owner.arguments.each do |name, arg_defn|
+          arg_defns.each do |name, arg_defn|
             if arg_defn.default_value? && !kwarg_arguments.key?(arg_defn.keyword)
               kwarg_arguments[arg_defn.keyword] = arg_defn.default_value
             end
