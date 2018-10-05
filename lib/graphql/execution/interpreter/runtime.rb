@@ -148,14 +148,15 @@ module GraphQL
             end
 
             after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
-              should_continue, continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
-              if should_continue
+              continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
+              if HALT != continue_value
                 continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections)
               end
             end
           end
         end
 
+        HALT = Object.new
         def continue_value(path, value, field, as_type, ast_node)
           if value.nil?
             if as_type.non_null?
@@ -164,19 +165,19 @@ module GraphQL
             else
               write_in_response(path, nil)
             end
-            false
+            HALT
           elsif value.is_a?(GraphQL::ExecutionError)
             value.path ||= path
             value.ast_node ||= ast_node
             write_execution_errors_in_response(path, [value])
-            false
+            HALT
           elsif value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
             value.each do |v|
               v.path ||= path
               v.ast_node ||= ast_node
             end
             write_execution_errors_in_response(path, value)
-            false
+            HALT
           elsif value.is_a?(GraphQL::UnauthorizedError)
             # this hook might raise & crash, or it might return
             # a replacement value
@@ -188,9 +189,9 @@ module GraphQL
 
             continue_value(path, next_value, field, as_type, ast_node)
           elsif GraphQL::Execution::Execute::SKIP == value
-            false
+            HALT
           else
-            return true, value
+            value
           end
         end
 
@@ -219,8 +220,8 @@ module GraphQL
               err
             end
             after_lazy(object_proxy, path: path, field: field) do |inner_object|
-              should_continue, continue_value = continue_value(path, inner_object, field, type, ast_node)
-              if should_continue
+              continue_value = continue_value(path, inner_object, field, type, ast_node)
+              if HALT != continue_value
                 write_in_response(path, {})
                 evaluate_selections(path, continue_value, type, next_selections)
               end
@@ -235,8 +236,8 @@ module GraphQL
               next_path.freeze
               set_type_at_path(next_path, inner_type)
               after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
-                should_continue, continue_value = continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
-                if should_continue
+                continue_value = continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
+                if HALT != continue_value
                   continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections)
                 end
               end
