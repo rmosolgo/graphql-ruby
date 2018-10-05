@@ -3,8 +3,6 @@
 module GraphQL
   module Execution
     class Interpreter
-      # TODO I wish I could just _not_ support this.
-      # It's counter to the spec. It's hard to maintain.
       class ExecutionErrors
         def initialize(ctx, ast_node, path)
           @context = ctx

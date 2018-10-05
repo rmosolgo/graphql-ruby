@@ -47,7 +47,6 @@ module GraphQL
           end
         end
 
-
         # TODO: isolate calls to this. Am I missing something?
         # @param field [GraphQL::Schema::Field]
         # @param eager [Boolean] Set to `true` for mutation root fields only
