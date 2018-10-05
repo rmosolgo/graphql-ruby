@@ -21,7 +21,7 @@ module GraphQL
       end
 
       def platform_field_key(type, field)
-        "#{type.name}.#{field.name}.graphql"
+        "#{type.graphql_name}.#{field.graphql_name}.graphql"
       end
     end
   end

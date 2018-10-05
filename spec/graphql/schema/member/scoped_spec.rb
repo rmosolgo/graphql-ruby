@@ -74,6 +74,9 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     query(Query)
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
   end
 
   describe ".scope_items(items, ctx)" do
@@ -117,6 +120,19 @@ describe GraphQL::Schema::Member::Scoped do
       "
       res = ScopeSchema.execute(query_str, context: {english: true})
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
+      assert_equal ["Paperclip"], names
+
+      query_str = "
+      {
+        itemsConnection {
+          nodes {
+            name
+          }
+        }
+      }
+      "
+      res = ScopeSchema.execute(query_str, context: {english: true})
+      names = res["data"]["itemsConnection"]["nodes"].map { |e| e["name"] }
       assert_equal ["Paperclip"], names
     end
 

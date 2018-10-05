@@ -39,13 +39,18 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         species: PetSpecies!
       }
 
+      interface Mammal {
+        name(surname: Boolean = false): String!
+        nickname: String
+      }
+
       interface Pet {
         name(surname: Boolean = false): String!
         nickname: String
         toys: [Toy!]!
       }
 
-      type Dog implements Pet {
+      type Dog implements Pet & Mammal {
         name(surname: Boolean = false): String!
         nickname: String
         doesKnowCommand(dogCommand: PetCommand): Boolean!
@@ -53,7 +58,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         toys: [Toy!]!
       }
 
-      type Cat implements Pet {
+      type Cat implements Pet & Mammal {
         name(surname: Boolean = false): String!
         nickname: String
         doesKnowCommand(catCommand: PetCommand): Boolean!
@@ -348,11 +353,12 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
     it "fails rule" do
       assert_equal [
-        "Field 'name' has a field conflict: name or nickname?",
         "Field 'x' has a field conflict: name or nickname?",
+        "Field 'name' has a field conflict: name or nickname?"
       ], error_messages
     end
   end
+
 
   describe "deep conflict" do
     let(:query_string) {%|
@@ -429,6 +435,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+
   describe "same aliases allowed on non-overlapping fields" do
     let(:query_string) {%|
       {
@@ -448,6 +455,53 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "same aliases not allowed on different interfaces" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Pet {
+            name
+          }
+          ... on Mammal {
+            name: nickname
+          }
+        }
+      }
+    |}
+
+    it "fails rule" do
+      assert_equal [
+        "Field 'name' has a field conflict: name or nickname?",
+      ], error_messages
+    end
+  end
+
+  describe "same aliases allowed on different parent interfaces and different concrete types" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Pet {
+            ...X
+          }
+          ... on Mammal {
+            ...Y
+          }
+        }
+      }
+
+      fragment X on Dog {
+        name
+      }
+      fragment Y on Cat {
+        name: nickname
+      }
+    |}
+
+    it "passes rule" do
+      assert_equal [], errors
+    end
+  end
+
   describe "allows different args where no conflict is possible" do
     let(:query_string) {%|
       {
@@ -455,6 +509,56 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
           ... on Dog {
             ...X
           }
+          ... on Cat {
+            ...Y
+          }
+        }
+      }
+
+      fragment X on Pet {
+        name(surname: true)
+      }
+
+      fragment Y on Pet {
+        name
+      }
+    |}
+
+    it "passes rule" do
+      assert_equal [], errors
+    end
+
+    describe "allows different args where no conflict is possible" do
+      let(:query_string) {%|
+        {
+          pet {
+            ... on Dog {
+              ... on Pet {
+                name
+              }
+            }
+            ... on Cat {
+              name(surname: true)
+            }
+          }
+        }
+      |}
+
+      it "passes rule" do
+        assert_equal [], errors
+      end
+    end
+  end
+
+  describe "allows different args where no conflict is possible deep" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Dog {
+            ...X
+          }
+        }
+        pet {
           ... on Cat {
             ...Y
           }
@@ -599,7 +703,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
           }
         }
         fragment X on SomeBox {
-          scalar: deepBox { unreleatedField }
+          scalar: deepBox { unrelatedField }
         }
         fragment Y on SomeBox {
           scalar: unrelatedField

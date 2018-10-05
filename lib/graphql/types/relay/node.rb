@@ -11,7 +11,6 @@ module GraphQL
         default_relay(true)
         description "An object with an ID."
         field(:id, ID, null: false, description: "ID of the object.")
-        # TODO Should I implement `id` here to call the schema's hook?
       end
     end
   end

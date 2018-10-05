@@ -23,24 +23,22 @@ module GraphQL
       # @return [Array<Hash>]
       def validate(query, validate: true)
         query.trace("validate", { validate: validate, query: query }) do
-          context = GraphQL::StaticValidation::ValidationContext.new(query)
-          rewrite = GraphQL::InternalRepresentation::Rewrite.new
 
-          # Put this first so its enters and exits are always called
-          rewrite.validate(context)
+          rules_to_use = validate ? @rules : []
+          visitor_class = BaseVisitor.including_rules(rules_to_use)
 
-          # If the caller opted out of validation, don't attach these
-          if validate
-            @rules.each do |rules|
-              rules.new.validate(context)
+          context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class)
+
+          # Attach legacy-style rules
+          rules_to_use.each do |rule_class_or_module|
+            if rule_class_or_module.method_defined?(:validate)
+              rule_class_or_module.new.validate(context)
             end
           end
 
           context.visitor.visit
-          rewrite_result = rewrite.document
-
           # Post-validation: allow validators to register handlers on rewritten query nodes
-          GraphQL::InternalRepresentation::Visit.visit_each_node(rewrite_result.operation_definitions, context.each_irep_node_handlers)
+          rewrite_result = context.visitor.rewrite_document
 
           {
             errors: context.errors,

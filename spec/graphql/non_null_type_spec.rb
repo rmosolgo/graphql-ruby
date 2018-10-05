@@ -39,7 +39,7 @@ describe GraphQL::NonNullType do
         query_string = %|{ cow { name cantBeNullButIs } }|
         err = assert_raises(GraphQL::InvalidNullError) { raise_schema.execute(query_string) }
         assert_equal("Cannot return null for non-nullable field Cow.cantBeNullButIs", err.message)
-        assert_equal("Cow", err.parent_type.name)
+        assert_equal("Cow", err.parent_type.graphql_name)
         assert_equal("cantBeNullButIs", err.field.name)
         assert_equal(nil, err.value)
       end

@@ -19,7 +19,6 @@ require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
 
-
 require "graphql/schema/member"
 require "graphql/schema/wrapper"
 require "graphql/schema/list"
@@ -27,15 +26,17 @@ require "graphql/schema/non_null"
 require "graphql/schema/argument"
 require "graphql/schema/enum_value"
 require "graphql/schema/enum"
+require "graphql/schema/field_extension"
 require "graphql/schema/field"
 require "graphql/schema/input_object"
 require "graphql/schema/interface"
+require "graphql/schema/scalar"
+require "graphql/schema/object"
+require "graphql/schema/union"
+
 require "graphql/schema/resolver"
 require "graphql/schema/mutation"
 require "graphql/schema/relay_classic_mutation"
-require "graphql/schema/object"
-require "graphql/schema/scalar"
-require "graphql/schema/union"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -82,7 +83,7 @@ module GraphQL
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
-      directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
+      directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
         if type == :field && after_built_ins
           type = :field_after_built_ins
@@ -93,7 +94,7 @@ module GraphQL
       multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
-      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)},
+      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block) },
       tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
 
     attr_accessor \
@@ -134,8 +135,6 @@ module GraphQL
     # @see {Query#tracers} for query-specific tracers
     attr_reader :tracers
 
-    self.default_execution_strategy = GraphQL::Execution::Execute
-
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
@@ -160,14 +159,18 @@ module GraphQL
       @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
-      @query_execution_strategy = self.class.default_execution_strategy
-      @mutation_execution_strategy = self.class.default_execution_strategy
-      @subscription_execution_strategy = self.class.default_execution_strategy
+      @query_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
+      @mutation_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
+      @subscription_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
       @context_class = GraphQL::Query::Context
       @introspection_namespace = nil
       @introspection_system = nil
+    end
+
+    def inspect
+      "#<#{self.class.name} ...>"
     end
 
     def initialize_copy(other)
@@ -389,7 +392,7 @@ module GraphQL
     # Fields for this type, after instrumentation is applied
     # @return [Hash<String, GraphQL::Field>]
     def get_fields(type)
-      @instrumented_field_map[type.name]
+      @instrumented_field_map[type.graphql_name]
     end
 
     def type_from_ast(ast_node)
@@ -657,6 +660,7 @@ module GraphQL
         :static_validator, :introspection_system,
         :query_analyzers, :tracers, :instrumenters,
         :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
+        :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
@@ -714,7 +718,6 @@ module GraphQL
             schema_defn.instrumenters[step] << inst
           end
         end
-        schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         lazy_classes.each do |lazy_class, value_method|
           schema_defn.lazy_methods.set(lazy_class, value_method)
         end
@@ -736,6 +739,10 @@ module GraphQL
               end
             end
           end
+        end
+        # Do this after `plugins` since Interpreter is a plugin
+        if schema_defn.query_execution_strategy != GraphQL::Execution::Interpreter
+          schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         end
         schema_defn.send(:rebuild_artifacts)
 
@@ -962,7 +969,7 @@ module GraphQL
       # @see {.accessible?}
       # @see {.authorized?}
       def call_on_type_class(member, method_name, *args, default:)
-        member = if member.respond_to?(:metadata)
+        member = if member.respond_to?(:metadata) && member.metadata
           member.metadata[:type_class] || member
         else
           member

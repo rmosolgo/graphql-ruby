@@ -228,14 +228,12 @@ describe GraphQL::Schema::Field do
     end
 
     it "makes a suggestion when the type is false" do
-      thing = Class.new(GraphQL::Schema::Object) do
-        graphql_name "Thing"
-        # False might come from an invalid `!`
-        field :stuff, false, null: false
-      end
-
       err = assert_raises ArgumentError do
-        thing.fields["stuff"].type
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "Thing"
+          # False might come from an invalid `!`
+          field :stuff, false, null: false
+        end
       end
 
       assert_includes err.message, "Thing.stuff"

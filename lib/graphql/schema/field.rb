@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 # test_via: ../object.rb
+require "graphql/schema/field/connection_extension"
+require "graphql/schema/field/scope_extension"
+
 module GraphQL
   class Schema
     class Field
@@ -26,13 +29,21 @@ module GraphQL
       # @return [Class] The type that this field belongs to
       attr_reader :owner
 
-
       # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one
       def resolver
         @resolver_class
       end
 
       alias :mutation :resolver
+
+      # @return [Array<Symbol>]
+      attr_reader :extras
+
+      # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
+      attr_reader :trace
+
+      # @return [String, nil]
+      attr_reader :subscription_scope
 
       # Create a field instance from a list of arguments, keyword arguments, and a block.
       #
@@ -87,7 +98,8 @@ module GraphQL
           elsif @return_type_expr
             Member::BuildType.to_type_name(@return_type_expr)
           else
-            raise "No connection info possible"
+            # As a last ditch, try to force loading the return type:
+            type.unwrap.name
           end
           @connection = return_type_name.end_with?("Connection")
         else
@@ -101,13 +113,12 @@ module GraphQL
           # The default was overridden
           @scope
         else
-          @return_type_expr && type.unwrap.respond_to?(:scope_items) && (connection? || type.list?)
+          @return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.include?("[")) || connection?
         end
       end
 
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
-      # @param return_type_expr [Class, GraphQL::BaseType, Array] The return type of this field
-      # @param desc [String] Field description
+      # @param type [Class, GraphQL::BaseType, Array] The return type of this field
       # @param owner [Class] The type that this field belongs to
       # @param null [Boolean] `true` if this field may return `null`, `false` if it is never `null`
       # @param description [String] Field description
@@ -126,8 +137,9 @@ module GraphQL
       # @param complexity [Numeric] When provided, set the complexity for this field
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, trace: nil, complexity: 1, extras: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
-
+      # @param extensions [Array<Class>] Named extensions to apply to this field (see also {#extension})
+      # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -145,7 +157,7 @@ module GraphQL
         @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
         @description = description
         if field.is_a?(GraphQL::Schema::Field)
-          @field_instance = field
+          raise ArgumentError, "Instead of passing a field as `field:`, use `add_field(field)` to add an already-defined field."
         else
           @field = field
         end
@@ -171,6 +183,8 @@ module GraphQL
         @resolver_class = resolver_class
         @scope = scope
         @trace = trace
+        @relay_node_field = relay_node_field
+        @relay_nodes_field = relay_nodes_field
 
         # Override the default from HasArguments
         @own_arguments = {}
@@ -184,6 +198,22 @@ module GraphQL
 
         @owner = owner
         @subscription_scope = subscription_scope
+
+        # Do this last so we have as much context as possible when initializing them:
+        @extensions = []
+        if extensions.any?
+          self.extensions(extensions)
+        end
+        # This should run before connection extension,
+        # but should it run after the definition block?
+        if scoped?
+          self.extension(ScopeExtension)
+        end
+        # The problem with putting this after the definition_block
+        # is that it would override arguments
+        if connection?
+          self.extension(ConnectionExtension)
+        end
 
         if definition_block
           if definition_block.arity == 1
@@ -204,6 +234,49 @@ module GraphQL
         end
       end
 
+      # Read extension instances from this field,
+      # or add new classes/options to be initialized on this field.
+      #
+      # @param extensions [Array<Class>, Hash<Class => Object>] Add extensions to this field
+      # @return [Array<GraphQL::Schema::FieldExtension>] extensions to apply to this field
+      def extensions(new_extensions = nil)
+        if new_extensions.nil?
+          # Read the value
+          @extensions
+        else
+          if @resolve || @function
+            raise ArgumentError, <<-MSG
+Extensions are not supported with resolve procs or functions,
+but #{owner.name}.#{name} has: #{@resolve || @function}
+So, it can't have extensions: #{extensions}.
+Use a method or a Schema::Resolver instead.
+MSG
+          end
+
+          # Normalize to a Hash of {name => options}
+          extensions_with_options = if new_extensions.last.is_a?(Hash)
+            new_extensions.pop
+          else
+            {}
+          end
+          new_extensions.each do |f|
+            extensions_with_options[f] = nil
+          end
+
+          # Initialize each class and stash the instance
+          extensions_with_options.each do |extension_class, options|
+            @extensions << extension_class.new(field: self, options: options)
+          end
+        end
+      end
+
+      # Add `extension` to this field, initialized with `options` if provided.
+      # @param extension [Class] subclass of {Schema::Fieldextension}
+      # @param options [Object] if provided, given as `options:` when initializing `extension`.
+      def extension(extension, options = nil)
+        extensions([{extension => options}])
+      end
+
       def complexity(new_complexity)
         case new_complexity
         when Proc
@@ -220,17 +293,13 @@ module GraphQL
         else
           raise("Invalid complexity: #{new_complexity.inspect} on #{@name}")
         end
-
       end
+
+      # @return [Integer, nil] Applied to connections if present
+      attr_reader :max_page_size
 
       # @return [GraphQL::Field]
       def to_graphql
-        # this field was previously defined and passed here, so delegate to it
-        if @field_instance
-          return @field_instance.to_graphql
-        end
-
-
         field_defn = if @field
           @field.dup
         elsif @function
@@ -263,23 +332,20 @@ module GraphQL
           field_defn.trace = @trace
         end
 
+        if @relay_node_field
+          field_defn.relay_node_field = @relay_node_field
+        end
+
+        if @relay_nodes_field
+          field_defn.relay_nodes_field = @relay_nodes_field
+        end
+
         field_defn.resolve = self.method(:resolve_field)
         field_defn.connection = connection?
-        field_defn.connection_max_page_size = @max_page_size
+        field_defn.connection_max_page_size = max_page_size
         field_defn.introspection = @introspection
         field_defn.complexity = @complexity
         field_defn.subscription_scope = @subscription_scope
-
-        # apply this first, so it can be overriden below
-        if connection?
-          # TODO: this could be a bit weird, because these fields won't be present
-          # after initialization, only in the `to_graphql` response.
-          # This calculation _could_ be moved up if need be.
-          argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
-          argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false
-          argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
-          argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
-        end
 
         arguments.each do |name, defn|
           arg_graphql = defn.to_graphql
@@ -324,37 +390,77 @@ module GraphQL
       end
 
       def authorized?(object, context)
-        if @resolver_class
+        self_auth = if @resolver_class
           @resolver_class.authorized?(object, context)
         else
           true
         end
+
+        self_auth && arguments.each_value.all? { |a| a.authorized?(object, context) }
       end
 
       # Implement {GraphQL::Field}'s resolve API.
       #
       # Eventually, we might hook up field instances to execution in another way. TBD.
+      # @see #resolve for how the interpreter hooks up to it
       def resolve_field(obj, args, ctx)
         ctx.schema.after_lazy(obj) do |after_obj|
           # First, apply auth ...
           query_ctx = ctx.query.context
           inner_obj = after_obj && after_obj.object
-          if authorized?(inner_obj, query_ctx) && arguments.each_value.all? { |a| a.authorized?(inner_obj, query_ctx) }
+          if authorized?(inner_obj, query_ctx)
             # Then if it passed, resolve the field
-            v = if @resolve_proc
+            if @resolve_proc
               # Might be nil, still want to call the func in that case
               @resolve_proc.call(inner_obj, args, ctx)
-            elsif @resolver_class
-              singleton_inst = @resolver_class.new(object: inner_obj, context: query_ctx)
-              public_send_field(singleton_inst, args, ctx)
             else
               public_send_field(after_obj, args, ctx)
             end
-            apply_scope(v, ctx)
           else
             nil
           end
         end
+      end
+
+      # This method is called by the interpreter for each field.
+      # You can extend it in your base field classes.
+      # @param object [GraphQL::Schema::Object] An instance of some type class, wrapping an application object
+      # @param args [Hash] A symbol-keyed hash of Ruby keyword arguments. (Empty if no args)
+      # @param ctx [GraphQL::Query::Context]
+      def resolve(object, args, ctx)
+        if @resolve_proc
+          raise "Can't run resolve proc for #{path} when using GraphQL::Execution::Interpreter"
+        end
+        begin
+          # Unwrap the GraphQL object to get the application object.
+          application_object = object.object
+          if self.authorized?(application_object, ctx)
+            # Apply field extensions
+            with_extensions(object, args, ctx) do |extended_obj, extended_args|
+              field_receiver = if @resolver_class
+                resolver_obj = if extended_obj.is_a?(GraphQL::Schema::Object)
+                  extended_obj.object
+                else
+                  extended_obj
+                end
+                @resolver_class.new(object: resolver_obj, context: ctx)
+              else
+                extended_obj
+              end
+
+              # Call the method with kwargs, if there are any
+              if extended_args.any?
+                field_receiver.public_send(method_sym, extended_args)
+              else
+                field_receiver.public_send(method_sym)
+              end
+            end
+          end
+        rescue GraphQL::UnauthorizedError => err
+          ctx.schema.unauthorized_object(err)
+        end
+      rescue GraphQL::ExecutionError => err
+        err
       end
 
       # Find a way to resolve this field, checking:
@@ -396,16 +502,6 @@ module GraphQL
 
       private
 
-      def apply_scope(value, ctx)
-        if scoped?
-          ctx.schema.after_lazy(value) do |inner_value|
-            @type.unwrap.scope_items(inner_value, ctx)
-          end
-        else
-          value
-        end
-      end
-
       CONTEXT_EXTRAS = [:path]
 
       # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
@@ -433,14 +529,6 @@ module GraphQL
             end
           end
 
-          if connection?
-            # Remove pagination args before passing it to a user method
-            ruby_kwargs.delete(:first)
-            ruby_kwargs.delete(:last)
-            ruby_kwargs.delete(:before)
-            ruby_kwargs.delete(:after)
-          end
-
           @extras.each do |extra_arg|
             ruby_kwargs[extra_arg] = fetch_extra(extra_arg, field_ctx)
           end
@@ -448,11 +536,55 @@ module GraphQL
           ruby_kwargs = NO_ARGS
         end
 
+        query_ctx = field_ctx.query.context
+        with_extensions(obj, ruby_kwargs, query_ctx) do |extended_obj, extended_args|
+          if @resolver_class
+            if extended_obj.is_a?(GraphQL::Schema::Object)
+              extended_obj = extended_obj.object
+            end
+            extended_obj = @resolver_class.new(object: extended_obj, context: query_ctx)
+          end
 
-        if ruby_kwargs.any?
-          obj.public_send(@method_sym, **ruby_kwargs)
+          if extended_args.any?
+            extended_obj.public_send(@method_sym, **extended_args)
+          else
+            extended_obj.public_send(@method_sym)
+          end
+        end
+      end
+
+      # Wrap execution with hooks.
+      # Written iteratively to avoid big stack traces.
+      # @return [Object] Whatever the
+      def with_extensions(obj, args, ctx)
+        if @extensions.none?
+          yield(obj, args)
         else
-          obj.public_send(@method_sym)
+          # Save these so that the originals can be re-given to `after_resolve` handlers.
+          original_args = args
+          original_obj = obj
+
+          memos = []
+          @extensions.each do |ext|
+            ext.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
+              # update this scope with the yielded value
+              obj = extended_obj
+              args = extended_args
+              # record the memo (or nil if none was yielded)
+              memos << memo
+            end
+          end
+          # Call the block which actually calls resolve
+          value = yield(obj, args)
+
+          ctx.schema.after_lazy(value) do |resolved_value|
+            @extensions.each_with_index do |ext, idx|
+              memo = memos[idx]
+              # TODO after_lazy?
+              resolved_value = ext.after_resolve(object: original_obj, arguments: original_args, context: ctx, value: resolved_value, memo: memo)
+            end
+            resolved_value
+          end
         end
       end
     end

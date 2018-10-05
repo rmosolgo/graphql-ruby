@@ -53,6 +53,22 @@ describe GraphQL::Relay::ConnectionResolve do
     end
   end
 
+  describe "when a resolver is used" do
+    it "returns the items with the correct parent" do
+      resolver_query_str = <<-GRAPHQL
+        {
+          rebels {
+            shipsByResolver {
+              parentClassName
+            }
+          }
+        }
+        GRAPHQL
+      result = star_wars_query(resolver_query_str)
+      assert_equal "StarWars::FactionRecord", result["data"]["rebels"]["shipsByResolver"]["parentClassName"]
+    end
+  end
+
   describe "when nil is returned" do
     it "becomes null" do
       result = star_wars_query(query_string, { "name" => "null" })

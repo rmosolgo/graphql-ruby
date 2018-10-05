@@ -319,6 +319,14 @@ describe GraphQL::Schema::Resolver do
           end
           value
         end
+
+        def resolve(*)
+          value = super
+          if @name == "resolver3"
+            value << -1
+          end
+          value
+        end
       end
 
       field_class(CustomField)
@@ -362,6 +370,10 @@ describe GraphQL::Schema::Resolver do
         else
           1
         end
+      end
+
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
       end
     end
   end
