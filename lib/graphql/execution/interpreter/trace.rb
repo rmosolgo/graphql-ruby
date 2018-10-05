@@ -132,7 +132,7 @@ module GraphQL
             # What a mess.
             args = arguments(nil, arg_type, ast_value)
             # TODO still track defaults_used?
-            return true, arg_defn.new(ruby_kwargs: args, context: context, defaults_used: nil)
+            return true, arg_type.new(ruby_kwargs: args, context: context, defaults_used: nil)
           else
             flat_value = flatten_ast_value(ast_value)
             return true, arg_type.coerce_input(flat_value, context)

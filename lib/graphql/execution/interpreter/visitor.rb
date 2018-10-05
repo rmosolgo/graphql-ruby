@@ -6,9 +6,6 @@ module GraphQL
       # The visitor itself is stateless,
       # it delegates state to the `trace`
       #
-      # It sets up a lot of context with `push` and `pop`
-      # to keep noise out of the Ruby backtrace.
-      #
       # I think it would be even better if we could somehow make
       # `continue_field` not recursive. "Trampolining" it somehow.
       class Visitor
@@ -106,7 +103,8 @@ module GraphQL
             end
 
             kwarg_arguments = trace.arguments(object, field_defn, ast_node)
-            # TODO: very shifty that these cached Hashes are being modified
+            # It might turn out that making arguments for every field is slow.
+            # If we have to cache them, we'll need a more subtle approach here.
             if field_defn.extras.include?(:ast_node)
               kwarg_arguments[:ast_node] = ast_node
             end
@@ -114,8 +112,7 @@ module GraphQL
               kwarg_arguments[:execution_errors] = ExecutionErrors.new(trace.context, ast_node, next_path)
             end
 
-            # TODO will this be a perf issue for scalar fields?
-            next_selections = fields.map(&:selections).inject(&:+)
+            next_selections = fields.inject([]) { |memo, f| memo.concat(f.selections) }
 
             # TODO:
             # - extract and fix subscription handling

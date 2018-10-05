@@ -108,7 +108,6 @@ module GraphQL
           else
             begin
               # These were checked to be the same in `#supports_multiplexing?`
-              # TODO rename these hooks
               query.schema.query_execution_strategy.begin_query(query, multiplex)
             rescue GraphQL::ExecutionError => err
               query.context.errors << err
@@ -130,7 +129,6 @@ module GraphQL
             end
           else
             # Use `context.value` which was assigned during execution
-            # TODO should this be per-query instead of for the schema?
             result = query.schema.query_execution_strategy.finish_query(query)
 
             if query.context.errors.any?
