@@ -15,7 +15,7 @@ module GraphQL
           @schema = query.schema
           @response_path = []
           @skip_stack = [false]
-          super(query.document)
+          super(query.selected_operation)
         end
 
         attr_reader :context, :query

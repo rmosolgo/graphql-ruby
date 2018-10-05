@@ -6,6 +6,36 @@ describe GraphQL::Analysis::AST::QueryDepth do
   let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
   let(:variables) { {} }
 
+  describe "multiple operations" do
+    let(:query_string) {%|
+      query Cheese1 {
+        cheese1: cheese(id: 1) {
+          id
+          flavor
+        }
+      }
+
+      query Cheese2 {
+        cheese(id: 2) {
+          similarCheese(source: SHEEP) {
+            ... on Cheese {
+              similarCheese(source: SHEEP) {
+                id
+              }
+            }
+          }
+        }
+      }
+    |}
+
+    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, operation_name: "Cheese1") }
+
+    it "analyzes the selected operation only" do
+      depth = result.first
+      assert_equal 2, depth
+    end
+  end
+
   describe "simple queries" do
     let(:query_string) {%|
       query cheeses($isIncluded: Boolean = true){
