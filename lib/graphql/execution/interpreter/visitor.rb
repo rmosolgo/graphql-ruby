@@ -95,11 +95,6 @@ module GraphQL
               end
             end
 
-            # TODO: this support is required for introspection types.
-            if !field_defn.respond_to?(:extras)
-              field_defn = field_defn.metadata[:type_class]
-            end
-
             return_type = resolve_if_late_bound_type(field_defn.type)
 
             next_path = [*path, result_name].freeze
