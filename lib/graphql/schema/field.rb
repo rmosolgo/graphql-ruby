@@ -500,13 +500,9 @@ MSG
         end
       end
 
-      private
-
-      CONTEXT_EXTRAS = [:path]
-
       # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
       def fetch_extra(extra_name, ctx)
-        if !CONTEXT_EXTRAS.include?(extra_name) && respond_to?(extra_name)
+        if extra_name != :path && respond_to?(extra_name)
           self.public_send(extra_name)
         elsif ctx.respond_to?(extra_name)
           ctx.public_send(extra_name)
@@ -514,6 +510,8 @@ MSG
           raise NotImplementedError, "Unknown field extra for #{self.path}: #{extra_name.inspect}"
         end
       end
+
+      private
 
       NO_ARGS = {}.freeze
 

@@ -126,11 +126,17 @@ module GraphQL
             kwarg_arguments = arguments(object, field_defn, ast_node)
             # It might turn out that making arguments for every field is slow.
             # If we have to cache them, we'll need a more subtle approach here.
-            if field_defn.extras.include?(:ast_node)
-              kwarg_arguments[:ast_node] = ast_node
-            end
-            if field_defn.extras.include?(:execution_errors)
-              kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
+            field_defn.extras.each do |extra|
+              case extra
+              when :ast_node
+                kwarg_arguments[:ast_node] = ast_node
+              when :execution_errors
+                kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
+              when :path
+                kwarg_arguments[:path] = next_path
+              else
+                kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
+              end
             end
 
             next_selections = fields.inject([]) { |memo, f| memo.concat(f.selections) }
@@ -276,9 +282,8 @@ module GraphQL
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = query.trace("execute_field_lazy", {field: field, path: path}) do
-                method_name = schema.lazy_method_name(obj)
                 begin
-                  obj.public_send(method_name)
+                  schema.sync_lazy(obj)
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
                   yield(err)
                 end
@@ -335,6 +340,8 @@ module GraphQL
             else
               return false, nil
             end
+          elsif ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
+            return true, nil
           elsif arg_type.is_a?(GraphQL::Schema::NonNull)
             arg_to_value(graphql_object, arg_type.of_type, ast_value)
           elsif arg_type.is_a?(GraphQL::Schema::List)

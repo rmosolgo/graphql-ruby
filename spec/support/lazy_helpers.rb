@@ -90,7 +90,7 @@ module LazyHelpers
     end
 
     def nested_sum(value:)
-      SumAll.new(context, value)
+      SumAll.new(value)
     end
 
     field :nullable_nested_sum, LazySum, null: true do
@@ -101,7 +101,7 @@ module LazyHelpers
       if value == 13
         Wrapper.new { raise GraphQL::ExecutionError.new("13 is unlucky") }
       else
-        SumAll.new(context, value)
+        SumAll.new(value)
       end
     end
 
