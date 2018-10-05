@@ -502,6 +502,19 @@ MSG
 
       private
 
+      CONTEXT_EXTRAS = [:path]
+
+      # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
+      def fetch_extra(extra_name, ctx)
+        if !CONTEXT_EXTRAS.include?(extra_name) && respond_to?(extra_name)
+          self.public_send(extra_name)
+        elsif ctx.respond_to?(extra_name)
+          ctx.public_send(extra_name)
+        else
+          raise NotImplementedError, "Unknown field extra for #{self.path}: #{extra_name.inspect}"
+        end
+      end
+
       NO_ARGS = {}.freeze
 
       def public_send_field(obj, graphql_args, field_ctx)
@@ -517,8 +530,7 @@ MSG
           end
 
           @extras.each do |extra_arg|
-            # TODO: provide proper tests for `:ast_node`, `:irep_node`, `:parent`, others?
-            ruby_kwargs[extra_arg] = field_ctx.public_send(extra_arg)
+            ruby_kwargs[extra_arg] = fetch_extra(extra_arg, field_ctx)
           end
         else
           ruby_kwargs = NO_ARGS

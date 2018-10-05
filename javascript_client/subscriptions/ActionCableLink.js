@@ -6,15 +6,20 @@ function ActionCableLink(options) {
   var cable = options.cable
   var channelName = options.channelName || "GraphqlChannel"
   var actionName = options.actionName || "execute"
+  var connectionParams = options.connectionParams
+
+  if (typeof connectionParams !== "object") {
+    connectionParams = {}
+  }
 
   return new ApolloLink(function(operation) {
     return new Observable(function(observer) {
       var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
 
-      var subscription = cable.subscriptions.create({
+      var subscription = cable.subscriptions.create(Object.assign({},{
         channel: channelName,
         channelId: channelId
-      }, {
+      }, connectionParams), {
         connected: function() {
           this.perform(
             actionName,

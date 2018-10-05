@@ -53,6 +53,7 @@ Several generators will add GraphQL types to your project. Run them with `-h` to
 - `rails g graphql:interface`
 - `rails g graphql:union`
 - `rails g graphql:enum`
+- `rails g graphql:scalar`
 
 
 ## Scaffolding Mutations

@@ -8,6 +8,25 @@
 
 ### Bug Fix
 
+### 1.7.13 (2 Oct 2018)
+
+### Breaking Change
+
+- `PunditIntegration`: instead of raising `MutationAuthorizationFailed` when an argument fails authorization, it will send a `GraphQL::UnauthorizedError` to your `Schema.unauthorized_object` hook. (This is what all other authorization failures do.) To retain the previous behavior, in your base mutation, add:
+
+  ```ruby
+  def unauthorized_by_pundit(owner, value)
+    # Raise a runtime error to halt query execution
+    raise "#{value} failed #{owner}'s auth check"
+  end
+  ```
+
+  Otherwise, customize the handling of this behavior with `Schema.unauthorized_object`.
+
+### Bug Fix
+
+- Auth: mutation arguments which have authorization constraints but _don't_ load an object from the database will have _mutation instance_ passed to the auth check, not the input value.
+
 ## 1.7.12 (29 Aug 2018)
 
 ### New Features
