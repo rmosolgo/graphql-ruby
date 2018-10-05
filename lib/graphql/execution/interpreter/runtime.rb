@@ -90,7 +90,6 @@ module GraphQL
 
         def evaluate_selections(path, owner_object, owner_type, selections, root_operation_type: nil)
           selections_by_name = {}
-          owner_type = resolve_if_late_bound_type(owner_type)
           gather_selections(owner_type, selections, selections_by_name)
           selections_by_name.each do |result_name, fields|
             ast_node = fields.first
