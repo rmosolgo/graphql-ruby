@@ -35,13 +35,10 @@ module GraphQL
                     raise "Invariant: Duplicate write to #{path} (previous: #{write_target[path_part].inspect}, new: #{value.inspect})"
                   end
                 else
+                  # Don't have to worry about dead paths here
+                  # because it's tracked by the runtime,
+                  # and values for dead paths are not sent to this method.
                   write_target = write_target.fetch(path_part, :__unset)
-                  if write_target.nil?
-                    # TODO how can we _halt_ execution when this happens?
-                    # rather than calculating the value but failing to write it,
-                    # can we just not resolve those lazy things?
-                    break
-                  end
                 end
               end
             end

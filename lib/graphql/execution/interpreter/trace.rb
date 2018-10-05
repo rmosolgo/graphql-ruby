@@ -19,7 +19,6 @@ module GraphQL
           @lazies = lazies
           @response = response
           @dead_paths = {}
-          @dead_root = false
           @types_at_paths = Hash.new { |h, k| h[k] = {} }
         end
 
@@ -199,30 +198,28 @@ module GraphQL
           nil
         end
 
+        # Mark `path` as having been permanently nulled out.
+        # No values will be added beyond that path.
         def add_dead_path(path)
-          if path.none?
-            @dead_root = true
-          else
-            dead = @dead_paths
-            path.each do |part|
-              dead = dead[part] ||= {}
-            end
+          dead = @dead_paths
+          path.each do |part|
+            dead = dead[part] ||= {}
           end
+          dead[:__dead] = true
         end
 
         def dead_path?(path)
-          is_dead = if @dead_root
-            true
-          elsif path.any?
-            res = @dead_paths
-            path.each do |part|
-              if res
+          res = @dead_paths
+          path.each do |part|
+            if res
+              if res[:__dead]
+                break
+              else
                 res = res[part]
               end
             end
-            !!res
           end
-          is_dead
+          res && res[:__dead]
         end
       end
     end
