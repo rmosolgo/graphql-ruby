@@ -35,6 +35,9 @@ module GraphQL
           # @return [Class]
           attr_reader :node_type
 
+          # @return [Class]
+          attr_reader :edge_class
+
           # Configure this connection to return `edges` and `nodes` based on `edge_type_class`.
           #
           # This method will use the inputs to create:
@@ -51,11 +54,11 @@ module GraphQL
 
             @node_type = node_type
             @edge_type = edge_type_class
+            @edge_class = edge_class
 
             field :edges, [edge_type_class, null: true],
               null: true,
               description: "A list of edges.",
-              method: :edge_nodes,
               edge_class: edge_class
 
             define_nodes_field if nodes_field
@@ -100,6 +103,17 @@ module GraphQL
         # but sometimes you need to override it to support the `nodes` field
         def nodes
           @object.edge_nodes
+        end
+
+        def edges
+          if context.interpreter?
+            context.schema.after_lazy(object.edge_nodes) do |nodes|
+              nodes.map { |n| self.class.edge_class.new(n, object) }
+            end
+          else
+            # This is done by edges_instrumentation
+            @object.edge_nodes
+          end
         end
       end
     end

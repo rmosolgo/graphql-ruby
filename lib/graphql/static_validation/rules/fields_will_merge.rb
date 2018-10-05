@@ -1,4 +1,6 @@
  # frozen_string_literal: true
+
+# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module FieldsWillMerge

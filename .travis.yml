@@ -40,6 +40,29 @@ matrix:
     gemfile: spec/dummy/Gemfile
     script:
       - cd spec/dummy && bundle exec rails test:system
+  - env:
+      - DISPLAY=':99.0'
+      - TESTING_INTERPRETER=yes
+    rvm: 2.4.3
+    addons:
+      apt:
+        sources:
+          - google-chrome
+        packages:
+          - google-chrome-stable
+    before_install:
+      - export CHROMEDRIVER_VERSION=`curl -s http://chromedriver.storage.googleapis.com/LATEST_RELEASE`
+      - curl -L -O "http://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+      - unzip chromedriver_linux64.zip && chmod +x chromedriver && sudo mv chromedriver /usr/local/bin
+    before_script:
+      - sh -e /etc/init.d/xvfb start
+    gemfile: spec/dummy/Gemfile
+    script:
+      - cd spec/dummy && bundle exec rails test:system
+  - env:
+      - TESTING_INTERPRETER=yes
+    rvm: 2.4.3
+    gemfile: gemfiles/rails_5.2.gemfile
   - rvm: 2.2.8
     gemfile: Gemfile
   - rvm: 2.2.8

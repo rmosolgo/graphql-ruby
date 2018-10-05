@@ -81,6 +81,9 @@ describe GraphQL::Schema::InputObject do
 
       class Schema < GraphQL::Schema
         query(Query)
+        if TESTING_INTERPRETER
+          use GraphQL::Execution::Interpreter
+        end
       end
     end
 

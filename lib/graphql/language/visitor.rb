@@ -37,6 +37,7 @@ module GraphQL
       SKIP = :_skip
 
       class DeleteNode; end
+
       # When this is returned from a visitor method,
       # Then the `node` passed into the method is removed from `parent`'s children.
       DELETE_NODE = DeleteNode.new
@@ -131,13 +132,17 @@ module GraphQL
       alias :on_variable_definition :on_abstract_node
       alias :on_variable_identifier :on_abstract_node
 
+      def visit_node(node, parent)
+        public_send(node.visit_method, node, parent)
+      end
+
       private
 
       # Run the hooks for `node`, and if the hooks return a copy of `node`,
       # copy `parent` so that it contains the copy of that node as a child,
       # then return the copies
       def on_node_with_modifications(node, parent)
-        new_node, new_parent = public_send(node.visit_method, node, parent)
+        new_node, new_parent = visit_node(node, parent)
         if new_node.is_a?(Nodes::AbstractNode) && !node.equal?(new_node)
           # The user-provided hook returned a new node.
           new_parent = new_parent && new_parent.replace_child(node, new_node)

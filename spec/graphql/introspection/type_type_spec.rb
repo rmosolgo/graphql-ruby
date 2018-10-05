@@ -144,7 +144,6 @@ describe GraphQL::Introspection::TypeType do
           }
         }
         GRAPHQL
-
         type_result = res["data"]["__schema"]["types"].find { |t| t["name"] == "Faction" }
         field_result = type_result["fields"].find { |f| f["name"] == "bases" }
         all_arg_names = ["after", "before", "first", "last", "nameIncludes"]

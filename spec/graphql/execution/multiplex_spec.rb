@@ -105,7 +105,7 @@ describe GraphQL::Execution::Multiplex do
         {query: q3},
         {query: q4},
       ])
-      assert_equal expected_res, res
+      assert_equal expected_res, res.map(&:to_h)
     end
   end
 
