@@ -94,7 +94,7 @@ module GraphQL
           selections_by_name.each do |result_name, fields|
             ast_node = fields.first
             field_name = ast_node.name
-            field_defn = owner_type.fields[field_name]
+            field_defn = owner_type.get_field(field_name)
             is_introspection = false
             if field_defn.nil?
               field_defn = if owner_type == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
