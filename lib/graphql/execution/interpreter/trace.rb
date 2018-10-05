@@ -82,9 +82,10 @@ module GraphQL
           kwarg_arguments = {}
           ast_node.arguments.each do |arg|
             arg_defn = arg_owner.arguments[arg.name]
-            # TODO not this
-            catch(:skip) do
-              value = arg_to_value(graphql_object, arg_defn.type, arg.value)
+            # Need to distinguish between client-provided `nil`
+            # and nothing-at-all
+            is_present, value = arg_to_value(graphql_object, arg_defn.type, arg.value)
+            if is_present
               # This doesn't apply to directives, which are legacy
               # Can remove this when Skip and Include use classes or something.
               if graphql_object
@@ -105,28 +106,31 @@ module GraphQL
           if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
             # If it's not here, it will get added later
             if query.variables.key?(ast_value.name)
-              query.variables[ast_value.name]
+              return true, query.variables[ast_value.name]
             else
-              throw :skip
+              return false, nil
             end
           elsif arg_defn.is_a?(GraphQL::Schema::NonNull)
             arg_to_value(graphql_object, arg_defn.of_type, ast_value)
           elsif arg_defn.is_a?(GraphQL::Schema::List)
             # Treat a single value like a list
             arg_value = Array(ast_value)
+            list = []
             arg_value.map do |inner_v|
-              arg_to_value(graphql_object, arg_defn.of_type, inner_v)
+              _present, value = arg_to_value(graphql_object, arg_defn.of_type, inner_v)
+              list << value
             end
+            return true, list
           elsif arg_defn.is_a?(Class) && arg_defn < GraphQL::Schema::InputObject
             # For these, `prepare` is applied during `#initialize`.
             # Pass `nil` so it will be skipped in `#arguments`.
             # What a mess.
             args = arguments(nil, arg_defn, ast_value)
             # TODO still track defaults_used?
-            arg_defn.new(ruby_kwargs: args, context: context, defaults_used: nil)
+            return true, arg_defn.new(ruby_kwargs: args, context: context, defaults_used: nil)
           else
             flat_value = flatten_ast_value(ast_value)
-            arg_defn.coerce_input(flat_value, context)
+            return true, arg_defn.coerce_input(flat_value, context)
           end
         end
 
