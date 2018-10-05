@@ -260,8 +260,7 @@ describe GraphQL::Query do
         def self.before_query(q); end;
 
         def self.after_query(q)
-          # This call is causing an infinite loop
-          # q.result["extensions"] = { "a" => 1 }
+          q.result["extensions"] = { "a" => 1 }
           LOG << :ok
         end
       end
