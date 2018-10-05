@@ -102,7 +102,12 @@ module GraphQL
           kwarg_arguments
         end
 
-        def arg_to_value(graphql_object, arg_defn, ast_value)
+        # Get a Ruby-ready value from a client query.
+        # @param graphql_object [Object] The owner of the field whose argument this is
+        # @param arg_type [Class, GraphQL::Schema::NonNull, GraphQL::Schema::List]
+        # @param ast_value [GraphQL::Language::Nodes::VariableIdentifier, String, Integer, Float, Boolean]
+        # @return [Array(is_present, value)]
+        def arg_to_value(graphql_object, arg_type, ast_value)
           if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
             # If it's not here, it will get added later
             if query.variables.key?(ast_value.name)
@@ -110,27 +115,27 @@ module GraphQL
             else
               return false, nil
             end
-          elsif arg_defn.is_a?(GraphQL::Schema::NonNull)
-            arg_to_value(graphql_object, arg_defn.of_type, ast_value)
-          elsif arg_defn.is_a?(GraphQL::Schema::List)
+          elsif arg_type.is_a?(GraphQL::Schema::NonNull)
+            arg_to_value(graphql_object, arg_type.of_type, ast_value)
+          elsif arg_type.is_a?(GraphQL::Schema::List)
             # Treat a single value like a list
             arg_value = Array(ast_value)
             list = []
             arg_value.map do |inner_v|
-              _present, value = arg_to_value(graphql_object, arg_defn.of_type, inner_v)
+              _present, value = arg_to_value(graphql_object, arg_type.of_type, inner_v)
               list << value
             end
             return true, list
-          elsif arg_defn.is_a?(Class) && arg_defn < GraphQL::Schema::InputObject
+          elsif arg_type.is_a?(Class) && arg_type < GraphQL::Schema::InputObject
             # For these, `prepare` is applied during `#initialize`.
             # Pass `nil` so it will be skipped in `#arguments`.
             # What a mess.
-            args = arguments(nil, arg_defn, ast_value)
+            args = arguments(nil, arg_type, ast_value)
             # TODO still track defaults_used?
             return true, arg_defn.new(ruby_kwargs: args, context: context, defaults_used: nil)
           else
             flat_value = flatten_ast_value(ast_value)
-            return true, arg_defn.coerce_input(flat_value, context)
+            return true, arg_type.coerce_input(flat_value, context)
           end
         end
 
