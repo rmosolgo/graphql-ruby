@@ -25,13 +25,15 @@ module GraphQL
         schema_defn.subscription_execution_strategy(GraphQL::Execution::Interpreter)
       end
 
-      # TODO rename and reconsider these hooks.
-      # Or, are they just temporary?
       def self.begin_multiplex(multiplex)
+        # Since this is basically the batching context,
+        # share it for a whole multiplex
         multiplex.context[:interpreter_instance] ||= self.new
       end
 
       def self.begin_query(query, multiplex)
+        # The batching context is shared by the multiplex,
+        # so fetch it out and use that instance.
         interpreter =
           query.context.namespace(:interpreter)[:interpreter_instance] =
           multiplex.context[:interpreter_instance]
@@ -44,7 +46,7 @@ module GraphQL
         interpreter.sync_lazies(multiplex: multiplex)
       end
 
-      def self.finish_query(query)
+      def self.finish_query(query, _multiplex)
         {
           "data" => query.context.namespace(:interpreter)[:interpreter_trace].final_value
         }
@@ -52,6 +54,9 @@ module GraphQL
 
       def evaluate(query)
         query.context.interpreter = true
+        # Although queries in a multiplex _share_ an Interpreter instance,
+        # they also have another item of state, which is private to that query
+        # in particular, assign it here:
         trace = Trace.new(query: query, lazies: @lazies, response: HashResponse.new)
         query.context.namespace(:interpreter)[:interpreter_trace] = trace
         query.trace("execute_query", {query: query}) do

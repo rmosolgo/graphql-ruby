@@ -125,7 +125,6 @@ module GraphQL
               field_defn.resolve_field_2(object, kwarg_arguments, trace.context)
             end
 
-            # TODO can we remove this and treat it as a bounce instead?
             trace.after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
               should_continue, continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
               if should_continue

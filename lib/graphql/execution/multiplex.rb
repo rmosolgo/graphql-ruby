@@ -89,7 +89,7 @@ module GraphQL
           # Then, find all errors and assign the result to the query object
           results.each_with_index.map do |data_result, idx|
             query = queries[idx]
-            finish_query(data_result, query)
+            finish_query(data_result, query, multiplex)
             # Get the Query::Result, not the Hash
             query.result
           end
@@ -119,7 +119,7 @@ module GraphQL
         # @param data_result [Hash] The result for the "data" key, if any
         # @param query [GraphQL::Query] The query which was run
         # @return [Hash] final result of this query, including all values and errors
-        def finish_query(data_result, query)
+        def finish_query(data_result, query, multiplex)
           # Assign the result so that it can be accessed in instrumentation
           query.result_values = if data_result.equal?(NO_OPERATION)
             if !query.valid?
@@ -129,7 +129,7 @@ module GraphQL
             end
           else
             # Use `context.value` which was assigned during execution
-            result = query.schema.query_execution_strategy.finish_query(query)
+            result = query.schema.query_execution_strategy.finish_query(query, multiplex)
 
             if query.context.errors.any?
               error_result = query.context.errors.map(&:to_h)

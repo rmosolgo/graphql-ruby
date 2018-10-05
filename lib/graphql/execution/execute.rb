@@ -35,7 +35,7 @@ module GraphQL
         ExecutionFunctions.lazy_resolve_root_selection(results, multiplex: multiplex)
       end
 
-      def self.finish_query(query)
+      def self.finish_query(query, _multiplex)
         {
           "data" => Execution::Flatten.call(query.context)
         }

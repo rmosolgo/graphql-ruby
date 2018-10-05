@@ -10,16 +10,19 @@ module GraphQL
       class Trace
         extend Forwardable
         def_delegators :query, :schema, :context
-        # TODO document these methods
-        attr_reader :query, :result, :lazies
+
+        # @return [GraphQL::Query]
+        attr_reader :query
+
+        # @return [Array<GraphQL::Execution::Lazy>] defered calls from user code, to be executed later
+        attr_reader :lazies
 
         def initialize(query:, lazies:, response:)
-          # shared by the parent and all children:
           @query = query
           @lazies = lazies
           @response = response
           @dead_paths = {}
-          @types_at_paths = Hash.new { |h, k| h[k] = {} }
+          @types_at_paths = {}
         end
 
         def final_value
@@ -114,7 +117,8 @@ module GraphQL
             # Pass `nil` so it will be skipped in `#arguments`.
             # What a mess.
             args = arguments(nil, arg_type, ast_value)
-            # TODO still track defaults_used?
+            # We're not tracking defaults_used, but for our purposes
+            # we compare the value to the default value.
             return true, arg_type.new(ruby_kwargs: args, context: context, defaults_used: nil)
           else
             flat_value = flatten_ast_value(ast_value)
