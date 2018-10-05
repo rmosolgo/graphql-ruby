@@ -39,7 +39,9 @@ describe GraphQL::Tracing::PlatformTracing do
 
     it "calls the platform's own method with its own keys" do
       schema.execute(" { cheese(id: 1) { flavor } }")
-      # TODO This should probably be unified
+      # This is different because schema/member/instrumentation
+      # calls `irep_selection` which causes the query to be parsed.
+      # But interpreter doesn't require parsing until later.
       expected_trace = if TESTING_INTERPRETER
         [
           "em",
@@ -73,7 +75,9 @@ describe GraphQL::Tracing::PlatformTracing do
 
     it "only traces traceTrue, not traceFalse or traceNil" do
       schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
-      # TODO unify this
+      # This is different because schema/member/instrumentation
+      # calls `irep_selection` which causes the query to be parsed.
+      # But interpreter doesn't require parsing until later.
       expected_trace = if TESTING_INTERPRETER
         [
           "em",
@@ -107,7 +111,9 @@ describe GraphQL::Tracing::PlatformTracing do
 
     it "traces traceTrue and traceNil but not traceFalse" do
       schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
-      # TODO unify these
+      # This is different because schema/member/instrumentation
+      # calls `irep_selection` which causes the query to be parsed.
+      # But interpreter doesn't require parsing until later.
       expected_trace = if TESTING_INTERPRETER
         [
           "em",
