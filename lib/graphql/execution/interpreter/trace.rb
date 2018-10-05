@@ -170,12 +170,6 @@ module GraphQL
         end
 
         def set_type_at_path(path, type)
-          if type.is_a?(GraphQL::Schema::LateBoundType)
-            # TODO need a general way for handling these in the interpreter,
-            # since they aren't removed during the cache-building stage.
-            type = schema.types[type.name]
-          end
-
           types = @types_at_paths
           path.each do |part|
             if part.is_a?(Integer)
