@@ -5,7 +5,8 @@ Bundler.require
 
 # Print full backtrace for failiures:
 ENV["BACKTRACE"] = "1"
-# TODO: use an environment variable to switch this
+# Set this env var to use Interpreter for fixture schemas.
+# Eventually, interpreter will be the default.
 TESTING_INTERPRETER = ENV["TESTING_INTERPRETER"]
 TESTING_RESCUE_FROM = !TESTING_INTERPRETER
 
