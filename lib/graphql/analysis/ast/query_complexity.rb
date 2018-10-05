@@ -9,8 +9,6 @@ module GraphQL
         def initialize(query)
           super
           @complexities_on_type = [TypeComplexity.new]
-          @skip_stack = [false]
-          @in_fragment_def = false
         end
 
         # Overide this method to use the complexity result
