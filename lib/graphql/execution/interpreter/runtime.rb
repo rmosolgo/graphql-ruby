@@ -195,11 +195,11 @@ module GraphQL
         def continue_field(path, value, field, type, ast_node, next_selections)
           type = resolve_if_late_bound_type(type)
 
-          case type.kind
-          when TypeKinds::SCALAR, TypeKinds::ENUM
+          case type.kind.name
+          when "SCALAR", "ENUM"
             r = type.coerce_result(value, context)
             write_in_response(path, r)
-          when TypeKinds::UNION, TypeKinds::INTERFACE
+          when "UNION", "INTERFACE"
             resolved_type = query.resolve_type(type, value)
             possible_types = query.possible_types(type)
 
@@ -212,7 +212,7 @@ module GraphQL
               resolved_type = resolved_type.metadata[:type_class]
               continue_field(path, value, field, resolved_type, ast_node, next_selections)
             end
-          when TypeKinds::OBJECT
+          when "OBJECT"
             object_proxy = begin
               type.authorized_new(value, context)
             rescue GraphQL::ExecutionError => err
@@ -225,10 +225,10 @@ module GraphQL
                 evaluate_selections(path, continue_value, type, next_selections)
               end
             end
-          when TypeKinds::LIST
+          when "LIST"
             write_in_response(path, [])
             inner_type = type.of_type
-            value.each_with_index.each do |inner_value, idx|
+            value.each_with_index do |inner_value, idx|
               next_path = [*path, idx].freeze
               set_type_at_path(next_path, inner_type)
               after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
@@ -238,7 +238,7 @@ module GraphQL
                 end
               end
             end
-          when TypeKinds::NON_NULL
+          when "NON_NULL"
             inner_type = type.of_type
             # Don't `set_type_at_path` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
