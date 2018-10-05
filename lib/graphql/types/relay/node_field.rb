@@ -15,13 +15,12 @@ module GraphQL
         argument :id, "ID!", required: true,
           description: "ID of the object."
 
-        # TODO rename, make this public
-        def resolve_field_2(obj, args, ctx)
+        def resolve(obj, args, ctx)
           ctx.schema.object_from_id(args[:id], ctx)
         end
 
         def resolve_field(obj, args, ctx)
-          resolve_field_2(obj, args, ctx)
+          resolve(obj, args, ctx)
         end
       end
     end

@@ -246,7 +246,8 @@ describe GraphQL::Subscriptions do
           res_1 = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
           res_2 = schema.execute(query_str, context: { socket: "2" }, variables: { "id" => "200" }, root_value: root_object)
 
-          # TODO this is because of skip.
+          # This difference is because of how `SKIP` is handled.
+          # Honestly the new way is probably better, since it puts a value there.
           empty_response = if TESTING_INTERPRETER && schema == ClassBasedInMemoryBackend::Schema
             {}
           else

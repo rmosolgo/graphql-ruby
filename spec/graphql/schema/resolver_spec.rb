@@ -281,7 +281,7 @@ describe GraphQL::Schema::Resolver do
           value
         end
 
-        def resolve_field_2(*)
+        def resolve(*)
           value = super
           if @name == "resolver3"
             value << -1

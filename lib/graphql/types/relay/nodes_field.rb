@@ -16,13 +16,12 @@ module GraphQL
         argument :ids, "[ID!]!", required: true,
           description: "IDs of the objects."
 
-        # TODO rename, make this public
-        def resolve_field_2(obj, args, ctx)
+        def resolve(obj, args, ctx)
           args[:ids].map { |id| ctx.schema.object_from_id(id, ctx) }
         end
 
         def resolve_field(obj, args, ctx)
-          resolve_field_2(obj, args, ctx)
+          resolve(obj, args, ctx)
         end
       end
     end

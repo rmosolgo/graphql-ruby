@@ -136,7 +136,7 @@ module GraphQL
             next_selections = fields.inject([]) { |memo, f| memo.concat(f.selections) }
 
             app_result = query.trace("execute_field", {field: field_defn, path: next_path}) do
-              field_defn.resolve_field_2(object, kwarg_arguments, context)
+              field_defn.resolve(object, kwarg_arguments, context)
             end
 
             after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|

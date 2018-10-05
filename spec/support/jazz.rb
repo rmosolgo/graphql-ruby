@@ -76,7 +76,7 @@ module Jazz
       end
     end
 
-    def resolve_field_2(*)
+    def resolve(*)
       result = super
       if @upcase && result
         result.upcase

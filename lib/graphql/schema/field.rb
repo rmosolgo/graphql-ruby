@@ -402,6 +402,7 @@ MSG
       # Implement {GraphQL::Field}'s resolve API.
       #
       # Eventually, we might hook up field instances to execution in another way. TBD.
+      # @see #resolve for how the interpreter hooks up to it
       def resolve_field(obj, args, ctx)
         ctx.schema.after_lazy(obj) do |after_obj|
           # First, apply auth ...
@@ -421,33 +422,37 @@ MSG
         end
       end
 
-      # Called by interpreter
-      # TODO rename this, make it public-ish
-      def resolve_field_2(obj_or_lazy, args, ctx)
+      # This method is called by the interpreter for each field.
+      # You can extend it in your base field classes.
+      # @param object [GraphQL::Schema::Object] An instance of some type class, wrapping an application object
+      # @param args [Hash] A symbol-keyed hash of Ruby keyword arguments. (Empty if no args)
+      # @param ctx [GraphQL::Query::Context]
+      def resolve(object, args, ctx)
         if @resolve_proc
           raise "Can't run resolve proc for #{path} when using GraphQL::Execution::Interpreter"
         end
         begin
-          ctx.schema.after_lazy(obj_or_lazy) do |obj|
-            application_object = obj.object
-            if self.authorized?(application_object, ctx)
-              with_extensions(obj, args, ctx) do |extended_obj, extended_args|
-                field_receiver = if @resolver_class
-                  resolver_obj = if extended_obj.is_a?(GraphQL::Schema::Object)
-                    extended_obj.object
-                  else
-                    extended_obj
-                  end
-                  @resolver_class.new(object: resolver_obj, context: ctx)
+          # Unwrap the GraphQL object to get the application object.
+          application_object = object.object
+          if self.authorized?(application_object, ctx)
+            # Apply field extensions
+            with_extensions(object, args, ctx) do |extended_obj, extended_args|
+              field_receiver = if @resolver_class
+                resolver_obj = if extended_obj.is_a?(GraphQL::Schema::Object)
+                  extended_obj.object
                 else
                   extended_obj
                 end
+                @resolver_class.new(object: resolver_obj, context: ctx)
+              else
+                extended_obj
+              end
 
-                if extended_args.any?
-                  field_receiver.public_send(method_sym, extended_args)
-                else
-                  field_receiver.public_send(method_sym)
-                end
+              # Call the method with kwargs, if there are any
+              if extended_args.any?
+                field_receiver.public_send(method_sym, extended_args)
+              else
+                field_receiver.public_send(method_sym)
               end
             end
           end

@@ -48,6 +48,15 @@ class Types::Subscription < Types::BaseObject
 end
 ```
 
+Some Relay configurations must be updated too. For example:
+
+```diff
+- field :node, field: GraphQL::Relay::Node.field
++ add_field(GraphQL::Types::Relay::NodeField)
+```
+
+(Alternatively, consider implementing `Query.node` in your own app, using `NodeField` as inspiration.)
+
 ## Compatibility
 
 The new runtime works with class-based schemas only. Several features are no longer supported:
