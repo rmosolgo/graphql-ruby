@@ -546,7 +546,6 @@ describe GraphQL::Authorization do
   end
 
   describe "applying the accessible? method" do
-    focus
     it "works with fields and arguments" do
       queries = {
         "{ inaccessible }" => ["Some fields in this query are not accessible: inaccessible"],
