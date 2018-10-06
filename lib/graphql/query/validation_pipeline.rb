@@ -121,6 +121,8 @@ module GraphQL
               qa << GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)
             end
           end
+
+          qa
         else
           qa
         end

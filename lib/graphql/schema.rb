@@ -669,7 +669,7 @@ module GraphQL
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
-        :analysis_engine, :using_ast_analysis?,
+        :analysis_engine, :analysis_engine=, :using_ast_analysis?,
         :max_complexity=, :max_depth=,
         :metadata,
         :default_mask,
