@@ -58,7 +58,7 @@ module GraphQL
           multiplex = self.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
           multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
             if supports_multiplexing?(schema)
-              instrument_and_analyze(multiplex, max_complexity: max_complexity) do
+              instrument_and_analyze(multiplex) do
                 run_as_multiplex(multiplex)
               end
             else
