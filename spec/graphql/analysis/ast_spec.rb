@@ -102,7 +102,6 @@ describe GraphQL::Analysis::AST do
       assert_equal expected_visited_types, collected_types
 
       expected_node_counts = {
-        GraphQL::Language::Nodes::Document => 1,
         GraphQL::Language::Nodes::OperationDefinition => 1,
         GraphQL::Language::Nodes::Field => 3,
         GraphQL::Language::Nodes::Argument => 1
