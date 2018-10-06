@@ -77,5 +77,78 @@ module GraphQL
         end
       end
     end
+
+    class AstAnalyzer < GraphQL::Analysis::AST::Analyzer
+      class InaccessibleFieldsError < ::GraphQL::AnalysisError
+        # @return [Array<Schema::Field, GraphQL::Field>] Fields that failed `.accessible?` checks
+        attr_reader :fields
+
+        # @return [GraphQL::Query::Context] The current query's context
+        attr_reader :context
+
+        # @return [Array<GraphQL::Language::Node>] The visited nodes that failed `.accessible?` checks
+        # @see {#fields} for the Field definitions
+        attr_reader :nodes
+
+        def initialize(fields:, nodes:, context:)
+          @fields = fields
+          @nodes = nodes
+          @context = context
+          super("Some fields in this query are not accessible: #{fields.map(&:graphql_name).join(", ")}")
+        end
+      end
+
+      def initialize(query)
+        super
+        @inaccessible_nodes = []
+        @schema = query.schema
+        @ctx = query.context
+      end
+
+      def on_enter_field(node, parent, visitor)
+        field_defn = visitor.field_definition
+        next_field_accessible = accessible?(field_defn)
+
+        if !next_field_accessible
+          @inaccessible_nodes << [node, field_defn]
+        else
+          arg_accessible = true
+          argument_defns(node, field_defn).each do |arg_defn|
+            arg_accessible = accessible?(arg_defn)
+            if !arg_accessible
+              @inaccessible_nodes << [node, field_defn]
+              break
+            end
+          end
+          if arg_accessible
+            return_type = visitor.type_definition
+            next_type_accessible = accessible?(return_type)
+            if !next_type_accessible
+              @inaccessible_nodes << [node, field_defn]
+            end
+          end
+        end
+      end
+
+      def result
+        if @inaccessible_nodes.any?
+          nodes, fields = @inaccessible_nodes.transpose
+          err = InaccessibleFieldsError.new(fields: fields, irep_nodes: nodes, context: @context)
+          context.schema.inaccessible_fields(err)
+        end
+      end
+
+      private
+
+      def argument_defns(node, field_defn)
+        node.arguments.map do |arg|
+          field_defn.arguments[arg.name]
+        end
+      end
+
+      def accessible?(member)
+        @schema.accessible?(member, @ctx)
+      end
+    end
   end
 end

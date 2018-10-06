@@ -55,6 +55,45 @@ describe GraphQL::Analysis::AST do
     end
   end
 
+  class AstErrorAnalyzer < GraphQL::Analysis::AST::Analyzer
+    def result
+      GraphQL::AnalysisError.new("An Error!")
+    end
+  end
+
+  describe "using the AST analysis engine" do
+    let(:schema) do
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'Query'
+
+        field :foobar, Integer, null: false
+
+        def foobar
+          1337
+        end
+      end
+
+      Class.new(GraphQL::Schema) do
+        query query_type
+        enable_ast_analysis
+        query_analyzer AstErrorAnalyzer
+      end
+    end
+
+    let(:query_string) {%|
+      query {
+        foobar
+      }
+    |}
+
+    let(:query) { GraphQL::Query.new(schema, query_string, variables: {}) }
+
+    focus
+    it "runs the AST analyzers correctly" do
+      query.result
+    end
+  end
+
   describe ".analyze_query" do
     let(:analyzers) { [AstTypeCollector, AstNodeCounter] }
     let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, analyzers) }

@@ -177,7 +177,7 @@ module GraphQL
               multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(multiplex.max_complexity)]
             end
 
-            GraphQL::Analysis.analyze_multiplex(multiplex, multiplex_analyzers)
+            schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
             yield
           end
         end

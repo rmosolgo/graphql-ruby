@@ -106,7 +106,8 @@ module GraphQL
       :cursor_encoder,
       :ast_node,
       :raise_definition_error,
-      :introspection_namespace
+      :introspection_namespace,
+      :analysis_engine
 
     # Single, long-lived instance of the provided subscriptions class, if there is one.
     # @return [GraphQL::Subscriptions]
@@ -710,7 +711,14 @@ module GraphQL
         schema_defn.cursor_encoder = cursor_encoder
         schema_defn.tracers.concat(defined_tracers)
         schema_defn.query_analyzers.concat(defined_query_analyzers)
-        schema_defn.query_analyzers << GraphQL::Authorization::Analyzer
+        schema_defn.analysis_engine = analysis_engine
+
+        if analysis_engine == GraphQL::Analysis::AST
+          schema_defn.query_analyzers << GraphQL::Authorization::AstAnalyzer
+        else
+          schema_defn.query_analyzers << GraphQL::Authorization::Analyzer
+        end
+
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
         defined_instrumenters.each do |step, insts|
@@ -826,6 +834,14 @@ module GraphQL
         else
           @default_execution_strategy
         end
+      end
+
+      def enable_ast_analysis
+        @analysis_engine = GraphQL::Analysis::AST
+      end
+
+      def analysis_engine
+        @analysis_engine || GraphQL::Analysis
       end
 
       def context_class(new_context_class = nil)

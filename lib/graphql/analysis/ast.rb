@@ -28,7 +28,7 @@ module GraphQL
             if query.valid?
               analyze_query(
                 query,
-                query.ast_analyzers,
+                query.analyzers,
                 multiplex_analyzers: multiplex_analyzers
               )
             else
@@ -56,7 +56,7 @@ module GraphQL
             .select { |analyzer| analyzer.analyze? }
 
           analyzers_to_run = query_analyzers + multiplex_analyzers
-          return unless analyzers_to_run.any?
+          return [] unless analyzers_to_run.any?
 
           visitor = GraphQL::Analysis::AST::Visitor.new(
             query: query,
