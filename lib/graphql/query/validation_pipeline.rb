@@ -53,11 +53,6 @@ module GraphQL
         @query_analyzers
       end
 
-      def ast_analyzers
-        ensure_has_validated
-        @ast_query_analyzers
-      end
-
       private
 
       # If the pipeline wasn't run yet, run it.
@@ -91,35 +86,10 @@ module GraphQL
               @max_depth,
               @max_complexity
             )
-            @ast_query_analyzers = build_ast_analyzers(
-              @schema,
-              @max_depth,
-              @max_complexity
-            )
           end
         end
 
         @valid = @validation_errors.none?
-      end
-
-      def build_ast_analyzers(schema, max_depth, max_complexity)
-        if max_depth || max_complexity
-          # TODO: schema should also have ast_analyzers
-          # qa = schema.query_analyzers.dup
-          qa = []
-
-          if max_depth
-            qa << GraphQL::Analysis::AST::MaxQueryDepth
-          end
-          if max_complexity
-            qa << GraphQL::Analysis::AST::MaxQueryComplexity
-          end
-          qa
-        else
-          # TODO
-          # schema.query_analyzers
-          []
-        end
       end
 
       # If there are max_* values, add them,
@@ -128,12 +98,24 @@ module GraphQL
         if max_depth || max_complexity
           qa = schema.query_analyzers.dup
 
-          if max_depth
-            qa << GraphQL::Analysis::MaxQueryDepth.new(max_depth)
+          # Depending on the analysis engine, we must use different analyzers
+          # remove this once everything has switched over to AST analyzers
+          if schema.analysis_engine == GraphQL::Analysis::AST
+            if max_depth
+              qa << GraphQL::Analysis::AST::MaxQueryDepth
+            end
+            if max_complexity
+              qa << GraphQL::Analysis::AST::MaxQueryComplexity
+            end
+          else
+            if max_depth
+              qa << GraphQL::Analysis::MaxQueryDepth.new(max_depth)
+            end
+            if max_complexity
+              qa << GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)
+            end
           end
-          if max_complexity
-            qa << GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)
-          end
+
           qa
         else
           schema.query_analyzers
