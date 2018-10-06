@@ -76,6 +76,15 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
   end
 
   describe "across a multiplex" do
+    before do
+      @old_analysis_engine = Dummy::Schema.analysis_engine
+      Dummy::Schema.analysis_engine = GraphQL::Analysis::AST
+    end
+
+    after do
+      Dummy::Schema.analysis_engine = @old_analysis_engine
+    end
+
     let(:queries) {
       5.times.map { |n|
         GraphQL::Query.new(Dummy::Schema, "{ cheese(id: #{n}) { id } }", variables: {})

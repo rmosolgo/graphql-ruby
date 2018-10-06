@@ -88,7 +88,6 @@ describe GraphQL::Analysis::AST do
 
     let(:query) { GraphQL::Query.new(schema, query_string, variables: {}) }
 
-    focus
     it "runs the AST analyzers correctly" do
       query.result
     end

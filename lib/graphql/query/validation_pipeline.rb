@@ -107,6 +107,7 @@ module GraphQL
             if max_complexity
               qa << GraphQL::Analysis::AST::MaxQueryComplexity
             end
+            qa << GraphQL::Authorization::AstAnalyzer
           else
             if max_depth
               qa << GraphQL::Analysis::MaxQueryDepth.new(max_depth)
@@ -114,6 +115,7 @@ module GraphQL
             if max_complexity
               qa << GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)
             end
+            qa << GraphQL::Authorization::Analyzer
           end
 
           qa

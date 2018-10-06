@@ -126,6 +126,7 @@ module GraphQL
 
     class << self
       attr_writer :default_execution_strategy
+      attr_writer :analysis_engine
     end
 
     def default_filter
@@ -160,6 +161,7 @@ module GraphQL
       @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
+      @analysis_engine = self.class.analysis_engine || GraphQL::Analysis
       @query_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
       @mutation_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
       @subscription_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
@@ -712,12 +714,6 @@ module GraphQL
         schema_defn.tracers.concat(defined_tracers)
         schema_defn.query_analyzers.concat(defined_query_analyzers)
         schema_defn.analysis_engine = analysis_engine
-
-        if analysis_engine == GraphQL::Analysis::AST
-          schema_defn.query_analyzers << GraphQL::Authorization::AstAnalyzer
-        else
-          schema_defn.query_analyzers << GraphQL::Authorization::Analyzer
-        end
 
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
