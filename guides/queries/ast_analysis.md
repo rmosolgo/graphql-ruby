@@ -125,11 +125,11 @@ end
 
 ### Using Analyzers
 
-The new query analyzers are added to the schema the same one as before with `query_analyzer`. However, to use the new analysis engine, you must opt in by using `enable_ast_analysis`, for example:
+The new query analyzers are added to the schema the same one as before with `query_analyzer`. However, to use the new analysis engine, you must opt in by using `use GraphQL::Analysis::AST`, for example:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  enable_ast_analysis
+  use GraphQL::Analysis::AST
   query_analyzer MyQueryAnalyzer
 end
 ```

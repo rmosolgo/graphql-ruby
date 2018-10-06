@@ -372,6 +372,9 @@ describe GraphQL::Authorization do
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
       end
+      if TESTING_AST_ANALYSIS
+        use GraphQL::Analysis::AST
+      end
       query(Query)
       mutation(Mutation)
 
@@ -543,6 +546,7 @@ describe GraphQL::Authorization do
   end
 
   describe "applying the accessible? method" do
+    focus
     it "works with fields and arguments" do
       queries = {
         "{ inaccessible }" => ["Some fields in this query are not accessible: inaccessible"],

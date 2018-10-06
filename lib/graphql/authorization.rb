@@ -133,8 +133,8 @@ module GraphQL
       def result
         if @inaccessible_nodes.any?
           nodes, fields = @inaccessible_nodes.transpose
-          err = InaccessibleFieldsError.new(fields: fields, irep_nodes: nodes, context: @context)
-          context.schema.inaccessible_fields(err)
+          err = InaccessibleFieldsError.new(fields: fields, nodes: nodes, context: @context)
+          @schema.inaccessible_fields(err)
         end
       end
 

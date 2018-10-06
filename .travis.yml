@@ -43,6 +43,7 @@ matrix:
   - env:
       - DISPLAY=':99.0'
       - TESTING_INTERPRETER=yes
+      - TESTING_AST_ANALYSIS=yes
     rvm: 2.4.3
     addons:
       apt:

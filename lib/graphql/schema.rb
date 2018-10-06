@@ -126,7 +126,6 @@ module GraphQL
 
     class << self
       attr_writer :default_execution_strategy
-      attr_writer :analysis_engine
     end
 
     def default_filter
@@ -161,7 +160,7 @@ module GraphQL
       @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
-      @analysis_engine = self.class.analysis_engine || GraphQL::Analysis
+      @analysis_engine = GraphQL::Analysis
       @query_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
       @mutation_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
       @subscription_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
@@ -210,6 +209,10 @@ module GraphQL
 
     def remove_handler(*args, &block)
       rescue_middleware.remove_handler(*args, &block)
+    end
+
+    def using_ast_analysis?
+      @analysis_engine == GraphQL::Analysis::AST
     end
 
     # For forwards-compatibility with Schema classes
@@ -666,6 +669,7 @@ module GraphQL
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
+        :analysis_engine, :using_ast_analysis?,
         :max_complexity=, :max_depth=,
         :metadata,
         :default_mask,
@@ -713,7 +717,6 @@ module GraphQL
         schema_defn.cursor_encoder = cursor_encoder
         schema_defn.tracers.concat(defined_tracers)
         schema_defn.query_analyzers.concat(defined_query_analyzers)
-        schema_defn.analysis_engine = analysis_engine
 
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
@@ -830,14 +833,6 @@ module GraphQL
         else
           @default_execution_strategy
         end
-      end
-
-      def enable_ast_analysis
-        @analysis_engine = GraphQL::Analysis::AST
-      end
-
-      def analysis_engine
-        @analysis_engine || GraphQL::Analysis
       end
 
       def context_class(new_context_class = nil)

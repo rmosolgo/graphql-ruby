@@ -95,19 +95,24 @@ module GraphQL
       # If there are max_* values, add them,
       # otherwise reuse the schema's list of analyzers.
       def build_analyzers(schema, max_depth, max_complexity)
-        if max_depth || max_complexity
-          qa = schema.query_analyzers.dup
+        qa = schema.query_analyzers.dup
 
+        if schema.using_ast_analysis?
+          qa << GraphQL::Authorization::AstAnalyzer
+        else
+          qa << GraphQL::Authorization::Analyzer
+        end
+
+        if max_depth || max_complexity
           # Depending on the analysis engine, we must use different analyzers
           # remove this once everything has switched over to AST analyzers
-          if schema.analysis_engine == GraphQL::Analysis::AST
+          if schema.using_ast_analysis?
             if max_depth
               qa << GraphQL::Analysis::AST::MaxQueryDepth
             end
             if max_complexity
               qa << GraphQL::Analysis::AST::MaxQueryComplexity
             end
-            qa << GraphQL::Authorization::AstAnalyzer
           else
             if max_depth
               qa << GraphQL::Analysis::MaxQueryDepth.new(max_depth)
@@ -115,12 +120,9 @@ module GraphQL
             if max_complexity
               qa << GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)
             end
-            qa << GraphQL::Authorization::Analyzer
           end
-
-          qa
         else
-          schema.query_analyzers
+          qa
         end
       end
     end
