@@ -13,6 +13,12 @@ module GraphQL
     module AST
       module_function
 
+      # Analyze a multiplex, and all queries within.
+      # Multiplex analyzers are ran for all queries, keeping state.
+      # Query analyzers are ran per query, without carrying state between queries.
+      #
+      # @param multiplex [GraphQL::Execution::Multiplex]
+      # @param analyzers [Array<GraphQL::Analysis::AST::Analyzer>]
       # @return [void]
       def analyze_multiplex(multiplex, analyzers)
         multiplex_analyzers = analyzers.map { |analyzer| analyzer.new(multiplex) }
@@ -41,7 +47,7 @@ module GraphQL
       end
 
       # @param query [GraphQL::Query]
-      # @param analyzers [Array<#call>] Objects that respond to `#call(memo, visit_type, irep_node)`
+      # @param analyzers [Array<GraphQL::Analysis::AST::Analyzer>]
       # @return [Array<Any>] Results from those analyzers
       def analyze_query(query, analyzers, multiplex_analyzers: [])
         query.trace("analyze_query", { query: query }) do

@@ -2,15 +2,25 @@
 module GraphQL
   module Analysis
     module AST
+      # Query analyzer for query ASTs. Query analyzers respond to visitor style methods
+      # but are prefixed by `enter` and `leave`.
+      #
+      # @param [GraphQL::Query] The query to analyze
       class Analyzer
         def initialize(query)
           @query = query
         end
 
+        # Analyzer hook to decide at analysis time whether a query should
+        # be analyzed or not.
+        # @return [Boolean] If the query should be analyzed or not
         def analyze?
           true
         end
 
+        # The result for this analyzer. Returning {GraphQL::AnalysisError} results
+        # in a query error.
+        # @return [Any] The analyzer result
         def result
           raise NotImplementedError
         end
@@ -28,37 +38,17 @@ module GraphQL
 
         build_visitor_hooks :argument
         build_visitor_hooks :directive
-        build_visitor_hooks :directive_definition
-        build_visitor_hooks :directive_location
         build_visitor_hooks :document
         build_visitor_hooks :enum
-        build_visitor_hooks :enum_type_definition
-        build_visitor_hooks :enum_type_extension
-        build_visitor_hooks :enum_value_definition
         build_visitor_hooks :field
-        build_visitor_hooks :field_definition
-        build_visitor_hooks :fragment_definition
         build_visitor_hooks :fragment_spread
         build_visitor_hooks :inline_fragment
         build_visitor_hooks :input_object
-        build_visitor_hooks :input_object_type_definition
-        build_visitor_hooks :input_object_type_extension
-        build_visitor_hooks :input_value_definition
-        build_visitor_hooks :interface_type_definition
-        build_visitor_hooks :interface_type_extension
         build_visitor_hooks :list_type
         build_visitor_hooks :non_null_type
         build_visitor_hooks :null_value
-        build_visitor_hooks :object_type_definition
-        build_visitor_hooks :object_type_extension
         build_visitor_hooks :operation_definition
-        build_visitor_hooks :scalar_type_definition
-        build_visitor_hooks :scalar_type_extension
-        build_visitor_hooks :schema_definition
-        build_visitor_hooks :schema_extension
         build_visitor_hooks :type_name
-        build_visitor_hooks :union_type_definition
-        build_visitor_hooks :union_type_extension
         build_visitor_hooks :variable_definition
         build_visitor_hooks :variable_identifier
         build_visitor_hooks :abstract_node

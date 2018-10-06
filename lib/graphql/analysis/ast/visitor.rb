@@ -2,6 +2,14 @@
 module GraphQL
   module Analysis
     module AST
+      # Depth first traversal through a query AST, calling AST analyzers
+      # along the way.
+      #
+      # The visitor is a special case of GraphQL::Language::Visitor, visiting
+      # only the selected operation, providing helpers for common use cases such
+      # as skipped fields and visiting fragment spreads.
+      #
+      # @see {GraphQL::Analysis::AST::Analyzer} AST Analyzers for queries
       class Visitor < GraphQL::Language::Visitor
         def initialize(query:, analyzers:)
           @analyzers = analyzers
@@ -18,19 +26,36 @@ module GraphQL
           super(query.selected_operation)
         end
 
-        attr_reader :context, :query
+        # @return [GraphQL::Query] the query being visited
+        attr_reader :query
 
         # @return [Array<GraphQL::ObjectType>] Types whose scope we've entered
         attr_reader :object_types
 
-        # @return [Array<String>] The nesting of the current position in the AST
-        def path
-          @path.dup
-        end
+        # Visit Helpers
 
+        # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
+        # @see {GraphQL::Query#arguments_for}
         def arguments_for(ast_node, field_definition)
           @query.arguments_for(ast_node, field_definition)
         end
+
+        # @return [Boolean] If the visitor is currently inside a fragment definition
+        def visiting_fragment_definition?
+          @in_fragment_def
+        end
+
+        # @return [Boolean] If the current node should be skipped because of a skip or include directive
+        def skipping?
+          @skipping
+        end
+
+        # @return [Array<String>] The path to the response key for the current field
+        def response_path
+          @response_path.dup
+        end
+
+        # Visitor Hooks
 
         def on_operation_definition(node, parent)
           object_type = @schema.root_type_for_operation(node.operation_type)
@@ -139,6 +164,8 @@ module GraphQL
           call_analyzers(:on_leave_abstract_node, node, parent)
         end
 
+        # Visit a fragment spread inline instead of visiting the definition
+        # by itself.
         def enter_fragment_spread_inline(fragment_spread)
           fragment_def = query.fragments[fragment_spread.name]
 
@@ -155,20 +182,10 @@ module GraphQL
           end
         end
 
+        # Visit a fragment spread inline instead of visiting the definition
+        # by itself.
         def leave_fragment_spread_inline(_fragment_spread)
           object_types.pop
-        end
-
-        def visiting_fragment_definition?
-          @in_fragment_def
-        end
-
-        def skipping?
-          @skipping
-        end
-
-        def response_path
-          @response_path.dup
         end
 
         # @return [GraphQL::BaseType] The current object type
