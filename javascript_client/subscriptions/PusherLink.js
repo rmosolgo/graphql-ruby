@@ -34,7 +34,8 @@
 //     // Do something with `data` and/or `errors`
 //   }})
 //
-import {ApolloLink, Observable} from "apollo-link"
+var ApolloLink = require("apollo-link").ApolloLink
+var Observable = require("apollo-link").Observable
 
 class PusherLink extends ApolloLink {
   constructor(options) {
@@ -88,4 +89,4 @@ class PusherLink extends ApolloLink {
   }
 }
 
-export default PusherLink
+module.exports = PusherLink
