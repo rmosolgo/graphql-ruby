@@ -20,29 +20,24 @@ module GraphQL
 
         # Add `value` at `path`.
         # @return [void]
-        def write(path, value, propagating_nil: false)
-          write_target = @result
-          if write_target
-            if path.none?
-              @result = value
-            else
-              path.each_with_index do |path_part, idx|
-                next_part = path[idx + 1]
-                if next_part.nil?
-                  if write_target[path_part].nil? || (propagating_nil)
-                    write_target[path_part] = value
-                  else
-                    raise "Invariant: Duplicate write to #{path} (previous: #{write_target[path_part].inspect}, new: #{value.inspect})"
-                  end
-                else
-                  # Don't have to worry about dead paths here
-                  # because it's tracked by the runtime,
-                  # and values for dead paths are not sent to this method.
-                  write_target = write_target.fetch(path_part, :__unset)
-                end
-              end
+        def write(path, value)
+          if path.size == 0 # faster than #none?
+            @result = value
+          elsif (write_target = @result)
+            i = 0
+            prefinal_steps = path.size - 1
+            # Use `while` to avoid a closure
+            while i < prefinal_steps
+              path_part = path[i]
+              i += 1
+              write_target = write_target[path_part]
             end
+            path_part = path[i]
+            write_target[path_part] = value
+          else
+            # The response is completely nulled out
           end
+
           nil
         end
       end

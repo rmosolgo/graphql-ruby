@@ -92,6 +92,12 @@ namespace :bench do
     prepare_benchmark
     GraphQLBenchmark.profile
   end
+
+  desc "Run benchmarks on a very large result"
+  task :profile_large_result do
+    prepare_benchmark
+    GraphQLBenchmark.profile_large_result
+  end
 end
 
 namespace :test do
