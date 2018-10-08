@@ -2,7 +2,7 @@
 layout: guide
 doc_stub: false
 search: true
-section: Type Definitions
+section: Fields
 title: Arguments
 desc: Fields may take arguments as inputs
 index: 10
