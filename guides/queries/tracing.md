@@ -55,7 +55,7 @@ To enable it, install the tracer:
 ```ruby
 # Send execution events to ActiveSupport::Notifications
 class MySchema < GraphQL::Schema
-  tracer GraphQL::Tracing::ActiveSupportNotificationsTracing
+  tracer(GraphQL::Tracing::ActiveSupportNotificationsTracing)
 end
 ```
 
