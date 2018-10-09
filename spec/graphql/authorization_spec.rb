@@ -372,9 +372,6 @@ describe GraphQL::Authorization do
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
       end
-      if TESTING_AST_ANALYSIS
-        use GraphQL::Analysis::AST
-      end
       query(Query)
       mutation(Mutation)
 

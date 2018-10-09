@@ -100,7 +100,7 @@ module GraphQL
         end
       end
 
-      # Don't use make_visit_method becuase it breaks `super`
+      # We don't use `alias` here because it breaks `super`
       def self.make_visit_method(node_method, super_method)
         class_eval(<<-EOS, __FILE__, __LINE__ + 1)
           def #{node_method}(node, parent)
