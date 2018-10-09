@@ -97,10 +97,16 @@ module GraphQL
       def build_analyzers(schema, max_depth, max_complexity)
         qa = schema.query_analyzers.dup
 
-        if schema.using_ast_analysis?
-          qa << GraphQL::Authorization::AstAnalyzer
-        else
-          qa << GraphQL::Authorization::Analyzer
+        # Filter out the built in authorization analyzer.
+        # It is deprecated and does not have an AST analyzer alternative.
+        qa = qa.select do |analyzer|
+          if analyzer == GraphQL::Authorization::Analyzer
+            warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
+            # Only use the authorization analyzer if we're using the old analysis engine
+            !schema.using_ast_analysis?
+          else
+            true
+          end
         end
 
         if max_depth || max_complexity
