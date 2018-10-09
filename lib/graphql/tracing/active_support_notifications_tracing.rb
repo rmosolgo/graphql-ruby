@@ -5,7 +5,6 @@ module GraphQL
     # This implementation forwards events to ActiveSupport::Notifications
     # with a `graphql.` prefix.
     #
-    # Installed automatically when `ActiveSupport::Notifications` is discovered.
     module ActiveSupportNotificationsTracing
       # A cache of frequently-used keys to avoid needless string allocations
       KEYS = {

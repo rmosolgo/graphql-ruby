@@ -15,11 +15,6 @@ end
 module GraphQL
   # Library entry point for performance metric reporting.
   #
-  # {ActiveSupportNotificationsTracing} is imported by default
-  # when `ActiveSupport::Notifications` is found.
-  #
-  # You can remove it with `GraphQL::Tracing.uninstall(GraphQL::Tracing::ActiveSupportNotificationsTracing)`.
-  #
   # __Warning:__ Installing/uninstalling tracers is not thread-safe. Do it during application boot only.
   #
   # @example Sending custom events
