@@ -51,6 +51,14 @@ module GraphQL
         end
       end
 
+      # @return [Object] the value used when the client doesn't provide a value for this argument
+      attr_reader :default_value
+
+      # @return [Boolean] True if this argument has a default value
+      def default_value?
+        @default_value != NO_DEFAULT
+      end
+
       attr_writer :description
 
       # @return [String] Documentation for this argument

@@ -66,6 +66,15 @@ module GraphQL
           all_fields
         end
 
+        def get_field(field_name)
+          for ancestor in ancestors
+            if ancestor.respond_to?(:own_fields) && f = ancestor.own_fields[field_name]
+              return f
+            end
+          end
+          nil
+        end
+
         # Register this field with the class, overriding a previous one if needed.
         # Also, add a parent method for resolving this field.
         # @param field_defn [GraphQL::Schema::Field]
