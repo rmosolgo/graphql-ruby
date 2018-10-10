@@ -66,6 +66,15 @@ module GraphQL
           all_fields
         end
 
+        def get_field(field_name)
+          for ancestor in ancestors
+            if ancestor.respond_to?(:own_fields) && f = ancestor.own_fields[field_name]
+              return f
+            end
+          end
+          nil
+        end
+
         # Register this field with the class, overriding a previous one if needed.
         # Also, add a parent method for resolving this field.
         # @param field_defn [GraphQL::Schema::Field]
@@ -123,7 +132,7 @@ ERR
           end
           default_resolve_module.module_eval <<-RUBY, __FILE__, __LINE__ + 1
             def #{method_name}(**args)
-              field_inst = self.class.fields[#{field_key}] || raise(%|Failed to find field #{field_key} for \#{self.class} among \#{self.class.fields.keys}|)
+              field_inst = self.class.get_field(#{field_key}) || raise(%|Failed to find field #{field_key} for \#{self.class} among \#{self.class.fields.keys}|)
               field_inst.resolve_field_method(self, args, context)
             end
           RUBY

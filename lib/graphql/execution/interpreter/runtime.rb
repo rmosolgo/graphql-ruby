@@ -90,12 +90,11 @@ module GraphQL
 
         def evaluate_selections(path, owner_object, owner_type, selections, root_operation_type: nil)
           selections_by_name = {}
-          owner_type = resolve_if_late_bound_type(owner_type)
           gather_selections(owner_type, selections, selections_by_name)
           selections_by_name.each do |result_name, fields|
             ast_node = fields.first
             field_name = ast_node.name
-            field_defn = owner_type.fields[field_name]
+            field_defn = owner_type.get_field(field_name)
             is_introspection = false
             if field_defn.nil?
               field_defn = if owner_type == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
@@ -111,7 +110,10 @@ module GraphQL
 
             return_type = resolve_if_late_bound_type(field_defn.type)
 
-            next_path = [*path, result_name].freeze
+            next_path = path.dup
+            next_path << result_name
+            next_path.freeze
+
             # This seems janky, but we need to know
             # the field's return type at this path in order
             # to propagate `null`
@@ -146,36 +148,36 @@ module GraphQL
             end
 
             after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
-              should_continue, continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
-              if should_continue
+              continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
+              if HALT != continue_value
                 continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections)
               end
             end
           end
         end
 
+        HALT = Object.new
         def continue_value(path, value, field, as_type, ast_node)
-          if value.nil? || value.is_a?(GraphQL::ExecutionError)
-            if value.nil?
-              if as_type.non_null?
-                err = GraphQL::InvalidNullError.new(field.owner, field, value)
-                write_in_response(path, err, propagating_nil: true)
-              else
-                write_in_response(path, nil)
-              end
+          if value.nil?
+            if as_type.non_null?
+              err = GraphQL::InvalidNullError.new(field.owner, field, value)
+              write_invalid_null_in_response(path, err)
             else
-              value.path ||= path
-              value.ast_node ||= ast_node
-              write_in_response(path, value, propagating_nil: as_type.non_null?)
+              write_in_response(path, nil)
             end
-            false
-          elsif value.is_a?(Array) && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
+            HALT
+          elsif value.is_a?(GraphQL::ExecutionError)
+            value.path ||= path
+            value.ast_node ||= ast_node
+            write_execution_errors_in_response(path, [value])
+            HALT
+          elsif value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
             value.each do |v|
               v.path ||= path
               v.ast_node ||= ast_node
             end
-            write_in_response(path, value, propagating_nil: as_type.non_null?)
-            false
+            write_execution_errors_in_response(path, value)
+            HALT
           elsif value.is_a?(GraphQL::UnauthorizedError)
             # this hook might raise & crash, or it might return
             # a replacement value
@@ -187,20 +189,18 @@ module GraphQL
 
             continue_value(path, next_value, field, as_type, ast_node)
           elsif GraphQL::Execution::Execute::SKIP == value
-            false
+            HALT
           else
-            return true, value
+            value
           end
         end
 
         def continue_field(path, value, field, type, ast_node, next_selections)
-          type = resolve_if_late_bound_type(type)
-
-          case type.kind
-          when TypeKinds::SCALAR, TypeKinds::ENUM
+          case type.kind.name
+          when "SCALAR", "ENUM"
             r = type.coerce_result(value, context)
             write_in_response(path, r)
-          when TypeKinds::UNION, TypeKinds::INTERFACE
+          when "UNION", "INTERFACE"
             resolved_type = query.resolve_type(type, value)
             possible_types = query.possible_types(type)
 
@@ -208,39 +208,45 @@ module GraphQL
               parent_type = field.owner
               type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
               schema.type_error(type_error, context)
-              write_in_response(path, nil, propagating_nil: field.type.non_null?)
+              write_in_response(path, nil)
             else
               resolved_type = resolved_type.metadata[:type_class]
               continue_field(path, value, field, resolved_type, ast_node, next_selections)
             end
-          when TypeKinds::OBJECT
+          when "OBJECT"
             object_proxy = begin
               type.authorized_new(value, context)
             rescue GraphQL::ExecutionError => err
               err
             end
             after_lazy(object_proxy, path: path, field: field) do |inner_object|
-              should_continue, continue_value = continue_value(path, inner_object, field, type, ast_node)
-              if should_continue
+              continue_value = continue_value(path, inner_object, field, type, ast_node)
+              if HALT != continue_value
                 write_in_response(path, {})
                 evaluate_selections(path, continue_value, type, next_selections)
               end
             end
-          when TypeKinds::LIST
+          when "LIST"
             write_in_response(path, [])
             inner_type = type.of_type
-            value.each_with_index.each do |inner_value, idx|
-              next_path = [*path, idx].freeze
+            idx = 0
+            value.each do |inner_value|
+              next_path = path.dup
+              next_path << idx
+              next_path.freeze
               set_type_at_path(next_path, inner_type)
               after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
-                should_continue, continue_value = continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
-                if should_continue
+                continue_value = continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
+                if HALT != continue_value
                   continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections)
                 end
               end
+              idx += 1
             end
-          when TypeKinds::NON_NULL
+          when "NON_NULL"
             inner_type = type.of_type
+            # For fields like `__schema: __Schema!`
+            inner_type = resolve_if_late_bound_type(inner_type)
             # Don't `set_type_at_path` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
             continue_field(path, value, field, inner_type, ast_node, next_selections)
@@ -305,8 +311,9 @@ module GraphQL
 
         def arguments(graphql_object, arg_owner, ast_node)
           kwarg_arguments = {}
+          arg_defns = arg_owner.arguments
           ast_node.arguments.each do |arg|
-            arg_defn = arg_owner.arguments[arg.name]
+            arg_defn = arg_defns[arg.name]
             # Need to distinguish between client-provided `nil`
             # and nothing-at-all
             is_present, value = arg_to_value(graphql_object, arg_defn.type, arg.value)
@@ -319,7 +326,7 @@ module GraphQL
               kwarg_arguments[arg_defn.keyword] = value
             end
           end
-          arg_owner.arguments.each do |name, arg_defn|
+          arg_defns.each do |name, arg_defn|
             if arg_defn.default_value? && !kwarg_arguments.key?(arg_defn.keyword)
               kwarg_arguments[arg_defn.keyword] = arg_defn.default_value
             end
@@ -386,27 +393,35 @@ module GraphQL
           end
         end
 
-        def write_in_response(path, value, propagating_nil: false)
+        def write_invalid_null_in_response(path, invalid_null_error)
+          if !dead_path?(path)
+            schema.type_error(invalid_null_error, context)
+            write_in_response(path, nil)
+            add_dead_path(path)
+          end
+        end
+
+        def write_execution_errors_in_response(path, errors)
+          if !dead_path?(path)
+            errors.each do |v|
+              context.errors << v
+            end
+            write_in_response(path, nil)
+            add_dead_path(path)
+          end
+        end
+
+        def write_in_response(path, value)
           if dead_path?(path)
             return
           else
-            if value.is_a?(GraphQL::ExecutionError) || (value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError)})
-              Array(value).each do |v|
-                context.errors << v
-              end
-              write_in_response(path, nil, propagating_nil: propagating_nil)
-              add_dead_path(path)
-            elsif value.is_a?(GraphQL::InvalidNullError)
-              schema.type_error(value, context)
-              write_in_response(path, nil, propagating_nil: true)
-              add_dead_path(path)
-            elsif value.nil? && path.any? && type_at(path).non_null?
+            if value.nil? && path.any? && type_at(path).non_null?
               # This nil is invalid, try writing it at the previous spot
               propagate_path = path[0..-2]
-              write_in_response(propagate_path, value, propagating_nil: true)
+              write_in_response(propagate_path, value)
               add_dead_path(propagate_path)
             else
-              @response.write(path, value, propagating_nil: propagating_nil)
+              @response.write(path, value)
             end
           end
         end

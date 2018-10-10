@@ -51,4 +51,92 @@ module GraphQLBenchmark
 
     printer.print(STDOUT, {})
   end
+
+  # Adapted from https://github.com/rmosolgo/graphql-ruby/issues/861
+  def self.profile_large_result
+    schema = ProfileLargeResult::Schema
+    document = ProfileLargeResult::ALL_FIELDS
+    Benchmark.ips do |x|
+      x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
+        schema.execute(document: document)
+      }
+    end
+
+    result = RubyProf.profile do
+      schema.execute(document: document)
+    end
+    printer = RubyProf::FlatPrinter.new(result)
+    # printer = RubyProf::GraphHtmlPrinter.new(result)
+    # printer = RubyProf::FlatPrinterWithLineNumbers.new(result)
+    printer.print(STDOUT, {})
+
+    report = MemoryProfiler.report do
+      schema.execute(document: document)
+    end
+
+    report.pretty_print
+  end
+
+  module ProfileLargeResult
+    DATA = 1000.times.map {
+      {
+        id:             SecureRandom.uuid,
+        int1:           SecureRandom.random_number(100000),
+        int2:           SecureRandom.random_number(100000),
+        string1:        SecureRandom.base64,
+        string2:        SecureRandom.base64,
+        boolean1:       SecureRandom.random_number(1) == 0,
+        boolean2:       SecureRandom.random_number(1) == 0,
+        int_array:      10.times.map { SecureRandom.random_number(100000) },
+        string_array:   10.times.map { SecureRandom.base64 },
+        boolean_array:  10.times.map { SecureRandom.random_number(1) == 0 },
+      }
+    }
+
+
+    class FooType < GraphQL::Schema::Object
+      field :id, ID, null: false
+      field :int1, Integer, null: false
+      field :int2, Integer, null: false
+      field :string1, String, null: false
+      field :string2, String, null: false
+      field :boolean1, Boolean, null: false
+      field :boolean2, Boolean, null: false
+      field :string_array, [String], null: false
+      field :int_array, [Integer], null: false
+      field :boolean_array, [Boolean], null: false
+    end
+
+    class QueryType < GraphQL::Schema::Object
+      description "Query root of the system"
+      field :foos, [FooType], null: false, description: "Return a list of Foo objects"
+      def foos
+        DATA
+      end
+    end
+
+    class Schema < GraphQL::Schema
+      query QueryType
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
+    end
+
+    ALL_FIELDS = GraphQL.parse <<-GRAPHQL
+      {
+        foos {
+          id
+          int1
+          int2
+          string1
+          string2
+          boolean1
+          boolean2
+          stringArray
+          intArray
+          booleanArray
+        }
+      }
+    GRAPHQL
+  end
 end
