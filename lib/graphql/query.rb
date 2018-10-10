@@ -221,7 +221,8 @@ module GraphQL
       with_prepared_ast { @validation_pipeline }
     end
 
-    def_delegators :validation_pipeline, :validation_errors, :internal_representation, :analyzers
+    def_delegators :validation_pipeline, :validation_errors, :internal_representation,
+                   :analyzers, :ast_analyzers, :max_depth, :max_complexity
 
     attr_accessor :analysis_errors
     def valid?

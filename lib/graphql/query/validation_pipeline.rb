@@ -14,6 +14,8 @@ module GraphQL
     #
     # @api private
     class ValidationPipeline
+      attr_reader :max_depth, :max_complexity
+
       def initialize(query:, validate:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
         @validation_errors = []
         @internal_representation = nil
@@ -93,18 +95,42 @@ module GraphQL
       # If there are max_* values, add them,
       # otherwise reuse the schema's list of analyzers.
       def build_analyzers(schema, max_depth, max_complexity)
-        if max_depth || max_complexity
-          qa = schema.query_analyzers.dup
+        qa = schema.query_analyzers.dup
 
-          if max_depth
-            qa << GraphQL::Analysis::MaxQueryDepth.new(max_depth)
+        # Filter out the built in authorization analyzer.
+        # It is deprecated and does not have an AST analyzer alternative.
+        qa = qa.select do |analyzer|
+          if analyzer == GraphQL::Authorization::Analyzer
+            warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
+            # Only use the authorization analyzer if we're using the old analysis engine
+            !schema.using_ast_analysis?
+          else
+            true
           end
-          if max_complexity
-            qa << GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)
+        end
+
+        if max_depth || max_complexity
+          # Depending on the analysis engine, we must use different analyzers
+          # remove this once everything has switched over to AST analyzers
+          if schema.using_ast_analysis?
+            if max_depth
+              qa << GraphQL::Analysis::AST::MaxQueryDepth
+            end
+            if max_complexity
+              qa << GraphQL::Analysis::AST::MaxQueryComplexity
+            end
+          else
+            if max_depth
+              qa << GraphQL::Analysis::MaxQueryDepth.new(max_depth)
+            end
+            if max_complexity
+              qa << GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)
+            end
           end
+
           qa
         else
-          schema.query_analyzers
+          qa
         end
       end
     end

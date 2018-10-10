@@ -106,7 +106,8 @@ module GraphQL
       :cursor_encoder,
       :ast_node,
       :raise_definition_error,
-      :introspection_namespace
+      :introspection_namespace,
+      :analysis_engine
 
     # Single, long-lived instance of the provided subscriptions class, if there is one.
     # @return [GraphQL::Subscriptions]
@@ -159,6 +160,7 @@ module GraphQL
       @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
+      @analysis_engine = GraphQL::Analysis
       @query_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
       @mutation_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
       @subscription_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
@@ -207,6 +209,10 @@ module GraphQL
 
     def remove_handler(*args, &block)
       rescue_middleware.remove_handler(*args, &block)
+    end
+
+    def using_ast_analysis?
+      @analysis_engine == GraphQL::Analysis::AST
     end
 
     # For forwards-compatibility with Schema classes
@@ -663,6 +669,7 @@ module GraphQL
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
+        :analysis_engine, :analysis_engine=, :using_ast_analysis?,
         :max_complexity=, :max_depth=,
         :metadata,
         :default_mask,
@@ -711,6 +718,7 @@ module GraphQL
         schema_defn.tracers.concat(defined_tracers)
         schema_defn.query_analyzers.concat(defined_query_analyzers)
         schema_defn.query_analyzers << GraphQL::Authorization::Analyzer
+
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
         defined_instrumenters.each do |step, insts|
