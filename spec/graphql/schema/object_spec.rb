@@ -239,4 +239,47 @@ describe GraphQL::Schema::Object do
       assert_equal({"data" => nil }, res.to_h)
     end
   end
+
+
+  describe "#resolve_field(field)" do
+    module CounterTest
+      class CounterObject < GraphQL::Schema::Object
+        field :f1, String, null: false, extras: [:name], method: :f
+        field :f2, String, null: false, extras: [:name], method: :f
+
+        def f(name:)
+          "#{object}-#{name}"
+        end
+
+        def resolve_field(field, arguments, ctx)
+          context[:counter] += 1
+          super
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :counters, [CounterObject, null: true], null: false
+        def counters
+          ["a", "b", nil]
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query(Query)
+      end
+    end
+
+    it "is called for each field resolution" do
+      query_str = "{ counters { f1 f2 } }"
+      ctx = {counter: 0}
+      res = CounterTest::Schema.execute(query_str, context: ctx)
+      expected_counters = [
+        {"f1" => "a-f1", "f2" => "a-f2"},
+        {"f1" => "b-f1", "f2" => "b-f2"},
+        nil
+      ]
+      assert_equal expected_counters, res["data"]["counters"]
+      assert_equal 4, ctx[:counter]
+    end
+  end
 end

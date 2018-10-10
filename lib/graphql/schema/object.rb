@@ -56,6 +56,14 @@ module GraphQL
         @context = context
       end
 
+      # This wraps a call to resolving each field on this object,
+      # finally returning whatever the field would return.
+      # @param field [GraphQL::Schema::Field] The configured field being resolved
+      # @param argument [Hash{Symbol => Object}] Incoming GraphQL arguments
+      def resolve_field(field_instance, arguments, field_ctx)
+        field_instance.resolve_field_on_object(self, arguments, field_ctx)
+      end
+
       class << self
         def implements(*new_interfaces)
           new_interfaces.each do |int|
