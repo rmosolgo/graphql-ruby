@@ -77,7 +77,8 @@ module GraphQL
 
         def lookahead
           owner_type = irep_node.owner_type.metadata[:type_class] || raise("Lookahead is only compatible with class-based schemas")
-          Execution::Lookahead.new(query: query, ast_node: ast_node, owner: owner_type)
+          ast_nodes = irep_node.ast_nodes
+          Execution::Lookahead.new(query: query, ast_nodes: ast_nodes, owner: owner_type)
         end
       end
 

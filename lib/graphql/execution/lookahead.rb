@@ -28,10 +28,10 @@ module GraphQL
     #   end
     class Lookahead
       # @param query [GraphQL::Query]
-      # @param ast_node [GraphQL::Language::Nodes::Field]
+      # @param ast_nodes [Array<GraphQL::Language::Nodes::Field>]
       # @param owner [Class] A type definition
-      def initialize(query:, ast_node:, owner:)
-        @ast_node = ast_node
+      def initialize(query:, ast_nodes:, owner:)
+        @ast_nodes = ast_nodes
         @owner = owner
         @query = query
       end
@@ -64,10 +64,17 @@ module GraphQL
         field_name = normalize_name(field_name)
         next_field = FieldHelpers.get_field(@query.schema, @owner, field_name)
         if next_field
-          next_node = @ast_node.selections.find { |s| find_selected_node(s, field_name, next_field, arguments: arguments) }
-          if next_node
+
+          next_nodes = []
+          @ast_nodes.each do |ast_node|
+            ast_node.selections.each do |selection|
+              find_selected_nodes(selection, field_name, next_field, arguments: arguments, matches: next_nodes)
+            end
+          end
+
+          if next_nodes.any?
             next_owner = next_field.type.unwrap
-            Lookahead.new(query: @query, ast_node: next_node, owner: next_owner)
+            Lookahead.new(query: @query, ast_nodes: next_nodes, owner: next_owner)
           else
             NULL_LOOKAHEAD
           end
@@ -118,15 +125,14 @@ module GraphQL
       end
 
       # If a selection on `node` matches `field_name` (which is backed by `field_defn`)
-      # and matches the `arguments:` constraints, then return that node.
-      # @return [GraphQL::Language::Nodes::Field, nil]
-      def find_selected_node(node, field_name, field_defn, arguments:)
+      # and matches the `arguments:` constraints, then add that node to `matches`
+      def find_selected_nodes(node, field_name, field_defn, arguments:, matches:)
         case node
         when GraphQL::Language::Nodes::Field
           if node.name == field_name
             if arguments.nil? || arguments.none?
               # No constraint applied
-              node
+              matches << node
             else
               query_kwargs = ArgumentHelpers.arguments(@query, nil, field_defn, node)
               passes_args = arguments.all? do |arg_name, arg_value|
@@ -135,17 +141,15 @@ module GraphQL
                 query_kwargs.key?(arg_name) && query_kwargs[arg_name] == arg_value
               end
               if passes_args
-                node
+                matches << node
               end
             end
-          else
-            nil
           end
         when GraphQL::Language::Nodes::InlineFragment
-          node.selections.find { |s| find_selected_node(s, field_name, field_defn, arguments: arguments) }
+          node.selections.find { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
         when GraphQL::Language::Nodes::FragmentSpread
-          frag_defn = query.document.fragments[node.name]
-          frag_defn.selections.find { |s| find_selected_node(s, field_name, field_defn, arguments: arguments) }
+          frag_defn = @query.fragments[node.name]
+          frag_defn.selections.find { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
         else
           raise "Unexpected selection comparison on #{node.class.name} (#{node})"
         end
