@@ -139,12 +139,6 @@ describe GraphQL::Query::Arguments do
       assert_nil arguments.dig("z")
       assert_nil arguments.dig(7)
     end
-
-    it "handles underscored keys" do
-      # TODO shouldn't either of these work?
-      # assert_equal 3, arguments.dig('input_object', 'd')
-      # assert_equal 3, arguments.dig(:input_object, :d)
-    end
   end
 
 

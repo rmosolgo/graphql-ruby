@@ -7,12 +7,12 @@ module GraphQL
     #
     # @param args [Array<[String, Symbol>] Retrieves the value object corresponding to the each key objects repeatedly
     # @return [Object]
-    def dig(*args)
-      val = self[args.shift]
-      if val.nil? || (args.respond_to?(:empty?) ? !!args.empty? : !args)
+    def dig(own_key, *rest_keys)
+      val = self[own_key]
+      if val.nil? || rest_keys.empty?
         val
       else
-        val.dig(*args)
+        val.dig(*rest_keys)
       end
     end
   end
