@@ -85,22 +85,30 @@ When any CanCan check returns `false`, the unauthorized object is passed to {{ "
 
 ## Scopes
 
+#### ActiveRecord::Relation
+
 The CanCan integration adds [CanCan's `.accessible_by`](https://github.com/cancancommunity/cancancan/wiki/Fetching-Records) to GraphQL-Ruby's {% internal_link "list scoping", "/authorization/scoping" %}
 
-To scope lists of interface or union type, include the integration in your base union class and base interface module:
+To scope lists of interface or union type, include the integration in your base union class and base interface module _and_ set a base `can_can_action`, if desired:
 
 ```ruby
 class BaseUnion < GraphQL::Schema::Union
   include GraphQL::Pro::CanCanIntegration::UnionIntegration
+  # To provide a default action for scoping lists:
+  can_can_action :read
 end
 
 module BaseInterface
   include GraphQL::Schema::Interface
   include GraphQL::Pro::CanCanIntegration::InterfaceIntegration
+  # To provide a default action for scoping lists:
+  can_can_action :read
 end
 ```
 
-Note that `.accessible_by` is best for database relations, but doesn't play well with Arrays. See below for bypassing CanCan if you want to return an Array.
+#### Array
+
+For Arrays, the CanCan integration will use `.select { ... }` to filter items using the `can_can_action` from the lists's type.
 
 #### Bypassing scopes
 

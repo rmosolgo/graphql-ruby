@@ -8,7 +8,19 @@
 
 ### Bug Fix
 
-### 1.7.13 (2 Oct 2018)
+### 1.8.0 (11 Oct 2018)
+
+### New Features
+
+- Support Rails 3.2 with OperationStore
+- Use `.select` to filter items in CanCanIntegration
+
+### Bug Fix
+
+- Properly send an _ability_ and the configured `can_can_action` to `.accessible_by`
+- Use a string (not integer) for `Content-Length` header in the dashboard
+
+## 1.7.13 (2 Oct 2018)
 
 ### Breaking Change
 
