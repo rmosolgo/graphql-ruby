@@ -4,28 +4,37 @@ require "spec_helper"
 describe GraphQL::Execution::Lookahead do
   module LookaheadTest
     DATA = [
-      OpenStruct.new(name: "Cardinal", is_waterfowl: false, similar_species_names: ["Scarlet Tanager"]),
-      OpenStruct.new(name: "Scarlet Tanager", is_waterfowl: false, similar_species_names: ["Cardinal"]),
-      OpenStruct.new(name: "Great Egret", is_waterfowl: false, similar_species_names: ["Great Blue Heron"]),
-      OpenStruct.new(name: "Great Blue Heron", is_waterfowl: true, similar_species_names: ["Great Egret"]),
+      OpenStruct.new(name: "Cardinal", is_waterfowl: false, similar_species_names: ["Scarlet Tanager"], genus: OpenStruct.new(latin_name: "Piranga")),
+      OpenStruct.new(name: "Scarlet Tanager", is_waterfowl: false, similar_species_names: ["Cardinal"], genus: OpenStruct.new(latin_name: "Cardinalis")),
+      OpenStruct.new(name: "Great Egret", is_waterfowl: false, similar_species_names: ["Great Blue Heron"], genus: OpenStruct.new(latin_name: "Ardea")),
+      OpenStruct.new(name: "Great Blue Heron", is_waterfowl: true, similar_species_names: ["Great Egret"], genus: OpenStruct.new(latin_name: "Ardea")),
     ]
 
     def DATA.find_by_name(name)
       DATA.find { |b| b.name == name }
     end
 
+    class BirdGenus < GraphQL::Schema::Object
+      field :latin_name, String, null: false
+    end
+
     class BirdSpecies < GraphQL::Schema::Object
       field :name, String, null: false
       field :is_waterfowl, Boolean, null: false
-      field :similar_species, [BirdSpecies], null: false,
+      field :similar_species, [BirdSpecies], null: false
+
+      def similar_species
+        object.similar_species_names.map { |n| DATA.find_by_name(n) }
+      end
+
+      field :genus, BirdGenus, null: false,
         extras: [:lookahead]
 
-      def similar_species(lookahead:)
-        if lookahead.selects?(:__typename)
-          context[:lookahead_typename] += 1
+      def genus(lookahead:)
+        if lookahead.selects?(:latin_name)
+          context[:lookahead_latin_name] += 1
         end
-
-        object.similar_species_names.map { |n| DATA.find_by_name(n) }
+        object.genus
       end
     end
 
@@ -72,8 +81,8 @@ describe GraphQL::Execution::Lookahead do
 
     it "can detect fields on objects with symbol or string" do
       ast_node = document.definitions.first.selections.first
-      owner = LookaheadTest::BirdSpecies
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], owner: owner)
+      field = LookaheadTest::Query.fields["findBirdSpecies"]
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
       assert_equal true, lookahead.selects?("similarSpecies")
       assert_equal true, lookahead.selects?(:similar_species)
       assert_equal false, lookahead.selects?("isWaterfowl")
@@ -82,16 +91,14 @@ describe GraphQL::Execution::Lookahead do
 
     it "detects by name, not by alias" do
       ast_node = document.definitions.first
-      owner = LookaheadTest::Query
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], owner: owner)
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
       assert_equal true, lookahead.selects?("__typename")
     end
 
     describe "constraints by arguments" do
       let(:lookahead) do
         ast_node = document.definitions.first
-        owner = LookaheadTest::Query
-        GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], owner: owner)
+        GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
       end
 
       it "is true without constraints" do
@@ -132,8 +139,7 @@ describe GraphQL::Execution::Lookahead do
 
     it "can do a chained lookahead" do
       ast_node = document.definitions.first
-      owner = LookaheadTest::Query
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], owner: owner)
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
       next_lookahead = lookahead.selection(:find_bird_species, arguments: { by_name: "Cardinal" })
       assert_equal true, next_lookahead.selected?
       nested_selection = next_lookahead.selection(:similar_species).selection(:is_waterfowl, arguments: {})
@@ -143,8 +149,7 @@ describe GraphQL::Execution::Lookahead do
 
     it "can detect fields on lists with symbol or string" do
       ast_node = document.definitions.first
-      owner = LookaheadTest::Query
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], owner: owner)
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
       assert_equal true, lookahead.selection(:find_bird_species).selection(:similar_species).selection(:is_waterfowl).selected?
       assert_equal true, lookahead.selection("findBirdSpecies").selection("similarSpecies").selection("isWaterfowl").selected?
     end
@@ -180,8 +185,7 @@ describe GraphQL::Execution::Lookahead do
 
       it "finds selections using merging" do
         ast_node = document.definitions.first
-        owner = LookaheadTest::Query
-        lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], owner: owner)
+        lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
         merged_lookahead = lookahead.selection(:find_bird_species).selection(:similar_species)
         assert merged_lookahead.selects?(:__typename)
         assert merged_lookahead.selects?(:is_waterfowl)
@@ -195,20 +199,20 @@ describe GraphQL::Execution::Lookahead do
       query_str = <<-GRAPHQL
       {
         cardinal: findBirdSpecies(byName: "Cardinal") {
-          similarSpecies { __typename }
+          genus { __typename }
         }
-        scarletTanager: findBirdSpecies(byName: "ScarletTanager") {
-          similarSpecies { name }
+        scarletTanager: findBirdSpecies(byName: "Scarlet Tanager") {
+          genus { latinName }
         }
         greatBlueHeron: findBirdSpecies(byName: "Great Blue Heron") {
-          similarSpecies { __typename }
+          genus { latinName }
         }
       }
       GRAPHQL
-      context = {lookahead_typename: 0}
+      context = {lookahead_latin_name: 0}
       res = LookaheadTest::Schema.execute(query_str, context: context)
       refute res.key?("errors")
-      assert_equal 2, context[:lookahead_typename]
+      assert_equal 2, context[:lookahead_latin_name]
     end
   end
 end

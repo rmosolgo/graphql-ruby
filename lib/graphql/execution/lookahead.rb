@@ -28,11 +28,13 @@ module GraphQL
     #   end
     class Lookahead
       # @param query [GraphQL::Query]
-      # @param ast_nodes [Array<GraphQL::Language::Nodes::Field>]
-      # @param owner [Class] A type definition
-      def initialize(query:, ast_nodes:, owner:)
+      # @param ast_nodes [Array<GraphQL::Language::Nodes::Field>, Array<GraphQL::Language::Nodes::OperationDefinition>]
+      # @param field [GraphQL::Schema::Field] if `ast_nodes` are fields, this is the field definition matching those nodes
+      # @param root_type [Class] if `ast_nodes` are operation definition, this is the root type for that operation
+      def initialize(query:, ast_nodes:, field: nil, root_type: nil)
         @ast_nodes = ast_nodes
-        @owner = owner
+        @field = field
+        @root_type = root_type
         @query = query
       end
 
@@ -61,20 +63,25 @@ module GraphQL
       # It returns a null object (check with {#selected?})
       # @return [GraphQL::Execution::Lookahead]
       def selection(field_name, arguments: nil)
-        field_name = normalize_name(field_name)
-        next_field = FieldHelpers.get_field(@query.schema, @owner, field_name)
-        if next_field
+        next_field_name = normalize_name(field_name)
 
+        next_field_owner = if @field
+          @field.type.unwrap
+        else
+          @root_type
+        end
+
+        next_field_defn = FieldHelpers.get_field(@query.schema, next_field_owner, next_field_name)
+        if next_field_defn
           next_nodes = []
           @ast_nodes.each do |ast_node|
             ast_node.selections.each do |selection|
-              find_selected_nodes(selection, field_name, next_field, arguments: arguments, matches: next_nodes)
+              find_selected_nodes(selection, next_field_name, next_field_defn, arguments: arguments, matches: next_nodes)
             end
           end
 
           if next_nodes.any?
-            next_owner = next_field.type.unwrap
-            Lookahead.new(query: @query, ast_nodes: next_nodes, owner: next_owner)
+            Lookahead.new(query: @query, ast_nodes: next_nodes, field: next_field_defn)
           else
             NULL_LOOKAHEAD
           end
