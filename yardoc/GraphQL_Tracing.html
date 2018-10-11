@@ -6,11 +6,6 @@
   <body>
     <p>Module: GraphQL::Tracing
 Library entry point for performance metric reporting. 
-ActiveSupportNotificationsTracing is imported by default when
-<code class="highlighter-rouge">ActiveSupport::Notifications</code> is found. 
-You can remove it with
-<code class="highlighter-rouge">GraphQL::Tracing.uninstall(GraphQL::Tracing::ActiveSupportNotificat
-ionsTracing)</code>. 
 <strong>Warning:</strong> Installing/uninstalling tracers is not thread-safe. Do
 it during application boot only. 
 Events: 

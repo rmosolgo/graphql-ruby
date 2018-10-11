@@ -133,21 +133,29 @@
 
 <h2 id="scopes">Scopes</h2>
 
+<h4 id="activerecordrelation">ActiveRecord::Relation</h4>
+
 <p>The CanCan integration adds <a href="https://github.com/cancancommunity/cancancan/wiki/Fetching-Records">CanCan’s <code class="highlighter-rouge">.accessible_by</code></a> to GraphQL-Ruby’s <a href="/authorization/scoping">list scoping</a></p>
 
-<p>To scope lists of interface or union type, include the integration in your base union class and base interface module:</p>
+<p>To scope lists of interface or union type, include the integration in your base union class and base interface module <em>and</em> set a base <code class="highlighter-rouge">can_can_action</code>, if desired:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseUnion</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Union</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">CanCanIntegration</span><span class="o">::</span><span class="no">UnionIntegration</span>
+  <span class="c1"># To provide a default action for scoping lists:</span>
+  <span class="n">can_can_action</span> <span class="ss">:read</span>
 <span class="k">end</span>
 
 <span class="k">module</span> <span class="nn">BaseInterface</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">CanCanIntegration</span><span class="o">::</span><span class="no">InterfaceIntegration</span>
+  <span class="c1"># To provide a default action for scoping lists:</span>
+  <span class="n">can_can_action</span> <span class="ss">:read</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Note that <code class="highlighter-rouge">.accessible_by</code> is best for database relations, but doesn’t play well with Arrays. See below for bypassing CanCan if you want to return an Array.</p>
+<h4 id="array">Array</h4>
+
+<p>For Arrays, the CanCan integration will use <code class="highlighter-rouge">.select { ... }</code> to filter items using the <code class="highlighter-rouge">can_can_action</code> from the lists’s type.</p>
 
 <h4 id="bypassing-scopes">Bypassing scopes</h4>
 
