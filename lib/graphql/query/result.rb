@@ -37,7 +37,7 @@ module GraphQL
       end
 
       def inspect
-        "#<GraphQL::Query::Result @query=... @to_h=#{@to_h} >"
+        "#<GraphQL::Query::Result @query=... @to_h=#{@to_h}>"
       end
 
       # A result is equal to another object when:

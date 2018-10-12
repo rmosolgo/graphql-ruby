@@ -101,7 +101,7 @@ module GraphQL
         # @return [Hash] The initial result (may not be finished if there are lazy values)
         def begin_query(query)
           operation = query.selected_operation
-          if operation.nil? || !query.valid?
+          if operation.nil? || !query.valid? || query.context.errors.any?
             NO_OPERATION
           else
             begin
@@ -119,7 +119,8 @@ module GraphQL
         def finish_query(data_result, query)
           # Assign the result so that it can be accessed in instrumentation
           query.result_values = if data_result.equal?(NO_OPERATION)
-            if !query.valid?
+            if !query.valid? || query.context.errors.any?
+              # A bit weird, but `Query#static_errors` _includes_ `query.context.errors`
               { "errors" => query.static_errors.map(&:to_h) }
             else
               data_result
