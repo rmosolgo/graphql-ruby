@@ -57,6 +57,7 @@ describe GraphQL::Schema do
           raise GraphQL::ExecutionError, "Raised from instrumenter before_query"
         end
       end
+
       def after_query(query)
       end
     end
