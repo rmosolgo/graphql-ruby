@@ -89,7 +89,7 @@ module GraphQL
       end
 
       def print_type(type)
-        node = @document_from_schema.build_object_type_node(type)
+        node = @document_from_schema.build_type_definition_node(type)
         print(node)
       end
 

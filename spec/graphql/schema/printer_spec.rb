@@ -630,6 +630,20 @@ SCHEMA
       assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(schema.types['Post'])
     end
 
+    it "can print non-object types" do
+      expected = <<SCHEMA
+# Test
+input Sub {
+  # Something
+  int: Int
+
+  # Something
+  string: String
+}
+SCHEMA
+      assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(schema.types['Sub'])
+    end
+
     it "can print arguments that use non-standard Ruby objects as default values" do
       backing_object = Struct.new(:value)
 
