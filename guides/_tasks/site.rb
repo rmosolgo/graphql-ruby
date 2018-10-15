@@ -156,6 +156,7 @@ PAGE
     puts "Wrote #{docs.size} YARD docs to #{files_target}."
   end
 
+  desc "Update the Algolia search index used for graphql-ruby.org"
   task :update_search_index do
     if !ENV["ALGOLIA_API_KEY"]
       warn("Can't update search index without ALGOLIA_API_KEY; Search will be out-of-date.")
