@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+### 1.8.1 (16 Oct 2018)
+
+### Bug Fix
+
+- Improve operation store models to work when `config.active_record.primary_key_prefix_type` is set
+
 ### 1.8.0 (11 Oct 2018)
 
 ### New Features
