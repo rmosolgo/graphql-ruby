@@ -10,7 +10,7 @@ module GraphQL
       #
       # Original Algorithm: https://github.com/graphql/graphql-js/blob/master/src/validation/rules/OverlappingFieldsCanBeMerged.js
       NO_ARGS = {}.freeze
-      Field = Struct.new(:node, :definition, :parents)
+      Field = Struct.new(:node, :definition, :owner_type, :parents)
       FragmentSpread = Struct.new(:name, :parents)
 
       def initialize(*)
@@ -34,7 +34,7 @@ module GraphQL
       def conflicts_within_selection_set(node, parent_type)
         return if parent_type.nil?
 
-        fields, fragment_spreads = fields_and_fragments_from_selection(node, parents: [parent_type])
+        fields, fragment_spreads = fields_and_fragments_from_selection(node, owner_type: parent_type, parents: [])
 
         # (A) Find find all conflicts "within" the fields of this selection set.
         find_conflicts_within(fields)
@@ -100,10 +100,12 @@ module GraphQL
 
         fragment_fields1, fragment_spreads1 = fields_and_fragments_from_selection(
           fragment1,
+          owner_type: fragment_type1,
           parents: [*fragment_spread1.parents, fragment_type1]
         )
         fragment_fields2, fragment_spreads2 = fields_and_fragments_from_selection(
           fragment2,
+          owner_type: fragment_type1,
           parents: [*fragment_spread2.parents, fragment_type2]
         )
 
@@ -147,7 +149,7 @@ module GraphQL
         fragment_type = context.schema.types[fragment.type.name]
         return if fragment_type.nil?
 
-        fragment_fields, fragment_spreads = fields_and_fragments_from_selection(fragment, parents: [*fragment_spread.parents, fragment_type])
+        fragment_fields, fragment_spreads = fields_and_fragments_from_selection(fragment, owner_type: fragment_type, parents: [*fragment_spread.parents, fragment_type])
 
         # (D) First find any conflicts between the provided collection of fields
         # and the collection of fields represented by the given fragment.
@@ -213,16 +215,18 @@ module GraphQL
 
         return_type1 = field1.definition.type.unwrap
         return_type2 = field2.definition.type.unwrap
-        parents1 = [*field1.parents, return_type1]
-        parents2 = [*field2.parents, return_type2]
+        parents1 = [return_type1]
+        parents2 = [return_type2]
 
         fields, fragment_spreads = fields_and_fragments_from_selection(
           field1.node,
+          owner_type: return_type1,
           parents: parents1
         )
 
         fields2, fragment_spreads2 = fields_and_fragments_from_selection(
           field2.node,
+          owner_type: return_type2,
           parents: parents2
         )
 
@@ -281,21 +285,21 @@ module GraphQL
         end
       end
 
-      def fields_and_fragments_from_selection(node, parents:)
-        fields, fragment_spreads = find_fields_and_fragments(node.selections, parents: parents)
+      def fields_and_fragments_from_selection(node, owner_type:, parents:)
+        fields, fragment_spreads = find_fields_and_fragments(node.selections, owner_type: owner_type, parents: parents)
         response_keys = fields.group_by { |f| f.node.alias || f.node.name }
         [response_keys, fragment_spreads]
       end
 
-      def find_fields_and_fragments(selections, parents:, fields: [], fragment_spreads: [])
+      def find_fields_and_fragments(selections, owner_type:, parents:, fields: [], fragment_spreads: [])
         selections.each do |node|
           case node
           when GraphQL::Language::Nodes::Field
-            definition = context.schema.get_field(parents.last, node.name)
-            fields << Field.new(node, definition, parents)
+            definition = context.schema.get_field(owner_type, node.name)
+            fields << Field.new(node, definition, owner_type, parents)
           when GraphQL::Language::Nodes::InlineFragment
-            fragment_type = node.type ? context.schema.types[node.type.name] : parents.last
-            find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], fields: fields, fragment_spreads: fragment_spreads) if fragment_type
+            fragment_type = node.type ? context.schema.types[node.type.name] : owner_type
+            find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: owner_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
           when GraphQL::Language::Nodes::FragmentSpread
             fragment_spreads << FragmentSpread.new(node.name, parents)
           end
@@ -333,22 +337,17 @@ module GraphQL
       end
 
       # Given two list of parents, find out if they are mutually exclusive
+      # In this context, `parents` represends the "self scope" of the field,
+      # what types may be found at this point in the query.
       def mutually_exclusive?(parents1, parents2)
-        i = 0
-        j = 0
-
-        while i <= parents1.size - 1 && j <= parents2.size - 1 do
-          type1 = parents1[i]
-          type2 = parents2[j]
-
-          # If the types we're comparing are both different object types,
-          # they have to be mutually exclusive.
-          if type1 != type2 && type1.kind.object? && type2.kind.object?
-            return true
+        parents1.each do |type1|
+          parents2.each do |type2|
+            # If the types we're comparing are both different object types,
+            # they have to be mutually exclusive.
+            if type1 != type2 && type1.kind.object? && type2.kind.object?
+              return true
+            end
           end
-
-          i = i + 1 if i <= parents1.size - 1
-          j = j + 1 if j <= parents2.size - 1
         end
 
         false
