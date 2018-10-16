@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+## 1.8.11 (16 Oct 2018)
+
+### New features
+
+- `extras: [:lookahead]` injects a `GraphQL::Execution::Lookahead`
+
+### Bug fixes
+
+- Fix type printing in Printer #1902
+- Rescue `GraphQL::ExecutionError` in `.before_query` hooks #1898
+- Properly load default values that are lists of input objects from the IDL #1874
+
 ## 1.8.10 (21 Sep 2018)
 
 ### Bug fixes
