@@ -4,12 +4,12 @@ require "spec_helper"
 describe GraphQL::Relay::RangeAdd do
   # Make sure that the encoder is found through `ctx.schema`:
   module PassThroughEncoder
-    def self.encode(plaintext, nonce: false)
-      "__#{plaintext}"
+    def self.encode(unencoded_text, nonce: false)
+      "__#{unencoded_text}"
     end
 
-    def self.decode(ciphertext, nonce: false)
-      ciphertext[2..-1]
+    def self.decode(encoded_text, nonce: false)
+      encoded_text[2..-1]
     end
   end
 
