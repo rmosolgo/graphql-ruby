@@ -548,6 +548,27 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         assert_equal [], errors
       end
     end
+
+    describe "allows different args where no conflict is possible with uneven abstract scoping" do
+      let(:query_string) {%|
+        {
+          pet {
+            ... on Pet {
+              ... on Dog {
+                name
+              }
+            }
+            ... on Cat {
+              name(surname: true)
+            }
+          }
+        }
+      |}
+
+      it "passes rule" do
+        assert_equal [], errors
+      end
+    end
   end
 
   describe "allows different args where no conflict is possible deep" do
