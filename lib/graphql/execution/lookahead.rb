@@ -94,6 +94,29 @@ module GraphQL
         end
       end
 
+      # Like {#selection}, but for all nodes.
+      # It returns a list of Lookaheads for all Selections
+      #
+      # If `arguments:` is provided, each provided key/value will be matched
+      # against the arguments in each selection. This method will filter the selections
+      # if any of the given `arguments:` do not match the given selection.
+      # @param arguments [Hash] Arguments which must match in the selection
+      # @return [Array<GraphQL::Execution::Lookahead>]
+      def selections(arguments: nil)
+        @ast_nodes
+          .flat_map(&:selections)
+          .map(&:name)
+          .map { |name| selection(name, arguments: arguments) }
+          .select(&:selected?)
+      end
+
+      # The name of the field.
+      # It returns the same of the Lookahead's field.
+      # @return [Symbol]
+      def name
+        @field&.method_sym
+      end
+
       # This is returned for {Lookahead#selection} when a non-existent field is passed
       class NullLookahead < Lookahead
         # No inputs required here.
