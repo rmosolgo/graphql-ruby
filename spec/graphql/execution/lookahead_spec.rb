@@ -229,9 +229,10 @@ describe GraphQL::Execution::Lookahead do
         }
       GRAPHQL
     }
-    let(:query) {
-      GraphQL::Query.new(LookaheadTest::Schema, document: document, variables: { name: "Cardinal" })
-    }
+
+    def query(doc = document)
+      GraphQL::Query.new(LookaheadTest::Schema, document: document)
+    end
 
     it "provides a list of all selections" do
       ast_node = document.definitions.first.selections.first
@@ -254,6 +255,28 @@ describe GraphQL::Execution::Lookahead do
       arguments = { by_name: "Laughing Gull" }
 
       assert_equal lookahead.selections(arguments: arguments).map(&:name), [:find_bird_species]
+    end
+
+    it 'handles duplicate selections' do
+      doc = GraphQL.parse <<-GRAPHQL
+        query {
+          findBirdSpecies(byName: "Laughing Gull") {
+            name
+          }
+
+          findBirdSpecies(byName: "Laughing Gull") {
+            name
+            similarSpecies {
+              likesWater: isWaterfowl
+            }
+          }
+        }
+      GRAPHQL
+
+      ast_node = doc.definitions.first
+      lookahead = GraphQL::Execution::Lookahead.new(query: query(doc), ast_nodes: [ast_node], root_type: LookaheadTest::Query)
+
+      assert_equal lookahead.selections.map(&:name), [:find_bird_species, :find_bird_species]
     end
   end
 end
