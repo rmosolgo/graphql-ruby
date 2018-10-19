@@ -61,6 +61,7 @@ module GraphQL
         # Track both sides of the dependency
         @defdep_dependent_definitions[@defdep_fragment_definitions[node.name]] << @defdep_current_parent
         @defdep_immediate_dependencies[@defdep_current_parent] << node
+        super
       end
 
       # A map of operation definitions to an array of that operation's dependencies

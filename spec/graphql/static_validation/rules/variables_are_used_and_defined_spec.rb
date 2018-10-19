@@ -58,4 +58,22 @@ describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
 
     assert_equal(expected, errors)
   end
+
+  describe "usages in directives on fragment spreads" do
+    let(:query_string) {
+      <<-GRAPHQL
+      query($f: Boolean!){
+        ...F @include(if: $f)
+      }
+      fragment F on Query {
+        __typename
+      }
+      GRAPHQL
+    }
+
+    focus
+    it "finds usages" do
+      assert_equal([], errors)
+    end
+  end
 end
