@@ -110,11 +110,15 @@ module GraphQL
       # @param arguments [Hash] Arguments which must match in the selection
       # @return [Array<GraphQL::Execution::Lookahead>]
       def selections(arguments: nil)
-        @ast_nodes
-          .flat_map(&:selections)
-          .map(&:name)
-          .map { |name| selection(name, arguments: arguments) }
-          .select(&:selected?)
+        subselections_by_name = {}
+        @ast_nodes.each do |node|
+          node.selections.each do |subselection|
+            subselections_by_name[subselection.name] ||= selection(subselection.name, arguments: arguments)
+          end
+        end
+
+        # Items may be filtered out if `arguments` doesn't match
+        subselections_by_name.values.select(&:selected?)
       end
 
       # The method name of the field.

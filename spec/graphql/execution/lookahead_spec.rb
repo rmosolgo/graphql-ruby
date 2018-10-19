@@ -265,7 +265,6 @@ describe GraphQL::Execution::Lookahead do
           }
 
           findBirdSpecies(byName: "Laughing Gull") {
-            name
             similarSpecies {
               likesWater: isWaterfowl
             }
@@ -276,7 +275,8 @@ describe GraphQL::Execution::Lookahead do
       ast_node = doc.definitions.first
       lookahead = GraphQL::Execution::Lookahead.new(query: query(doc), ast_nodes: [ast_node], root_type: LookaheadTest::Query)
 
-      assert_equal lookahead.selections.map(&:name), [:find_bird_species, :find_bird_species]
+      assert_equal [:find_bird_species], lookahead.selections.map(&:name), "Selections are merged"
+      assert_equal [:name, :similar_species], lookahead.selections.first.selections.map(&:name), "Subselections are merged"
     end
   end
 end
