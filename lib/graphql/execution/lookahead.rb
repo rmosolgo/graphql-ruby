@@ -154,6 +154,10 @@ module GraphQL
         def selection(*)
           NULL_LOOKAHEAD
         end
+
+        def selections(*)
+          []
+        end
       end
 
       # A singleton, so that misses don't come with overhead.

@@ -278,5 +278,15 @@ describe GraphQL::Execution::Lookahead do
       assert_equal [:find_bird_species], lookahead.selections.map(&:name), "Selections are merged"
       assert_equal [:name, :similar_species], lookahead.selections.first.selections.map(&:name), "Subselections are merged"
     end
+
+    it "works for missing selections" do
+      ast_node = document.definitions.first.selections.first
+      field = LookaheadTest::Query.fields["findBirdSpecies"]
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
+      null_lookahead = lookahead.selection(:genus)
+      # This is an implementation detail, but I want to make sure the test is set up right
+      assert_instance_of GraphQL::Execution::Lookahead::NullLookahead, null_lookahead
+      assert_equal [], null_lookahead.selections
+    end
   end
 end
