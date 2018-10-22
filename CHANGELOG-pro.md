@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+### 1.8.2 (22 Oct 2018)
+
+### Bug Fix
+
+- Support `NULLS LAST` in stable cursors
+
 ### 1.8.1 (16 Oct 2018)
 
 ### Bug Fix
