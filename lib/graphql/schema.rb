@@ -708,6 +708,9 @@ module GraphQL
         schema_defn.query_analyzers << GraphQL::Authorization::Analyzer
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
+        schema_defn.query_execution_strategy = query_execution_strategy
+        schema_defn.mutation_execution_strategy = mutation_execution_strategy
+        schema_defn.subscription_execution_strategy = subscription_execution_strategy
         defined_instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
