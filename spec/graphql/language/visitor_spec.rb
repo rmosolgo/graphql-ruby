@@ -212,6 +212,24 @@ describe GraphQL::Language::Visitor do
           super(node, parent)
         end
       end
+
+      def on_field_definition(node, parent)
+        if node.name == "renameThis"
+          new_node = node.merge(name: "wasRenamed")
+          super(new_node, parent)
+        else
+          super
+        end
+      end
+
+      def on_input_value_definition(node, parent)
+        if node.name == "renameThisArg"
+          new_node = node.merge(name: "argWasRenamed")
+          super(new_node, parent)
+        else
+          super
+        end
+      end
     end
 
     def get_result(query_str)
@@ -359,14 +377,18 @@ GRAPHQL
 
     it "works with SDL" do
       before_query = <<-GRAPHQL.chop
-type Rename {
+type Rename @doStuff {
   f: Int
+  renameThis: String
+  f2(renameThisArg: Boolean): Boolean
 }
 GRAPHQL
 
       after_query = <<-GRAPHQL.chop
-type WasRenamed {
+type WasRenamed @doStuff(addedArgument2: 2) {
   f: Int
+  wasRenamed: String
+  f2(argWasRenamed: Boolean): Boolean
 }
 GRAPHQL
 

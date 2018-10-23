@@ -84,7 +84,7 @@ module GraphQL
           if prev_children.is_a?(Array)
             # Copy that list, and replace `previous_child` with `new_child`
             # in the list.
-            new_children = public_send(method_name).dup
+            new_children = prev_children.dup
             prev_idx = new_children.index(previous_child)
             new_children[prev_idx] = new_child
           else
@@ -554,7 +554,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
         })
         def children_method_name
-          :definitions
+          :fields
         end
       end
 
@@ -566,7 +566,17 @@ module GraphQL
           arguments: GraphQL::Language::Nodes::InputValueDefinition,
         })
         def children_method_name
-          :definitions
+          :fields
+        end
+
+        # this is so that `children_method_name` of `InputValueDefinition` works properly
+        # with `#replace_child`
+        alias :fields :arguments
+        def merge(new_options)
+          if (f = new_options.delete(:fields))
+            new_options[:arguments] = f
+          end
+          super
         end
       end
 
@@ -645,7 +655,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
         })
         def children_method_name
-          :definitions
+          :values
         end
       end
 
