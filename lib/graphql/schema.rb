@@ -656,7 +656,6 @@ module GraphQL
         :execute, :multiplex,
         :static_validator, :introspection_system,
         :query_analyzers, :tracers, :instrumenters,
-        :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
@@ -709,6 +708,9 @@ module GraphQL
         schema_defn.query_analyzers << GraphQL::Authorization::Analyzer
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
+        schema_defn.query_execution_strategy = query_execution_strategy
+        schema_defn.mutation_execution_strategy = mutation_execution_strategy
+        schema_defn.subscription_execution_strategy = subscription_execution_strategy
         defined_instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
@@ -786,6 +788,30 @@ module GraphQL
           @default_max_page_size = new_default_max_page_size
         else
           @default_max_page_size
+        end
+      end
+
+      def query_execution_strategy(new_query_execution_strategy = nil)
+        if new_query_execution_strategy
+          @query_execution_strategy = new_query_execution_strategy
+        else
+          @query_execution_strategy || self.default_execution_strategy
+        end
+      end
+
+      def mutation_execution_strategy(new_mutation_execution_strategy = nil)
+        if new_mutation_execution_strategy
+          @mutation_execution_strategy = new_mutation_execution_strategy
+        else
+          @mutation_execution_strategy || self.default_execution_strategy
+        end
+      end
+
+      def subscription_execution_strategy(new_subscription_execution_strategy = nil)
+        if new_subscription_execution_strategy
+          @subscription_execution_strategy = new_subscription_execution_strategy
+        else
+          @subscription_execution_strategy || self.default_execution_strategy
         end
       end
 
