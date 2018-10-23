@@ -84,7 +84,7 @@ module GraphQL
           if prev_children.is_a?(Array)
             # Copy that list, and replace `previous_child` with `new_child`
             # in the list.
-            new_children = public_send(method_name).dup
+            new_children = prev_children.dup
             prev_idx = new_children.index(previous_child)
             new_children[prev_idx] = new_child
           else
@@ -511,6 +511,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class SchemaExtension < AbstractNode
@@ -518,6 +521,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class ScalarTypeDefinition < AbstractNode
@@ -526,6 +532,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class ScalarTypeExtension < AbstractNode
@@ -533,6 +542,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class InputValueDefinition < AbstractNode
@@ -541,6 +553,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :fields
+        end
       end
 
       class FieldDefinition < AbstractNode
@@ -550,6 +565,19 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           arguments: GraphQL::Language::Nodes::InputValueDefinition,
         })
+        def children_method_name
+          :fields
+        end
+
+        # this is so that `children_method_name` of `InputValueDefinition` works properly
+        # with `#replace_child`
+        alias :fields :arguments
+        def merge(new_options)
+          if (f = new_options.delete(:fields))
+            new_options[:arguments] = f
+          end
+          super
+        end
       end
 
       class ObjectTypeDefinition < AbstractNode
@@ -559,6 +587,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class ObjectTypeExtension < AbstractNode
@@ -567,6 +598,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class InterfaceTypeDefinition < AbstractNode
@@ -576,6 +610,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class InterfaceTypeExtension < AbstractNode
@@ -584,6 +621,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class UnionTypeDefinition < AbstractNode
@@ -592,6 +632,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class UnionTypeExtension < AbstractNode
@@ -600,6 +643,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class EnumValueDefinition < AbstractNode
@@ -608,6 +654,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :values
+        end
       end
 
       class EnumTypeDefinition < AbstractNode
@@ -617,6 +666,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           values: GraphQL::Language::Nodes::EnumValueDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class EnumTypeExtension < AbstractNode
@@ -625,6 +677,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           values: GraphQL::Language::Nodes::EnumValueDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class InputObjectTypeDefinition < AbstractNode
@@ -634,6 +689,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::InputValueDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class InputObjectTypeExtension < AbstractNode
@@ -642,6 +700,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::InputValueDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
     end
   end

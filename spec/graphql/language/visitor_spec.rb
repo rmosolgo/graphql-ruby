@@ -203,6 +203,33 @@ describe GraphQL::Language::Visitor do
           super(node, parent)
         end
       end
+
+      def on_object_type_definition(node, parent)
+        if node.name == "Rename"
+          new_node = node.merge(name: "WasRenamed")
+          super(new_node, parent)
+        else
+          super(node, parent)
+        end
+      end
+
+      def on_field_definition(node, parent)
+        if node.name == "renameThis"
+          new_node = node.merge(name: "wasRenamed")
+          super(new_node, parent)
+        else
+          super
+        end
+      end
+
+      def on_input_value_definition(node, parent)
+        if node.name == "renameThisArg"
+          new_node = node.merge(name: "argWasRenamed")
+          super(new_node, parent)
+        else
+          super
+        end
+      end
     end
 
     def get_result(query_str)
@@ -340,6 +367,28 @@ query {
     renamed
     ...renamedSpread
   }
+}
+GRAPHQL
+
+      document, new_document = get_result(before_query)
+      assert_equal before_query, document.to_query_string
+      assert_equal after_query, new_document.to_query_string
+    end
+
+    it "works with SDL" do
+      before_query = <<-GRAPHQL.chop
+type Rename @doStuff {
+  f: Int
+  renameThis: String
+  f2(renameThisArg: Boolean): Boolean
+}
+GRAPHQL
+
+      after_query = <<-GRAPHQL.chop
+type WasRenamed @doStuff(addedArgument2: 2) {
+  f: Int
+  wasRenamed: String
+  f2(argWasRenamed: Boolean): Boolean
 }
 GRAPHQL
 
