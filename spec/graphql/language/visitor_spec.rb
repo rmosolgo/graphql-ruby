@@ -203,6 +203,15 @@ describe GraphQL::Language::Visitor do
           super(node, parent)
         end
       end
+
+      def on_object_type_definition(node, parent)
+        if node.name == "Rename"
+          new_node = node.merge(name: "WasRenamed")
+          super(new_node, parent)
+        else
+          super(node, parent)
+        end
+      end
     end
 
     def get_result(query_str)
@@ -340,6 +349,24 @@ query {
     renamed
     ...renamedSpread
   }
+}
+GRAPHQL
+
+      document, new_document = get_result(before_query)
+      assert_equal before_query, document.to_query_string
+      assert_equal after_query, new_document.to_query_string
+    end
+
+    it "works with SDL" do
+      before_query = <<-GRAPHQL.chop
+type Rename {
+  f: Int
+}
+GRAPHQL
+
+      after_query = <<-GRAPHQL.chop
+type WasRenamed {
+  f: Int
 }
 GRAPHQL
 

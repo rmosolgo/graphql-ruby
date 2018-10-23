@@ -511,6 +511,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class SchemaExtension < AbstractNode
@@ -518,6 +521,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class ScalarTypeDefinition < AbstractNode
@@ -526,6 +532,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class ScalarTypeExtension < AbstractNode
@@ -533,6 +542,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class InputValueDefinition < AbstractNode
@@ -541,6 +553,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class FieldDefinition < AbstractNode
@@ -550,6 +565,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           arguments: GraphQL::Language::Nodes::InputValueDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class ObjectTypeDefinition < AbstractNode
@@ -559,6 +577,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class ObjectTypeExtension < AbstractNode
@@ -567,6 +588,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class InterfaceTypeDefinition < AbstractNode
@@ -576,6 +600,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class InterfaceTypeExtension < AbstractNode
@@ -584,6 +611,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class UnionTypeDefinition < AbstractNode
@@ -592,6 +622,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class UnionTypeExtension < AbstractNode
@@ -600,6 +633,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class EnumValueDefinition < AbstractNode
@@ -608,6 +644,9 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class EnumTypeDefinition < AbstractNode
@@ -617,6 +656,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           values: GraphQL::Language::Nodes::EnumValueDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class EnumTypeExtension < AbstractNode
@@ -625,6 +667,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           values: GraphQL::Language::Nodes::EnumValueDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class InputObjectTypeDefinition < AbstractNode
@@ -634,6 +679,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::InputValueDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
 
       class InputObjectTypeExtension < AbstractNode
@@ -642,6 +690,9 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::InputValueDefinition,
         })
+        def children_method_name
+          :definitions
+        end
       end
     end
   end

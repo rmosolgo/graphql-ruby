@@ -71,7 +71,6 @@ describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
       GRAPHQL
     }
 
-    focus
     it "finds usages" do
       assert_equal([], errors)
     end
