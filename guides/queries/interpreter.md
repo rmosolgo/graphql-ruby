@@ -73,6 +73,9 @@ The new runtime works with class-based schemas only. Several features are no lon
 
   These depend on the now-removed `Rewrite` step, which wasted a lot of time making often-unneeded preparation. Most of the attributes you might need from an `irep_node` are available with `extras: [...]`. Query analyzers can be refactored to be static checks (custom validation rules) or dynamic checks, made at runtime. The built-in analyzers have been refactored to run as validators.
 
+  A new style of analyzers has been added, which rely only on the query AST. By using the interpreter, you automatically opt-in
+  into the new analysis runtime, which is [described here](guides/queries/ast_analysis.md).
+
   `irep_node`-based lookahead is not supported. Stay tuned for a replacement.
 
 - `rescue_from`

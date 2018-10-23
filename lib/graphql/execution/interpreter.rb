@@ -22,6 +22,8 @@ module GraphQL
         schema_defn.query_execution_strategy(GraphQL::Execution::Interpreter)
         schema_defn.mutation_execution_strategy(GraphQL::Execution::Interpreter)
         schema_defn.subscription_execution_strategy(GraphQL::Execution::Interpreter)
+        schema = schema_defn.target
+        schema.analysis_engine = GraphQL::Analysis::AST
       end
 
       def self.begin_multiplex(multiplex)

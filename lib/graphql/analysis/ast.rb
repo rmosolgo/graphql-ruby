@@ -13,11 +13,6 @@ module GraphQL
     module AST
       module_function
 
-      def use(schema_defn)
-        schema = schema_defn.target
-        schema.analysis_engine = GraphQL::Analysis::AST
-      end
-
       # Analyze a multiplex, and all queries within.
       # Multiplex analyzers are ran for all queries, keeping state.
       # Query analyzers are ran per query, without carrying state between queries.
