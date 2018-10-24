@@ -32,6 +32,11 @@ module GraphQL
         # @return [Array<GraphQL::ObjectType>] Types whose scope we've entered
         attr_reader :object_types
 
+        def visit
+          return if @document.nil?
+          super
+        end
+
         # Visit Helpers
 
         # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
