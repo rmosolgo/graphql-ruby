@@ -19,9 +19,15 @@ module GraphQL
       end
 
       def self.use(schema_defn)
-        schema_defn.query_execution_strategy(GraphQL::Execution::Interpreter)
-        schema_defn.mutation_execution_strategy(GraphQL::Execution::Interpreter)
-        schema_defn.subscription_execution_strategy(GraphQL::Execution::Interpreter)
+        # Reach through the legacy objects for the actual class defn
+        schema_class = schema_defn.target.class
+        # This is not good, since both of these are holding state now,
+        # we have to update both :(
+        [schema_class, schema_defn].each do |schema_config|
+          schema_config.query_execution_strategy(GraphQL::Execution::Interpreter)
+          schema_config.mutation_execution_strategy(GraphQL::Execution::Interpreter)
+          schema_config.subscription_execution_strategy(GraphQL::Execution::Interpreter)
+        end
       end
 
       def self.begin_multiplex(multiplex)
