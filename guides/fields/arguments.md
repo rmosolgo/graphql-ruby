@@ -5,64 +5,127 @@ search: true
 section: Fields
 title: Arguments
 desc: Fields may take arguments as inputs
-index: 2
+index: 10
+class_based_api: true
 ---
 
-Fields can take __arguments__ as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in `MutationType`).
+Fields can take **arguments** as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in `MutationType`).
 
-Arguments are defined with the `argument` helper:
+Arguments are defined with the `argument` helper. These arguments are passed as [keyword arguments](https://robots.thoughtbot.com/ruby-2-keyword-arguments) to the resolver method:
 
 ```ruby
-field :search_posts, types[PostType] do
-  argument :category, types.String
-  resolve ->(obj, args, ctx) {
-    args[:category]
-    # => maybe a string, eg "Programming"
-    if args[:category]
-      Post.where(category: category).limit(10)
-    else
-      Post.all.limit(10)
-    end
-  }
+field :search_posts, [PostType], null: false do
+  argument :category, String, required: true
+end
+
+def search_posts(category:)
+  Post.where(category: category).limit(10)
 end
 ```
 
-Use `!` to mark an argument as _required_:
+To make an argument optional, set `required: false`, and set default values for the corresponding keyword arguments:
 
 ```ruby
-# This argument is a required string:
-argument :category, !types.String
+field :search_posts, [PostType], null: false do
+  argument :category, String, required: false
+end
+
+def search_posts(category: nil)
+  if category
+    Post.where(category: category).limit(10)
+  else
+    Post.all.limit(10)
+  end
+end
 ```
 
-Use `default_value: value` to provide a default value for the argument if not supplied in the query.
+Be aware that if all arguments are optional and the query does not provide any arguments, then the resolver method will be called with no arguments. To prevent an `ArgumentError` in this case, you must either specify default values for all keyword arguments (as done in the prior example) or use the double splat operator argument in the method definition. For example:
 
 ```ruby
-argument :category, types.String, default_value: "Programming"
+def search_posts(**args)
+  if args[:category]
+    Post.where(category: args[:category]).limit(10)
+  else
+    Post.all.limit(10)
+  end
+end
 ```
 
-Use `as: :alternateName` to use a different key from within your resolvers while
+Another approach is to use `default_value: value` to provide a default value for the argument if it is not supplied in the query.
+
+```ruby
+field :search_posts, [PostType], null: false do
+  argument :category, String, required: false, default_value: "Programming"
+end
+
+def search_posts(category:)
+  Post.where(category: category).limit(10)
+end
+```
+
+Use `as: :alternate_name` to use a different key from within your resolvers while
 exposing another key to clients.
 
 ```ruby
-field :post, PostType do
-  argument :postId, types.Id, as: :id
-  resolve ->(obj, args, ctx) {
-    Post.find(args['id'])
-  }
+field :post, PostType, null: false do
+  argument :post_id, ID, required: true, as: :id
+end
+
+def post(id:)
+  Post.find(id)
 end
 ```
 
-Provide a `prepare` function to modify or validate the value of an argument before the field's `resolve` function is executed:
+Provide a `prepare` function to modify or validate the value of an argument before the field's resolver method is executed:
 
 ```ruby
-field :posts, types[PostType] do
-  argument :startDate, types.String, prepare: ->(startDate, ctx) {
+field :posts, [PostType], null: false do
+  argument :start_date, String, required: true, prepare: ->(startDate, ctx) {
     # return the prepared argument or GraphQL::ExecutionError.new("msg")
     # to halt the execution of the field and add "msg" to the `errors` key.
   }
-  resolve ->(obj, args, ctx) {
-    # use prepared args['startDate']
+end
+
+def posts(start_date:)
+  # use prepared start_date
+end
+```
+
+Arguments that are snake_cased will be camelized in the GraphQL schema. Using the example of:
+
+```ruby
+field :posts, [PostType], null: false do
+  argument :start_year, Int, required: true
+end
+```
+
+The corresponding GraphQL query will look like:
+
+```graphql
+{
+  posts(startYear: 2018) {
+    id
   }
+}
+```
+
+To disable auto-camelization, pass `camelize: false` to the `argument` method.
+
+```ruby
+field :posts, [PostType], null: false do
+  argument :start_year, Int, required: true, camelize: false
+end
+```
+
+Furthermore, if you're argument is already camelCased, then it will remain camelized in the GraphQL schema. However, the argument will be converted to snake_case when it is passed to the resolver method:
+
+```ruby
+field :posts, [PostType], null: false do
+  argument :startYear, Int, required: true
+end
+
+def posts(start_year:)
+  # ...
 end
 ```
 
@@ -73,16 +136,3 @@ Only certain types are valid for arguments:
 - {{ "GraphQL::InputObjectType" | api_doc }}, which allows key-value pairs as input
 - {{ "GraphQL::ListType" | api_doc }}s of a valid input type
 - {{ "GraphQL::NonNullType" | api_doc }}s of a valid input type
-
-
-The `args` parameter of a `resolve` function will always be a {{ "GraphQL::Query::Arguments" | api_doc }}. You can access specific arguments with `["arg_name"]` or `[:arg_name]`. You recursively turn it into a Ruby Hash with `to_h`. Inside `args`, scalars will be parsed into Ruby values and enums will be converted to their `value:` (if one was provided).
-
-```ruby
-resolve ->(obj, args, ctx) {
-  args["category"] == args[:category]
-  # => true
-  args.to_h
-  # => { "category" => "Programming" }
-  # ...
-}
-```

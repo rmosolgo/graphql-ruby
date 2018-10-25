@@ -51,6 +51,17 @@ describe GraphQL::Schema do
     class FirstInstrumenter < LogInstrumenter; end
     class SecondInstrumenter < LogInstrumenter; end
 
+    class ExecutionErrorInstrumenter
+      def before_query(query)
+        if query.context[:raise_execution_error]
+          raise GraphQL::ExecutionError, "Raised from instrumenter before_query"
+        end
+      end
+
+      def after_query(query)
+      end
+    end
+
     let(:query_type) {
       GraphQL::ObjectType.define do
         name "Query"
@@ -67,6 +78,7 @@ describe GraphQL::Schema do
         query(spec.query_type)
         instrument(:query, FirstInstrumenter.new)
         instrument(:query, SecondInstrumenter.new)
+        instrument(:query, ExecutionErrorInstrumenter.new)
       end
     }
 
@@ -94,6 +106,13 @@ describe GraphQL::Schema do
         assert context[:first_instrumenter_did_end]
         assert context[:second_instrumenter_did_begin]
         assert context[:second_instrumenter_did_end]
+      end
+
+      it "rescues execution errors from before_query" do
+        context = {raise_execution_error: true}
+        res = schema.execute(" { int(value: 2) } ", context: context)
+        assert_equal "Raised from instrumenter before_query", res["errors"].first["message"]
+        refute res.key?("data"), "The query doesn't run"
       end
     end
 

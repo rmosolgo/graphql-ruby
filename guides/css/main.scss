@@ -115,11 +115,11 @@ p, li {
 
 li {
   margin-left: 15px;
-  margin-top: 15px
+  margin-top: 5px
 }
 
 p, ul {
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 ul {
@@ -333,6 +333,8 @@ li p, li div {
   margin: 10px;
   border: 1px solid $subtle-color;
   border-radius: 3px;
+  // make it float right in a flex container
+  margin-left: auto;
 }
 
 .search-results-container {

@@ -2,7 +2,7 @@
 layout: guide
 doc_stub: false
 search: true
-section: Type Definitions
+section: Fields
 title: Resolvers
 desc: Reusable, extendable resolution logic for complex fields
 index: 9

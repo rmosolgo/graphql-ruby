@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rubygems'
+require 'bundler'
 Bundler.require
 
 # Print full backtrace for failiures:
@@ -14,6 +15,7 @@ require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
 
 require "graphql"
+require "rake"
 require "graphql/rake_task"
 require "benchmark"
 require "pry"

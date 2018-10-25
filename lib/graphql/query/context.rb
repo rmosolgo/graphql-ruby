@@ -74,6 +74,12 @@ module GraphQL
         def execution_errors
           @execution_errors ||= ExecutionErrors.new(self)
         end
+
+        def lookahead
+          ast_nodes = irep_node.ast_nodes
+          field = irep_node.definition.metadata[:type_class] || raise("Lookahead is only compatible with class-based schemas")
+          Execution::Lookahead.new(query: query, ast_nodes: ast_nodes, field: field)
+        end
       end
 
       class ExecutionErrors

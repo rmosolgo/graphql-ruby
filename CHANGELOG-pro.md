@@ -8,7 +8,31 @@
 
 ### Bug Fix
 
-### 1.7.13 (2 Oct 2018)
+### 1.8.2 (22 Oct 2018)
+
+### Bug Fix
+
+- Support `NULLS LAST` in stable cursors
+
+### 1.8.1 (16 Oct 2018)
+
+### Bug Fix
+
+- Improve operation store models to work when `config.active_record.primary_key_prefix_type` is set
+
+### 1.8.0 (11 Oct 2018)
+
+### New Features
+
+- Support Rails 3.2 with OperationStore
+- Use `.select` to filter items in CanCanIntegration
+
+### Bug Fix
+
+- Properly send an _ability_ and the configured `can_can_action` to `.accessible_by`
+- Use a string (not integer) for `Content-Length` header in the dashboard
+
+## 1.7.13 (2 Oct 2018)
 
 ### Breaking Change
 

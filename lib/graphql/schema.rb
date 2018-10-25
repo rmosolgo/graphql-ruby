@@ -166,9 +166,9 @@ module GraphQL
       @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
       @analysis_engine = GraphQL::Analysis
-      @query_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
-      @mutation_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
-      @subscription_execution_strategy = self.class.default_execution_strategy || GraphQL::Execution::Execute
+      @query_execution_strategy = self.class.default_execution_strategy
+      @mutation_execution_strategy = self.class.default_execution_strategy
+      @subscription_execution_strategy = self.class.default_execution_strategy
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
       @context_class = GraphQL::Query::Context
@@ -670,7 +670,6 @@ module GraphQL
         :execute, :multiplex,
         :static_validator, :introspection_system,
         :query_analyzers, :tracers, :instrumenters,
-        :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
@@ -725,6 +724,9 @@ module GraphQL
 
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
+        schema_defn.query_execution_strategy = query_execution_strategy
+        schema_defn.mutation_execution_strategy = mutation_execution_strategy
+        schema_defn.subscription_execution_strategy = subscription_execution_strategy
         defined_instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
@@ -808,6 +810,30 @@ module GraphQL
         end
       end
 
+      def query_execution_strategy(new_query_execution_strategy = nil)
+        if new_query_execution_strategy
+          @query_execution_strategy = new_query_execution_strategy
+        else
+          @query_execution_strategy || self.default_execution_strategy
+        end
+      end
+
+      def mutation_execution_strategy(new_mutation_execution_strategy = nil)
+        if new_mutation_execution_strategy
+          @mutation_execution_strategy = new_mutation_execution_strategy
+        else
+          @mutation_execution_strategy || self.default_execution_strategy
+        end
+      end
+
+      def subscription_execution_strategy(new_subscription_execution_strategy = nil)
+        if new_subscription_execution_strategy
+          @subscription_execution_strategy = new_subscription_execution_strategy
+        else
+          @subscription_execution_strategy || self.default_execution_strategy
+        end
+      end
+
       def max_complexity(max_complexity = nil)
         if max_complexity
           @max_complexity = max_complexity
@@ -836,7 +862,7 @@ module GraphQL
         if superclass <= GraphQL::Schema
           superclass.default_execution_strategy
         else
-          @default_execution_strategy
+          @default_execution_strategy ||= GraphQL::Execution::Execute
         end
       end
 

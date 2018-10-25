@@ -62,6 +62,8 @@ module GraphQL
             # if any before hooks raise an exception, quit calling before hooks,
             # but call the after hooks on anything that succeeded but also
             # raise the exception that came from the before hook.
+          rescue GraphQL::ExecutionError => err
+            object.context.errors << err
           rescue => e
             raise call_after_hooks(successful, object, after_hook_name, e)
           end

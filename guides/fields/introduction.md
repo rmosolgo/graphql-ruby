@@ -8,56 +8,187 @@ desc: Implement fields and resolvers with the Ruby DSL
 index: 0
 ---
 
-{{ "GraphQL::ObjectType" | api_doc }}s and {{ "GraphQL::InterfaceType" | api_doc }}s may expose their values with _fields_. A field definition looks like this:
+
+Object fields expose data about that object or connect the object to other objects. You can add fields to your object types with the `field(...)` class method, for example:
 
 ```ruby
-PostType = GraphQL::ObjectType.define do
-  # ...
-  #     name  , type        , description (optional)
-  field :title, types.String, "The title of the Post"
+field :name, String, "The unique name of this list", null: false
+```
+
+{% internal_link "Objects", "/type_definitions/objects" %} and {% internal_link "Interfaces", "/type_definitions/interfaces" %} have fields.
+
+The different elements of field definition are addressed below:
+
+- [Return types](#field-return-type) say what kind of data this field returns
+- [Documentation](#field-documentation) includes description and deprecation notes
+- [Resolution behavior](#field-resolution) hooks up Ruby code to the GraphQL field
+- [Arguments](#field-arguments) allow fields to take input when they're queried
+- [Extra field metadata](#extra-field-metadata) for low-level access to the GraphQL-Ruby runtime
+- [Add default values for field parameters](#field-parameter-default-values)
+
+### Field Return Type
+
+The second argument to `field(...)` is the return type. This can be:
+
+- A built-in GraphQL type (`Integer`, `Float`, `String`, `ID`, or `Boolean`)
+- A GraphQL type from your application
+- An _array_ of any of the above, which denotes a {% internal_link "list type", "/type_definitions/lists" %}.
+
+{% internal_link "Nullability", "/type_definitions/non_nulls" %} is expressed with the required `null:` keyword:
+
+- `null: true` means that the field _may_ return `nil`
+- `null: false` means the field is non-nullable; it may not return `nil`. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
+
+Additionally, list types maybe nullable by adding `[..., null: true]` to the definition.
+
+Here are some examples:
+
+```ruby
+field :name, String, null: true # `String`, may return a `String` or `nil`
+field :id, ID, null: false # `ID!`, always returns an `ID`, never `nil`
+field :teammates, [Types::User], null: false # `[User!]!`, always returns a list containing `User`s
+field :scores, [Integer, null: true], null: true # `[Int]`, may return a list or `nil`, the list may contain a mix of `Integer`s and `nil`s
+```
+
+### Field Documentation
+
+Fields maybe documented with a __description__ and may be __deprecated__.
+
+__Descriptions__ can be added with the `field(...)` method as a positional argument, a keyword argument, or inside the block:
+
+```ruby
+# 3rd positional argument
+field :name, String, "The name of this thing", null: false
+
+# `description:` keyword
+field :name, String, null: false,
+  description: "The name of this thing"
+
+# inside the block
+field :name, String, null: false do
+  description "The name of this thing"
 end
 ```
 
-By default, fields are resolved by sending the name to the underlying object (eg `post.title` in the example above). 
-
-You can use the `hash_key` option instead to force a hash lookup instead of the default behaviour:
+__Deprecated__ fields can be marked by adding a `deprecation_reason:` keyword argument:
 
 ```ruby
-field :title, types.String, hash_key: :title
-# resolved with `post[:title]` instead of `post.title`
+field :email, String, null: true,
+  deprecation_reason: "Users may have multiple emails, use `User.emails` instead."
 ```
 
-You can define a different resolution by providing a `resolve` function:
+Fields with a `deprecation_reason:` will appear as "deprecated" in GraphiQL.
+
+### Field Resolution
+
+In general, fields return Ruby values corresponding to their GraphQL return types. For example, a field with the return type `String` should return a Ruby string, and a field with the return type `[User!]!` should return a Ruby array with zero or more `User` objects in it.
+
+By default, fields return values by:
+
+- Trying to call a method on the underlying object; _OR_
+- If the underlying object is a `Hash`, lookup a key in that hash.
+
+The method name or hash key corresponds to the field name, so in this example:
 
 ```ruby
-PostType = GraphQL::ObjectType.define do
+field :top_score, Integer, null: false
+```
+
+The default behavior is to look for a `#top_score` method, or lookup a `Hash` key, `:top_score` (symbol) or `"top_score"` (string).
+
+You can override the method name with the `method:` keyword, or override the hash key with the `hash_key:` keyword, for example:
+
+```ruby
+# Use the `#best_score` method to resolve this field
+field :top_score, Integer, null: false,
+  method: :best_score
+
+# Lookup `hash["allPlayers"]` to resolve this field
+field :players, [User], null: false,
+  hash_key: "allPlayers"
+```
+
+If you don't want to delegate to the underlying object, you can define a method for each field:
+
+```ruby
+# Use the custom method below to resolve this field
+field :total_games_played, Integer, null: false
+
+def total_games_played
+  object.games.count
+end
+```
+
+Inside the method, you can access some helper methods:
+
+- `object` is the underlying application object (formerly `obj` to resolve functions)
+- `context` is the query context (passed as `context:` when executing queries, formerly `ctx` to resolve functions)
+
+Additionally, when you define arguments (see below), they're passed to the method definition, for example:
+
+```ruby
+# Call the custom method with incoming arguments
+field :current_winning_streak, Integer, null: false do
+  argument :include_ties, Boolean, required: false, default_value: false
+end
+
+def current_winning_streak(include_ties:)
+  # Business logic goes here
+end
+```
+
+### Field Arguments
+
+_Arguments_ allow fields to take input to their resolution. For example:
+
+- A `search()` field may take a `term:` argument, which is the query to use for searching, eg `search(term: "GraphQL")`
+- A `user()` field may take an `id:` argument, which specifies which user to find, eg `user(id: 1)`
+- An `attachments()` field may take a `type:` argument, which filters the result by file type, eg `attachments(type: PHOTO)`
+
+Read more in the {% internal_link "Arguments guide", "/fields/arguments" %}
+
+### Extra Field Metadata
+
+Inside a field method, you can access some low-level objects from the GraphQL-Ruby runtime. Be warned, these APIs are subject to change, so check the changelog when updating.
+
+A few `extras` are available:
+
+- `irep_node`
+- `ast_node`
+- `parent`, the parent field context
+- `execution_errors`, whose `#add(err_or_msg)` method should be used for adding errors
+
+To inject them into your field method, first, add the `extras:` option to the field definition:
+
+```ruby
+field :my_field, String, null: false, extras: [:ast_node]
+```
+
+Then add `ast_node:` keyword to the method signature:
+
+```ruby
+def my_field(ast_node:)
   # ...
-  #     name   , type        , description (optional)
-  field :teaser, types.String, "The teaser of the Post" do
-    # how to get the value?
-    resolve ->(obj, args, ctx) {
-      # first 40 chars of the body
-      obj.body[0, 40]
-    }
+end
+```
+
+At runtime, the requested runtime object will be passed to the field.
+
+__Custom extras__ are also possible. Any method on your field class can be passed to `extras: [...]`, and the value will be injected into the method. For example, `extras: [:owner]` will inject the object type who owns the field. Any new methods on your custom field class may be used, too.
+
+### Field Parameter Default Values
+
+The field method requires you to pass `null:` keyword argument to determine whether the field is nullable or not. Another field you may want to overrid is `camelize`, which is `true` by default. You can override this behavior by adding a custom field.
+
+```ruby
+class CustomField < GraphQL::Schema::Field
+  # Add `null: false` and `camelize: false` which provide default values
+  # in case the caller doesn't pass anything for those arguments.
+  # **kwargs is a catch-all that will get everything else
+  def initialize(*args, null: false, camelize: false, **kwargs, &block)
+    # Then, call super _without_ any args, where Ruby will take
+    # _all_ the args originally passed to this method and pass it to the super method.
+    super
   end
-end
-```
-
-The resolve function receives inputs:
-
-- `object`: The underlying object for this type (above, a `Post` instance)
-- `arguments`: The arguments for this field (see below, a {{ "GraphQL::Query::Arguments" | api_doc }} instance)
-- `context`: The context for this query (see {% internal_link "Executing Queries","/queries/executing_queries" %}, a {{ "GraphQL::Query::Context" | api_doc }} instance)
-
-In fact, the `field do ... end` block is passed to {{ "GraphQL::Field" | api_doc }}'s `.define` method, so you can define many things there:
-
-```ruby
-field do
-  name "teaser"
-  type types.String
-  description "..."
-  resolve ->(obj, args, ctx) { ... }
-  deprecation_reason "Too long, use .title instead"
-  complexity 2
 end
 ```

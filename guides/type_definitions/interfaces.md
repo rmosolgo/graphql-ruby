@@ -117,6 +117,8 @@ end
 This method will be called by objects who implement the interface. To override this implementation,
 object classes can override the `#price` method.
 
+Read more in the {% internal_link "Fields guide", "/fields/introduction" %}.
+
 ### Definition Methods
 
 You can use `definition_methods do ... end` to add helper methods to interface modules. By adding methods to `definition_methods`:
