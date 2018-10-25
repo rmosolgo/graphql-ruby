@@ -375,6 +375,9 @@ describe GraphQL::Authorization do
       query(Query)
       mutation(Mutation)
 
+      # Opt in to accessible? checks
+      query_analyzer GraphQL::Authorization::Analyzer
+
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
