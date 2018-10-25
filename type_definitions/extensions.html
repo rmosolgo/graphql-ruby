@@ -176,6 +176,47 @@
 
 <p>Now, <code class="highlighter-rouge">AuthorizedField.new(*args, &amp;block).to_graphql</code> will be used to create <code class="highlighter-rouge">GraphQL::Field</code>s.</p>
 
+<h3 id="customizing-connections">Customizing Connections</h3>
+
+<p>Connections may be customized in a similar way to Fields.</p>
+
+<ul>
+  <li>Create a new class extending ‘GraphQL::Types::Relay::BaseConnection’</li>
+  <li>Assign it to your object/interface type with <code class="highlighter-rouge">connection_type_class(MyCustomConnection)</code></li>
+</ul>
+
+<p>For example, you can create a custom connection:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyCustomConnection</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span>
+  <span class="n">field</span> <span class="ss">:total_count</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+  <span class="k">def</span> <span class="nf">total_count</span>
+    <span class="n">object</span><span class="p">.</span><span class="nf">nodes</span><span class="p">.</span><span class="nf">size</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, pass the field class as <code class="highlighter-rouge">connection_type_class(...)</code> wherever it should be used:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Types</span>
+  <span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+    <span class="c1"># Use this class for defining connections</span>
+    <span class="n">connection_type_class</span> <span class="no">MyCustomConnection</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, all type classes that extend <code class="highlighter-rouge">BaseObject</code> will have a connection_type with the additional field <code class="highlighter-rouge">totalCount</code>.</p>
+
+<h3 id="customizing-edges">Customizing Edges</h3>
+
+<p>Edges may be customized in a similar way to Connections.</p>
+
+<ul>
+  <li>Create a new class extending ‘GraphQL::Types::Relay::BaseEdge’</li>
+  <li>Assign it to your object/interface type with <code class="highlighter-rouge">edge_type_class(MyCustomEdge)</code></li>
+</ul>
+
 <h3 id="customizing-arguments">Customizing Arguments</h3>
 
 <p>Arguments may be customized in a similar way to Fields.</p>
