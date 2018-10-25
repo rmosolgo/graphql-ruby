@@ -90,7 +90,12 @@ module GraphQL
         end
         schema.instrumenters[type] << instrumenter
       },
-      query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
+      query_analyzer: ->(schema, analyzer) {
+        if analyzer == GraphQL::Authorization::Analyzer
+          warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
+        end
+        schema.query_analyzers << analyzer
+      },
       multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
@@ -717,7 +722,6 @@ module GraphQL
         schema_defn.cursor_encoder = cursor_encoder
         schema_defn.tracers.concat(defined_tracers)
         schema_defn.query_analyzers.concat(defined_query_analyzers)
-        schema_defn.query_analyzers << GraphQL::Authorization::Analyzer
 
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
@@ -930,6 +934,9 @@ module GraphQL
       end
 
       def query_analyzer(new_analyzer)
+        if new_analyzer == GraphQL::Authorization::Analyzer
+          warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
+        end
         defined_query_analyzers << new_analyzer
       end
 

@@ -100,10 +100,8 @@ module GraphQL
         # Filter out the built in authorization analyzer.
         # It is deprecated and does not have an AST analyzer alternative.
         qa = qa.select do |analyzer|
-          if analyzer == GraphQL::Authorization::Analyzer
-            warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
-            # Only use the authorization analyzer if we're using the old analysis engine
-            !schema.using_ast_analysis?
+          if analyzer == GraphQL::Authorization::Analyzer && schema.using_ast_analysis?
+            raise "The Authorization analyzer is not supported with AST Analyzers"
           else
             true
           end
