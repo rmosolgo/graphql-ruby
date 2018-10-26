@@ -37,6 +37,10 @@ import { ApolloLink } from 'apollo-link';
 import { ApolloClient } from 'apollo-client';
 import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
+
+// Load PusherLink from graphql-ruby-client
+import PusherLink from 'graphql-ruby-client/subscriptions/PusherLink';
+
 // Load Pusher and create a client
 import Pusher from "pusher-js"
 var pusherClient = new Pusher("your-app-key", { cluster: "us2" })
