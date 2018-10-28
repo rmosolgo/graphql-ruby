@@ -1,7 +1,7 @@
 // An Apollo Link for using graphql-pro's Ably subscriptions
 //
 // @example Adding subscriptions to a HttpLink
-//   // Load Pusher and create a client
+//   // Load Ably and create a client
 //   var Ably = require('ably')
 //   // Be sure to create an API key with "Subscribe" and "Presence" permissions only,
 //   // and use that limited API key here:
