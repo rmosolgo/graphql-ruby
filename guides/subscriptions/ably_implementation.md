@@ -148,7 +148,7 @@ Read more here: ["Using CORS"](https://www.html5rocks.com/en/tutorials/cors/).
 
 Your server needs to receive webhooks from Ably when clients disconnect. This keeps your local subscription database in sync with Ably.
 
-In the Ably web UI, Add a webhook:
+In the Ably web UI, Add a webhook for "Channel Lifecycle" events:
 
 {{ "/subscriptions/ably_webhook_configuration.png" | link_to_img:"Ably Webhook Configuration" }}
 

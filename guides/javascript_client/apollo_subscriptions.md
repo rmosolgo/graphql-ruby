@@ -77,9 +77,9 @@ import { ApolloLink } from 'apollo-link';
 import { ApolloClient } from 'apollo-client';
 import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
-// Load Pusher and create a client
-import Pusher from "pusher-js"
-var pusherClient = new Pusher("your-app-key", { cluster: "us2" })
+// Load Ably and create a client
+const Ably = require("ably")
+const ablyClient = new Ably.Realtime("your-app-key")
 
 // Make the HTTP link which actually sends the queries
 const httpLink = new HttpLink({
@@ -87,11 +87,11 @@ const httpLink = new HttpLink({
   credentials: 'include'
 });
 
-// Make the Pusher link which will pick up on subscriptions
-const pusherLink = new PusherLink({pusher: pusherClient})
+// Make the Ably link which will pick up on subscriptions
+const ablyLink = new AblyLink({ably: ablyClient})
 
 // Combine the two links to work together
-const link = ApolloLink.from([pusherLink, httpLink])
+const link = ApolloLink.from([ablyLink, httpLink])
 
 // Initialize the client
 const client = new ApolloClient({
@@ -100,7 +100,11 @@ const client = new ApolloClient({
 });
 ```
 
-This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Pusher for future updates.
+This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Ably for future updates.
+
+For your __app key__, make a key with "Pubscribe" and "Presence" privileges and use that:
+
+{{ "/javascript_client/ably_key.png" | link_to_img:"Ably Subscription Key Privileges" }}
 
 ## Apollo 2 -- ActionCable
 
