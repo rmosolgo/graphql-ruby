@@ -13,6 +13,7 @@ GraphQL-Ruby's JavaScript client includes four kinds of support for Apollo Clien
 - Apollo 2.x:
   - [Overview](#apollo-2)
   - [Pusher](#apollo-2--pusher)
+  - [Ably](#apollo-2--ably)
   - [ActionCable](#apollo-2--actioncable)
 - Apollo 1.x:
   - [Overview](#apollo-1)
@@ -28,6 +29,45 @@ Apollo 2 is supported by implementing Apollo Links.
 `graphql-ruby-client` includes support for subscriptions with Pusher and ApolloLink.
 
 To use it, add `PusherLink` before your `HttpLink`.
+
+For example:
+
+```js
+// Load Apollo stuff
+import { ApolloLink } from 'apollo-link';
+import { ApolloClient } from 'apollo-client';
+import { HttpLink } from 'apollo-link-http';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+// Load Pusher and create a client
+import Pusher from "pusher-js"
+var pusherClient = new Pusher("your-app-key", { cluster: "us2" })
+
+// Make the HTTP link which actually sends the queries
+const httpLink = new HttpLink({
+  uri: '/graphql',
+  credentials: 'include'
+});
+
+// Make the Pusher link which will pick up on subscriptions
+const pusherLink = new PusherLink({pusher: pusherClient})
+
+// Combine the two links to work together
+const link = ApolloLink.from([pusherLink, httpLink])
+
+// Initialize the client
+const client = new ApolloClient({
+  link: link,
+  cache: new InMemoryCache()
+});
+```
+
+This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Pusher for future updates.
+
+## Apollo 2 -- Ably
+
+`graphql-ruby-client` includes support for subscriptions with Ably and ApolloLink.
+
+To use it, add `AblyLink` before your `HttpLink`.
 
 For example:
 
