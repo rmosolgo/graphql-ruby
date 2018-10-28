@@ -1,5 +1,10 @@
 # graphql-ruby-client
 
+## 1.5.0 (27 October 2018)
+
+- Fix `export` usage in PusherLink, use `require` and `module.exports` instead #1889
+- Add `AblyLink` #1925
+
 ## 1.4.1 (19 Sept 2018)
 
 - Add `connectionOptions` to ActionCableLink #1857
