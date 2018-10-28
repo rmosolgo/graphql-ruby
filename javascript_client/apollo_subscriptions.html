@@ -55,6 +55,7 @@
     <ul>
       <li><a href="#apollo-2">Overview</a></li>
       <li><a href="#apollo-2--pusher">Pusher</a></li>
+      <li><a href="#apollo-2--ably">Ably</a></li>
       <li><a href="#apollo-2--actioncable">ActionCable</a></li>
     </ul>
   </li>
@@ -84,6 +85,10 @@
 <span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-client'</span><span class="p">;</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link-http'</span><span class="p">;</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-cache-inmemory'</span><span class="p">;</span>
+
+<span class="c1">// Load PusherLink from graphql-ruby-client</span>
+<span class="k">import</span> <span class="nx">PusherLink</span> <span class="k">from</span> <span class="s1">'graphql-ruby-client/subscriptions/PusherLink'</span><span class="p">;</span>
+
 <span class="c1">// Load Pusher and create a client</span>
 <span class="k">import</span> <span class="nx">Pusher</span> <span class="k">from</span> <span class="s2">"pusher-js"</span>
 <span class="kd">var</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="s2">"your-app-key"</span><span class="p">,</span> <span class="p">{</span> <span class="na">cluster</span><span class="p">:</span> <span class="s2">"us2"</span> <span class="p">})</span>
@@ -108,6 +113,50 @@
 </code></pre></div></div>
 
 <p>This link will check responses for the <code class="highlighter-rouge">X-Subscription-ID</code> header, and if it’s present, it will use that value to subscribe to Pusher for future updates.</p>
+
+<h2 id="apollo-2--ably">Apollo 2 – Ably</h2>
+
+<p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with Ably and ApolloLink.</p>
+
+<p>To use it, add <code class="highlighter-rouge">AblyLink</code> before your <code class="highlighter-rouge">HttpLink</code>.</p>
+
+<p>For example:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load Apollo stuff</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-client'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link-http'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-cache-inmemory'</span><span class="p">;</span>
+<span class="c1">// Load Ably and create a client</span>
+<span class="kd">const</span> <span class="nx">Ably</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"ably"</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">ablyClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Ably</span><span class="p">.</span><span class="nx">Realtime</span><span class="p">(</span><span class="s2">"your-app-key"</span><span class="p">)</span>
+
+<span class="c1">// Make the HTTP link which actually sends the queries</span>
+<span class="kd">const</span> <span class="nx">httpLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HttpLink</span><span class="p">({</span>
+  <span class="na">uri</span><span class="p">:</span> <span class="s1">'/graphql'</span><span class="p">,</span>
+  <span class="na">credentials</span><span class="p">:</span> <span class="s1">'include'</span>
+<span class="p">});</span>
+
+<span class="c1">// Make the Ably link which will pick up on subscriptions</span>
+<span class="kd">const</span> <span class="nx">ablyLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AblyLink</span><span class="p">({</span><span class="na">ably</span><span class="p">:</span> <span class="nx">ablyClient</span><span class="p">})</span>
+
+<span class="c1">// Combine the two links to work together</span>
+<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="k">from</span><span class="p">([</span><span class="nx">ablyLink</span><span class="p">,</span> <span class="nx">httpLink</span><span class="p">])</span>
+
+<span class="c1">// Initialize the client</span>
+<span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApolloClient</span><span class="p">({</span>
+  <span class="na">link</span><span class="p">:</span> <span class="nx">link</span><span class="p">,</span>
+  <span class="na">cache</span><span class="p">:</span> <span class="k">new</span> <span class="nx">InMemoryCache</span><span class="p">()</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>This link will check responses for the <code class="highlighter-rouge">X-Subscription-ID</code> header, and if it’s present, it will use that value to subscribe to Ably for future updates.</p>
+
+<p>For your <strong>app key</strong>, make a key with “Pubscribe” and “Presence” privileges and use that:</p>
+
+<p><a href="/javascript_client/ably_key.png" target="_blank" class="img-link">
+  <img src="/javascript_client/ably_key.png" title="Ably Subscription Key Privileges" alt="Ably Subscription Key Privileges" />
+</a></p>
 
 <h2 id="apollo-2--actioncable">Apollo 2 – ActionCable</h2>
 

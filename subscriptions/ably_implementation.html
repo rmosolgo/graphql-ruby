@@ -1,0 +1,307 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Ably Implementation</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.8.11/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="http://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#subscriptions-guides">Subscriptions</a>
+  &raquo; Ably Implementation
+</p>
+
+
+
+  <div class="pro-header">
+    <p>
+      <strong>⚡️ Pro Feature ⚡️</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="http://graphql.pro">GraphQL-Pro</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Ably Implementation</h1>
+<div class="guide-container">
+  <p><a href="http://graphql.pro">GraphQL Pro</a> includes a subscription system based on <a href="http://redis.io">Redis</a> and <a href="http://ably.io">Ably</a> which works with any Ruby web framework.</p>
+
+<p>After creating an app on Ably, you can hook it up to your GraphQL schema.</p>
+
+<ul>
+  <li><a href="#how-it-works">How it Works</a></li>
+  <li><a href="#database-setup">Database setup</a></li>
+  <li><a href="#schema-configuration">Schema configuration</a></li>
+  <li><a href="#execution-configuration">Execution configuration</a></li>
+  <li><a href="#webhook-configuration">Webhook configuration</a></li>
+  <li><a href="#authorization">Authorization</a></li>
+  <li><a href="#serializing-context">Serializing context</a></li>
+  <li><a href="#dashboard">Dashboard</a></li>
+  <li><a href="#development-tips">Development tips</a></li>
+  <li><a href="#client-configuration">Client configuration</a></li>
+</ul>
+
+<h2 id="how-it-works">How it Works</h2>
+
+<p>This subscription implementation uses a hybrid approach:</p>
+
+<ul>
+  <li><strong>Your app</strong> takes GraphQL queries an runs them</li>
+  <li><strong>Redis</strong> stores subscription data for later updates</li>
+  <li><strong>Ably</strong> sends updates to subscribed clients</li>
+</ul>
+
+<p>So, the lifecycle goes like this:</p>
+
+<ul>
+  <li>A <code class="highlighter-rouge">subscription</code> query is sent by HTTP Post to your server (just like a <code class="highlighter-rouge">query</code> or <code class="highlighter-rouge">mutation</code>)</li>
+  <li>The response contains a Ably channel ID (as an HTTP header) which the client may subscribe to</li>
+  <li>The client opens that Ably channel</li>
+  <li>When the server triggers updates, they’re delivered over the Ably channel</li>
+  <li>When the client unsubscribes, the server receives a webhook and responds by removing its subscription data</li>
+</ul>
+
+<p>Here’s another look:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. Subscription is created in your app
+
+          HTTP POST
+        .----------&gt;   write to Redis
+      📱            ⚙️ -----&gt; 💾
+        &lt;---------'
+        X-Subscription-ID: 1234
+
+
+2. Client opens a connection to Ably
+
+          websocket
+      📱 &lt;---------&gt; ☁️
+
+
+3. The app sends updates via Ably
+
+      ⚙️ ---------&gt; ☁️ ------&gt; 📱
+        POST           update
+      (via gem)   (via websocket)
+
+
+4. When the client unsubscribes, Ably notifies the app
+
+          webhook
+      ⚙️ &lt;-------- ☁️  (disconnect) 📱
+</code></pre></div></div>
+
+<p>By using this configuration, you can use GraphQL subscriptions without hosting a push server yourself!</p>
+
+<h2 id="database-setup">Database setup</h2>
+
+<p>Subscriptions require a <em>persistent</em> Redis database, configured with:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>maxmemory-policy noeviction
+<span class="c"># optional, more durable persistence:</span>
+appendonly <span class="nb">yes</span>
+</code></pre></div></div>
+
+<p>Otherwise, Redis will drop data that doesn’t fit in memory (read more in <a href="https://redis.io/topics/persistence">“Redis persistence”</a>).</p>
+
+<p>If you’re already using Redis in your application, see <a href="http://www.mikeperham.com/2015/09/24/storing-data-with-redis/">“Storing Data in Redis”</a> for options to isolate data and tune your configuration.</p>
+
+<h2 id="schema-configuration">Schema configuration</h2>
+
+<p>Add <code class="highlighter-rouge">redis</code> to your <code class="highlighter-rouge">Gemfile</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'redis'</span>
+</code></pre></div></div>
+
+<p>and <code class="highlighter-rouge">bundle install</code>. Then create a Redis instance:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># for example, in an initializer:</span>
+<span class="vg">$graphql_subscriptions_redis</span> <span class="o">=</span> <span class="no">Redis</span><span class="p">.</span><span class="nf">new</span> <span class="c1"># default connection</span>
+</code></pre></div></div>
+
+<p>Then, that Redis client is passed to the Subscription configuration:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">AblySubscriptions</span><span class="p">,</span>
+    <span class="ss">redis: </span><span class="vg">$graphql_subscriptions_redis</span><span class="p">,</span>
+    <span class="ss">ably: </span><span class="no">Ably</span><span class="o">::</span><span class="no">Rest</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">key: </span><span class="no">ABLY_API_KEY</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>That connection will be used for managing subscription state. All writes to Redis are prefixed with <code class="highlighter-rouge">graphql:sub:</code>.</p>
+
+<h2 id="execution-configuration">Execution configuration</h2>
+
+<p>During execution, GraphQL will assign a <code class="highlighter-rouge">subscription_id</code> to the <code class="highlighter-rouge">context</code> hash. The client will use that ID to listen for updates, so you must return the <code class="highlighter-rouge">subscription_id</code> in the response headers.</p>
+
+<p>Return <code class="highlighter-rouge">result.context[:subscription_id]</code> as the <code class="highlighter-rouge">X-Subscription-ID</code> header. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="c1"># For subscriptions, return the subscription_id as a header</span>
+<span class="k">if</span> <span class="n">result</span><span class="p">.</span><span class="nf">subscription?</span>
+  <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s2">"X-Subscription-ID"</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:subscription_id</span><span class="p">]</span>
+<span class="k">end</span>
+<span class="n">render</span> <span class="ss">json: </span><span class="n">result</span>
+</code></pre></div></div>
+
+<p>This way, the client can use that ID as a Ably channel.</p>
+
+<p>For <strong>CORS requests</strong>, you need a special header so that clients can read the custom header:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="n">result</span><span class="p">.</span><span class="nf">subscription?</span>
+  <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s2">"X-Subscription-ID"</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:subscription_id</span><span class="p">]</span>
+  <span class="c1"># Required for CORS requests:</span>
+  <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s2">"Access-Control-Expose-Headers"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"X-Subscription-ID"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Read more here: <a href="https://www.html5rocks.com/en/tutorials/cors/">“Using CORS”</a>.</p>
+
+<h2 id="webhook-configuration">Webhook configuration</h2>
+
+<p>Your server needs to receive webhooks from Ably when clients disconnect. This keeps your local subscription database in sync with Ably.</p>
+
+<p>In the Ably web UI, Add a webhook for “Channel Lifecycle” events:</p>
+
+<p><a href="/subscriptions/ably_webhook_configuration.png" target="_blank" class="img-link">
+  <img src="/subscriptions/ably_webhook_configuration.png" title="Ably Webhook Configuration" alt="Ably Webhook Configuration" />
+</a></p>
+
+<p>Then, mount the Rack app for handling webhooks from Ably. For example, on Rails:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
+
+<span class="c1"># Include GraphQL::Pro's routing extensions:</span>
+<span class="n">using</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Routes</span>
+
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Handle webhooks for subscriptions:</span>
+  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ably_webhooks_client</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/ably_webhooks"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This way, we’ll be kept up-to-date with Ably’s unsubscribe events.</p>
+
+<h2 id="serializing-context">Serializing Context</h2>
+
+<p>Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query <code class="highlighter-rouge">context</code>.</p>
+
+<p>By default, this is done with <a href="/api-doc/1.8.11/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="highlighter-rouge">dump</code> and <code class="highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="highlighter-rouge">GraphQL::Pro::Subscriptions</code> and override <code class="highlighter-rouge">#dump_context(ctx)</code> and <code class="highlighter-rouge">#load_context(ctx_string)</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomSubscriptions</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">AblySubscriptions</span>
+  <span class="k">def</span> <span class="nf">dump_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="n">context_hash</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">.</span><span class="nf">to_h</span>
+    <span class="c1"># somehow convert this hash to a string, return the string</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">load_context</span><span class="p">(</span><span class="n">ctx_string</span><span class="p">)</span>
+    <span class="c1"># Given the string from the DB, create a new hash</span>
+    <span class="c1"># to use as `context:`</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, use your <em>custom</em> subscriptions class instead of the built-in one for your schema:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Use custom subscriptions instead of GraphQL::Pro::AblySubscriptions</span>
+  <span class="c1"># to get custom serialization logic</span>
+  <span class="n">use</span> <span class="no">CustomSubscriptions</span><span class="p">,</span> <span class="o">...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>That gives you fine-grained control of context reloading.</p>
+
+<h2 id="dashboard">Dashboard</h2>
+
+<p>You can monitor subscription state in the <a href="/pro/dashboard">GraphQL-Pro Dashboard</a>:</p>
+
+<p><a href="/subscriptions/redis_dashboard_1.png" target="_blank" class="img-link">
+  <img src="/subscriptions/redis_dashboard_1.png" title="Redis Subscription Dashboard" alt="Redis Subscription Dashboard" />
+</a></p>
+
+<p><a href="/subscriptions/redis_dashboard_2.png" target="_blank" class="img-link">
+  <img src="/subscriptions/redis_dashboard_2.png" title="Redis Subscription Detail" alt="Redis Subscription Detail" />
+</a></p>
+
+<h2 id="development-tips">Development Tips</h2>
+
+<h4 id="clear-subscription-data">Clear subscription data</h4>
+
+<p>At any time, you can reset your subscription database with the <strong>“Reset”</strong> button in the <a href="/pro/dashboard">GraphQL-Pro Dashboard</a>, or in Ruby:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Wipe all subscription data from the DB:</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">clear</span>
+</code></pre></div></div>
+
+<h4 id="developing-with-webhooks">Developing with webhooks</h4>
+
+<p>To receive webhooks in development, you can <a href="https://www.ably.io/tutorials/webhook-chuck-norris">use ngrok</a>. It gives you a public URL which you can setup with Ably, then any hooks delivered to that URL will be forwarded to your development environment.</p>
+
+<h2 id="client-configuration">Client configuration</h2>
+
+<p>Install the <a href="https://github.com/ably/ably-js">Ably JS client</a> then see docs for <a href="/javascript_client/apollo_subscriptions">Apollo Client</a>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/subscriptions/ably_implementation.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Ably Implementation">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
