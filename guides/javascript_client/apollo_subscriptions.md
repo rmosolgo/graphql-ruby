@@ -13,6 +13,7 @@ GraphQL-Ruby's JavaScript client includes four kinds of support for Apollo Clien
 - Apollo 2.x:
   - [Overview](#apollo-2)
   - [Pusher](#apollo-2--pusher)
+  - [Ably](#apollo-2--ably)
   - [ActionCable](#apollo-2--actioncable)
 - Apollo 1.x:
   - [Overview](#apollo-1)
@@ -65,6 +66,49 @@ const client = new ApolloClient({
 ```
 
 This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Pusher for future updates.
+
+## Apollo 2 -- Ably
+
+`graphql-ruby-client` includes support for subscriptions with Ably and ApolloLink.
+
+To use it, add `AblyLink` before your `HttpLink`.
+
+For example:
+
+```js
+// Load Apollo stuff
+import { ApolloLink } from 'apollo-link';
+import { ApolloClient } from 'apollo-client';
+import { HttpLink } from 'apollo-link-http';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+// Load Ably and create a client
+const Ably = require("ably")
+const ablyClient = new Ably.Realtime("your-app-key")
+
+// Make the HTTP link which actually sends the queries
+const httpLink = new HttpLink({
+  uri: '/graphql',
+  credentials: 'include'
+});
+
+// Make the Ably link which will pick up on subscriptions
+const ablyLink = new AblyLink({ably: ablyClient})
+
+// Combine the two links to work together
+const link = ApolloLink.from([ablyLink, httpLink])
+
+// Initialize the client
+const client = new ApolloClient({
+  link: link,
+  cache: new InMemoryCache()
+});
+```
+
+This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Ably for future updates.
+
+For your __app key__, make a key with "Pubscribe" and "Presence" privileges and use that:
+
+{{ "/javascript_client/ably_key.png" | link_to_img:"Ably Subscription Key Privileges" }}
 
 ## Apollo 2 -- ActionCable
 
