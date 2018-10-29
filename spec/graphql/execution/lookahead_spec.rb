@@ -88,7 +88,6 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "detects by name, not by alias" do
-      ast_node = document.definitions.first
       assert_equal true, query.lookahead.selects?("__typename")
     end
 
