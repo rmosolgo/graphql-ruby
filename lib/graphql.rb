@@ -7,6 +7,53 @@ require "forwardable"
 require_relative "./graphql/railtie" if defined? Rails::Railtie
 
 module GraphQL
+  class RecursionGuard
+    attr_accessor :trace, :guard_name, :object
+
+    def initialize(object, guard_name)
+      self.guard_name = guard_name
+      self.object = object
+      self.trace = caller
+      
+      if guard_hash.include?(guard_name)
+        raise <<~STR
+          Recursive invocation detected in #{object.class.name}##{guard_name}
+
+          ############################################################################################
+          Original Stack Trace:
+          ############################################################################################
+          #{guard_hash[guard_name].trace.join("\n")}
+
+          ############################################################################################
+          Second Stack Trace:
+          ############################################################################################
+          #{caller.join("\n")}"
+        STR
+      end
+
+      guard_hash[guard_name] = self
+    end
+
+    def guard_hash
+      hash = object.instance_variable_get(:@__recursion_guard)
+      hash ||= object.instance_variable_set(:@__recursion_guard, {})
+    end
+
+    def dispose
+      guard_hash.delete(guard_name)
+      object.remove_instance_variable(:@__recursion_guard) if guard_hash.empty?
+    end
+
+    def self.guard(object, guard_name)
+      guard = new(object, guard_name)
+      begin
+        return yield
+      ensure
+        guard.dispose
+      end
+    end
+  end
+
   class Error < StandardError
   end
 

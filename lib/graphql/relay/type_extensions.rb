@@ -6,7 +6,9 @@ module GraphQL
     module TypeExtensions
       # @return [GraphQL::ObjectType] The default connection type for this object type
       def connection_type
-        @connection_type ||= define_connection
+        RecursionGuard.guard(self, :connection_type) do
+          @connection_type ||= define_connection
+        end
       end
 
       # Define a custom connection type for this object type
@@ -17,7 +19,9 @@ module GraphQL
 
       # @return [GraphQL::ObjectType] The default edge type for this object type
       def edge_type
-        @edge_type ||= define_edge
+        RecursionGuard.guard(self, :edge_type) do
+          @edge_type ||= define_edge
+        end
       end
 
       # Define a custom edge type for this object type

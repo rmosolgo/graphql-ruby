@@ -12,7 +12,9 @@ module GraphQL
         # It's cached here so that user-overridden {.to_graphql} implementations
         # are also cached
         def graphql_definition
-          @graphql_definition ||= to_graphql
+          RecursionGuard.guard(self, :graphql_definition) do
+            @graphql_definition ||= to_graphql
+          end
         end
 
         # Wipe out the cached graphql_definition so that `.to_graphql` will be called again.
