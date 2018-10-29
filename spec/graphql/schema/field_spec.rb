@@ -279,4 +279,17 @@ describe GraphQL::Schema::Field do
       assert_equal "Broken!!", field.deprecation_reason
     end
   end
+
+  describe "#original_name" do
+    it "is exactly the same as the passed in name" do
+      field = GraphQL::Schema::Field.from_options(
+        :my_field,
+        String,
+        null: false,
+        camelize: true
+      )
+
+      assert_equal :my_field, field.original_name
+    end
+  end
 end

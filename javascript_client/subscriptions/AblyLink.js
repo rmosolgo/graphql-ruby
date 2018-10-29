@@ -1,13 +1,15 @@
-// An Apollo Link for using graphql-pro's Pusher subscriptions
+// An Apollo Link for using graphql-pro's Ably subscriptions
 //
 // @example Adding subscriptions to a HttpLink
-//   // Load Pusher and create a client
-//   import Pusher from "pusher-js"
-//   var pusherClient = new Pusher("your-app-key", { cluster: "us2" })
+//   // Load Ably and create a client
+//   var Ably = require('ably')
+//   // Be sure to create an API key with "Subscribe" and "Presence" permissions only,
+//   // and use that limited API key here:
+//   var ablyClient = new Ably.Realtime("yourapp.key:secret")
 //
 //   // Build a combined link, initialize the client:
-//   const pusherLink = new PusherLink({pusher: pusherClient})
-//   const link = ApolloLink.from([authLink, pusherLink, httpLink])
+//   const ablyLink = new AblyLink({ably: ablyClient})
+//   const link = ApolloLink.from([authLink, ablyLink, httpLink])
 //   const client = new ApolloClient(link: link, ...)
 //
 // @example Building a subscription, then subscribing to it
@@ -37,11 +39,11 @@
 var ApolloLink = require("apollo-link").ApolloLink
 var Observable = require("apollo-link").Observable
 
-class PusherLink extends ApolloLink {
+class AblyLink extends ApolloLink {
   constructor(options) {
     super()
-    // Retain a handle to the Pusher client
-    this.pusher = options.pusher
+    // Retain a handle to the Ably client
+    this.ably = options.ably
   }
 
   request(operation, forward) {
@@ -72,12 +74,16 @@ class PusherLink extends ApolloLink {
   }
 
   _createSubscription(subscriptionChannel, observer) {
-    const pusherChannel = this.pusher.subscribe(subscriptionChannel)
+    const ablyChannel = this.ably.channels.get(subscriptionChannel)
+    // Register presence, so that we can detect empty channels and clean them up server-side
+    ablyChannel.presence.enterClient("graphql-subscriber", "subscribed")
     // Subscribe for more update
-    pusherChannel.bind("update", function(payload) {
+    ablyChannel.subscribe("update", function(message) {
+      var payload = message.data
       if (!payload.more) {
         // This is the end, the server says to unsubscribe
-        pusher.unsubscribe(subscriptionChannel)
+        ablyChannel.presence.leaveClient()
+        ablyChannel.unsubscribe()
         observer.complete()
       }
       const result = payload.result
@@ -89,4 +95,4 @@ class PusherLink extends ApolloLink {
   }
 }
 
-module.exports = PusherLink
+module.exports = AblyLink

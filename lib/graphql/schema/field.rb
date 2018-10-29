@@ -29,6 +29,9 @@ module GraphQL
       # @return [Class] The type that this field belongs to
       attr_reader :owner
 
+      # @return [Symobol] the orignal name of the field, passed in by the user
+      attr_reader :original_name
+
       # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one
       def resolver
         @resolver_class
@@ -154,6 +157,7 @@ module GraphQL
         if (field || function || resolve) && extras.any?
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve and class-based field such as mutation class, please remove `field:`, `function:` or `resolve:`"
         end
+        @original_name = name
         @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
         @description = description
         if field.is_a?(GraphQL::Schema::Field)

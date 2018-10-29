@@ -8,19 +8,25 @@
 
 ### Bug Fix
 
-### 1.8.2 (22 Oct 2018)
+## 1.9.0 (27 Oct 2018)
+
+### New Features
+
+- Add `GraphQL::Pro::AblySubscriptions` for GraphQL subscriptions over Ably.io transport
+
+## 1.8.2 (22 Oct 2018)
 
 ### Bug Fix
 
 - Support `NULLS LAST` in stable cursors
 
-### 1.8.1 (16 Oct 2018)
+## 1.8.1 (16 Oct 2018)
 
 ### Bug Fix
 
 - Improve operation store models to work when `config.active_record.primary_key_prefix_type` is set
 
-### 1.8.0 (11 Oct 2018)
+## 1.8.0 (11 Oct 2018)
 
 ### New Features
 
