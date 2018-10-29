@@ -48,12 +48,18 @@ describe GraphQL::Execution::Lookahead do
       end
     end
 
+    class LookaheadInstrumenter
+      def self.before_query(query)
+        query.context[:root_lookahead_names] = query.lookahead.selections.map(&:name)
+      end
+      def self.after_query(q)
+      end
+    end
+
     class Schema < GraphQL::Schema
       query(Query)
+      instrument :query, LookaheadInstrumenter
     end
-    # Cause everything to be loaded
-    # TODO remove this
-    Schema.graphql_definition
   end
 
   describe "looking ahead" do
@@ -202,6 +208,7 @@ describe GraphQL::Execution::Lookahead do
       res = LookaheadTest::Schema.execute(query_str, context: context)
       refute res.key?("errors")
       assert_equal 2, context[:lookahead_latin_name]
+      assert_equal [:find_bird_species], context[:root_lookahead_names]
     end
   end
 

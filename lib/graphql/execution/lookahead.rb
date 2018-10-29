@@ -132,9 +132,7 @@ module GraphQL
       #
       # @return [Symbol]
       def name
-        return unless @field.respond_to?(:original_name)
-
-        @field.original_name
+        @field && @field.original_name
       end
 
       # This is returned for {Lookahead#selection} when a non-existent field is passed
