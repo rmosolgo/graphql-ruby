@@ -94,6 +94,49 @@ module GraphQL
         end
       end
 
+      # Like {#selection}, but for all nodes.
+      # It returns a list of Lookaheads for all Selections
+      #
+      # If `arguments:` is provided, each provided key/value will be matched
+      # against the arguments in each selection. This method will filter the selections
+      # if any of the given `arguments:` do not match the given selection.
+      #
+      # @example getting the name of a selection
+      #   def articles(lookahead:)
+      #     next_lookaheads = lookahead.selections # => [#<GraphQL::Execution::Lookahead ...>, ...]
+      #     next_lookaheads.map(&:name) #=> [:full_content, :title]
+      #   end
+      #
+      # @param arguments [Hash] Arguments which must match in the selection
+      # @return [Array<GraphQL::Execution::Lookahead>]
+      def selections(arguments: nil)
+        subselections_by_name = {}
+        @ast_nodes.each do |node|
+          node.selections.each do |subselection|
+            subselections_by_name[subselection.name] ||= selection(subselection.name, arguments: arguments)
+          end
+        end
+
+        # Items may be filtered out if `arguments` doesn't match
+        subselections_by_name.values.select(&:selected?)
+      end
+
+      # The method name of the field.
+      # It returns the method_sym of the Lookahead's field.
+      #
+      # @example getting the name of a selection
+      #   def articles(lookahead:)
+      #     article.selection(:full_content).name # => :full_content
+      #     # ...
+      #   end
+      #
+      # @return [Symbol]
+      def name
+        return unless @field.respond_to?(:original_name)
+
+        @field.original_name
+      end
+
       # This is returned for {Lookahead#selection} when a non-existent field is passed
       class NullLookahead < Lookahead
         # No inputs required here.
@@ -110,6 +153,10 @@ module GraphQL
 
         def selection(*)
           NULL_LOOKAHEAD
+        end
+
+        def selections(*)
+          []
         end
       end
 

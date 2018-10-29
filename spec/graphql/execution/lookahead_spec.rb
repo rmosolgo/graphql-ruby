@@ -215,4 +215,78 @@ describe GraphQL::Execution::Lookahead do
       assert_equal 2, context[:lookahead_latin_name]
     end
   end
+
+  describe '#selections' do
+    let(:document) {
+      GraphQL.parse <<-GRAPHQL
+        query {
+          findBirdSpecies(byName: "Laughing Gull") {
+            name
+            similarSpecies {
+              likesWater: isWaterfowl
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    def query(doc = document)
+      GraphQL::Query.new(LookaheadTest::Schema, document: document)
+    end
+
+    it "provides a list of all selections" do
+      ast_node = document.definitions.first.selections.first
+      field = LookaheadTest::Query.fields["findBirdSpecies"]
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
+      assert_equal lookahead.selections.map(&:name), [:name, :similar_species]
+    end
+
+    it "filters outs selections which do not match arguments" do
+      ast_node = document.definitions.first
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
+      arguments = { by_name: "Cardinal" }
+
+      assert_equal lookahead.selections(arguments: arguments).map(&:name), []
+    end
+
+    it "includes selections which match arguments" do
+      ast_node = document.definitions.first
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
+      arguments = { by_name: "Laughing Gull" }
+
+      assert_equal lookahead.selections(arguments: arguments).map(&:name), [:find_bird_species]
+    end
+
+    it 'handles duplicate selections' do
+      doc = GraphQL.parse <<-GRAPHQL
+        query {
+          findBirdSpecies(byName: "Laughing Gull") {
+            name
+          }
+
+          findBirdSpecies(byName: "Laughing Gull") {
+            similarSpecies {
+              likesWater: isWaterfowl
+            }
+          }
+        }
+      GRAPHQL
+
+      ast_node = doc.definitions.first
+      lookahead = GraphQL::Execution::Lookahead.new(query: query(doc), ast_nodes: [ast_node], root_type: LookaheadTest::Query)
+
+      assert_equal [:find_bird_species], lookahead.selections.map(&:name), "Selections are merged"
+      assert_equal [:name, :similar_species], lookahead.selections.first.selections.map(&:name), "Subselections are merged"
+    end
+
+    it "works for missing selections" do
+      ast_node = document.definitions.first.selections.first
+      field = LookaheadTest::Query.fields["findBirdSpecies"]
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
+      null_lookahead = lookahead.selection(:genus)
+      # This is an implementation detail, but I want to make sure the test is set up right
+      assert_instance_of GraphQL::Execution::Lookahead::NullLookahead, null_lookahead
+      assert_equal [], null_lookahead.selections
+    end
+  end
 end
