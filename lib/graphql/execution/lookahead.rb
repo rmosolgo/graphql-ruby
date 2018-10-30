@@ -324,14 +324,14 @@ module GraphQL
       module FieldHelpers
         module_function
 
-        def get_field(schema, owner_type, field_name )
+        def get_field(schema, owner_type, field_name)
           field_defn = owner_type.get_field(field_name)
           field_defn ||= if owner_type == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
             entry_point_field.metadata[:type_class]
           elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
             dynamic_field.metadata[:type_class]
           else
-            raise "Invariant: no field for #{owner_type}.#{field_name}"
+            nil
           end
 
           field_defn

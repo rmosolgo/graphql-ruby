@@ -211,6 +211,13 @@ describe GraphQL::Execution::Lookahead do
       assert_equal 2, context[:lookahead_latin_name]
       assert_equal [:find_bird_species], context[:root_lookahead_names]
     end
+
+    it "works for invalid queries" do
+      context = {lookahead_latin_name: 0}
+      res = LookaheadTest::Schema.execute("{ doesNotExist }", context: context)
+      assert res.key?("errors")
+      assert_equal 0, context[:lookahead_latin_name]
+    end
   end
 
   describe '#selections' do
