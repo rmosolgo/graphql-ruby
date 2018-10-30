@@ -52,6 +52,7 @@ describe GraphQL::Execution::Lookahead do
       def self.before_query(query)
         query.context[:root_lookahead_names] = query.lookahead.selections.map(&:name)
       end
+
       def self.after_query(q)
       end
     end
