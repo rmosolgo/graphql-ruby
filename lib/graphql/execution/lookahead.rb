@@ -36,11 +36,17 @@ module GraphQL
       # @param field [GraphQL::Schema::Field] if `ast_nodes` are fields, this is the field definition matching those nodes
       # @param root_type [Class] if `ast_nodes` are operation definition, this is the root type for that operation
       def initialize(query:, ast_nodes:, field: nil, root_type: nil)
-        @ast_nodes = ast_nodes
+        @ast_nodes = ast_nodes.freeze
         @field = field
         @root_type = root_type
         @query = query
       end
+
+      # @return [Array<GraphQL::Language::Nodes::Field>]
+      attr_reader :ast_nodes
+
+      # @return [GraphQL::Schema::Field]
+      attr_reader :field
 
       # True if this node has a selection on `field_name`.
       # If `field_name` is a String, it is treated as a GraphQL-style (camelized)
@@ -112,9 +118,7 @@ module GraphQL
       def selections(arguments: nil)
         subselections_by_name = {}
         @ast_nodes.each do |node|
-          node.selections.each do |subselection|
-            subselections_by_name[subselection.name] ||= selection(subselection.name, arguments: arguments)
-          end
+          find_selections(subselections_by_name, node.selections, arguments)
         end
 
         # Items may be filtered out if `arguments` doesn't match
@@ -180,6 +184,22 @@ module GraphQL
         end
       end
 
+      def find_selections(subselections_by_name, ast_selections, arguments)
+        ast_selections.each do |ast_selection|
+          case ast_selection
+          when GraphQL::Language::Nodes::Field
+            subselections_by_name[ast_selection.name] ||= selection(ast_selection.name, arguments: arguments)
+          when GraphQL::Language::Nodes::InlineFragment
+            find_selections(subselections_by_name, ast_selection.selections, arguments)
+          when GraphQL::Language::Nodes::FragmentSpread
+            frag_defn = @query.fragments[ast_selection.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{ast_selection.name} (found: #{@query.fragments.keys})")
+            find_selections(subselections_by_name, frag_defn.selections, arguments)
+          else
+            raise "Invariant: Unexpected selection type: #{ast_selection.class}"
+          end
+        end
+      end
+
       # If a selection on `node` matches `field_name` (which is backed by `field_defn`)
       # and matches the `arguments:` constraints, then add that node to `matches`
       def find_selected_nodes(node, field_name, field_defn, arguments:, matches:)
@@ -202,10 +222,10 @@ module GraphQL
             end
           end
         when GraphQL::Language::Nodes::InlineFragment
-          node.selections.find { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
+          node.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
         when GraphQL::Language::Nodes::FragmentSpread
-          frag_defn = @query.fragments[node.name]
-          frag_defn.selections.find { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
+          frag_defn = @query.fragments[node.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{node.name} (found: #{@query.fragments.keys})")
+          frag_defn.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
         else
           raise "Unexpected selection comparison on #{node.class.name} (#{node})"
         end
