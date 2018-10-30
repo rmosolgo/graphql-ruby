@@ -227,7 +227,7 @@ describe GraphQL::Execution::Lookahead do
     }
 
     def query(doc = document)
-      GraphQL::Query.new(LookaheadTest::Schema, document: document)
+      GraphQL::Query.new(LookaheadTest::Schema, document: doc)
     end
 
     it "provides a list of all selections" do
@@ -253,26 +253,37 @@ describe GraphQL::Execution::Lookahead do
       assert_equal lookahead.selections(arguments: arguments).map(&:name), [:find_bird_species]
     end
 
-    it 'handles duplicate selections' do
+    it 'handles duplicate selections across fragments' do
       doc = GraphQL.parse <<-GRAPHQL
         query {
+          ... on Query {
+            ...MoreFields
+          }
+        }
+
+        fragment MoreFields on Query {
           findBirdSpecies(byName: "Laughing Gull") {
             name
           }
-
           findBirdSpecies(byName: "Laughing Gull") {
-            similarSpecies {
-              likesWater: isWaterfowl
-            }
+            ...EvenMoreFields
+          }
+        }
+
+        fragment EvenMoreFields on BirdSpecies {
+          similarSpecies {
+            likesWater: isWaterfowl
           }
         }
       GRAPHQL
 
-      ast_node = doc.definitions.first
-      lookahead = GraphQL::Execution::Lookahead.new(query: query(doc), ast_nodes: [ast_node], root_type: LookaheadTest::Query)
+      lookahead = query(doc).lookahead
 
-      assert_equal [:find_bird_species], lookahead.selections.map(&:name), "Selections are merged"
-      assert_equal [:name, :similar_species], lookahead.selections.first.selections.map(&:name), "Subselections are merged"
+      root_selections = lookahead.selections
+      assert_equal [:find_bird_species], root_selections.map(&:name), "Selections are merged"
+      assert_equal 2, root_selections.first.ast_nodes.size, "It represents both nodes"
+
+      assert_equal [:name, :similar_species], root_selections.first.selections.map(&:name), "Subselections are merged"
     end
 
     it "works for missing selections" do
