@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.9.1 (1 Nov 2018)
+
+- Fix Pusher reference in AblySubscriptions
+
 ## 1.9.0 (27 Oct 2018)
 
 ### New Features
