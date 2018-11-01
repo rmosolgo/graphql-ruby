@@ -49,7 +49,7 @@
   AMP =           '&';
 
   QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
-  BLOCK_STRING = BLOCK_QUOTE QUOTE{0,2} BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE;
+  BLOCK_STRING = BLOCK_QUOTE (QUOTE{1,2} ^QUOTE){0,1} BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE;
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
 

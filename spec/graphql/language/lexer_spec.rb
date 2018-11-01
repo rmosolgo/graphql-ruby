@@ -39,6 +39,12 @@ describe GraphQL::Language::Lexer do
         assert_equal "c\n \"\"\" d", tokens[5].value
         assert_equal "\"\"e\"\"", tokens[6].value
       end
+
+      it "tokenizes 10 quote edge case correctly" do
+        tokens = subject.tokenize('""""""""""')
+        assert_equal '""', tokens[0].value # first 8 quotes are a valid block string """"""""
+        assert_equal '', tokens[1].value # last 2 quotes are a valid string ""
+      end
     end
 
     it "unescapes escaped characters" do
