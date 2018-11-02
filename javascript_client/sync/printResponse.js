@@ -2,7 +2,12 @@
  * Given JSON from the OperationStore server,
  * Send a human-friendly status update to the terminal
 */
-function printResponse(response, aliasToNameMap, logger) {
+function printResponse(response, operations, logger) {
+  var aliasToNameMap = {}
+  operations.forEach(function(op) {
+    aliasToNameMap[op.alias] = op.name
+  })
+
   var failed = response.failed.length
   // These might get overriden for status output
   var notModified = response.not_modified.length
