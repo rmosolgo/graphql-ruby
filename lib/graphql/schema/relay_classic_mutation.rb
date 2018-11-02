@@ -32,7 +32,12 @@ module GraphQL
         # Without the interpreter, the inputs are unwrapped by an instrumenter.
         # But when using the interpreter, no instrumenters are applied.
         if context.interpreter?
-          input = inputs[:input]
+          input = inputs[:input].to_h
+          # Transfer these from the top-level hash to the
+          # shortcutted `input:` object
+          self.class.extras.each do |ext|
+            input[ext] = inputs[ext]
+          end
         else
           input = inputs
         end
