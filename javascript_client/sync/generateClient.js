@@ -1,6 +1,3 @@
-var sendPayload = require("./sendPayload")
-var prepareRelay = require("./prepareRelay")
-
 var generateJs = require("./outfileGenerators/js")
 var generateJson = require("./outfileGenerators/json")
 
