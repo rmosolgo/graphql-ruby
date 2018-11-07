@@ -23,7 +23,7 @@ var fs = require("fs")
  * @param {String} options.client - the Client ID that these operations belong to
  * @param {Function} options.send - A function for sending the payload to the server, with the signature `options.send(payload)`. (Default is an HTTP `POST` request)
  * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
- * @return {void}
+ * @return {Promise} Rejects with an Error or String if something goes wrong. Resolves with the operation payload if successful.
 */
 function sync(options) {
   if (!options) {
