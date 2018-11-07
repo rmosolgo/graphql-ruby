@@ -3,7 +3,6 @@ var prepareRelay = require("./prepareRelay")
 var prepareIsolatedFiles = require("./prepareIsolatedFiles")
 var prepareProject = require("./prepareProject")
 var { generateClientCode, gatherOperations } = require("./generateClient")
-var printResponse = require("./printResponse")
 var Logger = require("./logger")
 
 var glob = require("glob")
@@ -65,48 +64,85 @@ function sync(options) {
     outfile = "OperationStoreClient.js"
   }
 
-  if (payload.operations.length === 0) {
-    logger.log("No operations found in " + graphqlGlob + ", not syncing anything")
-  } else {
-    logger.log("Syncing " + payload.operations.length + " operations to " + logger.bright(url) + "...")
-
-    var writeArtifacts = function(response) {
-      var responseData
-      if (response) {
-        try {
-          responseData = JSON.parse(response)
-          printResponse(responseData, payload.operations, logger)
-          if (responseData.failed.length) {
-            return false
-          }
-        } catch (err) {
-          logger.log("Failed to print sync result:", err)
-        }
+  return new Promise(function(resolve, reject) {
+    if (payload.operations.length === 0) {
+      logger.log("No operations found in " + graphqlGlob + ", not syncing anything")
+      resolve(payload)
+    } else {
+      logger.log("Syncing " + payload.operations.length + " operations to " + logger.bright(url) + "...")
+      var sendOpts = {
+        url: url,
+        client: clientName,
+        secret: encryptionKey,
       }
+      var sendPromise = Promise.resolve(sendFunc(payload, sendOpts))
+      return sendPromise.then(function(response) {
+        var responseData
+        if (response) {
+          try {
+            responseData = JSON.parse(response)
+            var aliasToNameMap = {}
 
-      var generatedCode = generateClientCode(clientName, payload.operations, options.outfileType)
-      logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
-      fs.writeFileSync(outfile, generatedCode, "utf8")
-      logger.log(logger.green("✓ Done!"))
-    }
+            payload.operations.forEach(function(op) {
+              aliasToNameMap[op.alias] = op.name
+            })
 
-    var sendOpts = {
-      url: url,
-      client: clientName,
-      secret: encryptionKey,
-    }
-    var maybePromise = sendFunc(payload, sendOpts)
+            var failed = responseData.failed.length
+            // These might get overriden for status output
+            var notModified = responseData.not_modified.length
+            var added = responseData.added.length
+            if (failed) {
+              // Override these to reflect reality
+              notModified = 0
+              added = 0
+            }
 
-    if (maybePromise instanceof Promise) {
-      return maybePromise.then(writeArtifacts).catch(function(err) {
+            var addedColor = added ? "green" : "dim"
+            logger.log("  " + logger.colorize(addedColor, added + " added"))
+            var notModifiedColor = notModified ? "reset" : "dim"
+
+            logger.log("  " + logger.colorize(notModifiedColor, notModified + " not modified"))
+            var failedColor = failed ? "red" : "dim"
+            logger.log("  " + logger.colorize(failedColor, failed + " failed"))
+
+            if (failed) {
+              logger.error("Sync failed, errors:")
+              var failedOperationAlias, failedOperationName, errors
+              var allErrors = []
+              for (failedOperationAlias in responseData.errors) {
+                failedOperationName = aliasToNameMap[failedOperationAlias]
+                logger.error("  " + failedOperationName + ":")
+                errors = responseData.errors[failedOperationAlias]
+                errors.forEach(function(errMessage) {
+                  allErrors.push(failedOperationName + ": " + errMessage)
+                  logger.error("    " + logger.colorize("red", "✘") + " " + errMessage)
+                })
+              }
+              reject("Sync failed: " + allErrors.join(", "))
+              return
+            }
+          } catch (err) {
+            logger.log("Failed to print sync result:", err)
+            reject(err)
+            return
+          }
+        }
+
+        var generatedCode = generateClientCode(clientName, payload.operations, options.outfileType)
+        payload.generatedCode = generatedCode
+        logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
+        fs.writeFileSync(outfile, generatedCode, "utf8")
+        logger.log(logger.green("✓ Done!"))
+        resolve(payload)
+        return
+      }).catch(function(err) {
         logger.error(logger.colorize("red", "Sync failed:"))
         logger.error(err)
-        return false
+        reject(err)
+        return
       })
-    } else {
-      return writeArtifacts()
     }
-  }
+  })
 }
 
 module.exports = sync
