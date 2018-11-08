@@ -80,6 +80,8 @@ def execute
 end
 ```
 
+If Apollo Client has issues recognizing the result of`render json: result`, replace it with `render body: result.to_json, content_type: 'application/json'`.
+
 ## Validation and Error Handling
 
 Each query is validated and {% internal_link "analyzed","/queries/analysis" %} independently. The `results` array may include a mix of successful results and failed results
