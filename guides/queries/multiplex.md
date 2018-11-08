@@ -80,7 +80,7 @@ def execute
 end
 ```
 
-If Apollo Client has issues recognizing the result of`render json: result`, replace it with `render body: result.to_json, content_type: 'application/json'`.
+If Apollo Client has issues recognizing the result of `render json: result`, replace it with `render body: result.to_json, content_type: 'application/json'`.
 
 ## Validation and Error Handling
 
