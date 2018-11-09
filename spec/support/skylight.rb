@@ -9,9 +9,11 @@ end
 
 module Skylight
   ENDPOINT_NAMES = []
+  TITLE_NAMES = []
   # Reset state between tests
   def self.clear_all
     ENDPOINT_NAMES.clear
+    TITLE_NAMES.clear
   end
 
   def self.instrumenter
@@ -19,6 +21,7 @@ module Skylight
   end
 
   def self.instrument(category:, title:)
+    TITLE_NAMES << title
     yield
   end
 
