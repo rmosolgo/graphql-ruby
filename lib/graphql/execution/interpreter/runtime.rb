@@ -311,7 +311,7 @@ module GraphQL
 
         def each_argument_pair(ast_args_or_hash)
           case ast_args_or_hash
-          when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject
+          when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject, GraphQL::Language::Nodes::Directive
             ast_args_or_hash.arguments.each do |arg|
               yield(arg.name, arg.value)
             end
