@@ -455,6 +455,18 @@ module Jazz
     def named_entities
       [Models.data["Ensemble"].first, nil]
     end
+
+    field :default_value_test, String, null: false do
+      if TESTING_INTERPRETER
+        argument :arg_with_default, InspectableInput, required: false, default_value: { string_value: "S" }
+      else
+        argument :arg_with_default, InspectableInput, required: false, default_value: { "stringValue" => "S" }
+      end
+    end
+
+    def default_value_test(arg_with_default:)
+      "#{arg_with_default.class.name} -> #{arg_with_default.to_h}"
+    end
   end
 
   class EnsembleInput < GraphQL::Schema::InputObject
