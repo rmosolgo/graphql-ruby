@@ -309,14 +309,30 @@ module GraphQL
           end
         end
 
-        def arguments(graphql_object, arg_owner, ast_node)
+        def each_argument_pair(ast_args_or_hash)
+          case ast_args_or_hash
+          when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject
+            ast_args_or_hash.arguments.each do |arg|
+              yield(arg.name, arg.value)
+            end
+          when Hash
+            ast_args_or_hash.each do |key, value|
+              normalized_name = GraphQL::Schema::Member::BuildType.camelize(key.to_s)
+              yield(normalized_name, value)
+            end
+          else
+            raise "Invariant, unexpected #{ast_args_or_hash.inspect}"
+          end
+        end
+
+        def arguments(graphql_object, arg_owner, ast_node_or_hash)
           kwarg_arguments = {}
           arg_defns = arg_owner.arguments
-          ast_node.arguments.each do |arg|
-            arg_defn = arg_defns[arg.name]
+          each_argument_pair(ast_node_or_hash) do |arg_name, arg_value|
+            arg_defn = arg_defns[arg_name]
             # Need to distinguish between client-provided `nil`
             # and nothing-at-all
-            is_present, value = arg_to_value(graphql_object, arg_defn.type, arg.value)
+            is_present, value = arg_to_value(graphql_object, arg_defn.type, arg_value)
             if is_present
               # This doesn't apply to directives, which are legacy
               # Can remove this when Skip and Include use classes or something.
@@ -328,7 +344,8 @@ module GraphQL
           end
           arg_defns.each do |name, arg_defn|
             if arg_defn.default_value? && !kwarg_arguments.key?(arg_defn.keyword)
-              kwarg_arguments[arg_defn.keyword] = arg_defn.default_value
+              _is_present, value = arg_to_value(graphql_object, arg_defn.type, arg_defn.default_value)
+              kwarg_arguments[arg_defn.keyword] = value
             end
           end
           kwarg_arguments

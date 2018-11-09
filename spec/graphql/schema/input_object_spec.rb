@@ -123,6 +123,13 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
+  describe "when used with default_value" do
+    it "comes as an instance" do
+      res = Jazz::Schema.execute("{ defaultValueTest }")
+      assert_equal "Jazz::InspectableInput -> {:string_value=>\"S\"}", res["data"]["defaultValueTest"]
+    end
+  end
+
   describe "#to_h" do
     module InputObjectToHTest
       class TestInput1 < GraphQL::Schema::InputObject
