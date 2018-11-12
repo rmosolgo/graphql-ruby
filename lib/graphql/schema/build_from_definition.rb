@@ -64,9 +64,7 @@ module GraphQL
             end
           end
 
-          GraphQL::Schema::DIRECTIVES.each do |built_in_directive|
-            directives[built_in_directive.name] = built_in_directive unless directives[built_in_directive.name]
-          end
+          directives = GraphQL::Schema.default_directives.merge(directives)
 
           if schema_definition
             if schema_definition.query

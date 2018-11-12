@@ -53,7 +53,7 @@ module GraphQL
           location_name = LOCATION_MESSAGE_NAMES[required_location]
           allowed_location_names = directive_defn.locations.map { |loc| LOCATION_MESSAGE_NAMES[loc] }
           add_error(GraphQL::StaticValidation::DirectivesAreInValidLocationsError.new(
-            "'@#{directive_defn.name}' can't be applied to #{location_name} (allowed: #{allowed_location_names.join(", ")})",
+            "'@#{directive_defn.graphql_name}' can't be applied to #{location_name} (allowed: #{allowed_location_names.join(", ")})",
             nodes: directive_ast,
             target: location_name,
             name: directive_defn.name

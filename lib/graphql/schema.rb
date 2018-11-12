@@ -33,6 +33,11 @@ require "graphql/schema/interface"
 require "graphql/schema/scalar"
 require "graphql/schema/object"
 require "graphql/schema/union"
+require "graphql/schema/directive"
+require "graphql/schema/directive/include"
+require "graphql/schema/directive/skip"
+require "graphql/schema/directive/feature"
+require "graphql/schema/directive/transform"
 
 require "graphql/schema/resolver"
 require "graphql/schema/mutation"
@@ -85,6 +90,7 @@ module GraphQL
       :default_mask,
       :cursor_encoder,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
+      directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
         if type == :field && after_built_ins
           type = :field_after_built_ins
@@ -145,7 +151,6 @@ module GraphQL
     # @see {Query#tracers} for query-specific tracers
     attr_reader :tracers
 
-    DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
     attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
@@ -154,7 +159,7 @@ module GraphQL
       @tracers = []
       @definition_error = nil
       @orphan_types = []
-      @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
+      @directives = self.class.default_directives
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @middleware = MiddlewareChain.new(final_step: GraphQL::Execution::Execute::FieldResolveStep)
       @query_analyzers = []
@@ -571,6 +576,7 @@ module GraphQL
     # Can't delegate to `class`
     alias :_schema_class :class
     def_delegators :_schema_class, :visible?, :accessible?, :authorized?, :unauthorized_object, :inaccessible_fields
+    def_delegators :_schema_class, :directive
 
     # A function to call when {#execute} receives an invalid query string
     #
@@ -727,7 +733,10 @@ module GraphQL
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
-        schema_defn.directives = directives
+
+        prepped_dirs = {}
+        directives.each { |k, v| prepped_dirs[k] = v.graphql_definition}
+        schema_defn.directives = prepped_dirs
         schema_defn.introspection_namespace = introspection
         schema_defn.resolve_type = method(:resolve_type)
         schema_defn.object_from_id = method(:object_from_id)
@@ -978,7 +987,19 @@ module GraphQL
           @directives = new_directives.reduce({}) { |m, d| m[d.name] = d; m }
         end
 
-        @directives ||= directives(DIRECTIVES)
+        @directives ||= default_directives
+      end
+
+      def directive(new_directive)
+        directives[new_directive.graphql_name] = new_directive
+      end
+
+      def default_directives
+        {
+          "include" => GraphQL::Directive::IncludeDirective,
+          "skip" => GraphQL::Directive::SkipDirective,
+          "deprecated" => GraphQL::Directive::DeprecatedDirective,
+        }
       end
 
       def tracer(new_tracer)
