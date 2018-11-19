@@ -1,11 +1,3 @@
-var md5 = require("./md5")
-var glob = require("glob")
-var fs = require("fs")
-
-var prepareRelay = require("./prepareRelay")
-var prepareIsolatedFiles = require("./prepareIsolatedFiles")
-var prepareProject = require("./prepareProject")
-
 var generateJs = require("./outfileGenerators/js")
 var generateJson = require("./outfileGenerators/json")
 
