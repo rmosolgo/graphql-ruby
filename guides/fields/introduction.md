@@ -108,6 +108,23 @@ field :players, [User], null: false,
   hash_key: "allPlayers"
 ```
 
+To pass-through the underlying object without calling a method on it, you can use `method: :itself`:
+
+```ruby
+field :player, User, null: false,
+  method: :itself
+```
+
+This is equivalent to:
+
+```ruby
+field :player, User, null: false
+
+def player
+  object
+end
+```
+
 If you don't want to delegate to the underlying object, you can define a method for each field:
 
 ```ruby
@@ -136,6 +153,24 @@ def current_winning_streak(include_ties:)
   # Business logic goes here
 end
 ```
+
+As the examples above show, by default the custom method name must match the field name. If you want to use a different custom method, the `resolver_method` option is available:
+
+```ruby
+# Use the custom method with a non-default name below to resolve this field
+field :total_games_played, Integer, null: false, resolver_method: :games_played
+
+def games_played
+  object.games.count
+end
+```
+
+`resolver_method` has two main use cases:
+
+1. resolver re-use between multiple fields
+2. dealing with method conflicts (specifically if you have fields named `context` or `object`)
+
+Note that `resolver_method` _cannot_ be used in combination with `method` or `hash_key`.
 
 ### Field Arguments
 
