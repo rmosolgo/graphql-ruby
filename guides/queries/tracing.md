@@ -89,7 +89,7 @@ To add [New Relic](https://newrelic.com/) instrumentation:
 class MySchema < GraphQL::Schema
   use(GraphQL::Tracing::NewRelicTracing)
   # Optional, use the operation name to set the new relic transaction name:
-  # use GraphQL::Tracing::NewRelicTracing, set_transaction_name: true
+  # use(GraphQL::Tracing::NewRelicTracing, set_transaction_name: true)
 end
 ```
 
