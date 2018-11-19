@@ -22,7 +22,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       def lazy_sym
-        Box.new(value: sym)
+        Box.new(value: object.sym)
       end
     end
 

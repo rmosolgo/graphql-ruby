@@ -190,12 +190,12 @@ module StarWars
       all_bases.to_a
     end
 
-    field :basesWithMaxLimitRelation, BaseConnection, null: true, max_page_size: 2, method: :all_bases
-    field :basesWithMaxLimitArray, BaseConnection, null: true, max_page_size: 2, method: :all_bases_array
-    field :basesWithDefaultMaxLimitRelation, BaseConnection, null: true, method: :all_bases
-    field :basesWithDefaultMaxLimitArray, BaseConnection, null: true, method: :all_bases_array
-    field :basesWithLargeMaxLimitRelation, BaseConnection, null: true, max_page_size: 1000, method: :all_bases
-    field :basesWithoutNodes, BaseConnectionWithoutNodes, null: true, method: :all_bases_array
+    field :basesWithMaxLimitRelation, BaseConnection, null: true, max_page_size: 2, resolver_method: :all_bases
+    field :basesWithMaxLimitArray, BaseConnection, null: true, max_page_size: 2, resolver_method: :all_bases_array
+    field :basesWithDefaultMaxLimitRelation, BaseConnection, null: true, resolver_method: :all_bases
+    field :basesWithDefaultMaxLimitArray, BaseConnection, null: true, resolver_method: :all_bases_array
+    field :basesWithLargeMaxLimitRelation, BaseConnection, null: true, max_page_size: 1000, resolver_method: :all_bases
+    field :basesWithoutNodes, BaseConnectionWithoutNodes, null: true, resolver_method: :all_bases_array
 
     field :basesAsSequelDataset, BasesConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
       argument :nameIncludes, String, required: false
@@ -209,7 +209,7 @@ module StarWars
       all_bases
     end
 
-    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, method: :lazy_bases
+    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, resolver_method: :lazy_bases
 
     def lazy_bases
       LazyNodesWrapper.new(object.bases)

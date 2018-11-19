@@ -354,7 +354,7 @@ module Dummy
       COWS.values + GOATS.values
     end
 
-    field :all_animal_as_cow, [AnimalAsCow, null: true], null: false, method: :all_animal
+    field :all_animal_as_cow, [AnimalAsCow, null: true], null: false, resolver_method: :all_animal
 
     field :all_dairy, [DairyProduct, null: true], null: true do
       argument :execution_error_at_index, Integer, required: false
@@ -372,7 +372,7 @@ module Dummy
       CHEESES.values + MILKS.values
     end
 
-    field :all_edible_as_milk, [EdibleAsMilk, null: true], null: true, method: :all_edible
+    field :all_edible_as_milk, [EdibleAsMilk, null: true], null: true, resolver_method: :all_edible
 
     field :error, String, null: true, description: "Raise an error"
     def error
