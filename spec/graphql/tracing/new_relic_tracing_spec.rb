@@ -20,6 +20,11 @@ describe GraphQL::Tracing::NewRelicTracing do
       query(Query)
       use(GraphQL::Tracing::NewRelicTracing, set_transaction_name: true)
     end
+
+    class SchemaWithScalarTrace < GraphQL::Schema
+      query(Query)
+      use(GraphQL::Tracing::NewRelicTracing, trace_scalars: true)
+    end
   end
 
   before do
@@ -43,5 +48,10 @@ describe GraphQL::Tracing::NewRelicTracing do
     # Override with `true`
     NewRelicTest::SchemaWithoutTransactionName.execute "{ int }", context: { set_new_relic_transaction_name: true }
     assert_equal ["GraphQL/query.anonymous"], NewRelic::TRANSACTION_NAMES
+  end
+
+  it "traces scalars when trace_scalars is true" do
+    NewRelicTest::SchemaWithScalarTrace.execute "query X { int }"
+    assert_includes NewRelic::EXECUTION_SCOPES, "GraphQL/Query/int"
   end
 end

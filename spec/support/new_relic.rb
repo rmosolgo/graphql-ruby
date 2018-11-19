@@ -6,9 +6,11 @@ end
 
 module NewRelic
   TRANSACTION_NAMES = []
+  EXECUTION_SCOPES = []
   # Reset state between tests
   def self.clear_all
     TRANSACTION_NAMES.clear
+    EXECUTION_SCOPES.clear
   end
   module Agent
     def self.set_transaction_name(name)
@@ -17,6 +19,7 @@ module NewRelic
 
     module MethodTracerHelpers
       def self.trace_execution_scoped(trace_name)
+        EXECUTION_SCOPES << trace_name
         yield
       end
     end
