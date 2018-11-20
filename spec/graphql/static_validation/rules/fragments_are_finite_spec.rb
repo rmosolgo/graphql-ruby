@@ -38,12 +38,12 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
       {
         "message"=>"Fragment sourceField contains an infinite loop",
         "locations"=>[{"line"=>12, "column"=>5}],
-        "fields"=>["fragment sourceField"],
+        "path"=>["fragment sourceField"],
       },
       {
         "message"=>"Fragment flavorField contains an infinite loop",
         "locations"=>[{"line"=>17, "column"=>5}],
-        "fields"=>["fragment flavorField"],
+        "path"=>["fragment flavorField"],
       }
     ]
     assert_equal(expected, errors)

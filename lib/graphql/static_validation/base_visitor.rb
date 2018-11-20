@@ -174,6 +174,7 @@ module GraphQL
 
       # Error `message` is located at `node`
       def add_error(message, nodes, path: nil)
+        # Add an optional hash here that message adds onto the response object - then easy to vary for all items
         path ||= @path.dup
         nodes = Array(nodes)
         m = GraphQL::StaticValidation::Message.new(message, nodes: nodes, path: path)

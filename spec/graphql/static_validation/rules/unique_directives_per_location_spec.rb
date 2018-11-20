@@ -101,7 +101,7 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
       assert_includes errors, {
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 20 }],
-        "fields" => ["query", "type", "field"],
+        "path" => ["query", "type", "field"],
       }
     end
   end
@@ -120,13 +120,13 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
       assert_includes errors, {
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 20 }],
-        "fields" => ["query", "type", "field"],
+        "path" => ["query", "type", "field"],
       }
 
       assert_includes errors, {
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 23 }],
-        "fields" => ["query", "type", "field"],
+        "path" => ["query", "type", "field"],
       }
     end
   end
@@ -144,13 +144,13 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
       assert_includes errors, {
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 23 }],
-        "fields" => ["query", "type", "field"],
+        "path" => ["query", "type", "field"],
       }
 
       assert_includes errors, {
         "message" => 'The directive "B" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 20 }, { "line" => 4, "column" => 26 }],
-        "fields" => ["query", "type", "field"],
+        "path" => ["query", "type", "field"],
       }
     end
   end
@@ -168,13 +168,13 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
       assert_includes errors, {
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 3, "column" => 14 }, { "line" => 3, "column" => 17 }],
-        "fields" => ["query", "type"],
+        "path" => ["query", "type"],
       }
 
       assert_includes errors, {
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 20 }],
-        "fields" => ["query", "type", "field"],
+        "path" => ["query", "type", "field"],
       }
     end
   end

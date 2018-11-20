@@ -7,6 +7,7 @@ module GraphQL
       module MessageHelper
         # Error `message` is located at `node`
         def message(message, nodes, context: nil, path: nil)
+          # TODO: also add object hash of extras as in base_visitor
           path ||= context.path
           nodes = Array(nodes)
           GraphQL::StaticValidation::Message.new(message, nodes: nodes, path: path)
@@ -26,7 +27,7 @@ module GraphQL
         {
           "message" => message,
           "locations" => locations,
-          "fields" => path,
+          "path" => path,
         }
       end
 

@@ -22,25 +22,25 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
     assert_includes(errors, {
       "message"=>"AnimalProduct isn't a valid input type (on $interface)",
       "locations"=>[{"line"=>5, "column"=>7}],
-      "fields"=>["query getCheese"],
+      "path"=>["query getCheese"],
     })
 
     assert_includes(errors, {
       "message"=>"Milk isn't a valid input type (on $object)",
       "locations"=>[{"line"=>6, "column"=>7}],
-      "fields"=>["query getCheese"],
+      "path"=>["query getCheese"],
     })
 
     assert_includes(errors, {
       "message"=>"Cheese isn't a valid input type (on $objects)",
       "locations"=>[{"line"=>7, "column"=>7}],
-      "fields"=>["query getCheese"],
+      "path"=>["query getCheese"],
     })
 
     assert_includes(errors, {
       "message"=>"Nonsense isn't a defined input type (on $unknownType)",
       "locations"=>[{"line"=>8, "column"=>7}],
-      "fields"=>["query getCheese"],
+      "path"=>["query getCheese"],
     })
   end
 

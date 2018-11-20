@@ -19,28 +19,28 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
     illegal_selection_error = {
       "message"=>"Selections can't be made on scalars (field 'id' returns Int but has selections [something, someFields])",
       "locations"=>[{"line"=>6, "column"=>47}],
-      "fields"=>["query getCheese", "illegalSelectionCheese", "id"],
+      "path"=>["query getCheese", "illegalSelectionCheese", "id"],
     }
     assert_includes(errors, illegal_selection_error, "finds illegal selections on scalars")
 
     objects_selection_required_error = {
       "message"=>"Field must have selections (field 'cheese' returns Cheese but has no selections. Did you mean 'cheese { ... }'?)",
       "locations"=>[{"line"=>4, "column"=>7}],
-      "fields"=>["query getCheese", "missingFieldsObject"],
+      "path"=>["query getCheese", "missingFieldsObject"],
     }
     assert_includes(errors, objects_selection_required_error, "finds objects without selections")
 
     interfaces_selection_required_error = {
       "message"=>"Field must have selections (field 'selfAsEdible' returns Edible but has no selections. Did you mean 'selfAsEdible { ... }'?)",
       "locations"=>[{"line"=>5, "column"=>47}],
-      "fields"=>["query getCheese", "missingFieldsInterface", "selfAsEdible"],
+      "path"=>["query getCheese", "missingFieldsInterface", "selfAsEdible"],
     }
     assert_includes(errors, interfaces_selection_required_error, "finds interfaces without selections")
 
     incorrect_fragment_error = {
       "message"=>"Selections can't be made on scalars (field 'flavor' returns String but has inline fragments [String])",
       "locations"=>[{"line"=>7, "column"=>48}],
-      "fields"=>["query getCheese", "incorrectFragmentSpread", "flavor"],
+      "path"=>["query getCheese", "incorrectFragmentSpread", "flavor"],
     }
     assert_includes(errors, incorrect_fragment_error, "finds scalar fields with selections")
   end
@@ -53,7 +53,7 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
       selections_required_error = {
         "message"=> "Field must have selections (anonymous query returns Query but has no selections. Did you mean ' { ... }'?)",
         "locations"=>[{"line"=>1, "column"=>1}],
-        "fields"=>["query"]
+        "path"=>["query"]
       }
       assert_includes(errors, selections_required_error)
     end
