@@ -26,7 +26,7 @@ module GraphQL
                 add_error(error_message, node, extensions: {
                   "rule": "StaticValidation::VariableDefaultValuesAreCorrectlyTyped",
                   "name": node.name,
-                  "type": type
+                  "type": type.to_s
                 })
               end
             end

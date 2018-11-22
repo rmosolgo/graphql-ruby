@@ -28,7 +28,7 @@ module GraphQL
           "message" => message,
           "locations" => locations,
           "path" => path,
-        }.tap { |hash| hash["extensions"] = @extensions unless @extensions.empty? }
+        }.tap { |hash| hash["extensions"] = @extensions.collect{ |k,v| [k.to_s, v] }.to_h unless @extensions.empty? }
       end
 
       private

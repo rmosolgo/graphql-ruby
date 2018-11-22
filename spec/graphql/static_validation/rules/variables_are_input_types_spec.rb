@@ -23,24 +23,28 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
       "message"=>"AnimalProduct isn't a valid input type (on $interface)",
       "locations"=>[{"line"=>5, "column"=>7}],
       "path"=>["query getCheese"],
+      "extensions"=>{"rule"=>"StaticValidation::VariablesAreInputTypes", "name"=>"interface", "type"=>"AnimalProduct"}
     })
 
     assert_includes(errors, {
       "message"=>"Milk isn't a valid input type (on $object)",
       "locations"=>[{"line"=>6, "column"=>7}],
       "path"=>["query getCheese"],
+      "extensions"=>{"rule"=>"StaticValidation::VariablesAreInputTypes", "name"=>"object", "type"=>"Milk"}
     })
 
     assert_includes(errors, {
       "message"=>"Cheese isn't a valid input type (on $objects)",
       "locations"=>[{"line"=>7, "column"=>7}],
       "path"=>["query getCheese"],
+      "extensions"=>{"rule"=>"StaticValidation::VariablesAreInputTypes", "name"=>"objects", "type"=>"Cheese"}
     })
 
     assert_includes(errors, {
       "message"=>"Nonsense isn't a defined input type (on $unknownType)",
       "locations"=>[{"line"=>8, "column"=>7}],
       "path"=>["query getCheese"],
+      "extensions"=>{"rule"=>"StaticValidation::VariablesAreInputTypes", "name"=>"unknownType", "type"=>"Nonsense"}
     })
   end
 

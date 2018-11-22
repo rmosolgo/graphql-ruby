@@ -20,6 +20,7 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
       "message"=>"Selections can't be made on scalars (field 'id' returns Int but has selections [something, someFields])",
       "locations"=>[{"line"=>6, "column"=>47}],
       "path"=>["query getCheese", "illegalSelectionCheese", "id"],
+      "extensions"=>{"rule"=>"StaticValidation::FieldsHaveAppropriateSelections", "name"=>"field 'id'", "type"=>"Int"}
     }
     assert_includes(errors, illegal_selection_error, "finds illegal selections on scalars")
 
@@ -27,6 +28,7 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
       "message"=>"Field must have selections (field 'cheese' returns Cheese but has no selections. Did you mean 'cheese { ... }'?)",
       "locations"=>[{"line"=>4, "column"=>7}],
       "path"=>["query getCheese", "missingFieldsObject"],
+      "extensions"=>{"rule"=>"StaticValidation::FieldsHaveAppropriateSelections", "name"=>"field 'cheese'", "type"=>"Cheese"}
     }
     assert_includes(errors, objects_selection_required_error, "finds objects without selections")
 
@@ -34,6 +36,7 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
       "message"=>"Field must have selections (field 'selfAsEdible' returns Edible but has no selections. Did you mean 'selfAsEdible { ... }'?)",
       "locations"=>[{"line"=>5, "column"=>47}],
       "path"=>["query getCheese", "missingFieldsInterface", "selfAsEdible"],
+      "extensions"=>{"rule"=>"StaticValidation::FieldsHaveAppropriateSelections", "name"=>"field 'selfAsEdible'", "type"=>"Edible"}
     }
     assert_includes(errors, interfaces_selection_required_error, "finds interfaces without selections")
 
@@ -41,6 +44,7 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
       "message"=>"Selections can't be made on scalars (field 'flavor' returns String but has inline fragments [String])",
       "locations"=>[{"line"=>7, "column"=>48}],
       "path"=>["query getCheese", "incorrectFragmentSpread", "flavor"],
+      "extensions"=>{"rule"=>"StaticValidation::FieldsHaveAppropriateSelections", "name"=>"field 'flavor'", "type"=>"String"}
     }
     assert_includes(errors, incorrect_fragment_error, "finds scalar fields with selections")
   end
@@ -53,7 +57,8 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
       selections_required_error = {
         "message"=> "Field must have selections (anonymous query returns Query but has no selections. Did you mean ' { ... }'?)",
         "locations"=>[{"line"=>1, "column"=>1}],
-        "path"=>["query"]
+        "path"=>["query"],
+        "extensions"=>{"rule"=>"StaticValidation::FieldsHaveAppropriateSelections", "name"=>"anonymous query", "type"=>"Query"}
       }
       assert_includes(errors, selections_required_error)
     end

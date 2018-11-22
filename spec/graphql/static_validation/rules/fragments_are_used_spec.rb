@@ -18,6 +18,7 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
       "message"=>"Fragment unusedFields was defined, but not used",
       "locations"=>[{"line"=>8, "column"=>5}],
       "path"=>["fragment unusedFields"],
+      "extensions"=>{"rule"=>"StaticValidation::FragmentsAreUsed", "fragment"=>"unusedFields"}
     })
   end
 
@@ -25,7 +26,8 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
     assert_includes(errors, {
       "message"=>"Fragment undefinedFields was used, but not defined",
       "locations"=>[{"line"=>5, "column"=>7}],
-      "path"=>["query getCheese", "... undefinedFields"]
+      "path"=>["query getCheese", "... undefinedFields"],
+      "extensions"=>{"rule"=>"StaticValidation::FragmentsAreUsed", "fragement"=>"undefinedFields"}
     })
   end
 

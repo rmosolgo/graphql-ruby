@@ -32,6 +32,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
           "message"=>"Field 'notDefinedField' doesn't exist on type 'Query'",
           "locations"=>[{"line"=>1, "column"=>18}],
           "path"=>["query getStuff", "notDefinedField"],
+          "extensions"=>{"rule"=>"StaticValidation::FieldsAreDefinedOnType", "field"=>"notDefinedField", "type"=>"Query"}
         }
       ]
       assert_equal(expected_errors, errors)
@@ -47,6 +48,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
           "message"=>"Field 'amountThatILikeIt' doesn't exist on type 'Edible'",
           "locations"=>[{"line"=>1, "column"=>35}],
           "path"=>["query getStuff", "favoriteEdible", "amountThatILikeIt"],
+          "extensions"=>{"rule"=>"StaticValidation::FieldsAreDefinedOnType", "field"=>"amountThatILikeIt", "type"=>"Edible"}
         }
       ]
       assert_equal(expected_errors, errors)
@@ -121,6 +123,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
               {"line"=>2, "column"=>33}
             ],
             "path"=>["query", "cheese", "__schema"],
+            "extensions"=>{"rule"=>"StaticValidation::FieldsAreDefinedOnType", "field"=>"__schema", "type"=>"Cheese"}
           }
         ]
         assert_equal(expected_errors, errors)
@@ -152,6 +155,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
               {"line"=>2, "column"=>33}
             ],
             "path"=>["query", "cheese", "__type"],
+            "extensions"=>{"rule"=>"StaticValidation::FieldsAreDefinedOnType", "field"=>"__type", "type"=>"Cheese"}
           }
         ]
         assert_equal(expected_errors, errors)

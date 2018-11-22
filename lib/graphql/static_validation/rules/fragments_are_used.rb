@@ -18,7 +18,7 @@ module GraphQL
           if !fragment.name.nil?
             add_error("Fragment #{fragment.name} was defined, but not used", fragment.node, path: fragment.path, extensions: {
               "rule": "StaticValidation::FragmentsAreUsed",
-              "fragement": fragement.name
+              "fragment": fragment.name
             })
           end
         end

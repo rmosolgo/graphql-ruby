@@ -27,6 +27,7 @@ describe GraphQL::StaticValidation::SubscriptionRootExists do
       "message"=>"Schema is not configured for subscriptions",
       "locations"=>[{"line"=>2, "column"=>5}],
       "path"=>["subscription"],
+      "extensions"=>{"rule"=>"StaticValidation::SubscriptionRootExists"}
     }
     assert_includes(errors, missing_subscription_root_error)
   end

@@ -52,10 +52,10 @@ module GraphQL
           end
           extensions = {
             "rule": "StaticValidation::FieldsHaveAppropriateSelections",
-            "name": node_name
+            "name": node_name.to_s
           }
           unless resolved_type.nil?
-            extensions["type"] = resolved_type
+            extensions["type"] = resolved_type.to_s
           end
           add_error(msg % { node_name: node_name }, ast_node, extensions: extensions)
           false
