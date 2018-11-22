@@ -32,6 +32,10 @@ module GraphQL
               valid = context.valid_literal?(node.value, arg_defn.type)
             rescue GraphQL::CoercionError => err
               error_message = err.message
+              extensions = {
+                "rule": "StaticValidation::ArgumentLiteralsAreCompatible",
+                "type": "CoercionError"
+              }
             end
 
             if !valid
@@ -41,7 +45,13 @@ module GraphQL
                 "Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value. Expected type '#{arg_defn.type}'."
               end
 
-              add_error(error_message, parent)
+              extensions ||= {
+                "rule": "StaticValidation::ArgumentLiteralsAreCompatible",
+                "argument": node.name,
+                "type": node_type(parent)
+              }
+
+              add_error(error_message, parent, extensions: extensions)
             end
           end
         end

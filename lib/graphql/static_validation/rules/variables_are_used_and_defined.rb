@@ -125,12 +125,20 @@ module GraphQL
         # Declared but not used:
         node_variables
           .select { |name, usage| usage.declared? && !usage.used? }
-          .each { |var_name, usage| add_error("Variable $#{var_name} is declared by #{usage.declared_by.name} but not used", usage.declared_by, path: usage.path) }
+          .each { |var_name, usage| add_error("Variable $#{var_name} is declared by #{usage.declared_by.name} but not used", usage.declared_by, path: usage.path, extensions: {
+            "rule": "StaticValidation::VariablesAreUsedAndDefined",
+            "variable": var_name,
+            "usage": "delcared by #{usage.declared_by.name}"
+          }) }
 
         # Used but not declared:
         node_variables
           .select { |name, usage| usage.used? && !usage.declared? }
-          .each { |var_name, usage| add_error("Variable $#{var_name} is used by #{usage.used_by.name} but not declared", usage.ast_node, path: usage.path) }
+          .each { |var_name, usage| add_error("Variable $#{var_name} is used by #{usage.used_by.name} but not declared", usage.ast_node, path: usage.path, extensions: {
+            "rule": "StaticValidation::VariablesAreUsedAndDefined",
+            "variable": var_name,
+            "usage": "not declared"
+          }) }
       end
     end
   end

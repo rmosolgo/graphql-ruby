@@ -21,7 +21,10 @@ module GraphQL
           argument_defns.each { |a| args_by_name[a.name] << a }
           args_by_name.each do |name, defns|
             if defns.size > 1
-              add_error("There can be only one argument named \"#{name}\"", defns)
+              add_error("There can be only one argument named \"#{name}\"", defns, extensions: {
+                "rule": "StaticValidation::ArgumentNamesAreUnique",
+                "name": name
+              })
             end
           end
         end

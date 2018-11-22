@@ -6,20 +6,20 @@ module GraphQL
       # Convenience for validators
       module MessageHelper
         # Error `message` is located at `node`
-        def message(message, nodes, context: nil, path: nil)
-          # TODO: also add object hash of extras as in base_visitor
+        def message(message, nodes, context: nil, path: nil, extensions: {})
           path ||= context.path
           nodes = Array(nodes)
-          GraphQL::StaticValidation::Message.new(message, nodes: nodes, path: path)
+          GraphQL::StaticValidation::Message.new(message, nodes: nodes, path: path, extensions: extensions)
         end
       end
 
       attr_reader :message, :path
 
-      def initialize(message, path: [], nodes: [])
+      def initialize(message, path: [], nodes: [], extensions: {})
         @message = message
         @nodes = nodes
         @path = path
+        @extensions = extensions
       end
 
       # A hash representation of this Message
@@ -28,7 +28,7 @@ module GraphQL
           "message" => message,
           "locations" => locations,
           "path" => path,
-        }
+        }.tap { |hash| hash["extensions"] = @extensions unless @extensions.empty? }
       end
 
       private

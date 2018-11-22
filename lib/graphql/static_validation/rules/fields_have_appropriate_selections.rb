@@ -50,7 +50,14 @@ module GraphQL
           else
             raise("Unexpected node #{ast_node}")
           end
-          add_error(msg % { node_name: node_name }, ast_node)
+          extensions = {
+            "rule": "StaticValidation::FieldsHaveAppropriateSelections",
+            "name": node_name
+          }
+          unless resolved_type.nil?
+            extensions["type"] = resolved_type
+          end
+          add_error(msg % { node_name: node_name }, ast_node, extensions: extensions)
           false
         else
           true

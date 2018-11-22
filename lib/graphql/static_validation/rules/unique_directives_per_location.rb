@@ -37,7 +37,11 @@ module GraphQL
           if used_directives[directive_name]
             add_error(
               "The directive \"#{directive_name}\" can only be used once at this location.",
-              [used_directives[directive_name], ast_directive]
+              [used_directives[directive_name], ast_directive],
+              extensions: {
+                "rule": "StaticValidation::UniqueDirectivesPerLocation",
+                "directive": directive_name
+              }
             )
           else
             used_directives[directive_name] = ast_directive

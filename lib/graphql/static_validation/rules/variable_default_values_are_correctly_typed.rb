@@ -6,7 +6,10 @@ module GraphQL
         if !node.default_value.nil?
           value = node.default_value
           if node.type.is_a?(GraphQL::Language::Nodes::NonNullType)
-            add_error("Non-null variable $#{node.name} can't have a default value", node)
+            add_error("Non-null variable $#{node.name} can't have a default value", node, extensions: {
+              "rule": "StaticValidation::VariableDefaultValuesAreCorrectlyTyped",
+              "name": node.name
+            })
           else
             type = context.schema.type_from_ast(node.type)
             if type.nil?
@@ -20,14 +23,18 @@ module GraphQL
 
               if !valid
                 error_message ||= "Default value for $#{node.name} doesn't match type #{type}"
-                add_error(error_message, node)
+                add_error(error_message, node, extensions: {
+                  "rule": "StaticValidation::VariableDefaultValuesAreCorrectlyTyped",
+                  "name": node.name,
+                  "type": type
+                })
               end
-            end 
-          end 
+            end
+          end
         end
-        
+
         super
       end
     end
-  end 
+  end
 end
