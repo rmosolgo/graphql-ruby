@@ -24,10 +24,13 @@ module GraphQL
           @storage = other.storage.dup
         end
 
+        LazySpec = Struct.new(:value_method, :exec_method)
+        private_constant :LazySpec
+
         # @param lazy_class [Class] A class which represents a lazy value (subclasses may also be used)
         # @param lazy_value_method [Symbol] The method to call on this class to get its value
-        def set(lazy_class, lazy_value_method)
-          @storage[lazy_class] = lazy_value_method
+        def set(lazy_class, lazy_value_method, concurrent_exec_method)
+          @storage[lazy_class] = LazySpec.new(lazy_value_method, concurrent_exec_method)
         end
 
         # @param value [Object] an object which may have a `lazy_value_method` registered for its class or superclasses

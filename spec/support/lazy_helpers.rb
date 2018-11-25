@@ -18,6 +18,24 @@ module LazyHelpers
     end
   end
 
+  # This is like the `Wrapper` but it will only evaluate a `value` if the block
+  # has been executed. This allows for testing that the `execute` block has in
+  # fact been called before the value has been accessed. While this is not a
+  # requirement in real applications (the `value` method could also call
+  # `execute` if it has not yet been called) this simplified class makes testing
+  # easier.
+  class ConcurrentWrapper
+    attr_reader :value
+
+    def initialize(&block)
+      @block = block
+    end
+
+    def execute
+      @value = @block.call
+    end
+  end
+
   class SumAll
     attr_reader :own_value
     attr_writer :value
@@ -35,6 +53,33 @@ module LazyHelpers
         total_value
       end
       @value
+    end
+
+    def all
+      self.class.all
+    end
+
+    def self.all
+      @all ||= []
+    end
+  end
+
+  class ConcurrentSumAll
+    attr_reader :own_value
+    attr_accessor :value
+
+    def initialize(own_value)
+      @own_value = own_value
+      all << self
+    end
+
+    def execute
+      @value = begin
+        total_value = all.map(&:own_value).reduce(&:+)
+        all.each { |v| v.value = total_value}
+        all.clear
+        total_value
+      end
     end
 
     def all
@@ -66,6 +111,17 @@ module LazyHelpers
     alias :nullable_nested_sum :nested_sum
   end
 
+  class ConcurrentSum < GraphQL::Schema::Object
+    field :value, Integer, null: true, resolve: ->(o, a, c) { o }
+    field :concurrentNestedSum, ConcurrentSum, null: false do
+      argument :value, Integer, required: true
+    end
+
+    def concurrent_nested_sum(value:)
+      ConcurrentWrapper.new { @object + value }
+    end
+  end
+
   using GraphQL::DeprecatedDSL
   if RUBY_ENGINE == "jruby"
     # JRuby doesn't support refinements, so the `using` above won't work
@@ -80,9 +136,20 @@ module LazyHelpers
       resolve ->(o, a, c) { Wrapper.new(a[:value] + a[:plus])}
     end
 
+    field :concurrentInt, !types.Int do
+      argument :value, !types.Int
+      argument :plus, types.Int, default_value: 0
+      resolve ->(o, a, c) { ConcurrentWrapper.new { a[:value] + a[:plus] } }
+    end
+
     field :nestedSum, !LazySum do
       argument :value, !types.Int
       resolve ->(o, args, c) { SumAll.new(args[:value]) }
+    end
+
+    field :concurrentNestedSum, !ConcurrentSum do
+      argument :value, !types.Int
+      resolve ->(o, args, c) { ConcurrentSumAll.new(args[:value]) }
     end
 
     field :nullableNestedSum, LazySum do
@@ -138,7 +205,9 @@ module LazyHelpers
     query(LazyQuery)
     mutation(LazyQuery)
     lazy_resolve(Wrapper, :item)
+    lazy_resolve(ConcurrentWrapper, :value, :execute)
     lazy_resolve(SumAll, :value)
+    lazy_resolve(ConcurrentSumAll, :value, :execute)
     instrument(:query, SumAllInstrumentation.new(counter: nil))
     instrument(:multiplex, SumAllInstrumentation.new(counter: 1))
     instrument(:multiplex, SumAllInstrumentation.new(counter: 2))

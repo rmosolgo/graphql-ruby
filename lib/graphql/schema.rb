@@ -92,7 +92,9 @@ module GraphQL
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
-      lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
+      lazy_resolve: ->(schema, lazy_class, lazy_value_method, concurrent_exec_method = nil) {
+        schema.lazy_methods.set(lazy_class, lazy_value_method, concurrent_exec_method)
+      },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)},
       tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
 
@@ -157,7 +159,7 @@ module GraphQL
       @parse_error_proc = DefaultParseError
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
-      @lazy_methods.set(GraphQL::Execution::Lazy, :value)
+      @lazy_methods.set(GraphQL::Execution::Lazy, :value, :execute)
       @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
       @query_execution_strategy = self.class.default_execution_strategy
@@ -604,12 +606,24 @@ module GraphQL
 
     # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered wtih {#lazy_resolve}.
     def lazy_method_name(obj)
-      @lazy_methods.get(obj)
+      spec = @lazy_methods.get(obj)
+      spec && spec.value_method
+    end
+
+    # @return [Symbol, nil] The method name to concurrently resolve `obj`, or nil if `obj`'s class wasn't registered wtih {#lazy_resolve} with a concurrent method.
+    def concurrent_method_name(obj)
+      spec = @lazy_methods.get(obj)
+      spec && spec.exec_method
     end
 
     # @return [Boolean] True if this object should be lazily resolved
     def lazy?(obj)
       !!lazy_method_name(obj)
+    end
+
+    # @return [Boolean] True if this object should be concurrently executed
+    def concurrent?(obj)
+      !!concurrent_method_name(obj)
     end
 
     # Return the GraphQL IDL for the schema
@@ -656,7 +670,8 @@ module GraphQL
         :execute, :multiplex,
         :static_validator, :introspection_system,
         :query_analyzers, :tracers, :instrumenters,
-        :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
+        :validate, :multiplex_analyzers,
+        :lazy?, :lazy_method_name, :concurrent_method_name, :after_lazy, :sync_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
         :metadata,
@@ -717,8 +732,8 @@ module GraphQL
           end
         end
         schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
-        lazy_classes.each do |lazy_class, value_method|
-          schema_defn.lazy_methods.set(lazy_class, value_method)
+        lazy_classes.each do |lazy_class, (value_method, exec_method)|
+          schema_defn.lazy_methods.set(lazy_class, value_method, exec_method)
         end
         if @rescues
           @rescues.each do |err_class, handler|
@@ -915,8 +930,8 @@ module GraphQL
         DefaultTypeError.call(type_err, ctx)
       end
 
-      def lazy_resolve(lazy_class, value_method)
-        lazy_classes[lazy_class] = value_method
+      def lazy_resolve(lazy_class, value_method, exec_method = nil)
+        lazy_classes[lazy_class] = [value_method, exec_method]
       end
 
       def instrument(instrument_step, instrumenter, options = {})
@@ -1028,13 +1043,16 @@ module GraphQL
     # @api private
     def after_lazy(value)
       if lazy?(value)
-        GraphQL::Execution::Lazy.new do
-          result = sync_lazy(value)
-          # The returned result might also be lazy, so check it, too
-          after_lazy(result) do |final_result|
-            yield(final_result) if block_given?
-          end
-        end
+        GraphQL::Execution::Lazy.new(
+          value: -> {
+            result = sync_lazy(value)
+            # The returned result might also be lazy, so check it, too
+            after_lazy(result) do |final_result|
+              yield(final_result) if block_given?
+            end
+          },
+          exec: -> { exec_concurrent(value) }
+        )
       else
         yield(value) if block_given?
       end
@@ -1060,6 +1078,24 @@ module GraphQL
           v
         end
       }
+    end
+
+    # Override this method to handle lazy concurrent objects in a custom way.
+    # @param value [Object] an instance of a class registered with {.lazy_resolve}
+    # @param ctx [GraphQL::Query::Context] the context for this query
+    # @return [Object] A GraphQL-ready (non-lazy) object
+    def self.exec_concurrent(value)
+      yield(value)
+    end
+
+    # @see Schema.exec_concurrent for a hook to override
+    # @api private
+    def exec_concurrent(value)
+      self.class.exec_concurrent(value) do |v|
+        if concurrent_method = concurrent_method_name(v)
+          value.public_send(concurrent_method)
+        end
+      end
     end
 
     protected

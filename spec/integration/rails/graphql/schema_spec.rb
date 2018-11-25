@@ -373,9 +373,10 @@ type Query {
     end
   end
 
-  describe "#lazy? / #lazy_method_name" do
+  describe "#lazy? / #lazy_method_name / #concurrent? / #concurrent_method_name" do
     class LazyObj; end
     class LazyObjChild < LazyObj; end
+    class ConcurrentObj; end
 
     let(:schema) {
       query_type = GraphQL::ObjectType.define(name: "Query")
@@ -383,18 +384,33 @@ type Query {
         query(query_type)
         lazy_resolve(Integer, :itself)
         lazy_resolve(LazyObj, :dup)
+        lazy_resolve(ConcurrentObj, :dup, :exec)
       end
     }
 
     it "returns registered lazy method names by class/superclass, or returns nil" do
       assert_equal :itself, schema.lazy_method_name(68)
       assert_equal true, schema.lazy?(77)
+      assert_equal false, schema.concurrent?(77)
+
       assert_equal :dup, schema.lazy_method_name(LazyObj.new)
+      assert_nil schema.concurrent_method_name(LazyObj.new)
       assert_equal true, schema.lazy?(LazyObj.new)
+      assert_equal false, schema.concurrent?(LazyObj.new)
+
       assert_equal :dup, schema.lazy_method_name(LazyObjChild.new)
+      assert_nil schema.concurrent_method_name(LazyObjChild.new)
       assert_equal true, schema.lazy?(LazyObjChild.new)
+      assert_equal false, schema.concurrent?(LazyObjChild.new)
+
+      assert_equal :dup, schema.lazy_method_name(ConcurrentObj.new)
+      assert_equal :exec, schema.concurrent_method_name(ConcurrentObj.new)
+      assert_equal true, schema.lazy?(ConcurrentObj.new)
+      assert_equal true, schema.concurrent?(ConcurrentObj.new)
+
       assert_nil schema.lazy_method_name({})
       assert_equal false, schema.lazy?({})
+      assert_equal false, schema.concurrent?({})
     end
   end
 

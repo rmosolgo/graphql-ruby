@@ -10,6 +10,11 @@ describe GraphQL::Execution::Lazy do
       assert_equal 3, res["data"]["int"]
     end
 
+    it 'calls concurrent handlers' do
+      res = run_query('{  concurrentInt(value: 2, plus: 1) }')
+      assert_equal 3, res['data']['concurrentInt']
+    end
+
     it "can do nested lazy values" do
       res = run_query %|
       {
@@ -43,6 +48,13 @@ describe GraphQL::Execution::Lazy do
             value
           }
         }
+
+        d: concurrentNestedSum(value: 1) {
+          value
+          concurrentNestedSum(value: 2) {
+            value
+          }
+        }
       }
       |
 
@@ -65,6 +77,9 @@ describe GraphQL::Execution::Lazy do
           {"nestedSum"=>{"value"=>14}},
           {"nestedSum"=>{"value"=>14}}
         ],
+        "d"=>{"value"=>1, "concurrentNestedSum"=>{
+          "value"=>3
+        }}
       }
 
       assert_equal expected_data, res["data"]
@@ -162,6 +177,7 @@ describe GraphQL::Execution::Lazy do
         a: nullableNestedSum(value: 1001) { value }
         b: nullableNestedSum(value: 1013) { value }
         c: nullableNestedSum(value: 1002) { value }
+        d: concurrentNestedSum(value: 2) { value }
       }
       GRAPHQL
 
@@ -169,6 +185,7 @@ describe GraphQL::Execution::Lazy do
       assert_equal 101, res["data"]["a"]["value"]
       assert_equal 113, res["data"]["b"]["value"]
       assert_equal 102, res["data"]["c"]["value"]
+      assert_equal 2, res["data"]["d"]["value"]
     end
   end
 
@@ -178,14 +195,19 @@ describe GraphQL::Execution::Lazy do
     let(:map) { GraphQL::Execution::Lazy::LazyMethodMap.new }
 
     it "finds methods for classes and subclasses" do
-      map.set(LazyHelpers::Wrapper, :item)
-      map.set(LazyHelpers::SumAll, :value)
+      map.set(LazyHelpers::Wrapper, :item, :exec)
+      map.set(LazyHelpers::SumAll, :value, :exec)
       b = LazyHelpers::Wrapper.new(1)
       sub_b = LazyHelpers::Wrapper.new(2)
       s = LazyHelpers::SumAll.new(3)
-      assert_equal(:item, map.get(b))
-      assert_equal(:item, map.get(sub_b))
-      assert_equal(:value, map.get(s))
+      assert_equal(:item, map.get(b).value_method)
+      assert_equal(:exec, map.get(b).exec_method)
+
+      assert_equal(:item, map.get(sub_b).value_method)
+      assert_equal(:exec, map.get(sub_b).exec_method)
+
+      assert_equal(:value, map.get(s).value_method)
+      assert_equal(:exec, map.get(s).exec_method)
     end
   end
 end

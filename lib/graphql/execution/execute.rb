@@ -115,20 +115,29 @@ module GraphQL
           end
 
           if field_ctx.schema.lazy?(raw_value)
-            field_ctx.value = Execution::Lazy.new {
-              inner_value = field_ctx.trace("execute_field_lazy", {context: field_ctx}) {
-                begin
+            field_ctx.value = Execution::Lazy.new(
+              value: -> {
+                inner_value = field_ctx.trace("execute_field_lazy", {context: field_ctx}) {
                   begin
-                    field_ctx.field.lazy_resolve(raw_value, arguments, field_ctx)
-                  rescue GraphQL::UnauthorizedError => err
-                    field_ctx.schema.unauthorized_object(err)
+                    begin
+                      field_ctx.field.lazy_resolve(raw_value, arguments, field_ctx)
+                    rescue GraphQL::UnauthorizedError => err
+                      field_ctx.schema.unauthorized_object(err)
+                    end
+                  rescue GraphQL::ExecutionError => err
+                    err
                   end
-                rescue GraphQL::ExecutionError => err
-                  err
+                }
+                continue_or_wait(inner_value, field_ctx.type, field_ctx)
+              },
+              exec: -> {
+                if field_ctx.schema.concurrent?(raw_value)
+                  field_ctx.trace("execute_field_concurrent", {context: field_ctx}) {
+                    field_ctx.field.concurrent_exec(raw_value, arguments, field_ctx)
+                  }
                 end
               }
-              continue_or_wait(inner_value, field_ctx.type, field_ctx)
-            }
+            )
           else
             continue_or_wait(raw_value, field_ctx.type, field_ctx)
           end
@@ -143,8 +152,10 @@ module GraphQL
         # and resolve child fields
         def continue_or_wait(raw_value, field_type, field_ctx)
           if field_ctx.schema.lazy?(raw_value)
-            field_ctx.value = Execution::Lazy.new {
-              inner_value = begin
+            field_ctx.value = Execution::Lazy.new(
+              value: -> {
+                inner_value =
+                begin
                   begin
                     field_ctx.schema.sync_lazy(raw_value)
                   rescue GraphQL::UnauthorizedError => err
@@ -154,8 +165,14 @@ module GraphQL
                   err
                 end
 
-              field_ctx.value = continue_or_wait(inner_value, field_type, field_ctx)
-            }
+                field_ctx.value = continue_or_wait(inner_value, field_type, field_ctx)
+              },
+              exec: -> {
+                if field_ctx.schema.concurrent?(raw_value)
+                  field_ctx.schema.exec_concurrent(raw_value)
+                end
+              }
+            )
           else
             field_ctx.value = continue_resolve_field(raw_value, field_type, field_ctx)
           end

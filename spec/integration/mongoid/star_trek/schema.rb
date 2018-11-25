@@ -262,6 +262,10 @@ module StarTrek
 
       loaded[@id]
     end
+
+    def execute
+      # no-op
+    end
   end
 
   class LazyWrapper
@@ -275,6 +279,10 @@ module StarTrek
 
     def value
       @resolved_value = @value || @lazy_value.call
+    end
+
+    def execute
+      # no-op
     end
   end
 
@@ -394,8 +402,8 @@ module StarTrek
       GraphQL::Schema::UniqueWithinType.encode(type.name, object.id)
     end
 
-    lazy_resolve(LazyWrapper, :value)
-    lazy_resolve(LazyLoader, :value)
+    lazy_resolve(LazyWrapper, :value, :execute)
+    lazy_resolve(LazyLoader, :value, :execute)
 
     instrument(:field, ClassNameRecorder.new(:before_built_ins))
     instrument(:field, ClassNameRecorder.new(:after_built_ins), after_built_ins: true)

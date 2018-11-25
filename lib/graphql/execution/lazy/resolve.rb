@@ -35,12 +35,17 @@ module GraphQL
           if acc.empty?
             Lazy::NullResult
           else
-            Lazy.new {
-              acc.each_with_index { |ctx, idx|
-                acc[idx] = ctx.value.value
-              }
-              resolve_in_place(acc)
-            }
+            Lazy.new(
+              value: -> {
+                acc.each { |ctx| ctx.value.execute }
+
+                acc.each_with_index { |ctx, idx|
+                  acc[idx] = ctx.value.value
+                }
+                resolve_in_place(acc)
+              },
+              exec: -> {}
+            )
           end
         end
 

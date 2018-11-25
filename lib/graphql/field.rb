@@ -123,6 +123,7 @@ module GraphQL
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :description, :deprecation_reason,
       :resolve, :lazy_resolve,
+      :concurrent_exec,
       :type, :arguments,
       :property, :hash_key, :complexity,
       :mutation, :function,
@@ -138,6 +139,7 @@ module GraphQL
       :name, :deprecation_reason, :description, :description=, :property, :hash_key,
       :mutation, :arguments, :complexity, :function,
       :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc, :resolve_proc,
+      :concurrent_exec, :concurrent_exec=, :concurrent_exec_proc,
       :type, :type=, :name=, :property=, :hash_key=,
       :relay_node_field, :relay_nodes_field, :edges?, :edge_class, :subscription_scope,
       :introspection?
@@ -154,6 +156,9 @@ module GraphQL
 
     # @return [<#call(obj, args, ctx)>] A proc-like object which can be called trigger a lazy resolution
     attr_reader :lazy_resolve_proc
+
+    # @return [<#call(obj, args, ctx)>] A proc-like object which can be called trigger a concurrent execution
+    attr_reader :concurrent_exec_proc
 
     # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
     attr_reader :name
@@ -218,6 +223,7 @@ module GraphQL
       @arguments = {}
       @resolve_proc = build_default_resolver
       @lazy_resolve_proc = DefaultLazyResolve
+      @concurrent_exec_proc = DefaultConcurrentExec
       @relay_node_field = false
       @connection = false
       @connection_max_page_size = nil
@@ -307,12 +313,21 @@ module GraphQL
       @lazy_resolve_proc = new_lazy_resolve_proc
     end
 
+    def concurrent_exec(obj, args, ctx)
+      @concurrent_exec_proc.call(obj, args, ctx)
+    end
+
+    def concurrent_exec=(new_concurrent_exec_proc)
+      @concurrent_exec_proc = new_concurrent_exec_proc
+    end
+
     # Prepare a lazy value for this field. It may be `then`-ed and resolved later.
     # @return [GraphQL::Execution::Lazy] A lazy wrapper around `obj` and its registered method name
     def prepare_lazy(obj, args, ctx)
-      GraphQL::Execution::Lazy.new {
-        lazy_resolve(obj, args, ctx)
-      }
+      GraphQL::Execution::Lazy.new(
+        value: -> { lazy_resolve(obj, args, ctx) },
+        exec: -> { concurrent_exec(obj, args, ctx) }
+      )
     end
 
     private
@@ -324,6 +339,12 @@ module GraphQL
     module DefaultLazyResolve
       def self.call(obj, args, ctx)
         ctx.schema.sync_lazy(obj)
+      end
+    end
+
+    module DefaultConcurrentExec
+      def self.call(obj, args, ctx)
+        ctx.schema.exec_concurrent(obj)
       end
     end
   end
