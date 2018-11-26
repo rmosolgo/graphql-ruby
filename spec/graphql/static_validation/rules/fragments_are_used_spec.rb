@@ -38,4 +38,21 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
       assert_equal({}, result)
     end
   end
+
+  describe "invalid unused fragments" do
+    let(:query_string) {"
+      query getCheese {
+        name
+      }
+      fragment Invalid on DoesNotExist { fatContent }
+    "}
+
+    it "handles them gracefully" do
+      assert_includes(errors, {
+        "message"=>"No such type DoesNotExist, so it can't be a fragment condition",
+        "locations"=>[{"line"=>5, "column"=>7}],
+        "fields"=>["fragment Invalid"]
+      })
+    end
+  end
 end
