@@ -12,7 +12,7 @@ module GraphQL
         end
 
         dependency_map.unused_dependencies.each do |fragment|
-          if !fragment.name.nil?
+          if fragment && !fragment.name.nil?
             add_error("Fragment #{fragment.name} was defined, but not used", fragment.node, path: fragment.path)
           end
         end
