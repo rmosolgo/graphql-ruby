@@ -47,7 +47,6 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
       fragment Invalid on DoesNotExist { fatContent }
     "}
 
-    focus
     it "handles them gracefully" do
       assert_includes(errors, {
         "message"=>"No such type DoesNotExist, so it can't be a fragment condition",
