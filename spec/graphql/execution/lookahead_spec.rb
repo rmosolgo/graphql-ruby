@@ -60,6 +60,9 @@ describe GraphQL::Execution::Lookahead do
     class Schema < GraphQL::Schema
       query(Query)
       instrument :query, LookaheadInstrumenter
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
     end
   end
 
