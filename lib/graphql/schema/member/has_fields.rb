@@ -127,7 +127,10 @@ Check `inherited` on #{self}'s superclasses.
 ERR
           end
           default_resolve_module.module_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def #{method_name}(**args)
+            # method_name can be a hash_key (see lib/graphql/schema/field.rb)
+            # so we need to make a raw define_method :sym call to avoid crashing
+            # on hash keys like :'some key with/weird-chars'
+            define_method #{method_name.inspect} do |**args|
               field_inst = self.class.fields[#{field_key}] || raise(%|Failed to find field #{field_key} for \#{self.class} among \#{self.class.fields.keys}|)
               field_inst.resolve_field_method(self, args, context)
             end
