@@ -26,9 +26,9 @@ describe("sync operations", () => {
           url = options.url
         },
       }
-      sync(options)
-
-      expect(url).toEqual("bogus")
+      return sync(options).then(function() {
+        expect(url).toEqual("bogus")
+      })
     })
   })
 
@@ -42,15 +42,15 @@ describe("sync operations", () => {
         quiet: true,
         send: (sendPayload, opts) => { payload = sendPayload },
       }
-      sync(options)
+      return sync(options).then(function() {
+        expect(payload.operations).toMatchSnapshot()
 
-      expect(payload.operations).toMatchSnapshot()
-
-      options.glob += "**/*.graphql"
-      sync(options)
-
-      // Get the same result, even when the glob already has a file extension
-      expect(payload.operations).toMatchSnapshot()
+        options.glob += "**/*.graphql"
+        return sync(options).then(function() {
+          // Get the same result, even when the glob already has a file extension
+          expect(payload.operations).toMatchSnapshot()
+        })
+      })
     })
 
     it("Uses a custom hash function if provided", () => {
@@ -66,9 +66,9 @@ describe("sync operations", () => {
         },
         send: (sendPayload, opts) => { payload = sendPayload },
       }
-      sync(options)
-
-      expect(payload.operations).toMatchSnapshot()
+      return sync(options).then(function() {
+        expect(payload.operations).toMatchSnapshot()
+      })
     })
   })
 
@@ -82,9 +82,9 @@ describe("sync operations", () => {
         url: "bogus",
         send: (sendPayload, opts) => { payload = sendPayload },
       }
-      sync(options)
-
-      expect(payload.operations).toMatchSnapshot()
+      return sync(options).then(function () {
+        expect(payload.operations).toMatchSnapshot()
+      })
     })
   })
 
@@ -99,9 +99,9 @@ describe("sync operations", () => {
         // mode: "project" is the default
         send: (sendPayload, opts) => { payload = sendPayload },
       }
-      sync(options)
-
-      expect(payload.operations).toMatchSnapshot()
+      return sync(options).then(function () {
+        expect(payload.operations).toMatchSnapshot()
+      })
     })
 
     it("Uses mode: file to process each file separately", () => {
@@ -114,12 +114,30 @@ describe("sync operations", () => {
         mode: "file",
         send: (sendPayload, opts) => { payload = sendPayload },
       }
-      sync(options)
-
-      expect(payload.operations).toMatchSnapshot()
+      return sync(options).then(function() {
+        expect(payload.operations).toMatchSnapshot()
+      })
     })
   })
 
+  describe("Promise result", () => {
+    it("Yields the payload and generated code", () => {
+      var options = {
+        client: "test-1",
+        path: "./__tests__/project",
+        url: "bogus",
+        quiet: true,
+        send: (sendPayload, opts) => { },
+      }
+
+      return sync(options).then(function(payload) {
+        expect(payload.operations.length).toEqual(5)
+        var generatedCode = fs.readFileSync("./OperationStoreClient.js", "utf8")
+        expect(payload.generatedCode).toEqual(generatedCode)
+        fs.unlinkSync("./OperationStoreClient.js")
+      })
+    })
+  })
   describe("Sync output", () => {
     it("Generates a usable artifact for middleware", () => {
       var options = {
@@ -129,13 +147,13 @@ describe("sync operations", () => {
         quiet: true,
         send: (sendPayload, opts) => { },
       }
-      sync(options)
-
-      var generatedCode = fs.readFileSync("./OperationStoreClient.js", "utf8")
-      expect(generatedCode).toMatch('"GetStuff": "5f0da489cf508a7c65ff5fa144e50545"')
-      expect(generatedCode).toMatch('module.exports = OperationStoreClient')
-      expect(generatedCode).toMatch('var _client = "test-1"')
-      fs.unlinkSync("./OperationStoreClient.js")
+      return sync(options).then(function() {
+        var generatedCode = fs.readFileSync("./OperationStoreClient.js", "utf8")
+        expect(generatedCode).toMatch('"GetStuff": "5f0da489cf508a7c65ff5fa144e50545"')
+        expect(generatedCode).toMatch('module.exports = OperationStoreClient')
+        expect(generatedCode).toMatch('var _client = "test-1"')
+        fs.unlinkSync("./OperationStoreClient.js")
+      })
     })
 
     it("Takes an outfile option", () => {
@@ -147,13 +165,13 @@ describe("sync operations", () => {
         outfile: "__crazy_outfile.js",
         send: (sendPayload, opts) => { },
       }
-      sync(options)
-
-      var generatedCode = fs.readFileSync("./__crazy_outfile.js", "utf8")
-      expect(generatedCode).toMatch('"GetStuff": "5f0da489cf508a7c65ff5fa144e50545"')
-      expect(generatedCode).toMatch('module.exports = OperationStoreClient')
-      expect(generatedCode).toMatch('var _client = "test-2"')
-      fs.unlinkSync("./__crazy_outfile.js")
+      return sync(options).then(function() {
+        var generatedCode = fs.readFileSync("./__crazy_outfile.js", "utf8")
+        expect(generatedCode).toMatch('"GetStuff": "5f0da489cf508a7c65ff5fa144e50545"')
+        expect(generatedCode).toMatch('module.exports = OperationStoreClient')
+        expect(generatedCode).toMatch('var _client = "test-2"')
+        fs.unlinkSync("./__crazy_outfile.js")
+      })
     })
   })
 
@@ -167,9 +185,9 @@ describe("sync operations", () => {
         url: "bogus",
         send: (sendPayload, opts) => { },
       }
-      sync(options)
-
-      expect(spy.mock.calls).toMatchSnapshot()
+      return sync(options).then(function() {
+        expect(spy.mock.calls).toMatchSnapshot()
+      })
     })
 
     it("Can be quieted with quiet: true", () => {
@@ -182,9 +200,9 @@ describe("sync operations", () => {
         quiet: true,
         send: (sendPayload, opts) => { },
       }
-      sync(options)
-
-      expect(spy.mock.calls).toMatchSnapshot()
+      return sync(options).then(function() {
+        expect(spy.mock.calls).toMatchSnapshot()
+      })
     })
   })
 
@@ -193,7 +211,7 @@ describe("sync operations", () => {
       return nock("http://example.com").post("/stored_operations/sync").reply(status, data)
     }
 
-    it("prints failure", () => {
+    it("prints failure and sends the message to the promise", () => {
       var spyConsoleLog = console.log
       var spyConsoleError = console.error
 
@@ -213,7 +231,8 @@ describe("sync operations", () => {
 
       var syncPromise = sync(options)
 
-      return syncPromise.then(() => {
+      return syncPromise.catch((errmsg) => {
+        expect(errmsg).toEqual("Sync failed: GetStuff: something")
         expect(spyConsoleLog.mock.calls).toMatchSnapshot()
         expect(spyConsoleError.mock.calls).toMatchSnapshot()
         jest.clearAllMocks();

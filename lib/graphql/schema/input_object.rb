@@ -5,6 +5,7 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
       extend Forwardable
       extend GraphQL::Schema::Member::HasArguments
+      include GraphQL::Dig
 
       def initialize(values = nil, ruby_kwargs: nil, context:, defaults_used:)
         @context = context

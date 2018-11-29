@@ -161,4 +161,55 @@ describe GraphQL::Schema::InputObject do
       assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4 } }, input_object.to_h)
     end
   end
+
+  describe "#dig" do
+    module InputObjectDigTest
+      class TestInput1 < GraphQL::Schema::InputObject
+        graphql_name "TestInput1"
+        argument :d, Int, required: true
+        argument :e, Int, required: true
+      end
+
+      class TestInput2 < GraphQL::Schema::InputObject
+        graphql_name "TestInput2"
+        argument :a, Int, required: true
+        argument :b, Int, required: true
+        argument :c, TestInput1, as: :inputObject, required: true
+      end
+
+      TestInput1.to_graphql
+      TestInput2.to_graphql
+    end
+    arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
+
+    input_object = InputObjectDigTest::TestInput2.new(
+      arg_values,
+      context: nil,
+      defaults_used: Set.new
+    )
+    it "returns the value at that key" do
+      assert_equal 1, input_object.dig("a")
+      assert_equal 1, input_object.dig(:a)
+      assert input_object.dig("inputObject").is_a?(GraphQL::Schema::InputObject)
+    end
+
+    it "works with nested keys" do
+      assert_equal 3, input_object.dig("inputObject", "d")
+      assert_equal 3, input_object.dig(:inputObject, :d)
+      assert_equal 3, input_object.dig("inputObject", :d)
+      assert_equal 3, input_object.dig(:inputObject, "d")
+    end
+
+    it "returns nil for missing keys" do
+      assert_nil input_object.dig("z")
+      assert_nil input_object.dig(7)
+    end
+
+    it "handles underscored keys" do
+      # TODO - shouldn't this work too?
+      # assert_equal 3, input_object.dig('input_object', 'd')
+      assert_equal 3, input_object.dig(:input_object, :d)
+    end
+
+  end
 end

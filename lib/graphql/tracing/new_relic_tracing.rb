@@ -17,8 +17,8 @@ module GraphQL
       # @param set_transaction_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
       #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
       #   It can also be specified per-query with `context[:set_new_relic_transaction_name]`.
-      def initialize(set_transaction_name: false)
-        @set_transaction_name = set_transaction_name
+      def initialize(options = {})
+        @set_transaction_name = options.fetch(:set_transaction_name, false)
         super
       end
 
