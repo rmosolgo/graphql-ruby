@@ -75,6 +75,7 @@ describe GraphQL::Schema::Member::HasFields do
       field :string3, SubSubObjectWithStringField, null: false, method: :object
       field :float1, ObjectWithFloatField, null: false, method: :object
       field :float2, ObjectWithSubFloatField, null: false, method: :object
+      field :hash_key1, String, null: false, hash_key: :'foo bar/fizz-buzz'
     end
 
     class Schema < GraphQL::Schema
