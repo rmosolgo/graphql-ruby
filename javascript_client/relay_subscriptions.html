@@ -143,6 +143,29 @@
 
 <p>Since <code class="highlighter-rouge">OperationStoreClient</code> is in the <code class="highlighter-rouge">fetchOperation</code> function, it will apply to all GraphQL operations.</p>
 
+<h2 id="ably">Ably</h2>
+
+<p>Pass <code class="highlighter-rouge">ably:</code> to get Subscription updates over Ably:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Require the helper function</span>
+<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"graphql-ruby-client/subscriptions/createHandler"</span><span class="p">)</span>
+
+<span class="c1">// Load Ably and create a client</span>
+<span class="kd">const</span> <span class="nx">Ably</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"ably"</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">ablyClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Ably</span><span class="p">.</span><span class="nx">Realtime</span><span class="p">(</span><span class="s2">"your-app-key"</span><span class="p">)</span>
+
+<span class="c1">// Create a Relay Modern-compatible handler</span>
+<span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createHandler</span><span class="p">({</span>
+  <span class="na">pusher</span><span class="p">:</span> <span class="nx">ablyClient</span><span class="p">,</span>
+  <span class="na">fetchOperation</span><span class="p">:</span> <span class="kc">null</span> <span class="c1">// TODO!</span>
+<span class="p">})</span>
+
+<span class="c1">// Create a Relay Modern network with the handler</span>
+<span class="kd">var</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">Network</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">fetchQuery</span><span class="p">,</span> <span class="nx">subscriptionHandler</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>For <code class="highlighter-rouge">fetchOperation</code>, see <a href="#fetchoperation-function"><code class="highlighter-rouge">fetchOperation</code> function</a> above.</p>
+
 <h2 id="actioncable">ActionCable</h2>
 
 <p>With this configuration, <code class="highlighter-rouge">subscription</code> queries will be routed to ActionCable.</p>
