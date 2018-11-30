@@ -42,7 +42,7 @@ module GraphQL
           legacy_root_type = schema.root_type_for_operation(root_op_type)
           root_type = legacy_root_type.metadata[:type_class] || raise("Invariant: type must be class-based: #{legacy_root_type}")
           object_proxy = root_type.authorized_new(query.root_value, context)
-
+          object_proxy = schema.sync_lazy(object_proxy)
           path = []
           evaluate_selections(path, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
         end
