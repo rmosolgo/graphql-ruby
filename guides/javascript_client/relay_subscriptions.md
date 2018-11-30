@@ -102,6 +102,30 @@ const network = Network.create(fetchQuery, subscriptionHandler)
 
 Since `OperationStoreClient` is in the `fetchOperation` function, it will apply to all GraphQL operations.
 
+## Ably
+
+Pass `ably:` to get Subscription updates over Ably:
+
+```js
+// Require the helper function
+var createHandler = require("graphql-ruby-client/subscriptions/createHandler")
+
+// Load Ably and create a client
+const Ably = require("ably")
+const ablyClient = new Ably.Realtime("your-app-key")
+
+// Create a Relay Modern-compatible handler
+var subscriptionHandler = createHandler({
+  pusher: ablyClient,
+  fetchOperation: null // TODO!
+})
+
+// Create a Relay Modern network with the handler
+var network = Network.create(fetchQuery, subscriptionHandler)
+```
+
+For `fetchOperation`, see [`fetchOperation` function](#fetchoperation-function) above.
+
 ## ActionCable
 
 With this configuration, `subscription` queries will be routed to ActionCable.
