@@ -1065,7 +1065,14 @@ module GraphQL
     # @param ctx [GraphQL::Query::Context] the context for this query
     # @return [Object] A GraphQL-ready (non-lazy) object
     def self.sync_lazy(value)
-      yield(value)
+      if block_given?
+        # This was already hit by the instance, just give it back
+        yield(value)
+      else
+        # This was called directly on the class, hit the instance
+        # which has the lazy method map
+        self.graphql_definition.sync_lazy(value)
+      end
     end
 
     # @see Schema.sync_lazy for a hook to override
