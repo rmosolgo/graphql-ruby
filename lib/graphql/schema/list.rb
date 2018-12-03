@@ -23,11 +23,6 @@ module GraphQL
       def to_type_signature
         "[#{@of_type.to_type_signature}]"
       end
-
-      # @return [Integer]
-      def list_depth
-        @of_type.list_depth + 1
-      end
     end
   end
 end
