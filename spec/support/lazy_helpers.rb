@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 module LazyHelpers
+  MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK = 44
+
   class Wrapper
     def initialize(item = nil, &block)
       if block
@@ -47,7 +49,19 @@ module LazyHelpers
   end
 
   class LazySum < GraphQL::Schema::Object
-    field :value, Integer, null: true, resolve: ->(o, a, c) { o == 13 ? nil : o }
+    field :value, Integer, null: true
+    def value
+      object == 13 ? nil : object
+    end
+
+    def self.authorized?(obj, ctx)
+      if obj == MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK
+        Wrapper.new { true }
+      else
+        true
+      end
+    end
+
     field :nestedSum, LazySum, null: false do
       argument :value, Integer, required: true
     end
@@ -72,33 +86,40 @@ module LazyHelpers
     GraphQL::DeprecatedDSL.activate
   end
 
-  LazyQuery = GraphQL::ObjectType.define do
-    name "Query"
-    field :int, !types.Int do
-      argument :value, !types.Int
-      argument :plus, types.Int, default_value: 0
-      resolve ->(o, a, c) { Wrapper.new(a[:value] + a[:plus])}
+  class LazyQuery < GraphQL::Schema::Object
+    field :int, Integer, null: false do
+      argument :value, Integer, required: true
+      argument :plus, Integer, required: false, default_value: 0
+    end
+    def int(value:, plus:)
+      Wrapper.new(value + plus)
     end
 
-    field :nestedSum, !LazySum do
-      argument :value, !types.Int
-      resolve ->(o, args, c) { SumAll.new(args[:value]) }
+    field :nested_sum, LazySum, null: false do
+      argument :value, Integer, required: true
     end
 
-    field :nullableNestedSum, LazySum do
-      argument :value, types.Int
-      resolve ->(o, args, c) {
-        if args[:value] == 13
-          Wrapper.new { raise GraphQL::ExecutionError.new("13 is unlucky") }
-        else
-          SumAll.new(args[:value])
-        end
-      }
+    def nested_sum(value:)
+      SumAll.new(value)
     end
 
-    field :listSum, types[LazySum] do
-      argument :values, types[types.Int]
-      resolve ->(o, args, c) { args[:values] }
+    field :nullable_nested_sum, LazySum, null: true do
+      argument :value, Integer, required: true
+    end
+
+    def nullable_nested_sum(value:)
+      if value == 13
+        Wrapper.new { raise GraphQL::ExecutionError.new("13 is unlucky") }
+      else
+        SumAll.new(value)
+      end
+    end
+
+    field :list_sum, [LazySum], null: true do
+      argument :values, [Integer], required: true
+    end
+    def list_sum(values:)
+      values
     end
   end
 
@@ -153,7 +174,7 @@ module LazyHelpers
     end
   end
 
-  def run_query(query_str)
-    LazySchema.execute(query_str)
+  def run_query(query_str, **rest)
+    LazySchema.execute(query_str, **rest)
   end
 end
