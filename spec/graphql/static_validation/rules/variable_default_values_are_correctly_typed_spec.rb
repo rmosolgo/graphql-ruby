@@ -30,19 +30,19 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
         "message"=>"Default value for $badInt doesn't match type Int",
         "locations"=>[{"line"=>6, "column"=>7}],
         "path"=>["query getCheese"],
-        "extensions"=>{"rule"=>"StaticValidation::VariableDefaultValuesAreCorrectlyTyped", "name"=>"badInt", "type"=>"Int"}
+        "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"badInt", "typeName"=>"Int"}
       },
       {
         "message"=>"Default value for $badInput doesn't match type DairyProductInput",
         "locations"=>[{"line"=>8, "column"=>7}],
         "path"=>["query getCheese"],
-        "extensions"=>{"rule"=>"StaticValidation::VariableDefaultValuesAreCorrectlyTyped", "name"=>"badInput", "type"=>"DairyProductInput"}
+        "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"badInput", "typeName"=>"DairyProductInput"}
       },
       {
         "message"=>"Non-null variable $nonNull can't have a default value",
         "locations"=>[{"line"=>9, "column"=>7}],
         "path"=>["query getCheese"],
-        "extensions"=>{"rule"=>"StaticValidation::VariableDefaultValuesAreCorrectlyTyped", "name"=>"nonNull"}
+        "extensions"=>{"code"=>"defaultValueInvalidOnNonNullVariable", "variableName"=>"nonNull"}
       }
     ]
     assert_equal(expected, errors)
@@ -120,19 +120,19 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
             "message"=>"Non-null variable $a can't have a default value",
             "locations"=>[{"line"=>3, "column"=>11}],
             "path"=>["query getCheese"],
-            "extensions"=>{"rule"=>"StaticValidation::VariableDefaultValuesAreCorrectlyTyped", "name"=>"a"}
+            "extensions"=>{"code"=>"defaultValueInvalidOnNonNullVariable", "variableName"=>"a"}
           },
           {
             "message"=>"Non-null variable $b can't have a default value",
             "locations"=>[{"line"=>4, "column"=>11}],
             "path"=>["query getCheese"],
-            "extensions"=>{"rule"=>"StaticValidation::VariableDefaultValuesAreCorrectlyTyped", "name"=>"b"}
+            "extensions"=>{"code"=>"defaultValueInvalidOnNonNullVariable", "variableName"=>"b"}
           },
           {
             "message"=>"Default value for $c doesn't match type ComplexInput",
             "locations"=>[{"line"=>5, "column"=>11}],
             "path"=>["query getCheese"],
-            "extensions"=>{"rule"=>"StaticValidation::VariableDefaultValuesAreCorrectlyTyped", "name"=>"c", "type"=>"ComplexInput"}
+            "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"c", "typeName"=>"ComplexInput"}
           }
         ]
 
@@ -189,7 +189,7 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
         "message"=> "cannot coerce to Float",
         "locations"=>[{"line"=>3, "column"=>9}],
         "path"=>["query"],
-        "extensions"=>{"rule"=>"StaticValidation::VariableDefaultValuesAreCorrectlyTyped", "name"=>"value", "type"=>"Time"}
+        "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"value", "typeName"=>"Time"}
       }
     end
   end

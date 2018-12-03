@@ -172,13 +172,11 @@ module GraphQL
 
       private
 
-      # Error `message` is located at `node`
-      def add_error(message, nodes, path: nil, extensions: {})
-        path ||= @path.dup
-        nodes = Array(nodes)
-        m = GraphQL::StaticValidation::Message.new(message, nodes: nodes, path: path, extensions: extensions)
-        context.errors << m
+      def add_error(error)
+        error.path ||= @path.dup
+        context.errors << error
       end
+
     end
   end
 end

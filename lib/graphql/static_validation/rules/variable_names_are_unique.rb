@@ -9,10 +9,11 @@ module GraphQL
           var_defns.each { |v| vars_by_name[v.name] << v }
           vars_by_name.each do |name, defns|
             if defns.size > 1
-              add_error("There can only be one variable named \"#{name}\"", defns, extensions: {
-                "rule": "StaticValidation::VariableNamesAreUnique",
-                "name": name
-              })
+              add_error(GraphQL::StaticValidation::VariableNamesAreUniqueError.new(
+                "There can only be one variable named \"#{name}\"",
+                nodes: defns,
+                name: name
+              ))
             end
           end
         end

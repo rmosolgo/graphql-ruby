@@ -17,7 +17,7 @@ describe GraphQL::StaticValidation::FragmentTypesExist do
       "message"=>"Fragment definition has no name",
       "locations"=>[{"line"=>2, "column"=>5}],
       "path"=>["fragment "],
-      "extensions"=>{"rule"=>"StaticValidation::FragmentsAreNamed"}
+      "extensions"=>{"code"=>"anonymousFragment"}
     }
     assert_includes(errors, fragment_def_error, "on fragment definitions")
   end

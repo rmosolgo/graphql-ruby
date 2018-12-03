@@ -32,19 +32,19 @@ describe GraphQL::StaticValidation::FragmentSpreadsArePossible do
         "message"=>"Fragment on Milk can't be spread inside Cheese",
         "locations"=>[{"line"=>6, "column"=>9}],
         "path"=>["query getCheese", "cheese", "... on Milk"],
-        "extensions"=>{"rule"=>"StaticValidation::FragmentSpreadsArePossible", "name"=>"", "type"=>"Milk", "parent"=>"Cheese"}
+        "extensions"=>{"code"=>"cannotSpreadFragment", "typeName"=>"Milk", "fragmentName"=>"unknown", "parentName"=>"Cheese"}
       },
       {
         "message"=>"Fragment milkFields on Milk can't be spread inside Cheese",
         "locations"=>[{"line"=>4, "column"=>9}],
         "path"=>["query getCheese", "cheese", "... milkFields"],
-        "extensions"=>{"rule"=>"StaticValidation::FragmentSpreadsArePossible", "name"=>" milkFields", "type"=>"Milk", "parent"=>"Cheese"}
+        "extensions"=>{"code"=>"cannotSpreadFragment", "typeName"=>"Milk", "fragmentName"=>" milkFields", "parentName"=>"Cheese"}
       },
       {
         "message"=>"Fragment milkFields on Milk can't be spread inside Cheese",
         "locations"=>[{"line"=>18, "column"=>7}],
         "path"=>["fragment cheeseFields", "... milkFields"],
-        "extensions"=>{"rule"=>"StaticValidation::FragmentSpreadsArePossible", "name"=>" milkFields", "type"=>"Milk", "parent"=>"Cheese"}
+        "extensions"=>{"code"=>"cannotSpreadFragment", "typeName"=>"Milk", "fragmentName"=>" milkFields", "parentName"=>"Cheese"}
       }
     ]
     assert_equal(expected, errors)

@@ -95,7 +95,7 @@ describe GraphQL::Execution::Multiplex do
             "message"=>"Field must have selections (field 'nullableNestedSum' returns LazySum but has no selections. Did you mean 'nullableNestedSum { ... }'?)",
             "locations"=>[{"line"=>1, "column"=>4}],
             "path"=>["query", "validationError"],
-            "extensions"=>{"rule"=>"StaticValidation::FieldsHaveAppropriateSelections", "name"=>"field 'nullableNestedSum'", "type"=>"LazySum"}
+            "extensions"=>{"code"=>"selectionMismatch", "nodeName"=>"field 'nullableNestedSum'", "typeName"=>"LazySum"}
           }]
         },
       ]

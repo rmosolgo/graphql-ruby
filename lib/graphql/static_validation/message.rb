@@ -9,26 +9,25 @@ module GraphQL
         def message(message, nodes, context: nil, path: nil, extensions: {})
           path ||= context.path
           nodes = Array(nodes)
-          GraphQL::StaticValidation::Message.new(message, nodes: nodes, path: path, extensions: extensions)
+          GraphQL::StaticValidation::Message.new(message, nodes: nodes, path: path)
         end
       end
 
-      attr_reader :message, :path
+      attr_reader   :message
+      attr_accessor :path
 
-      def initialize(message, path: [], nodes: [], extensions: {})
+      def initialize(message, path: nil, nodes: [])
         @message = message
-        @nodes = nodes
+        @nodes = Array(nodes)
         @path = path
-        @extensions = extensions
       end
 
       # A hash representation of this Message
       def to_h
         {
           "message" => message,
-          "locations" => locations,
-          "path" => path,
-        }.tap { |hash| hash["extensions"] = @extensions.collect{ |k,v| [k.to_s, v] }.to_h unless @extensions.empty? }
+          "locations" => locations
+        }.tap { |h| h["path"] = path unless path.nil? }
       end
 
       private

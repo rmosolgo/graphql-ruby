@@ -35,7 +35,7 @@ describe GraphQL::StaticValidation::Validator do
         "message" => "Variable $undefinedVar is used by  but not declared",
         "locations" => [{"line" => 1, "column" => 14, "filename" => "not_a_real.graphql"}],
         "path" => ["query", "cheese", "id"],
-        "extensions"=>{"rule"=>"StaticValidation::VariablesAreUsedAndDefined", "variable"=>"undefinedVar", "usage"=>"not declared"}
+        "extensions"=>{"code"=>"variableNotDeclared", "variableName"=>"undefinedVar"}
       }]
       assert_equal expected_errors, errors
     end
@@ -116,7 +116,8 @@ describe GraphQL::StaticValidation::Validator do
             {
               "message"=>"Fragment cheeseFields contains an infinite loop",
               "locations"=>[{"line"=>10, "column"=>9}],
-              "path"=>["fragment cheeseFields"]
+              "path"=>["fragment cheeseFields"],
+              "extensions"=>{"code"=>"infiniteLoop", "fragmentName"=>"cheeseFields"}
             }
           ]
           assert_equal(expected, errors)

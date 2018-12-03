@@ -43,19 +43,19 @@ describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
         "message"=>"Variable $notUsedVar is declared by getCheese but not used",
         "locations"=>[{"line"=>2, "column"=>5}],
         "path"=>["query getCheese"],
-        "extensions"=>{"rule"=>"StaticValidation::VariablesAreUsedAndDefined", "variable"=>"notUsedVar", "usage"=>"delcared by getCheese"}
+        "extensions"=>{"code"=>"variableNotUsed", "variableName"=>"notUsedVar"}
       },
       {
         "message"=>"Variable $undefinedVar is used by getCheese but not declared",
         "locations"=>[{"line"=>19, "column"=>22}],
         "path"=>["query getCheese", "c3", "id"],
-        "extensions"=>{"rule"=>"StaticValidation::VariablesAreUsedAndDefined", "variable"=>"undefinedVar", "usage"=>"not declared"}
+        "extensions"=>{"code"=>"variableNotDeclared", "variableName"=>"undefinedVar"}
       },
       {
         "message"=>"Variable $undefinedFragmentVar is used by innerCheeseFields but not declared",
         "locations"=>[{"line"=>29, "column"=>22}],
         "path"=>["fragment innerCheeseFields", "c4", "id"],
-        "extensions"=>{"rule"=>"StaticValidation::VariablesAreUsedAndDefined", "variable"=>"undefinedFragmentVar", "usage"=>"not declared"}
+        "extensions"=>{"code"=>"variableNotDeclared", "variableName"=>"undefinedFragmentVar"}
       },
     ]
 

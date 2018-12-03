@@ -36,19 +36,19 @@ describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
         "message"=>"Invalid fragment on type Boolean (must be Union, Interface or Object)",
         "locations"=>[{"line"=>6, "column"=>11}],
         "path"=>["query getCheese", "cheese", "... on Cheese", "... on Boolean"],
-        "extensions"=>{"rule"=>"StaticValidation::FragmentsAreOnCompositeTypes", "type"=>"Boolean"}
+        "extensions"=>{"code"=>"fragmentOnNonCompositeType", "typeName"=>"Boolean"}
       },
       {
         "message"=>"Invalid fragment on type DairyProductInput (must be Union, Interface or Object)",
         "locations"=>[{"line"=>16, "column"=>9}],
         "path"=>["query getCheese", "cheese", "... on DairyProductInput"],
-        "extensions"=>{"rule"=>"StaticValidation::FragmentsAreOnCompositeTypes", "type"=>"DairyProductInput"}
+        "extensions"=>{"code"=>"fragmentOnNonCompositeType", "typeName"=>"DairyProductInput"}
       },
       {
         "message"=>"Invalid fragment on type Int (must be Union, Interface or Object)",
         "locations"=>[{"line"=>22, "column"=>5}],
         "path"=>["fragment intFields"],
-        "extensions"=>{"rule"=>"StaticValidation::FragmentsAreOnCompositeTypes", "type"=>"Int"}
+        "extensions"=>{"code"=>"fragmentOnNonCompositeType", "typeName"=>"Int"}
       },
     ]
     assert_equal(expected, errors)

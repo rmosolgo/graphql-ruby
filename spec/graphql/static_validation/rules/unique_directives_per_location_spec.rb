@@ -102,7 +102,7 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 20 }],
         "path" => ["query", "type", "field"],
-        "extensions"=>{"rule"=>"StaticValidation::UniqueDirectivesPerLocation", "directive"=>"A"}
+        "extensions" => {"code"=>"directiveNotUniqueForLocation", "directiveName"=>"A"}
       }
     end
   end
@@ -122,14 +122,14 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 20 }],
         "path" => ["query", "type", "field"],
-        "extensions"=> {"rule"=>"StaticValidation::UniqueDirectivesPerLocation", "directive"=>"A"}
+        "extensions" => {"code"=>"directiveNotUniqueForLocation", "directiveName"=>"A"}
       }
 
       assert_includes errors, {
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 23 }],
         "path" => ["query", "type", "field"],
-        "extensions"=> {"rule"=>"StaticValidation::UniqueDirectivesPerLocation", "directive"=>"A"}
+        "extensions" => {"code"=>"directiveNotUniqueForLocation", "directiveName"=>"A"}
       }
     end
   end
@@ -148,14 +148,14 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 23 }],
         "path" => ["query", "type", "field"],
-        "extensions"=>{"rule"=>"StaticValidation::UniqueDirectivesPerLocation", "directive"=>"A"}
+        "extensions" => {"code"=>"directiveNotUniqueForLocation", "directiveName"=>"A"}
       }
 
       assert_includes errors, {
         "message" => 'The directive "B" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 20 }, { "line" => 4, "column" => 26 }],
         "path" => ["query", "type", "field"],
-        "extensions"=>{"rule"=>"StaticValidation::UniqueDirectivesPerLocation", "directive"=>"B"}
+        "extensions" => {"code"=>"directiveNotUniqueForLocation", "directiveName"=>"B"}
       }
     end
   end
@@ -174,14 +174,14 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 3, "column" => 14 }, { "line" => 3, "column" => 17 }],
         "path" => ["query", "type"],
-        "extensions" => {"rule" => "StaticValidation::UniqueDirectivesPerLocation", "directive" => "A"}
+        "extensions" => {"code"=>"directiveNotUniqueForLocation", "directiveName"=>"A"}
       }
 
       assert_includes errors, {
         "message" => 'The directive "A" can only be used once at this location.',
         "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 20 }],
         "path" => ["query", "type", "field"],
-        "extensions" => {"rule" => "StaticValidation::UniqueDirectivesPerLocation", "directive" => "A"}
+        "extensions" => {"code"=>"directiveNotUniqueForLocation", "directiveName"=>"A"}
       }
     end
   end

@@ -21,7 +21,7 @@ describe GraphQL::StaticValidation::FragmentNamesAreUnique do
       "message"=>"Fragment name \"frag1\" must be unique",
       "locations"=>[{"line"=>8, "column"=>5}, {"line"=>9, "column"=>5}],
       "path"=>[],
-      "extensions"=>{"rule"=>"StaticValidation::FragmentNamesAreUnique", "name"=>"frag1"}
+      "extensions"=>{"code"=>"fragmentNotUnique", "fragmentName"=>"frag1"}
     }
     assert_includes(errors, fragment_def_error)
   end

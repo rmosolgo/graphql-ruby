@@ -57,7 +57,12 @@ module GraphQL
           unless resolved_type.nil?
             extensions["type"] = resolved_type.to_s
           end
-          add_error(msg % { node_name: node_name }, ast_node, extensions: extensions)
+          add_error(GraphQL::StaticValidation::FieldsHaveAppropriateSelectionsError.new(
+            msg % { node_name: node_name },
+            nodes: ast_node,
+            node_name: node_name.to_s,
+            type: resolved_type.nil? ? nil : resolved_type.to_s
+          ))
           false
         else
           true

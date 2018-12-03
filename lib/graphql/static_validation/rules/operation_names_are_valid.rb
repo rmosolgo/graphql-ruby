@@ -18,14 +18,16 @@ module GraphQL
 
         @operation_names.each do |name, nodes|
           if name.nil? && op_count > 1
-            add_error(%|Operation name is required when multiple operations are present|, nodes, extensions: {
-              "rule": "StaticValidation::OperationNamesAreValid"
-            })
+            add_error(GraphQL::StaticValidation::OperationNamesAreValidError.new(
+              %|Operation name is required when multiple operations are present|,
+              nodes: nodes
+            ))
           elsif nodes.length > 1
-            add_error(%|Operation name "#{name}" must be unique|, nodes, extensions: {
-              "rule": "StaticValidation::OperationNamesAreValid",
-              "name": name
-            })
+            add_error(GraphQL::StaticValidation::OperationNamesAreValidError.new(
+              %|Operation name "#{name}" must be unique|,
+              nodes: nodes,
+              name: name
+            ))
           end
         end
       end

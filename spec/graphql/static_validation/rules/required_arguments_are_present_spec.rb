@@ -23,7 +23,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
       "message"=>"Field 'cheese' is missing required arguments: id",
       "locations"=>[{"line"=>4, "column"=>7}],
       "path"=>["query getCheese", "cheese"],
-      "extensions"=>{"rule"=>"StaticValidation::RequiredArgumentsArePresent", "class"=>"Field", "name"=>"cheese", "arguments"=>"id"}
+      "extensions"=>{"code"=>"missingRequiredArguments", "className"=>"Field", "name"=>"cheese", "arguments"=>"id"}
     }
     assert_includes(errors, query_root_error)
 
@@ -31,7 +31,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
       "message"=>"Field 'similarCheese' is missing required arguments: source",
       "locations"=>[{"line"=>8, "column"=>7}],
       "path"=>["fragment cheeseFields", "similarCheese"],
-      "extensions"=>{"rule"=>"StaticValidation::RequiredArgumentsArePresent", "class"=>"Field", "name"=>"similarCheese", "arguments"=>"source"}
+      "extensions"=>{"code"=>"missingRequiredArguments", "className"=>"Field", "name"=>"similarCheese", "arguments"=>"source"}
     }
     assert_includes(errors, fragment_error)
 
@@ -39,7 +39,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
       "message"=>"Directive 'skip' is missing required arguments: if",
       "locations"=>[{"line"=>10, "column"=>10}],
       "path"=>["fragment cheeseFields", "id"],
-      "extensions"=>{"rule"=>"StaticValidation::RequiredArgumentsArePresent", "class"=>"Directive", "name"=>"skip", "arguments"=>"if"}
+      "extensions"=>{"code"=>"missingRequiredArguments", "className"=>"Directive", "name"=>"skip", "arguments"=>"if"}
     }
     assert_includes(errors, directive_error)
   end
@@ -60,8 +60,8 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
           ],
           "path"=>["query", "__type"],
           "extensions"=>{
-            "rule"=>"StaticValidation::RequiredArgumentsArePresent",
-            "class"=>"Field",
+            "code"=>"missingRequiredArguments",
+            "className"=>"Field",
             "name"=>"__type",
             "arguments"=>"name"
           }
