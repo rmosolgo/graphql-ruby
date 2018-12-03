@@ -38,7 +38,7 @@ describe GraphQL::Execution::Lazy do
           }
         }
 
-        c: listSum(values: [1,2]) {
+        c: listSum(values: [1,2,44]) {
           nestedSum(value: 3) {
             value
           }
@@ -68,6 +68,29 @@ describe GraphQL::Execution::Lazy do
       }
 
       assert_equal expected_data, res["data"]
+    end
+
+    focus
+    it "resolves each field at one depth before proceeding to the next depth" do
+      [
+        [1, 2, LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK],
+        [2, LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK, 1],
+        [LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK, 1, 2],
+      ].each do |values|
+        res = run_query <<-GRAPHQL, variables: { values: values }
+        query($values: [Int!]!) {
+          listSum(values: $values) {
+            nestedSum(value: 3) {
+              value
+            }
+          }
+        }
+        GRAPHQL
+        pp res.to_h
+        assert_equal 56, res["data"]["listSum"][0]["nestedSum"]["value"]
+        assert_equal 56, res["data"]["listSum"][1]["nestedSum"]["value"]
+        assert_equal 56, res["data"]["listSum"][2]["nestedSum"]["value"]
+      end
     end
 
     it "propagates nulls to the root" do

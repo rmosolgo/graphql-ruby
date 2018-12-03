@@ -7,14 +7,13 @@ module GraphQL
   module Execution
     class Interpreter
       def initialize
-        # A buffer shared by all queries running in this interpreter
-        @lazies = []
       end
 
       # Support `Executor` :S
       def execute(_operation, _root_type, query)
-        runtime = evaluate(query)
+        evaluate(query)
         sync_lazies(query: query)
+        runtime = query.context.namespace(:interpreter)[:runtime]
         runtime.final_value
       end
 
@@ -64,7 +63,6 @@ module GraphQL
         # in particular, assign it here:
         runtime = Runtime.new(
           query: query,
-          lazies: @lazies,
           response: HashResponse.new,
         )
         query.context.namespace(:interpreter)[:runtime] = runtime
@@ -73,7 +71,7 @@ module GraphQL
           runtime.run_eager
         end
 
-        runtime
+        nil
       end
 
       def sync_lazies(query: nil, multiplex: nil)
@@ -81,13 +79,10 @@ module GraphQL
         if query.nil? && multiplex.queries.length == 1
           query = multiplex.queries[0]
         end
+        queries = multiplex ? multiplex.queries : [query]
+        final_values = queries.map { |q| q.context.namespace(:interpreter)[:runtime].final_value }
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-          while @lazies.any?
-            next_wave = @lazies.dup
-            @lazies.clear
-            # This will cause a side-effect with `.write(...)`
-            next_wave.each(&:value)
-          end
+          Lazy::Resolve.resolve_interpreter_result(final_values)
         end
       end
     end

@@ -22,11 +22,63 @@ module GraphQL
           def self.empty?
             true
           end
+
+          def self.map
+            self
+          end
         end
 
         def self.resolve(value)
           lazies = resolve_in_place(value)
           deep_sync(lazies)
+        end
+
+        def self.resolve_interpreter_result(result)
+          lazies = interpreter_each_lazy(NullAccumulator, result)
+          interpreter_resolve_all(lazies)
+        end
+
+        def self.interpreter_resolve_all(result)
+          puts "SYNCING #{result.size}:"
+          result.each do |r|
+            puts "   - #{r.field.path.ljust(20)} @ #{r.path}"
+          end
+          lazy_results = result.map do |l|
+            puts "SYNC #{l.field.path.ljust(20)} @ #{l.path}"
+            l.value
+          end
+
+          next_lazies = interpreter_each_lazy(NullAccumulator, lazy_results)
+          if !next_lazies.empty?
+            interpreter_resolve_all(next_lazies)
+          end
+        end
+
+        def self.interpreter_each_lazy(acc, value)
+          case value
+          when Hash
+            if value.values.any? { |v| v.is_a?(Lazy) }
+              p "Hash: #{value.keys}"
+            end
+            value.each do |k, v|
+              acc = interpreter_each_lazy(acc, v)
+            end
+            acc
+          when Array
+            if value.any? { |v| v.is_a?(Lazy) }
+              p "Array: #{value.size}"
+            end
+            value.each { |i|
+              acc = interpreter_each_lazy(acc, i)
+            }
+            acc
+          when Lazy
+            p "Plain Lazy"
+            acc << value
+          else
+            # Some application value
+            acc
+          end
         end
 
         def self.resolve_in_place(value)

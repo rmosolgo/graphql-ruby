@@ -69,6 +69,17 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
+    class LazyListMember < GraphQL::Schema::Object
+      field :value, Int, null: false
+      def value
+        if @object == 3
+          Box.new(value: Box.new(value: @object))
+        else
+          Box.new(value: @object)
+        end
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       # Try a root-level authorized hook that returns a lazy value
       def self.authorized?(obj, ctx)
@@ -119,6 +130,16 @@ describe GraphQL::Execution::Interpreter do
 
       field :field_counter, FieldCounter, null: false
       def field_counter; :field_counter; end
+
+
+      field :list_with_lazies, LazyListMember, null: false
+      def list_with_lazies
+        [
+          Box.new(value: 1),
+          Box.new(value: 2),
+          Box.new(value: 3)
+        ]
+      end
     end
 
     class Schema < GraphQL::Schema

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 module LazyHelpers
+  MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK = 44
+
   class Wrapper
     def initialize(item = nil, &block)
       if block
@@ -50,6 +52,14 @@ module LazyHelpers
     field :value, Integer, null: true
     def value
       object == 13 ? nil : object
+    end
+
+    def self.authorized?(obj, ctx)
+      if obj == MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK
+        Wrapper.new { true }
+      else
+        true
+      end
     end
 
     field :nestedSum, LazySum, null: false do
@@ -168,7 +178,7 @@ module LazyHelpers
     end
   end
 
-  def run_query(query_str)
-    LazySchema.execute(query_str)
+  def run_query(query_str, **rest)
+    LazySchema.execute(query_str, **rest)
   end
 end

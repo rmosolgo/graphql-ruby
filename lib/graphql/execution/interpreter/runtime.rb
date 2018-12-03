@@ -15,11 +15,10 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        def initialize(query:, lazies:, response:)
+        def initialize(query:, response:)
           @query = query
           @schema = query.schema
           @context = query.context
-          @lazies = lazies
           @response = response
           @dead_paths = {}
           @types_at_paths = {}
@@ -34,7 +33,7 @@ module GraphQL
         end
 
         # This _begins_ the execution. Some deferred work
-        # might be stored up in {@lazies}.
+        # might be stored up in lazies.
         # @return [void]
         def run_eager
           root_operation = query.selected_operation
@@ -45,6 +44,7 @@ module GraphQL
           object_proxy = schema.sync_lazy(object_proxy)
           path = []
           evaluate_selections(path, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
+          nil
         end
 
         private
@@ -206,6 +206,7 @@ module GraphQL
           when "SCALAR", "ENUM"
             r = type.coerce_result(value, context)
             write_in_response(path, r)
+            r
           when "UNION", "INTERFACE"
             resolved_type = query.resolve_type(type, value)
             possible_types = query.possible_types(type)
@@ -215,6 +216,7 @@ module GraphQL
               type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
               schema.type_error(type_error, context)
               write_in_response(path, nil)
+              nil
             else
               resolved_type = resolved_type.metadata[:type_class]
               continue_field(path, value, field, resolved_type, ast_node, next_selections)
@@ -228,18 +230,22 @@ module GraphQL
             after_lazy(object_proxy, path: path, field: field) do |inner_object|
               continue_value = continue_value(path, inner_object, field, type, ast_node)
               if HALT != continue_value
-                write_in_response(path, {})
+                response_hash = {}
+                write_in_response(path, response_hash)
                 evaluate_selections(path, continue_value, type, next_selections)
+                response_hash
               end
             end
           when "LIST"
-            write_in_response(path, [])
+            response_list = []
+            write_in_response(path, response_list)
             inner_type = type.of_type
             idx = 0
-            value.each do |inner_value|
+            value.map do |inner_value|
               next_path = path.dup
               next_path << idx
               next_path.freeze
+              idx += 1
               set_type_at_path(next_path, inner_type)
               after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
                 continue_value = continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
@@ -247,7 +253,6 @@ module GraphQL
                   continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections)
                 end
               end
-              idx += 1
             end
           when "NON_NULL"
             inner_type = type.of_type
@@ -290,7 +295,7 @@ module GraphQL
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(obj, field:, path:, eager: false)
           if schema.lazy?(obj)
-            lazy = GraphQL::Execution::Lazy.new do
+            lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = query.trace("execute_field_lazy", {field: field, path: path}) do
@@ -308,7 +313,8 @@ module GraphQL
             if eager
               lazy.value
             else
-              @lazies << lazy
+              write_in_response(path, lazy)
+              lazy
             end
           else
             yield(obj)

@@ -112,6 +112,11 @@ module GraphQL
           end
         end
 
+        # @return [Integer]
+        def list_depth
+          0
+        end
+
         private
 
         def find_inherited_method(method_name, default_value)
