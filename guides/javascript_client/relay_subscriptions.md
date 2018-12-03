@@ -68,7 +68,7 @@ var createHandler = require("graphql-ruby-client/subscriptions/createHandler")
 
 // Load Ably and create a client
 const Ably = require("ably")
-const ablyClient = new Ably.Realtime("your-app-key")
+const ablyClient = new Ably.Realtime({ key: "your-app-key" })
 
 // create a fetchOperation, see below for more details
 function fetchOperation(operation, variables, cacheConfig) {
