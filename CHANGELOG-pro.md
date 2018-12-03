@@ -8,12 +8,25 @@
 
 ### Bug Fix
 
+## 1.9.3 (3 Dec 2018)
+
+### Bug Fix
+
+- Include table name when adding a default order-by-id to ActiveRecord Relations
+- Raise if a required cursor attribute is missing
+- Improve `rake routes` output for operation store endpoint
+- Support already-parsed queries in subscription RedisStorage
+
 ## 1.9.2 (2 Nov 2018)
+
+### Bug Fix
 
 - Derp, remove the dummy app's `.log` files from the gem bundle
 - Fix ordering bug when a SQL function call doesn't have an explicit order
 
 ## 1.9.1 (1 Nov 2018)
+
+### Bug Fix
 
 - Fix Pusher reference in AblySubscriptions
 
