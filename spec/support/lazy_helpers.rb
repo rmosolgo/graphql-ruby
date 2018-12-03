@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 module LazyHelpers
   MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK = 44
-
+  MAGIC_NUMBER_THAT_RETURNS_NIL = 0
+  MAGIC_NUMBER_THAT_RAISES_ERROR = 13
   class Wrapper
     def initialize(item = nil, &block)
       if block
@@ -51,7 +52,11 @@ module LazyHelpers
   class LazySum < GraphQL::Schema::Object
     field :value, Integer, null: true
     def value
-      object == 13 ? nil : object
+      if object == MAGIC_NUMBER_THAT_RAISES_ERROR
+        nil
+      else
+        object
+      end
     end
 
     def self.authorized?(obj, ctx)
@@ -67,7 +72,7 @@ module LazyHelpers
     end
 
     def nested_sum(value:)
-      if value == 13
+      if value == MAGIC_NUMBER_THAT_RAISES_ERROR
         Wrapper.new(nil)
       else
         SumAll.new(@object + value)
@@ -108,18 +113,20 @@ module LazyHelpers
     end
 
     def nullable_nested_sum(value:)
-      if value == 13
-        Wrapper.new { raise GraphQL::ExecutionError.new("13 is unlucky") }
+      if value == MAGIC_NUMBER_THAT_RAISES_ERROR
+        Wrapper.new { raise GraphQL::ExecutionError.new("#{MAGIC_NUMBER_THAT_RAISES_ERROR} is unlucky") }
+      elsif value == MAGIC_NUMBER_THAT_RETURNS_NIL
+        nil
       else
         SumAll.new(value)
       end
     end
 
-    field :list_sum, [LazySum], null: true do
+    field :list_sum, [LazySum, null: true], null: true do
       argument :values, [Integer], required: true
     end
     def list_sum(values:)
-      values
+      values.map { |v| v == MAGIC_NUMBER_THAT_RETURNS_NIL ? nil : v }
     end
   end
 

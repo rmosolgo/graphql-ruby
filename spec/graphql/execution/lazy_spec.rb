@@ -95,6 +95,28 @@ describe GraphQL::Execution::Lazy do
           assert_equal 56, res["data"]["listSum"][2]["nestedSum"]["value"]
         end
       end
+
+      it "Handles fields that return nil" do
+        values = [
+          LazyHelpers::MAGIC_NUMBER_THAT_RETURNS_NIL,
+          LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK,
+          1,
+          2,
+        ]
+
+        res = run_query <<-GRAPHQL, variables: { values: values }
+        query($values: [Int!]!) {
+          listSum(values: $values) {
+            nullableNestedSum(value: 3) {
+              value
+            }
+          }
+        }
+        GRAPHQL
+
+        values = res["data"]["listSum"].map { |s| s && s["nullableNestedSum"]["value"] }
+        assert_equal [nil, 56, 56, 56], values
+      end
     end
 
     it "propagates nulls to the root" do

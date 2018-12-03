@@ -90,7 +90,9 @@ module GraphQL
         end
         final_values.compact!
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-          resolve_interpreter_result(final_values)
+          while final_values.any?
+            final_values = resolve_interpreter_result(final_values)
+          end
         end
       end
 
@@ -111,7 +113,9 @@ module GraphQL
         next_level = []
 
         # Work through the queue until it's empty
-        while result_value = results_level.pop
+        while results_level.size > 0
+          result_value = results_level.shift
+
           if result_value.is_a?(Lazy)
             result_value = result_value.value
           end
@@ -129,9 +133,7 @@ module GraphQL
           end
         end
 
-        if next_level.any?
-          resolve_interpreter_result(next_level)
-        end
+        next_level
       end
     end
   end
