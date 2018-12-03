@@ -70,27 +70,30 @@ describe GraphQL::Execution::Lazy do
       assert_equal expected_data, res["data"]
     end
 
-    [
-      [1, 2, LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK],
-      [2, LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK, 1],
-      [LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK, 1, 2],
-    ].each do |ordered_values|
-      it "resolves each field at one depth before proceeding to the next depth (using #{ordered_values})" do
-        res = run_query <<-GRAPHQL, variables: { values: ordered_values }
-        query($values: [Int!]!) {
-          listSum(values: $values) {
-            nestedSum(value: 3) {
-              value
+    # This only works with the interpreter
+    if TESTING_INTERPRETER
+      [
+        [1, 2, LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK],
+        [2, LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK, 1],
+        [LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK, 1, 2],
+      ].each do |ordered_values|
+        it "resolves each field at one depth before proceeding to the next depth (using #{ordered_values})" do
+          res = run_query <<-GRAPHQL, variables: { values: ordered_values }
+          query($values: [Int!]!) {
+            listSum(values: $values) {
+              nestedSum(value: 3) {
+                value
+              }
             }
           }
-        }
-        GRAPHQL
+          GRAPHQL
 
-        # Even though magic number `44`'s `.authorized?` hook returns a lazy value,
-        # these fields should be resolved together and return the same value.
-        assert_equal 56, res["data"]["listSum"][0]["nestedSum"]["value"]
-        assert_equal 56, res["data"]["listSum"][1]["nestedSum"]["value"]
-        assert_equal 56, res["data"]["listSum"][2]["nestedSum"]["value"]
+          # Even though magic number `44`'s `.authorized?` hook returns a lazy value,
+          # these fields should be resolved together and return the same value.
+          assert_equal 56, res["data"]["listSum"][0]["nestedSum"]["value"]
+          assert_equal 56, res["data"]["listSum"][1]["nestedSum"]["value"]
+          assert_equal 56, res["data"]["listSum"][2]["nestedSum"]["value"]
+        end
       end
     end
 
