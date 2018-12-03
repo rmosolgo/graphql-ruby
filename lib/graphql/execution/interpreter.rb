@@ -82,7 +82,52 @@ module GraphQL
         queries = multiplex ? multiplex.queries : [query]
         final_values = queries.map { |q| q.context.namespace(:interpreter)[:runtime].final_value }
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-          Lazy::Resolve.resolve_interpreter_result(final_values)
+          resolve_interpreter_result(final_values)
+        end
+      end
+
+      private
+
+      # `result` is one level of _depth_ of a query or multiplex.
+      #
+      # Resolve all lazy values in that depth before moving on
+      # to the next level.
+      #
+      # It's assumed that the lazies will perform side-effects
+      # and return {Lazy} instances if there's more work to be done,
+      # or return {Hash}/{Array} if the query should be continued.
+      #
+      # @param result [Array, Hash, Object]
+      # @return void
+      def resolve_interpreter_result(result)
+        next_level = case result
+        when Array
+          result
+        when Hash
+          result.values
+        when Lazy
+          [result]
+        else
+          []
+        end
+
+        next_non_lazy_values = []
+        next_level.each do |next_value|
+          if next_value.is_a?(Lazy)
+            next_value = next_value.value
+          end
+
+          if next_value.is_a?(Lazy)
+            next_level << next_value
+          elsif next_value.is_a?(Hash)
+            next_non_lazy_values.concat(next_value.values)
+          elsif next_value.is_a?(Array)
+            next_non_lazy_values.concat(next_value)
+          end
+        end
+
+        if next_non_lazy_values.any?
+          resolve_interpreter_result(next_non_lazy_values)
         end
       end
     end
