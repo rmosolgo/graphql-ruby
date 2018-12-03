@@ -53,7 +53,8 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
       assert_includes(errors, {
         "message"=>"No such type DoesNotExist, so it can't be a fragment condition",
         "locations"=>[{"line"=>5, "column"=>7}],
-        "fields"=>["fragment Invalid"]
+        "path"=>["fragment Invalid"],
+        "extensions"=>{"code"=>"undefinedType", "typeName"=>"DoesNotExist"}
       })
     end
   end
