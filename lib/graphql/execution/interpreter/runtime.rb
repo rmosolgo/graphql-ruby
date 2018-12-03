@@ -201,6 +201,14 @@ module GraphQL
           end
         end
 
+        # The resolver for `field` returned `value`. Continue to execute the query,
+        # treating `value` as `type` (probably the return type of the field).
+        #
+        # Use `next_selections` to resolve object fields, if there are any.
+        #
+        # Location information from `path` and `ast_node`.
+        #
+        # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
         def continue_field(path, value, field, type, ast_node, next_selections)
           case type.kind.name
           when "SCALAR", "ENUM"

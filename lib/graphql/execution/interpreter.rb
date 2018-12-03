@@ -11,9 +11,8 @@ module GraphQL
 
       # Support `Executor` :S
       def execute(_operation, _root_type, query)
-        evaluate(query)
+        runtime = evaluate(query)
         sync_lazies(query: query)
-        runtime = query.context.namespace(:interpreter)[:runtime]
         runtime.final_value
       end
 
@@ -56,6 +55,8 @@ module GraphQL
         }
       end
 
+      # Run the eager part of `query`
+      # @return {Interpreter::Runtime}
       def evaluate(query)
         query.context.interpreter = true
         # Although queries in a multiplex _share_ an Interpreter instance,
@@ -71,16 +72,23 @@ module GraphQL
           runtime.run_eager
         end
 
-        nil
+        runtime
       end
 
+      # Run the lazy part of `query` or `multiplex`.
+      # @return [void]
       def sync_lazies(query: nil, multiplex: nil)
         tracer = query || multiplex
         if query.nil? && multiplex.queries.length == 1
           query = multiplex.queries[0]
         end
         queries = multiplex ? multiplex.queries : [query]
-        final_values = queries.map { |q| q.context.namespace(:interpreter)[:runtime].final_value }
+        final_values = queries.map do |query|
+          runtime = query.context.namespace(:interpreter)[:runtime]
+          # it might not be present if the query has an error
+          runtime ? runtime.final_value : nil
+        end
+        final_values.compact!
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
           resolve_interpreter_result(final_values)
         end
@@ -88,7 +96,7 @@ module GraphQL
 
       private
 
-      # `result` is one level of _depth_ of a query or multiplex.
+      # `results_level` is one level of _depth_ of a query or multiplex.
       #
       # Resolve all lazy values in that depth before moving on
       # to the next level.
@@ -99,35 +107,30 @@ module GraphQL
       #
       # @param result [Array, Hash, Object]
       # @return void
-      def resolve_interpreter_result(result)
-        next_level = case result
-        when Array
-          result
-        when Hash
-          result.values
-        when Lazy
-          [result]
-        else
-          []
-        end
+      def resolve_interpreter_result(results_level)
+        next_level = []
 
-        next_non_lazy_values = []
-        next_level.each do |next_value|
-          if next_value.is_a?(Lazy)
-            next_value = next_value.value
+        # Work through the queue until it's empty
+        while result_value = results_level.pop
+          if result_value.is_a?(Lazy)
+            result_value = result_value.value
           end
 
-          if next_value.is_a?(Lazy)
-            next_level << next_value
-          elsif next_value.is_a?(Hash)
-            next_non_lazy_values.concat(next_value.values)
-          elsif next_value.is_a?(Array)
-            next_non_lazy_values.concat(next_value)
+          if result_value.is_a?(Lazy)
+            # Since this field returned another lazy,
+            # add it to the same queue
+            results_level << result_value
+          elsif result_value.is_a?(Hash)
+            # This is part of the next level, add it
+            next_level.concat(result_value.values)
+          elsif result_value.is_a?(Array)
+            # This is part of the next level, add it
+            next_level.concat(result_value)
           end
         end
 
-        if next_non_lazy_values.any?
-          resolve_interpreter_result(next_non_lazy_values)
+        if next_level.any?
+          resolve_interpreter_result(next_level)
         end
       end
     end
