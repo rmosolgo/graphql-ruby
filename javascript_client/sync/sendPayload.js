@@ -2,7 +2,6 @@ var http = require("http")
 var https = require("https")
 var url = require("url")
 var crypto = require('crypto')
-var printResponse = require("./printResponse")
 
 /**
  * Use HTTP POST to send this payload to the endpoint.

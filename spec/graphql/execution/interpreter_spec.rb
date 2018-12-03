@@ -70,6 +70,11 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class Query < GraphQL::Schema::Object
+      # Try a root-level authorized hook that returns a lazy value
+      def self.authorized?(obj, ctx)
+        Box.new(value: true)
+      end
+
       field :card, Card, null: true do
         argument :name, String, required: true
       end

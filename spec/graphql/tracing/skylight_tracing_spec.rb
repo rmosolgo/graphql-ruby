@@ -26,6 +26,11 @@ describe GraphQL::Tracing::SkylightTracing do
         use GraphQL::Execution::Interpreter
       end
     end
+
+    class SchemaWithScalarTrace < GraphQL::Schema
+      query(Query)
+      use(GraphQL::Tracing::SkylightTracing, trace_scalars: true)
+    end
   end
 
   before do
@@ -49,5 +54,10 @@ describe GraphQL::Tracing::SkylightTracing do
     # Override with `true`
     SkylightTest::SchemaWithoutTransactionName.execute "{ int }", context: { set_skylight_endpoint_name: true }
     assert_equal ["GraphQL/query.<anonymous>"], Skylight::ENDPOINT_NAMES
+  end
+
+  it "traces scalars when trace_scalars is true" do
+    SkylightTest::SchemaWithScalarTrace.execute "query X { int }"
+    assert_includes Skylight::TITLE_NAMES, "graphql.Query.int"
   end
 end

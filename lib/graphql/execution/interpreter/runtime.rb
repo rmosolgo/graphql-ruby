@@ -42,7 +42,7 @@ module GraphQL
           legacy_root_type = schema.root_type_for_operation(root_op_type)
           root_type = legacy_root_type.metadata[:type_class] || raise("Invariant: type must be class-based: #{legacy_root_type}")
           object_proxy = root_type.authorized_new(query.root_value, context)
-
+          object_proxy = schema.sync_lazy(object_proxy)
           path = []
           evaluate_selections(path, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
         end
@@ -91,8 +91,8 @@ module GraphQL
         def evaluate_selections(path, owner_object, owner_type, selections, root_operation_type: nil)
           selections_by_name = {}
           gather_selections(owner_type, selections, selections_by_name)
-          selections_by_name.each do |result_name, fields|
-            ast_node = fields.first
+          selections_by_name.each do |result_name, field_ast_nodes|
+            ast_node = field_ast_nodes.first
             field_name = ast_node.name
             field_defn = owner_type.get_field(field_name)
             is_introspection = false
@@ -136,12 +136,18 @@ module GraphQL
                 kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
               when :path
                 kwarg_arguments[:path] = next_path
+              when :lookahead
+                kwarg_arguments[:lookahead] = Execution::Lookahead.new(
+                  query: query,
+                  ast_nodes: field_ast_nodes,
+                  field: field_defn,
+                )
               else
                 kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
               end
             end
 
-            next_selections = fields.inject([]) { |memo, f| memo.concat(f.selections) }
+            next_selections = field_ast_nodes.inject([]) { |memo, f| memo.concat(f.selections) }
 
             app_result = query.trace("execute_field", {field: field_defn, path: next_path}) do
               field_defn.resolve(object, kwarg_arguments, context)

@@ -17,8 +17,8 @@ module GraphQL
       # @param set_endpoint_name [Boolean] If true, the GraphQL operation name will be used as the endpoint name.
       #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
       #   It can also be specified per-query with `context[:set_skylight_endpoint_name]`.
-      def initialize(set_endpoint_name: false)
-        @set_endpoint_name = set_endpoint_name
+      def initialize(options = {})
+        @set_endpoint_name = options.fetch(:set_endpoint_name, false)
         super
       end
 

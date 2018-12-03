@@ -106,7 +106,7 @@ const client = new ApolloClient({
 
 This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Ably for future updates.
 
-For your __app key__, make a key with "Pubscribe" and "Presence" privileges and use that:
+For your __app key__, make a key with "Subscribe" and "Presence" privileges and use that:
 
 {{ "/javascript_client/ably_key.png" | link_to_img:"Ably Subscription Key Privileges" }}
 

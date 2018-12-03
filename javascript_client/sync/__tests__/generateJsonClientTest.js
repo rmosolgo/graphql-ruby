@@ -1,10 +1,14 @@
-var { generateClient, JSON_TYPE } = require("../generateClient")
+var { generateClientCode, JSON_TYPE } = require("../generateClient")
 var fs = require("fs")
 
 function withExampleClient(mapName, callback) {
   // Generate some code and write it to a file
-  var exampleMap = { a: "b", "c-d": "e-f" }
-  var json = generateClient("example-client", exampleMap, JSON_TYPE)
+  var exampleOperations = [
+    {name: "a", alias: "b"},
+    {name: "c-d", alias: "e-f"}
+  ]
+
+  var json = generateClientCode("example-client", exampleOperations, JSON_TYPE)
   var filename = "./" + mapName + ".json"
   fs.writeFileSync(filename, json)
 

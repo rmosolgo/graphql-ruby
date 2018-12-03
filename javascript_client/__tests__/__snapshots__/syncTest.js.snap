@@ -204,7 +204,7 @@ Array [
 ]
 `;
 
-exports[`sync operations Printing the result prints failure 1`] = `
+exports[`sync operations Printing the result prints failure and sends the message to the promise 1`] = `
 Array [
   Array [
     "Syncing 5 operations to [1mhttp://example.com/stored_operations/sync[0m...",
@@ -221,7 +221,7 @@ Array [
 ]
 `;
 
-exports[`sync operations Printing the result prints failure 2`] = `
+exports[`sync operations Printing the result prints failure and sends the message to the promise 2`] = `
 Array [
   Array [
     "Sync failed, errors:",
