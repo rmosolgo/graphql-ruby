@@ -258,7 +258,8 @@ module GraphQL
               after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
                 continue_value = continue_value(next_path, inner_inner_value, field, is_non_null, ast_node)
                 if HALT != continue_value
-                  continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections, is_non_null)
+                  # reset `is_non_null` here, because the inner type will have its own nullability constraint
+                  continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections, false)
                 end
               end
             end

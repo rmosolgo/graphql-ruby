@@ -127,6 +127,14 @@ describe GraphQL::Execution::Interpreter do
         end
       end
 
+      field :findMany, [Entity, null: true], null: false do
+        argument :ids, [ID], required: true
+      end
+
+      def find_many(ids:)
+        find(id: ids)
+      end
+
       field :field_counter, FieldCounter, null: false
       def field_counter; :field_counter; end
     end
@@ -273,6 +281,23 @@ describe GraphQL::Execution::Interpreter do
       }
       GRAPHQL
       assert_equal ["Cannot return null for non-nullable field Query.find"], res["errors"].map { |e| e["message"] }
+    end
+
+    it "works with lists of unions" do
+      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      {
+        findMany(ids: ["RAV", "NOPE"]) {
+          ... on Expansion {
+            sym
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal 2, res["data"]["findMany"].size
+      assert_equal "RAV", res["data"]["findMany"][0]["sym"]
+      assert_equal nil, res["data"]["findMany"][1]
+      assert_equal false, res.key?("errors")
     end
   end
 
