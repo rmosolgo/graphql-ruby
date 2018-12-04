@@ -154,18 +154,18 @@ module GraphQL
             end
 
             after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
-              continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
+              continue_value = continue_value(next_path, inner_result, field_defn, return_type.non_null?, ast_node)
               if HALT != continue_value
-                continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections)
+                continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false)
               end
             end
           end
         end
 
         HALT = Object.new
-        def continue_value(path, value, field, as_type, ast_node)
+        def continue_value(path, value, field, is_non_null, ast_node)
           if value.nil?
-            if as_type.non_null?
+            if is_non_null
               err = GraphQL::InvalidNullError.new(field.owner, field, value)
               write_invalid_null_in_response(path, err)
             else
@@ -193,7 +193,7 @@ module GraphQL
               err
             end
 
-            continue_value(path, next_value, field, as_type, ast_node)
+            continue_value(path, next_value, field, is_non_null, ast_node)
           elsif GraphQL::Execution::Execute::SKIP == value
             HALT
           else
@@ -209,7 +209,7 @@ module GraphQL
         # Location information from `path` and `ast_node`.
         #
         # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
-        def continue_field(path, value, field, type, ast_node, next_selections)
+        def continue_field(path, value, field, type, ast_node, next_selections, is_non_null)
           case type.kind.name
           when "SCALAR", "ENUM"
             r = type.coerce_result(value, context)
@@ -227,7 +227,7 @@ module GraphQL
               nil
             else
               resolved_type = resolved_type.metadata[:type_class]
-              continue_field(path, value, field, resolved_type, ast_node, next_selections)
+              continue_field(path, value, field, resolved_type, ast_node, next_selections, is_non_null)
             end
           when "OBJECT"
             object_proxy = begin
@@ -236,7 +236,7 @@ module GraphQL
               err
             end
             after_lazy(object_proxy, path: path, field: field) do |inner_object|
-              continue_value = continue_value(path, inner_object, field, type, ast_node)
+              continue_value = continue_value(path, inner_object, field, is_non_null, ast_node)
               if HALT != continue_value
                 response_hash = {}
                 write_in_response(path, response_hash)
@@ -256,9 +256,9 @@ module GraphQL
               idx += 1
               set_type_at_path(next_path, inner_type)
               after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
-                continue_value = continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
+                continue_value = continue_value(next_path, inner_inner_value, field, is_non_null, ast_node)
                 if HALT != continue_value
-                  continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections)
+                  continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections, is_non_null)
                 end
               end
             end
@@ -268,7 +268,7 @@ module GraphQL
             inner_type = resolve_if_late_bound_type(inner_type)
             # Don't `set_type_at_path` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
-            continue_field(path, value, field, inner_type, ast_node, next_selections)
+            continue_field(path, value, field, inner_type, ast_node, next_selections, true)
           else
             raise "Invariant: Unhandled type kind #{type.kind} (#{type})"
           end
