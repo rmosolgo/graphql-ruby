@@ -225,7 +225,7 @@ module GraphQL
 
     # Validate a query string according to this schema.
     # @param string_or_document [String, GraphQL::Language::Nodes::Document]
-    # @return [Array<GraphQL::StaticValidation::Message>]
+    # @return [Array<GraphQL::StaticValidation::Error >]
     def validate(string_or_document, rules: nil)
       doc = if string_or_document.is_a?(String)
         GraphQL.parse(string_or_document)

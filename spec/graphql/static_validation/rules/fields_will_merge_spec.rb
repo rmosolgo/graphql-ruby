@@ -381,7 +381,8 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
             {"line"=>4, "column"=>11},
             {"line"=>8, "column"=>11}
           ],
-          "fields"=>[]
+          "path"=>[],
+          "extensions"=>{"code"=>"fieldConflict", "fieldName"=>"x", "conflicts"=>"name or nickname"}
         }
       ]
       assert_equal expected_errors, errors

@@ -23,7 +23,11 @@ module GraphQL
           type_name = fragment_node.type.name
           type = context.warden.get_type(type_name)
           if type.nil?
-            add_error("No such type #{type_name}, so it can't be a fragment condition", fragment_node)
+            add_error(GraphQL::StaticValidation::FragmentTypesExistError.new(
+              "No such type #{type_name}, so it can't be a fragment condition",
+              nodes: fragment_node,
+              type: type_name
+            ))
             false
           else
             true

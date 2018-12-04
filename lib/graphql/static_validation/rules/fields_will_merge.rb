@@ -193,13 +193,25 @@ module GraphQL
           if node1.name != node2.name
             errored_nodes = [node1.name, node2.name].sort.join(" or ")
             msg = "Field '#{response_key}' has a field conflict: #{errored_nodes}?"
-            context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: [node1, node2])
+            context.errors << GraphQL::StaticValidation::FieldsWillMergeError.new(
+              msg,
+              nodes: [node1, node2],
+              path: [],
+              field_name: response_key,
+              conflicts: errored_nodes
+            )
           end
 
           args = possible_arguments(node1, node2)
           if args.size > 1
             msg = "Field '#{response_key}' has an argument conflict: #{args.map { |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?"
-            context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: [node1, node2])
+            context.errors << GraphQL::StaticValidation::FieldsWillMergeError.new(
+              msg,
+              nodes: [node1, node2],
+              path: [],
+              field_name: response_key,
+              conflicts: args.map { |arg| GraphQL::Language.serialize(arg) }.join(" or ")
+            )
           end
         end
 

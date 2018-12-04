@@ -17,7 +17,8 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
     assert_includes(errors, {
       "message"=>"Fragment unusedFields was defined, but not used",
       "locations"=>[{"line"=>8, "column"=>5}],
-      "fields"=>["fragment unusedFields"],
+      "path"=>["fragment unusedFields"],
+      "extensions"=>{"code"=>"useAndDefineFragment", "fragmentName"=>"unusedFields"}
     })
   end
 
@@ -25,7 +26,8 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
     assert_includes(errors, {
       "message"=>"Fragment undefinedFields was used, but not defined",
       "locations"=>[{"line"=>5, "column"=>7}],
-      "fields"=>["query getCheese", "... undefinedFields"]
+      "path"=>["query getCheese", "... undefinedFields"],
+      "extensions"=>{"code"=>"useAndDefineFragment", "fragmentName"=>"undefinedFields"}
     })
   end
 
@@ -51,7 +53,8 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
       assert_includes(errors, {
         "message"=>"No such type DoesNotExist, so it can't be a fragment condition",
         "locations"=>[{"line"=>5, "column"=>7}],
-        "fields"=>["fragment Invalid"]
+        "path"=>["fragment Invalid"],
+        "extensions"=>{"code"=>"undefinedType", "typeName"=>"DoesNotExist"}
       })
     end
   end

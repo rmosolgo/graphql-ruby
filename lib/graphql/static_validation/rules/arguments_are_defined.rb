@@ -29,7 +29,13 @@ module GraphQL
         elsif parent_defn
           kind_of_node = node_type(parent)
           error_arg_name = parent_name(parent, parent_defn)
-          add_error("#{kind_of_node} '#{error_arg_name}' doesn't accept argument '#{node.name}'", node)
+          add_error(GraphQL::StaticValidation::ArgumentsAreDefinedError.new(
+            "#{kind_of_node} '#{error_arg_name}' doesn't accept argument '#{node.name}'",
+            nodes: node,
+            name: error_arg_name,
+            type: kind_of_node,
+            argument: node.name
+          ))
         else
           # Some other weird error
           super

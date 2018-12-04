@@ -35,10 +35,11 @@ module GraphQL
         node.directives.each do |ast_directive|
           directive_name = ast_directive.name
           if used_directives[directive_name]
-            add_error(
+            add_error(GraphQL::StaticValidation::UniqueDirectivesPerLocationError.new(
               "The directive \"#{directive_name}\" can only be used once at this location.",
-              [used_directives[directive_name], ast_directive]
-            )
+              nodes: [used_directives[directive_name], ast_directive],
+              directive: directive_name,
+            ))
           else
             used_directives[directive_name] = ast_directive
           end

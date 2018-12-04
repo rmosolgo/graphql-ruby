@@ -84,7 +84,14 @@ module GraphQL
       end
 
       def create_error(error_message, var_type, ast_var, arg_defn, arg_node)
-        add_error("#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})", arg_node)
+        add_error(GraphQL::StaticValidation::VariableUsagesAreAllowedError.new(
+          "#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})",
+          nodes: arg_node,
+          name: ast_var.name,
+          type: var_type.to_s,
+          argument: arg_node.name,
+          error: error_message
+        ))
       end
 
       def wrap_var_type_with_depth_of_arg(var_type, arg_node)

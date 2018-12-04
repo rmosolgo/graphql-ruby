@@ -35,17 +35,20 @@ describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
       {
         "message"=>"Invalid fragment on type Boolean (must be Union, Interface or Object)",
         "locations"=>[{"line"=>6, "column"=>11}],
-        "fields"=>["query getCheese", "cheese", "... on Cheese", "... on Boolean"],
+        "path"=>["query getCheese", "cheese", "... on Cheese", "... on Boolean"],
+        "extensions"=>{"code"=>"fragmentOnNonCompositeType", "typeName"=>"Boolean"}
       },
       {
         "message"=>"Invalid fragment on type DairyProductInput (must be Union, Interface or Object)",
         "locations"=>[{"line"=>16, "column"=>9}],
-        "fields"=>["query getCheese", "cheese", "... on DairyProductInput"],
+        "path"=>["query getCheese", "cheese", "... on DairyProductInput"],
+        "extensions"=>{"code"=>"fragmentOnNonCompositeType", "typeName"=>"DairyProductInput"}
       },
       {
         "message"=>"Invalid fragment on type Int (must be Union, Interface or Object)",
         "locations"=>[{"line"=>22, "column"=>5}],
-        "fields"=>["fragment intFields"],
+        "path"=>["fragment intFields"],
+        "extensions"=>{"code"=>"fragmentOnNonCompositeType", "typeName"=>"Int"}
       },
     ]
     assert_equal(expected, errors)

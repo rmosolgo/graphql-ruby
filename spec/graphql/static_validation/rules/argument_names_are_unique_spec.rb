@@ -19,7 +19,7 @@ describe GraphQL::StaticValidation::ArgumentNamesAreUnique do
       error = errors.first
       assert_equal 'There can be only one argument named "id"', error["message"]
       assert_equal [{ "line" => 2, "column" => 18}, { "line" => 2, "column" => 25 }], error["locations"]
-      assert_equal ["query GetStuff", "c1"], error["fields"]
+      assert_equal ["query GetStuff", "c1"], error["path"]
     end
   end
 
@@ -38,7 +38,7 @@ describe GraphQL::StaticValidation::ArgumentNamesAreUnique do
       error = errors.first
       assert_equal 'There can be only one argument named "if"', error["message"]
       assert_equal [{ "line" => 2, "column" => 34}, { "line" => 2, "column" => 44 }], error["locations"]
-      assert_equal ["query GetStuff", "c1"], error["fields"]
+      assert_equal ["query GetStuff", "c1"], error["path"]
     end
   end
 end

@@ -9,7 +9,11 @@ module GraphQL
 
       def on_directive(node, parent)
         if !@directive_names.include?(node.name)
-          add_error("Directive @#{node.name} is not defined", node)
+          add_error(GraphQL::StaticValidation::DirectivesAreDefinedError.new(
+            "Directive @#{node.name} is not defined",
+            nodes: node,
+            directive: node.name
+          ))
         else
           super
         end

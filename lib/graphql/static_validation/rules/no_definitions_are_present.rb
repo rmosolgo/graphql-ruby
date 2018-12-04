@@ -2,7 +2,7 @@
 module GraphQL
   module StaticValidation
     module NoDefinitionsArePresent
-      include GraphQL::StaticValidation::Message::MessageHelper
+      include GraphQL::StaticValidation::Error::ErrorHelper
 
       def initialize(*)
         super
@@ -33,7 +33,7 @@ module GraphQL
       def on_document(node, parent)
         super
         if @schema_definition_nodes.any?
-          add_error(%|Query cannot contain schema definitions|, @schema_definition_nodes)
+          add_error(GraphQL::StaticValidation::NoDefinitionsArePresentError.new(%|Query cannot contain schema definitions|, nodes: @schema_definition_nodes))
         end
       end
     end
