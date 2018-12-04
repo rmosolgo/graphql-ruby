@@ -6,8 +6,8 @@ module GraphQL
       attr_reader :violation
 
       VIOLATIONS = {
-        :VARIABLE_NOT_USED      => "variableNotUsed",
-        :VARIABLE_NOT_DECLARED  => "variableNotDeclared",
+        :VARIABLE_NOT_USED     => "variableNotUsed",
+        :VARIABLE_NOT_DEFINED  => "variableNotDefined",
       }
 
       def initialize(message, path: nil, nodes: [], name:, error_type:)

@@ -35,7 +35,7 @@ describe GraphQL::StaticValidation::Validator do
         "message" => "Variable $undefinedVar is used by  but not declared",
         "locations" => [{"line" => 1, "column" => 14, "filename" => "not_a_real.graphql"}],
         "path" => ["query", "cheese", "id"],
-        "extensions"=>{"code"=>"variableNotDeclared", "variableName"=>"undefinedVar"}
+        "extensions"=>{"code"=>"variableNotDefined", "variableName"=>"undefinedVar"}
       }]
       assert_equal expected_errors, errors
     end

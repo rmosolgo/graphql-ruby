@@ -144,7 +144,7 @@ module GraphQL
               nodes: usage.ast_node,
               path: usage.path,
               name: var_name,
-              error_type: VariablesAreUsedAndDefinedError::VIOLATIONS[:VARIABLE_NOT_DECLARED]
+              error_type: VariablesAreUsedAndDefinedError::VIOLATIONS[:VARIABLE_NOT_DEFINED]
             ))
           }
       end
