@@ -7,8 +7,6 @@ module GraphQL
   module Execution
     class Interpreter
       def initialize
-        # A buffer shared by all queries running in this interpreter
-        @lazies = []
       end
 
       # Support `Executor` :S
@@ -57,6 +55,8 @@ module GraphQL
         }
       end
 
+      # Run the eager part of `query`
+      # @return {Interpreter::Runtime}
       def evaluate(query)
         query.context.interpreter = true
         # Although queries in a multiplex _share_ an Interpreter instance,
@@ -64,7 +64,6 @@ module GraphQL
         # in particular, assign it here:
         runtime = Runtime.new(
           query: query,
-          lazies: @lazies,
           response: HashResponse.new,
         )
         query.context.namespace(:interpreter)[:runtime] = runtime
@@ -76,19 +75,65 @@ module GraphQL
         runtime
       end
 
+      # Run the lazy part of `query` or `multiplex`.
+      # @return [void]
       def sync_lazies(query: nil, multiplex: nil)
         tracer = query || multiplex
         if query.nil? && multiplex.queries.length == 1
           query = multiplex.queries[0]
         end
+        queries = multiplex ? multiplex.queries : [query]
+        final_values = queries.map do |query|
+          runtime = query.context.namespace(:interpreter)[:runtime]
+          # it might not be present if the query has an error
+          runtime ? runtime.final_value : nil
+        end
+        final_values.compact!
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-          while @lazies.any?
-            next_wave = @lazies.dup
-            @lazies.clear
-            # This will cause a side-effect with `.write(...)`
-            next_wave.each(&:value)
+          while final_values.any?
+            final_values = resolve_interpreter_result(final_values)
           end
         end
+      end
+
+      private
+
+      # `results_level` is one level of _depth_ of a query or multiplex.
+      #
+      # Resolve all lazy values in that depth before moving on
+      # to the next level.
+      #
+      # It's assumed that the lazies will perform side-effects
+      # and return {Lazy} instances if there's more work to be done,
+      # or return {Hash}/{Array} if the query should be continued.
+      #
+      # @param result [Array, Hash, Object]
+      # @return void
+      def resolve_interpreter_result(results_level)
+        next_level = []
+
+        # Work through the queue until it's empty
+        while results_level.size > 0
+          result_value = results_level.shift
+
+          if result_value.is_a?(Lazy)
+            result_value = result_value.value
+          end
+
+          if result_value.is_a?(Lazy)
+            # Since this field returned another lazy,
+            # add it to the same queue
+            results_level << result_value
+          elsif result_value.is_a?(Hash)
+            # This is part of the next level, add it
+            next_level.concat(result_value.values)
+          elsif result_value.is_a?(Array)
+            # This is part of the next level, add it
+            next_level.concat(result_value)
+          end
+        end
+
+        next_level
       end
     end
   end
