@@ -132,7 +132,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       def find_many(ids:)
-        find(id: ids)
+        find(id: ids).map { |e| Box.new(value: e) }
       end
 
       field :field_counter, FieldCounter, null: false
@@ -286,7 +286,7 @@ describe GraphQL::Execution::Interpreter do
     it "works with lists of unions" do
       res = InterpreterTest::Schema.execute <<-GRAPHQL
       {
-        findMany(ids: ["RAV", "NOPE"]) {
+        findMany(ids: ["RAV", "NOPE", "BOGUS"]) {
           ... on Expansion {
             sym
           }
@@ -294,9 +294,10 @@ describe GraphQL::Execution::Interpreter do
       }
       GRAPHQL
 
-      assert_equal 2, res["data"]["findMany"].size
+      assert_equal 3, res["data"]["findMany"].size
       assert_equal "RAV", res["data"]["findMany"][0]["sym"]
       assert_equal nil, res["data"]["findMany"][1]
+      assert_equal nil, res["data"]["findMany"][2]
       assert_equal false, res.key?("errors")
     end
   end
