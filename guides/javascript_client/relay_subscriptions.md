@@ -77,7 +77,7 @@ function fetchOperation(operation, variables, cacheConfig) {
 
 // Create a Relay Modern-compatible handler
 var subscriptionHandler = createHandler({
-  pusher: ablyClient,
+  ably: ablyClient,
   fetchOperation: fetchOperation
 })
 
