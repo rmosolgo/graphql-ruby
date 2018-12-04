@@ -570,7 +570,7 @@ module GraphQL
 
     # Can't delegate to `class`
     alias :_schema_class :class
-    def_delegators :_schema_class, :visible?, :accessible?, :authorized?, :unauthorized_object, :inaccessible_fields
+    def_delegators :_schema_class, :visible?, :accessible?, :authorized?, :unauthorized_object, :unauthorized_field, :inaccessible_fields
 
     # A function to call when {#execute} receives an invalid query string
     #
@@ -944,7 +944,7 @@ module GraphQL
       # By default, this hook just replaces the unauthorized object with `nil`.
       #
       # Whatever value is returned from this method will be used instead of the
-      # unauthorized object (accessible ass `unauthorized_error.object`). If an
+      # unauthorized object (accessible as `unauthorized_error.object`). If an
       # error is raised, then `nil` will be used.
       #
       # If you want to add an error to the `"errors"` key, raise a {GraphQL::ExecutionError}
@@ -955,6 +955,20 @@ module GraphQL
       def unauthorized_object(unauthorized_error)
         nil
       end
+
+      # This hook is called when a field fails an `authorized?` check.
+      #
+      # By default, this hook implements the same behavior as unauthorized_object.
+      #
+      # Whatever value is returned from this method will be used instead of the
+      # unauthorized field . If an error is raised, then `nil` will be used.
+      #
+      # If you want to add an error to the `"errors"` key, raise a {GraphQL::ExecutionError}
+      # in this hook.
+      #
+      # @param unauthorized_error [GraphQL::UnauthorizedError]
+      # @return [Field] The returned field will be put in the GraphQL response
+      alias_method :unauthorized_field, :unauthorized_object
 
       def type_error(type_err, ctx)
         DefaultTypeError.call(type_err, ctx)
