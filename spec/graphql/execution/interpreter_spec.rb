@@ -17,6 +17,14 @@ describe GraphQL::Execution::Interpreter do
       field :name, String, null: false
       field :cards, ["InterpreterTest::Card"], null: false
 
+      def self.authorized?(expansion, ctx)
+        if expansion.sym == "NOPE"
+          false
+        else
+          true
+        end
+      end
+
       def cards
         Query::CARDS.select { |c| c.expansion_sym == @object.sym }
       end
@@ -104,6 +112,8 @@ describe GraphQL::Execution::Interpreter do
         OpenStruct.new(name: "Ravnica, City of Guilds", sym: "RAV"),
         # This data has an error, for testing null propagation
         OpenStruct.new(name: nil, sym: "XYZ"),
+        # This is not allowed by .authorized?,
+        OpenStruct.new(name: nil, sym: "NOPE"),
       ]
 
       field :find, [Entity], null: false do
@@ -115,6 +125,14 @@ describe GraphQL::Execution::Interpreter do
           Query::EXPANSIONS.find { |e| e.sym == ent_id } ||
             Query::CARDS.find { |c| c.name == ent_id }
         end
+      end
+
+      field :findMany, [Entity, null: true], null: false do
+        argument :ids, [ID], required: true
+      end
+
+      def find_many(ids:)
+        find(id: ids).map { |e| Box.new(value: e) }
       end
 
       field :field_counter, FieldCounter, null: false
@@ -233,6 +251,7 @@ describe GraphQL::Execution::Interpreter do
       # Although the expansion was found, its name of `nil`
       # propagated to here
       assert_nil res["data"].fetch("expansion")
+      assert_equal ["Cannot return null for non-nullable field Expansion.name"], res["errors"].map { |e| e["message"] }
     end
 
     it "propagates nulls in lists" do
@@ -249,6 +268,37 @@ describe GraphQL::Execution::Interpreter do
       res = InterpreterTest::Schema.execute(query_str)
       # A null in one of the list items removed the whole list
       assert_nil(res["data"])
+    end
+
+    it "works with unions that fail .authorized?" do
+      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      {
+        find(id: "NOPE") {
+          ... on Expansion {
+            sym
+          }
+        }
+      }
+      GRAPHQL
+      assert_equal ["Cannot return null for non-nullable field Query.find"], res["errors"].map { |e| e["message"] }
+    end
+
+    it "works with lists of unions" do
+      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      {
+        findMany(ids: ["RAV", "NOPE", "BOGUS"]) {
+          ... on Expansion {
+            sym
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal 3, res["data"]["findMany"].size
+      assert_equal "RAV", res["data"]["findMany"][0]["sym"]
+      assert_equal nil, res["data"]["findMany"][1]
+      assert_equal nil, res["data"]["findMany"][2]
+      assert_equal false, res.key?("errors")
     end
   end
 
