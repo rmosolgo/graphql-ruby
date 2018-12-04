@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class ArgumentsAreDefinedError < Message
+    class ArgumentsAreDefinedError < StaticValidation::Error
       attr_reader :name
       attr_reader :type_name
       attr_reader :argument_name

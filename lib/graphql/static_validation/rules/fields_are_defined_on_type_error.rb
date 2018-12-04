@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class FieldsAreDefinedOnTypeError < Message
+    class FieldsAreDefinedOnTypeError < StaticValidation::Error
       attr_reader :type_name
       attr_reader :field_name
 

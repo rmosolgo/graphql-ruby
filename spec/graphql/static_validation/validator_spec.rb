@@ -182,10 +182,10 @@ describe GraphQL::StaticValidation::Validator do
     describe "With a legacy-style rule" do
       # GraphQL-Pro's operation store uses this
       class ValidatorSpecLegacyRule
-        include GraphQL::StaticValidation::Message::MessageHelper
+        include GraphQL::StaticValidation::Error::ErrorHelper
         def validate(ctx)
           ctx.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(n, _p) {
-            ctx.errors << message("Busted!", n, context: ctx)
+            ctx.errors << error("Busted!", n, context: ctx)
           }
         end
       end

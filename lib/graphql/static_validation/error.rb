@@ -2,14 +2,14 @@
 module GraphQL
   module StaticValidation
     # Generates GraphQL-compliant validation message.
-    class Message
+    class Error
       # Convenience for validators
-      module MessageHelper
-        # Error `message` is located at `node`
-        def message(message, nodes, context: nil, path: nil, extensions: {})
+      module ErrorHelper
+        # Error `error_message` is located at `node`
+        def error(error_message, nodes, context: nil, path: nil, extensions: {})
           path ||= context.path
           nodes = Array(nodes)
-          GraphQL::StaticValidation::Message.new(message, nodes: nodes, path: path)
+          GraphQL::StaticValidation::Error.new(error_message, nodes: nodes, path: path)
         end
       end
 

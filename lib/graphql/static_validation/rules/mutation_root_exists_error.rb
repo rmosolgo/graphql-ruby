@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class MutationRootExistsError < Message
+    class MutationRootExistsError < StaticValidation::Error
 
       def initialize(message, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)

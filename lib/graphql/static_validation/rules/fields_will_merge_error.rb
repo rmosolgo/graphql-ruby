@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class FieldsWillMergeError < Message
+    class FieldsWillMergeError < StaticValidation::Error
       attr_reader :field_name
       attr_reader :conflicts
 

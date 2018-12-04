@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class OperationNamesAreValidError < Message
+    class OperationNamesAreValidError < StaticValidation::Error
       attr_reader :operation_name
 
       def initialize(message, path: nil, nodes: [], name: nil)

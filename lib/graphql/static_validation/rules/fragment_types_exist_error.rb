@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class FragmentTypesExistError < Message
+    class FragmentTypesExistError < StaticValidation::Error
       attr_reader :type_name
 
       def initialize(message, path: nil, nodes: [], type:)

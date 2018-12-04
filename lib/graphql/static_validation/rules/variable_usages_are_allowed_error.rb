@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class VariableUsagesAreAllowedError < Message
+    class VariableUsagesAreAllowedError < StaticValidation::Error
       attr_reader :type_name
       attr_reader :variable_name
       attr_reader :argument_name

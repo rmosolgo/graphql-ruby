@@ -2,7 +2,7 @@
 module GraphQL
   module StaticValidation
     module NoDefinitionsArePresent
-      include GraphQL::StaticValidation::Message::MessageHelper
+      include GraphQL::StaticValidation::Error::ErrorHelper
 
       def initialize(*)
         super

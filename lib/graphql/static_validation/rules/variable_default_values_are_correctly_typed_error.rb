@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class VariableDefaultValuesAreCorrectlyTypedError < Message
+    class VariableDefaultValuesAreCorrectlyTypedError < StaticValidation::Error
       attr_reader :variable_name
       attr_reader :type_name
       attr_reader :violation

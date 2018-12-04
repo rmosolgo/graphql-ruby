@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class FragmentsAreUsedError < Message
+    class FragmentsAreUsedError < StaticValidation::Error
       attr_reader :fragment_name
 
       def initialize(message, path: nil, nodes: [], fragment:)

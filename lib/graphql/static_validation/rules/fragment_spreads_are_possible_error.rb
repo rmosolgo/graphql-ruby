@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class FragmentSpreadsArePossibleError < Message
+    class FragmentSpreadsArePossibleError < StaticValidation::Error
       attr_reader :type_name
       attr_reader :fragment_name
       attr_reader :parent_name

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class UniqueDirectivesPerLocationError < Message
+    class UniqueDirectivesPerLocationError < StaticValidation::Error
       attr_reader :directive_name
 
       def initialize(message, path: nil, nodes: [], directive:)

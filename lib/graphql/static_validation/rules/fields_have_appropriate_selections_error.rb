@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class FieldsHaveAppropriateSelectionsError < Message
+    class FieldsHaveAppropriateSelectionsError < StaticValidation::Error
       attr_reader :type_name
       attr_reader :node_name
 

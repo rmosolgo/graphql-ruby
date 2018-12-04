@@ -4,7 +4,7 @@ module GraphQL
     # Scalars _can't_ have selections
     # Objects _must_ have selections
     module FieldsHaveAppropriateSelections
-      include GraphQL::StaticValidation::Message::MessageHelper
+      include GraphQL::StaticValidation::Error::ErrorHelper
 
       def on_field(node, parent)
         field_defn = field_definition

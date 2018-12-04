@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class DirectivesAreInValidLocationsError < Message
+    class DirectivesAreInValidLocationsError < StaticValidation::Error
       attr_reader :target_name
       attr_reader :name
 

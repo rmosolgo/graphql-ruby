@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class FragmentsAreNamedError < Message
+    class FragmentsAreNamedError < StaticValidation::Error
 
       def initialize(message, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
