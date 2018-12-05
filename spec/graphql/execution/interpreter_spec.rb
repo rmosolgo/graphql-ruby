@@ -4,10 +4,17 @@ require "spec_helper"
 describe GraphQL::Execution::Interpreter do
   module InterpreterTest
     class Box
-      attr_reader :value
-
-      def initialize(value:)
+      def initialize(value: nil, &block)
         @value = value
+        @block = block
+      end
+
+      def value
+        if @block
+          @value = @block.call
+          @block = nil
+        end
+        @value
       end
     end
 
@@ -67,6 +74,7 @@ describe GraphQL::Execution::Interpreter do
       field :calls, Integer, null: false do
         argument :expected, Integer, required: true
       end
+
       def calls(expected:)
         c = context[:calls] += 1
         if c != expected
@@ -74,6 +82,18 @@ describe GraphQL::Execution::Interpreter do
         else
           c
         end
+      end
+
+      field :runtime_info, String, null: false
+      def runtime_info
+        "#{context.namespace(:interpreter)[:current_path]} -> #{context.namespace(:interpreter)[:current_field].path}"
+      end
+
+      field :lazy_runtime_info, String, null: false
+      def lazy_runtime_info
+        Box.new {
+          "#{context.namespace(:interpreter)[:current_path]} -> #{context.namespace(:interpreter)[:current_field].path}"
+        }
       end
     end
 
@@ -221,6 +241,26 @@ describe GraphQL::Execution::Interpreter do
       # This can be removed later, just a sanity check during migration
       res = InterpreterTest::Schema.execute("{ __typename }")
       assert_equal true, res.context.interpreter?
+    end
+  end
+
+  describe "runtime info in context" do
+    it "is available" do
+      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      {
+        fieldCounter {
+          runtimeInfo
+          fieldCounter {
+            runtimeInfo
+            lazyRuntimeInfo
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal '["fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo', res["data"]["fieldCounter"]["runtimeInfo"]
+      assert_equal '["fieldCounter", "fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo', res["data"]["fieldCounter"]["fieldCounter"]["runtimeInfo"]
+      assert_equal '["fieldCounter", "fieldCounter", "lazyRuntimeInfo"] -> FieldCounter.lazyRuntimeInfo', res["data"]["fieldCounter"]["fieldCounter"]["lazyRuntimeInfo"]
     end
   end
 
