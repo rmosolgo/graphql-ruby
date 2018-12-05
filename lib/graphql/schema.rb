@@ -855,9 +855,11 @@ module GraphQL
         end
       end
 
-      def rescue_from(err_class, &handler_block)
+      def rescue_from(*err_classes, &handler_block)
         @rescues ||= {}
-        @rescues[err_class] = handler_block
+        err_classes.each do |err_class|
+          @rescues[err_class] = handler_block
+        end
       end
 
       def resolve_type(type, obj, ctx)
