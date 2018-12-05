@@ -150,6 +150,8 @@ module GraphQL
             next_selections = field_ast_nodes.inject([]) { |memo, f| memo.concat(f.selections) }
 
             app_result = query.trace("execute_field", {field: field_defn, path: next_path}) do
+              context.namespace(:interpreter)[:current_path] = next_path
+              context.namespace(:interpreter)[:current_field] = field_defn
               field_defn.resolve(object, kwarg_arguments, context)
             end
 
@@ -302,8 +304,12 @@ module GraphQL
         # @param eager [Boolean] Set to `true` for mutation root fields only
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(obj, field:, path:, eager: false)
+          context.namespace(:interpreter)[:current_path] = path
+          context.namespace(:interpreter)[:current_field] = field
           if schema.lazy?(obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
+              context.namespace(:interpreter)[:current_path] = path
+              context.namespace(:interpreter)[:current_field] = field
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = query.trace("execute_field_lazy", {field: field, path: path}) do
