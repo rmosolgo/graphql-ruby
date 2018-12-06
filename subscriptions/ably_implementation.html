@@ -126,6 +126,14 @@
 
 <p>By using this configuration, you can use GraphQL subscriptions without hosting a push server yourself!</p>
 
+<h2 id="ably-setup">Ably setup</h2>
+<p>Add <code class="highlighter-rouge">ably-rest</code> to your <code class="highlighter-rouge">Gemfile</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'ably-rest'</span>
+</code></pre></div></div>
+
+<p>and <code class="highlighter-rouge">bundle install</code>.</p>
+
 <h2 id="database-setup">Database setup</h2>
 
 <p>Subscriptions require a <em>persistent</em> Redis database, configured with:</p>
@@ -194,13 +202,10 @@ appendonly <span class="nb">yes</span>
 
 <p>Your server needs to receive webhooks from Ably when clients disconnect. This keeps your local subscription database in sync with Ably.</p>
 
-<p>In the Ably web UI, Add a webhook for “Channel Lifecycle” events:</p>
+<h3 id="server">Server</h3>
+<p><em>Note: if you’re setting up in a development environment you should follow the <a href="#Developing-with-webhooks">Developing with webhooks</a> section first</em></p>
 
-<p><a href="/subscriptions/ably_webhook_configuration.png" target="_blank" class="img-link">
-  <img src="/subscriptions/ably_webhook_configuration.png" title="Ably Webhook Configuration" alt="Ably Webhook Configuration" />
-</a></p>
-
-<p>Then, mount the Rack app for handling webhooks from Ably. For example, on Rails:</p>
+<p>Mount the Rack app for handling webhooks from Ably. For example, on Rails:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
 
@@ -214,7 +219,19 @@ appendonly <span class="nb">yes</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>This way, we’ll be kept up-to-date with Ably’s unsubscribe events.</p>
+<h3 id="ably">Ably</h3>
+<ol>
+  <li>Go to the Ably dashboard</li>
+  <li>Click on your application.</li>
+  <li>Select the “Reactor” tab</li>
+  <li>Click on the “+ New Reactor Rule” button</li>
+  <li>Click on the “Choose” button for “Reactor Event”</li>
+  <li>Click on the “Choose” button for “WebHooks”</li>
+  <li>Enter your url (including the webhooks path from above) in the URL field</li>
+  <li>Under “Source” select “Channel Lifecycle”</li>
+  <li>Under “Sign with key” select the API Key prefix that matches the prefix of the ABLY_API_KEY you provided.</li>
+  <li>Click “Create”</li>
+</ol>
 
 <h2 id="serializing-context">Serializing Context</h2>
 

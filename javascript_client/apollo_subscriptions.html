@@ -129,7 +129,7 @@
 <span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-cache-inmemory'</span><span class="p">;</span>
 <span class="c1">// Load Ably and create a client</span>
 <span class="kd">const</span> <span class="nx">Ably</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"ably"</span><span class="p">)</span>
-<span class="kd">const</span> <span class="nx">ablyClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Ably</span><span class="p">.</span><span class="nx">Realtime</span><span class="p">(</span><span class="s2">"your-app-key"</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">ablyClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Ably</span><span class="p">.</span><span class="nx">Realtime</span><span class="p">({</span> <span class="na">key</span><span class="p">:</span> <span class="s2">"your-app-key"</span> <span class="p">})</span>
 
 <span class="c1">// Make the HTTP link which actually sends the queries</span>
 <span class="kd">const</span> <span class="nx">httpLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HttpLink</span><span class="p">({</span>

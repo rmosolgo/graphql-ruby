@@ -98,7 +98,7 @@
 
 <p>Then, extend that one for each union in your schema:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">CommentSubject</span> <span class="o">&lt;</span> <span class="no">BaseUnion</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">CommentSubject</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseUnion</span>
   <span class="n">description</span> <span class="s2">"Objects which may be commented on"</span>
   <span class="n">possible_types</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Image</span>
 
