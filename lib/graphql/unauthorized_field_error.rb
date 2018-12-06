@@ -5,13 +5,18 @@ module GraphQL
     attr_reader :field
 
     def initialize(message = nil, object: nil, type: nil, context: nil, field: nil)
-      if message.nil? && [object, field, type].any?(&:nil?)
+      if message.nil? && [field, type].any?(&:nil?)
         raise ArgumentError, "#{self.class.name} requires either a message or keywords"
       end
 
       @field = field
-      # message ||= "An instance of #{object.class} failed #{type.name}'s authorization check on field #{field.name}"
-      message ||= "An instance of #{object.class} failed the authorization check on field #{field.name}"
+      message ||= begin
+        if object
+          "An instance of #{object.class} failed #{type.name}'s authorization check on field #{field.name}"
+        else
+          "Failed #{type.name}'s authorization check on field #{field.name}"
+        end
+      end
       super(message, object: object, type: type, context: context)
     end
   end
