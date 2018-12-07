@@ -400,7 +400,17 @@ MSG
           true
         end
 
-        self_auth && arguments.each_value.all? { |a| a.authorized?(object, context) }
+        if self_auth
+          # Faster than `.any?`
+          arguments.each_value do |arg|
+            if !arg.authorized?(object, context)
+              return false
+            end
+          end
+          true
+        else
+          false
+        end
       end
 
       # Implement {GraphQL::Field}'s resolve API.
