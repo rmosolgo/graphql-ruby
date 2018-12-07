@@ -19,9 +19,14 @@ module GraphQL
           @query = query
           @schema = query.schema
           @context = query.context
+          @interpreter_context = @context.namespace(:interpreter)
           @response = response
           @dead_paths = {}
           @types_at_paths = {}
+          # A cache of { Class => { String => Schema::Field } }
+          # Which assumes that MyObject.get_field("myField") will return the same field
+          # during the lifetime of a query
+          @fields_cache = Hash.new { |h, k| h[k] = {} }
         end
 
         def final_value
@@ -55,8 +60,15 @@ module GraphQL
             when GraphQL::Language::Nodes::Field
               if passes_skip_and_include?(node)
                 response_key = node.alias || node.name
-                s = selections_by_name[response_key] ||= []
-                s << node
+                selections = selections_by_name[response_key]
+                if selections
+                  s = Array(selections)
+                  s << node
+                  selections_by_name[response_key] = s
+                else
+                  # No selection was foudn for this field yet
+                  selections_by_name[response_key] = node
+                end
               end
             when GraphQL::Language::Nodes::InlineFragment
               if passes_skip_and_include?(node)
@@ -91,10 +103,16 @@ module GraphQL
         def evaluate_selections(path, owner_object, owner_type, selections, root_operation_type: nil)
           selections_by_name = {}
           gather_selections(owner_type, selections, selections_by_name)
-          selections_by_name.each do |result_name, field_ast_nodes|
-            ast_node = field_ast_nodes.first
+          selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
+            if field_ast_nodes_or_ast_node.is_a?(Array)
+              field_ast_nodes = field_ast_nodes_or_ast_node
+              ast_node = field_ast_nodes.first
+            else
+              field_ast_nodes = nil
+              ast_node = field_ast_nodes_or_ast_node
+            end
             field_name = ast_node.name
-            field_defn = owner_type.get_field(field_name)
+            field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name)
             is_introspection = false
             if field_defn.nil?
               field_defn = if owner_type == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
@@ -137,6 +155,9 @@ module GraphQL
               when :path
                 kwarg_arguments[:path] = next_path
               when :lookahead
+                if !field_ast_nodes
+                  field_ast_nodes = [ast_node]
+                end
                 kwarg_arguments[:lookahead] = Execution::Lookahead.new(
                   query: query,
                   ast_nodes: field_ast_nodes,
@@ -147,11 +168,17 @@ module GraphQL
               end
             end
 
-            next_selections = field_ast_nodes.inject([]) { |memo, f| memo.concat(f.selections) }
+            # Optimize for the case that field is selected only once
+            if field_ast_nodes.nil? || field_ast_nodes.size == 1
+              next_selections = ast_node.selections
+            else
+              next_selections = []
+              field_ast_nodes.each { |f| next_selections.concat(f.selections) }
+            end
 
             app_result = query.trace("execute_field", {field: field_defn, path: next_path}) do
-              context.namespace(:interpreter)[:current_path] = next_path
-              context.namespace(:interpreter)[:current_field] = field_defn
+              @interpreter_context[:current_path] = next_path
+              @interpreter_context[:current_field] = field_defn
               field_defn.resolve(object, kwarg_arguments, context)
             end
 
@@ -251,12 +278,13 @@ module GraphQL
             write_in_response(path, response_list)
             inner_type = type.of_type
             idx = 0
-            value.map do |inner_value|
+            value.each do |inner_value|
               next_path = path.dup
               next_path << idx
               next_path.freeze
               idx += 1
               set_type_at_path(next_path, inner_type)
+              # This will update `response_list` with the lazy
               after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
                 # reset `is_non_null` here and below, because the inner type will have its own nullability constraint
                 continue_value = continue_value(next_path, inner_inner_value, field, false, ast_node)
@@ -265,6 +293,7 @@ module GraphQL
                 end
               end
             end
+            response_list
           when "NON_NULL"
             inner_type = type.of_type
             # For fields like `__schema: __Schema!`
@@ -305,12 +334,12 @@ module GraphQL
         # @param eager [Boolean] Set to `true` for mutation root fields only
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(obj, field:, path:, eager: false)
-          context.namespace(:interpreter)[:current_path] = path
-          context.namespace(:interpreter)[:current_field] = field
+          @interpreter_context[:current_path] = path
+          @interpreter_context[:current_field] = field
           if schema.lazy?(obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
-              context.namespace(:interpreter)[:current_path] = path
-              context.namespace(:interpreter)[:current_field] = field
+              @interpreter_context[:current_path] = path
+              @interpreter_context[:current_field] = field
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = query.trace("execute_field_lazy", {field: field, path: path}) do

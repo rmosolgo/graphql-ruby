@@ -67,12 +67,16 @@ module GraphQL
         end
 
         def get_field(field_name)
-          for ancestor in ancestors
-            if ancestor.respond_to?(:own_fields) && f = ancestor.own_fields[field_name]
-              return f
+          if (f = own_fields[field_name])
+            f
+          else
+            for ancestor in ancestors
+              if ancestor.respond_to?(:own_fields) && f = ancestor.own_fields[field_name]
+                return f
+              end
             end
+            nil
           end
-          nil
         end
 
         # Register this field with the class, overriding a previous one if needed.
