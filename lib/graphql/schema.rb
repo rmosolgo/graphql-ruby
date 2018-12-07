@@ -966,7 +966,7 @@ module GraphQL
       # If you want to add an error to the `"errors"` key, raise a {GraphQL::ExecutionError}
       # in this hook.
       #
-      # @param unauthorized_error [GraphQL::UnauthorizedError]
+      # @param unauthorized_error [GraphQL::UnauthorizedFieldError]
       # @return [Field] The returned field will be put in the GraphQL response
       alias_method :unauthorized_field, :unauthorized_object
 
