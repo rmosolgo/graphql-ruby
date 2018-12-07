@@ -61,26 +61,34 @@ module GraphQL
               if passes_skip_and_include?(node)
                 response_key = node.alias || node.name
                 selections = selections_by_name[response_key]
+                # if there was already a selection of this field,
+                # use an array to hold all selections,
+                # otherise, use the single node to represent the selection
                 if selections
+                  # This field was already selected at least once,
+                  # add this node to the list of selections
                   s = Array(selections)
                   s << node
                   selections_by_name[response_key] = s
                 else
-                  # No selection was foudn for this field yet
+                  # No selection was found for this field yet
                   selections_by_name[response_key] = node
                 end
               end
             when GraphQL::Language::Nodes::InlineFragment
               if passes_skip_and_include?(node)
-                include_fragmment = if node.type
+                if node.type
                   type_defn = schema.types[node.type.name]
                   type_defn = type_defn.metadata[:type_class]
-                  possible_types = query.warden.possible_types(type_defn).map { |t| t.metadata[:type_class] }
-                  possible_types.include?(owner_type)
+                  # Faster than .map{}.include?()
+                  query.warden.possible_types(type_defn).each do |t|
+                    if t.metadata[:type_class] == owner_type
+                      gather_selections(owner_type, node.selections, selections_by_name)
+                      break
+                    end
+                  end
                 else
-                  true
-                end
-                if include_fragmment
+                  # it's an untyped fragment, definitely continue
                   gather_selections(owner_type, node.selections, selections_by_name)
                 end
               end
@@ -89,9 +97,11 @@ module GraphQL
                 fragment_def = query.fragments[node.name]
                 type_defn = schema.types[fragment_def.type.name]
                 type_defn = type_defn.metadata[:type_class]
-                possible_types = schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
-                if possible_types.include?(owner_type)
-                  gather_selections(owner_type, fragment_def.selections, selections_by_name)
+                schema.possible_types(type_defn).each do |t|
+                  if t.metadata[:type_class] == owner_type
+                    gather_selections(owner_type, fragment_def.selections, selections_by_name)
+                    break
+                  end
                 end
               end
             else
@@ -104,6 +114,9 @@ module GraphQL
           selections_by_name = {}
           gather_selections(owner_type, selections, selections_by_name)
           selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
+            # As a performance optimization, the hash key will be a `Node` if
+            # there's only one selection of the field. But if there are multiple
+            # selections of the field, it will be an Array of nodes
             if field_ast_nodes_or_ast_node.is_a?(Array)
               field_ast_nodes = field_ast_nodes_or_ast_node
               ast_node = field_ast_nodes.first
