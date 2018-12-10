@@ -621,6 +621,76 @@ describe GraphQL::Authorization do
       end
     end
 
+    describe "field level authorization" do
+      let(:query) { "{ unauthorized }" }
+      let(:response) {auth_execute(query, query_args)}
+      let(:field_response) {response["data"].fetch("unauthorized")}
+      describe "unauthorized field" do
+        let(:query_args) { {root_value: :hide} }
+        it "returns nil" do
+          assert_nil field_response
+        end
+
+        describe "with an unauthorized field hook configured" do
+          describe "when the hook returns a value" do
+            UNAUTHORIZED_FIELD_DEFAULT_RESPONSE = 42
+            before do
+              AuthTest::Schema.instance_eval do
+                def unauthorized_field(_error)
+                  UNAUTHORIZED_FIELD_DEFAULT_RESPONSE
+                end
+              end
+            end
+
+            it "replaces the response with the return value of the unauthorized field hook" do
+              assert_equal UNAUTHORIZED_FIELD_DEFAULT_RESPONSE, field_response
+            end
+          end
+
+          describe "when the hook raises an error" do
+            before do
+              AuthTest::Schema.instance_eval do
+                def unauthorized_field(_error)
+                  raise GraphQL::ExecutionError, "Unauthorized field error"
+                end
+              end
+            end
+
+            it "returns nil" do
+              assert_nil field_response
+            end
+
+            it "adds the error to the errors key" do
+              assert_equal ["Unauthorized field error"], response["errors"].map { |e| e["message"] }
+            end
+          end
+        end
+
+        # TODO: Implement this without test pollution
+        # describe "with an unauthorized field hook not configured" do
+        #   UNAUTHORIZED_OBJECT_DEFAULT_RESPONSE = 500
+        #   before do
+        #     AuthTest::Schema.instance_eval do
+        #       def unauthorized_object(_error)
+        #         UNAUTHORIZED_OBJECT_DEFAULT_RESPONSE
+        #       end
+        #     end
+        #   end
+        #
+        #   it "delegates to the unauthorized object hook" do
+        #     assert_equal UNAUTHORIZED_OBJECT_DEFAULT_RESPONSE, field_response
+        #   end
+        # end
+      end
+
+      describe "authorized field" do
+        let(:query_args) { {root_value: 1} }
+        it "returns the field data" do
+          assert_equal 1, field_response
+        end
+      end
+    end
+
     it "halts on unauthorized fields, using the parent object" do
       query = "{ unauthorized }"
       hidden_response = auth_execute(query, root_value: :hide)

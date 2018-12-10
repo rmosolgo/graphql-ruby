@@ -968,7 +968,9 @@ module GraphQL
       #
       # @param unauthorized_error [GraphQL::UnauthorizedFieldError]
       # @return [Field] The returned field will be put in the GraphQL response
-      alias_method :unauthorized_field, :unauthorized_object
+      def unauthorized_field(unauthorized_error)
+        unauthorized_object(unauthorized_error)
+      end
 
       def type_error(type_err, ctx)
         DefaultTypeError.call(type_err, ctx)
