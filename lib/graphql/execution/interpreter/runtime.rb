@@ -518,9 +518,6 @@ module GraphQL
         def type_at(path)
           t = @types_at_paths
           path.each do |part|
-            if part.is_a?(Integer)
-              part = 0
-            end
             t = t[part] || (raise("Invariant: #{part.inspect} not found in #{t}"))
           end
           t = t[:__type]
@@ -530,10 +527,6 @@ module GraphQL
         def set_type_at_path(path, type)
           types = @types_at_paths
           path.each do |part|
-            if part.is_a?(Integer)
-              part = 0
-            end
-
             types = types[part] ||= {}
           end
           # Use this magic key so that the hash contains:
