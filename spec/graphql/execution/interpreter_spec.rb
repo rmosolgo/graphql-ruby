@@ -39,6 +39,11 @@ describe GraphQL::Execution::Interpreter do
       def lazy_sym
         Box.new(value: sym)
       end
+
+      field :null_union_field_test, Integer, null: false
+      def null_union_field_test
+        1
+      end
     end
 
     class Card < GraphQL::Schema::Object
@@ -48,6 +53,11 @@ describe GraphQL::Execution::Interpreter do
 
       def expansion
         Query::EXPANSIONS.find { |e| e.sym == @object.expansion_sym }
+      end
+
+      field :null_union_field_test, Integer, null: true
+      def null_union_field_test
+        nil
       end
     end
 
@@ -339,6 +349,23 @@ describe GraphQL::Execution::Interpreter do
       assert_equal nil, res["data"]["findMany"][1]
       assert_equal nil, res["data"]["findMany"][2]
       assert_equal false, res.key?("errors")
+    end
+
+    it "works with union lists that have members of different kinds, with different nullabilities" do
+      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      {
+        findMany(ids: ["RAV", "Dark Confidant"]) {
+          ... on Expansion {
+            nullUnionFieldTest
+          }
+          ... on Card {
+            nullUnionFieldTest
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal [1, nil], res["data"]["findMany"].map { |f| f["nullUnionFieldTest"] }
     end
   end
 
