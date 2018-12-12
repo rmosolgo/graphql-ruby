@@ -171,6 +171,7 @@ describe GraphQL::Execution::Interpreter do
 
     class Schema < GraphQL::Schema
       use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
       query(Query)
       lazy_resolve(Box, :value)
     end

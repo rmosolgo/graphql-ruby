@@ -77,6 +77,7 @@ describe GraphQL::Analysis::AST do
         query query_type
         use GraphQL::Analysis::AST
         query_analyzer AstErrorAnalyzer
+        use GraphQL::Execution::Interpreter
       end
     end
 
@@ -89,7 +90,16 @@ describe GraphQL::Analysis::AST do
     let(:query) { GraphQL::Query.new(schema, query_string, variables: {}) }
 
     it "runs the AST analyzers correctly" do
+      res = query.result
+      refute res.key?("data")
+      assert_equal ["An Error!"], res["errors"].map { |e| e["message"] }
+    end
+
+    it "skips rewrite" do
+      # Try running the query:
       query.result
+      # But the validation step doesn't build an irep_node tree
+      assert_nil query.irep_selection
     end
   end
 

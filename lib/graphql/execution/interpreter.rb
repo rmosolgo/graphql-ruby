@@ -17,6 +17,7 @@ module GraphQL
       end
 
       def self.use(schema_defn)
+        schema_defn.target.interpreter = true
         # Reach through the legacy objects for the actual class defn
         schema_class = schema_defn.target.class
         # This is not good, since both of these are holding state now,
@@ -58,7 +59,6 @@ module GraphQL
       # Run the eager part of `query`
       # @return {Interpreter::Runtime}
       def evaluate(query)
-        query.context.interpreter = true
         # Although queries in a multiplex _share_ an Interpreter instance,
         # they also have another item of state, which is private to that query
         # in particular, assign it here:

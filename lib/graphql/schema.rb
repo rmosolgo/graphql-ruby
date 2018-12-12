@@ -174,7 +174,16 @@ module GraphQL
       @context_class = GraphQL::Query::Context
       @introspection_namespace = nil
       @introspection_system = nil
+      @interpeter = false
     end
+
+    # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
+    def interpreter?
+      @interpreter
+    end
+
+    # @api private
+    attr_writer :interpreter
 
     def inspect
       "#<#{self.class.name} ...>"
@@ -673,7 +682,7 @@ module GraphQL
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
-        :analysis_engine, :analysis_engine=, :using_ast_analysis?,
+        :analysis_engine, :analysis_engine=, :using_ast_analysis?, :interpreter?,
         :max_complexity=, :max_depth=,
         :metadata,
         :default_mask,
