@@ -135,6 +135,8 @@ module GraphQL
       end
     end
 
+    def_delegators :@schema, :interpreter?
+
     def subscription_update?
       @subscription_topic && subscription?
     end

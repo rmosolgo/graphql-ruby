@@ -27,12 +27,17 @@ module GraphQL
       # Build a class to visit the AST and perform validation,
       # or use a pre-built class if rules is `ALL_RULES` or empty.
       # @param rules [Array<Module, Class>]
+      # @param rewrite [Boolean] if `false`, don't include rewrite
       # @return [Class] A class for validating `rules` during visitation
-      def self.including_rules(rules)
+      def self.including_rules(rules, rewrite: true)
         if rules.none?
           NoValidateVisitor
         elsif rules == ALL_RULES
-          DefaultVisitor
+          if rewrite
+            DefaultVisitor
+          else
+            InterpreterVisitor
+          end
         else
           visitor_class = Class.new(self) do
             include(GraphQL::StaticValidation::DefinitionDependencies)

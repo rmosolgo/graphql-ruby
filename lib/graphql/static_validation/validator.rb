@@ -25,7 +25,8 @@ module GraphQL
         query.trace("validate", { validate: validate, query: query }) do
 
           rules_to_use = validate ? @rules : []
-          visitor_class = BaseVisitor.including_rules(rules_to_use)
+          can_skip_rewrite = query.context.interpreter? && query.schema.using_ast_analysis?
+          visitor_class = BaseVisitor.including_rules(rules_to_use, rewrite: !can_skip_rewrite)
 
           context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class)
 
@@ -37,8 +38,7 @@ module GraphQL
           end
 
           context.visitor.visit
-          # Post-validation: allow validators to register handlers on rewritten query nodes
-          rewrite_result = context.visitor.rewrite_document
+          rewrite_result = can_skip_rewrite ? nil : context.visitor.rewrite_document
 
           {
             errors: context.errors,
