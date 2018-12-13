@@ -385,6 +385,8 @@ module GraphQL
           else
             obj.object.public_send(@method_sym)
           end
+        elsif obj.object.is_a?(GraphQL::ExecutionErrorsMapper)
+          obj.object
         else
           raise <<-ERR
         Failed to implement #{@owner.graphql_name}.#{@name}, tried:

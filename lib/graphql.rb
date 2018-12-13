@@ -42,6 +42,7 @@ end
 # Order matters for these:
 
 require "graphql/execution_error"
+require "graphql/execution_errors_mapper"
 require "graphql/define"
 require "graphql/base_type"
 require "graphql/object_type"

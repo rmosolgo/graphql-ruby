@@ -168,6 +168,12 @@ module GraphQL
           query = field_ctx.query
 
           case raw_value
+          when GraphQL::ExecutionErrorsMapper
+            raw_value.errors.each do |error|
+              error.ast_node ||= field_ctx.ast_node
+              error.path = field_ctx.path
+              query.context.errors.push(error)
+            end
           when GraphQL::ExecutionError
             raw_value.ast_node ||= field_ctx.ast_node
             raw_value.path = field_ctx.path
@@ -206,6 +212,12 @@ module GraphQL
               nil
             end
           elsif value.is_a?(GraphQL::ExecutionError)
+            if field_type.kind.non_null?
+              PROPAGATE_NULL
+            else
+              nil
+            end
+          elsif value.is_a?(GraphQL::ExecutionErrorsMapper)
             if field_type.kind.non_null?
               PROPAGATE_NULL
             else
