@@ -21,10 +21,23 @@ module GraphQL
           if type.nil?
             # This is handled by another validator
           else
+            #if ENV['NO_BUBBLING']
+            #   begin
+            #    valid = context.valid_literal?(value, type)
+            #   rescue GraphQL::CoercionError, GraphQL::LiteralValidationError => err
+            #     error_message = err.message if err.is_a? GraphQL::CoercionError
+            #   end
+
+            #   if !valid
+            #     error_message ||= "Default value for $#{node.name} doesn't match type #{type}"
+            #     context.errors << message(error_message, node, context: context)
+            #   end
+            # else
+
             begin
               valid = context.valid_literal?(value, type)
-            rescue GraphQL::CoercionError => err
-              error_message = err.message
+            rescue GraphQL::CoercionError, GraphQL::LiteralValidationError => err
+              error_message = err.message if err.is_a? GraphQL::CoercionError
             end
 
             if !valid

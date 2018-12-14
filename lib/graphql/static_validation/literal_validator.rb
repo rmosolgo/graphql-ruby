@@ -10,27 +10,55 @@ module GraphQL
 
       def validate(ast_value, type)
         if ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
-          !type.kind.non_null?
+          maybe_raise(ast_value) do
+            !type.kind.non_null?
+          end
         elsif type.kind.non_null?
-          (!ast_value.nil?) && validate(ast_value, type.of_type)
+          maybe_raise(ast_value) do
+            (!ast_value.nil?)
+          end && validate(ast_value, type.of_type)
         elsif type.kind.list?
           item_type = type.of_type
           ensure_array(ast_value).all? { |val| validate(val, item_type) }
         elsif ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           true
         elsif type.kind.scalar? && constant_scalar?(ast_value)
-          type.valid_input?(ast_value, @context)
-        elsif type.kind.enum? && ast_value.is_a?(GraphQL::Language::Nodes::Enum)
-          type.valid_input?(ast_value.name, @context)
+          maybe_raise(ast_value) do
+            type.valid_input?(ast_value, @context)
+          end
+        elsif type.kind.enum?
+          maybe_raise(ast_value) do
+            if ast_value.is_a?(GraphQL::Language::Nodes::Enum)
+              type.valid_input?(ast_value.name, @context)
+            else
+              # if our ast_value isn't an Enum it's going to be invalid so return false
+              false
+            end
+          end
         elsif type.kind.input_object? && ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
-          required_input_fields_are_present(type, ast_value) &&
-            present_input_field_values_are_valid(type, ast_value)
+          maybe_raise(ast_value) do
+            required_input_fields_are_present(type, ast_value)
+          end && present_input_field_values_are_valid(type, ast_value)
         else
-          false
+          maybe_raise(ast_value) do
+            false
+          end
         end
       end
 
       private
+
+
+      def maybe_raise(ast_value)
+        ret = yield if block_given?
+        if ENV['NO_BUBBLING'] && !ret
+          e = LiteralValidationError.new
+          e.ast_value = ast_value
+          raise e
+        else
+          ret
+        end
+      end
 
       # The GraphQL grammar supports variables embedded within scalars but graphql.js
       # doesn't support it so we won't either for simplicity
@@ -47,6 +75,8 @@ module GraphQL
       end
 
       def required_input_fields_are_present(type, ast_node)
+        # TODO - would be nice to use these to create an error message so the caller knows
+        # that required fields are missing
         required_field_names = @warden.arguments(type)
           .select { |f| f.type.kind.non_null? }
           .map(&:name)
@@ -60,6 +90,11 @@ module GraphQL
         ast_node.arguments.all? do |value|
           field = field_map[value.name]
           field && validate(value.value, field.type)
+          # field && begin
+          #   validate(value.value, field.type)
+          # rescue GraphQL::CoercionError, GraphQL::LiteralValidationError => err
+          #   false
+          # end
         end
       end
 
