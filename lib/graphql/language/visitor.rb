@@ -170,12 +170,14 @@ module GraphQL
             # The user-provided hook requested to remove this node
             new_parent = new_parent && new_parent.delete_child(node)
             return nil, new_parent
+          else
+            new_node_and_new_parent
           end
         else
           # The user-provided hook didn't make any modifications.
           # In fact, the hook might have returned who-knows-what, so
           # ignore the return value and use the original values.
-          new_node_and_new_parent
+          [node, parent]
         end
       end
 
