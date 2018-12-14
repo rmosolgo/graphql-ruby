@@ -81,7 +81,7 @@ module GraphQL
 
         def on_inline_fragment(node, parent)
           on_fragment_with_type(node) do
-            @path.push("...#{node.type ? " on #{node.type.to_query_string}" : ""}")
+            @path.push("...#{node.type ? " on #{node.type.name}" : ""}")
             call_analyzers(:on_enter_inline_fragment, node, parent)
             super
             call_analyzers(:on_leave_inline_fragment, node, parent)

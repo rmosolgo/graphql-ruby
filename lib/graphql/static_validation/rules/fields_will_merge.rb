@@ -297,13 +297,18 @@ module GraphQL
         end
       end
 
+      NO_SELECTIONS = [[].freeze, [].freeze].freeze
       def fields_and_fragments_from_selection(node, owner_type:, parents:)
-        fields, fragment_spreads = find_fields_and_fragments(node.selections, owner_type: owner_type, parents: parents)
-        response_keys = fields.group_by { |f| f.node.alias || f.node.name }
-        [response_keys, fragment_spreads]
+        if node.selections.none?
+          NO_SELECTIONS
+        else
+          fields, fragment_spreads = find_fields_and_fragments(node.selections, owner_type: owner_type, parents: parents, fields: [], fragment_spreads: [])
+          response_keys = fields.group_by { |f| f.node.alias || f.node.name }
+          [response_keys, fragment_spreads]
+        end
       end
 
-      def find_fields_and_fragments(selections, owner_type:, parents:, fields: [], fragment_spreads: [])
+      def find_fields_and_fragments(selections, owner_type:, parents:, fields:, fragment_spreads:)
         selections.each do |node|
           case node
           when GraphQL::Language::Nodes::Field
