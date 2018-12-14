@@ -297,7 +297,8 @@ module GraphQL
         end
       end
 
-      NO_SELECTIONS = [[].freeze, [].freeze].freeze
+      NO_SELECTIONS = [{}.freeze, [].freeze].freeze
+
       def fields_and_fragments_from_selection(node, owner_type:, parents:)
         if node.selections.none?
           NO_SELECTIONS
