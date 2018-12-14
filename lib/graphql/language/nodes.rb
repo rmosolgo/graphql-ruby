@@ -35,14 +35,16 @@ module GraphQL
             other.children.eql?(self.children)
         end
 
+        NO_CHILDREN = [].freeze
+
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] all nodes in the tree below this one
         def children
-          []
+          NO_CHILDREN
         end
 
         # @return [Array<Integer, Float, String, Boolean, Array>] Scalar values attached to this node
         def scalars
-          []
+          NO_CHILDREN
         end
 
         # This might be unnecessary, but its easiest to add it here.
@@ -267,7 +269,7 @@ module GraphQL
         #   @return [String, Float, Integer, Boolean, Array, InputObject] The value passed for this key
 
         def children
-          [value].flatten.select { |v| v.is_a?(AbstractNode) }
+          @children ||= Array(value).select { |v| v.is_a?(AbstractNode) }
         end
       end
 
