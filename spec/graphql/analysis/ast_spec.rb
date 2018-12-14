@@ -61,6 +61,16 @@ describe GraphQL::Analysis::AST do
     end
   end
 
+  class AstPreviousField < GraphQL::Analysis::AST::Analyzer
+    def on_enter_field(node, parent, visitor)
+      @previous_field = visitor.previous_field_definition
+    end
+
+    def result
+      @previous_field
+    end
+  end
+
   describe "using the AST analysis engine" do
     let(:schema) do
       query_type = Class.new(GraphQL::Schema::Object) do
@@ -135,6 +145,16 @@ describe GraphQL::Analysis::AST do
         it "it runs the analyzer" do
           # Both analyzers ran
           assert_equal 2, reduce_result.size
+        end
+      end
+
+      describe "Visitor#previous_field_definition" do
+        let(:analyzers) { [AstPreviousField] }
+        let(:query) { GraphQL::Query.new(Dummy::Schema, "{ __schema { types { name } } }") }
+
+        it "it runs the analyzer" do
+          prev_field = reduce_result.first
+          assert_equal "__Schema.types", prev_field.metadata[:type_class].path
         end
       end
     end

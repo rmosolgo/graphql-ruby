@@ -203,6 +203,11 @@ module GraphQL
           @field_definitions.last
         end
 
+        # @return [GraphQL::Field, nil] The GraphQL field which returned the object that the current field belongs to
+        def previous_field_definition
+          @field_definitions[-2]
+        end
+
         # @return [GraphQL::Directive, nil] The most-recently-entered GraphQL::Directive, if currently inside one
         def directive_definition
           @directive_definitions.last
