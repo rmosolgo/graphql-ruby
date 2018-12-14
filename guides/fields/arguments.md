@@ -117,7 +117,7 @@ field :posts, [PostType], null: false do
 end
 ```
 
-Furthermore, if you're argument is already camelCased, then it will remain camelized in the GraphQL schema. However, the argument will be converted to snake_case when it is passed to the resolver method:
+Furthermore, if your argument is already camelCased, then it will remain camelized in the GraphQL schema. However, the argument will be converted to snake_case when it is passed to the resolver method:
 
 ```ruby
 field :posts, [PostType], null: false do
