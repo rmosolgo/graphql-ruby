@@ -14,6 +14,11 @@ module GraphQL
         super(document)
       end
 
+      # This will be overwritten by {InternalRepresentation::Rewrite} if it's included
+      def rewrite_document
+        nil
+      end
+
       attr_reader :context
 
       # @return [Array<GraphQL::ObjectType>] Types whose scope we've entered
@@ -31,7 +36,12 @@ module GraphQL
       # @return [Class] A class for validating `rules` during visitation
       def self.including_rules(rules, rewrite: true)
         if rules.none?
-          NoValidateVisitor
+          if rewrite
+            NoValidateVisitor
+          else
+            # It's not doing _anything?!?_
+            BaseVisitor
+          end
         elsif rules == ALL_RULES
           if rewrite
             DefaultVisitor
@@ -50,7 +60,9 @@ module GraphQL
             end
           end
 
-          visitor_class.include(GraphQL::InternalRepresentation::Rewrite)
+          if rewrite
+            visitor_class.include(GraphQL::InternalRepresentation::Rewrite)
+          end
           visitor_class.include(ContextMethods)
           visitor_class
         end

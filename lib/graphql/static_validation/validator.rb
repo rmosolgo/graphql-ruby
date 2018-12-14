@@ -38,12 +38,11 @@ module GraphQL
           end
 
           context.visitor.visit
-          rewrite_result = can_skip_rewrite ? nil : context.visitor.rewrite_document
 
           {
             errors: context.errors,
             # If there were errors, the irep is garbage
-            irep: context.errors.any? ? nil : rewrite_result,
+            irep: context.errors.any? ? nil : context.visitor.rewrite_document,
           }
         end
       end
