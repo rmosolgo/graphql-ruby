@@ -113,7 +113,7 @@ module GraphQL
         end
 
         NullResolveType = ->(type, obj, ctx) {
-          raise(NotImplementedError, "Generated Schema cannot use Interface or Union types for execution.")
+          raise(NotImplementedError, "Generated Schema cannot use Interface or Union types for execution. Implement resolve_type on your resolver.")
         }
 
         NullScalarCoerce = ->(val, _ctx) { val }
