@@ -23,26 +23,37 @@ module GraphQL
       # @return [Array<Hash>]
       def validate(query, validate: true)
         query.trace("validate", { validate: validate, query: query }) do
-
-          rules_to_use = validate ? @rules : []
           can_skip_rewrite = query.context.interpreter? && query.schema.using_ast_analysis?
-          visitor_class = BaseVisitor.including_rules(rules_to_use, rewrite: !can_skip_rewrite)
+          errors = if validate == false && can_skip_rewrite
+            []
+          else
+            rules_to_use = validate ? @rules : []
+            visitor_class = BaseVisitor.including_rules(rules_to_use, rewrite: !can_skip_rewrite)
 
-          context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class)
+            context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class)
 
-          # Attach legacy-style rules
-          rules_to_use.each do |rule_class_or_module|
-            if rule_class_or_module.method_defined?(:validate)
-              rule_class_or_module.new.validate(context)
+            # Attach legacy-style rules
+            rules_to_use.each do |rule_class_or_module|
+              if rule_class_or_module.method_defined?(:validate)
+                rule_class_or_module.new.validate(context)
+              end
             end
+
+            context.visitor.visit
+            context.errors
           end
 
-          context.visitor.visit
+
+          irep = if errors.none? && context
+            # Only return this if there are no errors and validation was actually run
+            context.visitor.rewrite_document
+          else
+            nil
+          end
 
           {
-            errors: context.errors,
-            # If there were errors, the irep is garbage
-            irep: context.errors.any? ? nil : context.visitor.rewrite_document,
+            errors: errors,
+            irep: irep,
           }
         end
       end
