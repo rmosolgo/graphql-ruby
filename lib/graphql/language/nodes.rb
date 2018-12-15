@@ -269,7 +269,7 @@ module GraphQL
         #   @return [String, Float, Integer, Boolean, Array, InputObject] The value passed for this key
 
         def children
-          @children ||= Array(value).select { |v| v.is_a?(AbstractNode) }
+          @children ||= Array(value).flatten.select { |v| v.is_a?(AbstractNode) }
         end
       end
 
