@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# helpers to enable / disable error bubbling in a block scope
 module ErrorBubblingHelpers
   def without_error_bubbling(schema)
     original_error_bubbling = schema.error_bubbling
