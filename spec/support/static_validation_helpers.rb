@@ -23,6 +23,6 @@ module StaticValidationHelpers
   end
 
   def schema
-    Dummy::Schema
+    Dummy::Schema.graphql_definition
   end
 end

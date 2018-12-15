@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   include StaticValidationHelpers
+  include ErrorBubblingHelpers
 
   let(:query_string) {%|
     query getCheese {
@@ -19,112 +20,121 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       similarCheese(source: 4.5) { __typename }
     }
   |}
+  describe "with error bubbling disabled" do
+    it "finds undefined or missing-required arguments to fields and directives" do
+      error_bubbling_disabled(schema) do
+      # `wacky` above is handled by ArgumentsAreDefined, so only 6 are tested below
+        assert_equal(6, errors.length)
+        query_root_error = {
+          "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
+          "locations"=>[{"line"=>3, "column"=>7}],
+          "fields"=>["query getCheese", "stringCheese", "id"],
+        }
+        assert_includes(errors, query_root_error)
 
-  it "finds undefined or missing-required arguments to fields and directives" do
-    # `wacky` above is handled by ArgumentsAreDefined, so only 6 are tested below
-    if ENV['NO_BUBBLING']
-      assert_equal(6, errors.length)
+        directive_error = {
+          "message"=>"Argument 'if' on Directive 'skip' has an invalid value. Expected type 'Boolean!'.",
+          "locations"=>[{"line"=>4, "column"=>30}],
+          "fields"=>["query getCheese", "cheese", "source", "if"],
+        }
+        assert_includes(errors, directive_error)
 
-      query_root_error = {
-        "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
-        "locations"=>[{"line"=>3, "column"=>7}],
-        "fields"=>["query getCheese", "stringCheese", "id"],
-      }
-      assert_includes(errors, query_root_error)
+        input_object_error = {
+          "message"=>"Argument 'product' on Field 'badSource' has an invalid value. Expected type '[DairyProductInput]'.",
+          "locations"=>[{"line"=>6, "column"=>7}],
+          "fields"=>["query getCheese", "badSource", "product"],
+        }
+        refute_includes(errors, input_object_error)
 
-      directive_error = {
-        "message"=>"Argument 'if' on Directive 'skip' has an invalid value. Expected type 'Boolean!'.",
-        "locations"=>[{"line"=>4, "column"=>30}],
-        "fields"=>["query getCheese", "cheese", "source", "if"],
-      }
-      assert_includes(errors, directive_error)
+        input_object_field_error = {
+          "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
+          "locations"=>[{"line"=>6, "column"=>40}],
+          "fields"=>["query getCheese", "badSource", "product", "source"],
+        }
+        assert_includes(errors, input_object_field_error)
 
-      input_object_error = {
-        "message"=>"Argument 'product' on Field 'badSource' has an invalid value. Expected type '[DairyProductInput]'.",
-        "locations"=>[{"line"=>6, "column"=>7}],
-        "fields"=>["query getCheese", "badSource", "product"],
-      }
-      refute_includes(errors, input_object_error)
+        # TODO - this shouldn't be here but we don't have another way to report
+        # a missing field. ideally we'd report something like:
+        # "Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
+        # or even that it's required?
+        missing_required_field_error = {
+          "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
+          "locations"=>[{"line"=>7, "column"=>7}],
+          "fields"=>["query getCheese", "missingSource", "product"],
+        }
+        assert_includes(errors, missing_required_field_error)
 
-      input_object_field_error = {
-        "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
-        "locations"=>[{"line"=>6, "column"=>40}],
-        "fields"=>["query getCheese", "badSource", "product", "source"],
-      }
-      assert_includes(errors, input_object_field_error)
+        fragment_error = {
+          "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
+          "locations"=>[{"line"=>13, "column"=>7}],
+          "fields"=>["fragment cheeseFields", "similarCheese", "source"],
+        }
+        assert_includes(errors, fragment_error)
+      end
+    end
+    it 'works with error bubbling enabled' do
+      error_bubbling_enabled(schema) do
+        assert_equal(8, errors.length)
 
-      missing_required_field_error = {
-        "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
-        "locations"=>[{"line"=>7, "column"=>7}],
-        "fields"=>["query getCheese", "missingSource", "product"],
-      }
-      assert_includes(errors, missing_required_field_error)
+        query_root_error = {
+          "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
+          "locations"=>[{"line"=>3, "column"=>7}],
+          "fields"=>["query getCheese", "stringCheese", "id"],
+        }
+        assert_includes(errors, query_root_error)
 
-      fragment_error = {
-        "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
-        "locations"=>[{"line"=>13, "column"=>7}],
-        "fields"=>["fragment cheeseFields", "similarCheese", "source"],
-      }
-      assert_includes(errors, fragment_error)
-    else
-      assert_equal(8, errors.length)
+        directive_error = {
+          "message"=>"Argument 'if' on Directive 'skip' has an invalid value. Expected type 'Boolean!'.",
+          "locations"=>[{"line"=>4, "column"=>30}],
+          "fields"=>["query getCheese", "cheese", "source", "if"],
+        }
+        assert_includes(errors, directive_error)
 
-      query_root_error = {
-        "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
-        "locations"=>[{"line"=>3, "column"=>7}],
-        "fields"=>["query getCheese", "stringCheese", "id"],
-      }
-      assert_includes(errors, query_root_error)
+        input_object_error = {
+          "message"=>"Argument 'product' on Field 'badSource' has an invalid value. Expected type '[DairyProductInput]'.",
+          "locations"=>[{"line"=>6, "column"=>7}],
+          "fields"=>["query getCheese", "badSource", "product"],
+        }
+        assert_includes(errors, input_object_error)
 
-      directive_error = {
-        "message"=>"Argument 'if' on Directive 'skip' has an invalid value. Expected type 'Boolean!'.",
-        "locations"=>[{"line"=>4, "column"=>30}],
-        "fields"=>["query getCheese", "cheese", "source", "if"],
-      }
-      assert_includes(errors, directive_error)
+        input_object_field_error = {
+          "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
+          "locations"=>[{"line"=>6, "column"=>40}],
+          "fields"=>["query getCheese", "badSource", "product", "source"],
+        }
+        assert_includes(errors, input_object_field_error)
 
-      input_object_error = {
-        "message"=>"Argument 'product' on Field 'badSource' has an invalid value. Expected type '[DairyProductInput]'.",
-        "locations"=>[{"line"=>6, "column"=>7}],
-        "fields"=>["query getCheese", "badSource", "product"],
-      }
-      assert_includes(errors, input_object_error)
+        missing_required_field_error = {
+          "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
+          "locations"=>[{"line"=>7, "column"=>7}],
+          "fields"=>["query getCheese", "missingSource", "product"],
+        }
+        assert_includes(errors, missing_required_field_error)
 
-      input_object_field_error = {
-        "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
-        "locations"=>[{"line"=>6, "column"=>40}],
-        "fields"=>["query getCheese", "badSource", "product", "source"],
-      }
-      assert_includes(errors, input_object_field_error)
-
-      missing_required_field_error = {
-        "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
-        "locations"=>[{"line"=>7, "column"=>7}],
-        "fields"=>["query getCheese", "missingSource", "product"],
-      }
-      assert_includes(errors, missing_required_field_error)
-
-      fragment_error = {
-        "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
-        "locations"=>[{"line"=>13, "column"=>7}],
-        "fields"=>["fragment cheeseFields", "similarCheese", "source"],
-      }
-      assert_includes(errors, fragment_error)
+        fragment_error = {
+          "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
+          "locations"=>[{"line"=>13, "column"=>7}],
+          "fields"=>["fragment cheeseFields", "similarCheese", "source"],
+        }
+        assert_includes(errors, fragment_error)
+      end
     end
   end
 
-  describe "using input objects for enums" do
+  describe "using input objects for enums it adds an error" do
     let(:query_string) { <<-GRAPHQL
       {
         yakSource: searchDairy(product: [{source: {a: 1, b: 2}, fatContent: 1.1}]) { __typename }
       }
     GRAPHQL
     }
-
-    it "adds an error" do
-      if ENV['NO_BUBBLING']
+    it "works with error bubbling disabled" do
+      error_bubbling_disabled(schema) do
         assert_equal 1, errors.length
-      else
+      end
+    end
+    it "works with error bubbling enabled" do
+      error_bubbling_enabled(schema) do
         # TODO:
         # It's annoying that this error cascades up, there should only be one:
         assert_equal 2, errors.length
@@ -236,25 +246,38 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         }
       |}
 
-      it "finds errors" do
-        if ENV['NO_BUBBLING']
-          assert_equal 1, errors.length
-          refute_includes errors, {"message"=>
-            "Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
-           "locations"=>[{"line"=>3, "column"=>11}],
-           "fields"=>["query", "field", "arg"]}
-        else
-          assert_equal 2, errors.length
-          assert_includes errors, {"message"=>
-            "Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
-           "locations"=>[{"line"=>3, "column"=>11}],
-           "fields"=>["query", "field", "arg"]}
+      describe "it finds errors" do
+        it "works with error bubbling disabled" do
+          error_bubbling_disabled(schema) do
+            assert_equal 1, errors.length
+            refute_includes errors, {"message"=>
+              "Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
+            "locations"=>[{"line"=>3, "column"=>11}],
+            "fields"=>["query", "field", "arg"]}
+            assert_includes errors, {
+              "message"=>"Argument 'b' on InputObject 'Input' has an invalid value. Expected type 'Int!'.",
+              "locations"=>[{"line"=>3, "column"=>22}],
+              "fields"=>["query", "field", "arg", "b"]
+            }
+
+          end
         end
-        assert_includes errors, {
-          "message"=>"Argument 'b' on InputObject 'Input' has an invalid value. Expected type 'Int!'.",
-          "locations"=>[{"line"=>3, "column"=>22}],
-          "fields"=>["query", "field", "arg", "b"]
-        }
+        it "works with error bubbling enabled" do
+          error_bubbling_enabled(schema) do
+            assert_equal 2, errors.length
+            assert_includes errors, {"message"=>
+              "Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
+            "locations"=>[{"line"=>3, "column"=>11}],
+            "fields"=>["query", "field", "arg"]}
+
+            assert_includes errors, {
+              "message"=>"Argument 'b' on InputObject 'Input' has an invalid value. Expected type 'Int!'.",
+              "locations"=>[{"line"=>3, "column"=>22}],
+              "fields"=>["query", "field", "arg", "b"]
+            }
+
+          end
+        end
       end
     end
   end

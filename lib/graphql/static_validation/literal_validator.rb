@@ -10,11 +10,11 @@ module GraphQL
 
       def validate(ast_value, type)
         if ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
-          maybe_raise(ast_value) do
+          maybe_raise_if_invalid(ast_value) do
             !type.kind.non_null?
           end
         elsif type.kind.non_null?
-          maybe_raise(ast_value) do
+          maybe_raise_if_invalid(ast_value) do
             (!ast_value.nil?)
           end && validate(ast_value, type.of_type)
         elsif type.kind.list?
@@ -23,11 +23,11 @@ module GraphQL
         elsif ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           true
         elsif type.kind.scalar? && constant_scalar?(ast_value)
-          maybe_raise(ast_value) do
+          maybe_raise_if_invalid(ast_value) do
             type.valid_input?(ast_value, @context)
           end
         elsif type.kind.enum?
-          maybe_raise(ast_value) do
+          maybe_raise_if_invalid(ast_value) do
             if ast_value.is_a?(GraphQL::Language::Nodes::Enum)
               type.valid_input?(ast_value.name, @context)
             else
@@ -36,11 +36,11 @@ module GraphQL
             end
           end
         elsif type.kind.input_object? && ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
-          maybe_raise(ast_value) do
+          maybe_raise_if_invalid(ast_value) do
             required_input_fields_are_present(type, ast_value)
           end && present_input_field_values_are_valid(type, ast_value)
         else
-          maybe_raise(ast_value) do
+          maybe_raise_if_invalid(ast_value) do
             false
           end
         end
@@ -49,9 +49,9 @@ module GraphQL
       private
 
 
-      def maybe_raise(ast_value)
+      def maybe_raise_if_invalid(ast_value)
         ret = yield if block_given?
-        if ENV['NO_BUBBLING'] && !ret
+        if @context.schema.disable_error_bubbling && !ret
           e = LiteralValidationError.new
           e.ast_value = ast_value
           raise e
@@ -90,11 +90,6 @@ module GraphQL
         ast_node.arguments.all? do |value|
           field = field_map[value.name]
           field && validate(value.value, field.type)
-          # field && begin
-          #   validate(value.value, field.type)
-          # rescue GraphQL::CoercionError, GraphQL::LiteralValidationError => err
-          #   false
-          # end
         end
       end
 

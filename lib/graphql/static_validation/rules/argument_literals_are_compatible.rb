@@ -6,8 +6,7 @@ module GraphQL
         return if node.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
         arg_defn = defn.arguments[node.name]
         return unless arg_defn
-
-        if ENV['NO_BUBBLING']
+        if context.schema.disable_error_bubbling
           begin
             context.valid_literal?(node.value, arg_defn.type)
           rescue GraphQL::CoercionError, GraphQL::LiteralValidationError => err

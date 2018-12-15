@@ -462,7 +462,7 @@ module Dummy
     max_depth 5
     # TODO why is `.graphql_definition` required here?
     orphan_types Honey, Beverage.graphql_definition
-
+    disable_error_bubbling false
     rescue_from(NoSuchDairyError) { |err| err.message  }
 
     def self.resolve_type(type, obj, ctx)

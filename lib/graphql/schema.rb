@@ -78,6 +78,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
+      :disable_error_bubbling,
       :raise_definition_error,
       :object_from_id, :id_from_object,
       :default_mask,
@@ -101,6 +102,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :directives,
+      :disable_error_bubbling,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
       :ast_node,
@@ -168,6 +170,7 @@ module GraphQL
       @context_class = GraphQL::Query::Context
       @introspection_namespace = nil
       @introspection_system = nil
+      @disable_error_bubbling = false
     end
 
     def initialize_copy(other)
@@ -659,6 +662,7 @@ module GraphQL
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
+        :disable_error_bubbling=,
         :metadata,
         :default_mask,
         :default_filter, :redefine,
@@ -692,6 +696,7 @@ module GraphQL
         schema_defn.mutation = mutation
         schema_defn.subscription = subscription
         schema_defn.max_complexity = max_complexity
+        schema_defn.disable_error_bubbling = disable_error_bubbling
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
@@ -820,6 +825,14 @@ module GraphQL
           @max_complexity = max_complexity
         else
           @max_complexity
+        end
+      end
+
+      def disable_error_bubbling(new_error_bubbling = nil)
+        if !new_error_bubbling.nil?
+          @disable_error_bubbling = new_error_bubbling
+        else
+          @disable_error_bubbling
         end
       end
 
