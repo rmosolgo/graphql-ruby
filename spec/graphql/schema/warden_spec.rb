@@ -633,7 +633,7 @@ describe GraphQL::Schema::Warden do
 
     describe "with error bubbling disabled" do
       it "isn't a valid literal input" do
-        error_bubbling_disabled(MaskHelpers::Schema) do
+        without_error_bubbling(MaskHelpers::Schema) do
           query_string = %|
           {
             languages(within: {latitude: 1.0, longitude: 2.2, miles: 3.3}) { name }
@@ -650,7 +650,7 @@ describe GraphQL::Schema::Warden do
 
     describe "with error bubbling enabled" do
       it "isn't a valid literal input" do
-        error_bubbling_enabled(MaskHelpers::Schema) do
+        with_error_bubbling(MaskHelpers::Schema) do
           query_string = %|
           {
           languages(within: {latitude: 1.0, longitude: 2.2, miles: 3.3}) { name }

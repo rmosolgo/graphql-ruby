@@ -22,7 +22,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   |}
   describe "with error bubbling disabled" do
     it "finds undefined or missing-required arguments to fields and directives" do
-      error_bubbling_disabled(schema) do
+      without_error_bubbling(schema) do
       # `wacky` above is handled by ArgumentsAreDefined, so only 6 are tested below
         assert_equal(6, errors.length)
         query_root_error = {
@@ -73,7 +73,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       end
     end
     it 'works with error bubbling enabled' do
-      error_bubbling_enabled(schema) do
+      with_error_bubbling(schema) do
         assert_equal(8, errors.length)
 
         query_root_error = {
@@ -129,12 +129,12 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     GRAPHQL
     }
     it "works with error bubbling disabled" do
-      error_bubbling_disabled(schema) do
+      without_error_bubbling(schema) do
         assert_equal 1, errors.length
       end
     end
     it "works with error bubbling enabled" do
-      error_bubbling_enabled(schema) do
+      with_error_bubbling(schema) do
         # TODO:
         # It's annoying that this error cascades up, there should only be one:
         assert_equal 2, errors.length
@@ -248,7 +248,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
       describe "it finds errors" do
         it "works with error bubbling disabled" do
-          error_bubbling_disabled(schema) do
+          without_error_bubbling(schema) do
             assert_equal 1, errors.length
             refute_includes errors, {"message"=>
               "Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
@@ -263,7 +263,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
           end
         end
         it "works with error bubbling enabled" do
-          error_bubbling_enabled(schema) do
+          with_error_bubbling(schema) do
             assert_equal 2, errors.length
             assert_includes errors, {"message"=>
               "Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
