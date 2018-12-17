@@ -467,6 +467,8 @@ module Jazz
     def default_value_test(arg_with_default:)
       "#{arg_with_default.class.name} -> #{arg_with_default.to_h}"
     end
+
+    field :complex_hash_key, String, null: false, hash_key: :'foo bar/fizz-buzz'
   end
 
   class EnsembleInput < GraphQL::Schema::InputObject

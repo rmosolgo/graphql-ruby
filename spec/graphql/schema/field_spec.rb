@@ -45,6 +45,12 @@ describe GraphQL::Schema::Field do
       assert_equal 'underscored_arg', arg_defn.name
     end
 
+    it "works with arbitrary hash keys" do
+      result = Jazz::Schema.execute "{ complexHashKey }", root_value: { :'foo bar/fizz-buzz' => "OK!"}
+      hash_val = result["data"]["complexHashKey"]
+      assert_equal "OK!", hash_val, "It looked up the hash key"
+    end
+
     it "exposes the method override" do
       object = Class.new(Jazz::BaseObject) do
         field :t, String, method: :tt, null: true
