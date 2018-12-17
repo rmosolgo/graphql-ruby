@@ -91,8 +91,7 @@ module GraphQL
 
       def present_input_field_values_are_valid(type, ast_node)
         field_map = @warden.arguments(type).reduce({}) { |m, f| m[f.name] = f; m}
-        args = ast_node.arguments
-        args.all? do |value|
+        ast_node.arguments.all? do |value|
           field = field_map[value.name]
           # we want to call validate on an argument even if it's an invalid one
           # so that our raise exception is on it instead of the entire InputObject
