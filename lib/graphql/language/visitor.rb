@@ -207,6 +207,7 @@ module GraphQL
         attr_reader :leave
 
         def initialize
+          warn("Proc-based visitor hooks are deprecated and will be removed in 1.10.0. Migrate to a method-based visitor instead: http://graphql-ruby.org/language_tools/visitor")
           @enter = []
           @leave = []
         end
