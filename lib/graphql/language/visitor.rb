@@ -85,18 +85,21 @@ module GraphQL
         if node == DELETE_NODE
           # This might be passed to `super(DELETE_NODE, ...)`
           # by a user hook, don't want to keep visiting in that case.
-          return node, parent
+          [node, parent]
         else
           # Run hooks if there are any
           begin_hooks_ok = @visitors.none? || begin_visit(node, parent)
           if begin_hooks_ok
             node.children.each do |child_node|
+              new_child_and_node = on_node_with_modifications(child_node, node)
               # Reassign `node` in case the child hook makes a modification
-              _new_child_node, node = on_node_with_modifications(child_node, node)
+              if new_child_and_node.is_a?(Array)
+                node = new_child_and_node[1]
+              end
             end
           end
           @visitors.any? && end_visit(node, parent)
-          return node, parent
+          [node, parent]
         end
       end
 
@@ -155,20 +158,26 @@ module GraphQL
       # copy `parent` so that it contains the copy of that node as a child,
       # then return the copies
       def on_node_with_modifications(node, parent)
-        new_node, new_parent = visit_node(node, parent)
-        if new_node.is_a?(Nodes::AbstractNode) && !node.equal?(new_node)
-          # The user-provided hook returned a new node.
-          new_parent = new_parent && new_parent.replace_child(node, new_node)
-          return new_node, new_parent
-        elsif new_node == DELETE_NODE
-          # The user-provided hook requested to remove this node
-          new_parent = new_parent && new_parent.delete_child(node)
-          return nil, new_parent
+        new_node_and_new_parent = visit_node(node, parent)
+        if new_node_and_new_parent.is_a?(Array)
+          new_node = new_node_and_new_parent[0]
+          new_parent = new_node_and_new_parent[1]
+          if new_node.is_a?(Nodes::AbstractNode) && !node.equal?(new_node)
+            # The user-provided hook returned a new node.
+            new_parent = new_parent && new_parent.replace_child(node, new_node)
+            return new_node, new_parent
+          elsif new_node == DELETE_NODE
+            # The user-provided hook requested to remove this node
+            new_parent = new_parent && new_parent.delete_child(node)
+            return nil, new_parent
+          else
+            new_node_and_new_parent
+          end
         else
           # The user-provided hook didn't make any modifications.
           # In fact, the hook might have returned who-knows-what, so
           # ignore the return value and use the original values.
-          return node, parent
+          [node, parent]
         end
       end
 
