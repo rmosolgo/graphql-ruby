@@ -9,7 +9,12 @@ module GraphQL
       end
 
       def validate(ast_value, type)
-        if ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
+        if type.nil?
+          # this means we're an undefined argument, see #present_input_field_values_are_valid
+          return maybe_raise_if_invalid(ast_value) do
+            false
+          end
+        elsif ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
           maybe_raise_if_invalid(ast_value) do
             !type.kind.non_null?
           end
@@ -37,8 +42,8 @@ module GraphQL
           end
         elsif type.kind.input_object? && ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
           maybe_raise_if_invalid(ast_value) do
-            required_input_fields_are_present(type, ast_value)
-          end && present_input_field_values_are_valid(type, ast_value)
+            required_input_fields_are_present(type, ast_value) && present_input_field_values_are_valid(type, ast_value)
+          end
         else
           maybe_raise_if_invalid(ast_value) do
             false
@@ -86,9 +91,13 @@ module GraphQL
 
       def present_input_field_values_are_valid(type, ast_node)
         field_map = @warden.arguments(type).reduce({}) { |m, f| m[f.name] = f; m}
-        ast_node.arguments.all? do |value|
+        args = ast_node.arguments
+        args.all? do |value|
           field = field_map[value.name]
-          field && validate(value.value, field.type)
+          # we want to call validate on an argument even if it's an invalid one
+          # so that our raise exception is on it instead of the entire InputObject
+          type = field && field.type
+          validate(value.value, type)
         end
       end
 

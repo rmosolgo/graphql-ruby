@@ -23,8 +23,9 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   describe "with error bubbling disabled" do
     it "finds undefined or missing-required arguments to fields and directives" do
       without_error_bubbling(schema) do
-      # `wacky` above is handled by ArgumentsAreDefined, so only 6 are tested below
+        # `wacky` above is handled by ArgumentsAreDefined, so only 6 are tested below
         assert_equal(6, errors.length)
+
         query_root_error = {
           "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
           "locations"=>[{"line"=>3, "column"=>7}],
@@ -38,13 +39,6 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
           "fields"=>["query getCheese", "cheese", "source", "if"],
         }
         assert_includes(errors, directive_error)
-
-        input_object_error = {
-          "message"=>"Argument 'product' on Field 'badSource' has an invalid value. Expected type '[DairyProductInput]'.",
-          "locations"=>[{"line"=>6, "column"=>7}],
-          "fields"=>["query getCheese", "badSource", "product"],
-        }
-        refute_includes(errors, input_object_error)
 
         input_object_field_error = {
           "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
