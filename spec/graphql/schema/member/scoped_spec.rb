@@ -54,11 +54,11 @@ describe GraphQL::Schema::Member::Scoped do
       field :items, [Item], null: false
       field :unscoped_items, [Item], null: false,
         scope: false,
-        method: :items
+        resolver_method: :items
       field :french_items, [FrenchItem], null: false,
-        method: :items
+        resolver_method: :items
       field :items_connection, Item.connection_type, null: false,
-        method: :items
+        resolver_method: :items
 
       def items
         [

@@ -159,7 +159,7 @@ describe GraphQL::Authorization do
         super && value != "a"
       end
 
-      field :value, String, null: false, method: :object
+      field :value, String, null: false, method: :itself
     end
 
     module UnauthorizedInterface
@@ -186,7 +186,7 @@ describe GraphQL::Authorization do
         Box.new(value: Box.new(value: Box.new(value: Box.new(value: is_authed))))
       end
 
-      field :value, String, null: false, method: :object
+      field :value, String, null: false, method: :itself
     end
 
     class IntegerObject < BaseObject
@@ -197,7 +197,7 @@ describe GraphQL::Authorization do
         is_allowed = !(ctx[:unauthorized_relay] || obj == ctx[:exclude_integer])
         Box.new(value: Box.new(value: is_allowed))
       end
-      field :value, Integer, null: false, method: :object
+      field :value, Integer, null: false, method: :itself
     end
 
     class IntegerObjectEdge < GraphQL::Types::Relay::BaseEdge
@@ -237,7 +237,7 @@ describe GraphQL::Authorization do
 
     class Query < BaseObject
       field :hidden, Integer, null: false
-      field :unauthorized, Integer, null: true, method: :object
+      field :unauthorized, Integer, null: true, method: :itself
       field :int2, Integer, null: true do
         argument :int, Integer, required: false
         argument :hidden, Integer, required: false
@@ -268,22 +268,22 @@ describe GraphQL::Authorization do
       end
 
       def empty_array; []; end
-      field :hidden_object, HiddenObject, null: false, method: :itself
-      field :hidden_interface, HiddenInterface, null: false, method: :itself
-      field :hidden_default_interface, HiddenDefaultInterface, null: false, method: :itself
-      field :hidden_connection, RelayObject.connection_type, null: :false, method: :empty_array
-      field :hidden_edge, RelayObject.edge_type, null: :false, method: :edge_object
+      field :hidden_object, HiddenObject, null: false, resolver_method: :itself
+      field :hidden_interface, HiddenInterface, null: false, resolver_method: :itself
+      field :hidden_default_interface, HiddenDefaultInterface, null: false, resolver_method: :itself
+      field :hidden_connection, RelayObject.connection_type, null: :false, resolver_method: :empty_array
+      field :hidden_edge, RelayObject.edge_type, null: :false, resolver_method: :edge_object
 
       field :inaccessible, Integer, null: false, method: :object_id
-      field :inaccessible_object, InaccessibleObject, null: false, method: :itself
-      field :inaccessible_interface, InaccessibleInterface, null: false, method: :itself
-      field :inaccessible_default_interface, InaccessibleDefaultInterface, null: false, method: :itself
-      field :inaccessible_connection, RelayObject.connection_type, null: :false, method: :empty_array
-      field :inaccessible_edge, RelayObject.edge_type, null: :false, method: :edge_object
+      field :inaccessible_object, InaccessibleObject, null: false, resolver_method: :itself
+      field :inaccessible_interface, InaccessibleInterface, null: false, resolver_method: :itself
+      field :inaccessible_default_interface, InaccessibleDefaultInterface, null: false, resolver_method: :itself
+      field :inaccessible_connection, RelayObject.connection_type, null: :false, resolver_method: :empty_array
+      field :inaccessible_edge, RelayObject.edge_type, null: :false, resolver_method: :edge_object
 
-      field :unauthorized_object, UnauthorizedObject, null: true, method: :itself
-      field :unauthorized_connection, RelayObject.connection_type, null: false, method: :array_with_item
-      field :unauthorized_edge, RelayObject.edge_type, null: false, method: :edge_object
+      field :unauthorized_object, UnauthorizedObject, null: true, resolver_method: :itself
+      field :unauthorized_connection, RelayObject.connection_type, null: false, resolver_method: :array_with_item
+      field :unauthorized_edge, RelayObject.edge_type, null: false, resolver_method: :edge_object
 
       def edge_object
         OpenStruct.new(node: 100)
@@ -305,11 +305,11 @@ describe GraphQL::Authorization do
         [self, self]
       end
 
-      field :unauthorized_lazy_check_box, UnauthorizedCheckBox, null: true, method: :unauthorized_lazy_box do
+      field :unauthorized_lazy_check_box, UnauthorizedCheckBox, null: true, resolver_method: :unauthorized_lazy_box do
         argument :value, String, required: true
       end
 
-      field :unauthorized_interface, UnauthorizedInterface, null: true, method: :unauthorized_lazy_box do
+      field :unauthorized_interface, UnauthorizedInterface, null: true, resolver_method: :unauthorized_lazy_box do
         argument :value, String, required: true
       end
 

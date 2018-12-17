@@ -169,11 +169,11 @@ module StarTrek
       all_bases.to_a
     end
 
-    field :basesWithMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 2, method: :all_bases
-    field :basesWithMaxLimitArray, BaseType.connection_type, null: true, max_page_size: 2, method: :all_bases_array
-    field :basesWithDefaultMaxLimitRelation, BaseType.connection_type, null: true, method: :all_bases
-    field :basesWithDefaultMaxLimitArray, BaseType.connection_type, null: true, method: :all_bases_array
-    field :basesWithLargeMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 1000, method: :all_bases
+    field :basesWithMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 2, resolver_method: :all_bases
+    field :basesWithMaxLimitArray, BaseType.connection_type, null: true, max_page_size: 2, resolver_method: :all_bases_array
+    field :basesWithDefaultMaxLimitRelation, BaseType.connection_type, null: true, resolver_method: :all_bases
+    field :basesWithDefaultMaxLimitArray, BaseType.connection_type, null: true, resolver_method: :all_bases_array
+    field :basesWithLargeMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 1000, resolver_method: :all_bases
 
     field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true
     def bases_with_custom_edge

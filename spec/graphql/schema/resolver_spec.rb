@@ -181,7 +181,7 @@ describe GraphQL::Schema::Resolver do
 
     class IntegerWrapper < GraphQL::Schema::Object
       implements HasValue
-      field :value, Integer, null: false, method: :object
+      field :value, Integer, null: false, method: :itself
     end
 
     class PrepResolver9 < BaseResolver

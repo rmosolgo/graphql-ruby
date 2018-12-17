@@ -151,7 +151,7 @@ module Jazz
       null: false,
       description: "A unique identifier for this object",
     )
-    upcased_field :upcased_id, ID, null: false, method: :id # upcase: true added by helper
+    upcased_field :upcased_id, ID, null: false, resolver_method: :id # upcase: true added by helper
 
     def id
       GloballyIdentifiableType.to_id(@object)
@@ -191,7 +191,7 @@ module Jazz
   class Ensemble < ObjectWithUpcasedName
     # Test string type names
     # This method should override inherited one
-    field :name, "String", null: false, method: :overridden_name
+    field :name, "String", null: false, resolver_method: :overridden_name
     implements GloballyIdentifiableType, NamedEntity, HasMusicians
     description "A group of musicians playing together"
     config :config, :configged
@@ -363,10 +363,10 @@ module Jazz
       argument :input, [RawJson], required: true
     end
 
-    field :upcase_check_1, String, null: true, method: :upcase_check, extras: [:upcase]
-    field :upcase_check_2, String, null: false, upcase: false, method: :upcase_check, extras: [:upcase]
-    field :upcase_check_3, String, null: false, upcase: true, method: :upcase_check, extras: [:upcase]
-    field :upcase_check_4, String, null: false, upcase: "why not?", method: :upcase_check, extras: [:upcase]
+    field :upcase_check_1, String, null: true, resolver_method: :upcase_check, extras: [:upcase]
+    field :upcase_check_2, String, null: false, upcase: false, resolver_method: :upcase_check, extras: [:upcase]
+    field :upcase_check_3, String, null: false, upcase: true, resolver_method: :upcase_check, extras: [:upcase]
+    field :upcase_check_4, String, null: false, upcase: "why not?", resolver_method: :upcase_check, extras: [:upcase]
     def upcase_check(upcase:)
       upcase.inspect
     end

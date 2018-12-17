@@ -310,7 +310,7 @@ module GraphQL
             type: type_expr,
             description: description,
             extras: extras,
-            method: :resolve_with_support,
+            resolver_method: :resolve_with_support,
             resolver_class: self,
             arguments: arguments,
             null: null,

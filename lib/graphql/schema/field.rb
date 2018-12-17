@@ -20,16 +20,19 @@ module GraphQL
       # @return [String, nil] If present, the field is marked as deprecated with this documentation
       attr_accessor :deprecation_reason
 
-      # @return [Symbol] Method or hash key to look up
+      # @return [Symbol] Method or hash key on the underlying object to look up
       attr_reader :method_sym
 
-      # @return [String] Method or hash key to look up
+      # @return [String] Method or hash key on the underlying object to look up
       attr_reader :method_str
+
+      # @return [Symbol] The method on the type to look up
+      attr_reader :resolver_method
 
       # @return [Class] The type that this field belongs to
       attr_reader :owner
 
-      # @return [Symobol] the orignal name of the field, passed in by the user
+      # @return [Symobol] the original name of the field, passed in by the user
       attr_reader :original_name
 
       # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one
@@ -126,8 +129,9 @@ module GraphQL
       # @param null [Boolean] `true` if this field may return `null`, `false` if it is never `null`
       # @param description [String] Field description
       # @param deprecation_reason [String] If present, the field is marked "deprecated" with this message
-      # @param method [Symbol] The method to call to resolve this field (defaults to `name`)
-      # @param hash_key [Object] The hash key to lookup to resolve this field (defaults to `name` or `name.to_s`)
+      # @param method [Symbol] The method to call on the underlying object to resolve this field (defaults to `name`)
+      # @param hash_key [String, Symbol] The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to `name` or `name.to_s`)
+      # @param resolver_method [Symbol] The method on the type to call to resolve this field (defaults to `name`)
       # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
       # @param max_page_size [Integer] For connections, the maximum number of items to return from this field
       # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
@@ -142,7 +146,7 @@ module GraphQL
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       # @param extensions [Array<Class>] Named extensions to apply to this field (see also {#extension})
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, scope: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -158,6 +162,7 @@ module GraphQL
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve and class-based field such as mutation class, please remove `field:`, `function:` or `resolve:`"
         end
         @original_name = name
+        @underscored_name = Member::BuildType.underscore(name.to_s)
         @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
         @description = description
         if field.is_a?(GraphQL::Schema::Field)
@@ -168,15 +173,28 @@ module GraphQL
         @function = function
         @resolve = resolve
         @deprecation_reason = deprecation_reason
+
         if method && hash_key
           raise ArgumentError, "Provide `method:` _or_ `hash_key:`, not both. (called with: `method: #{method.inspect}, hash_key: #{hash_key.inspect}`)"
         end
 
+        if resolver_method
+          if method
+            raise ArgumentError, "Provide `method:` _or_ `resolver_method:`, not both. (called with: `method: #{method.inspect}, resolver_method: #{resolver_method.inspect}`)"
+          end
+
+          if hash_key
+            raise ArgumentError, "Provide `hash_key:` _or_ `resolver_method:`, not both. (called with: `hash_key: #{hash_key.inspect}, resolver_method: #{resolver_method.inspect}`)"
+          end
+        end
+
         # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
-        method_name = method || hash_key || Member::BuildType.underscore(name.to_s)
+        method_name = method || hash_key || @underscored_name
+        resolver_method ||= @underscored_name
 
         @method_str = method_name.to_s
         @method_sym = method_name.to_sym
+        @resolver_method = resolver_method
         @complexity = complexity
         @return_type_expr = type
         @return_type_null = null
@@ -462,11 +480,15 @@ MSG
                 extended_obj
               end
 
-              # Call the method with kwargs, if there are any
-              if extended_args.any?
-                field_receiver.public_send(method_sym, extended_args)
+              if field_receiver.respond_to?(@resolver_method)
+                # Call the method with kwargs, if there are any
+                if extended_args.any?
+                  field_receiver.public_send(@resolver_method, **extended_args)
+                else
+                  field_receiver.public_send(@resolver_method)
+                end
               else
-                field_receiver.public_send(method_sym)
+                resolve_field_method(field_receiver, extended_args, ctx)
               end
             end
           end
@@ -505,7 +527,7 @@ MSG
           raise <<-ERR
         Failed to implement #{@owner.graphql_name}.#{@name}, tried:
 
-        - `#{obj.class}##{@method_sym}`, which did not exist
+        - `#{obj.class}##{@resolver_method}`, which did not exist
         - `#{obj.object.class}##{@method_sym}`, which did not exist
         - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
 
@@ -557,10 +579,14 @@ MSG
             extended_obj = @resolver_class.new(object: extended_obj, context: query_ctx)
           end
 
-          if extended_args.any?
-            extended_obj.public_send(@method_sym, **extended_args)
+          if extended_obj.respond_to?(@resolver_method)
+            if extended_args.any?
+              extended_obj.public_send(@resolver_method, **extended_args)
+            else
+              extended_obj.public_send(@resolver_method)
+            end
           else
-            extended_obj.public_send(@method_sym)
+            resolve_field_method(extended_obj, extended_args, query_ctx)
           end
         end
       end

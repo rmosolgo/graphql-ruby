@@ -34,7 +34,7 @@ describe GraphQL::Schema::FieldExtension do
     end
 
     class Query < BaseObject
-      field :doubled, Integer, null: false, method: :pass_thru do
+      field :doubled, Integer, null: false, resolver_method: :pass_thru do
         extension(DoubleFilter)
         argument :input, Integer, required: true
       end
@@ -43,12 +43,12 @@ describe GraphQL::Schema::FieldExtension do
         input # return it as-is, it will be modified by extensions
       end
 
-      field :trippled_by_option, Integer, null: false, method: :pass_thru do
+      field :trippled_by_option, Integer, null: false, resolver_method: :pass_thru do
         extension(MultiplyByOption, factor: 3)
         argument :input, Integer, required: true
       end
 
-      field :multiply_input, Integer, null: false, method: :pass_thru, extensions: [MultiplyByArgument] do
+      field :multiply_input, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgument] do
         argument :input, Integer, required: true
       end
     end

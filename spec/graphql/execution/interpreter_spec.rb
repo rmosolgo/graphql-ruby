@@ -37,7 +37,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       def lazy_sym
-        Box.new(value: sym)
+        Box.new(value: object.sym)
       end
 
       field :null_union_field_test, Integer, null: false
