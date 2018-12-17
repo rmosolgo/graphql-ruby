@@ -23,8 +23,10 @@ module GraphQL
           else
             begin
               valid = context.valid_literal?(value, type)
-            rescue GraphQL::CoercionError, GraphQL::LiteralValidationError => err
-              error_message = err.message if err.is_a? GraphQL::CoercionError
+            rescue GraphQL::CoercionError => err
+              error_message = err.message
+            rescue GraphQL::LiteralValidationError
+              # noop, we just want to stop any LiteralValidationError from propagating
             end
 
             if !valid

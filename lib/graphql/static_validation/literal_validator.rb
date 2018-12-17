@@ -48,9 +48,8 @@ module GraphQL
 
       private
 
-
       def maybe_raise_if_invalid(ast_value)
-        ret = yield if block_given?
+        ret = yield
         if !@context.schema.error_bubbling && !ret
           e = LiteralValidationError.new
           e.ast_value = ast_value
