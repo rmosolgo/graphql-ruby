@@ -8,9 +8,18 @@ module GraphQL
 
         if field.nil?
           if parent_type.kind.union?
-            add_error("Selections can't be made directly on unions (see selections on #{parent_type.name})", parent)
+            add_error(GraphQL::StaticValidation::FieldsHaveAppropriateSelectionsError.new(
+              "Selections can't be made directly on unions (see selections on #{parent_type.name})",
+              nodes: parent,
+              node_name: parent_type.name
+            ))
           else
-            add_error("Field '#{node.name}' doesn't exist on type '#{parent_type.name}'", node)
+            add_error(GraphQL::StaticValidation::FieldsAreDefinedOnTypeError.new(
+              "Field '#{node.name}' doesn't exist on type '#{parent_type.name}'",
+              nodes: node,
+              field: node.name,
+              type: parent_type.name
+            ))
           end
         else
           super

@@ -1,5 +1,10 @@
 # graphql-ruby-client
 
+## 1.6.0 (19 Nov 2018)
+
+- Fix unused requires #1943
+- Add `generateClient` function to generate code _without_ the HTTP call #1941
+
 ## 1.5.0 (27 October 2018)
 
 - Fix `export` usage in PusherLink, use `require` and `module.exports` instead #1889

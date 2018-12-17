@@ -2,7 +2,7 @@
 module GraphQL
   module StaticValidation
     module ArgumentNamesAreUnique
-      include GraphQL::StaticValidation::Message::MessageHelper
+      include GraphQL::StaticValidation::Error::ErrorHelper
 
       def on_field(node, parent)
         validate_arguments(node)
@@ -21,7 +21,7 @@ module GraphQL
           argument_defns.each { |a| args_by_name[a.name] << a }
           args_by_name.each do |name, defns|
             if defns.size > 1
-              add_error("There can be only one argument named \"#{name}\"", defns)
+              add_error(GraphQL::StaticValidation::ArgumentNamesAreUniqueError.new("There can be only one argument named \"#{name}\"", nodes: defns, name: name))
             end
           end
         end

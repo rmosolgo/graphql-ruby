@@ -81,7 +81,7 @@ module GraphQL
 
         def on_inline_fragment(node, parent)
           on_fragment_with_type(node) do
-            @path.push("...#{node.type ? " on #{node.type.to_query_string}" : ""}")
+            @path.push("...#{node.type ? " on #{node.type.name}" : ""}")
             call_analyzers(:on_enter_inline_fragment, node, parent)
             super
             call_analyzers(:on_leave_inline_fragment, node, parent)
@@ -201,6 +201,11 @@ module GraphQL
         # @return [GraphQL::Field, nil] The most-recently-entered GraphQL::Field, if currently inside one
         def field_definition
           @field_definitions.last
+        end
+
+        # @return [GraphQL::Field, nil] The GraphQL field which returned the object that the current field belongs to
+        def previous_field_definition
+          @field_definitions[-2]
         end
 
         # @return [GraphQL::Directive, nil] The most-recently-entered GraphQL::Directive, if currently inside one

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require "graphql/static_validation/message"
+require "graphql/static_validation/error"
 require "graphql/static_validation/definition_dependencies"
 require "graphql/static_validation/type_stack"
 require "graphql/static_validation/validator"
@@ -15,3 +15,4 @@ end
 
 require "graphql/static_validation/all_rules"
 require "graphql/static_validation/default_visitor"
+require "graphql/static_validation/interpreter_visitor"

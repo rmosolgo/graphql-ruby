@@ -155,13 +155,6 @@ module GraphQL
         @path = []
         @value = nil
         @context = self # for SharedMethods
-        # The interpreter will set this
-        @interpreter = nil
-      end
-
-      # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
-      def interpreter?
-        @interpreter
       end
 
       # @api private
@@ -171,7 +164,7 @@ module GraphQL
       attr_writer :value
 
       def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch, :dig
-      def_delegators :@query, :trace
+      def_delegators :@query, :trace, :interpreter?
 
       # @!method [](key)
       #   Lookup `key` from the hash passed to {Schema#execute} as `context:`

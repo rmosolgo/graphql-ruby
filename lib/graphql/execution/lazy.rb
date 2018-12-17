@@ -20,11 +20,17 @@ module GraphQL
         Resolve.resolve(val)
       end
 
+      attr_reader :path, :field
+
       # Create a {Lazy} which will get its inner value by calling the block
+      # @param path [Array<String, Integer>]
+      # @param field [GraphQL::Schema::Field]
       # @param get_value_func [Proc] a block to get the inner value (later)
-      def initialize(&get_value_func)
+      def initialize(path: nil, field: nil, &get_value_func)
         @get_value_func = get_value_func
         @resolved = false
+        @path = path
+        @field = field
       end
 
       # @return [Object] The wrapped value, calling the lazy block if necessary

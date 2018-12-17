@@ -40,7 +40,11 @@ module GraphQL
           required_location = SIMPLE_LOCATIONS[ast_parent.class]
           assert_includes_location(directive_defn, ast_directive, required_location)
         else
-          add_error("Directives can't be applied to #{ast_parent.class.name}s", ast_directive)
+          add_error(GraphQL::StaticValidation::DirectivesAreInValidLocationsError.new(
+            "Directives can't be applied to #{ast_parent.class.name}s",
+            nodes: ast_directive,
+            target: ast_parent.class.name
+          ))
         end
       end
 
@@ -48,7 +52,12 @@ module GraphQL
         if !directive_defn.locations.include?(required_location)
           location_name = LOCATION_MESSAGE_NAMES[required_location]
           allowed_location_names = directive_defn.locations.map { |loc| LOCATION_MESSAGE_NAMES[loc] }
-          add_error("'@#{directive_defn.name}' can't be applied to #{location_name} (allowed: #{allowed_location_names.join(", ")})", directive_ast)
+          add_error(GraphQL::StaticValidation::DirectivesAreInValidLocationsError.new(
+            "'@#{directive_defn.name}' can't be applied to #{location_name} (allowed: #{allowed_location_names.join(", ")})",
+            nodes: directive_ast,
+            target: location_name,
+            name: directive_defn.name
+          ))
         end
       end
     end

@@ -61,6 +61,16 @@ describe GraphQL::Analysis::AST do
     end
   end
 
+  class AstPreviousField < GraphQL::Analysis::AST::Analyzer
+    def on_enter_field(node, parent, visitor)
+      @previous_field = visitor.previous_field_definition
+    end
+
+    def result
+      @previous_field
+    end
+  end
+
   describe "using the AST analysis engine" do
     let(:schema) do
       query_type = Class.new(GraphQL::Schema::Object) do
@@ -77,6 +87,7 @@ describe GraphQL::Analysis::AST do
         query query_type
         use GraphQL::Analysis::AST
         query_analyzer AstErrorAnalyzer
+        use GraphQL::Execution::Interpreter
       end
     end
 
@@ -89,7 +100,26 @@ describe GraphQL::Analysis::AST do
     let(:query) { GraphQL::Query.new(schema, query_string, variables: {}) }
 
     it "runs the AST analyzers correctly" do
+      res = query.result
+      refute res.key?("data")
+      assert_equal ["An Error!"], res["errors"].map { |e| e["message"] }
+    end
+
+    it "skips rewrite" do
+      # Try running the query:
       query.result
+      # But the validation step doesn't build an irep_node tree
+      assert_nil query.irep_selection
+    end
+
+    describe "when validate: false" do
+      let(:query) { GraphQL::Query.new(schema, query_string, validate: false) }
+      it "Skips rewrite" do
+        # Try running the query:
+        query.result
+        # But the validation step doesn't build an irep_node tree
+        assert_nil query.irep_selection
+      end
     end
   end
 
@@ -125,6 +155,16 @@ describe GraphQL::Analysis::AST do
         it "it runs the analyzer" do
           # Both analyzers ran
           assert_equal 2, reduce_result.size
+        end
+      end
+
+      describe "Visitor#previous_field_definition" do
+        let(:analyzers) { [AstPreviousField] }
+        let(:query) { GraphQL::Query.new(Dummy::Schema, "{ __schema { types { name } } }") }
+
+        it "it runs the analyzer" do
+          prev_field = reduce_result.first
+          assert_equal "__Schema.types", prev_field.metadata[:type_class].path
         end
       end
     end

@@ -31,17 +31,22 @@ module GraphQL
             begin
               valid = context.valid_literal?(node.value, arg_defn.type)
             rescue GraphQL::CoercionError => err
-              error_message = err.message
+              error = GraphQL::StaticValidation::ArgumentLiteralsAreCompatibleError.new(err.message, nodes: parent, type: "CoercionError")
             end
 
             if !valid
-              error_message ||= begin
+              error ||= begin
                 kind_of_node = node_type(parent)
                 error_arg_name = parent_name(parent, parent_defn)
-                "Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value. Expected type '#{arg_defn.type}'."
-              end
 
-              add_error(error_message, parent)
+                GraphQL::StaticValidation::ArgumentLiteralsAreCompatibleError.new(
+                  "Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value. Expected type '#{arg_defn.type}'.",
+                  nodes: parent,
+                  type: kind_of_node,
+                  argument: node.name
+                )
+              end
+              add_error(error)
             end
           end
         end

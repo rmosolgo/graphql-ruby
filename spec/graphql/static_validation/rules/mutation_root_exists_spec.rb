@@ -31,7 +31,8 @@ describe GraphQL::StaticValidation::MutationRootExists do
     missing_mutation_root_error = {
       "message"=>"Schema is not configured for mutations",
       "locations"=>[{"line"=>2, "column"=>5}],
-      "fields"=>["mutation addBagel"],
+      "path"=>["mutation addBagel"],
+      "extensions"=>{"code"=>"missingMutationConfiguration"}
     }
     assert_includes(errors, missing_mutation_root_error)
   end

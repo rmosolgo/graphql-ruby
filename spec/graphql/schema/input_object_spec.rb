@@ -161,4 +161,78 @@ describe GraphQL::Schema::InputObject do
       assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4 } }, input_object.to_h)
     end
   end
+
+  describe "#dig" do
+    module InputObjectDigTest
+      class TestInput1 < GraphQL::Schema::InputObject
+        graphql_name "TestInput1"
+        argument :d, Int, required: true
+        argument :e, Int, required: true
+      end
+
+      class TestInput2 < GraphQL::Schema::InputObject
+        graphql_name "TestInput2"
+        argument :a, Int, required: true
+        argument :b, Int, required: true
+        argument :c, TestInput1, as: :inputObject, required: true
+      end
+
+      TestInput1.to_graphql
+      TestInput2.to_graphql
+    end
+    arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
+
+    input_object = InputObjectDigTest::TestInput2.new(
+      arg_values,
+      context: nil,
+      defaults_used: Set.new
+    )
+    it "returns the value at that key" do
+      assert_equal 1, input_object.dig("a")
+      assert_equal 1, input_object.dig(:a)
+      assert input_object.dig("inputObject").is_a?(GraphQL::Schema::InputObject)
+    end
+
+    it "works with nested keys" do
+      assert_equal 3, input_object.dig("inputObject", "d")
+      assert_equal 3, input_object.dig(:inputObject, :d)
+      assert_equal 3, input_object.dig("inputObject", :d)
+      assert_equal 3, input_object.dig(:inputObject, "d")
+    end
+
+    it "returns nil for missing keys" do
+      assert_nil input_object.dig("z")
+      assert_nil input_object.dig(7)
+    end
+
+    it "handles underscored keys" do
+      # TODO - shouldn't this work too?
+      # assert_equal 3, input_object.dig('input_object', 'd')
+      assert_equal 3, input_object.dig(:input_object, :d)
+    end
+  end
+
+  describe "introspection" do
+    it "returns input fields" do
+      res = Jazz::Schema.execute('
+        {
+          __type(name: "InspectableInput") {
+            name
+            inputFields { name }
+          }
+          __schema {
+            types {
+              name
+              inputFields { name }
+            }
+          }
+        }')
+      # Test __type
+      assert_equal ["stringValue", "nestedInput", "legacyInput"], res["data"]["__type"]["inputFields"].map { |f| f["name"] }
+      # Test __schema { types }
+      # It's upcased to test custom introspection
+      input_type = res["data"]["__schema"]["types"].find { |t| t["name"] == "INSPECTABLEINPUT" }
+      assert_equal ["stringValue", "nestedInput", "legacyInput"], input_type["inputFields"].map { |f| f["name"] }
+    end
+  end
 end

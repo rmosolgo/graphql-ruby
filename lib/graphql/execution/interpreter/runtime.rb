@@ -15,14 +15,18 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        def initialize(query:, lazies:, response:)
+        def initialize(query:, response:)
           @query = query
           @schema = query.schema
           @context = query.context
-          @lazies = lazies
+          @interpreter_context = @context.namespace(:interpreter)
           @response = response
           @dead_paths = {}
           @types_at_paths = {}
+          # A cache of { Class => { String => Schema::Field } }
+          # Which assumes that MyObject.get_field("myField") will return the same field
+          # during the lifetime of a query
+          @fields_cache = Hash.new { |h, k| h[k] = {} }
         end
 
         def final_value
@@ -34,7 +38,7 @@ module GraphQL
         end
 
         # This _begins_ the execution. Some deferred work
-        # might be stored up in {@lazies}.
+        # might be stored up in lazies.
         # @return [void]
         def run_eager
           root_operation = query.selected_operation
@@ -42,9 +46,10 @@ module GraphQL
           legacy_root_type = schema.root_type_for_operation(root_op_type)
           root_type = legacy_root_type.metadata[:type_class] || raise("Invariant: type must be class-based: #{legacy_root_type}")
           object_proxy = root_type.authorized_new(query.root_value, context)
-
+          object_proxy = schema.sync_lazy(object_proxy)
           path = []
           evaluate_selections(path, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
+          nil
         end
 
         private
@@ -55,20 +60,35 @@ module GraphQL
             when GraphQL::Language::Nodes::Field
               if passes_skip_and_include?(node)
                 response_key = node.alias || node.name
-                s = selections_by_name[response_key] ||= []
-                s << node
+                selections = selections_by_name[response_key]
+                # if there was already a selection of this field,
+                # use an array to hold all selections,
+                # otherise, use the single node to represent the selection
+                if selections
+                  # This field was already selected at least once,
+                  # add this node to the list of selections
+                  s = Array(selections)
+                  s << node
+                  selections_by_name[response_key] = s
+                else
+                  # No selection was found for this field yet
+                  selections_by_name[response_key] = node
+                end
               end
             when GraphQL::Language::Nodes::InlineFragment
               if passes_skip_and_include?(node)
-                include_fragmment = if node.type
+                if node.type
                   type_defn = schema.types[node.type.name]
                   type_defn = type_defn.metadata[:type_class]
-                  possible_types = query.warden.possible_types(type_defn).map { |t| t.metadata[:type_class] }
-                  possible_types.include?(owner_type)
+                  # Faster than .map{}.include?()
+                  query.warden.possible_types(type_defn).each do |t|
+                    if t.metadata[:type_class] == owner_type
+                      gather_selections(owner_type, node.selections, selections_by_name)
+                      break
+                    end
+                  end
                 else
-                  true
-                end
-                if include_fragmment
+                  # it's an untyped fragment, definitely continue
                   gather_selections(owner_type, node.selections, selections_by_name)
                 end
               end
@@ -77,9 +97,11 @@ module GraphQL
                 fragment_def = query.fragments[node.name]
                 type_defn = schema.types[fragment_def.type.name]
                 type_defn = type_defn.metadata[:type_class]
-                possible_types = schema.possible_types(type_defn).map { |t| t.metadata[:type_class] }
-                if possible_types.include?(owner_type)
-                  gather_selections(owner_type, fragment_def.selections, selections_by_name)
+                schema.possible_types(type_defn).each do |t|
+                  if t.metadata[:type_class] == owner_type
+                    gather_selections(owner_type, fragment_def.selections, selections_by_name)
+                    break
+                  end
                 end
               end
             else
@@ -91,10 +113,19 @@ module GraphQL
         def evaluate_selections(path, owner_object, owner_type, selections, root_operation_type: nil)
           selections_by_name = {}
           gather_selections(owner_type, selections, selections_by_name)
-          selections_by_name.each do |result_name, fields|
-            ast_node = fields.first
+          selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
+            # As a performance optimization, the hash key will be a `Node` if
+            # there's only one selection of the field. But if there are multiple
+            # selections of the field, it will be an Array of nodes
+            if field_ast_nodes_or_ast_node.is_a?(Array)
+              field_ast_nodes = field_ast_nodes_or_ast_node
+              ast_node = field_ast_nodes.first
+            else
+              field_ast_nodes = nil
+              ast_node = field_ast_nodes_or_ast_node
+            end
             field_name = ast_node.name
-            field_defn = owner_type.get_field(field_name)
+            field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name)
             is_introspection = false
             if field_defn.nil?
               field_defn = if owner_type == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
@@ -136,30 +167,47 @@ module GraphQL
                 kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
               when :path
                 kwarg_arguments[:path] = next_path
+              when :lookahead
+                if !field_ast_nodes
+                  field_ast_nodes = [ast_node]
+                end
+                kwarg_arguments[:lookahead] = Execution::Lookahead.new(
+                  query: query,
+                  ast_nodes: field_ast_nodes,
+                  field: field_defn,
+                )
               else
                 kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
               end
             end
 
-            next_selections = fields.inject([]) { |memo, f| memo.concat(f.selections) }
+            # Optimize for the case that field is selected only once
+            if field_ast_nodes.nil? || field_ast_nodes.size == 1
+              next_selections = ast_node.selections
+            else
+              next_selections = []
+              field_ast_nodes.each { |f| next_selections.concat(f.selections) }
+            end
 
             app_result = query.trace("execute_field", {field: field_defn, path: next_path}) do
+              @interpreter_context[:current_path] = next_path
+              @interpreter_context[:current_field] = field_defn
               field_defn.resolve(object, kwarg_arguments, context)
             end
 
             after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
-              continue_value = continue_value(next_path, inner_result, field_defn, return_type, ast_node)
+              continue_value = continue_value(next_path, inner_result, field_defn, return_type.non_null?, ast_node)
               if HALT != continue_value
-                continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections)
+                continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false)
               end
             end
           end
         end
 
         HALT = Object.new
-        def continue_value(path, value, field, as_type, ast_node)
+        def continue_value(path, value, field, is_non_null, ast_node)
           if value.nil?
-            if as_type.non_null?
+            if is_non_null
               err = GraphQL::InvalidNullError.new(field.owner, field, value)
               write_invalid_null_in_response(path, err)
             else
@@ -187,7 +235,7 @@ module GraphQL
               err
             end
 
-            continue_value(path, next_value, field, as_type, ast_node)
+            continue_value(path, next_value, field, is_non_null, ast_node)
           elsif GraphQL::Execution::Execute::SKIP == value
             HALT
           else
@@ -195,11 +243,20 @@ module GraphQL
           end
         end
 
-        def continue_field(path, value, field, type, ast_node, next_selections)
+        # The resolver for `field` returned `value`. Continue to execute the query,
+        # treating `value` as `type` (probably the return type of the field).
+        #
+        # Use `next_selections` to resolve object fields, if there are any.
+        #
+        # Location information from `path` and `ast_node`.
+        #
+        # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
+        def continue_field(path, value, field, type, ast_node, next_selections, is_non_null)
           case type.kind.name
           when "SCALAR", "ENUM"
             r = type.coerce_result(value, context)
             write_in_response(path, r)
+            r
           when "UNION", "INTERFACE"
             resolved_type = query.resolve_type(type, value)
             possible_types = query.possible_types(type)
@@ -209,9 +266,10 @@ module GraphQL
               type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
               schema.type_error(type_error, context)
               write_in_response(path, nil)
+              nil
             else
               resolved_type = resolved_type.metadata[:type_class]
-              continue_field(path, value, field, resolved_type, ast_node, next_selections)
+              continue_field(path, value, field, resolved_type, ast_node, next_selections, is_non_null)
             end
           when "OBJECT"
             object_proxy = begin
@@ -220,36 +278,42 @@ module GraphQL
               err
             end
             after_lazy(object_proxy, path: path, field: field) do |inner_object|
-              continue_value = continue_value(path, inner_object, field, type, ast_node)
+              continue_value = continue_value(path, inner_object, field, is_non_null, ast_node)
               if HALT != continue_value
-                write_in_response(path, {})
+                response_hash = {}
+                write_in_response(path, response_hash)
                 evaluate_selections(path, continue_value, type, next_selections)
+                response_hash
               end
             end
           when "LIST"
-            write_in_response(path, [])
+            response_list = []
+            write_in_response(path, response_list)
             inner_type = type.of_type
             idx = 0
             value.each do |inner_value|
               next_path = path.dup
               next_path << idx
               next_path.freeze
+              idx += 1
               set_type_at_path(next_path, inner_type)
+              # This will update `response_list` with the lazy
               after_lazy(inner_value, path: next_path, field: field) do |inner_inner_value|
-                continue_value = continue_value(next_path, inner_inner_value, field, inner_type, ast_node)
+                # reset `is_non_null` here and below, because the inner type will have its own nullability constraint
+                continue_value = continue_value(next_path, inner_inner_value, field, false, ast_node)
                 if HALT != continue_value
-                  continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections)
+                  continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections, false)
                 end
               end
-              idx += 1
             end
+            response_list
           when "NON_NULL"
             inner_type = type.of_type
             # For fields like `__schema: __Schema!`
             inner_type = resolve_if_late_bound_type(inner_type)
             # Don't `set_type_at_path` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
-            continue_field(path, value, field, inner_type, ast_node, next_selections)
+            continue_field(path, value, field, inner_type, ast_node, next_selections, true)
           else
             raise "Invariant: Unhandled type kind #{type.kind} (#{type})"
           end
@@ -283,8 +347,12 @@ module GraphQL
         # @param eager [Boolean] Set to `true` for mutation root fields only
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(obj, field:, path:, eager: false)
+          @interpreter_context[:current_path] = path
+          @interpreter_context[:current_field] = field
           if schema.lazy?(obj)
-            lazy = GraphQL::Execution::Lazy.new do
+            lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
+              @interpreter_context[:current_path] = path
+              @interpreter_context[:current_field] = field
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = query.trace("execute_field_lazy", {field: field, path: path}) do
@@ -302,7 +370,8 @@ module GraphQL
             if eager
               lazy.value
             else
-              @lazies << lazy
+              write_in_response(path, lazy)
+              lazy
             end
           else
             yield(obj)
@@ -449,9 +518,6 @@ module GraphQL
         def type_at(path)
           t = @types_at_paths
           path.each do |part|
-            if part.is_a?(Integer)
-              part = 0
-            end
             t = t[part] || (raise("Invariant: #{part.inspect} not found in #{t}"))
           end
           t = t[:__type]
@@ -461,10 +527,6 @@ module GraphQL
         def set_type_at_path(path, type)
           types = @types_at_paths
           path.each do |part|
-            if part.is_a?(Integer)
-              part = 0
-            end
-
             types = types[part] ||= {}
           end
           # Use this magic key so that the hash contains:

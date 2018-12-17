@@ -4,10 +4,17 @@ require "spec_helper"
 describe GraphQL::Execution::Interpreter do
   module InterpreterTest
     class Box
-      attr_reader :value
-
-      def initialize(value:)
+      def initialize(value: nil, &block)
         @value = value
+        @block = block
+      end
+
+      def value
+        if @block
+          @value = @block.call
+          @block = nil
+        end
+        @value
       end
     end
 
@@ -17,12 +24,25 @@ describe GraphQL::Execution::Interpreter do
       field :name, String, null: false
       field :cards, ["InterpreterTest::Card"], null: false
 
+      def self.authorized?(expansion, ctx)
+        if expansion.sym == "NOPE"
+          false
+        else
+          true
+        end
+      end
+
       def cards
         Query::CARDS.select { |c| c.expansion_sym == @object.sym }
       end
 
       def lazy_sym
         Box.new(value: object.sym)
+      end
+
+      field :null_union_field_test, Integer, null: false
+      def null_union_field_test
+        1
       end
     end
 
@@ -33,6 +53,11 @@ describe GraphQL::Execution::Interpreter do
 
       def expansion
         Query::EXPANSIONS.find { |e| e.sym == @object.expansion_sym }
+      end
+
+      field :null_union_field_test, Integer, null: true
+      def null_union_field_test
+        nil
       end
     end
 
@@ -59,6 +84,7 @@ describe GraphQL::Execution::Interpreter do
       field :calls, Integer, null: false do
         argument :expected, Integer, required: true
       end
+
       def calls(expected:)
         c = context[:calls] += 1
         if c != expected
@@ -67,9 +93,26 @@ describe GraphQL::Execution::Interpreter do
           c
         end
       end
+
+      field :runtime_info, String, null: false
+      def runtime_info
+        "#{context.namespace(:interpreter)[:current_path]} -> #{context.namespace(:interpreter)[:current_field].path}"
+      end
+
+      field :lazy_runtime_info, String, null: false
+      def lazy_runtime_info
+        Box.new {
+          "#{context.namespace(:interpreter)[:current_path]} -> #{context.namespace(:interpreter)[:current_field].path}"
+        }
+      end
     end
 
     class Query < GraphQL::Schema::Object
+      # Try a root-level authorized hook that returns a lazy value
+      def self.authorized?(obj, ctx)
+        Box.new(value: true)
+      end
+
       field :card, Card, null: true do
         argument :name, String, required: true
       end
@@ -99,6 +142,8 @@ describe GraphQL::Execution::Interpreter do
         OpenStruct.new(name: "Ravnica, City of Guilds", sym: "RAV"),
         # This data has an error, for testing null propagation
         OpenStruct.new(name: nil, sym: "XYZ"),
+        # This is not allowed by .authorized?,
+        OpenStruct.new(name: nil, sym: "NOPE"),
       ]
 
       field :find, [Entity], null: false do
@@ -112,12 +157,21 @@ describe GraphQL::Execution::Interpreter do
         end
       end
 
+      field :findMany, [Entity, null: true], null: false do
+        argument :ids, [ID], required: true
+      end
+
+      def find_many(ids:)
+        find(id: ids).map { |e| Box.new(value: e) }
+      end
+
       field :field_counter, FieldCounter, null: false
       def field_counter; :field_counter; end
     end
 
     class Schema < GraphQL::Schema
       use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
       query(Query)
       lazy_resolve(Box, :value)
     end
@@ -201,6 +255,26 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
+  describe "runtime info in context" do
+    it "is available" do
+      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      {
+        fieldCounter {
+          runtimeInfo
+          fieldCounter {
+            runtimeInfo
+            lazyRuntimeInfo
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal '["fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo', res["data"]["fieldCounter"]["runtimeInfo"]
+      assert_equal '["fieldCounter", "fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo', res["data"]["fieldCounter"]["fieldCounter"]["runtimeInfo"]
+      assert_equal '["fieldCounter", "fieldCounter", "lazyRuntimeInfo"] -> FieldCounter.lazyRuntimeInfo', res["data"]["fieldCounter"]["fieldCounter"]["lazyRuntimeInfo"]
+    end
+  end
+
   describe "CI setup" do
     it "sets interpreter based on a constant" do
       if TESTING_INTERPRETER
@@ -228,6 +302,7 @@ describe GraphQL::Execution::Interpreter do
       # Although the expansion was found, its name of `nil`
       # propagated to here
       assert_nil res["data"].fetch("expansion")
+      assert_equal ["Cannot return null for non-nullable field Expansion.name"], res["errors"].map { |e| e["message"] }
     end
 
     it "propagates nulls in lists" do
@@ -244,6 +319,54 @@ describe GraphQL::Execution::Interpreter do
       res = InterpreterTest::Schema.execute(query_str)
       # A null in one of the list items removed the whole list
       assert_nil(res["data"])
+    end
+
+    it "works with unions that fail .authorized?" do
+      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      {
+        find(id: "NOPE") {
+          ... on Expansion {
+            sym
+          }
+        }
+      }
+      GRAPHQL
+      assert_equal ["Cannot return null for non-nullable field Query.find"], res["errors"].map { |e| e["message"] }
+    end
+
+    it "works with lists of unions" do
+      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      {
+        findMany(ids: ["RAV", "NOPE", "BOGUS"]) {
+          ... on Expansion {
+            sym
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal 3, res["data"]["findMany"].size
+      assert_equal "RAV", res["data"]["findMany"][0]["sym"]
+      assert_equal nil, res["data"]["findMany"][1]
+      assert_equal nil, res["data"]["findMany"][2]
+      assert_equal false, res.key?("errors")
+    end
+
+    it "works with union lists that have members of different kinds, with different nullabilities" do
+      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      {
+        findMany(ids: ["RAV", "Dark Confidant"]) {
+          ... on Expansion {
+            nullUnionFieldTest
+          }
+          ... on Card {
+            nullUnionFieldTest
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal [1, nil], res["data"]["findMany"].map { |f| f["nullUnionFieldTest"] }
     end
   end
 

@@ -15,8 +15,12 @@ module GraphQL
       end
 
       def __type(name:)
-        # This will probably break with non-Interpreter runtime
         type = context.warden.get_type(name)
+
+        if type && context.interpreter?
+          type = type.metadata[:type_class] || raise("Invariant: interpreter requires class-based type for #{name}")
+        end
+
         # The interpreter provides this wrapping, other execution doesnt, so support both.
         if type && !context.interpreter?
           # Apply wrapping manually since this field isn't wrapped by instrumentation
