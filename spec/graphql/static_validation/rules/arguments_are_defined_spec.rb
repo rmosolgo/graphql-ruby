@@ -24,7 +24,7 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
       with_error_bubbling(Dummy::Schema) do
         # There's an extra error here, the unexpected argument on "DairyProductInput"
         # triggers _another_ error that the field expected a different type
-        assert_equal(5, errors.length)
+        assert_equal(6, errors.length)
 
         query_root_error = {
           "message"=>"Field 'cheese' doesn't accept argument 'silly'",
@@ -55,9 +55,10 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
         assert_includes(errors, directive_error)
       end
     end
+
     it "works without error bubbling" do
       without_error_bubbling(Dummy::Schema) do
-        assert_equal(4, errors.length)
+        assert_equal(5, errors.length)
 
         extra_error =  {"message"=>
           "Argument 'product' on Field 'searchDairy' has an invalid value. Expected type '[DairyProductInput]'.",

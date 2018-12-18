@@ -8,27 +8,31 @@ module GraphQL
       def validate(context)
         visitor = context.visitor
         visitor[GraphQL::Language::Nodes::InputObject] << ->(node, parent) {
-          return unless parent.is_a? GraphQL::Language::Nodes::Argument
+          next unless parent.is_a? GraphQL::Language::Nodes::Argument
           validate_input_object(node, context, parent)
         }
       end
 
       private
 
-      def validate_input_object(ast_node, context, parent)
+      def get_parent_type(context, parent)
         defn = context.field_definition
         parent_type = context.warden.arguments(defn)
-          .find{|f| f.name = parent.name}
-          .type.unwrap
+          .find{|f| f.name == parent_name(parent, defn) }
+        parent_type ? parent_type.type.unwrap : nil
+      end
 
-        return unless parent_type.is_a? GraphQL::Language::Nodes::InputObject
+      def validate_input_object(ast_node, context, parent)
+        parent_type = get_parent_type(context, parent)
+        return unless parent_type && parent_type.kind.input_object?
+
         required_fields = parent_type.arguments
           .select{|k,v| v.type.kind.non_null?}
           .keys
 
-        defn.arguments[parent_name(parent, defn)].type.unwrap
         present_fields = ast_node.arguments.map(&:name)
         missing_fields = required_fields - present_fields
+
         missing_fields.each do |missing_field|
           path = [ *context.path, missing_field]
           missing_field_type = parent_type.arguments[missing_field].type
