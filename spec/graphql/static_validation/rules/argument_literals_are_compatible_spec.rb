@@ -284,8 +284,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
   describe "custom error messages" do
     let(:schema) {
-
-      CoerceTestTimeType = GraphQL::ScalarType.define do
+      CoerceTestTimeType ||= GraphQL::ScalarType.define do
         name "Time"
         description "Time since epoch in seconds"
 
@@ -300,16 +299,25 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         coerce_result ->(value, ctx) { value.to_f }
       end
 
-      CoerceTestQueryType = GraphQL::ObjectType.define do
+      CoerceTestDeepTimeType ||= GraphQL::InputObjectType.define do
+        name "range"
+        description "Time range"
+        argument :from, !CoerceTestTimeType
+        argument :to, !CoerceTestTimeType
+      end
+
+      CoerceTestQueryType ||= GraphQL::ObjectType.define do
         name "Query"
         description "The query root of this schema"
 
         field :time do
           type CoerceTestTimeType
-          argument :value, !CoerceTestTimeType
+          argument :value, CoerceTestTimeType
+          argument :range, CoerceTestDeepTimeType
           resolve ->(obj, args, ctx) { args[:value] }
         end
       end
+
 
       GraphQL::Schema.define do
         query CoerceTestQueryType
@@ -322,14 +330,62 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       }
     |}
 
-    it "sets error message from a CoercionError if raised" do
-      assert_equal 1, errors.length
+    describe "with a shallow coercion" do
+      it "sets error message from a CoercionError if raised" do
+        assert_equal 1, errors.length
 
-      assert_includes errors, {
-        "message"=> "cannot coerce to Float",
-        "locations"=>[{"line"=>3, "column"=>9}],
-        "fields"=>["query", "time", "value"]
+        assert_includes errors, {
+          "message"=> "cannot coerce to Float",
+          "locations"=>[{"line"=>3, "column"=>9}],
+          "fields"=>["query", "time", "value"]
+        }
+      end
+    end
+
+    describe "with a deep coercion" do
+      let(:query_string) {%|
+        query {
+          time(range: { from: "a", to: "b" })
+        }
+      |}
+
+      from_error = {
+        "message"=>"cannot coerce to Float",
+        "locations"=>[{"line"=>3, "column"=>23}],
+        "fields"=>["query", "time", "range", "from"]
       }
+
+      to_error = {
+        "message"=>"cannot coerce to Float",
+        "locations"=>[{"line"=>3, "column"=>23}],
+        "fields"=>["query", "time", "range", "to"]
+      }
+
+      bubbling_error = {
+        "message"=>"cannot coerce to Float",
+        "locations"=>[{"line"=>3, "column"=>11}],
+        "fields"=>["query", "time", "range"]
+      }
+
+      describe "sets deep error message from a CoercionError if raised" do
+        it "works with error bubbling enabled" do
+          with_error_bubbling(schema) do
+            assert_equal 3, errors.length
+            assert_includes(errors, from_error)
+            assert_includes(errors, to_error)
+            assert_includes(errors, bubbling_error)
+          end
+        end
+
+        it "works without error bubbling enabled" do
+          without_error_bubbling(schema) do
+            assert_equal 2, errors.length
+            assert_includes(errors, from_error)
+            assert_includes(errors, to_error)
+            refute_includes(errors, bubbling_error)
+          end
+        end
+      end
     end
   end
 end

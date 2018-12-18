@@ -11,6 +11,12 @@ module GraphQL
           valid = context.valid_literal?(node.value, arg_defn.type)
         rescue GraphQL::CoercionError => err
           error_message = err.message
+          context.schema.error_bubbling
+          if !context.schema.error_bubbling && !arg_defn.type.unwrap.kind.scalar?
+            # if error bubbling is disabled and the arg that caused this error isn't a scalar then
+            # short-circuit here so we avoid bubbling this up to whatever input_object / array contains us
+            return false
+          end
         rescue GraphQL::LiteralValidationError => err
           # check to see if the ast node that caused the error to be raised is
           # the same as the node we were checking here.
