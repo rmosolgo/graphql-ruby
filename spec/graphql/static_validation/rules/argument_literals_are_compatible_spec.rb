@@ -24,7 +24,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     it "finds undefined or missing-required arguments to fields and directives" do
       without_error_bubbling(schema) do
         # `wacky` above is handled by ArgumentsAreDefined, so only 6 are tested below
-        assert_equal(6, errors.length)
+        assert_equal(5, errors.length)
 
         query_root_error = {
           "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
@@ -46,17 +46,6 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
           "fields"=>["query getCheese", "badSource", "product", "source"],
         }
         assert_includes(errors, input_object_field_error)
-
-        # TODO - this shouldn't be here but we don't have another way to report
-        # a missing field. ideally we'd report something like:
-        # "Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
-        # or even that it's required?
-        missing_required_field_error = {
-          "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
-          "locations"=>[{"line"=>7, "column"=>7}],
-          "fields"=>["query getCheese", "missingSource", "product"],
-        }
-        assert_includes(errors, missing_required_field_error)
 
         fragment_error = {
           "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
