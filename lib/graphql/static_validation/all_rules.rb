@@ -24,6 +24,7 @@ module GraphQL
       GraphQL::StaticValidation::ArgumentsAreDefined,
       GraphQL::StaticValidation::ArgumentLiteralsAreCompatible,
       GraphQL::StaticValidation::RequiredArgumentsArePresent,
+      GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent,
       GraphQL::StaticValidation::ArgumentNamesAreUnique,
       GraphQL::StaticValidation::VariableNamesAreUnique,
       GraphQL::StaticValidation::VariablesAreInputTypes,

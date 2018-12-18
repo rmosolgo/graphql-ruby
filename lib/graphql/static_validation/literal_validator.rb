@@ -86,7 +86,13 @@ module GraphQL
           .map(&:name)
         present_field_names = ast_node.arguments.map(&:name)
         missing_required_field_names = required_field_names - present_field_names
-        missing_required_field_names.none?
+        if @context.schema.error_bubbling
+          missing_required_field_names.none?
+        else
+          missing_required_field_names.all? do |name|
+            validate(GraphQL::Language::Nodes::NullValue.new(name: name), @warden.arguments(type).find { |f| f.name == name }.type )
+          end
+        end
       end
 
       def present_input_field_values_are_valid(type, ast_node)
