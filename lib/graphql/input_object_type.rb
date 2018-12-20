@@ -100,12 +100,7 @@ module GraphQL
       end
 
       result = arguments_class.new(input_values, context: ctx, defaults_used: defaults_used)
-
-      if result.respond_to?(:prepare)
-        result = result.prepare
-      end
-
-      result
+      result.prepare
     end
 
     # @api private

@@ -88,6 +88,10 @@ module GraphQL
 
       def_delegators :to_h, :keys, :values, :each, :any?
 
+      def prepare
+        self
+      end
+
       # Access each key, value and type for the arguments in this set.
       # @yield [argument_value] The {ArgumentValue} for each argument
       # @yieldparam argument_value [ArgumentValue]
@@ -154,12 +158,7 @@ module GraphQL
           when GraphQL::InputObjectType
             if value.is_a?(Hash)
               result = arg_defn_type.arguments_class.new(value, context: context, defaults_used: Set.new)
-              
-              if result.respond_to?(:prepare)
-                result = result.prepare
-              end
-              
-              result
+              result.prepare
             else
               value
             end
