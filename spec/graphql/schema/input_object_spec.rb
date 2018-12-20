@@ -329,28 +329,7 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareTest::Schema.execute(query_str, variables: { input: { min: 5, max: 10 } })
       expected_obj = (5..10).inspect
       assert_equal expected_obj, res["data"]["inputs"]
-    end
-    
-    it "gives an error if prepare returns nil (literal)" do
-      query_str = <<-GRAPHQL
-      { inputs(input: { min: 10, max: 5 }) }
-      GRAPHQL
-
-      res = InputObjectPrepareTest::Schema.execute(query_str)
-      err_msg = "Could not coerce value {min:10,max:5} to InputObj"
-      puts res.to_h.inspect
-      assert_equal err_msg, res["errors"][0]["message"]
-    end
-
-    it "gives an error if prepare returns nil (variable)" do
-      query_str = <<-GRAPHQL
-      query ($input: InputObj!){ inputs(input: $input) }
-      GRAPHQL
-
-      res = InputObjectPrepareTest::Schema.execute(query_str, variables: { input: { min: 10, max: 5 } })
-      err_msg = "Variable input of type InputObj! was provided invalid value"
-      assert_equal err_msg, res["errors"][0]["message"]
-    end
+    end    
   end
 
   describe "in queries" do

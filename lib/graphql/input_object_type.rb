@@ -153,11 +153,6 @@ module GraphQL
         end
       end
 
-      # Better way to do this, perhaps keeping the coerced value around?
-      if coerce_non_null_input(input, ctx).nil?
-        result.add_problem("Could not coerce value #{GraphQL::Language.serialize(input)} to #{name}")
-      end
-
       result
     end
   end
