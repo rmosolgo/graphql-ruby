@@ -254,7 +254,7 @@ module GraphQL
         return ''.dup unless node.description
 
         description = indent != '' && !first_in_block ? "\n".dup : "".dup
-        description << GraphQL::Language::Comments.commentize(node.description, indent: indent)
+        description << GraphQL::Language::BlockString.print(node.description, indent: indent)
       end
 
       def print_field_definitions(fields)
