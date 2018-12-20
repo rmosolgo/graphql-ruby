@@ -21,7 +21,7 @@ describe GraphQL::Relay::RelationConnection do
 
   describe "results" do
     let(:query_string) {%|
-      query getShips($first: Int, $after: String, $last: Int, $before: String,  $nameIncludes: String){
+      query getShips($first: Int, $after: String, $last: Int, $before: String, $nameIncludes: String){
         empire {
           bases(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
             ... basesConnection
@@ -66,6 +66,39 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal("Mw==", get_last_cursor(result))
     end
 
+    it "uses unscope(:order) count(*) when the relation has some complicated SQL" do
+      query_s = <<-GRAPHQL
+        query getShips($first: Int, $after: String, $complexOrder: Boolean){
+          empire {
+            bases(first: $first, after: $after, complexOrder: $complexOrder) {
+              edges {
+                node {
+                  name
+                }
+              }
+              pageInfo {
+                hasNextPage
+              }
+            }
+          }
+        }
+      GRAPHQL
+      result = nil
+      log = with_active_record_log do
+        result = star_wars_query(query_s, "first" => 1, "after" => "MQ==", "complexOrder" => true)
+      end
+
+      conn = result["data"]["empire"]["bases"]
+      assert_equal(1, conn["edges"].size)
+      assert_equal(true, conn["pageInfo"]["hasNextPage"])
+
+      log_entries = log.split("\n")
+      assert_equal 2, log_entries.size, "It ran 2 sql queries"
+      edges_query, has_next_page_query = log_entries
+      assert_includes edges_query, "ORDER BY bases.name", "The query for edges _is_ ordered"
+      refute_includes has_next_page_query, "ORDER BY bases.name", "The count query **does not** have an order"
+    end
+
     it 'provides custom fields on the connection type' do
       result = star_wars_query(query_string, "first" => 2)
       assert_equal(
@@ -90,15 +123,11 @@ describe GraphQL::Relay::RelationConnection do
         }
       }
       GRAPHQL
-      io = StringIO.new
-      begin
-        prev_logger = ActiveRecord::Base.logger
-        ActiveRecord::Base.logger = Logger.new(io)
+      result = nil
+      log = with_active_record_log do
         result = star_wars_query(query_str, "first" => 2)
-      ensure
-        ActiveRecord::Base.logger = prev_logger
       end
-      assert_equal 2, io.string.scan("\n").count, "Two log entries"
+      assert_equal 2, log.scan("\n").count, "Two log entries"
       assert_equal 3, result["data"]["empire"]["bases"]["totalCount"]
       assert_equal 2, result["data"]["empire"]["bases"]["edges"].size
     end

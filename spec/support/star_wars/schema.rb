@@ -148,9 +148,13 @@ module StarWars
       if args[:nameIncludes]
         all_bases = all_bases.where("name LIKE ?", "%#{args[:nameIncludes]}%")
       end
+      if args[:complexOrder]
+        all_bases = all_bases.order("bases.name DESC")
+      end
       all_bases
     } do
       argument :nameIncludes, String, required: false
+      argument :complexOrder, Boolean, required: false
     end
 
     field :basesClone, BaseConnection, null: true
