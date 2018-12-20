@@ -44,7 +44,7 @@ Gem::Specification.new do |s|
   # website stuff
   s.add_development_dependency "jekyll"
   s.add_development_dependency "yard"
-  s.add_development_dependency "jekyll-algolia" if RUBY_VERSION >= '2.3.0'
-  s.add_development_dependency "jekyll-redirect-from" if RUBY_VERSION >= '2.3.0'
+  s.add_development_dependency "jekyll-algolia" if RUBY_VERSION >= '2.4.0'
+  s.add_development_dependency "jekyll-redirect-from" if RUBY_VERSION >= '2.4.0'
   s.add_development_dependency "m", "~> 1.5.0"
 end
