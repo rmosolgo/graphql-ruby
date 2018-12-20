@@ -78,6 +78,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
+      :error_bubbling,
       :raise_definition_error,
       :object_from_id, :id_from_object,
       :default_mask,
@@ -106,6 +107,9 @@ module GraphQL
       :ast_node,
       :raise_definition_error,
       :introspection_namespace
+
+    # [Boolean] True if this object bubbles validation errors up from a field into its parent InputObject, if there is one.
+    attr_accessor :error_bubbling
 
     # Single, long-lived instance of the provided subscriptions class, if there is one.
     # @return [GraphQL::Subscriptions]
@@ -168,6 +172,7 @@ module GraphQL
       @context_class = GraphQL::Query::Context
       @introspection_namespace = nil
       @introspection_system = nil
+      @error_bubbling = true
     end
 
     def initialize_copy(other)
@@ -659,6 +664,7 @@ module GraphQL
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
+        :error_bubbling=,
         :metadata,
         :default_mask,
         :default_filter, :redefine,
@@ -692,6 +698,7 @@ module GraphQL
         schema_defn.mutation = mutation
         schema_defn.subscription = subscription
         schema_defn.max_complexity = max_complexity
+        schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
@@ -820,6 +827,14 @@ module GraphQL
           @max_complexity = max_complexity
         else
           @max_complexity
+        end
+      end
+
+      def error_bubbling(new_error_bubbling = nil)
+        if !new_error_bubbling.nil?
+          @error_bubbling = new_error_bubbling
+        else
+          @error_bubbling
         end
       end
 

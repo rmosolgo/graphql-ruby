@@ -3,6 +3,25 @@ module GraphQL
   module StaticValidation
     # Implement validate_node
     class ArgumentsValidator
+      module ArgumentsValidatorHelpers
+        private
+
+        def parent_name(parent, type_defn)
+          if parent.is_a?(GraphQL::Language::Nodes::Field)
+            parent.alias || parent.name
+          elsif parent.is_a?(GraphQL::Language::Nodes::InputObject)
+            type_defn.name
+          else
+            parent.name
+          end
+        end
+
+        def node_type(parent)
+          parent.class.name.split("::").last
+        end
+      end
+
+      include ArgumentsValidatorHelpers
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
@@ -29,22 +48,7 @@ module GraphQL
           validate_node(parent, node, parent_defn, context)
         }
       end
-
-      private
-
-      def parent_name(parent, type_defn)
-        if parent.is_a?(GraphQL::Language::Nodes::Field)
-          parent.alias || parent.name
-        elsif parent.is_a?(GraphQL::Language::Nodes::InputObject)
-          type_defn.name
-        else
-          parent.name
-        end
-      end
-
-      def node_type(parent)
-        parent.class.name.split("::").last
-      end
     end
+
   end
 end
