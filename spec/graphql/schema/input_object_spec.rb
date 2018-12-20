@@ -102,7 +102,6 @@ describe GraphQL::Schema::InputObject do
         argument :max, Integer, required: false
 
         def prepare
-          return unless min <= max
           min..max
         end
       end
