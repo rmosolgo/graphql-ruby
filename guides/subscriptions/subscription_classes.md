@@ -10,6 +10,13 @@ index: 1
 
 You can extend {{ "GraphQL::Schema::Subscription" | api_doc }} to create fields that can be subscribed to.
 
+These classes support several behaviors:
+
+- Authorizing (or rejecting) initial subscription requests and subsequent updates
+- Returning values for initial subscription requests
+- Unsubscribing from the server
+- Skipping updates for certain clients (eg, don't send updates to the person who triggered the event)
+
 ## Add a base class
 
 First, add a base class for your application. You can hook up your base classes there:
@@ -123,7 +130,7 @@ subscription($roomId: ID!) {
 }
 ```
 
-If you configuure fields with `null: true`, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)
+If you configure fields with `null: true`, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)
 
 Instead of a generated type, you can provide an already-configured type with `payload_type`:
 
@@ -171,7 +178,7 @@ Also, if this method fails before calling `#update`, then the client will be aut
 - Call `super` to register a subscription
 - Raise `GraphQL::ExecutionError` to halt and return an error
 - Return a value to give the client an initial response
-- Return `context.skip` to skip the initial response
+- Return `:no_response` to skip the initial response
 
 You can define this method to add initial responses or perform other logic before subscribing.
 
@@ -215,6 +222,24 @@ After a client has registered a subscription, the application may trigger subscr
 
 - Unsubscribe the client with `unsubscribe`
 - Return a value with `super` (which returns `object`) or by returning a different value.
+
+### Skipping subscription updates
+
+Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `:no_update`.
+
+```ruby
+class CommentWasAdded < Subscriptions::BaseSubscription
+  def update(post_id:)
+    comment = object # #<Comment ...>
+    if comment.author == context[:viewer]
+      :no_update
+    else
+      # Continue updating this client, since it's not the commenter
+      super
+    end
+  end
+end
+```
 
 ### Returning a different object for subscription updates
 
