@@ -26,12 +26,24 @@ describe GraphQL::Language::Lexer do
       assert_equal tokens[0], tokens[1].prev_token
     end
 
+    it "allows escaped quotes in strings" do
+      tokens = subject.tokenize('"a\\"b""c"')
+      assert_equal 'a"b', tokens[0].value
+      assert_equal 'c', tokens[1].value
+    end
+
     describe "block strings" do
-      let(:query_string) { %|{ a(b: """\nc\n  d\n""")}|}
+      let(:query_string) { %|{ a(b: """\nc\n \\""" d\n""" """""e""""")}|}
 
       it "tokenizes them" do
-        str_token = tokens[5]
-        assert_equal "c\n  d", str_token.value
+        assert_equal "c\n \"\"\" d", tokens[5].value
+        assert_equal "\"\"e\"\"", tokens[6].value
+      end
+
+      it "tokenizes 10 quote edge case correctly" do
+        tokens = subject.tokenize('""""""""""')
+        assert_equal '""', tokens[0].value # first 8 quotes are a valid block string """"""""
+        assert_equal '', tokens[1].value # last 2 quotes are a valid string ""
       end
     end
 

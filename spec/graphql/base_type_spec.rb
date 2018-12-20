@@ -112,7 +112,9 @@ describe GraphQL::BaseType do
     schema = GraphQL::Schema.define(query: query_root)
 
     expected = <<TYPE
-# A blog post
+"""
+A blog post
+"""
 type Post {
   body: String!
   id: ID!

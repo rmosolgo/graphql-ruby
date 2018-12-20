@@ -78,6 +78,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
+      :error_bubbling,
       :raise_definition_error,
       :object_from_id, :id_from_object,
       :default_mask,
@@ -106,6 +107,9 @@ module GraphQL
       :ast_node,
       :raise_definition_error,
       :introspection_namespace
+
+    # [Boolean] True if this object bubbles validation errors up from a field into its parent InputObject, if there is one.
+    attr_accessor :error_bubbling
 
     # Single, long-lived instance of the provided subscriptions class, if there is one.
     # @return [GraphQL::Subscriptions]
@@ -168,6 +172,7 @@ module GraphQL
       @context_class = GraphQL::Query::Context
       @introspection_namespace = nil
       @introspection_system = nil
+      @error_bubbling = true
     end
 
     def initialize_copy(other)
@@ -656,10 +661,10 @@ module GraphQL
         :execute, :multiplex,
         :static_validator, :introspection_system,
         :query_analyzers, :tracers, :instrumenters,
-        :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
+        :error_bubbling=,
         :metadata,
         :default_mask,
         :default_filter, :redefine,
@@ -693,6 +698,7 @@ module GraphQL
         schema_defn.mutation = mutation
         schema_defn.subscription = subscription
         schema_defn.max_complexity = max_complexity
+        schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
@@ -709,6 +715,9 @@ module GraphQL
         schema_defn.query_analyzers << GraphQL::Authorization::Analyzer
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
+        schema_defn.query_execution_strategy = query_execution_strategy
+        schema_defn.mutation_execution_strategy = mutation_execution_strategy
+        schema_defn.subscription_execution_strategy = subscription_execution_strategy
         defined_instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
@@ -789,11 +798,43 @@ module GraphQL
         end
       end
 
+      def query_execution_strategy(new_query_execution_strategy = nil)
+        if new_query_execution_strategy
+          @query_execution_strategy = new_query_execution_strategy
+        else
+          @query_execution_strategy || self.default_execution_strategy
+        end
+      end
+
+      def mutation_execution_strategy(new_mutation_execution_strategy = nil)
+        if new_mutation_execution_strategy
+          @mutation_execution_strategy = new_mutation_execution_strategy
+        else
+          @mutation_execution_strategy || self.default_execution_strategy
+        end
+      end
+
+      def subscription_execution_strategy(new_subscription_execution_strategy = nil)
+        if new_subscription_execution_strategy
+          @subscription_execution_strategy = new_subscription_execution_strategy
+        else
+          @subscription_execution_strategy || self.default_execution_strategy
+        end
+      end
+
       def max_complexity(max_complexity = nil)
         if max_complexity
           @max_complexity = max_complexity
         else
           @max_complexity
+        end
+      end
+
+      def error_bubbling(new_error_bubbling = nil)
+        if !new_error_bubbling.nil?
+          @error_bubbling = new_error_bubbling
+        else
+          @error_bubbling
         end
       end
 
@@ -829,9 +870,11 @@ module GraphQL
         end
       end
 
-      def rescue_from(err_class, &handler_block)
+      def rescue_from(*err_classes, &handler_block)
         @rescues ||= {}
-        @rescues[err_class] = handler_block
+        err_classes.each do |err_class|
+          @rescues[err_class] = handler_block
+        end
       end
 
       def resolve_type(type, obj, ctx)

@@ -48,14 +48,11 @@ optional arguments:
       quiet: argv.hasOwnProperty("quiet"),
     })
 
-    if (result instanceof Promise){
-      result.then(function(res) {
-        if (res === false) {
-          process.exit(1)
-        }
-      })
-    } else if (result === false) {
+    result.then(function(res) {
+      process.exit(0)
+    }).catch(function(_err) {
+      // The error is logged by the function
       process.exit(1)
-    }
+    })
   }
 }

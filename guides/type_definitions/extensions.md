@@ -121,6 +121,45 @@ end
 
 Now, `AuthorizedField.new(*args, &block).to_graphql` will be used to create `GraphQL::Field`s.
 
+### Customizing Connections
+
+Connections may be customized in a similar way to Fields.
+
+- Create a new class extending 'GraphQL::Types::Relay::BaseConnection'
+- Assign it to your object/interface type with `connection_type_class(MyCustomConnection)`
+
+For example, you can create a custom connection:
+
+```ruby
+class MyCustomConnection < GraphQL::Types::Relay::BaseConnection
+  field :total_count, Integer, null: false
+
+  def total_count
+    object.nodes.size
+  end
+end
+```
+
+Then, pass the field class as `connection_type_class(...)` wherever it should be used:
+
+```ruby
+module Types
+  class BaseObject < GraphQL::Schema::Object
+    # Use this class for defining connections
+    connection_type_class MyCustomConnection
+  end
+end
+```
+
+Now, all type classes that extend `BaseObject` will have a connection_type with the additional field `totalCount`.
+
+### Customizing Edges
+
+Edges may be customized in a similar way to Connections.
+
+- Create a new class extending 'GraphQL::Types::Relay::BaseEdge'
+- Assign it to your object/interface type with `edge_type_class(MyCustomEdge)`
+
 ### Customizing Arguments
 
 Arguments may be customized in a similar way to Fields.
