@@ -10,9 +10,7 @@ appraise 'rails_3.2' do
 end
 
 appraise 'rails_4.1' do
-  gem 'rails', '~> 4.1', require: 'rails/all'
-  gem 'activerecord', '~> 4.1.10'
-  gem 'actionpack', '~> 4.1.10'
+  gem 'rails', '~> 4.1.10', require: 'rails/all'
   gem 'test-unit'
   gem 'sqlite3', platform: :ruby
   gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
