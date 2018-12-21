@@ -12,4 +12,5 @@ gem 'pry-byebug'
 # Required for running `jekyll algolia ...` (via `rake site:update_search_index`)
 group :jekyll_plugins do
   gem 'jekyll-algolia', '~> 1.0'
+  gem 'jekyll-redirect-from'
 end
