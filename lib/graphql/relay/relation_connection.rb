@@ -133,27 +133,21 @@ module GraphQL
 
       # Apply cursors to edges
       def sliced_nodes
-        return @sliced_nodes if defined? @sliced_nodes
-
-        @sliced_nodes = nodes
-
-        if after
-          offset = (relation_offset(@sliced_nodes) || 0) + offset_from_cursor(after)
-          @sliced_nodes = @sliced_nodes.offset(offset)
-        end
-
-        if before && after
-          if offset_from_cursor(after) < offset_from_cursor(before)
-            @sliced_nodes = limit_nodes(@sliced_nodes,  offset_from_cursor(before) - offset_from_cursor(after) - 1)
+        @sliced_nodes ||=
+          if before && after
+            if offset_from_cursor(after) < offset_from_cursor(before)
+              limit_nodes(nodes, offset_from_cursor(before) - offset_from_cursor(after) - 1)
+            else
+              limit_nodes(nodes, 0)
+            end
+          elsif after
+            offset = (relation_offset(nodes) || 0) + offset_from_cursor(after)
+            nodes.offset(offset)
+          elsif before
+            limit_nodes(nodes, offset_from_cursor(before) - 1)
           else
-            @sliced_nodes = limit_nodes(@sliced_nodes, 0)
+            nodes
           end
-
-        elsif before
-          @sliced_nodes = limit_nodes(@sliced_nodes, offset_from_cursor(before) - 1)
-        end
-
-        @sliced_nodes
       end
 
       def limit_nodes(sliced_nodes, limit)
