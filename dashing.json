@@ -1,0 +1,15 @@
+{
+    "name": "graphql-ruby",
+    "package": "graphql-ruby",
+    "index": "index.html",
+    "selectors": {
+        ".guide-header": "Guide",
+        ".guide-section h2": "Section"
+    },
+    "ignore": [
+        "ABOUT"
+    ],
+    "icon32x32": "guides/graphql-ruby-32x32.png",
+    "allowJS": false,
+    "ExternalURL": "http://graphql-ruby.org/"
+}

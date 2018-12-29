@@ -98,6 +98,34 @@ namespace :site do
     puts 'Done.'
   end
 
+  desc "Build a docset for Dash"
+  task :build_dash do
+    puts "Checking for dash-docset dir..."
+    unless File.exist?("./dash-docset")
+      puts "Creating dash-docset dir..."
+      Dir.mkdir("./dash-docset")
+    end
+
+    puts "Building site into dash-docset directory..."
+    ENV['JEKYLL_ENV'] = 'production'
+    require "jekyll"
+    config = Jekyll::Configuration.from(
+      "source"       => File.expand_path("guides"),
+      "destination"  => File.expand_path("dash-docset"),
+      "sass"         => { "style" => "compressed" }
+    )
+
+    merged_config = config.merge(config.read_config_file("./guides/_config.yml"))
+    merged_config_with_overrides = merged_config.merge(
+      "defaults" => merged_config["defaults"] + [
+        { "scope" => { "path" => "" }, "values" => { "target" => "dash" } }
+      ]
+    )
+    Jekyll::Site.new(merged_config_with_overrides).process
+
+    system 'dashing build -s ./dash-docset/'
+  end
+
   YARD::Rake::YardocTask.new(:prepare_yardoc)
 
   task build_doc: :prepare_yardoc do
