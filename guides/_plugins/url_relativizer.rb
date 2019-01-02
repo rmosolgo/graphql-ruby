@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'pathname'
 
 # Taken from https://github.com/jekyll/jekyll/issues/6360#issuecomment-329275101
