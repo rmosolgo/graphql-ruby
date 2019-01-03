@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::Schema::Validation::Rules
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Schema::Validation::Rules";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (R)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Validation.html" title="GraphQL::Schema::Validation (class)">Validation</a></span></span>
+     &raquo; 
+    <span class="title">Rules</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::Schema::Validation::Rules
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/validation.rb</dd>
+  </dl>
+  
+</div>
+
+
+  <h2>Constant Summary</h2>
+  <dl class="constants">
+    
+      <dt id="FIELDS_ARE_VALID-constant" class="">FIELDS_ARE_VALID =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'>Rules</span><span class='period'>.</span><span class='id identifier rubyid_assert_named_items_are_valid'><span class='object_link'><a href="#assert_named_items_are_valid-class_method" title="GraphQL::Schema::Validation::Rules.assert_named_items_are_valid (method)">assert_named_items_are_valid</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>field</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_all_fields'>all_fields</span> <span class='rbrace'>}</span><span class='rparen'>)</span></pre></dd>
+    
+      <dt id="HAS_ONE_OR_MORE_POSSIBLE_TYPES-constant" class="">HAS_ONE_OR_MORE_POSSIBLE_TYPES =
+        
+      </dt>
+      <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+  <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;=</span> <span class='int'>1</span> <span class='op'>?</span> <span class='kw'>nil</span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>must have at least one possible type</span><span class='tstring_end'>&quot;</span></span>
+<span class='rbrace'>}</span></pre></dd>
+    
+      <dt id="NAME_IS_STRING-constant" class="">NAME_IS_STRING =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'>Rules</span><span class='period'>.</span><span class='id identifier rubyid_assert_property'><span class='object_link'><a href="#assert_property-class_method" title="GraphQL::Schema::Validation::Rules.assert_property (method)">assert_property</a></span></span><span class='lparen'>(</span><span class='symbol'>:name</span><span class='comma'>,</span> <span class='const'>String</span><span class='rparen'>)</span></pre></dd>
+    
+      <dt id="DESCRIPTION_IS_STRING_OR_NIL-constant" class="">DESCRIPTION_IS_STRING_OR_NIL =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'>Rules</span><span class='period'>.</span><span class='id identifier rubyid_assert_property'><span class='object_link'><a href="#assert_property-class_method" title="GraphQL::Schema::Validation::Rules.assert_property (method)">assert_property</a></span></span><span class='lparen'>(</span><span class='symbol'>:description</span><span class='comma'>,</span> <span class='const'>String</span><span class='comma'>,</span> <span class='const'>NilClass</span><span class='rparen'>)</span></pre></dd>
+    
+      <dt id="ARGUMENTS_ARE_STRING_TO_ARGUMENT-constant" class="">ARGUMENTS_ARE_STRING_TO_ARGUMENT =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'>Rules</span><span class='period'>.</span><span class='id identifier rubyid_assert_property_mapping'><span class='object_link'><a href="#assert_property_mapping-class_method" title="GraphQL::Schema::Validation::Rules.assert_property_mapping (method)">assert_property_mapping</a></span></span><span class='lparen'>(</span><span class='symbol'>:arguments</span><span class='comma'>,</span> <span class='const'>String</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Argument.html" title="GraphQL::Argument (class)">Argument</a></span></span><span class='rparen'>)</span></pre></dd>
+    
+      <dt id="ARGUMENTS_ARE_VALID-constant" class="">ARGUMENTS_ARE_VALID =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'>Rules</span><span class='period'>.</span><span class='id identifier rubyid_assert_named_items_are_valid'><span class='object_link'><a href="#assert_named_items_are_valid-class_method" title="GraphQL::Schema::Validation::Rules.assert_named_items_are_valid (method)">assert_named_items_are_valid</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>argument</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span> <span class='rbrace'>}</span><span class='rparen'>)</span></pre></dd>
+    
+      <dt id="DEFAULT_VALUE_IS_VALID_FOR_TYPE-constant" class="">DEFAULT_VALUE_IS_VALID_FOR_TYPE =
+        
+      </dt>
+      <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_default_value'>default_value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../NonNullType.html" title="GraphQL::NonNullType (class)">NonNullType</a></span></span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>%Q(</span><span class='tstring_content'>Variable </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> of type &quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot; is required and will not use the default value. Perhaps you meant to use type &quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot;.</span><span class='tstring_end'>)</span></span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_default_value'>default_value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='id identifier rubyid_coerced_value'>coerced_value</span> <span class='op'>=</span> <span class='kw'>begin</span>
+      <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_coerce_isolated_result'>coerce_isolated_result</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_default_value'>default_value</span><span class='rparen'>)</span>
+    <span class='kw'>rescue</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_ex'>ex</span>
+      <span class='id identifier rubyid_ex'>ex</span>
+    <span class='kw'>end</span>
+
+    <span class='kw'>if</span> <span class='id identifier rubyid_coerced_value'>coerced_value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span> <span class='id identifier rubyid_coerced_value'>coerced_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>StandardError</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_msg'>msg</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>default value </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_default_value'>default_value</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> is not valid for type </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+      <span class='id identifier rubyid_msg'>msg</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_coerced_value'>coerced_value</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_coerced_value'>coerced_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>StandardError</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_msg'>msg</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='rbrace'>}</span></pre></dd>
+    
+      <dt id="TYPE_IS_VALID_INPUT_TYPE-constant" class="">TYPE_IS_VALID_INPUT_TYPE =
+        
+      </dt>
+      <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+  <span class='id identifier rubyid_outer_type'>outer_type</span> <span class='op'>=</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span>
+  <span class='id identifier rubyid_inner_type'>inner_type</span> <span class='op'>=</span> <span class='id identifier rubyid_outer_type'>outer_type</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../BaseType.html" title="GraphQL::BaseType (class)">BaseType</a></span></span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_outer_type'>outer_type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span> <span class='op'>:</span> <span class='kw'>nil</span>
+
+  <span class='kw'>case</span> <span class='id identifier rubyid_inner_type'>inner_type</span>
+  <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../ScalarType.html" title="GraphQL::ScalarType (class)">ScalarType</a></span></span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../InputObjectType.html" title="GraphQL::InputObjectType (class)">InputObjectType</a></span></span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../EnumType.html" title="GraphQL::EnumType (class)">EnumType</a></span></span>
+    <span class='comment'># OK
+</span>  <span class='kw'>else</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>type must be a valid input type (Scalar or InputObject), not </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_outer_type'>outer_type</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'> (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_outer_type'>outer_type</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='rbrace'>}</span></pre></dd>
+    
+      <dt id="SCHEMA_CAN_RESOLVE_TYPES-constant" class="">SCHEMA_CAN_RESOLVE_TYPES =
+        
+      </dt>
+      <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_type'>type</span><span class='op'>|</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_abstract?'>abstract?</span> <span class='rbrace'>}</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_resolve_type_proc'>resolve_type_proc</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>schema contains Interfaces or Unions, so you must define a `resolve_type -&gt; (obj, ctx) { ... }` function</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='comment'># :+1:
+</span>  <span class='kw'>end</span>
+<span class='rbrace'>}</span></pre></dd>
+    
+      <dt id="SCHEMA_CAN_FETCH_IDS-constant" class="">SCHEMA_CAN_FETCH_IDS =
+        
+      </dt>
+      <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+  <span class='id identifier rubyid_has_node_field'>has_node_field</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_all_fields'>all_fields</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:relay_node_field</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_has_node_field'>has_node_field</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_object_from_id_proc'>object_from_id_proc</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>schema contains `node(id:...)` field, so you must define a `object_from_id -&gt; (id, ctx) { ... }` function</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='comment'># :rocket:
+</span>  <span class='kw'>end</span>
+<span class='rbrace'>}</span></pre></dd>
+    
+      <dt id="SCHEMA_CAN_GENERATE_IDS-constant" class="">SCHEMA_CAN_GENERATE_IDS =
+        
+      </dt>
+      <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+  <span class='id identifier rubyid_has_id_field'>has_id_field</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_t'>t</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_fields?'>fields?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_t'>t</span><span class='period'>.</span><span class='id identifier rubyid_all_fields'>all_fields</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_resolve_proc'>resolve_proc</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Relay.html" title="GraphQL::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Relay/GlobalIdResolve.html" title="GraphQL::Relay::GlobalIdResolve (class)">GlobalIdResolve</a></span></span><span class='rparen'>)</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_has_id_field'>has_id_field</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_id_from_object_proc'>id_from_object_proc</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>schema contains `global_id_field`, so you must define a `id_from_object -&gt; (obj, type, ctx) { ... }` function</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='comment'># :ok_hand:
+</span>  <span class='kw'>end</span>
+<span class='rbrace'>}</span></pre></dd>
+    
+      <dt id="SCHEMA_INSTRUMENTERS_ARE_VALID-constant" class="">SCHEMA_INSTRUMENTERS_ARE_VALID =
+        
+      </dt>
+      <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+  <span class='id identifier rubyid_errs'>errs</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_instrumenters'>instrumenters</span><span class='lbracket'>[</span><span class='symbol'>:query</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_inst'>inst</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_inst'>inst</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:before_query</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='op'>!</span><span class='id identifier rubyid_inst'>inst</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:after_query</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_errs'>errs</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>`instrument(:query, </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_inst'>inst</span><span class='embexpr_end'>}</span><span class='tstring_content'>)` is invalid: must respond to `before_query(query)` and `after_query(query)` </span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_instrumenters'>instrumenters</span><span class='lbracket'>[</span><span class='symbol'>:field</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_inst'>inst</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_inst'>inst</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:instrument</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_errs'>errs</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>`instrument(:field, </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_inst'>inst</span><span class='embexpr_end'>}</span><span class='tstring_content'>)` is invalid: must respond to `instrument(type, field)`</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_errs'>errs</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>
+    <span class='id identifier rubyid_errs'>errs</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid instrumenters:\n</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_errs'>errs</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='rbrace'>}</span></pre></dd>
+    
+      <dt id="RESERVED_TYPE_NAME-constant" class="">RESERVED_TYPE_NAME =
+        
+      </dt>
+      <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_start_with?'>start_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>__</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_introspection?'>introspection?</span>
+    <span class='comment'># TODO: make this a hard failure in a later version
+</span>    <span class='id identifier rubyid_warn'>warn</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Name </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> must not begin with \&quot;__\&quot;, which is reserved by GraphQL introspection.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>else</span>
+    <span class='comment'># ok name
+</span>  <span class='kw'>end</span>
+<span class='rbrace'>}</span></pre></dd>
+    
+      <dt id="RESERVED_NAME-constant" class="">RESERVED_NAME =
+        
+      </dt>
+      <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_named_thing'>named_thing</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_named_thing'>named_thing</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_start_with?'>start_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>__</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+    <span class='comment'># TODO: make this a hard failure in a later version
+</span>    <span class='id identifier rubyid_warn'>warn</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Name </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_named_thing'>named_thing</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> must not begin with \&quot;__\&quot;, which is reserved by GraphQL introspection.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>else</span>
+    <span class='comment'># no worries
+</span>  <span class='kw'>end</span>
+<span class='rbrace'>}</span></pre></dd>
+    
+      <dt id="INTERFACES_ARE_IMPLEMENTED-constant" class="">INTERFACES_ARE_IMPLEMENTED =
+        
+      </dt>
+      <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+  <span class='id identifier rubyid_field_errors'>field_errors</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_obj_type'>obj_type</span><span class='period'>.</span><span class='id identifier rubyid_interfaces'>interfaces</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_interface_type'>interface_type</span><span class='op'>|</span>
+    <span class='id identifier rubyid_interface_type'>interface_type</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_field_name'>field_name</span><span class='comma'>,</span> <span class='id identifier rubyid_field_defn'>field_defn</span><span class='op'>|</span>
+      <span class='id identifier rubyid_object_field'>object_field</span> <span class='op'>=</span> <span class='id identifier rubyid_obj_type'>obj_type</span><span class='period'>.</span><span class='id identifier rubyid_get_field'>get_field</span><span class='lparen'>(</span><span class='id identifier rubyid_field_name'>field_name</span><span class='rparen'>)</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_object_field'>object_field</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+        <span class='id identifier rubyid_field_errors'>field_errors</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>%|</span><span class='tstring_content'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_name'>field_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot; is required by </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_interface_type'>interface_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> but not implemented by </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_end'>|</span></span>
+      <span class='kw'>elsif</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Execution.html" title="GraphQL::Execution (module)">Execution</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Execution/Typecast.html" title="GraphQL::Execution::Typecast (module)">Typecast</a></span></span><span class='period'>.</span><span class='id identifier rubyid_subtype?'><span class='object_link'><a href="../../Execution/Typecast.html#subtype%3F-class_method" title="GraphQL::Execution::Typecast.subtype? (method)">subtype?</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_object_field'>object_field</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_field_errors'>field_errors</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>%|</span><span class='tstring_content'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_name'>field_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot; is required by </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_interface_type'>interface_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> to return </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='embexpr_end'>}</span><span class='tstring_content'> but </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_name'>field_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> returns </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_object_field'>object_field</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='embexpr_end'>}</span><span class='tstring_end'>|</span></span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='op'>|</span>
+          <span class='id identifier rubyid_object_field_arg'>object_field_arg</span> <span class='op'>=</span> <span class='id identifier rubyid_object_field'>object_field</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='rbracket'>]</span>
+          <span class='kw'>if</span> <span class='id identifier rubyid_object_field_arg'>object_field_arg</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+            <span class='id identifier rubyid_field_errors'>field_errors</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>%|</span><span class='tstring_content'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot; argument is required by </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_interface_type'>interface_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_name'>field_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> but not accepted by </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_name'>field_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>|</span></span>
+          <span class='kw'>elsif</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span> <span class='op'>!=</span> <span class='id identifier rubyid_object_field_arg'>object_field_arg</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span>
+            <span class='id identifier rubyid_field_errors'>field_errors</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>%|</span><span class='tstring_content'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot; is required by </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_interface_type'>interface_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> to accept </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='embexpr_end'>}</span><span class='tstring_content'> but </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_name'>field_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> accepts </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_object_field_arg'>object_field_arg</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='embexpr_end'>}</span><span class='tstring_content'> for &quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot;</span><span class='tstring_end'>|</span></span>
+          <span class='kw'>end</span>
+        <span class='kw'>end</span>
+
+        <span class='id identifier rubyid_object_field'>object_field</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='op'>|</span>
+          <span class='kw'>if</span> <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../NonNullType.html" title="GraphQL::NonNullType (class)">NonNullType</a></span></span><span class='rparen'>)</span>
+            <span class='id identifier rubyid_field_errors'>field_errors</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>%|</span><span class='tstring_content'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot; is not accepted by </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_interface_type'>interface_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_name'>field_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> but required by </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_name'>field_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>|</span></span>
+          <span class='kw'>end</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_field_errors'>field_errors</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> failed to implement some interfaces: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_errors'>field_errors</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>, </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='rbrace'>}</span></pre></dd>
+    
+  </dl>
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#assert_named_items_are_valid-class_method" title="assert_named_items_are_valid (class method)">.<strong>assert_named_items_are_valid</strong>(item_name, get_items_proc)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#assert_property-class_method" title="assert_property (class method)">.<strong>assert_property</strong>(property_name, *allowed_classes)  &#x21d2; Proc </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A proc which will validate the input by calling <code>property_name</code> and asserting it is an instance of one of <code>allowed_classes</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#assert_property_list_of-class_method" title="assert_property_list_of (class method)">.<strong>assert_property_list_of</strong>(property_name, list_member_class)  &#x21d2; Proc </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A proc to validate the input by calling <code>property_name</code> and asserting that the return is an Array of <code>list_member_class</code> instances.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#assert_property_mapping-class_method" title="assert_property_mapping (class method)">.<strong>assert_property_mapping</strong>(property_name, from_class, to_class)  &#x21d2; Proc </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A proc to validate that validates the input by calling <code>property_name</code> and asserting that the return value is a Hash of <code>{from_class =&gt; to_class}</code> pairs.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="assert_named_items_are_valid-class_method">
+  
+    .<strong>assert_named_items_are_valid</strong>(item_name, get_items_proc)  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/validation.rb', line 75</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_assert_named_items_are_valid'>assert_named_items_are_valid</span><span class='lparen'>(</span><span class='id identifier rubyid_item_name'>item_name</span><span class='comma'>,</span> <span class='id identifier rubyid_get_items_proc'>get_items_proc</span><span class='rparen'>)</span>
+  <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_items'>items</span> <span class='op'>=</span> <span class='id identifier rubyid_get_items_proc'>get_items_proc</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_error_message'>error_message</span> <span class='op'>=</span> <span class='kw'>nil</span>
+    <span class='id identifier rubyid_items'>items</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_item'>item</span><span class='op'>|</span>
+      <span class='id identifier rubyid_item_message'>item_message</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Validation.html" title="GraphQL::Schema::Validation (class)">Validation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_validate'><span class='object_link'><a href="../Validation.html#validate-class_method" title="GraphQL::Schema::Validation.validate (method)">validate</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_item_message'>item_message</span>
+        <span class='id identifier rubyid_error_message'>error_message</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_item_name'>item_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_item'>item</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_item_message'>item_message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+        <span class='kw'>break</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_error_message'>error_message</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="assert_property-class_method">
+  
+    .<strong>assert_property</strong>(property_name, *allowed_classes)  &#x21d2; <tt>Proc</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns A proc which will validate the input by calling <code>property_name</code> and asserting it is an instance of one of <code>allowed_classes</code></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>property_name</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The method to validate</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>allowed_classes</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Classes which the return value may be an instance of</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A proc which will validate the input by calling <code>property_name</code> and asserting it is an instance of one of <code>allowed_classes</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+26
+27
+28
+29
+30
+31
+32
+33
+34</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/validation.rb', line 26</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_assert_property'>assert_property</span><span class='lparen'>(</span><span class='id identifier rubyid_property_name'>property_name</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_allowed_classes'>allowed_classes</span><span class='rparen'>)</span>
+  <span class='comment'># Hide LateBoundType from user-facing errors
+</span>  <span class='id identifier rubyid_allowed_classes_message'>allowed_classes_message</span> <span class='op'>=</span> <span class='id identifier rubyid_allowed_classes'>allowed_classes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:name</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='op'>|</span> <span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>LateBoundType</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> or </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_property_value'>property_value</span> <span class='op'>=</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='id identifier rubyid_property_name'>property_name</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_is_valid_value'>is_valid_value</span> <span class='op'>=</span> <span class='id identifier rubyid_allowed_classes'>allowed_classes</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_allowed_class'>allowed_class</span><span class='op'>|</span> <span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='id identifier rubyid_allowed_class'>allowed_class</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+    <span class='id identifier rubyid_is_valid_value'>is_valid_value</span> <span class='op'>?</span> <span class='kw'>nil</span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_name'>property_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> must return </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_allowed_classes_message'>allowed_classes_message</span><span class='embexpr_end'>}</span><span class='tstring_content'>, not </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="assert_property_list_of-class_method">
+  
+    .<strong>assert_property_list_of</strong>(property_name, list_member_class)  &#x21d2; <tt>Proc</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns A proc to validate the input by calling <code>property_name</code> and asserting that the return is an Array of <code>list_member_class</code> instances</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>property_name</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The method whose return value will be validated</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>list_member_class</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The class which each member of the returned array should be an instance of</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A proc to validate the input by calling <code>property_name</code> and asserting that the return is an Array of <code>list_member_class</code> instances</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/validation.rb', line 59</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_assert_property_list_of'>assert_property_list_of</span><span class='lparen'>(</span><span class='id identifier rubyid_property_name'>property_name</span><span class='comma'>,</span> <span class='id identifier rubyid_list_member_class'>list_member_class</span><span class='rparen'>)</span>
+  <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_property_value'>property_value</span> <span class='op'>=</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='id identifier rubyid_property_name'>property_name</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span>
+      <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_name'>property_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> must be an Array of </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_list_member_class'>list_member_class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>, not a </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_invalid_member'>invalid_member</span> <span class='op'>=</span> <span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_value'>value</span><span class='op'>|</span> <span class='op'>!</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='id identifier rubyid_list_member_class'>list_member_class</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_invalid_member'>invalid_member</span>
+        <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_name'>property_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> must contain </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_list_member_class'>list_member_class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>, not </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_invalid_member'>invalid_member</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_invalid_member'>invalid_member</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>else</span>
+        <span class='kw'>nil</span> <span class='comment'># OK
+</span>      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="assert_property_mapping-class_method">
+  
+    .<strong>assert_property_mapping</strong>(property_name, from_class, to_class)  &#x21d2; <tt>Proc</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns A proc to validate that validates the input by calling <code>property_name</code> and asserting that the return value is a Hash of <code>{from_class =&gt; to_class}</code> pairs</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>property_name</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The method whose return value will be validated</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>from_class</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The class for keys in the return value</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>to_class</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The class for values in the return value</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A proc to validate that validates the input by calling <code>property_name</code> and asserting that the return value is a Hash of <code>{from_class =&gt; to_class}</code> pairs</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/validation.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_assert_property_mapping'>assert_property_mapping</span><span class='lparen'>(</span><span class='id identifier rubyid_property_name'>property_name</span><span class='comma'>,</span> <span class='id identifier rubyid_from_class'>from_class</span><span class='comma'>,</span> <span class='id identifier rubyid_to_class'>to_class</span><span class='rparen'>)</span>
+  <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_property_value'>property_value</span> <span class='op'>=</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='id identifier rubyid_property_name'>property_name</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
+      <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_name'>property_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> must be a hash of {</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_from_class'>from_class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> =&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_to_class'>to_class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>}, not a </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_invalid_key'>invalid_key</span><span class='comma'>,</span> <span class='id identifier rubyid_invalid_value'>invalid_value</span> <span class='op'>=</span> <span class='id identifier rubyid_property_value'>property_value</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='op'>|</span> <span class='op'>!</span><span class='id identifier rubyid_key'>key</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='id identifier rubyid_from_class'>from_class</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='op'>!</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='id identifier rubyid_to_class'>to_class</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_invalid_key'>invalid_key</span>
+        <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_property_name'>property_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> must map </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_from_class'>from_class</span><span class='embexpr_end'>}</span><span class='tstring_content'> =&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_to_class'>to_class</span><span class='embexpr_end'>}</span><span class='tstring_content'>, not </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_invalid_key'>invalid_key</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> =&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_invalid_value'>invalid_value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_invalid_key'>invalid_key</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> =&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_invalid_value'>invalid_value</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>else</span>
+        <span class='kw'>nil</span> <span class='comment'># OK
+</span>      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu Jan  3 16:03:47 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.12 (ruby-2.4.2).
+</div>
+
+    </div>
+  </body>
+</html>

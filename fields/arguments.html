@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.11/">API</a>
+          <a href="/api-doc/1.8.12/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="http://graphql.pro">Upgrade to Pro</a>
@@ -124,8 +124,9 @@ exposing another key to clients.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:start_date</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">prepare: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">startDate</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="c1"># return the prepared argument or GraphQL::ExecutionError.new("msg")</span>
-    <span class="c1"># to halt the execution of the field and add "msg" to the `errors` key.</span>
+    <span class="c1"># return the prepared argument.</span>
+    <span class="c1"># raise a GraphQL::ExecutionError to halt the execution of the field and</span>
+    <span class="c1"># add the exception's message to the `errors` key.</span>
   <span class="p">}</span>
 <span class="k">end</span>
 
@@ -157,7 +158,7 @@ exposing another key to clients.</p>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Furthermore, if you’re argument is already camelCased, then it will remain camelized in the GraphQL schema. However, the argument will be converted to snake_case when it is passed to the resolver method:</p>
+<p>Furthermore, if your argument is already camelCased, then it will remain camelized in the GraphQL schema. However, the argument will be converted to snake_case when it is passed to the resolver method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:startYear</span><span class="p">,</span> <span class="no">Int</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
@@ -171,11 +172,11 @@ exposing another key to clients.</p>
 <p>Only certain types are valid for arguments:</p>
 
 <ul>
-  <li><a href="/api-doc/1.8.11/GraphQL/ScalarType" target="_blank" title="API docs for GraphQL::ScalarType"><code>GraphQL::ScalarType</code></a>, including built-in scalars (string, int, float, boolean, ID)</li>
-  <li><a href="/api-doc/1.8.11/GraphQL/EnumType" target="_blank" title="API docs for GraphQL::EnumType"><code>GraphQL::EnumType</code></a></li>
-  <li><a href="/api-doc/1.8.11/GraphQL/InputObjectType" target="_blank" title="API docs for GraphQL::InputObjectType"><code>GraphQL::InputObjectType</code></a>, which allows key-value pairs as input</li>
-  <li><a href="/api-doc/1.8.11/GraphQL/ListType" target="_blank" title="API docs for GraphQL::ListType"><code>GraphQL::ListType</code></a>s of a valid input type</li>
-  <li><a href="/api-doc/1.8.11/GraphQL/NonNullType" target="_blank" title="API docs for GraphQL::NonNullType"><code>GraphQL::NonNullType</code></a>s of a valid input type</li>
+  <li><a href="/api-doc/1.8.12/GraphQL/ScalarType" target="_blank" title="API docs for GraphQL::ScalarType"><code>GraphQL::ScalarType</code></a>, including built-in scalars (string, int, float, boolean, ID)</li>
+  <li><a href="/api-doc/1.8.12/GraphQL/EnumType" target="_blank" title="API docs for GraphQL::EnumType"><code>GraphQL::EnumType</code></a></li>
+  <li><a href="/api-doc/1.8.12/GraphQL/InputObjectType" target="_blank" title="API docs for GraphQL::InputObjectType"><code>GraphQL::InputObjectType</code></a>, which allows key-value pairs as input</li>
+  <li><a href="/api-doc/1.8.12/GraphQL/ListType" target="_blank" title="API docs for GraphQL::ListType"><code>GraphQL::ListType</code></a>s of a valid input type</li>
+  <li><a href="/api-doc/1.8.12/GraphQL/NonNullType" target="_blank" title="API docs for GraphQL::NonNullType"><code>GraphQL::NonNullType</code></a>s of a valid input type</li>
 </ul>
 
 </div>

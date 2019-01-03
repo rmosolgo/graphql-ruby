@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.11/">API</a>
+          <a href="/api-doc/1.8.12/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="http://graphql.pro">Upgrade to Pro</a>
@@ -83,21 +83,21 @@ rails g graphql:object Post title:String rating:Int comments:[Comment]
 
 <p>Types describe objects in your application and form the basis for <a href="http://graphql.org/learn/schema/#type-system">GraphQL’s type system</a>.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/post_type.graphql</span>
-<span class="k">class</span> <span class="nc">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/post_type.rb</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">description</span> <span class="s2">"A blog post"</span>
   <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
   <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
   <span class="c1"># fields should be queried in camel-case (this will be `truncatedPreview`)</span>
   <span class="n">field</span> <span class="ss">:truncated_preview</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
   <span class="c1"># Fields can return lists of other objects:</span>
-  <span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="p">[</span><span class="no">CommentType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+  <span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">CommentType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
     <span class="c1"># And fields can have their own descriptions:</span>
     <span class="ss">description: </span><span class="s2">"This post's comments, or null if this post has comments disabled."</span>
 <span class="k">end</span>
 
-<span class="c1"># app/graphql/comment_type.graphql</span>
-<span class="k">class</span> <span class="nc">CommentType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<span class="c1"># app/graphql/types/comment_type.rb</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">CommentType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
   <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 <span class="k">end</span>
