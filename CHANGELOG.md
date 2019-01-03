@@ -8,6 +8,26 @@
 
 ### Bug fixes
 
+## 1.8.12 (3 Jan 2018)
+
+### New features
+
+- Add `error_bubbling false` Schema configuration for nicer validation of compound inputs #2013
+- Print descriptions as block strings in SDL #2011
+- Improve string-to-constant resolution #1810
+- Add `Query::Context#to_hash` for splatting #1955
+- Add `#dig` to `Schema::InputObject` and `Query::Arguments` #1968
+- Add `.*_execution_strategy` methods to class-based schemas #1914
+- Accept multiple errors when adding `.rescue_from` handlers #1991
+
+### Bug fixes
+
+- Fix scalar tracing in NewRelic and Skylight #1954
+- Fix lexer for multiple block strings #1937
+- Add `unscope(:order)` when counting relations #1911
+- Improve build-from-definition error message #1998
+- Fix regression in legacy compat #2000
+
 ## 1.8.11 (16 Oct 2018)
 
 ### New features
