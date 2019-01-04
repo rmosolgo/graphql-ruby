@@ -11,9 +11,4 @@ gem "rails", "~> 5.2.0", require: "rails/all"
 gem "pg", platform: :ruby
 gem "sequel"
 
-group :jekyll_plugins do
-  gem "jekyll-algolia", "~> 1.0"
-  gem "jekyll-redirect-from"
-end
-
 gemspec path: "../"

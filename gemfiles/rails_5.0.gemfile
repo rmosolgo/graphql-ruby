@@ -14,9 +14,4 @@ gem "sqlite3", platform: :ruby
 gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "sequel"
 
-group :jekyll_plugins do
-  gem "jekyll-algolia", "~> 1.0"
-  gem "jekyll-redirect-from"
-end
-
 gemspec path: "../"
