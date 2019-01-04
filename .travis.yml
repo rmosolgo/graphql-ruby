@@ -13,8 +13,6 @@ env:
   global:
     - CODECLIMATE_REPO_TOKEN=f5b27b2e25d3f4e199bb2566fb4fd4507144a004c71d4aa33a32c2df5f940333
 
-install: bundle install --jobs=3 --retry=3 --without=jekyll_plugins
-
 rvm:
   - 2.3.8
 

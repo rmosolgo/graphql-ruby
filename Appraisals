@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 appraise 'rails_3.2' do
-  gem 'rails', '~> 3.2.21', require: 'rails/all'
+  gem 'rails', '3.2.22.5', require: 'rails/all'
   gem 'activerecord', '~> 3.2.21'
   gem 'actionpack', '~> 3.2.21'
   gem 'test-unit'
@@ -28,7 +28,7 @@ appraise 'rails_4.2' do
 end
 
 appraise 'rails_5.0' do
-  gem 'rails', '~> 5.0.0', require: 'rails/all'
+  gem 'rails', '~> 5.0', require: 'rails/all'
   gem 'activerecord', '~> 5.0.0'
   gem 'actionpack', '~> 5.0.0'
   gem 'sqlite3', platform: :ruby
