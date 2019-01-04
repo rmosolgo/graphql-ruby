@@ -17,6 +17,7 @@ before_install:
   - bundle --version
   - gem update --system --no-doc
   - bundle --version
+  - gem uninstall bundler --force
   - gem install bundler -v '< 2'
   - bundle --version
 
