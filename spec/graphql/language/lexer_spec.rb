@@ -45,6 +45,14 @@ describe GraphQL::Language::Lexer do
         assert_equal '""', tokens[0].value # first 8 quotes are a valid block string """"""""
         assert_equal '', tokens[1].value # last 2 quotes are a valid string ""
       end
+
+      it "tokenizes with nested single quote strings correctly" do
+        tokens = subject.tokenize('"""{"x"}"""')
+        assert_equal '{"x"}', tokens[0].value
+
+        tokens = subject.tokenize('"""{"foo":"bar"}"""')
+        assert_equal '{"foo":"bar"}', tokens[0].value
+      end
     end
 
     it "unescapes escaped characters" do
