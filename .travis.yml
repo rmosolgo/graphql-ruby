@@ -15,7 +15,7 @@ env:
 
 before_install:
   - gem update --system --no-doc
-  - gem install bundler
+  - gem install bundler -v '< 2'
 
 rvm:
   - 2.3.8
