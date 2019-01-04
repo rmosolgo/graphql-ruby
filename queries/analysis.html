@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.12/">API</a>
+          <a href="/api-doc/1.8.13/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="http://graphql.pro">Upgrade to Pro</a>
@@ -48,18 +48,18 @@
 
 <h1 class="guide-header">Ahead-of-Time Analysis</h1>
 <div class="guide-container">
-  <p>You can provide logic for validating incoming queries and rejecting them if they don’t pass. <em>Query analyzers</em> inspect the query and may return <a href="/api-doc/1.8.12/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> to halt execution.</p>
+  <p>You can provide logic for validating incoming queries and rejecting them if they don’t pass. <em>Query analyzers</em> inspect the query and may return <a href="/api-doc/1.8.13/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> to halt execution.</p>
 
 <p>GraphQL’s <code class="highlighter-rouge">max_depth</code> and <code class="highlighter-rouge">max_complexity</code> are implemented with query analyzers, you can see those for reference:</p>
 
 <ul>
-  <li><a href="/api-doc/1.8.12/GraphQL/Analysis/QueryDepth" target="_blank" title="API docs for GraphQL::Analysis::QueryDepth"><code>GraphQL::Analysis::QueryDepth</code></a></li>
-  <li><a href="/api-doc/1.8.12/GraphQL/Analysis/QueryComplexity" target="_blank" title="API docs for GraphQL::Analysis::QueryComplexity"><code>GraphQL::Analysis::QueryComplexity</code></a></li>
+  <li><a href="/api-doc/1.8.13/GraphQL/Analysis/QueryDepth" target="_blank" title="API docs for GraphQL::Analysis::QueryDepth"><code>GraphQL::Analysis::QueryDepth</code></a></li>
+  <li><a href="/api-doc/1.8.13/GraphQL/Analysis/QueryComplexity" target="_blank" title="API docs for GraphQL::Analysis::QueryComplexity"><code>GraphQL::Analysis::QueryComplexity</code></a></li>
 </ul>
 
 <h2 id="analyzer-api">Analyzer API</h2>
 
-<p>A query analyzer visits each field in the query <em>before</em> the query is executed. It can accumulate data during the visits, then return a value. If the returned value is a <a href="/api-doc/1.8.12/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> (or an array of those errors), the query won’t be executed and the error will be returned to the user. You can use this feature to assert that queries are permitted <em>before</em> running them!</p>
+<p>A query analyzer visits each field in the query <em>before</em> the query is executed. It can accumulate data during the visits, then return a value. If the returned value is a <a href="/api-doc/1.8.13/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> (or an array of those errors), the query won’t be executed and the error will be returned to the user. You can use this feature to assert that queries are permitted <em>before</em> running them!</p>
 
 <p>Query analyzers reuse concepts from <code class="highlighter-rouge">Array#reduce</code>, so let’s briefly revisit how that method works:</p>
 
@@ -108,8 +108,8 @@
 <ul>
   <li><code class="highlighter-rouge">#analyze?</code> is called before initializing any analyzer if it is defined. When <code class="highlighter-rouge">#analyze?</code> returns false, the analyzer won’t be ran.</li>
   <li><code class="highlighter-rouge">#initial_value</code> is a chance to initialize the state for your analysis. For example, you can return a hash with keys for the query, schema, and any other values you want to store.</li>
-  <li><code class="highlighter-rouge">#call</code> is called for each node in the query. <code class="highlighter-rouge">memo</code> is the analyzer state. <code class="highlighter-rouge">visit_type</code> is either <code class="highlighter-rouge">:enter</code> or <code class="highlighter-rouge">:leave</code>. <code class="highlighter-rouge">irep_node</code> is the <a href="/api-doc/1.8.12/GraphQL/InternalRepresentation/Node" target="_blank" title="API docs for GraphQL::InternalRepresentation::Node"><code>GraphQL::InternalRepresentation::Node</code></a> for the current field in the query. (It is like <code class="highlighter-rouge">item</code> in the <code class="highlighter-rouge">Array#reduce</code> callback.)</li>
-  <li><code class="highlighter-rouge">#final_value</code> is called <em>after</em> the visit. It provides a chance to write to your log or return a <a href="/api-doc/1.8.12/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> to halt query execution.</li>
+  <li><code class="highlighter-rouge">#call</code> is called for each node in the query. <code class="highlighter-rouge">memo</code> is the analyzer state. <code class="highlighter-rouge">visit_type</code> is either <code class="highlighter-rouge">:enter</code> or <code class="highlighter-rouge">:leave</code>. <code class="highlighter-rouge">irep_node</code> is the <a href="/api-doc/1.8.13/GraphQL/InternalRepresentation/Node" target="_blank" title="API docs for GraphQL::InternalRepresentation::Node"><code>GraphQL::InternalRepresentation::Node</code></a> for the current field in the query. (It is like <code class="highlighter-rouge">item</code> in the <code class="highlighter-rouge">Array#reduce</code> callback.)</li>
+  <li><code class="highlighter-rouge">#final_value</code> is called <em>after</em> the visit. It provides a chance to write to your log or return a <a href="/api-doc/1.8.13/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> to halt query execution.</li>
 </ul>
 
 <p>Query analyzers are added to the schema with <code class="highlighter-rouge">query_analyzer</code>, for example:</p>

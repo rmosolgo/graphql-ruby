@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Subscriptions::ActionCableSubscriptions
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Subscriptions::ActionCableSubscriptions";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (A)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Subscriptions.html" title="GraphQL::Subscriptions (class)">Subscriptions</a></span></span>
+     &raquo; 
+    <span class="title">ActionCableSubscriptions</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Subscriptions::ActionCableSubscriptions
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../Subscriptions.html" title="GraphQL::Subscriptions (class)">GraphQL::Subscriptions</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="../Subscriptions.html" title="GraphQL::Subscriptions (class)">GraphQL::Subscriptions</a></span></li>
+          
+            <li class="next">GraphQL::Subscriptions::ActionCableSubscriptions</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/subscriptions/action_cable_subscriptions.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>A subscriptions implementation that sends data
+as ActionCable broadcastings.</p>
+
+<p>Experimental, some things to keep in mind:</p>
+
+<ul>
+  <li>No queueing system; ActiveJob should be added</li>
+  <li>Take care to reload context when re-delivering the subscription. (see <span class='object_link'><a href="../Query.html#subscription_update%3F-instance_method" title="GraphQL::Query#subscription_update? (method)">Query#subscription_update?</a></span>)</li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'><p>Adding ActionCableSubscriptions to your schema</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='const'>MySchema</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="../Schema.html#define-instance_method" title="GraphQL::Schema#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='comment'># ...
+</span>  <span class='id identifier rubyid_use'>use</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Subscriptions.html" title="GraphQL::Subscriptions (class)">Subscriptions</a></span></span><span class='op'>::</span><span class='const'>ActionCableSubscriptions</span>
+<span class='kw'>end</span></code></pre>
+    
+      
+        <p class="example_title"><div class='inline'><p>Implementing a channel for GraphQL Subscriptions</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='kw'>class</span> <span class='const'>GraphqlChannel</span> <span class='op'>&lt;</span> <span class='const'>ApplicationCable</span><span class='op'>::</span><span class='const'>Channel</span>
+  <span class='kw'>def</span> <span class='id identifier rubyid_subscribed'>subscribed</span>
+    <span class='ivar'>@subscription_ids</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_query'>query</span> <span class='op'>=</span> <span class='id identifier rubyid_data'>data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>query</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_variables'>variables</span> <span class='op'>=</span> <span class='id identifier rubyid_ensure_hash'>ensure_hash</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>variables</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_operation_name'>operation_name</span> <span class='op'>=</span> <span class='id identifier rubyid_data'>data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>operationName</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_context'>context</span> <span class='op'>=</span> <span class='lbrace'>{</span>
+      <span class='label'>current_user:</span> <span class='id identifier rubyid_current_user'>current_user</span><span class='comma'>,</span>
+      <span class='comment'># Make sure the channel is in the context
+</span>      <span class='label'>channel:</span> <span class='kw'>self</span><span class='comma'>,</span>
+    <span class='rbrace'>}</span>
+
+    <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'>MySchema</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='lbrace'>{</span>
+      <span class='label'>query:</span> <span class='id identifier rubyid_query'>query</span><span class='comma'>,</span>
+      <span class='label'>context:</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span>
+      <span class='label'>variables:</span> <span class='id identifier rubyid_variables'>variables</span><span class='comma'>,</span>
+      <span class='label'>operation_name:</span> <span class='id identifier rubyid_operation_name'>operation_name</span>
+    <span class='rbrace'>}</span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_payload'>payload</span> <span class='op'>=</span> <span class='lbrace'>{</span>
+      <span class='label'>result:</span> <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_subscription?'>subscription?</span> <span class='op'>?</span> <span class='lbrace'>{</span> <span class='label'>data:</span> <span class='kw'>nil</span> <span class='rbrace'>}</span> <span class='op'>:</span> <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_to_h'>to_h</span><span class='comma'>,</span>
+      <span class='label'>more:</span> <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_subscription?'>subscription?</span><span class='comma'>,</span>
+    <span class='rbrace'>}</span>
+
+    <span class='comment'># Track the subscription here so we can remove it
+</span>    <span class='comment'># on unsubscribe.
+</span>    <span class='kw'>if</span> <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='symbol'>:subscription_id</span><span class='rbracket'>]</span>
+      <span class='ivar'>@subscription_ids</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='symbol'>:subscription_id</span><span class='rbracket'>]</span>
+    <span class='kw'>end</span>
+
+    <span class='id identifier rubyid_transmit'>transmit</span><span class='lparen'>(</span><span class='id identifier rubyid_payload'>payload</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_unsubscribed'>unsubscribed</span>
+    <span class='ivar'>@subscription_ids</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_sid'>sid</span><span class='op'>|</span>
+      <span class='const'>MySchema</span><span class='period'>.</span><span class='id identifier rubyid_subscriptions'>subscriptions</span><span class='period'>.</span><span class='id identifier rubyid_delete_subscription'>delete_subscription</span><span class='lparen'>(</span><span class='id identifier rubyid_sid'>sid</span><span class='rparen'>)</span>
+    <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_private'>private</span>
+
+    <span class='kw'>def</span> <span class='id identifier rubyid_ensure_hash'>ensure_hash</span><span class='lparen'>(</span><span class='id identifier rubyid_ambiguous_param'>ambiguous_param</span><span class='rparen'>)</span>
+      <span class='kw'>case</span> <span class='id identifier rubyid_ambiguous_param'>ambiguous_param</span>
+      <span class='kw'>when</span> <span class='const'>String</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_ambiguous_param'>ambiguous_param</span><span class='period'>.</span><span class='id identifier rubyid_present?'>present?</span>
+          <span class='id identifier rubyid_ensure_hash'>ensure_hash</span><span class='lparen'>(</span><span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_ambiguous_param'>ambiguous_param</span><span class='rparen'>)</span><span class='rparen'>)</span>
+        <span class='kw'>else</span>
+          <span class='lbrace'>{</span><span class='rbrace'>}</span>
+        <span class='kw'>end</span>
+      <span class='kw'>when</span> <span class='const'>Hash</span><span class='comma'>,</span> <span class='const'>ActionController</span><span class='op'>::</span><span class='const'>Parameters</span>
+        <span class='id identifier rubyid_ambiguous_param'>ambiguous_param</span>
+      <span class='kw'>when</span> <span class='kw'>nil</span>
+        <span class='lbrace'>{</span><span class='rbrace'>}</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unexpected parameter: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_ambiguous_param'>ambiguous_param</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+
+
+</div>
+  <h2>Constant Summary</h2>
+  <dl class="constants">
+    
+      <dt id="SUBSCRIPTION_PREFIX-constant" class="">SUBSCRIPTION_PREFIX =
+        
+      </dt>
+      <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>graphql-subscription:</span><span class='tstring_end'>&quot;</span></span></pre></dd>
+    
+      <dt id="EVENT_PREFIX-constant" class="">EVENT_PREFIX =
+        
+      </dt>
+      <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>graphql-event:</span><span class='tstring_end'>&quot;</span></span></pre></dd>
+    
+  </dl>
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delete_subscription-instance_method" title="#delete_subscription (instance method)">#<strong>delete_subscription</strong>(subscription_id)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The channel was closed, forget about it.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#deliver-instance_method" title="#deliver (instance method)">#<strong>deliver</strong>(subscription_id, result)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>This subscription was re-evaluated.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#execute_all-instance_method" title="#execute_all (instance method)">#<strong>execute_all</strong>(event, object)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>An event was triggered; Push the data over ActionCable.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(serializer: Serialize, **rest)  &#x21d2; ActionCableSubscriptions </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of ActionCableSubscriptions.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#read_subscription-instance_method" title="#read_subscription (instance method)">#<strong>read_subscription</strong>(subscription_id)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return the query from “storage” (in memory).</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#write_subscription-instance_method" title="#write_subscription (instance method)">#<strong>write_subscription</strong>(query, events)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A query was run where these events were subscribed to.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="../Subscriptions.html" title="GraphQL::Subscriptions (class)">GraphQL::Subscriptions</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Subscriptions.html#build_id-instance_method" title="GraphQL::Subscriptions#build_id (method)">#build_id</a></span>, <span class='object_link'><a href="../Subscriptions.html#each_subscription_id-instance_method" title="GraphQL::Subscriptions#each_subscription_id (method)">#each_subscription_id</a></span>, <span class='object_link'><a href="../Subscriptions.html#execute-instance_method" title="GraphQL::Subscriptions#execute (method)">#execute</a></span>, <span class='object_link'><a href="../Subscriptions.html#normalize_name-instance_method" title="GraphQL::Subscriptions#normalize_name (method)">#normalize_name</a></span>, <span class='object_link'><a href="../Subscriptions.html#trigger-instance_method" title="GraphQL::Subscriptions#trigger (method)">#trigger</a></span>, <span class='object_link'><a href="../Subscriptions.html#use-class_method" title="GraphQL::Subscriptions.use (method)">use</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(serializer: Serialize, **rest)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Subscriptions::ActionCableSubscriptions (class)">ActionCableSubscriptions</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of ActionCableSubscriptions</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>serializer</span>
+      
+      
+        <span class='type'>(<tt>&lt;#dump(obj), #load(string)] Used for serializing messages before handing them to `.broadcast(msg)`</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>erializer [&lt;#dump(obj), #load(string)] Used for serializing messages before handing them to <code>.broadcast(msg)</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+86
+87
+88
+89
+90
+91
+92</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/subscriptions/action_cable_subscriptions.rb', line 86</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>serializer:</span> <span class='const'><span class='object_link'><a href="Serialize.html" title="GraphQL::Subscriptions::Serialize (module)">Serialize</a></span></span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_rest'>rest</span><span class='rparen'>)</span>
+  <span class='comment'># A per-process map of subscriptions to deliver.
+</span>  <span class='comment'># This is provided by Rails, so let&#39;s use it
+</span>  <span class='ivar'>@subscriptions</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Map</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='ivar'>@serializer</span> <span class='op'>=</span> <span class='id identifier rubyid_serializer'>serializer</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="delete_subscription-instance_method">
+  
+    #<strong>delete_subscription</strong>(subscription_id)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The channel was closed, forget about it.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+139
+140
+141</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/subscriptions/action_cable_subscriptions.rb', line 139</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_delete_subscription'>delete_subscription</span><span class='lparen'>(</span><span class='id identifier rubyid_subscription_id'>subscription_id</span><span class='rparen'>)</span>
+  <span class='ivar'>@subscriptions</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span><span class='lparen'>(</span><span class='id identifier rubyid_subscription_id'>subscription_id</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="deliver-instance_method">
+  
+    #<strong>deliver</strong>(subscription_id, result)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>This subscription was re-evaluated.
+Send it to the specific stream where this client was waiting.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+104
+105
+106
+107</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/subscriptions/action_cable_subscriptions.rb', line 104</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_deliver'>deliver</span><span class='lparen'>(</span><span class='id identifier rubyid_subscription_id'>subscription_id</span><span class='comma'>,</span> <span class='id identifier rubyid_result'>result</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_payload'>payload</span> <span class='op'>=</span> <span class='lbrace'>{</span> <span class='label'>result:</span> <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_to_h'>to_h</span><span class='comma'>,</span> <span class='label'>more:</span> <span class='kw'>true</span> <span class='rbrace'>}</span>
+  <span class='const'>ActionCable</span><span class='period'>.</span><span class='id identifier rubyid_server'>server</span><span class='period'>.</span><span class='id identifier rubyid_broadcast'>broadcast</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#SUBSCRIPTION_PREFIX-constant" title="GraphQL::Subscriptions::ActionCableSubscriptions::SUBSCRIPTION_PREFIX (constant)">SUBSCRIPTION_PREFIX</a></span></span> <span class='op'>+</span> <span class='id identifier rubyid_subscription_id'>subscription_id</span><span class='comma'>,</span> <span class='id identifier rubyid_payload'>payload</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="execute_all-instance_method">
+  
+    #<strong>execute_all</strong>(event, object)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>An event was triggered; Push the data over ActionCable.
+Subscribers will re-evaluate locally.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+96
+97
+98
+99
+100</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/subscriptions/action_cable_subscriptions.rb', line 96</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_execute_all'>execute_all</span><span class='lparen'>(</span><span class='id identifier rubyid_event'>event</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_stream'>stream</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="#EVENT_PREFIX-constant" title="GraphQL::Subscriptions::ActionCableSubscriptions::EVENT_PREFIX (constant)">EVENT_PREFIX</a></span></span> <span class='op'>+</span> <span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_topic'>topic</span>
+  <span class='id identifier rubyid_message'>message</span> <span class='op'>=</span> <span class='ivar'>@serializer</span><span class='period'>.</span><span class='id identifier rubyid_dump'>dump</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+  <span class='const'>ActionCable</span><span class='period'>.</span><span class='id identifier rubyid_server'>server</span><span class='period'>.</span><span class='id identifier rubyid_broadcast'>broadcast</span><span class='lparen'>(</span><span class='id identifier rubyid_stream'>stream</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="read_subscription-instance_method">
+  
+    #<strong>read_subscription</strong>(subscription_id)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Return the query from “storage” (in memory)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+128
+129
+130
+131
+132
+133
+134
+135
+136</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/subscriptions/action_cable_subscriptions.rb', line 128</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_read_subscription'>read_subscription</span><span class='lparen'>(</span><span class='id identifier rubyid_subscription_id'>subscription_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_query'>query</span> <span class='op'>=</span> <span class='ivar'>@subscriptions</span><span class='lbracket'>[</span><span class='id identifier rubyid_subscription_id'>subscription_id</span><span class='rbracket'>]</span>
+  <span class='lbrace'>{</span>
+    <span class='label'>query_string:</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_query_string'>query_string</span><span class='comma'>,</span>
+    <span class='label'>variables:</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_provided_variables'>provided_variables</span><span class='comma'>,</span>
+    <span class='label'>context:</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_to_h'>to_h</span><span class='comma'>,</span>
+    <span class='label'>operation_name:</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_operation_name'>operation_name</span><span class='comma'>,</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="write_subscription-instance_method">
+  
+    #<strong>write_subscription</strong>(query, events)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>A query was run where these events were subscribed to.
+Store them in memory in <em>this</em> ActionCable frontend.
+It will receive notifications when events come in
+and re-evaluate the query locally.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/subscriptions/action_cable_subscriptions.rb', line 113</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_write_subscription'>write_subscription</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_events'>events</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_channel'>channel</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='symbol'>:channel</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_subscription_id'>subscription_id</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='symbol'>:subscription_id</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='id identifier rubyid_build_id'>build_id</span>
+  <span class='id identifier rubyid_stream'>stream</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='symbol'>:action_cable_stream</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='const'><span class='object_link'><a href="#SUBSCRIPTION_PREFIX-constant" title="GraphQL::Subscriptions::ActionCableSubscriptions::SUBSCRIPTION_PREFIX (constant)">SUBSCRIPTION_PREFIX</a></span></span> <span class='op'>+</span> <span class='id identifier rubyid_subscription_id'>subscription_id</span>
+  <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_stream_from'>stream_from</span><span class='lparen'>(</span><span class='id identifier rubyid_stream'>stream</span><span class='rparen'>)</span>
+  <span class='ivar'>@subscriptions</span><span class='lbracket'>[</span><span class='id identifier rubyid_subscription_id'>subscription_id</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span>
+  <span class='id identifier rubyid_events'>events</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_event'>event</span><span class='op'>|</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_stream_from'>stream_from</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#EVENT_PREFIX-constant" title="GraphQL::Subscriptions::ActionCableSubscriptions::EVENT_PREFIX (constant)">EVENT_PREFIX</a></span></span> <span class='op'>+</span> <span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_topic'>topic</span><span class='comma'>,</span> <span class='label'>coder:</span> <span class='const'>ActiveSupport</span><span class='op'>::</span><span class='const'>JSON</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_message'>message</span><span class='op'>|</span>
+      <span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_subscription_id'>subscription_id</span><span class='comma'>,</span> <span class='id identifier rubyid_event'>event</span><span class='comma'>,</span> <span class='ivar'>@serializer</span><span class='period'>.</span><span class='id identifier rubyid_load'>load</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span><span class='rparen'>)</span>
+      <span class='kw'>nil</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri Jan  4 17:33:13 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.12 (ruby-2.4.2).
+</div>
+
+    </div>
+  </body>
+</html>
