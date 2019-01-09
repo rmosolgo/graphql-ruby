@@ -381,35 +381,27 @@ describe GraphQL::Authorization do
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
-        AuthTest.unauthorized_object_hook(err)
+        if err.object.respond_to?(:replacement)
+          err.object.replacement
+        elsif err.object == :replace
+          33
+        else
+          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object}"
+        end
       end
 
       # use GraphQL::Backtrace
-    end
-
-    def self.unauthorized_object_hook(err)
-      if err.object.respond_to?(:replacement)
-        err.object.replacement
-      elsif err.object == :replace
-        33
-      else
-        raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object}"
-      end
-    end
-
-    def self.unauthorized_field_hook(err)
-      if err.object == :replace
-        42
-      else
-        raise GraphQL::ExecutionError, "Unauthorized field #{err.field.graphql_name} on #{err.type.graphql_name}: #{err.object}"
-      end
     end
 
     class SchemaWithFieldHook < GraphQL::Schema
       query(Query)
 
       def self.unauthorized_field(err)
-        AuthTest.unauthorized_field_hook(err)
+        if err.object == :replace
+          42
+        else
+          raise GraphQL::ExecutionError, "Unauthorized field #{err.field.graphql_name} on #{err.type.graphql_name}: #{err.object}"
+        end
       end
     end
   end
