@@ -8,13 +8,13 @@
 
 ### Bug fixes
 
-## 1.8.13 (4 Jan 2018)
+## 1.8.13 (4 Jan 2019)
 
 ### Bug fixes
 
 - Fix regression in block string parsing #2032
 
-## 1.8.12 (3 Jan 2018)
+## 1.8.12 (3 Jan 2019)
 
 ### Breaking changes
 
