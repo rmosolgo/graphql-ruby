@@ -18,8 +18,8 @@ describe GraphQL::Schema do
       rescue_middleware = schema_defn.middleware.first
       assert_equal(1, rescue_middleware.rescue_table.length)
       # normally, you'd use a real class, not a symbol:
-      schema_defn.rescue_from(:error_class) { "my custom message" }
-      assert_equal(2, rescue_middleware.rescue_table.length)
+      schema_defn.rescue_from(:error_class, :another_err_class) { "my custom message" }
+      assert_equal(3, rescue_middleware.rescue_table.length)
     end
   end
 

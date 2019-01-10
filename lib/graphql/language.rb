@@ -9,7 +9,6 @@ require "graphql/language/nodes"
 require "graphql/language/parser"
 require "graphql/language/token"
 require "graphql/language/visitor"
-require "graphql/language/comments"
 
 module GraphQL
   module Language

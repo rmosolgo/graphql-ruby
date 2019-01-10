@@ -66,26 +66,38 @@ schema {
   query: Hello
 }
 
-# This is a directive
+"""
+This is a directive
+"""
 directive @foo(
-  # It has an argument
+  """
+  It has an argument
+  """
   arg: Int
 ) on FIELD
 
-# With an enum
+"""
+With an enum
+"""
 enum Color {
   BLUE
 
-  # Not a creative color
+  """
+  Not a creative color
+  """
   GREEN
   RED
 }
 
-# What a great type
+"""
+What a great type
+"""
 type Hello {
   anEnum: Color
 
-  # And a field to boot
+  """
+  And a field to boot
+  """
   str: String
 }
       SCHEMA
@@ -233,64 +245,102 @@ type Organization {
   email: String
 }
 
-# The connection type for Organization.
+"""
+The connection type for Organization.
+"""
 type OrganizationConnection {
-  # A list of edges.
+  """
+  A list of edges.
+  """
   edges: [OrganizationEdge]
 
-  # A list of nodes.
+  """
+  A list of nodes.
+  """
   nodes: [Organization]
 
-  # Information to aid in pagination.
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
 
-  # Identifies the total count of items in the connection.
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
 
-# An edge in a connection.
+"""
+An edge in a connection.
+"""
 type OrganizationEdge {
-  # A cursor for use in pagination.
+  """
+  A cursor for use in pagination.
+  """
   cursor: String!
 
-  # The item at the end of the edge.
+  """
+  The item at the end of the edge.
+  """
   node: Organization
 }
 
-# Information about pagination in a connection.
+"""
+Information about pagination in a connection.
+"""
 type PageInfo {
-  # When paginating forwards, the cursor to continue.
+  """
+  When paginating forwards, the cursor to continue.
+  """
   endCursor: String
 
-  # When paginating forwards, are there more items?
+  """
+  When paginating forwards, are there more items?
+  """
   hasNextPage: Boolean!
 
-  # When paginating backwards, are there more items?
+  """
+  When paginating backwards, are there more items?
+  """
   hasPreviousPage: Boolean!
 
-  # When paginating backwards, the cursor to continue.
+  """
+  When paginating backwards, the cursor to continue.
+  """
   startCursor: String
 }
 
 type Type {
   name: String
   organization(
-    # The login of the organization to find.
+    """
+    The login of the organization to find.
+    """
     login: String!
   ): Organization
 
-  # A list of organizations the user belongs to.
+  """
+  A list of organizations the user belongs to.
+  """
   organizations(
-    # Returns the elements in the list that come after the specified cursor.
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: String
 
-    # Returns the elements in the list that come before the specified cursor.
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: String
 
-    # Returns the first _n_ elements from the list.
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    # Returns the last _n_ elements from the list.
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
   ): OrganizationConnection!
 }

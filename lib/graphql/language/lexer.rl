@@ -37,7 +37,7 @@
   QUOTE =         '"';
   BLOCK_QUOTE =   '"""';
   ESCAPED_BLOCK_QUOTE = '\\"""';
-  BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^QUOTE | ^QUOTE QUOTE{1,2} ^QUOTE);
+  BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^QUOTE | QUOTE{1,2} ^QUOTE);
   ESCAPED_QUOTE = '\\"';
   STRING_CHAR =   (ESCAPED_QUOTE | ^QUOTE);
   VAR_SIGN =      '$';
@@ -49,7 +49,7 @@
   AMP =           '&';
 
   QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
-  BLOCK_STRING = BLOCK_QUOTE (QUOTE{1,2} ^QUOTE){0,1} BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE;
+  BLOCK_STRING = BLOCK_QUOTE BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE;
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
 

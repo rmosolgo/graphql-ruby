@@ -4,33 +4,13 @@ var graphql = require("graphql")
 describe("ActionCableLink", () => {
   it("delegates to the cable", () => {
     var log = []
+    var subscription
     var cable = {
       subscriptions: {
         create: function(channelName, options) {
-          var subscription = Object.assign(options, {
+          subscription = Object.assign(options, {
             perform: function(actionName, options) {
               log.push(["perform", { actionName: actionName, options: options }])
-
-              this.received({
-                result: {
-                  data: null
-                },
-                more: true
-              })
-
-              this.received({
-                result: {
-                  data: "data 1"
-                },
-                more: true
-              })
-
-              this.received({
-                result: {
-                  data: "data 2"
-                },
-                more: false
-              })
             },
             unsubscribe: function() {
               log.push(["unsubscribe"])
@@ -57,6 +37,29 @@ describe("ActionCableLink", () => {
     observable.subscribe(function(result) {
       log.push(["received", result])
     })
+
+
+    subscription.received({
+      result: {
+        data: null
+      },
+      more: true
+    })
+
+    subscription.received({
+      result: {
+        data: "data 1"
+      },
+      more: true
+    })
+
+    subscription.received({
+      result: {
+        data: "data 2"
+      },
+      more: false
+    })
+
 
     expect(log).toEqual([
       [

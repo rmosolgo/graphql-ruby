@@ -31,11 +31,34 @@ module GraphQL
             begin
               valid = context.valid_literal?(node.value, arg_defn.type)
             rescue GraphQL::CoercionError => err
+              error_message = err.message
+              context.schema.error_bubbling
+              if !context.schema.error_bubbling && !arg_defn.type.unwrap.kind.scalar?
+                # if error bubbling is disabled and the arg that caused this error isn't a scalar then
+                # short-circuit here so we avoid bubbling this up to whatever input_object / array contains us
+                return
+              end
               error = GraphQL::StaticValidation::ArgumentLiteralsAreCompatibleError.new(err.message, nodes: parent, type: "CoercionError")
+            rescue GraphQL::LiteralValidationError => err
+              # check to see if the ast node that caused the error to be raised is
+              # the same as the node we were checking here.
+              matched = if arg_defn.type.kind.list?
+                # for a list we claim an error if the node is contained in our list
+                node.value.include?(err.ast_value)
+              elsif arg_defn.type.kind.input_object? && node.value.is_a?(GraphQL::Language::Nodes::InputObject)
+                # for an input object we check the arguments
+                node.value.arguments.include?(err.ast_value)
+              else
+                # otherwise we just check equality
+                node.value == (err.ast_value)
+              end
+              if !matched
+                return
+              end
             end
 
             if !valid
-              error ||= begin
+            error ||= begin
                 kind_of_node = node_type(parent)
                 error_arg_name = parent_name(parent, parent_defn)
 

@@ -74,6 +74,15 @@ Here's another look:
 
 By using this configuration, you can use GraphQL subscriptions without hosting a push server yourself!
 
+## Ably setup
+Add `ably-rest` to your `Gemfile`:
+
+```ruby
+gem 'ably-rest'
+```
+
+and `bundle install`.
+
 ## Database setup
 
 Subscriptions require a _persistent_ Redis database, configured with:
@@ -148,11 +157,10 @@ Read more here: ["Using CORS"](https://www.html5rocks.com/en/tutorials/cors/).
 
 Your server needs to receive webhooks from Ably when clients disconnect. This keeps your local subscription database in sync with Ably.
 
-In the Ably web UI, Add a webhook for "Channel Lifecycle" events:
+### Server
+*Note: if you're setting up in a development environment you should follow the [Developing with webhooks](#Developing-with-webhooks) section first*
 
-{{ "/subscriptions/ably_webhook_configuration.png" | link_to_img:"Ably Webhook Configuration" }}
-
-Then, mount the Rack app for handling webhooks from Ably. For example, on Rails:
+Mount the Rack app for handling webhooks from Ably. For example, on Rails:
 
 ```ruby
 # config/routes.rb
@@ -167,7 +175,17 @@ Rails.application.routes.draw do
 end
 ```
 
-This way, we'll be kept up-to-date with Ably's unsubscribe events.
+### Ably
+1. Go to the Ably dashboard
+2. Click on your application.
+3. Select the "Reactor" tab
+4. Click on the "+ New Reactor Rule" button
+5. Click on the "Choose" button for "Reactor Event"
+6. Click on the "Choose" button for "WebHooks"
+7. Enter your url (including the webhooks path from above) in the URL field
+8. Under "Source" select "Channel Lifecycle"
+9. Under "Sign with key" select the API Key prefix that matches the prefix of the ABLY_API_KEY you provided.
+10. Click "Create"
 
 ## Serializing Context
 

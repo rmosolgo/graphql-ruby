@@ -439,7 +439,9 @@ MSG
         ctx.schema.after_lazy(obj) do |after_obj|
           # First, apply auth ...
           query_ctx = ctx.query.context
-          inner_obj = after_obj.object
+          # Some legacy fields can have `nil` here, not exactly sure why.
+          # @see https://github.com/rmosolgo/graphql-ruby/issues/1990 before removing
+          inner_obj = after_obj && after_obj.object
           if authorized?(inner_obj, query_ctx)
             # Then if it passed, resolve the field
             if @resolve_proc

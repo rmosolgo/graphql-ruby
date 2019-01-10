@@ -83,7 +83,7 @@ import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 // Load Ably and create a client
 const Ably = require("ably")
-const ablyClient = new Ably.Realtime("your-app-key")
+const ablyClient = new Ably.Realtime({ key: "your-app-key" })
 
 // Make the HTTP link which actually sends the queries
 const httpLink = new HttpLink({

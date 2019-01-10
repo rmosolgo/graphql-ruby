@@ -25,6 +25,8 @@ module StaticValidationHelpers
   end
 
   def schema
-    Dummy::Schema
+    # without #graphql_definition call here #errors / #error_messages will reference a different schema object
+    # than the one returned by schema so it's difficult to make changes in specs.
+    Dummy::Schema.graphql_definition
   end
 end

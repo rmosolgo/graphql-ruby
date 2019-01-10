@@ -235,6 +235,16 @@ TABLE
     end
   end
 
+  describe "splatting" do
+    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: {b: 1}}, object: nil) }
+
+    let(:splat) { ->(**context) { context } }
+
+    it "runs successfully" do
+      assert_equal({a: { b: 1 }}, splat.call(context))
+    end
+  end
+
   describe "accessing context after the fact" do
     let(:query_string) { %|
       { pushContext }

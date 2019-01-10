@@ -79,6 +79,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
+      :error_bubbling,
       :raise_definition_error,
       :object_from_id, :id_from_object,
       :default_mask,
@@ -113,6 +114,9 @@ module GraphQL
       :raise_definition_error,
       :introspection_namespace,
       :analysis_engine
+
+    # [Boolean] True if this object bubbles validation errors up from a field into its parent InputObject, if there is one.
+    attr_accessor :error_bubbling
 
     # Single, long-lived instance of the provided subscriptions class, if there is one.
     # @return [GraphQL::Subscriptions]
@@ -175,6 +179,7 @@ module GraphQL
       @introspection_namespace = nil
       @introspection_system = nil
       @interpeter = false
+      @error_bubbling = true
     end
 
     # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
@@ -684,6 +689,7 @@ module GraphQL
         # Configuration
         :analysis_engine, :analysis_engine=, :using_ast_analysis?, :interpreter?,
         :max_complexity=, :max_depth=,
+        :error_bubbling=,
         :metadata,
         :default_mask,
         :default_filter, :redefine,
@@ -717,6 +723,7 @@ module GraphQL
         schema_defn.mutation = mutation
         schema_defn.subscription = subscription
         schema_defn.max_complexity = max_complexity
+        schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
@@ -851,6 +858,14 @@ module GraphQL
         end
       end
 
+      def error_bubbling(new_error_bubbling = nil)
+        if !new_error_bubbling.nil?
+          @error_bubbling = new_error_bubbling
+        else
+          @error_bubbling
+        end
+      end
+
       def max_depth(new_max_depth = nil)
         if new_max_depth
           @max_depth = new_max_depth
@@ -883,9 +898,11 @@ module GraphQL
         end
       end
 
-      def rescue_from(err_class, &handler_block)
+      def rescue_from(*err_classes, &handler_block)
         @rescues ||= {}
-        @rescues[err_class] = handler_block
+        err_classes.each do |err_class|
+          @rescues[err_class] = handler_block
+        end
       end
 
       def resolve_type(type, obj, ctx)

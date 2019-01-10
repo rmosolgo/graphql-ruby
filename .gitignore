@@ -18,5 +18,7 @@ gh-pages/
 tmp/*
 __*.db
 node_modules/
+yarn.lock
 OperationStoreClient.js
 spec/integration/tmp
+.vscode/

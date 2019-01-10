@@ -42,6 +42,43 @@ module GraphQL
         # Rebuild the string
         lines.join("\n")
       end
+
+      def self.print(str, indent: '')
+        lines = str.split("\n")
+
+        block_str = "#{indent}\"\"\"\n".dup
+
+        lines.each do |line|
+          if line == ''
+            block_str << "\n"
+          else
+            sublines = break_line(line, 120 - indent.length)
+            sublines.each do |subline|
+              block_str << "#{indent}#{subline}\n"
+            end
+          end
+        end
+
+        block_str << "#{indent}\"\"\"\n".dup
+      end
+
+      private
+
+      def self.break_line(line, length)
+        return [line] if line.length < length + 5
+
+        parts = line.split(Regexp.new("((?: |^).{15,#{length - 40}}(?= |$))"))
+        return [line] if parts.length < 4
+
+        sublines = [parts.slice!(0, 3).join]
+
+        parts.each_with_index do |part, i|
+          next if i % 2 == 1
+          sublines << "#{part[1..-1]}#{parts[i + 1]}"
+        end
+
+        sublines
+      end
     end
   end
 end

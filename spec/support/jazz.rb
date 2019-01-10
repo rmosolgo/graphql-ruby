@@ -685,6 +685,18 @@ module Jazz
       end
     end
 
+    class NestedType < GraphQL::Introspection::TypeType
+      def name
+        object.name.upcase
+      end
+
+      class DeeplyNestedType < GraphQL::Introspection::TypeType
+        def name
+          object.name.upcase
+        end
+      end
+    end
+
     class SchemaType < GraphQL::Introspection::SchemaType
       graphql_name "__Schema"
 
