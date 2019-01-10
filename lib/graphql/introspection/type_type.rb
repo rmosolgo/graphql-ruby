@@ -25,6 +25,10 @@ module GraphQL
       field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: true
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type"), null: true
 
+      def name
+        object.graphql_name
+      end
+
       def kind
         @object.kind.name
       end
@@ -33,7 +37,7 @@ module GraphQL
         if !@object.kind.enum?
           nil
         else
-          enum_values = @context.warden.enum_values(@object)
+          enum_values = @context.warden.enum_values(@object.graphql_definition)
 
           if !include_deprecated
             enum_values = enum_values.select {|f| !f.deprecation_reason }
@@ -45,7 +49,7 @@ module GraphQL
 
       def interfaces
         if @object.kind == GraphQL::TypeKinds::OBJECT
-          @context.warden.interfaces(@object)
+          @context.warden.interfaces(@object.graphql_definition)
         else
           nil
         end
@@ -53,7 +57,7 @@ module GraphQL
 
       def input_fields
         if @object.kind.input_object?
-          @context.warden.arguments(@object)
+          @context.warden.arguments(@object.graphql_definition)
         else
           nil
         end
@@ -61,7 +65,7 @@ module GraphQL
 
       def possible_types
         if @object.kind.abstract?
-          @context.warden.possible_types(@object)
+          @context.warden.possible_types(@object.graphql_definition)
         else
           nil
         end
@@ -71,7 +75,7 @@ module GraphQL
         if !@object.kind.fields?
           nil
         else
-          fields = @context.warden.fields(@object)
+          fields = @context.warden.fields(@object.graphql_definition)
           if !include_deprecated
             fields = fields.select {|f| !f.deprecation_reason }
           end

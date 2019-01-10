@@ -36,17 +36,40 @@ module GraphQL
         when GraphQL::Query::Arguments
           arguments
         when Hash
-          GraphQL::Query::LiteralInput.from_arguments(
-            arguments,
-            field,
-            nil,
-          )
+          if field.is_a?(GraphQL::Schema::Field)
+            stringify_args(arguments)
+          else
+            GraphQL::Query::LiteralInput.from_arguments(
+              arguments,
+              field,
+              nil,
+            )
+          end
         else
           raise ArgumentError, "Unexpected arguments: #{arguments}, must be Hash or GraphQL::Arguments"
         end
 
         sorted_h = normalized_args.to_h.sort.to_h
         Serialize.dump_recursive([scope, name, sorted_h])
+      end
+
+      class << self
+        private
+        def stringify_args(args)
+          case args
+          when Hash
+            next_args = {}
+            args.each do |k, v|
+              str_k = GraphQL::Schema::Member::BuildType.camelize(k.to_s)
+              next_args[str_k] = stringify_args(v)
+            end
+            next_args
+          when Array
+            args.map { |a| stringify_args(a) }
+          else
+            args
+          end
+        end
       end
     end
   end

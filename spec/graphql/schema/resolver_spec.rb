@@ -181,7 +181,7 @@ describe GraphQL::Schema::Resolver do
 
     class IntegerWrapper < GraphQL::Schema::Object
       implements HasValue
-      field :value, Integer, null: false, method: :object
+      field :value, Integer, null: false, method: :itself
     end
 
     class PrepResolver9 < BaseResolver
@@ -319,6 +319,14 @@ describe GraphQL::Schema::Resolver do
           end
           value
         end
+
+        def resolve(*)
+          value = super
+          if @name == "resolver3"
+            value << -1
+          end
+          value
+        end
       end
 
       field_class(CustomField)
@@ -355,6 +363,9 @@ describe GraphQL::Schema::Resolver do
       mutation(Mutation)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
 
       def object_from_id(id, ctx)
         if id == "invalid"

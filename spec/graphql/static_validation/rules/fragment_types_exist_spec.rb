@@ -27,13 +27,15 @@ describe GraphQL::StaticValidation::FragmentTypesExist do
     inline_fragment_error =  {
       "message"=>"No such type Something, so it can't be a fragment condition",
       "locations"=>[{"line"=>11, "column"=>5}],
-      "fields"=>["fragment somethingFields"],
+      "path"=>["fragment somethingFields"],
+      "extensions"=>{"code"=>"undefinedType", "typeName"=>"Something"}
     }
     assert_includes(errors, inline_fragment_error, "on inline fragments")
     fragment_def_error = {
       "message"=>"No such type Nothing, so it can't be a fragment condition",
       "locations"=>[{"line"=>5, "column"=>9}],
-      "fields"=>["query getCheese", "cheese", "... on Nothing"],
+      "path"=>["query getCheese", "cheese", "... on Nothing"],
+      "extensions"=>{"code"=>"undefinedType", "typeName"=>"Nothing"}
     }
     assert_includes(errors, fragment_def_error, "on fragment definitions")
   end

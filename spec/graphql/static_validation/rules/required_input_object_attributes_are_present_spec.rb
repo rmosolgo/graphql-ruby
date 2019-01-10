@@ -24,12 +24,24 @@ describe GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent do
     missing_required_field_error = {
       "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
       "locations"=>[{"line"=>7, "column"=>7}],
-      "fields"=>["query getCheese", "missingSource", "product"],
+      "path"=>["query getCheese", "missingSource", "product"],
+      "extensions"=>{
+        "code"=>"argumentLiteralsIncompatible",
+        "typeName"=>"Field",
+        "argumentName"=>"product",
+      },
     }
-    missing_source_error = {"message"=>
-      "Argument 'source' on InputObject 'DairyProductInput' is required. Expected type DairyAnimal!",
-     "locations"=>[{"line"=>7, "column"=>44}],
-     "fields"=>["query getCheese", "missingSource", "product", "source"]}
+    missing_source_error = {
+      "message"=>"Argument 'source' on InputObject 'DairyProductInput' is required. Expected type DairyAnimal!",
+      "locations"=>[{"line"=>7, "column"=>44}],
+      "path"=>["query getCheese", "missingSource", "product", "source"],
+      "extensions"=>{
+        "code"=>"missingRequiredInputObjectAttribute",
+        "argumentName"=>"source",
+        "argumentType"=>"DairyAnimal!",
+        "inputObjectType"=>"DairyProductInput"
+      }
+    }
     it "finds undefined or missing-required arguments to fields and directives" do
       without_error_bubbling(schema) do
         assert_includes(errors, missing_source_error)

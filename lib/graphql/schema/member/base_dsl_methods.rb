@@ -55,6 +55,10 @@ module GraphQL
           end
         end
 
+        def introspection?
+          introspection
+        end
+
         # The mutation this type was derived from, if it was derived from a mutation
         # @return [Class]
         def mutation(mutation_class = nil)
@@ -79,9 +83,11 @@ module GraphQL
         # The default name is the Ruby constant name,
         # without any namespaces and with any `-Type` suffix removed
         def default_graphql_name
-          raise NotImplementedError, 'Anonymous class should declare a `graphql_name`' if name.nil?
+          @default_graphql_name ||= begin
+            raise NotImplementedError, 'Anonymous class should declare a `graphql_name`' if name.nil?
 
-          name.split("::").last.sub(/Type\Z/, "")
+            name.split("::").last.sub(/Type\Z/, "")
+          end
         end
 
         def visible?(context)

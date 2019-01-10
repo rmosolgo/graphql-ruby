@@ -6,6 +6,7 @@ require "graphql/subscriptions/serialize"
 if defined?(ActionCable)
   require "graphql/subscriptions/action_cable_subscriptions"
 end
+require "graphql/subscriptions/subscription_root"
 
 module GraphQL
   class Subscriptions

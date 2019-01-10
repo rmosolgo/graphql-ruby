@@ -236,7 +236,9 @@ describe GraphQL::Schema::Object do
     it "skips fields properly" do
       query_str = "{ find(id: \"MagicalSkipId\") { __typename } }"
       res = Jazz::Schema.execute(query_str)
-      assert_equal({"data" => nil }, res.to_h)
+      # TBH I think `{}` is probably righter than `nil`, I guess we'll see.
+      skip_value = TESTING_INTERPRETER ? {} : nil
+      assert_equal({"data" => skip_value }, res.to_h)
     end
   end
 end

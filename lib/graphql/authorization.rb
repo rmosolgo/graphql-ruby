@@ -20,6 +20,7 @@ module GraphQL
       end
     end
 
+    # @deprecated authorization at query runtime is generally a better idea.
     module Analyzer
       module_function
       def initial_value(query)

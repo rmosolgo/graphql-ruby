@@ -14,11 +14,17 @@ describe GraphQL::Tracing::SkylightTracing do
     class SchemaWithoutTransactionName < GraphQL::Schema
       query(Query)
       use(GraphQL::Tracing::SkylightTracing)
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
     end
 
     class SchemaWithTransactionName < GraphQL::Schema
       query(Query)
       use(GraphQL::Tracing::SkylightTracing, set_endpoint_name: true)
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
     end
 
     class SchemaWithScalarTrace < GraphQL::Schema

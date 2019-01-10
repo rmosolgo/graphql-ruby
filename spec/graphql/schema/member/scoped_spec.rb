@@ -54,11 +54,11 @@ describe GraphQL::Schema::Member::Scoped do
       field :items, [Item], null: false
       field :unscoped_items, [Item], null: false,
         scope: false,
-        method: :items
+        resolver_method: :items
       field :french_items, [FrenchItem], null: false,
-        method: :items
+        resolver_method: :items
       field :items_connection, Item.connection_type, null: false,
-        method: :items
+        resolver_method: :items
 
       def items
         [
@@ -74,6 +74,9 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     query(Query)
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
   end
 
   describe ".scope_items(items, ctx)" do
@@ -117,6 +120,19 @@ describe GraphQL::Schema::Member::Scoped do
       "
       res = ScopeSchema.execute(query_str, context: {english: true})
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
+      assert_equal ["Paperclip"], names
+
+      query_str = "
+      {
+        itemsConnection {
+          nodes {
+            name
+          }
+        }
+      }
+      "
+      res = ScopeSchema.execute(query_str, context: {english: true})
+      names = res["data"]["itemsConnection"]["nodes"].map { |e| e["name"] }
       assert_equal ["Paperclip"], names
     end
 

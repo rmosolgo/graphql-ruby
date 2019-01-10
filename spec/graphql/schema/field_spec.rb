@@ -45,6 +45,12 @@ describe GraphQL::Schema::Field do
       assert_equal 'underscored_arg', arg_defn.name
     end
 
+    it "works with arbitrary hash keys" do
+      result = Jazz::Schema.execute "{ complexHashKey }", root_value: { :'foo bar/fizz-buzz' => "OK!"}
+      hash_val = result["data"]["complexHashKey"]
+      assert_equal "OK!", hash_val, "It looked up the hash key"
+    end
+
     it "exposes the method override" do
       object = Class.new(Jazz::BaseObject) do
         field :t, String, method: :tt, null: true
@@ -228,14 +234,12 @@ describe GraphQL::Schema::Field do
     end
 
     it "makes a suggestion when the type is false" do
-      thing = Class.new(GraphQL::Schema::Object) do
-        graphql_name "Thing"
-        # False might come from an invalid `!`
-        field :stuff, false, null: false
-      end
-
       err = assert_raises ArgumentError do
-        thing.fields["stuff"].type
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "Thing"
+          # False might come from an invalid `!`
+          field :stuff, false, null: false
+        end
       end
 
       assert_includes err.message, "Thing.stuff"

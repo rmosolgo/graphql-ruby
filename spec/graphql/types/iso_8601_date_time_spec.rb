@@ -11,8 +11,7 @@ describe GraphQL::Types::ISO8601DateTime do
       field :minute, Integer, null: false
       field :second, Integer, null: false
       field :zone, String, null: false
-      # Use method: :object so that the DateTime instance is passed to the scalar
-      field :iso8601, GraphQL::Types::ISO8601DateTime, null: false, method: :object
+      field :iso8601, GraphQL::Types::ISO8601DateTime, null: false, method: :itself
     end
 
     class Query < GraphQL::Schema::Object
@@ -29,6 +28,9 @@ describe GraphQL::Types::ISO8601DateTime do
 
     class Schema < GraphQL::Schema
       query(Query)
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
     end
   end
 

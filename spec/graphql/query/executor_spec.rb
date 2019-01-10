@@ -186,29 +186,31 @@ describe GraphQL::Query::Executor do
       end
     end
 
-    describe "if the schema has a rescue handler" do
-      before do
-        # HACK: reach to the underlying instance to perform a side-effect
-        schema.graphql_definition.rescue_from(RuntimeError) { "Error was handled!" }
-      end
+    if TESTING_RESCUE_FROM
+      describe "if the schema has a rescue handler" do
+        before do
+          # HACK: reach to the underlying instance to perform a side-effect
+          schema.graphql_definition.rescue_from(RuntimeError) { "Error was handled!" }
+        end
 
-      after do
-        # remove the handler from the middleware:
-        schema.remove_handler(RuntimeError)
-      end
+        after do
+          # remove the handler from the middleware:
+          schema.remove_handler(RuntimeError)
+        end
 
-      it "adds to the errors key" do
-        expected = {
-          "data" => {"error" => nil},
-          "errors"=>[
-            {
-              "message"=>"Error was handled!",
-              "locations" => [{"line"=>1, "column"=>17}],
-              "path"=>["error"]
-            }
-          ]
-        }
-        assert_equal(expected, result)
+        it "adds to the errors key" do
+          expected = {
+            "data" => {"error" => nil},
+            "errors"=>[
+              {
+                "message"=>"Error was handled!",
+                "locations" => [{"line"=>1, "column"=>17}],
+                "path"=>["error"]
+              }
+            ]
+          }
+          assert_equal(expected, result)
+        end
       end
     end
   end

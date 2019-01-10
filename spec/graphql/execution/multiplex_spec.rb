@@ -94,7 +94,8 @@ describe GraphQL::Execution::Multiplex do
           "errors" => [{
             "message"=>"Field must have selections (field 'nullableNestedSum' returns LazySum but has no selections. Did you mean 'nullableNestedSum { ... }'?)",
             "locations"=>[{"line"=>1, "column"=>4}],
-            "fields"=>["query", "validationError"]
+            "path"=>["query", "validationError"],
+            "extensions"=>{"code"=>"selectionMismatch", "nodeName"=>"field 'nullableNestedSum'", "typeName"=>"LazySum"}
           }]
         },
       ]
@@ -105,7 +106,7 @@ describe GraphQL::Execution::Multiplex do
         {query: q3},
         {query: q4},
       ])
-      assert_equal expected_res, res
+      assert_equal expected_res, res.map(&:to_h)
     end
   end
 

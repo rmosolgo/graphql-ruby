@@ -31,7 +31,8 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
         {
           "message"=>"Field 'notDefinedField' doesn't exist on type 'Query'",
           "locations"=>[{"line"=>1, "column"=>18}],
-          "fields"=>["query getStuff", "notDefinedField"],
+          "path"=>["query getStuff", "notDefinedField"],
+          "extensions"=>{"code"=>"undefinedField", "typeName"=>"Query", "fieldName"=>"notDefinedField"}
         }
       ]
       assert_equal(expected_errors, errors)
@@ -46,7 +47,8 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
         {
           "message"=>"Field 'amountThatILikeIt' doesn't exist on type 'Edible'",
           "locations"=>[{"line"=>1, "column"=>35}],
-          "fields"=>["query getStuff", "favoriteEdible", "amountThatILikeIt"],
+          "path"=>["query getStuff", "favoriteEdible", "amountThatILikeIt"],
+          "extensions"=>{"code"=>"undefinedField", "typeName"=>"Edible", "fieldName"=>"amountThatILikeIt"}
         }
       ]
       assert_equal(expected_errors, errors)
@@ -67,7 +69,8 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
           "locations"=>[
             {"line"=>3, "column"=>7}
           ],
-          "fields"=>["fragment dpFields", "source"],
+          "path"=>["fragment dpFields", "source"],
+          "extensions"=>{"code"=>"selectionMismatch", "nodeName"=>"DairyProduct"}
         }
       ]
       assert_equal(expected_errors, errors)
@@ -120,7 +123,8 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
             "locations"=>[
               {"line"=>2, "column"=>33}
             ],
-            "fields"=>["query", "cheese", "__schema"],
+            "path"=>["query", "cheese", "__schema"],
+            "extensions"=>{"code"=>"undefinedField", "typeName"=>"Cheese", "fieldName"=>"__schema"}
           }
         ]
         assert_equal(expected_errors, errors)
@@ -151,7 +155,8 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
             "locations"=>[
               {"line"=>2, "column"=>33}
             ],
-            "fields"=>["query", "cheese", "__type"],
+            "path"=>["query", "cheese", "__type"],
+            "extensions"=>{"code"=>"undefinedField", "typeName"=>"Cheese", "fieldName"=>"__type"}
           }
         ]
         assert_equal(expected_errors, errors)

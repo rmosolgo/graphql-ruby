@@ -1,27 +1,35 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class OperationNamesAreValid
-      include GraphQL::StaticValidation::Message::MessageHelper
+    module OperationNamesAreValid
+      def initialize(*)
+        super
+        @operation_names = Hash.new { |h, k| h[k] = [] }
+      end
 
-      def validate(context)
-        op_names = Hash.new { |h, k| h[k] = [] }
+      def on_operation_definition(node, parent)
+        @operation_names[node.name] << node
+        super
+      end
 
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition].enter << ->(node, _parent) {
-          op_names[node.name] << node
-        }
+      def on_document(node, parent)
+        super
+        op_count = @operation_names.values.inject(0) { |m, v| m + v.size }
 
-        context.visitor[GraphQL::Language::Nodes::Document].leave << ->(node, _parent) {
-          op_count = op_names.values.inject(0) { |m, v| m + v.size }
-
-          op_names.each do |name, nodes|
-            if name.nil? && op_count > 1
-              context.errors << message(%|Operation name is required when multiple operations are present|, nodes, context: context)
-            elsif nodes.length > 1
-              context.errors << message(%|Operation name "#{name}" must be unique|, nodes, context: context)
-            end
+        @operation_names.each do |name, nodes|
+          if name.nil? && op_count > 1
+            add_error(GraphQL::StaticValidation::OperationNamesAreValidError.new(
+              %|Operation name is required when multiple operations are present|,
+              nodes: nodes
+            ))
+          elsif nodes.length > 1
+            add_error(GraphQL::StaticValidation::OperationNamesAreValidError.new(
+              %|Operation name "#{name}" must be unique|,
+              nodes: nodes,
+              name: name
+            ))
           end
-        }
+        end
       end
     end
   end

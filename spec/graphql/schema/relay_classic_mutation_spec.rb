@@ -50,6 +50,32 @@ describe GraphQL::Schema::RelayClassicMutation do
 
       assert_equal "Sitar", res["data"]["addSitar"]["instrument"]["name"]
     end
+
+    it "supports extras" do
+      res = Jazz::Schema.execute <<-GRAPHQL
+      mutation {
+        hasExtras(input: {}) {
+          nodeClass
+          int
+        }
+      }
+      GRAPHQL
+
+      assert_equal "GraphQL::Language::Nodes::Field", res["data"]["hasExtras"]["nodeClass"]
+      assert_nil res["data"]["hasExtras"]["int"]
+
+      # Also test with given args
+      res = Jazz::Schema.execute <<-GRAPHQL
+      mutation {
+        hasExtras(input: {int: 5}) {
+          nodeClass
+          int
+        }
+      }
+      GRAPHQL
+      assert_equal "GraphQL::Language::Nodes::Field", res["data"]["hasExtras"]["nodeClass"]
+      assert_equal 5, res["data"]["hasExtras"]["int"]
+    end
   end
 
   describe "loading multiple application objects" do

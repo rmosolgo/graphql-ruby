@@ -26,6 +26,9 @@ module InstrumentationSpec
   class Schema < GraphQL::Schema
     query Query
     orphan_types [SomeType]
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
   end
 end
 

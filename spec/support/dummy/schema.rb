@@ -270,42 +270,43 @@ module Dummy
     end
   end
 
-  class FetchItem < GraphQL::Function
-    attr_reader :type, :description, :arguments
-
-    def initialize(type:, data:, id_type: !GraphQL::INT_TYPE)
-      @type = type
-      @data = data
-      @description = "Find a #{type.name} by id"
-      @arguments = self.class.arguments.merge({"id" => GraphQL::Argument.define(name: "id", type: id_type)})
+  class FetchItem < GraphQL::Schema::Resolver
+    class << self
+      attr_accessor :data
     end
 
-    def call(obj, args, ctx)
-      id_string = args["id"].to_s # Cheese has Int type, Milk has ID type :(
-      _id, item = @data.find { |id, _item| id.to_s == id_string }
+    def self.build(type:, data:, id_type: "Int")
+      Class.new(self) do
+        self.data = data
+        type(type, null: true)
+        description("Find a #{type.name} by id")
+        argument :id, id_type, required: true
+      end
+    end
+
+    def resolve(id:)
+      id_string = id.to_s # Cheese has Int type, Milk has ID type :(
+      _id, item = self.class.data.find { |item_id, _item| item_id.to_s == id_string }
       item
     end
   end
 
-  class GetSingleton < GraphQL::Function
-    attr_reader :description, :type
-
-    def initialize(type:, data:)
-      @description = "Find the only #{type.name}"
-      @type = type
-      @data = data
+  class GetSingleton < GraphQL::Schema::Resolver
+    class << self
+      attr_accessor :data
     end
 
-    def call(obj, args, ctx)
-      @data
+    def self.build(type:, data:)
+      Class.new(self) do
+        description("Find the only #{type.name}")
+        type(type, null: true)
+        self.data = data
+      end
     end
-  end
 
-  FavoriteFieldDefn = GraphQL::Field.define do
-    name "favoriteEdible"
-    description "My favorite food"
-    type Edible
-    resolve ->(t, a, c) { MILKS[1] }
+    def resolve
+      self.class.data
+    end
   end
 
   class DairyAppQuery < BaseObject
@@ -316,9 +317,9 @@ module Dummy
     def root
       object
     end
-    field :cheese, function: FetchItem.new(type: Cheese, data: CHEESES)
-    field :milk, function: FetchItem.new(type: Milk, data: MILKS, id_type: GraphQL::Types::ID.to_non_null_type)
-    field :dairy, function: GetSingleton.new(type: Dairy, data: DAIRY)
+    field :cheese, resolver: FetchItem.build(type: Cheese, data: CHEESES)
+    field :milk, resolver: FetchItem.build(type: Milk, data: MILKS, id_type: "ID")
+    field :dairy, resolver: GetSingleton.build(type: Dairy, data: DAIRY)
     field :from_source, [Cheese, null: true], null: true, description: "Cheese from source" do
       argument :source, DairyAnimal, required: false, default_value: 1
     end
@@ -326,12 +327,16 @@ module Dummy
       CHEESES.values.select { |c| c.source == source }
     end
 
-    field :favorite_edible, field: FavoriteFieldDefn
-    field :cow, function: GetSingleton.new(type: Cow, data: COWS[1])
+    field :favorite_edible, Edible, null: true, description: "My favorite food"
+    def favorite_edible
+      MILKS[1]
+    end
+
+    field :cow, resolver: GetSingleton.build(type: Cow, data: COWS[1])
     field :search_dairy, DairyProduct, null: false do
       description "Find dairy products matching a description"
       # This is a list just for testing 😬
-      argument :product, [DairyProductInput, null: true], required: false, default_value: [{"source" => "SHEEP"}]
+      argument :product, [DairyProductInput, null: true], required: false, default_value: [{source: "SHEEP"}]
       argument :expires_after, Time, required: false
     end
 
@@ -349,7 +354,7 @@ module Dummy
       COWS.values + GOATS.values
     end
 
-    field :all_animal_as_cow, [AnimalAsCow, null: true], null: false, method: :all_animal
+    field :all_animal_as_cow, [AnimalAsCow, null: true], null: false, resolver_method: :all_animal
 
     field :all_dairy, [DairyProduct, null: true], null: true do
       argument :execution_error_at_index, Integer, required: false
@@ -367,7 +372,7 @@ module Dummy
       CHEESES.values + MILKS.values
     end
 
-    field :all_edible_as_milk, [EdibleAsMilk, null: true], null: true, method: :all_edible
+    field :all_edible_as_milk, [EdibleAsMilk, null: true], null: true, resolver_method: :all_edible
 
     field :error, String, null: true, description: "Raise an error"
     def error
@@ -445,7 +450,7 @@ module Dummy
 
     def replace_values(input:)
       GLOBAL_VALUES.clear
-      GLOBAL_VALUES.concat(input["values"])
+      GLOBAL_VALUES.concat(input[:values])
       GLOBAL_VALUES
     end
   end
@@ -467,6 +472,9 @@ module Dummy
 
     def self.resolve_type(type, obj, ctx)
       Schema.types[obj.class.name.split("::").last]
+    end
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
     end
   end
 end

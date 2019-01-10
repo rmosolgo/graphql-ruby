@@ -158,10 +158,13 @@ module GraphQL
       end
 
       # @api private
+      attr_writer :interpreter
+
+      # @api private
       attr_writer :value
 
       def_delegators :@provided_values, :[], :[]=, :to_h, :to_hash, :key?, :fetch, :dig
-      def_delegators :@query, :trace
+      def_delegators :@query, :trace, :interpreter?
 
       # @!method [](key)
       #   Lookup `key` from the hash passed to {Schema#execute} as `context:`
@@ -228,7 +231,7 @@ module GraphQL
         def_delegators :@context,
           :[], :[]=, :key?, :fetch, :to_h, :namespace, :dig,
           :spawn, :warden, :errors,
-          :execution_strategy, :strategy
+          :execution_strategy, :strategy, :interpreter?
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node

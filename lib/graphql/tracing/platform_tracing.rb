@@ -26,7 +26,23 @@ module GraphQL
             yield
           end
         when "execute_field", "execute_field_lazy"
-          if (platform_key = data[:context].field.metadata[:platform_key])
+          if data[:context]
+            field = data[:context].field
+            platform_key = field.metadata[:platform_key]
+            trace_field = true # implemented with instrumenter
+          else
+            field = data[:field]
+            # Lots of duplicated work here, can this be done ahead of time?
+            platform_key = platform_field_key(field.owner, field)
+            return_type = field.type.unwrap
+            trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+              (field.trace.nil? && @trace_scalars) || field.trace
+            else
+              true
+            end
+          end
+
+          if platform_key && trace_field
             platform_trace(platform_key, key, data) do
               yield
             end
