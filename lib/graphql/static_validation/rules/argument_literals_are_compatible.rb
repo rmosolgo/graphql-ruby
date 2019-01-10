@@ -36,7 +36,7 @@ module GraphQL
               if !context.schema.error_bubbling && !arg_defn.type.unwrap.kind.scalar?
                 # if error bubbling is disabled and the arg that caused this error isn't a scalar then
                 # short-circuit here so we avoid bubbling this up to whatever input_object / array contains us
-                return
+                return super
               end
               error = GraphQL::StaticValidation::ArgumentLiteralsAreCompatibleError.new(err.message, nodes: parent, type: "CoercionError")
             rescue GraphQL::LiteralValidationError => err
@@ -53,12 +53,14 @@ module GraphQL
                 node.value == (err.ast_value)
               end
               if !matched
-                return
+                # This node isn't the node that caused the error,
+                # So halt this visit but continue visiting the rest of the tree
+                return super
               end
             end
 
             if !valid
-            error ||= begin
+              error ||= begin
                 kind_of_node = node_type(parent)
                 error_arg_name = parent_name(parent, parent_defn)
 

@@ -28,28 +28,52 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
         query_root_error = {
           "message"=>"Field 'cheese' doesn't accept argument 'silly'",
           "locations"=>[{"line"=>4, "column"=>14}],
-          "fields"=>["query getCheese", "cheese", "silly"],
+          "path"=>["query getCheese", "cheese", "silly"],
+          "extensions"=>{
+            "code"=>"argumentNotAccepted",
+            "name"=>"cheese",
+            "typeName"=>"Field",
+            "argumentName"=>"silly"
+          },
         }
         assert_includes(errors, query_root_error)
 
         input_obj_record = {
           "message"=>"InputObject 'DairyProductInput' doesn't accept argument 'wacky'",
           "locations"=>[{"line"=>5, "column"=>30}],
-          "fields"=>["query getCheese", "searchDairy", "product", "wacky"],
+          "path"=>["query getCheese", "searchDairy", "product", "wacky"],
+          "extensions"=>{
+            "code"=>"argumentNotAccepted",
+            "name"=>"DairyProductInput",
+            "typeName"=>"InputObject",
+            "argumentName"=>"wacky"
+          },
         }
         assert_includes(errors, input_obj_record)
 
         fragment_error = {
           "message"=>"Field 'similarCheese' doesn't accept argument 'nonsense'",
           "locations"=>[{"line"=>9, "column"=>36}],
-          "fields"=>["fragment cheeseFields", "similarCheese", "nonsense"],
+          "path"=>["fragment cheeseFields", "similarCheese", "nonsense"],
+          "extensions"=>{
+            "code"=>"argumentNotAccepted",
+            "name"=>"similarCheese",
+            "typeName"=>"Field",
+            "argumentName"=>"nonsense",
+          },
         }
         assert_includes(errors, fragment_error)
 
         directive_error = {
           "message"=>"Directive 'skip' doesn't accept argument 'something'",
           "locations"=>[{"line"=>10, "column"=>16}],
-          "fields"=>["fragment cheeseFields", "id", "something"],
+          "path"=>["fragment cheeseFields", "id", "something"],
+          "extensions"=>{
+            "code"=>"argumentNotAccepted",
+            "name"=>"skip",
+            "typeName"=>"Directive",
+            "argumentName"=>"something",
+          },
         }
         assert_includes(errors, directive_error)
       end
@@ -59,11 +83,12 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
       without_error_bubbling(Dummy::Schema) do
         assert_equal(5, errors.length)
 
-        extra_error =  {"message"=>
-          "Argument 'product' on Field 'searchDairy' has an invalid value. Expected type '[DairyProductInput]'.",
-         "locations"=>[{"line"=>5, "column"=>7}],
-         "fields"=>["query getCheese", "searchDairy", "product"]}
-         refute_includes(errors, extra_error)
+        extra_error = {
+          "message"=>"Argument 'product' on Field 'searchDairy' has an invalid value. Expected type '[DairyProductInput]'.",
+          "locations"=>[{"line"=>5, "column"=>7}],
+          "path"=>["query getCheese", "searchDairy", "product"]
+        }
+        refute_includes(errors, extra_error)
       end
     end
   end

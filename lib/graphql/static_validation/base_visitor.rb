@@ -189,8 +189,8 @@ module GraphQL
 
       private
 
-      def add_error(error)
-        error.path ||= @path.dup
+      def add_error(error, path: nil)
+        error.path ||= (path || @path.dup)
         context.errors << error
       end
 

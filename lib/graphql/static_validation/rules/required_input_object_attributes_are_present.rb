@@ -1,16 +1,12 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class RequiredInputObjectAttributesArePresent
-      include GraphQL::StaticValidation::Message::MessageHelper
-      include GraphQL::StaticValidation::ArgumentsValidator::ArgumentsValidatorHelpers
-
-      def validate(context)
-        visitor = context.visitor
-        visitor[GraphQL::Language::Nodes::InputObject] << ->(node, parent) {
-          next unless parent.is_a? GraphQL::Language::Nodes::Argument
+    module RequiredInputObjectAttributesArePresent
+      def on_input_object(node, parent)
+        if parent.is_a? GraphQL::Language::Nodes::Argument
           validate_input_object(node, context, parent)
-        }
+        end
+        super
       end
 
       private
@@ -34,9 +30,16 @@ module GraphQL
         missing_fields = required_fields - present_fields
 
         missing_fields.each do |missing_field|
-          path = [ *context.path, missing_field]
+          path = [*context.path, missing_field]
           missing_field_type = parent_type.arguments[missing_field].type
-          context.errors << message("Argument '#{missing_field}' on InputObject '#{parent_type}' is required. Expected type #{missing_field_type}", ast_node, path: path, context: context)
+          add_error(RequiredInputObjectAttributesArePresentError.new(
+            "Argument '#{missing_field}' on InputObject '#{parent_type}' is required. Expected type #{missing_field_type}",
+            argument_name: missing_field,
+            argument_type: missing_field_type.to_s,
+            input_object_type: parent_type.to_s,
+            path: path,
+            nodes: ast_node,
+          ))
         end
       end
     end
