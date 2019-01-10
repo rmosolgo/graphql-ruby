@@ -27,7 +27,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         "missingRequiredArguments"
       end

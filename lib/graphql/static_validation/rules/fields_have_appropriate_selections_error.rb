@@ -23,7 +23,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         "selectionMismatch"
       end

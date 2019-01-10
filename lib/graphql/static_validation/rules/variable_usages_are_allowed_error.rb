@@ -30,7 +30,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         "variableMismatch"
       end
