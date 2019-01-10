@@ -27,7 +27,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         "cannotSpreadFragment"
       end

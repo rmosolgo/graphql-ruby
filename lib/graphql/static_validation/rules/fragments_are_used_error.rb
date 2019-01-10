@@ -21,7 +21,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         "useAndDefineFragment"
       end

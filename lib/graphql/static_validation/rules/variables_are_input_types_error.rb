@@ -24,7 +24,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         "variableRequiresValidType"
       end

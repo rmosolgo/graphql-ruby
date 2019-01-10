@@ -17,7 +17,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         "queryContainsSchemaDefinitions"
       end

@@ -20,7 +20,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         "uniquelyNamedOperations"
       end
