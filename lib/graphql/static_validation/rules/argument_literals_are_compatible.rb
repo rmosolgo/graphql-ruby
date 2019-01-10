@@ -31,7 +31,6 @@ module GraphQL
             begin
               valid = context.valid_literal?(node.value, arg_defn.type)
             rescue GraphQL::CoercionError => err
-              error_message = err.message
               context.schema.error_bubbling
               if !context.schema.error_bubbling && !arg_defn.type.unwrap.kind.scalar?
                 # if error bubbling is disabled and the arg that caused this error isn't a scalar then
