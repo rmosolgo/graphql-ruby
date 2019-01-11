@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.6.3 (11 Jan 2019)
+
+- Fix `.unsubscribe()` for PusherLink #2042
+
 ## 1.6.2 (14 Dec 2018)
 
 - Support identified Ably client #2003
