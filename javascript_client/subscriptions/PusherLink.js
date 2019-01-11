@@ -45,14 +45,42 @@ class PusherLink extends ApolloLink {
   }
 
   request(operation, forward) {
-    return new Observable((observer) => {
+    const subscribeObservable = new Observable((observer) => {  })
+
+    // Capture the super method
+    const prevSubscribe = subscribeObservable.subscribe.bind(subscribeObservable)
+
+    // Override subscribe to return an `unsubscribe` object, see
+    // https://github.com/apollographql/subscriptions-transport-ws/blob/master/src/client.ts#L182-L212
+    subscribeObservable.subscribe = (observerOrNext, onError, onComplete) => {
+      // Call super
+      prevSubscribe(observerOrNext, onError, onComplete)
+      const observer = getObserver(observerOrNext, onError, onComplete)
+      var subscriptionChannel = null
       // Check the result of the operation
-      forward(operation).subscribe({ next: (data) => {
+      const resultObservable = forward(operation)
+      // When the operation is done, try to get the subscription ID from the server
+      resultObservable.subscribe({ next: (data) => {
         // If the operation has the subscription header, it's a subscription
-        const subscriptionChannel = this._getSubscriptionChannel(operation)
+        const response = operation.getContext().response
+        // Check to see if the response has the header
+        subscriptionChannel = response.headers.get("X-Subscription-ID")
         if (subscriptionChannel) {
-          // This will keep pushing to `.next`
-          this._createSubscription(subscriptionChannel, observer)
+          // Set up the pusher subscription for updates from the server
+          const pusherChannel = this.pusher.subscribe(subscriptionChannel)
+          // Subscribe for more update
+          pusherChannel.bind("update", function(payload) {
+            if (!payload.more) {
+              // This is the end, the server says to unsubscribe
+              pusher.unsubscribe(subscriptionChannel)
+              observer.complete()
+            }
+            const result = payload.result
+            if (result) {
+              // Send the new response to listeners
+              observer.next(result)
+            }
+          })
         }
         else {
           // This isn't a subscription,
@@ -61,31 +89,35 @@ class PusherLink extends ApolloLink {
           observer.complete()
         }
       }})
-    })
-  }
-
-  _getSubscriptionChannel(operation) {
-    const response = operation.getContext().response
-    // Check to see if the response has the header
-    const subscriptionChannel = response.headers.get("X-Subscription-ID")
-    return subscriptionChannel
-  }
-
-  _createSubscription(subscriptionChannel, observer) {
-    const pusherChannel = this.pusher.subscribe(subscriptionChannel)
-    // Subscribe for more update
-    pusherChannel.bind("update", function(payload) {
-      if (!payload.more) {
-        // This is the end, the server says to unsubscribe
-        pusher.unsubscribe(subscriptionChannel)
-        observer.complete()
+      // Return an object that will unsubscribe _if_ the query was a subscription.
+      return {
+        unsubscribe: () => {
+          subscriptionChannel && this.pusher.unsubscribe(subscriptionChannel)
+        }
       }
-      const result = payload.result
-      if (result) {
-        // Send the new response to listeners
-        observer.next(result)
-      }
-    })
+    }
+
+    return subscribeObservable
+  }
+}
+
+// Turn `subscribe` arguments into an observer-like thing, see getObserver
+// https://github.com/apollographql/subscriptions-transport-ws/blob/master/src/client.ts#L329-L343
+function getObserver(observerOrNext, onError, onComplete) {
+  if (typeof observerOrNext === 'function') {
+    // Duck-type an observer
+    return {
+      next: (v) => observerOrNext(v),
+      error: (e) => onError && onError(e),
+      complete: () => onComplete && onComplete(),
+    }
+  } else {
+    // Make an object that calls to the given object, with safety checks
+    return {
+      next: (v) => observerOrNext.next && observerOrNext.next(v),
+      error: (e) => observerOrNext.error && observerOrNext.error(e),
+      complete: () => observerOrNext.complete && observerOrNext.complete(),
+    }
   }
 }
 
