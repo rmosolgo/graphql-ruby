@@ -20,7 +20,7 @@ module GraphQL
 
         # First-level usages of spreads within definitions
         # (When a key has an empty list as its value,
-        #  we can resolve that key's depenedents)
+        #  we can resolve that key's dependents)
         # { definition_node => [node, node ...] }
         @defdep_immediate_dependencies = Hash.new { |h, k| h[k] = Set.new }
 
@@ -72,7 +72,7 @@ module GraphQL
 
 
       # Map definition AST nodes to the definition AST nodes they depend on.
-      # Expose circular depednencies.
+      # Expose circular dependencies.
       class DependencyMap
         # @return [Array<GraphQL::Language::Nodes::FragmentDefinition>]
         attr_reader :cyclical_definitions
@@ -143,7 +143,7 @@ module GraphQL
               # Register the dependency AND second-order dependencies
               dependency_map[definition_node] << fragment_node
               dependency_map[definition_node].concat(dependency_map[fragment_node])
-              # Since we've regestered it, remove it from our to-do list
+              # Since we've registered it, remove it from our to-do list
               deps = @defdep_immediate_dependencies[definition_node]
               # Can't find a way to _just_ delete from `deps` and return the deleted entries
               removed, remaining = deps.partition { |spread| spread.name == fragment_node.name }

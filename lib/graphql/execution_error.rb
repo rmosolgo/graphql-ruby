@@ -4,7 +4,7 @@ module GraphQL
   # the error will be inserted into the response's `"errors"` key
   # and the field will resolve to `nil`.
   class ExecutionError < GraphQL::Error
-    # @return [GraphQL::Language::Nodes::Field] the field where the error occured
+    # @return [GraphQL::Language::Nodes::Field] the field where the error occurred
     attr_accessor :ast_node
 
     # @return [String] an array describing the JSON-path into the execution

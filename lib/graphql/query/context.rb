@@ -7,7 +7,7 @@ module GraphQL
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
       module SharedMethods
-        # @return [Object] The target for field resultion
+        # @return [Object] The target for field resolution
         attr_accessor :object
 
         # @return [Hash, Array, String, Integer, Float, Boolean, nil] The resolved value for this field
