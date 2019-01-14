@@ -124,7 +124,7 @@ module BaseInterface
 end
 ```
 
-Note that Pundit scopes are best for database relations, but don't play well with Arrays. See below for bypassing Pundit if you want to return an Array.
+Pundit scopes [don't play well](https://github.com/rmosolgo/graphql-ruby/issues/2008) with `Array`s, so the integration _skips_ scopes on Arrays. You can also opt out on a field-by-field basis as described below.
 
 #### Bypassing scopes
 

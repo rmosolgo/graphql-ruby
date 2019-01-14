@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.9.5 (14 Jan 2019)
+
+## Bug Fix
+
+- Don't pass arrays to Pundit scopes (fixes https://github.com/rmosolgo/graphql-ruby/issues/2008)
+
 ## 1.9.4 (11 Jan 2019)
 
 ## Bug Fix
