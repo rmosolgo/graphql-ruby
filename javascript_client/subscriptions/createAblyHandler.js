@@ -7,8 +7,14 @@ function createAblyHandler(options) {
   var fetchOperation = options.fetchOperation
   return function (operation, variables, cacheConfig, observer) {
     var channelName, channel
-    // POST the subscription like a normal query
-    fetchOperation(operation, variables, cacheConfig).then(function(response) {
+    Promise.all([
+       // POST the subscription like a normal query
+      fetchOperation(operation, variables, cacheConfig),
+      // and try to resolve ably in case it's a Promise
+      Promise.resolve(ably)
+    ]).then(function(results) {
+      var response = results[0]
+      ably = results[1]
       channelName = response.headers.get("X-Subscription-ID")
       channel = ably.channels.get(channelName)
       // Register presence, so that we can detect empty channels and clean them up server-side
