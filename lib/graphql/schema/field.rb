@@ -411,22 +411,24 @@ MSG
         end
       end
 
-      def field_authorized?(object, context)
-        if @resolver_class
+      def authorized?(object, context)
+        self_auth = if @resolver_class
           @resolver_class.authorized?(object, context)
         else
           true
         end
-      end
 
-      def arguments_authorized?(object, context)
-        # Faster than `.any?`
-        arguments.each_value do |arg|
-          if !arg.authorized?(object, context)
-            return false
+        if self_auth
+          # Faster than `.any?`
+          arguments.each_value do |arg|
+            if !arg.authorized?(object, context)
+              return false
+            end
           end
+          true
+        else
+          false
         end
-        true
       end
 
       # Implement {GraphQL::Field}'s resolve API.
@@ -440,17 +442,13 @@ MSG
           # Some legacy fields can have `nil` here, not exactly sure why.
           # @see https://github.com/rmosolgo/graphql-ruby/issues/1990 before removing
           inner_obj = after_obj && after_obj.object
-          if field_authorized?(inner_obj, query_ctx)
-            if arguments_authorized?(inner_obj, query_ctx)
-              # Then if it passed, resolve the field
-              if @resolve_proc
-                # Might be nil, still want to call the func in that case
-                @resolve_proc.call(inner_obj, args, ctx)
-              else
-                public_send_field(after_obj, args, ctx)
-              end
+          if authorized?(inner_obj, query_ctx)
+            # Then if it passed, resolve the field
+            if @resolve_proc
+              # Might be nil, still want to call the func in that case
+              @resolve_proc.call(inner_obj, args, ctx)
             else
-              nil
+              public_send_field(after_obj, args, ctx)
             end
           else
             err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
