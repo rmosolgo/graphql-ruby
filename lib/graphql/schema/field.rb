@@ -494,6 +494,9 @@ MSG
                 resolve_field_method(field_receiver, extended_args, ctx)
               end
             end
+          else
+            err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
+            ctx.schema.unauthorized_field(err)
           end
         rescue GraphQL::UnauthorizedError => err
           ctx.schema.unauthorized_object(err)
