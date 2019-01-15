@@ -11,7 +11,7 @@ module GraphQL
     # @param except [<#call(member, ctx)>]
     # @param include_introspection_types [Boolean] Whether or not to include introspection types in the AST
     # @param include_built_in_scalars [Boolean] Whether or not to include built in scalars in the AST
-    # @param include_built_in_directives [Boolean] Whether or not to include built in diirectives in the AST
+    # @param include_built_in_directives [Boolean] Whether or not to include built in directives in the AST
     class DocumentFromSchemaDefinition
       def initialize(
         schema, context: nil, only: nil, except: nil, include_introspection_types: false,

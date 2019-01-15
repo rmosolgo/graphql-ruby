@@ -41,7 +41,7 @@ module GraphQL
       def initialize(values, context:, defaults_used:)
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
           arg_name = inner_key.to_s
-          arg_defn = self.class.argument_definitions[arg_name] || raise("Not foudn #{arg_name} among #{self.class.argument_definitions.keys}")
+          arg_defn = self.class.argument_definitions[arg_name] || raise("Not found #{arg_name} among #{self.class.argument_definitions.keys}")
           arg_default_used = defaults_used.include?(arg_name)
           arg_value = wrap_value(inner_value, arg_defn.type, context)
           string_key = arg_defn.expose_as
