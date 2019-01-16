@@ -219,6 +219,7 @@ module Jazz
     value "KEYS" do
       description "Neither here nor there, really"
     end
+    value "SILENCE", "Makes no sound", value: false
   end
 
   # Lives side-by-side with an old-style definition
