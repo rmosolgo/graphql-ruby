@@ -18,7 +18,7 @@ module GraphQL
            @definition_line = options.delete(:definition_line)
            super(options)
          end
-       end
+        end
 
         attr_reader :line, :col, :filename
 
