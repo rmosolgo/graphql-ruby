@@ -92,15 +92,44 @@ describe GraphQL::Language::Lexer do
       type Query {
         a: B
       }
+
+      "Here's another description"
+
+      type B {
+        a: B
+      }
+
+      """
+      And another
+      multiline description
+      """
+
+
+      type C {
+        a: B
+      }
       GRAPHQL
 
       tokens = subject.tokenize(str)
 
-      string_tok, type_keyword_tok, query_name_tok = tokens
+      string_tok, type_keyword_tok, query_name_tok,
+        _curly, _ident, _colon, _ident, _curly,
+        string_tok_2, type_keyword_tok_2, b_name_tok,
+        _curly, _ident, _colon, _ident, _curly,
+        string_tok_3, type_keyword_tok_3, c_name_tok = tokens
 
       assert_equal 1, string_tok.line
       assert_equal 5, type_keyword_tok.line
       assert_equal 5, query_name_tok.line
+
+      # Make sure it handles the empty spaces, too
+      assert_equal 9, string_tok_2.line
+      assert_equal 11, type_keyword_tok_2.line
+      assert_equal 11, b_name_tok.line
+
+      assert_equal 15, string_tok_3.line
+      assert_equal 21, type_keyword_tok_3.line
+      assert_equal 21, c_name_tok.line
     end
   end
 end
