@@ -12,7 +12,7 @@ module GraphQL
         @query = query
       end
 
-      # Evalute {operation_name} on {query}.
+      # Evaluate {operation_name} on {query}.
       # Handle {GraphQL::ExecutionError}s by putting them in the "errors" key.
       # @return [Hash] A GraphQL response, with either a "data" key or an "errors" key
       def result
