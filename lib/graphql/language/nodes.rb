@@ -14,10 +14,10 @@ module GraphQL
           # @return [Integer] The first line of the definition (not the description)
           attr_reader :definition_line
 
-         def initialize(options = {})
-           @definition_line = options.delete(:definition_line)
-           super(options)
-         end
+          def initialize(options = {})
+            @definition_line = options.delete(:definition_line)
+            super(options)
+          end
         end
 
         attr_reader :line, :col, :filename
