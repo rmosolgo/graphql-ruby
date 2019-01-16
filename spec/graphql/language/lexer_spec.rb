@@ -95,9 +95,8 @@ describe GraphQL::Language::Lexer do
       GRAPHQL
 
       tokens = subject.tokenize(str)
-      pp tokens
 
-      string_tok, type_keyword_tok, query_name_tok, *rest = tokens
+      string_tok, type_keyword_tok, query_name_tok = tokens
 
       assert_equal 1, string_tok.line
       assert_equal 5, type_keyword_tok.line
