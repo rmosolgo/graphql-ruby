@@ -82,5 +82,26 @@ describe GraphQL::Language::Lexer do
       rparen_token = tokens[6]
       assert_equal '(RPAREN ")" [1:10])', rparen_token.inspect
     end
+
+    it "counts block string line properly" do
+      str = <<-GRAPHQL
+      """
+      Here is a
+      multiline description
+      """
+      type Query {
+        a: B
+      }
+      GRAPHQL
+
+      tokens = subject.tokenize(str)
+      pp tokens
+
+      string_tok, type_keyword_tok, query_name_tok, *rest = tokens
+
+      assert_equal 1, string_tok.line
+      assert_equal 5, type_keyword_tok.line
+      assert_equal 5, query_name_tok.line
+    end
   end
 end
