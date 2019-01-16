@@ -25,7 +25,7 @@ module GraphQL
         # @param results [Array]
         # @return [Array] Same size, filled with finished values
         def self.resolve(results)
-           next_results = []
+          next_results = []
 
           # Work through the queue until it's empty
           while results.size > 0
