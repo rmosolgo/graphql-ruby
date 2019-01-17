@@ -5,6 +5,8 @@ module GraphQL
     class Interpreter
       # I think it would be even better if we could somehow make
       # `continue_field` not recursive. "Trampolining" it somehow.
+      #
+      # @api private
       class Runtime
         # @return [GraphQL::Query]
         attr_reader :query
@@ -52,56 +54,53 @@ module GraphQL
           nil
         end
 
-        private
-
-        def gather_selections(owner_type, selections, selections_by_name)
+        def gather_selections(owner_object, owner_type, selections, selections_by_name)
           selections.each do |node|
+            # Skip gathering this if the directive says so
+            if !directives_include?(node, owner_object, owner_type)
+              next
+            end
+
             case node
             when GraphQL::Language::Nodes::Field
-              if passes_skip_and_include?(node)
-                response_key = node.alias || node.name
-                selections = selections_by_name[response_key]
-                # if there was already a selection of this field,
-                # use an array to hold all selections,
-                # otherise, use the single node to represent the selection
-                if selections
-                  # This field was already selected at least once,
-                  # add this node to the list of selections
-                  s = Array(selections)
-                  s << node
-                  selections_by_name[response_key] = s
-                else
-                  # No selection was found for this field yet
-                  selections_by_name[response_key] = node
-                end
+              response_key = node.alias || node.name
+              selections = selections_by_name[response_key]
+              # if there was already a selection of this field,
+              # use an array to hold all selections,
+              # otherise, use the single node to represent the selection
+              if selections
+                # This field was already selected at least once,
+                # add this node to the list of selections
+                s = Array(selections)
+                s << node
+                selections_by_name[response_key] = s
+              else
+                # No selection was found for this field yet
+                selections_by_name[response_key] = node
               end
             when GraphQL::Language::Nodes::InlineFragment
-              if passes_skip_and_include?(node)
-                if node.type
-                  type_defn = schema.types[node.type.name]
-                  type_defn = type_defn.metadata[:type_class]
-                  # Faster than .map{}.include?()
-                  query.warden.possible_types(type_defn).each do |t|
-                    if t.metadata[:type_class] == owner_type
-                      gather_selections(owner_type, node.selections, selections_by_name)
-                      break
-                    end
-                  end
-                else
-                  # it's an untyped fragment, definitely continue
-                  gather_selections(owner_type, node.selections, selections_by_name)
-                end
-              end
-            when GraphQL::Language::Nodes::FragmentSpread
-              if passes_skip_and_include?(node)
-                fragment_def = query.fragments[node.name]
-                type_defn = schema.types[fragment_def.type.name]
+              if node.type
+                type_defn = schema.types[node.type.name]
                 type_defn = type_defn.metadata[:type_class]
-                schema.possible_types(type_defn).each do |t|
+                # Faster than .map{}.include?()
+                query.warden.possible_types(type_defn).each do |t|
                   if t.metadata[:type_class] == owner_type
-                    gather_selections(owner_type, fragment_def.selections, selections_by_name)
+                    gather_selections(owner_object, owner_type, node.selections, selections_by_name)
                     break
                   end
+                end
+              else
+                # it's an untyped fragment, definitely continue
+                gather_selections(owner_object, owner_type, node.selections, selections_by_name)
+              end
+            when GraphQL::Language::Nodes::FragmentSpread
+              fragment_def = query.fragments[node.name]
+              type_defn = schema.types[fragment_def.type.name]
+              type_defn = type_defn.metadata[:type_class]
+              schema.possible_types(type_defn).each do |t|
+                if t.metadata[:type_class] == owner_type
+                  gather_selections(owner_object, owner_type, fragment_def.selections, selections_by_name)
+                  break
                 end
               end
             else
@@ -112,7 +111,7 @@ module GraphQL
 
         def evaluate_selections(path, owner_object, owner_type, selections, root_operation_type: nil)
           selections_by_name = {}
-          gather_selections(owner_type, selections, selections_by_name)
+          gather_selections(owner_object, owner_type, selections, selections_by_name)
           selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
             # As a performance optimization, the hash key will be a `Node` if
             # there's only one selection of the field. But if there are multiple
@@ -149,12 +148,16 @@ module GraphQL
             # the field's return type at this path in order
             # to propagate `null`
             set_type_at_path(next_path, return_type)
+            # Set this before calling `run_with_directives`, so that the directive can have the latest path
+            @interpreter_context[:current_path] = next_path
+            @interpreter_context[:current_field] = field_defn
 
             object = owner_object
 
             if is_introspection
               object = field_defn.owner.authorized_new(object, context)
             end
+
 
             kwarg_arguments = arguments(object, field_defn, ast_node)
             # It might turn out that making arguments for every field is slow.
@@ -189,16 +192,16 @@ module GraphQL
               field_ast_nodes.each { |f| next_selections.concat(f.selections) }
             end
 
-            app_result = query.trace("execute_field", {field: field_defn, path: next_path}) do
-              @interpreter_context[:current_path] = next_path
-              @interpreter_context[:current_field] = field_defn
-              field_defn.resolve(object, kwarg_arguments, context)
-            end
-
-            after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
-              continue_value = continue_value(next_path, inner_result, field_defn, return_type.non_null?, ast_node)
-              if HALT != continue_value
-                continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false)
+            resolve_with_directives(object, ast_node) do
+              # Actually call the field resolver and capture the result
+              app_result = query.trace("execute_field", {field: field_defn, path: next_path}) do
+                field_defn.resolve(object, kwarg_arguments, context)
+              end
+              after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
+                continue_value = continue_value(next_path, inner_result, field_defn, return_type.non_null?, ast_node)
+                if HALT != continue_value
+                  continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false)
+                end
               end
             end
           end
@@ -319,14 +322,32 @@ module GraphQL
           end
         end
 
-        def passes_skip_and_include?(node)
-          # Eventually this should actually call out to the directives
-          # instead of having magical hard-coded behavior.
-          node.directives.each do |dir|
-            dir_defn = schema.directives.fetch(dir.name)
-            if dir.name == "skip" && arguments(nil, dir_defn, dir)[:if] == true
-              return false
-            elsif dir.name == "include" && arguments(nil, dir_defn, dir)[:if] == false
+        def resolve_with_directives(object, ast_node)
+          run_directive(object, ast_node, 0) { yield }
+        end
+
+        def run_directive(object, ast_node, idx)
+          dir_node = ast_node.directives[idx]
+          if !dir_node
+            yield
+          else
+            dir_defn = schema.directives.fetch(dir_node.name)
+            if !dir_defn.is_a?(Class)
+              dir_defn = dir_defn.metadata[:type_class] || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
+            end
+            dir_args = arguments(nil, dir_defn, dir_node)
+            dir_defn.resolve(object, dir_args, context) do
+              run_directive(object, ast_node, idx + 1) { yield }
+            end
+          end
+        end
+
+        # Check {Schema::Directive.include?} for each directive that's present
+        def directives_include?(node, graphql_object, parent_type)
+          node.directives.each do |dir_node|
+            dir_defn = schema.directives.fetch(dir_node.name).metadata[:type_class] || raise("Only class-based directives are supported (not #{dir_node.name.inspect})")
+            args = arguments(graphql_object, dir_defn, dir_node)
+            if !dir_defn.include?(graphql_object, args, context)
               return false
             end
           end
