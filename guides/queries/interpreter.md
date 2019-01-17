@@ -11,11 +11,11 @@ index: 11
 
 GraphQL-Ruby 1.9.0 includes a new runtime module which you may use for your schema. Eventually, it will become the default.
 
-It's called `GraphQL::Execute::Interpreter` and you can hook it up with `use ...` in your schema class:
+It's called `GraphQL::Execution::Interpreter` and you can hook it up with `use ...` in your schema class:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  use GraphQL::Execute::Interpreter
+  use GraphQL::Execution::Interpreter
 end
 ```
 
@@ -73,7 +73,10 @@ The new runtime works with class-based schemas only. Several features are no lon
 
   These depend on the now-removed `Rewrite` step, which wasted a lot of time making often-unneeded preparation. Most of the attributes you might need from an `irep_node` are available with `extras: [...]`. Query analyzers can be refactored to be static checks (custom validation rules) or dynamic checks, made at runtime. The built-in analyzers have been refactored to run as validators.
 
-  `irep_node`-based lookahead is not supported. Stay tuned for a replacement.
+  For a replacement, check out:
+
+  - {{ "GraphQL::Execution::Lookahead" | api_doc }} for field-level info about child selections
+  - {{ "GraphQL::Analysis::AST" | api_doc }} for query analysis which is compatible with the new interpreter
 
 - `rescue_from`
 
