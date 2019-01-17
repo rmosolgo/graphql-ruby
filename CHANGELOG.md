@@ -24,6 +24,7 @@
 - Add class-based custom directives for the interpreter (#2055)
 - Add `Schema::FieldExtension` for customizing field execution with class-based fields #1795
 - Add `Query#lookahead` for root-level selection info #1931
+- Validation errors have `"extensions": { ... }` which includes metadata about that error #1970
 
 ### Bug fixes
 
