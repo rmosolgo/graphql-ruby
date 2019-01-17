@@ -476,24 +476,24 @@ racc_action_default = [
    -93,   -97,   -99,   -99,  -165,  -160 ]
 
 racc_goto_table = [
-    10,    72,    59,    10,    91,   195,   129,   132,   133,   283,
-   164,   203,    68,   125,   175,   202,   102,   135,    92,    37,
-   259,   227,    37,     4,   301,   182,    39,   159,   235,    99,
-   304,   119,   271,   245,   274,   270,   118,     2,   140,   271,
-   171,   274,   274,   167,   153,    88,   311,   139,    97,   143,
-   145,   147,   149,   134,   177,   103,   175,   281,     1,   288,
-   161,   256,    99,    95,   231,   202,   313,    40,   183,     3,
-   117,   258,   141,   266,   121,   165,   241,   127,   152,   292,
-   221,   248,   249,   224,   179,   202,   252,   276,   144,   146,
-   148,   150,   151,   255,   154,   155,   156,   157,   286,    99,
-   124,   137,   202,    99,    67,    99,   251,    99,   236,    99,
-   264,   170,   294,   246,   240,   173,   nil,    91,   264,   247,
-   nil,   nil,   172,   180,   nil,   nil,    41,    65,   264,   nil,
-   nil,   202,   nil,   nil,   189,   137,   nil,   202,   137,    99,
-   nil,   nil,   nil,   nil,   nil,   nil,   nil,   197,   nil,   264,
-   202,   nil,   nil,   202,   nil,   nil,   nil,   nil,   nil,   264,
-   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   201,   nil,
-   nil,   nil,   nil,   nil,   nil,    65,   nil,   137,   nil,   nil,
+    10,    72,    59,    10,    91,   195,   129,   164,   133,    68,
+   102,   203,   283,   259,   227,   202,    92,   175,   119,    37,
+   125,   235,    37,   274,   182,   270,   245,   135,   271,    99,
+   274,   274,   301,   140,   118,   271,   141,   132,   304,   153,
+   171,   139,   152,   143,   145,   147,   149,   161,    97,     2,
+   167,   134,   288,   236,   311,   103,    88,   159,   246,   175,
+    95,   256,    99,   231,   177,   202,   266,   240,     4,   313,
+   117,    39,   247,   165,   121,   281,   241,   127,   179,     1,
+   276,   248,   249,   252,    40,   202,   183,     3,   144,   146,
+   148,   150,   151,   258,   154,   155,   156,   157,   286,    99,
+   292,   137,   202,    99,   255,    99,   251,    99,   124,    99,
+   221,   170,   294,   224,    67,   173,   nil,    91,   nil,   nil,
+   nil,   nil,   172,   180,   264,   nil,    41,    65,   nil,   nil,
+   nil,   202,   264,   nil,   189,   137,   nil,   202,   137,    99,
+   nil,   nil,   264,   nil,   nil,   nil,   nil,   197,   nil,   nil,
+   202,   nil,   nil,   202,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   264,   nil,   nil,   nil,   nil,   201,   nil,
+   nil,   nil,   nil,   264,   nil,    65,   nil,   137,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   100,   nil,   nil,
    104,   105,   106,   107,   108,   109,   110,   111,   112,   113,
    114,   115,   nil,   nil,   nil,   nil,   238,   242,   308,   122,
@@ -520,24 +520,24 @@ racc_goto_table = [
    nil,   nil,   nil,   nil,   nil,   nil,   309,   nil,   293 ]
 
 racc_goto_check = [
-    10,    13,    15,    10,    23,    79,    19,    14,    19,    20,
-    22,    36,    28,    35,    55,    29,    48,    54,    27,    32,
-    45,    71,    32,     4,    21,    76,     4,    14,    71,    49,
-    21,    18,    31,    71,    78,    30,    17,     2,    70,    31,
-    19,    78,    78,    35,    70,    12,    21,    48,    13,    48,
-    48,    48,    48,    27,    54,    13,    55,    81,     1,    45,
-    18,    36,    49,    28,    76,    29,    20,    11,    77,     3,
-    13,    44,    72,    71,    13,    27,    74,    13,    72,    47,
-    14,    74,    74,    14,    48,    29,    22,    71,    13,    13,
-    13,    13,    13,    43,    13,    13,    13,    13,    36,    49,
-    34,    10,    29,    49,    50,    49,    19,    49,    73,    49,
-    80,    13,    79,    73,    33,    13,   nil,    23,    80,    33,
-   nil,   nil,    15,    13,   nil,   nil,    16,    16,    80,   nil,
-   nil,    29,   nil,   nil,    13,    10,   nil,    29,    10,    49,
-   nil,   nil,   nil,   nil,   nil,   nil,   nil,    13,   nil,    80,
-    29,   nil,   nil,    29,   nil,   nil,   nil,   nil,   nil,    80,
-   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,    10,   nil,
-   nil,   nil,   nil,   nil,   nil,    16,   nil,    10,   nil,   nil,
+    10,    13,    15,    10,    23,    79,    19,    22,    19,    28,
+    48,    36,    20,    45,    71,    29,    27,    55,    18,    32,
+    35,    71,    32,    78,    76,    30,    71,    54,    31,    49,
+    78,    78,    21,    70,    17,    31,    72,    14,    21,    70,
+    19,    48,    72,    48,    48,    48,    48,    18,    13,     2,
+    35,    27,    45,    73,    21,    13,    12,    14,    73,    55,
+    28,    36,    49,    76,    54,    29,    71,    33,     4,    20,
+    13,     4,    33,    27,    13,    81,    74,    13,    48,     1,
+    71,    74,    74,    22,    11,    29,    77,     3,    13,    13,
+    13,    13,    13,    44,    13,    13,    13,    13,    36,    49,
+    47,    10,    29,    49,    43,    49,    19,    49,    34,    49,
+    14,    13,    79,    14,    50,    13,   nil,    23,   nil,   nil,
+   nil,   nil,    15,    13,    80,   nil,    16,    16,   nil,   nil,
+   nil,    29,    80,   nil,    13,    10,   nil,    29,    10,    49,
+   nil,   nil,    80,   nil,   nil,   nil,   nil,    13,   nil,   nil,
+    29,   nil,   nil,    29,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,    80,   nil,   nil,   nil,   nil,    10,   nil,
+   nil,   nil,   nil,    80,   nil,    16,   nil,    10,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,    16,   nil,   nil,
     16,    16,    16,    16,    16,    16,    16,    16,    16,    16,
     16,    16,   nil,   nil,   nil,   nil,    32,    32,    19,    16,
@@ -564,15 +564,15 @@ racc_goto_check = [
    nil,   nil,   nil,   nil,   nil,   nil,    16,   nil,    16 ]
 
 racc_goto_pointer = [
-   nil,    58,    37,    69,    23,   nil,   nil,   nil,   nil,   nil,
-     0,    57,     5,   -18,   -90,    -9,   116,   -53,   -58,   -90,
-  -242,  -260,  -111,   -55,   nil,   nil,   nil,   -47,    -3,  -153,
-  -203,  -208,    19,   -73,     6,   -81,  -157,   nil,   nil,   nil,
-   nil,   nil,   nil,  -125,  -148,  -199,   nil,  -182,   -57,   -40,
-    89,   nil,   nil,   nil,   -84,  -121,   nil,   nil,   nil,   nil,
+   nil,    79,    49,    87,    68,   nil,   nil,   nil,   nil,   nil,
+     0,    74,    16,   -18,   -60,    -9,   116,   -55,   -71,   -90,
+  -239,  -252,  -114,   -55,   nil,   nil,   nil,   -49,    -6,  -153,
+  -213,  -212,    19,  -120,    14,   -74,  -157,   nil,   nil,   nil,
+   nil,   nil,   nil,  -114,  -126,  -206,   nil,  -161,   -63,   -40,
+    99,   nil,   nil,   nil,   -74,  -118,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-   -67,  -157,   -33,   -78,  -112,   nil,  -117,   -74,  -207,  -153,
-  -117,  -193 ]
+   -72,  -164,   -69,  -133,  -112,   nil,  -118,   -56,  -218,  -153,
+  -103,  -175 ]
 
 racc_goto_default = [
    nil,   nil,   nil,   nil,   nil,     5,     6,     7,     8,     9,
@@ -1246,7 +1246,7 @@ module_eval(<<'.,.,', 'parser.y', 116)
 
 module_eval(<<'.,.,', 'parser.y', 159)
   def _reduce_60(val, _values, result)
-     return make_node(:EnumValueDefinition, name: val[1], directives: val[2], description: val[0] || get_description(val[1]), position_source: val[0] || val[1]) 
+     return make_node(:EnumValueDefinition, name: val[1], directives: val[2], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1]) 
     result
   end
 .,.,
@@ -1572,7 +1572,7 @@ module_eval(<<'.,.,', 'parser.y', 273)
 
 module_eval(<<'.,.,', 'parser.y', 282)
   def _reduce_113(val, _values, result)
-     return make_node(:SchemaDefinition, position_source: val[0], directives: val[1], **val[3]) 
+     return make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0].line, directives: val[1], **val[3]) 
     result
   end
 .,.,
@@ -1734,7 +1734,7 @@ module_eval(<<'.,.,', 'parser.y', 338)
 
 module_eval(<<'.,.,', 'parser.y', 348)
   def _reduce_149(val, _values, result)
-            return make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
+            return make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1742,7 +1742,7 @@ module_eval(<<'.,.,', 'parser.y', 348)
 
 module_eval(<<'.,.,', 'parser.y', 353)
   def _reduce_150(val, _values, result)
-            return make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
+            return make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1808,7 +1808,7 @@ module_eval(<<'.,.,', 'parser.y', 371)
 
 module_eval(<<'.,.,', 'parser.y', 375)
   def _reduce_160(val, _values, result)
-            return make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
+            return make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1844,7 +1844,7 @@ module_eval(<<'.,.,', 'parser.y', 384)
 
 module_eval(<<'.,.,', 'parser.y', 388)
   def _reduce_165(val, _values, result)
-            return make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
+            return make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1873,7 +1873,7 @@ module_eval(<<'.,.,', 'parser.y', 394)
 
 module_eval(<<'.,.,', 'parser.y', 398)
   def _reduce_169(val, _values, result)
-            return make_node(:InterfaceTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
+            return make_node(:InterfaceTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1895,7 +1895,7 @@ module_eval(<<'.,.,', 'parser.y', 403)
 
 module_eval(<<'.,.,', 'parser.y', 407)
   def _reduce_172(val, _values, result)
-            return make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
+            return make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1903,7 +1903,7 @@ module_eval(<<'.,.,', 'parser.y', 407)
 
 module_eval(<<'.,.,', 'parser.y', 412)
   def _reduce_173(val, _values, result)
-             return make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
+             return make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1911,7 +1911,7 @@ module_eval(<<'.,.,', 'parser.y', 412)
 
 module_eval(<<'.,.,', 'parser.y', 417)
   def _reduce_174(val, _values, result)
-            return make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
+            return make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1919,7 +1919,7 @@ module_eval(<<'.,.,', 'parser.y', 417)
 
 module_eval(<<'.,.,', 'parser.y', 422)
   def _reduce_175(val, _values, result)
-            return make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[6], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
+            return make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
