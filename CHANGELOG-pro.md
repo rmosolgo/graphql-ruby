@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.9.6 (18 Jan 2019)
+
+- Properly render subscription context in dashboard
+
 ## 1.9.5 (14 Jan 2019)
 
 ## Bug Fix
