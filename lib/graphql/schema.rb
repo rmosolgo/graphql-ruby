@@ -42,6 +42,7 @@ require "graphql/schema/directive/transform"
 require "graphql/schema/resolver"
 require "graphql/schema/mutation"
 require "graphql/schema/relay_classic_mutation"
+require "graphql/schema/subscription"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.

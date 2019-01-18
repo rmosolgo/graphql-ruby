@@ -222,6 +222,7 @@ After a client has registered a subscription, the application may trigger subscr
 
 - Unsubscribe the client with `unsubscribe`
 - Return a value with `super` (which returns `object`) or by returning a different value.
+- Return `:no_update` to skip this update
 
 ### Skipping subscription updates
 
