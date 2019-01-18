@@ -8,7 +8,7 @@ function withExampleClient(mapName, callback) {
     {name: "c-d", alias: "e-f"}
   ]
   var jsCode = generateClientCode("example-client", exampleOperations, JS_TYPE)
-  var filename = "./" + mapName + ".js"
+  var filename = "./src/" + mapName + ".js"
   fs.writeFileSync(filename, jsCode)
 
   // Load the module and use it

@@ -1,7 +1,7 @@
-var sync = require("../sync")
+var sync = require("../src/sync")
 var fs = require("fs")
 var nock = require("nock")
-var Logger = require("../sync/logger")
+var Logger = require("../src/sync/logger")
 var logger = new Logger
 
 describe("sync operations", () => {
@@ -132,9 +132,9 @@ describe("sync operations", () => {
 
       return sync(options).then(function(payload) {
         expect(payload.operations.length).toEqual(5)
-        var generatedCode = fs.readFileSync("./OperationStoreClient.js", "utf8")
+        var generatedCode = fs.readFileSync("./src/OperationStoreClient.js", "utf8")
         expect(payload.generatedCode).toEqual(generatedCode)
-        fs.unlinkSync("./OperationStoreClient.js")
+        fs.unlinkSync("./src/OperationStoreClient.js")
       })
     })
   })
@@ -148,11 +148,11 @@ describe("sync operations", () => {
         send: (sendPayload, opts) => { },
       }
       return sync(options).then(function() {
-        var generatedCode = fs.readFileSync("./OperationStoreClient.js", "utf8")
+        var generatedCode = fs.readFileSync("./src/OperationStoreClient.js", "utf8")
         expect(generatedCode).toMatch('"GetStuff": "5f0da489cf508a7c65ff5fa144e50545"')
         expect(generatedCode).toMatch('module.exports = OperationStoreClient')
         expect(generatedCode).toMatch('var _client = "test-1"')
-        fs.unlinkSync("./OperationStoreClient.js")
+        fs.unlinkSync("./src/OperationStoreClient.js")
       })
     })
 

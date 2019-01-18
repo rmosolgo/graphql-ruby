@@ -196,7 +196,7 @@ Array [
     "Syncing 5 operations to [1mbogus[0m...",
   ],
   Array [
-    "Generating client module in [1mOperationStoreClient.js[0m...",
+    "Generating client module in [1msrc/OperationStoreClient.js[0m...",
   ],
   Array [
     "[32m✓ Done![0m",
@@ -255,7 +255,7 @@ Array [
     "  [2m0 failed[0m",
   ],
   Array [
-    "Generating client module in [1mOperationStoreClient.js[0m...",
+    "Generating client module in [1msrc/OperationStoreClient.js[0m...",
   ],
   Array [
     "[32m✓ Done![0m",
