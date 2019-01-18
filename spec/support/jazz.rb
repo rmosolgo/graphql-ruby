@@ -219,6 +219,7 @@ module Jazz
     value "KEYS" do
       description "Neither here nor there, really"
     end
+    value "SILENCE", "Makes no sound", value: false
   end
 
   # Lives side-by-side with an old-style definition
@@ -682,6 +683,18 @@ module Jazz
       def name
         n = object.graphql_name
         n && n.upcase
+      end
+    end
+
+    class NestedType < GraphQL::Introspection::TypeType
+      def name
+        object.name.upcase
+      end
+
+      class DeeplyNestedType < GraphQL::Introspection::TypeType
+        def name
+          object.name.upcase
+        end
       end
     end
 

@@ -6,7 +6,6 @@ search: true
 section: Queries
 desc: Observation hooks for execution
 index: 11
-experimental: true
 ---
 
 {{ "GraphQL::Tracing" | api_doc }} provides a `.trace` hook to observe events from the GraphQL runtime.

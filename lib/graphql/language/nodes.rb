@@ -8,8 +8,18 @@ module GraphQL
       # - `children` returns all AST nodes attached to this one. Used for tree traversal.
       # - `scalars` returns all scalar (Ruby) values attached to this one. Used for comparing nodes.
       # - `to_query_string` turns an AST node into a GraphQL string
-
       class AbstractNode
+        module DefinitionNode
+          # This AST node's {#line} returns the first line, which may be the description.
+          # @return [Integer] The first line of the definition (not the description)
+          attr_reader :definition_line
+
+          def initialize(options = {})
+            @definition_line = options.delete(:definition_line)
+            super(options)
+          end
+        end
+
         attr_reader :line, :col, :filename
 
         # Initialize a node by extracting its position,
@@ -282,6 +292,7 @@ module GraphQL
       end
 
       class DirectiveDefinition < AbstractNode
+        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods(
@@ -509,6 +520,7 @@ module GraphQL
       end
 
       class SchemaDefinition < AbstractNode
+        include DefinitionNode
         scalar_methods :query, :mutation, :subscription
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -529,6 +541,7 @@ module GraphQL
       end
 
       class ScalarTypeDefinition < AbstractNode
+        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods({
@@ -550,6 +563,7 @@ module GraphQL
       end
 
       class InputValueDefinition < AbstractNode
+        include DefinitionNode
         attr_reader :description
         scalar_methods :name, :type, :default_value
         children_methods({
@@ -561,6 +575,7 @@ module GraphQL
       end
 
       class FieldDefinition < AbstractNode
+        include DefinitionNode
         attr_reader :description
         scalar_methods :name, :type
         children_methods({
@@ -583,6 +598,7 @@ module GraphQL
       end
 
       class ObjectTypeDefinition < AbstractNode
+        include DefinitionNode
         attr_reader :description
         scalar_methods :name, :interfaces
         children_methods({
@@ -606,6 +622,7 @@ module GraphQL
       end
 
       class InterfaceTypeDefinition < AbstractNode
+        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods({
@@ -629,6 +646,7 @@ module GraphQL
       end
 
       class UnionTypeDefinition < AbstractNode
+        include DefinitionNode
         attr_reader :description, :types
         scalar_methods :name
         children_methods({
@@ -651,6 +669,7 @@ module GraphQL
       end
 
       class EnumValueDefinition < AbstractNode
+        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods({
@@ -662,6 +681,7 @@ module GraphQL
       end
 
       class EnumTypeDefinition < AbstractNode
+        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods({
@@ -685,6 +705,7 @@ module GraphQL
       end
 
       class InputObjectTypeDefinition < AbstractNode
+        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods({

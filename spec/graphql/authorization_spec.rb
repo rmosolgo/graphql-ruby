@@ -48,7 +48,7 @@ describe GraphQL::Authorization do
       end
 
       def authorized?(object, context)
-        super && object != :hide
+        super && object != :hide && object != :replace
       end
     end
 
@@ -383,12 +383,26 @@ describe GraphQL::Authorization do
       def self.unauthorized_object(err)
         if err.object.respond_to?(:replacement)
           err.object.replacement
+        elsif err.object == :replace
+          33
         else
           raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object}"
         end
       end
 
       # use GraphQL::Backtrace
+    end
+
+    class SchemaWithFieldHook < GraphQL::Schema
+      query(Query)
+
+      def self.unauthorized_field(err)
+        if err.object == :replace
+          42
+        else
+          raise GraphQL::ExecutionError, "Unauthorized field #{err.field.graphql_name} on #{err.type.graphql_name}: #{err.object}"
+        end
+      end
     end
   end
 
@@ -618,6 +632,65 @@ describe GraphQL::Authorization do
       assert_nil res["data"].fetch("doUnauthorizedStuff")
       assert_raises NotImplementedError do
         auth_execute(query)
+      end
+    end
+
+    describe "field level authorization" do
+      describe "unauthorized field" do
+        describe "with an unauthorized field hook configured" do
+          describe "when the hook returns a value" do
+            it "replaces the response with the return value of the unauthorized field hook" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :replace)
+              assert_equal 42, response["data"].fetch("unauthorized")
+            end
+          end
+
+          describe "when the field hook raises an error" do
+            it "returns nil" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :hide)
+              assert_nil response["data"].fetch("unauthorized")
+            end
+
+            it "adds the error to the errors key" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :hide)
+              assert_equal ["Unauthorized field unauthorized on Query: hide"], response["errors"].map { |e| e["message"] }
+            end
+          end
+        end
+
+        describe "with an unauthorized field hook not configured" do
+          describe "When the object hook replaces the field" do
+            it "delegates to the unauthorized object hook, which replaces the object" do
+              query = "{ unauthorized }"
+              response = AuthTest::Schema.execute(query, root_value: :replace)
+              assert_equal 33, response["data"].fetch("unauthorized")
+            end
+          end
+          describe "When the object hook raises an error" do
+            it "returns nil" do
+              query = "{ unauthorized }"
+              response = AuthTest::Schema.execute(query, root_value: :hide)
+              assert_nil response["data"].fetch("unauthorized")
+            end
+
+            it "adds the error to the errors key" do
+              query = "{ unauthorized }"
+              response = AuthTest::Schema.execute(query, root_value: :hide)
+              assert_equal ["Unauthorized Query: hide"], response["errors"].map { |e| e["message"] }
+            end
+          end
+        end
+      end
+
+      describe "authorized field" do
+        it "returns the field data" do
+          query = "{ unauthorized }"
+          response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 1)
+          assert_equal 1, response["data"].fetch("unauthorized")
+        end
       end
     end
 

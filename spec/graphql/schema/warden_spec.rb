@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+include ErrorBubblingHelpers
 
 module MaskHelpers
   class BaseArgument < GraphQL::Schema::Argument
@@ -664,17 +665,39 @@ describe GraphQL::Schema::Warden do
       assert_equal expected_errors, error_messages(res)
     end
 
-    it "isn't a valid literal input" do
-      query_string = %|
-      {
-        languages(within: {latitude: 1.0, longitude: 2.2, miles: 3.3}) { name }
-      }|
-      res = MaskHelpers.query_with_mask(query_string, mask)
-      expected_errors = [
-        "Argument 'within' on Field 'languages' has an invalid value. Expected type 'WithinInput'.",
-        "InputObject 'WithinInput' doesn't accept argument 'miles'"
-      ]
-      assert_equal expected_errors, error_messages(res)
+    describe "with error bubbling disabled" do
+      it "isn't a valid literal input" do
+        without_error_bubbling(MaskHelpers::Schema) do
+          query_string = %|
+          {
+            languages(within: {latitude: 1.0, longitude: 2.2, miles: 3.3}) { name }
+          }|
+          res = MaskHelpers.query_with_mask(query_string, mask)
+          expected_errors =
+            [
+              "InputObject 'WithinInput' doesn't accept argument 'miles'"
+            ]
+          assert_equal expected_errors, error_messages(res)
+        end
+      end
+    end
+
+    describe "with error bubbling enabled" do
+      it "isn't a valid literal input" do
+        with_error_bubbling(MaskHelpers::Schema) do
+          query_string = %|
+          {
+          languages(within: {latitude: 1.0, longitude: 2.2, miles: 3.3}) { name }
+          }|
+          res = MaskHelpers.query_with_mask(query_string, mask)
+          expected_errors =
+            [
+              "Argument 'within' on Field 'languages' has an invalid value. Expected type 'WithinInput'.",
+              "InputObject 'WithinInput' doesn't accept argument 'miles'"
+            ]
+          assert_equal expected_errors, error_messages(res)
+        end
+      end
     end
 
     it "isn't a valid variable input" do

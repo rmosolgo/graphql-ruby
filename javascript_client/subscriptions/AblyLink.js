@@ -5,7 +5,7 @@
 //   var Ably = require('ably')
 //   // Be sure to create an API key with "Subscribe" and "Presence" permissions only,
 //   // and use that limited API key here:
-//   var ablyClient = new Ably.Realtime("yourapp.key:secret")
+//   var ablyClient = new Ably.Realtime({ key: "yourapp.key:secret" })
 //
 //   // Build a combined link, initialize the client:
 //   const ablyLink = new AblyLink({ably: ablyClient})

@@ -22,7 +22,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         "fragmentOnNonCompositeType"
       end

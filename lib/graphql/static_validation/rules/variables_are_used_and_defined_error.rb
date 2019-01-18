@@ -29,7 +29,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         @violation
       end

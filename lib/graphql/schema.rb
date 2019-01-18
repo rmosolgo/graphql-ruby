@@ -33,6 +33,11 @@ require "graphql/schema/interface"
 require "graphql/schema/scalar"
 require "graphql/schema/object"
 require "graphql/schema/union"
+require "graphql/schema/directive"
+require "graphql/schema/directive/include"
+require "graphql/schema/directive/skip"
+require "graphql/schema/directive/feature"
+require "graphql/schema/directive/transform"
 
 require "graphql/schema/resolver"
 require "graphql/schema/mutation"
@@ -79,11 +84,13 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
+      :error_bubbling,
       :raise_definition_error,
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
+      directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
         if type == :field && after_built_ins
           type = :field_after_built_ins
@@ -114,6 +121,9 @@ module GraphQL
       :introspection_namespace,
       :analysis_engine
 
+    # [Boolean] True if this object bubbles validation errors up from a field into its parent InputObject, if there is one.
+    attr_accessor :error_bubbling
+
     # Single, long-lived instance of the provided subscriptions class, if there is one.
     # @return [GraphQL::Subscriptions]
     attr_accessor :subscriptions
@@ -141,7 +151,6 @@ module GraphQL
     # @see {Query#tracers} for query-specific tracers
     attr_reader :tracers
 
-    DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
     attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
@@ -150,7 +159,7 @@ module GraphQL
       @tracers = []
       @definition_error = nil
       @orphan_types = []
-      @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
+      @directives = self.class.default_directives
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @middleware = MiddlewareChain.new(final_step: GraphQL::Execution::Execute::FieldResolveStep)
       @query_analyzers = []
@@ -175,6 +184,7 @@ module GraphQL
       @introspection_namespace = nil
       @introspection_system = nil
       @interpeter = false
+      @error_bubbling = true
     end
 
     # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
@@ -565,7 +575,8 @@ module GraphQL
 
     # Can't delegate to `class`
     alias :_schema_class :class
-    def_delegators :_schema_class, :visible?, :accessible?, :authorized?, :unauthorized_object, :inaccessible_fields
+    def_delegators :_schema_class, :visible?, :accessible?, :authorized?, :unauthorized_object, :unauthorized_field, :inaccessible_fields
+    def_delegators :_schema_class, :directive
 
     # A function to call when {#execute} receives an invalid query string
     #
@@ -684,6 +695,7 @@ module GraphQL
         # Configuration
         :analysis_engine, :analysis_engine=, :using_ast_analysis?, :interpreter?,
         :max_complexity=, :max_depth=,
+        :error_bubbling=,
         :metadata,
         :default_mask,
         :default_filter, :redefine,
@@ -717,10 +729,14 @@ module GraphQL
         schema_defn.mutation = mutation
         schema_defn.subscription = subscription
         schema_defn.max_complexity = max_complexity
+        schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
-        schema_defn.directives = directives
+
+        prepped_dirs = {}
+        directives.each { |k, v| prepped_dirs[k] = v.graphql_definition}
+        schema_defn.directives = prepped_dirs
         schema_defn.introspection_namespace = introspection
         schema_defn.resolve_type = method(:resolve_type)
         schema_defn.object_from_id = method(:object_from_id)
@@ -851,6 +867,14 @@ module GraphQL
         end
       end
 
+      def error_bubbling(new_error_bubbling = nil)
+        if !new_error_bubbling.nil?
+          @error_bubbling = new_error_bubbling
+        else
+          @error_bubbling
+        end
+      end
+
       def max_depth(new_max_depth = nil)
         if new_max_depth
           @max_depth = new_max_depth
@@ -883,9 +907,11 @@ module GraphQL
         end
       end
 
-      def rescue_from(err_class, &handler_block)
+      def rescue_from(*err_classes, &handler_block)
         @rescues ||= {}
-        @rescues[err_class] = handler_block
+        err_classes.each do |err_class|
+          @rescues[err_class] = handler_block
+        end
       end
 
       def resolve_type(type, obj, ctx)
@@ -927,7 +953,7 @@ module GraphQL
       # By default, this hook just replaces the unauthorized object with `nil`.
       #
       # Whatever value is returned from this method will be used instead of the
-      # unauthorized object (accessible ass `unauthorized_error.object`). If an
+      # unauthorized object (accessible as `unauthorized_error.object`). If an
       # error is raised, then `nil` will be used.
       #
       # If you want to add an error to the `"errors"` key, raise a {GraphQL::ExecutionError}
@@ -937,6 +963,22 @@ module GraphQL
       # @return [Object] The returned object will be put in the GraphQL response
       def unauthorized_object(unauthorized_error)
         nil
+      end
+
+      # This hook is called when a field fails an `authorized?` check.
+      #
+      # By default, this hook implements the same behavior as unauthorized_object.
+      #
+      # Whatever value is returned from this method will be used instead of the
+      # unauthorized field . If an error is raised, then `nil` will be used.
+      #
+      # If you want to add an error to the `"errors"` key, raise a {GraphQL::ExecutionError}
+      # in this hook.
+      #
+      # @param unauthorized_error [GraphQL::UnauthorizedFieldError]
+      # @return [Field] The returned field will be put in the GraphQL response
+      def unauthorized_field(unauthorized_error)
+        unauthorized_object(unauthorized_error)
       end
 
       def type_error(type_err, ctx)
@@ -961,7 +1003,19 @@ module GraphQL
           @directives = new_directives.reduce({}) { |m, d| m[d.name] = d; m }
         end
 
-        @directives ||= directives(DIRECTIVES)
+        @directives ||= default_directives
+      end
+
+      def directive(new_directive)
+        directives[new_directive.graphql_name] = new_directive
+      end
+
+      def default_directives
+        {
+          "include" => GraphQL::Directive::IncludeDirective,
+          "skip" => GraphQL::Directive::SkipDirective,
+          "deprecated" => GraphQL::Directive::DeprecatedDirective,
+        }
       end
 
       def tracer(new_tracer)

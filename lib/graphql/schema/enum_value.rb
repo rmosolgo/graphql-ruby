@@ -40,7 +40,7 @@ module GraphQL
       def initialize(graphql_name, desc = nil, owner:, description: nil, value: nil, deprecation_reason: nil, &block)
         @graphql_name = graphql_name.to_s
         @description = desc || description
-        @value = value || @graphql_name
+        @value = value.nil? ? @graphql_name : value
         @deprecation_reason = deprecation_reason
         @owner = owner
 
@@ -57,7 +57,7 @@ module GraphQL
       end
 
       def value(new_val = nil)
-        if new_val
+        unless new_val.nil?
           @value = new_val
         end
         @value

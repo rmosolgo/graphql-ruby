@@ -159,13 +159,17 @@ module StarWars
     field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, resolver: ShipsWithMaxPageSize
 
     field :bases, BasesConnectionWithTotalCountType, null: true, connection: true do
-      argument :name_includes, String, required: false
+      argument :nameIncludes, String, required: false
+      argument :complexOrder, Boolean, required: false
     end
 
-    def bases(name_includes: nil)
+    def bases(name_includes: nil, complex_order: nil)
       all_bases = Base.where(id: object.bases)
       if name_includes
         all_bases = all_bases.where("name LIKE ?", "%#{name_includes}%")
+      end
+      if complex_order
+        all_bases = all_bases.order("bases.name DESC")
       end
       all_bases
     end

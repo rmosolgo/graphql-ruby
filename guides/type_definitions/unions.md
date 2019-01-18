@@ -54,7 +54,7 @@ end
 Then, extend that one for each union in your schema:
 
 ```ruby
-class Types::CommentSubject < BaseUnion
+class Types::CommentSubject < Types::BaseUnion
   description "Objects which may be commented on"
   possible_types Types::Post, Types::Image
 

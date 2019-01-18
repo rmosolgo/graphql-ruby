@@ -2,6 +2,7 @@
 require "graphql/execution/interpreter/execution_errors"
 require "graphql/execution/interpreter/hash_response"
 require "graphql/execution/interpreter/runtime"
+require "graphql/execution/interpreter/resolve"
 
 module GraphQL
   module Execution
@@ -90,50 +91,8 @@ module GraphQL
         end
         final_values.compact!
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-          while final_values.any?
-            final_values = resolve_interpreter_result(final_values)
-          end
+          Interpreter::Resolve.resolve_all(final_values)
         end
-      end
-
-      private
-
-      # `results_level` is one level of _depth_ of a query or multiplex.
-      #
-      # Resolve all lazy values in that depth before moving on
-      # to the next level.
-      #
-      # It's assumed that the lazies will perform side-effects
-      # and return {Lazy} instances if there's more work to be done,
-      # or return {Hash}/{Array} if the query should be continued.
-      #
-      # @param result [Array, Hash, Object]
-      # @return void
-      def resolve_interpreter_result(results_level)
-        next_level = []
-
-        # Work through the queue until it's empty
-        while results_level.size > 0
-          result_value = results_level.shift
-
-          if result_value.is_a?(Lazy)
-            result_value = result_value.value
-          end
-
-          if result_value.is_a?(Lazy)
-            # Since this field returned another lazy,
-            # add it to the same queue
-            results_level << result_value
-          elsif result_value.is_a?(Hash)
-            # This is part of the next level, add it
-            next_level.concat(result_value.values)
-          elsif result_value.is_a?(Array)
-            # This is part of the next level, add it
-            next_level.concat(result_value)
-          end
-        end
-
-        next_level
       end
     end
   end

@@ -8,6 +8,60 @@
 
 ### Bug fixes
 
+## 1.9.0-pre2 (17 Jan 2019)
+
+### Breaking changes
+
+- AST nodes are immutable. To modify a parsed GraphQL query, see `GraphQL::Language::Visitor` for its mutation API, which builds a new AST with the specified mutations applied. #1338, #1740
+- Cursors use urlsafe Base64. This won't break your clients (it's backwards-compatible), but it might break your tests, so it's listed here. #1698
+- Add `field(..., resolver_method:)` for when GraphQL-Ruby should call a method _other than_ the one whose name matches the field name (#1961). This means that if you're using `method:` to call a different method _on the Schema::Object subclass_, you should update that configuration to `resolver_method:`. (`method:` is still used to call a different method on the _underlying application object_.)
+- Calling `super` in a field method doesn't work anymore (#1961)
+
+### New features
+
+- Add `GraphQL::Execution::Interpreter` (#1394) and `GraphQL::Analysis::AST` (#1824) which together cut GraphQL overhead by half (time and memory)
+- Add `Schema.unauthorized_field(err)` for when `Field#authorized?` checks fail (#1994)
+- Add class-based custom directives for the interpreter (#2055)
+- Add `Schema::FieldExtension` for customizing field execution with class-based fields #1795
+- Add `Query#lookahead` for root-level selection info #1931
+- Validation errors have `"extensions": { ... }` which includes metadata about that error #1970
+
+### Bug fixes
+
+- Support `false` as an Enum value #2050
+- Support `hash_key:` fields when the key isn't a valid Ruby method name #2016
+- Fix lookahead with Fragments #1933
+
+## 1.8.13 (4 Jan 2019)
+
+### Bug fixes
+
+- Fix regression in block string parsing #2032
+
+## 1.8.12 (3 Jan 2019)
+
+### Breaking changes
+
+- When an input object's argument has a validation error, that error is reported on the _argument_ instead of its parent input object. #2013
+
+### New features
+
+- Add `error_bubbling false` Schema configuration for nicer validation of compound inputs #2013
+- Print descriptions as block strings in SDL #2011
+- Improve string-to-constant resolution #1810
+- Add `Query::Context#to_hash` for splatting #1955
+- Add `#dig` to `Schema::InputObject` and `Query::Arguments` #1968
+- Add `.*_execution_strategy` methods to class-based schemas #1914
+- Accept multiple errors when adding `.rescue_from` handlers #1991
+
+### Bug fixes
+
+- Fix scalar tracing in NewRelic and Skylight #1954
+- Fix lexer for multiple block strings #1937
+- Add `unscope(:order)` when counting relations #1911
+- Improve build-from-definition error message #1998
+- Fix regression in legacy compat #2000
+
 ## 1.8.11 (16 Oct 2018)
 
 ### New features

@@ -439,7 +439,9 @@ MSG
         ctx.schema.after_lazy(obj) do |after_obj|
           # First, apply auth ...
           query_ctx = ctx.query.context
-          inner_obj = after_obj.object
+          # Some legacy fields can have `nil` here, not exactly sure why.
+          # @see https://github.com/rmosolgo/graphql-ruby/issues/1990 before removing
+          inner_obj = after_obj && after_obj.object
           if authorized?(inner_obj, query_ctx)
             # Then if it passed, resolve the field
             if @resolve_proc
@@ -449,7 +451,8 @@ MSG
               public_send_field(after_obj, args, ctx)
             end
           else
-            nil
+            err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
+            query_ctx.schema.unauthorized_field(err)
           end
         end
       end
@@ -491,6 +494,9 @@ MSG
                 resolve_field_method(field_receiver, extended_args, ctx)
               end
             end
+          else
+            err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
+            ctx.schema.unauthorized_field(err)
           end
         rescue GraphQL::UnauthorizedError => err
           ctx.schema.unauthorized_object(err)

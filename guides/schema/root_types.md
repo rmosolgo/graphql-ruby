@@ -17,7 +17,6 @@ class MySchema < GraphQL::Schema
   query Types::QueryType
   # optional
   mutation Types::MutationType
-  # experimental
   subscription Types::SubscriptionType
 end
 ```
@@ -53,7 +52,6 @@ mutation AddPost($postAttrs: PostInput!){
   createPost(attrs: $postAttrs)
 }
 
-# Experimental
 subscription CommentAdded {
   # `Subscription.commentAdded`
   commentAdded(postId: 1)

@@ -9,7 +9,7 @@ module GraphQL
       end
 
       def call(obj, args, ctx)
-        # in a lazy ressolve hook, obj is the promise,
+        # in a lazy resolve hook, obj is the promise,
         # get the object that the promise was
         # originally derived from
         parent = ctx.object

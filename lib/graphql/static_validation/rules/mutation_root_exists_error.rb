@@ -18,7 +18,6 @@ module GraphQL
         })
       end
 
-      private
       def code
         "missingMutationConfiguration"
       end
