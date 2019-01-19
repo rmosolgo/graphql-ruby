@@ -184,7 +184,7 @@ You can define this method to add initial responses or perform other logic befor
 
 ### Adding an Initial Response
 
-By default, GraphQL-Ruby returns _nothing_ on an initial subscription. But, you may choose to override this and return a value in `def subscribe`. For example:
+By default, GraphQL-Ruby returns _nothing_ (`:no_response`) on an initial subscription. But, you may choose to override this and return a value in `def subscribe`. For example:
 
 ```ruby
 class Subscriptions::MessageWasPosted < Subscriptions::BaseSubscription

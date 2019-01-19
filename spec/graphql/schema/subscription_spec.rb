@@ -125,10 +125,6 @@ describe GraphQL::Schema::Subscription do
         SUBSCRIPTION_REGISTRY[subscription_id] = [query, events]
       end
 
-      def read_subscription(subscription_id)
-        query, events = SUBSCRIPTION_REGISTRY.fetch(subscription_id)
-      end
-
       def each_subscription_id(event)
         EVENT_REGISTRY[event.topic].each do |sub_id|
           yield(sub_id)
@@ -276,5 +272,9 @@ describe GraphQL::Schema::Subscription do
     it "skips the update if `:no_update` is returned"
     it "unsubscribes if a `loads:` argument is not found"
     it "unsubscribes if #authorized? fails"
+  end
+
+  describe "skipping some updates" do
+    it "can broadcast to a subset of subscribers"
   end
 end
