@@ -916,11 +916,15 @@ module GraphQL
       end
 
       def resolve_type(type, obj, ctx)
-        raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
+        if type.kind.object?
+          type
+        else
+          raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
+        end
       end
 
       def object_from_id(node_id, ctx)
-        raise NotImplementedError, "#{self.name}.object_from_id(node_id, ctx) must be implemented to use the `node` field (tried to load from id `#{node_id}`)"
+        raise NotImplementedError, "#{self.name}.object_from_id(node_id, ctx) must be implemented to load by ID (tried to load from id `#{node_id}`)"
       end
 
       def id_from_object(object, type, ctx)

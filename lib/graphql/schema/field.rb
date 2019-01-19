@@ -59,10 +59,11 @@ module GraphQL
       # It also normalizes positional arguments into keywords for {Schema::Field#initialize}.
       # @param resolver [Class] A {GraphQL::Schema::Resolver} class to use for field configuration
       # @param mutation [Class] A {GraphQL::Schema::Mutation} class to use for field configuration
+      # @param subscription [Class] A {GraphQL::Schema::Subscription} class to use for field configuration
       # @return [GraphQL::Schema:Field] an instance of `self
       # @see {.initialize} for other options
-      def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, **kwargs, &block)
-        if (parent_config = resolver || mutation)
+      def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
+        if (parent_config = resolver || mutation || subscription)
           # Get the parent config, merge in local overrides
           kwargs = parent_config.field_options.merge(kwargs)
           # Add a reference to that parent class

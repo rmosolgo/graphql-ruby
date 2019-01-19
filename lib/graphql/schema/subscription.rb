@@ -13,6 +13,11 @@ module GraphQL
     # Also, `#unsubscribe` terminates the subscription.
     class Subscription < GraphQL::Schema::Resolver
       extend GraphQL::Schema::Resolver::HasPayloadType
+      extend GraphQL::Schema::Member::HasFields
+
+      # The generated payload type is required; If there's no payload,
+      # propagate null.
+      null false
 
       def initialize(object:, context:)
         super
@@ -29,7 +34,7 @@ module GraphQL
 
       # Wrap the user-defined `#subscribe` hook
       def resolve_subscribe(args)
-        ret_val = subscribe(args)
+        ret_val = args.any? ? subscribe(args) : subscribe
         if ret_val == :no_response
           context.skip
         else
@@ -38,16 +43,17 @@ module GraphQL
       end
 
       # Default implementation returns the root object.
-      # Override it to return a different object or
-      # `:no_response` to change the initial response.
-      # TODO default should be :no_response for compat?
+      # Override it to return an object or
+      # `:no_response` to return nothing.
+      #
+      # The default is `:no_response`.
       def subscribe(args)
-        object
+        :no_response
       end
 
       # Wrap the user-provided `#update` hook
       def resolve_update(args)
-        ret_val = update(args)
+        ret_val = args.any? ? update(args) : update
         if ret_val == :no_update
           # TODO: this needs to be something _else_, that tells
           # the transport system to _make no send at all_.
