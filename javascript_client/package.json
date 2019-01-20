@@ -14,6 +14,7 @@
     "babel-jest": "^23.6.0",
     "jest": "^23.6.0",
     "nock": "^9.0.14",
+    "npm-run-all": "^4.1.5",
     "rollup": "^1.1.1",
     "rollup-plugin-babel": "^4.3.2",
     "rollup-plugin-commonjs": "^9.2.0",
@@ -21,7 +22,11 @@
     "rollup-plugin-node-resolve": "^4.0.0"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "rimraf dist && run-p build:subscriptions",
+    "build:subscriptions": "run-p build:subscriptions:es && run-p build:subscriptions:cjs",
+    "build:subscriptions:es": "NODE_ENV=es rollup -c",
+    "build:subscriptions:cjs": "NODE_ENV=cjs rollup -c"
   },
   "dependencies": {
     "apollo-link": "^1.0.3",
