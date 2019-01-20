@@ -8,15 +8,20 @@ const pkg = require("./package.json");
 const external = Object.keys(pkg.dependencies);
 
 export default {
-  input: "src/index.js",
-  output: {
-    file: {
-      es: pkg.module,
-      cjs: pkg.main
-    }[env],
-    format: env
-  },
-  external: external,
+  input: "src/subscriptions/index.js",
+  output: [
+    {
+      file: 'dist/subscriptions/graphql-ruby-client-subscriptions.umd.js',
+      format: 'umd',
+      name: 'graphql-ruby-client-subscriptions'
+    },
+    {
+      file: 'dist/subscriptions/graphql-ruby-client-subscriptions.esm.js',
+      format: 'esm',
+      name: 'graphql-ruby-client-subscriptions'
+    }
+  ],
+  external,
   plugins: [
     resolve(),
     babel({
