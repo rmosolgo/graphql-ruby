@@ -1,6 +1,7 @@
-var createActionCableHandler = require("./createActionCableHandler")
-var createPusherHandler = require("./createPusherHandler")
-var createAblyHandler = require("./createAblyHandler")
+import createActionCableHandler from "./createActionCableHandler";
+import createPusherHandler from "./createPusherHandler";
+import createAblyHandler from "./createAblyHandler";
+
 /**
  * Transport-agnostic wrapper for Relay Modern subscription handlers.
  * @example Add ActionCable subscriptions
@@ -30,4 +31,4 @@ function createHandler(options) {
   return handler
 }
 
-module.exports = createHandler
+export default createHandler

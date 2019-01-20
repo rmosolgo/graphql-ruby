@@ -1,4 +1,4 @@
-var registry = require("../registry")
+import registry from "../registry";
 
 describe("subscription registry", () => {
   it("adds and unsubscribes", () => {

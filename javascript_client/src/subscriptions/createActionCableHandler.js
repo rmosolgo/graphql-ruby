@@ -56,4 +56,4 @@ function createActionCableHandler(cable, operations) {
   }
 }
 
-module.exports = createActionCableHandler
+export default createActionCableHandler

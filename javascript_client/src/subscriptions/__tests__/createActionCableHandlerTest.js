@@ -1,4 +1,4 @@
-createActionCableHandler = require("../createActionCableHandler")
+import createActionCableHandler from "../createActionCableHandler";
 
 describe("createActionCableHandler", () => {
   it("returns a function producing a disposable subscription", () => {

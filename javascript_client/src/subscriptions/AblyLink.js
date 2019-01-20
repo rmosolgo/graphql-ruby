@@ -36,8 +36,7 @@
 //     // Do something with `data` and/or `errors`
 //   }})
 //
-var ApolloLink = require("apollo-link").ApolloLink
-var Observable = require("apollo-link").Observable
+import {ApolloLink, Observable} from "apollo-link";
 
 class AblyLink extends ApolloLink {
   constructor(options) {
@@ -95,4 +94,4 @@ class AblyLink extends ApolloLink {
   }
 }
 
-module.exports = AblyLink
+export default AblyLink

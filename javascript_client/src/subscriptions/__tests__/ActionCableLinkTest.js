@@ -1,5 +1,5 @@
-var ActionCableLink = require("../ActionCableLink")
-var graphql = require("graphql")
+import ActionCableLink from "../ActionCableLink";
+import * as graphql from "graphql";
 
 describe("ActionCableLink", () => {
   it("delegates to the cable", () => {

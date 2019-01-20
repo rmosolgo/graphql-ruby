@@ -1,5 +1,5 @@
-var printer = require("graphql/language/printer")
-var registry = require("./registry")
+import printer from "graphql/language/printer";
+import registry from "./registry";
 
 /**
  * Make a new subscriber for `addGraphQLSubscriptions`
@@ -68,4 +68,4 @@ PusherSubscriber.prototype.unsubscribe = function(id) {
   registry.unsubscribe(id)
 }
 
-module.exports = PusherSubscriber
+export default PusherSubscriber

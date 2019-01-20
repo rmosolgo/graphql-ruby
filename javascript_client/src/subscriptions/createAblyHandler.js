@@ -44,4 +44,4 @@ function createAblyHandler(options) {
   }
 }
 
-module.exports = createAblyHandler
+export default createAblyHandler

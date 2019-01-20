@@ -95,12 +95,12 @@ function generateClientCode(clientName, operations, type) {
   // Build up the map
   var keyValuePairs = "{"
   keyValuePairs += Object.keys(nameToAlias).map(function(operationName) {
-    persistedAlias = nameToAlias[operationName]
+    var persistedAlias = nameToAlias[operationName]
     return "\n  \"" + operationName + "\": \"" + persistedAlias + "\""
   }).join(",")
   keyValuePairs += "\n}"
 
-  generateOutfile = generators[type || JS_TYPE];
+  var generateOutfile = generators[type || JS_TYPE];
 
   if (!generateOutfile) {
     throw new Error("Unknown generator type " + type + " encountered for generating the outFile");

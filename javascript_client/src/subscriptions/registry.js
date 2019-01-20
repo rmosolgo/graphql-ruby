@@ -26,4 +26,4 @@ var registry = {
   },
 }
 
-module.exports = registry
+export default registry

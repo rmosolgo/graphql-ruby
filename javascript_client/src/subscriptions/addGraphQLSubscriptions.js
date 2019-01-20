@@ -1,5 +1,5 @@
-var ActionCableSubscriber = require("./ActionCableSubscriber")
-var PusherSubscriber = require("./PusherSubscriber")
+import ActionCableSubscriber from "./ActionCableSubscriber";
+import PusherSubscriber from "./PusherSubscriber";
 
 /**
  * Modify an Apollo network interface to
@@ -72,4 +72,4 @@ function addGraphQLSubscriptions(networkInterface, options) {
   return networkInterfaceWithSubscriptions
 }
 
-module.exports = addGraphQLSubscriptions
+export default addGraphQLSubscriptions

@@ -1,6 +1,5 @@
-var ApolloLink = require("apollo-link").ApolloLink
-var Observable = require("apollo-link").Observable
-var printer = require("graphql/language/printer")
+import {ApolloLink, Observable} from "apollo-link";
+import { print } from "graphql/language";
 
 function ActionCableLink(options) {
   var cable = options.cable
@@ -24,7 +23,7 @@ function ActionCableLink(options) {
           this.perform(
             actionName,
             {
-              query: operation.query ? printer.print(operation.query) : null,
+              query: operation.query ? print(operation.query) : null,
               variables: operation.variables,
               operationId: operation.operationId,
               operationName: operation.operationName
@@ -48,4 +47,4 @@ function ActionCableLink(options) {
   })
 }
 
-module.exports = ActionCableLink
+export default ActionCableLink

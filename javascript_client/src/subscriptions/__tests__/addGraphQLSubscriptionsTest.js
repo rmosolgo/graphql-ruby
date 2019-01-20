@@ -1,4 +1,4 @@
-addGraphQLSubscriptions = require("../addGraphQLSubscriptions")
+import addGraphQLSubscriptions from "../addGraphQLSubscriptions";
 
 describe("addGraphQLSubscriptions", () => {
   it("delegates to the subscriber", () => {

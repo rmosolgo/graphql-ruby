@@ -37,4 +37,4 @@ function createPusherHandler(options) {
   }
 }
 
-module.exports = createPusherHandler
+export default createPusherHandler
