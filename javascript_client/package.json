@@ -23,10 +23,9 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "rimraf dist && run-p build:subscriptions",
-    "build:subscriptions": "run-p build:subscriptions:es && run-p build:subscriptions:cjs",
-    "build:subscriptions:es": "NODE_ENV=es rollup -c",
-    "build:subscriptions:cjs": "NODE_ENV=cjs rollup -c"
+    "build": "rimraf dist && run-p build:subscriptions && run-p make:indexes",
+    "build:subscriptions": "rollup -c rollup.config.subscriptions.js",
+    "make:indexes": "cp dist/subscriptions/graphql-ruby-client-subscriptions.esm.js dist/subscriptions/index.js"
   },
   "dependencies": {
     "apollo-link": "^1.0.3",
