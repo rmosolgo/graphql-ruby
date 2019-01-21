@@ -12,6 +12,16 @@ module GraphQL
     #
     # Also, `#unsubscribe` terminates the subscription.
     class Subscription < GraphQL::Schema::Resolver
+      class EarlyTerminationError < StandardError
+      end
+
+      # Raised when `unsubscribe` is called; caught by `subscriptions.rb`
+      class UnsubscribedError < EarlyTerminationError
+      end
+
+      # Raised when `no_update` is returned; caught by `subscriptions.rb`
+      class NoUpdateError < EarlyTerminationError
+      end
       extend GraphQL::Schema::Resolver::HasPayloadType
       extend GraphQL::Schema::Member::HasFields
 
@@ -55,12 +65,7 @@ module GraphQL
       def resolve_update(args)
         ret_val = args.any? ? update(args) : update
         if ret_val == :no_update
-          # TODO: this needs to be something _else_, that tells
-          # the transport system to _make no send at all_.
-          #
-          # Or, maybe the transport side should _check_ whether any
-          # root fields are present, and if not, skip the send.
-          context.skip
+          raise NoUpdateError
         else
           ret_val
         end
@@ -69,7 +74,7 @@ module GraphQL
       # The default implementation returns the root object.
       # Override it to return `:no_update` if you want to
       # skip updates sometimes. Or override it to return a different object.
-      def update(args)
+      def update(args = {})
         object
       end
 
@@ -81,6 +86,11 @@ module GraphQL
           unsubscribe
         end
         super
+      end
+
+      # Call this to halt execution and remove this subscription from the system
+      def unsubscribe
+        raise UnsubscribedError
       end
     end
   end

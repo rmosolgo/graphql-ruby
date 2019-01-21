@@ -57,13 +57,13 @@ describe GraphQL::Schema::Subscription do
 
       def update(user:)
         if context[:viewer] == user
-          # don't update for one's own toots
+          # don't update for one's own toots.
+          # (IRL it would make more sense to implement this in `#subscribe`)
           :no_update
         else
-          {
-            toot: object,
-            user: USERS[object[:handle]],
-          }
+          # This assumes that trigger object can fulfill `{toot:, user:}`,
+          # for testing that the default implementation is `return object`
+          super
         end
       end
     end
@@ -79,6 +79,11 @@ describe GraphQL::Schema::Subscription do
 
       def subscribe
         { users: USERS.values }
+      end
+
+      # Test returning a custom object from #update
+      def update
+        { users: object[:new_users] }
       end
     end
 
@@ -118,6 +123,7 @@ describe GraphQL::Schema::Subscription do
       EVENT_REGISTRY = Hash.new { |h, k| h[k] = [] }
 
       def write_subscription(query, events)
+        query.context[:subscription_mailbox] = []
         subscription_id = build_id
         events.each do |ev|
           EVENT_REGISTRY[ev.topic] << subscription_id
@@ -131,7 +137,26 @@ describe GraphQL::Schema::Subscription do
         end
       end
 
-      def deliver(subscription_id, result, context)
+      def read_subscription(subscription_id)
+        query, _events = SUBSCRIPTION_REGISTRY[subscription_id]
+        {
+          query_string: query.query_string,
+          context: query.context.to_h,
+          variables: query.provided_variables,
+          operation_name: query.selected_operation_name,
+        }
+      end
+
+      def deliver(subscription_id, result)
+        query, _events = SUBSCRIPTION_REGISTRY[subscription_id]
+        query.context[:subscription_mailbox] << result
+      end
+
+      def delete_subscription(subscription_id)
+        query, events = SUBSCRIPTION_REGISTRY.delete(subscription_id)
+        events.each do |ev|
+          EVENT_REGISTRY[ev.topic].delete(subscription_id)
+        end
       end
     end
 
@@ -149,7 +174,12 @@ describe GraphQL::Schema::Subscription do
   before do
     # Reset databases
     SubscriptionFieldSchema::TOOTS.clear
-    SubscriptionFieldSchema::USERS.merge!(SubscriptionFieldSchema::ALL_USERS)
+    # Reset in order:
+    SubscriptionFieldSchema::USERS.clear
+    SubscriptionFieldSchema::ALL_USERS.map do |k, v|
+      SubscriptionFieldSchema::USERS[k] = v.dup
+    end
+
     SubscriptionFieldSchema::InMemorySubscriptions::SUBSCRIPTION_REGISTRY.clear
     SubscriptionFieldSchema::InMemorySubscriptions::EVENT_REGISTRY.clear
   end
@@ -267,14 +297,120 @@ describe GraphQL::Schema::Subscription do
   end
 
   describe "updates" do
-    it "updates with `object` by default"
-    it "updates with the returned value"
-    it "skips the update if `:no_update` is returned"
-    it "unsubscribes if a `loads:` argument is not found"
-    it "unsubscribes if #authorized? fails"
-  end
+    it "updates with `object` by default" do
+      res = exec_query <<-GRAPHQL
+      subscription {
+        tootWasTooted(handle: "matz") {
+          toot { body }
+        }
+      }
+      GRAPHQL
+      assert_equal 1, in_memory_subscription_count
+      obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: SubscriptionFieldSchema::USERS["matz"])
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
 
-  describe "skipping some updates" do
-    it "can broadcast to a subset of subscribers"
+      mailbox = res.context[:subscription_mailbox]
+      update_payload = mailbox.first
+      assert_equal "I am a C programmer", update_payload["data"]["tootWasTooted"]["toot"]["body"]
+    end
+
+    it "updates with the returned value" do
+      res = exec_query <<-GRAPHQL
+      subscription {
+        usersJoined {
+          users {
+            handle
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal 1, in_memory_subscription_count
+      SubscriptionFieldSchema.subscriptions.trigger(:users_joined, {}, {new_users: [{handle: "eileencodes"}, {handle: "tenderlove"}]})
+
+      update = res.context[:subscription_mailbox].first
+      assert_equal [{"handle" => "eileencodes"}, {"handle" => "tenderlove"}], update["data"]["usersJoined"]["users"]
+    end
+
+    it "skips the update if `:no_update` is returned, but updates other subscribers" do
+      query_str = <<-GRAPHQL
+      subscription {
+        tootWasTooted(handle: "matz") {
+          toot { body }
+        }
+      }
+      GRAPHQL
+
+      res1 = exec_query(query_str)
+      res2 = exec_query(query_str, context: { viewer: SubscriptionFieldSchema::USERS["matz"] })
+      assert_equal 2, in_memory_subscription_count
+
+      obj = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: SubscriptionFieldSchema::USERS["matz"])
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+
+      mailbox1 = res1.context[:subscription_mailbox]
+      mailbox2 = res2.context[:subscription_mailbox]
+      # The anonymous viewer got an update:
+      assert_equal "Merry Christmas, here's a new Ruby version", mailbox1.first["data"]["tootWasTooted"]["toot"]["body"]
+      # But not matz:
+      assert_equal [], mailbox2
+    end
+
+    it "unsubscribes if a `loads:` argument is not found" do
+      res = exec_query <<-GRAPHQL
+      subscription {
+        tootWasTooted(handle: "matz") {
+          toot { body }
+        }
+      }
+      GRAPHQL
+      assert_equal 1, in_memory_subscription_count
+      obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: SubscriptionFieldSchema::USERS["matz"])
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+
+      # Get 1 successful update
+      mailbox = res.context[:subscription_mailbox]
+      assert_equal 1, mailbox.size
+      update_payload = mailbox.first
+      assert_equal "I am a C programmer", update_payload["data"]["tootWasTooted"]["toot"]["body"]
+
+      # Then cause a not-found and update again
+      matz = SubscriptionFieldSchema::USERS.delete("matz")
+      obj = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: matz)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+      # there was no subsequent update
+      assert_equal 1, mailbox.size
+      # The database was cleaned up
+      assert_equal 0, in_memory_subscription_count
+    end
+
+    it "sends an error if `#authorized?` fails" do
+      res = exec_query <<-GRAPHQL
+      subscription {
+        tootWasTooted(handle: "matz") {
+          toot { body }
+        }
+      }
+      GRAPHQL
+      assert_equal 1, in_memory_subscription_count
+      matz = SubscriptionFieldSchema::USERS["matz"]
+      obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: matz)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+
+      # Get 1 successful update
+      mailbox = res.context[:subscription_mailbox]
+      assert_equal 1, mailbox.size
+      update_payload = mailbox.first
+      assert_equal "I am a C programmer", update_payload["data"]["tootWasTooted"]["toot"]["body"]
+
+      # Cause an authorized failure
+      matz[:private] = true
+      obj = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: matz)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+      assert_equal 2, mailbox.size
+      assert_equal ["Can't subscribe to private user"], mailbox.last["errors"].map { |e| e["message"] }
+      # The subscription remains in place
+      assert_equal 1, in_memory_subscription_count
+    end
   end
 end

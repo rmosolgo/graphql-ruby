@@ -30,9 +30,9 @@ module GraphQL
               field,
               scope: (field.subscription_scope ? context[field.subscription_scope] : nil),
             )
-            # The root object is _already_ the subscription update,
-            # it was passed to `.trigger`
-            object.object
+            # This is a subscription update. The resolver returned `skip` if it should be skipped,
+            # or else it returned an object to resolve the update.
+            value
           else
             # This is a subscription update, but this event wasn't triggered.
             context.skip
