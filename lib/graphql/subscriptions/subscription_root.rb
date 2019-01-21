@@ -4,8 +4,30 @@ module GraphQL
   class Subscriptions
     # Extend this module in your subscription root when using {GraphQL::Execution::Interpreter}.
     module SubscriptionRoot
+      def self.extended(child_cls)
+        child_cls.include(InstanceMethods)
+      end
+
+      # This is for maintaining backwards compatibility:
+      # if a subscription field is created without a `subscription:` resolver class,
+      # then implement the method with the previous default behavior.
+      module InstanceMethods
+        def skip_subscription_root(*)
+          if context.query.subscription_update?
+            object
+          else
+            context.skip
+          end
+        end
+      end
+
       def field(*args, extensions: [], **rest, &block)
         extensions += [Extension]
+        # Backwards-compat for schemas
+        if !rest[:subscription]
+          name = args.first
+          alias_method(name, :skip_subscription_root)
+        end
         super(*args, extensions: extensions, **rest, &block)
       end
 

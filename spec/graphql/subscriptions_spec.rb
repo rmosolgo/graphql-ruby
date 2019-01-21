@@ -116,24 +116,12 @@ class ClassBasedInMemoryBackend < InMemoryBackend
       argument :id, ID, required: true
     end
 
-    def payload(id:)
-      object
-    end
-
     field :event, Payload, null: true do
       argument :stream, StreamInput, required: false
     end
 
-    def event(stream: nil)
-      object
-    end
-
     field :my_event, Payload, null: true, subscription_scope: :me do
       argument :type, PayloadType, required: false
-    end
-
-    def my_event(type: nil)
-      object
     end
 
     field :failed_event, Payload, null: false  do
