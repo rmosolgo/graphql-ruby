@@ -40,6 +40,7 @@ module GraphQL
         @field = field
         @root_type = root_type
         @query = query
+        @selected_type = @field ? @field.type.unwrap : root_type
       end
 
       # @return [Array<GraphQL::Language::Nodes::Field>]
@@ -72,16 +73,10 @@ module GraphQL
       # Like {#selects?}, but can be used for chaining.
       # It returns a null object (check with {#selected?})
       # @return [GraphQL::Execution::Lookahead]
-      def selection(field_name, arguments: nil)
+      def selection(field_name, selected_type: @selected_type, arguments: nil)
         next_field_name = normalize_name(field_name)
 
-        next_field_owner = if @field
-          @field.type.unwrap
-        else
-          @root_type
-        end
-
-        next_field_defn = FieldHelpers.get_field(@query.schema, next_field_owner, next_field_name)
+        next_field_defn = FieldHelpers.get_field(@query.schema, selected_type, next_field_name)
         if next_field_defn
           next_nodes = []
           @ast_nodes.each do |ast_node|
@@ -118,7 +113,7 @@ module GraphQL
       def selections(arguments: nil)
         subselections_by_name = {}
         @ast_nodes.each do |node|
-          find_selections(subselections_by_name, node.selections, arguments)
+          find_selections(subselections_by_name, @selected_type, node.selections, arguments)
         end
 
         # Items may be filtered out if `arguments` doesn't match
@@ -137,6 +132,10 @@ module GraphQL
       # @return [Symbol]
       def name
         @field && @field.original_name
+      end
+
+      def inspect
+        "#<GraphQL::Execution::Lookahead #{@field ? "@field=#{@field.path.inspect}": "@root_type=#{@root_type}"} @ast_nodes.size=#{@ast_nodes.size}>"
       end
 
       # This is returned for {Lookahead#selection} when a non-existent field is passed
@@ -159,6 +158,10 @@ module GraphQL
 
         def selections(*)
           []
+        end
+
+        def inspect
+          "#<GraphQL::Execution::Lookahead::NullLookahead>"
         end
       end
 
@@ -184,16 +187,22 @@ module GraphQL
         end
       end
 
-      def find_selections(subselections_by_name, ast_selections, arguments)
+      def find_selections(subselections_by_name, selected_type, ast_selections, arguments)
         ast_selections.each do |ast_selection|
           case ast_selection
           when GraphQL::Language::Nodes::Field
-            subselections_by_name[ast_selection.name] ||= selection(ast_selection.name, arguments: arguments)
+            subselections_by_name[ast_selection.name] ||= selection(ast_selection.name, selected_type: selected_type, arguments: arguments)
           when GraphQL::Language::Nodes::InlineFragment
-            find_selections(subselections_by_name, ast_selection.selections, arguments)
+            if (t = ast_selection.type)
+              # Assuming this is valid, that `t` will be found.
+              selected_type = @query.schema.types[t.name].metadata[:type_class]
+            end
+            find_selections(subselections_by_name, selected_type, ast_selection.selections, arguments)
           when GraphQL::Language::Nodes::FragmentSpread
             frag_defn = @query.fragments[ast_selection.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{ast_selection.name} (found: #{@query.fragments.keys})")
-            find_selections(subselections_by_name, frag_defn.selections, arguments)
+            # Again, assuming a valid AST
+            selected_type = @query.schema.types[frag_defn.type.name].metadata[:type_class]
+            find_selections(subselections_by_name, selected_type, frag_defn.selections, arguments)
           else
             raise "Invariant: Unexpected selection type: #{ast_selection.class}"
           end

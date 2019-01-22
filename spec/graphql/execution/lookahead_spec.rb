@@ -14,12 +14,19 @@ describe GraphQL::Execution::Lookahead do
       DATA.find { |b| b.name == name }
     end
 
+    module Node
+      include GraphQL::Schema::Interface
+      field :id, ID, null: false
+    end
+
     class BirdGenus < GraphQL::Schema::Object
       field :latin_name, String, null: false
+      field :id, ID, null: false, method: :latin_name
     end
 
     class BirdSpecies < GraphQL::Schema::Object
       field :name, String, null: false
+      field :id, ID, null: false, method: :name
       field :is_waterfowl, Boolean, null: false
       field :similar_species, [BirdSpecies], null: false
 
@@ -45,6 +52,18 @@ describe GraphQL::Execution::Lookahead do
 
       def find_bird_species(by_name:)
         DATA.find_by_name(by_name)
+      end
+
+      field :node, Node, null: true do
+        argument :id, ID, required: true
+      end
+
+      def node(id:)
+        if (node = DATA.find_by_name(id))
+          node
+        else
+          DATA.map { |d| d.genus }.select { |g| g.name == id }
+        end
       end
     end
 
@@ -99,6 +118,40 @@ describe GraphQL::Execution::Lookahead do
 
     it "detects by name, not by alias" do
       assert_equal true, query.lookahead.selects?("__typename")
+    end
+
+    describe "fields on interfaces" do
+      let(:document) {
+        GraphQL.parse <<-GRAPHQL
+        query {
+          node(id: "Cardinal") {
+            id
+            ... on BirdSpecies {
+              name
+            }
+            ...Other
+          }
+        }
+        fragment Other on BirdGenus {
+          latinName
+        }
+        GRAPHQL
+      }
+
+      it "finds fields on object types and interface types" do
+        node_lookahead = query.lookahead.selection("node")
+        assert_equal [:id, :name, :latin_name], node_lookahead.selections.map(&:name)
+      end
+    end
+
+    describe "inspect" do
+      it "works for root lookaheads" do
+        assert_includes query.lookahead.inspect, "#<GraphQL::Execution::Lookahead @root_type="
+      end
+
+      it "works for field lookaheads" do
+        assert_includes query.lookahead.selection(:find_bird_species).inspect, "#<GraphQL::Execution::Lookahead @field="
+      end
     end
 
     describe "constraints by arguments" do
@@ -245,7 +298,7 @@ describe GraphQL::Execution::Lookahead do
       ast_node = document.definitions.first.selections.first
       field = LookaheadTest::Query.fields["findBirdSpecies"]
       lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
-      assert_equal lookahead.selections.map(&:name), [:name, :similar_species]
+      assert_equal [:name, :similar_species], lookahead.selections.map(&:name)
     end
 
     it "filters outs selections which do not match arguments" do
