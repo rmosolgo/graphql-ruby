@@ -184,7 +184,7 @@ module GraphQL
       @introspection_namespace = nil
       @introspection_system = nil
       @interpeter = false
-      @error_bubbling = true
+      @error_bubbling = false
     end
 
     # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
