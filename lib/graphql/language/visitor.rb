@@ -74,6 +74,7 @@ module GraphQL
         end
       end
 
+      # Call the user-defined handler for `node`.
       def visit_node(node, parent)
         public_send(node.visit_method, node, parent)
       end
@@ -86,77 +87,81 @@ module GraphQL
       # For compatibility, it calls hook procs, too.
       # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
       # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
-      # @return [void]
+      # @return [Array, nil] If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
       def on_abstract_node(node, parent)
         if node == DELETE_NODE
           # This might be passed to `super(DELETE_NODE, ...)`
           # by a user hook, don't want to keep visiting in that case.
-          [node, parent]
+          nil
         else
           # Run hooks if there are any
-          begin_hooks_ok = @visitors.none? || begin_visit(node, parent)
+          new_node = node
+          begin_hooks_ok = @visitors.none? || begin_visit(new_node, parent)
           if begin_hooks_ok
             node.children.each do |child_node|
-              new_child_and_node = on_node_with_modifications(child_node, node)
+              new_child_and_node = on_node_with_modifications(child_node, new_node)
               # Reassign `node` in case the child hook makes a modification
               if new_child_and_node.is_a?(Array)
-                node = new_child_and_node[1]
+                new_node = new_child_and_node[1]
               end
             end
           end
-          @visitors.any? && end_visit(node, parent)
-          [node, parent]
+          @visitors.any? && end_visit(new_node, parent)
+
+          if new_node.equal?(node)
+            nil
+          else
+            [new_node, parent]
+          end
         end
       end
 
       # We don't use `alias` here because it breaks `super`
-      def self.make_visit_method(node_method, super_method)
-        class_eval(<<-EOS, __FILE__, __LINE__ + 1)
+      def self.make_visit_method(node_method)
+        class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
           def #{node_method}(node, parent)
-            #{super_method}(node, parent)
+            child_mod = on_abstract_node(node, parent)
+            # If visiting the children returned changes, continue passing those.
+            child_mod || [node, parent]
           end
-        EOS
+        RUBY
       end
 
-      make_visit_method :on_argument, :on_abstract_node
-      make_visit_method :on_directive, :on_abstract_node
-      make_visit_method :on_directive_definition, :on_abstract_node
-      make_visit_method :on_directive_location, :on_abstract_node
-      make_visit_method :on_document, :on_abstract_node
-      make_visit_method :on_enum, :on_abstract_node
-      make_visit_method :on_enum_type_definition, :on_abstract_node
-      make_visit_method :on_enum_type_extension, :on_abstract_node
-      make_visit_method :on_enum_value_definition, :on_abstract_node
-      make_visit_method :on_field, :on_abstract_node
-      make_visit_method :on_field_definition, :on_abstract_node
-      make_visit_method :on_fragment_definition, :on_abstract_node
-      make_visit_method :on_fragment_spread, :on_abstract_node
-      make_visit_method :on_inline_fragment, :on_abstract_node
-      make_visit_method :on_input_object, :on_abstract_node
-      make_visit_method :on_input_object_type_definition, :on_abstract_node
-      make_visit_method :on_input_object_type_extension, :on_abstract_node
-      make_visit_method :on_input_value_definition, :on_abstract_node
-      make_visit_method :on_interface_type_definition, :on_abstract_node
-      make_visit_method :on_interface_type_extension, :on_abstract_node
-      make_visit_method :on_list_type, :on_abstract_node
-      make_visit_method :on_non_null_type, :on_abstract_node
-      make_visit_method :on_null_value, :on_abstract_node
-      make_visit_method :on_object_type_definition, :on_abstract_node
-      make_visit_method :on_object_type_extension, :on_abstract_node
-      make_visit_method :on_operation_definition, :on_abstract_node
-      make_visit_method :on_scalar_type_definition, :on_abstract_node
-      make_visit_method :on_scalar_type_extension, :on_abstract_node
-      make_visit_method :on_schema_definition, :on_abstract_node
-      make_visit_method :on_schema_extension, :on_abstract_node
-      make_visit_method :on_type_name, :on_abstract_node
-      make_visit_method :on_union_type_definition, :on_abstract_node
-      make_visit_method :on_union_type_extension, :on_abstract_node
-      make_visit_method :on_variable_definition, :on_abstract_node
-      make_visit_method :on_variable_identifier, :on_abstract_node
-
-      def visit_node(node, parent)
-        public_send(node.visit_method, node, parent)
-      end
+      make_visit_method :on_argument
+      make_visit_method :on_directive
+      make_visit_method :on_directive_definition
+      make_visit_method :on_directive_location
+      make_visit_method :on_document
+      make_visit_method :on_enum
+      make_visit_method :on_enum_type_definition
+      make_visit_method :on_enum_type_extension
+      make_visit_method :on_enum_value_definition
+      make_visit_method :on_field
+      make_visit_method :on_field_definition
+      make_visit_method :on_fragment_definition
+      make_visit_method :on_fragment_spread
+      make_visit_method :on_inline_fragment
+      make_visit_method :on_input_object
+      make_visit_method :on_input_object_type_definition
+      make_visit_method :on_input_object_type_extension
+      make_visit_method :on_input_value_definition
+      make_visit_method :on_interface_type_definition
+      make_visit_method :on_interface_type_extension
+      make_visit_method :on_list_type
+      make_visit_method :on_non_null_type
+      make_visit_method :on_null_value
+      make_visit_method :on_object_type_definition
+      make_visit_method :on_object_type_extension
+      make_visit_method :on_operation_definition
+      make_visit_method :on_scalar_type_definition
+      make_visit_method :on_scalar_type_extension
+      make_visit_method :on_schema_definition
+      make_visit_method :on_schema_extension
+      make_visit_method :on_type_name
+      make_visit_method :on_union_type_definition
+      make_visit_method :on_union_type_extension
+      make_visit_method :on_variable_definition
+      make_visit_method :on_variable_identifier
 
       private
 
@@ -183,7 +188,7 @@ module GraphQL
           # The user-provided hook didn't make any modifications.
           # In fact, the hook might have returned who-knows-what, so
           # ignore the return value and use the original values.
-          nil
+          new_node_and_new_parent
         end
       end
 
