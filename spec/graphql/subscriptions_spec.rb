@@ -111,6 +111,11 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   class Subscription < GraphQL::Schema::Object
     if TESTING_INTERPRETER
       extend GraphQL::Subscriptions::SubscriptionRoot
+    else
+      # Stub methods are required
+      [:payload, :event, :my_event].each do |m|
+        define_method(m) { |*a| nil }
+      end
     end
     field :payload, Payload, null: false do
       argument :id, ID, required: true
