@@ -96,17 +96,16 @@ module GraphQL
           # Run hooks if there are any
           begin_hooks_ok = @visitors.none? || begin_visit(node, parent)
           if begin_hooks_ok
-            new_node = node
             node.children.each do |child_node|
-              new_child_and_node = on_node_with_modifications(child_node, new_node)
+              new_child_and_node = on_node_with_modifications(child_node, node)
               # Reassign `node` in case the child hook makes a modification
               if new_child_and_node.is_a?(Array)
-                new_node = new_child_and_node[1]
+                node = new_child_and_node[1]
               end
             end
           end
           @visitors.any? && end_visit(node, parent)
-          [new_node, parent]
+          [node, parent]
         end
       end
 
