@@ -65,7 +65,13 @@ module GraphQL
       # Visit `document` and all children, applying hooks as you go
       # @return [void]
       def visit
-        @result, _nil_parent = on_node_with_modifications(@document, nil)
+        result = on_node_with_modifications(@document, nil)
+        @result = if result.is_a?(Array)
+          result.first
+        else
+          # The node wasn't modified
+          @document
+        end
       end
 
       def visit_node(node, parent)
@@ -90,16 +96,17 @@ module GraphQL
           # Run hooks if there are any
           begin_hooks_ok = @visitors.none? || begin_visit(node, parent)
           if begin_hooks_ok
+            new_node = node
             node.children.each do |child_node|
-              new_child_and_node = on_node_with_modifications(child_node, node)
+              new_child_and_node = on_node_with_modifications(child_node, new_node)
               # Reassign `node` in case the child hook makes a modification
               if new_child_and_node.is_a?(Array)
-                node = new_child_and_node[1]
+                new_node = new_child_and_node[1]
               end
             end
           end
           @visitors.any? && end_visit(node, parent)
-          [node, parent]
+          [new_node, parent]
         end
       end
 
@@ -177,7 +184,7 @@ module GraphQL
           # The user-provided hook didn't make any modifications.
           # In fact, the hook might have returned who-knows-what, so
           # ignore the return value and use the original values.
-          [node, parent]
+          nil
         end
       end
 
