@@ -31,6 +31,8 @@ class Subscriptions::BaseSubscription < GraphQL::Schema::Subscription
 end
 ```
 
+(This base class is a lot like the {% internal_link "mutation base class", "/mutations/mutation_classes" %}. They're both subclasses of {{ "GraphQL::Schema::Resolver" | api_doc }}.)
+
 ## Extend the base class and hook it up
 
 Define a class for each subscribable event in your system. For example, if you run a chat room, you might publish events whenever messages are posted in a room:
@@ -89,7 +91,7 @@ subscription($roomId: ID!) {
 }
 ```
 
-If a field is `required: true`, but the ID doesn't find an object, then the subscription will be unsubscribed (with `#unsubscribe`, see below).
+If the ID doesn't find an object, then the subscription will be unsubscribed (with `#unsubscribe`, see below).
 
 ## Fields
 
@@ -175,10 +177,10 @@ Also, if this method fails before calling `#update`, then the client will be aut
 
 `def subscribe(**args)` is called when a client _first_ sends a `subscription { ... }` request. In this method, you can do a few things:
 
-- Call `super` to register a subscription
 - Raise `GraphQL::ExecutionError` to halt and return an error
 - Return a value to give the client an initial response
 - Return `:no_response` to skip the initial response
+- Return `super` to fall back to the default behavior (which is `:no_response`).
 
 You can define this method to add initial responses or perform other logic before subscribing.
 
