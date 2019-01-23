@@ -153,7 +153,7 @@ describe GraphQL::Schema::Subscription do
       end
 
       def delete_subscription(subscription_id)
-        query, events = SUBSCRIPTION_REGISTRY.delete(subscription_id)
+        _query, events = SUBSCRIPTION_REGISTRY.delete(subscription_id)
         events.each do |ev|
           EVENT_REGISTRY[ev.topic].delete(subscription_id)
         end
