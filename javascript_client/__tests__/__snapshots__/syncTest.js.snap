@@ -341,3 +341,27 @@ Array [
   },
 ]
 `;
+
+exports[`sync operations verbose Adds debug output 1`] = `
+Array [
+  Array [
+    "[Sync] glob: ",
+    "./__tests__/documents**/*.graphql*",
+  ],
+  Array [
+    "[Sync] 1 files:",
+  ],
+  Array [
+    "[Sync]   - ./__tests__/documents/doc1.graphql",
+  ],
+  Array [
+    "Syncing 1 operations to [1mbogus[0m...",
+  ],
+  Array [
+    "Generating client module in [1mOperationStoreClient.js[0m...",
+  ],
+  Array [
+    "[32m✓ Done![0m",
+  ],
+]
+`;
