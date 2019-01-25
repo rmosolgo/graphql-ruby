@@ -4,8 +4,30 @@ module GraphQL
   class Subscriptions
     # Extend this module in your subscription root when using {GraphQL::Execution::Interpreter}.
     module SubscriptionRoot
+      def self.extended(child_cls)
+        child_cls.include(InstanceMethods)
+      end
+
+      # This is for maintaining backwards compatibility:
+      # if a subscription field is created without a `subscription:` resolver class,
+      # then implement the method with the previous default behavior.
+      module InstanceMethods
+        def skip_subscription_root(*)
+          if context.query.subscription_update?
+            object
+          else
+            context.skip
+          end
+        end
+      end
+
       def field(*args, extensions: [], **rest, &block)
         extensions += [Extension]
+        # Backwards-compat for schemas
+        if !rest[:subscription]
+          name = args.first
+          alias_method(name, :skip_subscription_root)
+        end
         super(*args, extensions: extensions, **rest, &block)
       end
 
@@ -22,16 +44,17 @@ module GraphQL
               context: context,
               field: field,
             )
-            context.skip
+            # TODO compat with non-class-based subscriptions?
+            value
           elsif context.query.subscription_topic == Subscriptions::Event.serialize(
               field.name,
               arguments,
               field,
               scope: (field.subscription_scope ? context[field.subscription_scope] : nil),
             )
-            # The root object is _already_ the subscription update,
-            # it was passed to `.trigger`
-            object.object
+            # This is a subscription update. The resolver returned `skip` if it should be skipped,
+            # or else it returned an object to resolve the update.
+            value
           else
             # This is a subscription update, but this event wasn't triggered.
             context.skip

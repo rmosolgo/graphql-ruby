@@ -14,14 +14,14 @@ class GraphqlChannel < ActionCable::Channel::Base
   class SubscriptionType < GraphQL::Schema::Object
     if TESTING_INTERPRETER
       extend GraphQL::Subscriptions::SubscriptionRoot
+    else
+      def payload(id:)
+        id
+      end
     end
 
     field :payload, PayloadType, null: false do
       argument :id, ID, required: true
-    end
-
-    def payload(id:)
-      id
     end
   end
 
