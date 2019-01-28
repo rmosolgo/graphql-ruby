@@ -81,8 +81,9 @@ Provide a `prepare` function to modify or validate the value of an argument befo
 ```ruby
 field :posts, [PostType], null: false do
   argument :start_date, String, required: true, prepare: ->(startDate, ctx) {
-    # return the prepared argument or GraphQL::ExecutionError.new("msg")
-    # to halt the execution of the field and add "msg" to the `errors` key.
+    # return the prepared argument.
+    # raise a GraphQL::ExecutionError to halt the execution of the field and
+    # add the exception's message to the `errors` key.
   }
 end
 
@@ -117,7 +118,7 @@ field :posts, [PostType], null: false do
 end
 ```
 
-Furthermore, if you're argument is already camelCased, then it will remain camelized in the GraphQL schema. However, the argument will be converted to snake_case when it is passed to the resolver method:
+Furthermore, if your argument is already camelCased, then it will remain camelized in the GraphQL schema. However, the argument will be converted to snake_case when it is passed to the resolver method:
 
 ```ruby
 field :posts, [PostType], null: false do

@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 module LazyHelpers
+  MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK = 44
+  MAGIC_NUMBER_THAT_RETURNS_NIL = 0
+  MAGIC_NUMBER_THAT_RAISES_ERROR = 13
   class Wrapper
     def initialize(item = nil, &block)
       if block
@@ -92,13 +95,29 @@ module LazyHelpers
   end
 
   class LazySum < GraphQL::Schema::Object
-    field :value, Integer, null: true, resolve: ->(o, a, c) { o == 13 ? nil : o }
+    field :value, Integer, null: true
+    def value
+      if object == MAGIC_NUMBER_THAT_RAISES_ERROR
+        nil
+      else
+        object
+      end
+    end
+
+    def self.authorized?(obj, ctx)
+      if obj == MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK
+        Wrapper.new { true }
+      else
+        true
+      end
+    end
+
     field :nestedSum, LazySum, null: false do
       argument :value, Integer, required: true
     end
 
     def nested_sum(value:)
-      if value == 13
+      if value == MAGIC_NUMBER_THAT_RAISES_ERROR
         Wrapper.new(nil)
       else
         SumAll.new(@object + value)
@@ -128,44 +147,59 @@ module LazyHelpers
     GraphQL::DeprecatedDSL.activate
   end
 
-  LazyQuery = GraphQL::ObjectType.define do
-    name "Query"
-    field :int, !types.Int do
-      argument :value, !types.Int
-      argument :plus, types.Int, default_value: 0
-      resolve ->(o, a, c) { Wrapper.new(a[:value] + a[:plus])}
+  class LazyQuery < GraphQL::Schema::Object
+    field :int, Integer, null: false do
+      argument :value, Integer, required: true
+      argument :plus, Integer, required: false, default_value: 0
+    end
+    def int(value:, plus:)
+      Wrapper.new(value + plus)
     end
 
-    field :concurrentInt, !types.Int do
-      argument :value, !types.Int
-      argument :plus, types.Int, default_value: 0
-      resolve ->(o, a, c) { ConcurrentWrapper.new { a[:value] + a[:plus] } }
+    field :concurrent_int, Integer, null: false do 
+      argument :value, Integer, required: true 
+      argument :plus, Integer, required: false, default_value: 0 
+    end 
+    
+    def concurrent_int(value:, plus:)
+      ConcurrentWrapper.new { value + plus }
+    end 
+    
+    field :concurrent_nested_sum, ConcurrentSum, null: false do 
+      argument :value, Integer, required: true 
+    end 
+    
+    def concurrent_nested_sum(value:)
+      ConcurrentSumAll.new(args[:value])
     end
 
-    field :nestedSum, !LazySum do
-      argument :value, !types.Int
-      resolve ->(o, args, c) { SumAll.new(args[:value]) }
+    field :nested_sum, LazySum, null: false do
+      argument :value, Integer, required: true
     end
 
-    field :concurrentNestedSum, !ConcurrentSum do
-      argument :value, !types.Int
-      resolve ->(o, args, c) { ConcurrentSumAll.new(args[:value]) }
+    def nested_sum(value:)
+      SumAll.new(value)
     end
 
-    field :nullableNestedSum, LazySum do
-      argument :value, types.Int
-      resolve ->(o, args, c) {
-        if args[:value] == 13
-          Wrapper.new { raise GraphQL::ExecutionError.new("13 is unlucky") }
-        else
-          SumAll.new(args[:value])
-        end
-      }
+    field :nullable_nested_sum, LazySum, null: true do
+      argument :value, Integer, required: true
     end
 
-    field :listSum, types[LazySum] do
-      argument :values, types[types.Int]
-      resolve ->(o, args, c) { args[:values] }
+    def nullable_nested_sum(value:)
+      if value == MAGIC_NUMBER_THAT_RAISES_ERROR
+        Wrapper.new { raise GraphQL::ExecutionError.new("#{MAGIC_NUMBER_THAT_RAISES_ERROR} is unlucky") }
+      elsif value == MAGIC_NUMBER_THAT_RETURNS_NIL
+        nil
+      else
+        SumAll.new(value)
+      end
+    end
+
+    field :list_sum, [LazySum, null: true], null: true do
+      argument :values, [Integer], required: true
+    end
+    def list_sum(values:)
+      values.map { |v| v == MAGIC_NUMBER_THAT_RETURNS_NIL ? nil : v }
     end
   end
 
@@ -212,6 +246,11 @@ module LazyHelpers
     instrument(:multiplex, SumAllInstrumentation.new(counter: 1))
     instrument(:multiplex, SumAllInstrumentation.new(counter: 2))
 
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+    end
+
     def self.sync_lazy(lazy)
       if lazy.is_a?(SumAll) && lazy.own_value > 1000
         lazy.value # clear the previous set
@@ -222,7 +261,7 @@ module LazyHelpers
     end
   end
 
-  def run_query(query_str)
-    LazySchema.execute(query_str)
+  def run_query(query_str, **rest)
+    LazySchema.execute(query_str, **rest)
   end
 end

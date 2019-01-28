@@ -1,9 +1,4 @@
 # frozen_string_literal: true
-guard :bundler do
-  watch("Gemfile")
-  # Uncomment next line if your Gemfile contains the `gemspec' command.
-  watch(/^.+\.gemspec/)
-end
 
 guard :minitest, test_file_patterns: ["*_spec.rb"] do
   # with Minitest::Spec

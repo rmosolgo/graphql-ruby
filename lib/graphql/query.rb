@@ -135,8 +135,21 @@ module GraphQL
       end
     end
 
+    def_delegators :@schema, :interpreter?
+
     def subscription_update?
       @subscription_topic && subscription?
+    end
+
+    # A lookahead for the root selections of this query
+    # @return [GraphQL::Execution::Lookahead]
+    def lookahead
+      @lookahead ||= begin
+        ast_node = selected_operation
+        root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
+        root_type = root_type.metadata[:type_class] || raise("Invariant: `lookahead` only works with class-based types")
+        GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
+      end
     end
 
     # @api private
@@ -221,7 +234,8 @@ module GraphQL
       with_prepared_ast { @validation_pipeline }
     end
 
-    def_delegators :validation_pipeline, :validation_errors, :internal_representation, :analyzers
+    def_delegators :validation_pipeline, :validation_errors, :internal_representation,
+                   :analyzers, :ast_analyzers, :max_depth, :max_complexity
 
     attr_accessor :analysis_errors
     def valid?

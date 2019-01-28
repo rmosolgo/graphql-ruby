@@ -81,6 +81,9 @@ describe GraphQL::Schema::InputObject do
 
       class Schema < GraphQL::Schema
         query(Query)
+        if TESTING_INTERPRETER
+          use GraphQL::Execution::Interpreter
+        end
       end
     end
 
@@ -117,6 +120,13 @@ describe GraphQL::Schema::InputObject do
         "ABC",
       ]
       assert_equal expected_info, res["data"]["inspectInput"]
+    end
+  end
+
+  describe "when used with default_value" do
+    it "comes as an instance" do
+      res = Jazz::Schema.execute("{ defaultValueTest }")
+      assert_equal "Jazz::InspectableInput -> {:string_value=>\"S\"}", res["data"]["defaultValueTest"]
     end
   end
 
@@ -200,6 +210,29 @@ describe GraphQL::Schema::InputObject do
       # assert_equal 3, input_object.dig('input_object', 'd')
       assert_equal 3, input_object.dig(:input_object, :d)
     end
+  end
 
+  describe "introspection" do
+    it "returns input fields" do
+      res = Jazz::Schema.execute('
+        {
+          __type(name: "InspectableInput") {
+            name
+            inputFields { name }
+          }
+          __schema {
+            types {
+              name
+              inputFields { name }
+            }
+          }
+        }')
+      # Test __type
+      assert_equal ["stringValue", "nestedInput", "legacyInput"], res["data"]["__type"]["inputFields"].map { |f| f["name"] }
+      # Test __schema { types }
+      # It's upcased to test custom introspection
+      input_type = res["data"]["__schema"]["types"].find { |t| t["name"] == "INSPECTABLEINPUT" }
+      assert_equal ["stringValue", "nestedInput", "legacyInput"], input_type["inputFields"].map { |f| f["name"] }
+    end
   end
 end

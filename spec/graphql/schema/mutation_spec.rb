@@ -23,7 +23,7 @@ describe GraphQL::Schema::Mutation do
 
   describe "argument prepare" do
     it "calls methods on the mutation, uses `as:`" do
-      query_str = 'mutation { prepareInput(input: 4) }'
+      query_str = "mutation { prepareInput(input: 4) }"
       res = Jazz::Schema.execute(query_str)
       assert_equal 16, res["data"]["prepareInput"], "It's squared by the prepare method"
     end
@@ -63,7 +63,8 @@ describe GraphQL::Schema::Mutation do
 
       assert_equal(GraphQL::Schema::Object, GraphQL::Schema::Mutation.object_class)
       assert_equal(obj_class, mutation_class.object_class)
-      assert_equal(obj_class, mutation_subclass.object_class)    end
+      assert_equal(obj_class, mutation_subclass.object_class)
+    end
   end
 
   describe ".argument_class" do
@@ -101,7 +102,8 @@ describe GraphQL::Schema::Mutation do
       response = Jazz::Schema.execute(query_str)
       assert_equal "Trombone", response["data"]["addInstrument"]["instrument"]["name"]
       assert_equal "BRASS", response["data"]["addInstrument"]["instrument"]["family"]
-      assert_equal "GraphQL::Query::Context::ExecutionErrors", response["data"]["addInstrument"]["ee"]
+      errors_class = TESTING_INTERPRETER ? "GraphQL::Execution::Interpreter::ExecutionErrors" : "GraphQL::Query::Context::ExecutionErrors"
+      assert_equal errors_class, response["data"]["addInstrument"]["ee"]
       assert_equal 7, response["data"]["addInstrument"]["entries"].size
     end
   end

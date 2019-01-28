@@ -13,22 +13,23 @@ describe GraphQL::Schema::CatchallMiddleware do
     Dummy::Schema.middleware.delete(GraphQL::Schema::CatchallMiddleware)
   end
 
-  describe "rescuing errors" do
-    let(:errors) { query.context.errors }
+  if TESTING_RESCUE_FROM
+    describe "rescuing errors" do
+      let(:errors) { query.context.errors }
 
-    it "turns into error messages" do
-      expected = {
-        "data" => { "error" => nil },
-        "errors"=> [
-          {
-            "message"=>"Internal error",
-            "locations"=>[{"line"=>1, "column"=>17}],
-            "path"=>["error"]
-          },
-        ]
-      }
-      assert_equal(expected, result)
+      it "turns into error messages" do
+        expected = {
+          "data" => { "error" => nil },
+          "errors"=> [
+            {
+              "message"=>"Internal error",
+              "locations"=>[{"line"=>1, "column"=>17}],
+              "path"=>["error"]
+            },
+          ]
+        }
+        assert_equal(expected, result)
+      end
     end
   end
-
 end

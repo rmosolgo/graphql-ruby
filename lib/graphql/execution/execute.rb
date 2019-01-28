@@ -24,6 +24,23 @@ module GraphQL
         GraphQL::Execution::Flatten.call(query.context)
       end
 
+      def self.begin_multiplex(_multiplex)
+      end
+
+      def self.begin_query(query, _multiplex)
+        ExecutionFunctions.resolve_root_selection(query)
+      end
+
+      def self.finish_multiplex(results, multiplex)
+        ExecutionFunctions.lazy_resolve_root_selection(results, multiplex: multiplex)
+      end
+
+      def self.finish_query(query, _multiplex)
+        {
+          "data" => Execution::Flatten.call(query.context)
+        }
+      end
+
       # @api private
       module ExecutionFunctions
         module_function
@@ -196,7 +213,7 @@ module GraphQL
               if list_errors.any?
                 list_errors.each do |error, index|
                   error.ast_node = field_ctx.ast_node
-                  error.path = field_ctx.path + [index]
+                  error.path = field_ctx.path + (field_ctx.type.list? ? [index] : [])
                   query.context.errors.push(error)
                 end
               end

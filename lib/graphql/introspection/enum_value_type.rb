@@ -11,6 +11,10 @@ module GraphQL
       field :is_deprecated, Boolean, null: false
       field :deprecation_reason, String, null: true
 
+      def name
+        object.graphql_name
+      end
+
       def is_deprecated
         !!@object.deprecation_reason
       end

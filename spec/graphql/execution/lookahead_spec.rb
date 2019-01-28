@@ -14,12 +14,19 @@ describe GraphQL::Execution::Lookahead do
       DATA.find { |b| b.name == name }
     end
 
+    module Node
+      include GraphQL::Schema::Interface
+      field :id, ID, null: false
+    end
+
     class BirdGenus < GraphQL::Schema::Object
       field :latin_name, String, null: false
+      field :id, ID, null: false, method: :latin_name
     end
 
     class BirdSpecies < GraphQL::Schema::Object
       field :name, String, null: false
+      field :id, ID, null: false, method: :name
       field :is_waterfowl, Boolean, null: false
       field :similar_species, [BirdSpecies], null: false
 
@@ -46,14 +53,36 @@ describe GraphQL::Execution::Lookahead do
       def find_bird_species(by_name:)
         DATA.find_by_name(by_name)
       end
+
+      field :node, Node, null: true do
+        argument :id, ID, required: true
+      end
+
+      def node(id:)
+        if (node = DATA.find_by_name(id))
+          node
+        else
+          DATA.map { |d| d.genus }.select { |g| g.name == id }
+        end
+      end
+    end
+
+    class LookaheadInstrumenter
+      def self.before_query(query)
+        query.context[:root_lookahead_names] = query.lookahead.selections.map(&:name)
+      end
+
+      def self.after_query(q)
+      end
     end
 
     class Schema < GraphQL::Schema
       query(Query)
+      instrument :query, LookaheadInstrumenter
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
     end
-    # Cause everything to be loaded
-    # TODO remove this
-    Schema.graphql_definition
   end
 
   describe "looking ahead" do
@@ -80,9 +109,7 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "can detect fields on objects with symbol or string" do
-      ast_node = document.definitions.first.selections.first
-      field = LookaheadTest::Query.fields["findBirdSpecies"]
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
+      lookahead = query.lookahead.selection("findBirdSpecies")
       assert_equal true, lookahead.selects?("similarSpecies")
       assert_equal true, lookahead.selects?(:similar_species)
       assert_equal false, lookahead.selects?("isWaterfowl")
@@ -90,15 +117,46 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "detects by name, not by alias" do
-      ast_node = document.definitions.first
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
-      assert_equal true, lookahead.selects?("__typename")
+      assert_equal true, query.lookahead.selects?("__typename")
+    end
+
+    describe "fields on interfaces" do
+      let(:document) {
+        GraphQL.parse <<-GRAPHQL
+        query {
+          node(id: "Cardinal") {
+            id
+            ... on BirdSpecies {
+              name
+            }
+            ...Other
+          }
+        }
+        fragment Other on BirdGenus {
+          latinName
+        }
+        GRAPHQL
+      }
+
+      it "finds fields on object types and interface types" do
+        node_lookahead = query.lookahead.selection("node")
+        assert_equal [:id, :name, :latin_name], node_lookahead.selections.map(&:name)
+      end
+    end
+
+    describe "inspect" do
+      it "works for root lookaheads" do
+        assert_includes query.lookahead.inspect, "#<GraphQL::Execution::Lookahead @root_type="
+      end
+
+      it "works for field lookaheads" do
+        assert_includes query.lookahead.selection(:find_bird_species).inspect, "#<GraphQL::Execution::Lookahead @field="
+      end
     end
 
     describe "constraints by arguments" do
       let(:lookahead) do
-        ast_node = document.definitions.first
-        GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
+        query.lookahead
       end
 
       it "is true without constraints" do
@@ -138,9 +196,7 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "can do a chained lookahead" do
-      ast_node = document.definitions.first
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
-      next_lookahead = lookahead.selection(:find_bird_species, arguments: { by_name: "Cardinal" })
+      next_lookahead = query.lookahead.selection(:find_bird_species, arguments: { by_name: "Cardinal" })
       assert_equal true, next_lookahead.selected?
       nested_selection = next_lookahead.selection(:similar_species).selection(:is_waterfowl, arguments: {})
       assert_equal true, nested_selection.selected?
@@ -148,10 +204,8 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "can detect fields on lists with symbol or string" do
-      ast_node = document.definitions.first
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
-      assert_equal true, lookahead.selection(:find_bird_species).selection(:similar_species).selection(:is_waterfowl).selected?
-      assert_equal true, lookahead.selection("findBirdSpecies").selection("similarSpecies").selection("isWaterfowl").selected?
+      assert_equal true, query.lookahead.selection(:find_bird_species).selection(:similar_species).selection(:is_waterfowl).selected?
+      assert_equal true, query.lookahead.selection("findBirdSpecies").selection("similarSpecies").selection("isWaterfowl").selected?
     end
 
     describe "merging branches and fragments" do
@@ -184,9 +238,7 @@ describe GraphQL::Execution::Lookahead do
       }
 
       it "finds selections using merging" do
-        ast_node = document.definitions.first
-        lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
-        merged_lookahead = lookahead.selection(:find_bird_species).selection(:similar_species)
+        merged_lookahead = query.lookahead.selection(:find_bird_species).selection(:similar_species)
         assert merged_lookahead.selects?(:__typename)
         assert merged_lookahead.selects?(:is_waterfowl)
         assert merged_lookahead.selects?(:name)
@@ -213,6 +265,14 @@ describe GraphQL::Execution::Lookahead do
       res = LookaheadTest::Schema.execute(query_str, context: context)
       refute res.key?("errors")
       assert_equal 2, context[:lookahead_latin_name]
+      assert_equal [:find_bird_species], context[:root_lookahead_names]
+    end
+
+    it "works for invalid queries" do
+      context = {lookahead_latin_name: 0}
+      res = LookaheadTest::Schema.execute("{ doesNotExist }", context: context)
+      assert res.key?("errors")
+      assert_equal 0, context[:lookahead_latin_name]
     end
   end
 
@@ -231,14 +291,14 @@ describe GraphQL::Execution::Lookahead do
     }
 
     def query(doc = document)
-      GraphQL::Query.new(LookaheadTest::Schema, document: document)
+      GraphQL::Query.new(LookaheadTest::Schema, document: doc)
     end
 
     it "provides a list of all selections" do
       ast_node = document.definitions.first.selections.first
       field = LookaheadTest::Query.fields["findBirdSpecies"]
       lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
-      assert_equal lookahead.selections.map(&:name), [:name, :similar_species]
+      assert_equal [:name, :similar_species], lookahead.selections.map(&:name)
     end
 
     it "filters outs selections which do not match arguments" do
@@ -257,26 +317,37 @@ describe GraphQL::Execution::Lookahead do
       assert_equal lookahead.selections(arguments: arguments).map(&:name), [:find_bird_species]
     end
 
-    it 'handles duplicate selections' do
+    it 'handles duplicate selections across fragments' do
       doc = GraphQL.parse <<-GRAPHQL
         query {
+          ... on Query {
+            ...MoreFields
+          }
+        }
+
+        fragment MoreFields on Query {
           findBirdSpecies(byName: "Laughing Gull") {
             name
           }
-
           findBirdSpecies(byName: "Laughing Gull") {
-            similarSpecies {
-              likesWater: isWaterfowl
-            }
+            ...EvenMoreFields
+          }
+        }
+
+        fragment EvenMoreFields on BirdSpecies {
+          similarSpecies {
+            likesWater: isWaterfowl
           }
         }
       GRAPHQL
 
-      ast_node = doc.definitions.first
-      lookahead = GraphQL::Execution::Lookahead.new(query: query(doc), ast_nodes: [ast_node], root_type: LookaheadTest::Query)
+      lookahead = query(doc).lookahead
 
-      assert_equal [:find_bird_species], lookahead.selections.map(&:name), "Selections are merged"
-      assert_equal [:name, :similar_species], lookahead.selections.first.selections.map(&:name), "Subselections are merged"
+      root_selections = lookahead.selections
+      assert_equal [:find_bird_species], root_selections.map(&:name), "Selections are merged"
+      assert_equal 2, root_selections.first.ast_nodes.size, "It represents both nodes"
+
+      assert_equal [:name, :similar_species], root_selections.first.selections.map(&:name), "Subselections are merged"
     end
 
     it "works for missing selections" do

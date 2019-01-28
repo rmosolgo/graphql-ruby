@@ -6,6 +6,7 @@ require "graphql/subscriptions/serialize"
 if defined?(ActionCable)
   require "graphql/subscriptions/action_cable_subscriptions"
 end
+require "graphql/subscriptions/subscription_root"
 
 module GraphQL
   class Subscriptions
@@ -99,6 +100,12 @@ module GraphQL
         }
       )
       deliver(subscription_id, result)
+    rescue GraphQL::Schema::Subscription::NoUpdateError
+      # This update was skipped in user code; do nothing.
+    rescue GraphQL::Schema::Subscription::UnsubscribedError
+      # `unsubscribe` was called, clean up on our side
+      # TODO also send `{more: false}` to client?
+      delete_subscription(subscription_id)
     end
 
     # Event `event` occurred on `object`,
@@ -132,9 +139,8 @@ module GraphQL
     # The result should be send to `subscription_id`.
     # @param subscription_id [String]
     # @param result [Hash]
-    # @param context [GraphQL::Query::Context]
     # @return [void]
-    def deliver(subscription_id, result, context)
+    def deliver(subscription_id, result)
       raise NotImplementedError
     end
 
@@ -144,6 +150,14 @@ module GraphQL
     # @param events [Array<GraphQL::Subscriptions::Event>]
     # @return [void]
     def write_subscription(query, events)
+      raise NotImplementedError
+    end
+
+    # A subscription was terminated server-side.
+    # Clean up the database.
+    # @param subscription_id [String]
+    # @return void.
+    def delete_subscription(subscription_id)
       raise NotImplementedError
     end
 

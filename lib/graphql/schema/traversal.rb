@@ -21,15 +21,19 @@ module GraphQL
       def initialize(schema, introspection: true)
         @schema = schema
         @introspection = introspection
+        built_in_insts = [
+          GraphQL::Relay::ConnectionInstrumentation,
+          GraphQL::Relay::EdgesInstrumentation,
+          GraphQL::Relay::Mutation::Instrumentation,
+        ]
+
+        if schema.query_execution_strategy != GraphQL::Execution::Interpreter
+          built_in_insts << GraphQL::Schema::Member::Instrumentation
+        end
+
         @field_instrumenters =
           schema.instrumenters[:field] +
-            # Wrap Relay-related objects in wrappers
-            [
-              GraphQL::Relay::ConnectionInstrumentation,
-              GraphQL::Relay::EdgesInstrumentation,
-              GraphQL::Relay::Mutation::Instrumentation,
-              GraphQL::Schema::Member::Instrumentation,
-            ] +
+            built_in_insts +
             schema.instrumenters[:field_after_built_ins]
 
         # These fields have types specified by _name_,

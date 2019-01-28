@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 module GraphQL
-  # Helpers for migrating in a backwards-compatibile way
+  # Helpers for migrating in a backwards-compatible way
   # @api private
   module BackwardsCompatibility
     module_function

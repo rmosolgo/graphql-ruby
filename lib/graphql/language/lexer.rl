@@ -37,7 +37,7 @@
   QUOTE =         '"';
   BLOCK_QUOTE =   '"""';
   ESCAPED_BLOCK_QUOTE = '\\"""';
-  BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^QUOTE | ^QUOTE QUOTE{1,2} ^QUOTE);
+  BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^QUOTE | QUOTE{1,2} ^QUOTE);
   ESCAPED_QUOTE = '\\"';
   STRING_CHAR =   (ESCAPED_QUOTE | ^QUOTE);
   VAR_SIGN =      '$';
@@ -49,7 +49,7 @@
   AMP =           '&';
 
   QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
-  BLOCK_STRING = BLOCK_QUOTE (QUOTE{1,2} ^QUOTE){0,1} BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE;
+  BLOCK_STRING = BLOCK_QUOTE BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE;
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
 
@@ -200,9 +200,13 @@ module GraphQL
         quotes_length = block ? 3 : 1
         ts += quotes_length
         value = meta[:data][ts...te - quotes_length].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
+        line_incr = 0
         if block
+          line_incr = value.count("\n")
           value = GraphQL::Language::BlockString.trim_whitespace(value)
         end
+        # TODO: replace with `String#match?` when we support only Ruby 2.4+
+        # (It's faster: https://bugs.ruby-lang.org/issues/8110)
         if value !~ VALID_STRING
           meta[:tokens] << token = GraphQL::Language::Token.new(
             name: :BAD_UNICODE_ESCAPE,
@@ -225,6 +229,7 @@ module GraphQL
 
         meta[:previous_token] = token
         meta[:col] += te - ts
+        meta[:line] += line_incr
       end
     end
   end

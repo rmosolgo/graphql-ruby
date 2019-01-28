@@ -28,7 +28,7 @@ module GraphQL
       # @param description [String]
       # @param default_value [Object]
       # @param as [Symbol] Override the keyword name when passed to a method
-      # @param prepare [Symbol] A method to call to tranform this argument's valuebefore sending it to field resolution
+      # @param prepare [Symbol] A method to call to transform this argument's valuebefore sending it to field resolution
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
       def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, description: nil, default_value: NO_DEFAULT, as: nil, camelize: true, prepare: nil, owner:, &definition_block)
         arg_name ||= name

@@ -435,8 +435,10 @@ describe GraphQL::Query do
             {
               "message" => "Variable cheeseId of type Int! was provided invalid value",
               "locations"=>[{ "line" => 2, "column" => 23 }],
-              "value" => "2",
-              "problems" => [{ "path" => [], "explanation" => 'Could not coerce value "2" to Int' }]
+              "extensions" => {
+                "value" => "2",
+                "problems" => [{ "path" => [], "explanation" => 'Could not coerce value "2" to Int' }]
+              }
             }
           ]
         }
@@ -453,8 +455,10 @@ describe GraphQL::Query do
             {
               "message" => "Variable cheeseId of type Int! was provided invalid value",
               "locations" => [{"line" => 2, "column" => 23}],
-              "value" => nil,
-              "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
+              "extensions" => {
+                "value" => nil,
+                "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
+              }
             }
           ]
         }
@@ -471,8 +475,10 @@ describe GraphQL::Query do
             {
               "message" => "Variable cheeseId of type Int! was provided invalid value",
               "locations" => [{"line" => 2, "column" => 23}],
-              "value" => nil,
-              "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
+              "extensions" => {
+                "value" => nil,
+                "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
+              }
             }
           ]
         }

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/schema/resolver/has_payload_type"
 
 module GraphQL
   class Schema
@@ -310,7 +311,7 @@ module GraphQL
             type: type_expr,
             description: description,
             extras: extras,
-            method: :resolve_with_support,
+            resolver_method: :resolve_with_support,
             resolver_class: self,
             arguments: arguments,
             null: null,

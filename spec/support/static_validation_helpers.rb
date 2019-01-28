@@ -12,10 +12,12 @@
 #   end
 module StaticValidationHelpers
   def errors
-    target_schema = schema
-    validator = GraphQL::StaticValidation::Validator.new(schema: target_schema)
-    query = GraphQL::Query.new(target_schema, query_string)
-    validator.validate(query)[:errors].map(&:to_h)
+    @errors ||= begin
+      target_schema = schema
+      validator = GraphQL::StaticValidation::Validator.new(schema: target_schema)
+      query = GraphQL::Query.new(target_schema, query_string)
+      validator.validate(query)[:errors].map(&:to_h)
+    end
   end
 
   def error_messages
@@ -23,6 +25,8 @@ module StaticValidationHelpers
   end
 
   def schema
-    Dummy::Schema
+    # without #graphql_definition call here #errors / #error_messages will reference a different schema object
+    # than the one returned by schema so it's difficult to make changes in specs.
+    Dummy::Schema.graphql_definition
   end
 end

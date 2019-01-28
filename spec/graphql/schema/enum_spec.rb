@@ -14,7 +14,7 @@ describe GraphQL::Schema::Enum do
     it "tells about the definition" do
       assert_equal "Family", enum.graphql_name
       assert_equal 29, enum.description.length
-      assert_equal 6, enum.values.size
+      assert_equal 7, enum.values.size
     end
 
     it "inherits values and description" do
@@ -26,8 +26,8 @@ describe GraphQL::Schema::Enum do
       # Description was inherited
       assert_equal 29, new_enum.description.length
       # values were inherited without modifying the parent
-      assert_equal 6, enum.values.size
-      assert_equal 7, new_enum.values.size
+      assert_equal 7, enum.values.size
+      assert_equal 8, new_enum.values.size
       perc_value = new_enum.values["PERCUSSION"]
       assert_equal "new description", perc_value.description
     end
@@ -56,8 +56,10 @@ describe GraphQL::Schema::Enum do
 
       string_val = enum_type.values["STRING"]
       didg_val = enum_type.values["DIDGERIDOO"]
+      silence_val = enum_type.values["SILENCE"]
       assert_equal "STRING", string_val.name
       assert_equal :str, string_val.value
+      assert_equal false, silence_val.value
       assert_equal "DIDGERIDOO", didg_val.name
       assert_equal "Merged into BRASS", didg_val.deprecation_reason
     end

@@ -34,7 +34,8 @@ describe GraphQL::StaticValidation::Validator do
       expected_errors = [{
         "message" => "Variable $undefinedVar is used by  but not declared",
         "locations" => [{"line" => 1, "column" => 14, "filename" => "not_a_real.graphql"}],
-        "fields" => ["query", "cheese", "id"]
+        "path" => ["query", "cheese", "id"],
+        "extensions"=>{"code"=>"variableNotDefined", "variableName"=>"undefinedVar"}
       }]
       assert_equal expected_errors, errors
     end
@@ -115,7 +116,8 @@ describe GraphQL::StaticValidation::Validator do
             {
               "message"=>"Fragment cheeseFields contains an infinite loop",
               "locations"=>[{"line"=>10, "column"=>9}],
-              "fields"=>["fragment cheeseFields"]
+              "path"=>["fragment cheeseFields"],
+              "extensions"=>{"code"=>"infiniteLoop", "fragmentName"=>"cheeseFields"}
             }
           ]
           assert_equal(expected, errors)
@@ -150,6 +152,52 @@ describe GraphQL::StaticValidation::Validator do
       |}
       it "marks an error" do
         assert_equal(1, errors.length)
+      end
+    end
+  end
+
+  describe "Custom ruleset" do
+    let(:query_string) { "
+        fragment Thing on Cheese {
+          __typename
+          similarCheese(source: COW)
+        }
+      "
+    }
+
+    let(:rules) {
+      # This is from graphql-client, eg
+      # https://github.com/github/graphql-client/blob/c86fc05d7eba2370452592bb93572caced4123af/lib/graphql/client.rb#L168
+      GraphQL::StaticValidation::ALL_RULES - [
+        GraphQL::StaticValidation::FragmentsAreUsed,
+        GraphQL::StaticValidation::FieldsHaveAppropriateSelections
+      ]
+    }
+    let(:validator) { GraphQL::StaticValidation::Validator.new(schema: Dummy::Schema, rules: rules) }
+
+    it "runs the specified rules" do
+      assert_equal 0, errors.size
+    end
+
+    describe "With a legacy-style rule" do
+      # GraphQL-Pro's operation store uses this
+      class ValidatorSpecLegacyRule
+        include GraphQL::StaticValidation::Error::ErrorHelper
+        def validate(ctx)
+          ctx.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(n, _p) {
+            ctx.errors << error("Busted!", n, context: ctx)
+          }
+        end
+      end
+
+      let(:rules) {
+        GraphQL::StaticValidation::ALL_RULES + [ValidatorSpecLegacyRule]
+      }
+
+      let(:query_string) { "{ __typename }"}
+
+      it "runs the rule" do
+        assert_equal ["Busted!"], errors.map { |e| e["message"] }
       end
     end
   end

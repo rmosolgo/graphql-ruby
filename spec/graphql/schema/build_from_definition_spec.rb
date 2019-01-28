@@ -60,37 +60,114 @@ type Hello {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports descriptions' do
+    it 'supports descriptions and definition_line' do
       schema = <<-SCHEMA
 schema {
   query: Hello
 }
 
-# This is a directive
+"""
+This is a directive
+"""
 directive @foo(
-  # It has an argument
+  """
+  It has an argument
+  """
   arg: Int
 ) on FIELD
 
-# With an enum
+"""
+With an enum
+"""
 enum Color {
   BLUE
 
-  # Not a creative color
+  """
+  Not a creative color
+  """
   GREEN
   RED
 }
 
-# What a great type
-type Hello {
-  anEnum: Color
+"""
+What a great type
+"""
+type Hello implements I {
+  anEnum(s: S): Color
 
-  # And a field to boot
-  str: String
+  """
+  And a field to boot
+  """
+  str(i: Input): String
 }
+
+"""
+An interface
+"""
+interface I {
+  str(i: Input): String
+}
+
+"""
+And an Input
+"""
+input Input {
+  s: String
+}
+
+"""
+A scalar
+"""
+scalar S
+
+"""
+And a union
+"""
+union U = Hello
       SCHEMA
 
       build_schema_and_compare_output(schema.chop)
+
+      built_schema = GraphQL::Schema.from_definition(schema)
+      # The schema's are the same since there's no description
+      assert_equal 1, built_schema.ast_node.line
+      assert_equal 1, built_schema.ast_node.definition_line
+
+      # These account for description:
+      assert_equal 5, built_schema.directives["foo"].ast_node.line, "The ast_node.line points to the description"
+      assert_equal 8, built_schema.directives["foo"].ast_node.definition_line, "The ast_node.definition_line points to the definition"
+
+      arg = built_schema.directives["foo"].arguments["arg"]
+      assert_equal 9, arg.ast_node.line
+      assert_equal 12, arg.ast_node.definition_line
+
+      enum_type = built_schema.types["Color"]
+      assert_equal 15, enum_type.ast_node.line, "The ast_node.line points to the description"
+      assert_equal 18, enum_type.ast_node.definition_line, "The ast_node.definition_line points to the definition"
+
+      enum_value = enum_type.values["GREEN"]
+      assert_equal 21, enum_value.ast_node.line
+      assert_equal 24, enum_value.ast_node.definition_line
+
+      obj_type = built_schema.types["Hello"]
+      assert_equal 28, obj_type.ast_node.line, "The ast_node.line points to the description"
+      assert_equal 31, obj_type.ast_node.definition_line, "The ast_node.definition_line points to the definition"
+
+      field = obj_type.fields["str"]
+      assert_equal 34, field.ast_node.line
+      assert_equal 37, field.ast_node.definition_line
+
+      assert_equal 40, built_schema.types["I"].ast_node.line
+      assert_equal 43, built_schema.types["I"].ast_node.definition_line
+
+      assert_equal 47, built_schema.types["Input"].ast_node.line
+      assert_equal 50, built_schema.types["Input"].ast_node.definition_line
+
+      assert_equal 54, built_schema.types["S"].ast_node.line
+      assert_equal 57, built_schema.types["S"].ast_node.definition_line
+
+      assert_equal 59, built_schema.types["U"].ast_node.line
+      assert_equal 62, built_schema.types["U"].ast_node.definition_line
     end
 
     it 'maintains built-in directives' do
@@ -233,64 +310,102 @@ type Organization {
   email: String
 }
 
-# The connection type for Organization.
+"""
+The connection type for Organization.
+"""
 type OrganizationConnection {
-  # A list of edges.
+  """
+  A list of edges.
+  """
   edges: [OrganizationEdge]
 
-  # A list of nodes.
+  """
+  A list of nodes.
+  """
   nodes: [Organization]
 
-  # Information to aid in pagination.
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
 
-  # Identifies the total count of items in the connection.
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
 
-# An edge in a connection.
+"""
+An edge in a connection.
+"""
 type OrganizationEdge {
-  # A cursor for use in pagination.
+  """
+  A cursor for use in pagination.
+  """
   cursor: String!
 
-  # The item at the end of the edge.
+  """
+  The item at the end of the edge.
+  """
   node: Organization
 }
 
-# Information about pagination in a connection.
+"""
+Information about pagination in a connection.
+"""
 type PageInfo {
-  # When paginating forwards, the cursor to continue.
+  """
+  When paginating forwards, the cursor to continue.
+  """
   endCursor: String
 
-  # When paginating forwards, are there more items?
+  """
+  When paginating forwards, are there more items?
+  """
   hasNextPage: Boolean!
 
-  # When paginating backwards, are there more items?
+  """
+  When paginating backwards, are there more items?
+  """
   hasPreviousPage: Boolean!
 
-  # When paginating backwards, the cursor to continue.
+  """
+  When paginating backwards, the cursor to continue.
+  """
   startCursor: String
 }
 
 type Type {
   name: String
   organization(
-    # The login of the organization to find.
+    """
+    The login of the organization to find.
+    """
     login: String!
   ): Organization
 
-  # A list of organizations the user belongs to.
+  """
+  A list of organizations the user belongs to.
+  """
   organizations(
-    # Returns the elements in the list that come after the specified cursor.
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: String
 
-    # Returns the elements in the list that come before the specified cursor.
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: String
 
-    # Returns the first _n_ elements from the list.
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    # Returns the last _n_ elements from the list.
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
   ): OrganizationConnection!
 }

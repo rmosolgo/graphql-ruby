@@ -12,7 +12,11 @@ function createAblyHandler(options) {
       channelName = response.headers.get("X-Subscription-ID")
       channel = ably.channels.get(channelName)
       // Register presence, so that we can detect empty channels and clean them up server-side
-      channel.presence.enterClient("graphql-subscriber", "subscribed")
+      if (ably.auth.clientId) {
+        channel.presence.enter("subscribed")
+      } else {
+        channel.presence.enterClient("graphql-subscriber", "subscribed")
+      }
       // When you get an update from ably, give it to Relay
       channel.subscribe("update", function(message) {
         // TODO Extract this code

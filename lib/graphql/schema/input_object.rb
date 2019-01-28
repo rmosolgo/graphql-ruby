@@ -7,11 +7,15 @@ module GraphQL
       extend GraphQL::Schema::Member::HasArguments
       include GraphQL::Dig
 
-      def initialize(values, context:, defaults_used:)
+      def initialize(values = nil, ruby_kwargs: nil, context:, defaults_used:)
         @context = context
-        @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
-        # Symbolized, underscored hash:
-        @ruby_style_hash = @arguments.to_kwargs
+        if ruby_kwargs
+          @ruby_style_hash = ruby_kwargs
+        else
+          @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
+          # Symbolized, underscored hash:
+          @ruby_style_hash = @arguments.to_kwargs
+        end
         # Apply prepares, not great to have it duplicated here.
         self.class.arguments.each do |name, arg_defn|
           ruby_kwargs_key = arg_defn.keyword
@@ -57,13 +61,15 @@ module GraphQL
       def [](key)
         if @ruby_style_hash.key?(key)
           @ruby_style_hash[key]
-        else
+        elsif @arguments
           @arguments[key]
+        else
+          nil
         end
       end
 
       def key?(key)
-        @ruby_style_hash.key?(key) || @arguments.key?(key)
+        @ruby_style_hash.key?(key) || (@arguments && @arguments.key?(key))
       end
 
       # A copy of the Ruby-style hash
@@ -79,8 +85,9 @@ module GraphQL
           argument_defn = super
           # Add a method access
           arg_name = argument_defn.graphql_definition.name
-          define_method(Member::BuildType.underscore(arg_name)) do
-            @arguments.public_send(arg_name)
+          method_name = Member::BuildType.underscore(arg_name).to_sym
+          define_method(method_name) do
+            @ruby_style_hash[method_name]
           end
         end
 

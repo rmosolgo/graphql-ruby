@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql/execution/lazy/lazy_method_map"
 require "graphql/execution/lazy/resolve"
+
 module GraphQL
   module Execution
     # This wraps a value which is available, but not yet calculated, like a promise or future.
@@ -19,13 +20,19 @@ module GraphQL
         Resolve.resolve(val)
       end
 
+      attr_reader :path, :field
+
       # Create a {Lazy} which will get its inner value by calling the block
       # @param value_proc [Proc] a block to get the inner value (later)
-      def initialize(original = nil, value:, exec:)
+      # @param path [Array<String, Integer>]
+      # @param field [GraphQL::Schema::Field]
+      def initialize(original = nil, path: nil, field: nil, value:, exec:)
         @original = original
         @value_proc = value
         @exec_proc = exec
         @resolved = false
+        @path = path
+        @field = field
       end
 
       def execute
