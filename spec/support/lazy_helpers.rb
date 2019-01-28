@@ -170,7 +170,7 @@ module LazyHelpers
     end 
     
     def concurrent_nested_sum(value:)
-      ConcurrentSumAll.new(args[:value])
+      ConcurrentSumAll.new(value)
     end
 
     field :nested_sum, LazySum, null: false do
