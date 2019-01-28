@@ -26,9 +26,15 @@ module GraphQL
       # @param value_proc [Proc] a block to get the inner value (later)
       # @param path [Array<String, Integer>]
       # @param field [GraphQL::Schema::Field]
-      def initialize(original = nil, path: nil, field: nil, value:, exec:)
+      def initialize(original = nil, path: nil, field: nil, value: nil, exec: nil)
         @original = original
-        @value_proc = value
+        @value_proc = if value 
+          value
+        elsif block_given?
+          Proc.new 
+        else
+          raise ArgumentError, "A block to call later is required as `value:` ora block"
+        end 
         @exec_proc = exec
         @resolved = false
         @path = path
