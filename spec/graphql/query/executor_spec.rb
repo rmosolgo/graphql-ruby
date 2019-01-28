@@ -257,10 +257,10 @@ describe GraphQL::Query::Executor do
             {
               "message" => "Variable input of type ReplaceValuesInput! was provided invalid value",
               "locations" => [{ "line" => 1, "column" => 13 }],
-              "value" => nil,
-              "problems" => [
-                { "path" => [], "explanation" => "Expected value to not be null" }
-              ]
+              "extensions" => {
+                "value" => nil,
+                "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
+              }
             }
           ]
         }
@@ -277,10 +277,10 @@ describe GraphQL::Query::Executor do
             {
               "message" => "Variable input of type ReplaceValuesInput! was provided invalid value",
               "locations" => [{ "line" => 1, "column" => 13 }],
-              "value" => {},
-              "problems" => [
-                { "path" => ["values"], "explanation" => "Expected value to not be null" }
-              ]
+              "extensions" => {
+                "value" => {},
+                "problems" => [{ "path" => ["values"], "explanation" => "Expected value to not be null" }]
+              }
             }
           ]
         }
@@ -297,11 +297,13 @@ describe GraphQL::Query::Executor do
             {
               "message" => "Variable input of type [DairyProductInput] was provided invalid value",
               "locations" => [{ "line" => 1, "column" => 10 }],
-              "value" => [{ "foo" => "bar" }],
-              "problems" => [
-                { "path" => [0, "foo"], "explanation" => "Field is not defined on DairyProductInput" },
-                { "path" => [0, "source"], "explanation" => "Expected value to not be null" }
-              ]
+              "extensions" => {
+                "value" => [{ "foo" => "bar" }],
+                "problems" => [
+                  { "path" => [0, "foo"], "explanation" => "Field is not defined on DairyProductInput" },
+                  { "path" => [0, "source"], "explanation" => "Expected value to not be null" }
+                ]
+              }
             }
           ]
         }
