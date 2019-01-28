@@ -14,7 +14,16 @@ module GraphQL
       end
 
       def to_h
-        super.merge({ "value" => value, "problems" => validation_result.problems })
+        # It is possible there are other extension items in this error, so handle
+        # a one level deep merge explicitly. However beyond that only show the
+        # latest value and problems.
+        super.merge({ "extensions" => { "value" => value, "problems" => validation_result.problems }}) do |key, oldValue, newValue|
+          if oldValue.respond_to? merge
+            oldValue.merge(newValue)
+          else
+            newValue
+          end
+        end
       end
     end
   end
