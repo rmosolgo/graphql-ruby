@@ -105,7 +105,8 @@ describe GraphQL::Schema::InputObject do
         inspectInput(input: {
           stringValue: "ABC",
           legacyInput: { intValue: 4 },
-          nestedInput: { stringValue: "xyz"}
+          nestedInput: { stringValue: "xyz"},
+          ensembleId: "Ensemble/Robert Glasper Experiment"
         })
       }
       GRAPHQL
@@ -118,6 +119,8 @@ describe GraphQL::Schema::InputObject do
         "ABC",
         "true",
         "ABC",
+        Jazz::Models::Ensemble.new("Robert Glasper Experiment").to_s,
+        "true",
       ]
       assert_equal expected_info, res["data"]["inspectInput"]
     end
@@ -228,11 +231,11 @@ describe GraphQL::Schema::InputObject do
           }
         }')
       # Test __type
-      assert_equal ["stringValue", "nestedInput", "legacyInput"], res["data"]["__type"]["inputFields"].map { |f| f["name"] }
+      assert_equal ["ensembleId", "stringValue", "nestedInput", "legacyInput"], res["data"]["__type"]["inputFields"].map { |f| f["name"] }
       # Test __schema { types }
       # It's upcased to test custom introspection
       input_type = res["data"]["__schema"]["types"].find { |t| t["name"] == "INSPECTABLEINPUT" }
-      assert_equal ["stringValue", "nestedInput", "legacyInput"], input_type["inputFields"].map { |f| f["name"] }
+      assert_equal ["ensembleId", "stringValue", "nestedInput", "legacyInput"], input_type["inputFields"].map { |f| f["name"] }
     end
   end
 end
