@@ -368,13 +368,13 @@ end
 
 By default, the integration uses `Pundit`'s top-level methods to interact with policies:
 
-- `Pundit.policy!(current_user, object)` is called to find a policy instance
-- `Pundit.policy_scope!(current_user, items)` is called to filter `items`
+- `Pundit.policy!(context[:current_user], object)` is called to find a policy instance
+- `Pundit.policy_scope!(context[:current_user], items)` is called to filter `items`
 
 You can override these by defining the following methods in your schema:
 
-- `pundit_policy(current_user, object)` to find a policy (or raise an error if one isn't found)
-- `scope_by_pundit_policy(current_user, items)` to apply a scope to `items` (or raise an error if one isn't found)
+- `pundit_policy(context, object)` to find a policy (or raise an error if one isn't found)
+- `scope_by_pundit_policy(context, items)` to apply a scope to `items` (or raise an error if one isn't found)
 
 Since different objects have different lifecycles, the hooks are installed slightly different ways:
 
@@ -386,7 +386,8 @@ Here's an example of how the custom hooks can be installed:
 ```ruby
 module CustomPolicyLookup
   # Lookup policies in the `SystemAdmin::` namespace for system_admin users
-  def pundit_policy(current_user, object)
+  def pundit_policy(context, object)
+    current_user = context[:current_user]
     if current_user.system_admin?
       policy_class = SystemAdmin.const_get("#{object.class.name}Policy")
       policy_class.new(current_user, object)

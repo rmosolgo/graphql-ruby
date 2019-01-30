@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.9.8 (30 Jan 2019)
+
+### New Features
+
+- Inject `context` into policy lookup hooks instead of just the user
+
 ## 1.9.7 (30 Jan 2019)
 
 ### New Features
