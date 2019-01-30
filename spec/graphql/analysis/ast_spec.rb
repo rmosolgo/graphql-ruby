@@ -137,6 +137,18 @@ describe GraphQL::Analysis::AST do
       }
     |}
 
+    describe "without a selected operation" do
+      let(:query_string) {%|
+        # A comment
+        # And nothing else
+        # Should not break
+      |}
+
+      it "bails early when there is no selected operation to be executed" do
+        assert_equal 2, reduce_result.size
+      end
+    end
+
     describe "conditional analysis" do
       let(:analyzers) { [AstTypeCollector, AstConditionalAnalyzer] }
 
