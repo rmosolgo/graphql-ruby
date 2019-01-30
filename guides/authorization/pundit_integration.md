@@ -45,6 +45,7 @@ And read on about the different features of the integration:
 - [Authorizing Fields](#authorizing-fields)
 - [Authorizing Arguments](#authorizing-arguments)
 - [Authorizing Mutations](#authorizing-mutations)
+- [Custom Policy Lookup](#custom-policy-lookup)
 
 ## Authorizing Objects
 
@@ -77,7 +78,7 @@ end
 
 For each object returned by GraphQL, the integration matches it to a policy and method.
 
-The policy is found using [`Pundit.policy!`](https://www.rubydoc.info/gems/pundit/Pundit%2Epolicy!), which looks up a policy using the object's class name.
+The policy is found using [`Pundit.policy!`](https://www.rubydoc.info/gems/pundit/Pundit%2Epolicy!), which looks up a policy using the object's class name. (This can be customized, see below.)
 
 Then, GraphQL will call a method on the policy to see whether the object is permitted or not. This method is assigned in the object class, for example:
 
@@ -125,6 +126,8 @@ end
 ```
 
 Pundit scopes [don't play well](https://github.com/rmosolgo/graphql-ruby/issues/2008) with `Array`s, so the integration _skips_ scopes on Arrays. You can also opt out on a field-by-field basis as described below.
+
+You can also customize how the scopes are looked up and applied, see below.
 
 #### Bypassing scopes
 
@@ -358,5 +361,64 @@ class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
     # Return errors as data:
     { errors: ["Missing required permission: #{owner.pundit_role}, can't access #{value.inspect}"] }
   end
+end
+```
+
+## Custom Policy Lookup
+
+By default, the integration uses `Pundit`'s top-level methods to interact with policies:
+
+- `Pundit.policy!(current_user, object)` is called to find a policy instance
+- `Pundit.policy_scope!(current_user, items)` is called to filter `items`
+
+You can override these by defining the following methods in your schema:
+
+- `pundit_policy(current_user, object)` to find a policy (or raise an error if one isn't found)
+- `scope_by_pundit_policy(current_user, items)` to apply a scope to `items` (or raise an error if one isn't found)
+
+Since different objects have different lifecycles, the hooks are installed slightly different ways:
+
+- Your base argument, field, and mutation classes should have _instance methods_ with those names
+- Your base type classes should have _class methods_ with that name
+
+Here's an example of how the custom hooks can be installed:
+
+```ruby
+module CustomPolicyLookup
+  # Lookup policies in the `SystemAdmin::` namespace for system_admin users
+  def pundit_policy(current_user, object)
+    if current_user.system_admin?
+      policy_class = SystemAdmin.const_get("#{object.class.name}Policy")
+      policy_class.new(current_user, object)
+    else
+      super
+    end
+  end
+end
+
+# Add policy hooks as class methods
+class Types::BaseObject < GraphQL::Schema::Object
+  extend CustomPolicyLookup
+end
+class Types::BaseUnion < GraphQL::Schema::Union
+  extend CustomPolicyLookup
+end
+module Types::BaseInterface
+  include GraphQL::Schema::Interface
+  # Add this as a class method that will be "inherited" by other interfaces:
+  definition_methods do
+    include CustomPolicyLookup
+  end
+end
+
+# Add policy hooks as instance methods
+class Types::BaseField < GraphQL::Schema::Field
+  include CustomPolicyLookup
+end
+class Types::BaseArgument < GraphQL::Schema::Argument
+  include CustomPolicyLookup
+end
+class Mutations::BaseMutation < GraphQL::Schema::Mutation
+  include CustomPolicyLookup
 end
 ```

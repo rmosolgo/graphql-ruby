@@ -8,7 +8,15 @@
 
 ### Bug Fix
 
+## 1.9.7 (30 Jan 2019)
+
+### New Features
+
+- Extract `pundit_policy` and `scope_by_pundit_policy` hooks for user override
+
 ## 1.9.6 (18 Jan 2019)
+
+### Bug Fix
 
 - Properly render subscription context in dashboard
 
