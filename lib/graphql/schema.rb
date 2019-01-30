@@ -184,7 +184,7 @@ module GraphQL
       @context_class = GraphQL::Query::Context
       @introspection_namespace = nil
       @introspection_system = nil
-      @interpeter = false
+      @interpreter = false
       @error_bubbling = false
     end
 
