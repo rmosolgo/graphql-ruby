@@ -611,9 +611,7 @@ MSG
 
           memos = []
           value = run_extensions_before_resolve(memos, obj, args, ctx) do |extended_obj, extended_args|
-            obj = extended_obj
-            args = extended_args
-            yield(obj, args)
+            yield(extended_obj, extended_args)
           end
 
           ctx.schema.after_lazy(value) do |resolved_value|
@@ -632,7 +630,7 @@ MSG
         if extension
           extension.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
             memos << memo
-            run_extensions_before_resolve(memos, extended_obj, extended_args, ctx, idx: idx + 1) { yield(obj, args) }
+            run_extensions_before_resolve(memos, extended_obj, extended_args, ctx, idx: idx + 1) { |o, a| yield(o, a) }
           end
         else
           yield(obj, args)
