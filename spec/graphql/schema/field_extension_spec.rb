@@ -30,7 +30,36 @@ describe GraphQL::Schema::FieldExtension do
       end
     end
 
+    class MultiplyByContext < GraphQL::Schema::FieldExtension
+      def after_resolve(value:, context:, **_rest)
+        if context[:multiply_by]
+          value * context[:multiply_by]
+        else
+          value
+        end
+      end
+    end
+
+    class MultiplyByContextAndOption < GraphQL::Schema::FieldExtension
+      def after_resolve(value:, context:, **_rest)
+        if context[:multiply_by_context_and_option]
+          value * context[:multiply_by_context_and_option] * options[:multiply_by]
+        else
+          value
+        end
+      end
+    end
+
+    class SuperField < GraphQL::Schema::Field
+      extension MultiplyByContext
+    end
+
+    class BaseField < SuperField
+      extension MultiplyByContextAndOption, multiply_by: 10
+    end
+
     class BaseObject < GraphQL::Schema::Object
+      field_class BaseField
     end
 
     class Query < BaseObject
@@ -68,8 +97,24 @@ describe GraphQL::Schema::FieldExtension do
   describe "reading" do
     it "has a reader method" do
       field = FilterTestSchema::Query.fields["multiplyInput"]
-      assert_equal 1, field.extensions.size
-      assert_instance_of FilterTestSchema::MultiplyByArgument, field.extensions.first
+      assert_equal 3, field.extensions.size
+      assert_instance_of FilterTestSchema::MultiplyByArgument, field.extensions[0]
+      assert_instance_of FilterTestSchema::MultiplyByContextAndOption, field.extensions[1]
+      assert_instance_of FilterTestSchema::MultiplyByContext, field.extensions[2]
+    end
+  end
+
+  describe "class-level extensions" do
+    it "applies them" do
+      query_str = "{ doubled(input: 3) }"
+      res = exec_query(query_str)
+      assert_equal 6, res["data"]["doubled"], "It can bypass them"
+
+      res2 = exec_query(query_str, context: { multiply_by: 2})
+      assert_equal 12, res2["data"]["doubled"], "It can run one of them"
+
+      res3 = exec_query(query_str, context: { multiply_by: 2, multiply_by_context_and_option: 3 })
+      assert_equal 360, res3["data"]["doubled"], "It can run both of them"
     end
   end
 

@@ -21,10 +21,12 @@ module GraphQL
         end
       end
 
-      def field(*args, extensions: [], **rest, &block)
+      def field(*args, extensions: [], subscription: nil, **rest, &block)
         extensions += [Extension]
-        # Backwards-compat for schemas
-        if !rest[:subscription]
+        if subscription
+          rest[:resolver] = subscription
+        else
+          # Backwards-compat for method-based subscription fields
           name = args.first
           alias_method(name, :skip_subscription_root)
         end

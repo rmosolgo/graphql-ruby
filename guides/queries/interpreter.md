@@ -16,6 +16,8 @@ It's called `GraphQL::Execution::Interpreter` and you can hook it up with `use .
 ```ruby
 class MySchema < GraphQL::Schema
   use GraphQL::Execution::Interpreter
+  # And, when you have updated your analyzers:
+  use GraphQL::Analysis::AST
 end
 ```
 
@@ -36,6 +38,8 @@ You can opt in to the interpreter in your schema class:
 ```ruby
 class MySchema < GraphQL::Schema
   use GraphQL::Execution::Interpreter
+  # And, after you have updated your analyzers:
+  use GraphQL::Analysis::AST
 end
 ```
 
@@ -90,9 +94,24 @@ Maybe this section should have been called _incompatibility_ 🤔.
 
 ## Extending the Runtime
 
-🚧 👷🚧
+See {% internal_link "Directives", "/type_definitions/directives" %}.
 
-The internals aren't clean enough to build on yet. Stay tuned.
+## Analyzers
+
+GraphQL-Ruby has "analyzers" that run _before_ execution and may reject a query. With the interpreter, you can use {% internal_link "AST Analyzers", "/queries/ast_analysis" %} to get better performance.
+
+To make the migration, convert your previous analyzers to extend {{ "GraphQL::Analysis::AST::Analyzer" | api_doc }} as described in the guide, then add to your schema:
+
+```ruby
+use GraphQL::Analysis::AST
+```
+
+When you use _both_ `Interpreter` and `Analysis::AST`, GraphQL-Ruby will skip the slow process of building `irep_nodes`.
+
+All analyzers must be migrated at once; running _some_ legacy analyzers and _some_ AST analyzers is not supported.
+
+You can migrate to `Interpreter` before migrating to `Analysis::AST`. In that case, the `irep_node` tree will still be constructed and used for analysis, even though it will not be used for execution.
+
 
 ## Implementation Notes
 

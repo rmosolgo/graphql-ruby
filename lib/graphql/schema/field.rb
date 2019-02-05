@@ -59,11 +59,10 @@ module GraphQL
       # It also normalizes positional arguments into keywords for {Schema::Field#initialize}.
       # @param resolver [Class] A {GraphQL::Schema::Resolver} class to use for field configuration
       # @param mutation [Class] A {GraphQL::Schema::Mutation} class to use for field configuration
-      # @param subscription [Class] A {GraphQL::Schema::Subscription} class to use for field configuration
       # @return [GraphQL::Schema:Field] an instance of `self
       # @see {.initialize} for other options
-      def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
-        if (parent_config = resolver || mutation || subscription)
+      def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, **kwargs, &block)
+        if (parent_config = resolver || mutation)
           # Get the parent config, merge in local overrides
           kwargs = parent_config.field_options.merge(kwargs)
           # Add a reference to that parent class
@@ -93,6 +92,29 @@ module GraphQL
           end
         end
         new(**kwargs, &block)
+      end
+
+      class << self
+        # @return [Array<Array<Class, Hash>>] Extension configurations for instances of this class
+        def extensions
+          all_exts = []
+          ancestors.each do |anc|
+            if anc.respond_to?(:own_extensions)
+              all_exts.concat(anc.own_extensions)
+            end
+          end
+          all_exts
+        end
+
+        def own_extensions
+          @own_extensions ||= []
+        end
+
+        # @param ext_class [Class] A subclass of {GraphQL::Schema::FieldExtension} to apply to all fields from this class
+        # @param options [Hash] Options to pass when initializing the extension
+        def extension(ext_class, options = {})
+          own_extensions << [ext_class, options]
+        end
       end
 
       # Can be set with `connection: true|false` or inferred from a type name ending in `*Connection`
@@ -224,8 +246,11 @@ module GraphQL
 
         # Do this last so we have as much context as possible when initializing them:
         @extensions = []
-        if extensions.any?
-          self.extensions(extensions)
+        # Also apply the class's extensions
+        extension_configs = extensions + self.class.extensions
+
+        if extension_configs.any?
+          self.extensions(extension_configs)
         end
         # This should run before connection extension,
         # but should it run after the definition block?
@@ -276,14 +301,21 @@ Use a method or a Schema::Resolver instead.
 MSG
           end
 
-          # Normalize to a Hash of {name => options}
+          # Normalize to a Hash of {class => options}
           extensions_with_options = if new_extensions.last.is_a?(Hash)
             new_extensions.pop
           else
             {}
           end
           new_extensions.each do |f|
-            extensions_with_options[f] = nil
+            if f.is_a?(Class)
+              extensions_with_options[f] = nil
+            elsif f.is_a?(Array)
+              ext_class, ext_options = f
+              extensions_with_options[ext_class] = ext_options
+            else
+              raise ArgumentError, "Unexpected extension configuration: #{f}"
+            end
           end
 
           # Initialize each class and stash the instance
