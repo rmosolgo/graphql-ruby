@@ -4,13 +4,27 @@ module GraphQL
     module Relay
       # This can be used for implementing `Query.node(id: ...)`,
       # or use it for inspiration for your own field definition.
+      #
+      # @example Adding this field directly
+      #   add_field(GraphQL::Types::Relay::NodeField)
+      #
+      # @example Implementing a similar field in your own Query root
+      #
+      #   field :node, GraphQL::Types::Relay::Node, null: true,
+      #     description: "Fetches an object given its ID" do
+      #       argument :id, ID, required: true
+      #     end
+      #
+      #   def node(id:)
+      #     context.schema.object_from_id(context, id)
+      #   end
+      #
       NodeField = GraphQL::Schema::Field.new(
         name: "node",
         owner: nil,
         type: GraphQL::Types::Relay::Node,
         null: true,
         description: "Fetches an object given its ID.",
-        relay_node_field: true,
       ) do
         argument :id, "ID!", required: true,
           description: "ID of the object."
