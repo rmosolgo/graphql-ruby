@@ -300,7 +300,7 @@ module GraphQL
       NO_SELECTIONS = [{}.freeze, [].freeze].freeze
 
       def fields_and_fragments_from_selection(node, owner_type:, parents:)
-        if node.selections.none?
+        if node.selections.empty?
           NO_SELECTIONS
         else
           fields, fragment_spreads = find_fields_and_fragments(node.selections, owner_type: owner_type, parents: parents, fields: [], fragment_spreads: [])

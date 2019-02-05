@@ -44,7 +44,7 @@ module GraphQL
           end
 
 
-          irep = if errors.none? && context
+          irep = if errors.empty? && context
             # Only return this if there are no errors and validation was actually run
             context.visitor.rewrite_document
           else

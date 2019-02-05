@@ -96,7 +96,7 @@ module GraphQL
         else
           # Run hooks if there are any
           new_node = node
-          begin_hooks_ok = @visitors.none? || begin_visit(new_node, parent)
+          begin_hooks_ok = @visitors.empty? || begin_visit(new_node, parent)
           if begin_hooks_ok
             node.children.each do |child_node|
               new_child_and_node = on_node_with_modifications(child_node, new_node)

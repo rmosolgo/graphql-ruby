@@ -31,7 +31,7 @@ module GraphQL
           else
             "Selections can't be made on scalars (%{node_name} returns #{resolved_type.name} but has selections [#{ast_node.selections.map(&:name).join(", ")}])"
           end
-        elsif resolved_type.kind.fields? && ast_node.selections.none?
+        elsif resolved_type.kind.fields? && ast_node.selections.empty?
           "Field must have selections (%{node_name} returns #{resolved_type.name} but has no selections. Did you mean '#{ast_node.name} { ... }'?)"
         else
           nil

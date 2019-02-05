@@ -28,7 +28,7 @@ def parse_document
     end
     # From the tokens, build an AST
     @tracer.trace("parse", {query_string: @query_string}) do
-      if @tokens.none?
+      if @tokens.empty?
         make_node(:Document, definitions: [], filename: @filename)
       else
         do_parse

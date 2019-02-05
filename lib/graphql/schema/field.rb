@@ -602,7 +602,7 @@ MSG
       # Written iteratively to avoid big stack traces.
       # @return [Object] Whatever the
       def with_extensions(obj, args, ctx)
-        if @extensions.none?
+        if @extensions.empty?
           yield(obj, args)
         else
           # Save these so that the originals can be re-given to `after_resolve` handlers.
