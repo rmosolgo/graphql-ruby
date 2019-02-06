@@ -78,6 +78,8 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class FieldCounter < GraphQL::Schema::Object
+      implements GraphQL::Types::Relay::Node
+
       field :field_counter, FieldCounter, null: false
       def field_counter; :field_counter; end
 
@@ -167,6 +169,9 @@ describe GraphQL::Execution::Interpreter do
 
       field :field_counter, FieldCounter, null: false
       def field_counter; :field_counter; end
+
+      field :node, field: GraphQL::Relay::Node.field
+      field :nodes, field: GraphQL::Relay::Node.plural_field
     end
 
     class Schema < GraphQL::Schema
@@ -174,6 +179,14 @@ describe GraphQL::Execution::Interpreter do
       use GraphQL::Analysis::AST
       query(Query)
       lazy_resolve(Box, :value)
+
+      def self.object_from_id(id, ctx)
+        OpenStruct.new(id: id)
+      end
+
+      def self.resolve_type(type, obj, ctx)
+        FieldCounter
+      end
     end
   end
 
@@ -277,6 +290,9 @@ describe GraphQL::Execution::Interpreter do
 
   describe "CI setup" do
     it "sets interpreter based on a constant" do
+      # Force the plugins to be applied
+      Jazz::Schema.graphql_definition
+      Dummy::Schema.graphql_definition
       if TESTING_INTERPRETER
         assert_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
         assert_equal GraphQL::Execution::Interpreter, Dummy::Schema.query_execution_strategy
@@ -286,6 +302,7 @@ describe GraphQL::Execution::Interpreter do
       end
     end
   end
+
   describe "null propagation" do
     it "propagates nulls" do
       query_str = <<-GRAPHQL
@@ -397,6 +414,16 @@ describe GraphQL::Execution::Interpreter do
       # It will raise an error if it doesn't match the expectation
       res = InterpreterTest::Schema.execute(query_str, context: { calls: 0 })
       assert_equal 3, res["data"]["fieldCounter"]["fieldCounter"]["c3"]
+    end
+  end
+
+  describe "backwards compatibility" do
+    it "handles a legacy nodes field" do
+      res = InterpreterTest::Schema.execute('{ node(id: "abc") { id } }')
+      assert_equal "abc", res["data"]["node"]["id"]
+
+      res = InterpreterTest::Schema.execute('{ nodes(ids: ["abc", "xyz"]) { id } }')
+      assert_equal ["abc", "xyz"], res["data"]["nodes"].map { |n| n["id"] }
     end
   end
 end
