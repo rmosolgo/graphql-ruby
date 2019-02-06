@@ -76,11 +76,11 @@ module GraphQL
           @validation_errors.concat(validation_result[:errors])
           @internal_representation = validation_result[:irep]
 
-          if @validation_errors.none?
+          if @validation_errors.empty?
             @validation_errors.concat(@query.variables.errors)
           end
 
-          if @validation_errors.none?
+          if @validation_errors.empty?
             @query_analyzers = build_analyzers(
               @schema,
               @max_depth,
@@ -89,7 +89,7 @@ module GraphQL
           end
         end
 
-        @valid = @validation_errors.none?
+        @valid = @validation_errors.empty?
       end
 
       # If there are max_* values, add them,

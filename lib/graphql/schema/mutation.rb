@@ -65,7 +65,7 @@ module GraphQL
       class << self
         # Override this method to handle legacy-style usages of `MyMutation.field`
         def field(*args, &block)
-          if args.none?
+          if args.empty?
             raise ArgumentError, "#{name}.field is used for adding fields to this mutation. Use `mutation: #{name}` to attach this mutation instead."
           else
             super

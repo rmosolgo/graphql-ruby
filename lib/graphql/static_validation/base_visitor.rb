@@ -35,7 +35,7 @@ module GraphQL
       # @param rewrite [Boolean] if `false`, don't include rewrite
       # @return [Class] A class for validating `rules` during visitation
       def self.including_rules(rules, rewrite: true)
-        if rules.none?
+        if rules.empty?
           if rewrite
             NoValidateVisitor
           else

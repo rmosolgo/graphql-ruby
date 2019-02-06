@@ -239,7 +239,7 @@ module GraphQL
 
     attr_accessor :analysis_errors
     def valid?
-      validation_pipeline.valid? && analysis_errors.none?
+      validation_pipeline.valid? && analysis_errors.empty?
     end
 
     def warden

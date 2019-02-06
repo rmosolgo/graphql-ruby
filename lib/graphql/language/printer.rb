@@ -135,7 +135,7 @@ module GraphQL
         if (schema.query.nil? || schema.query == 'Query') &&
            (schema.mutation.nil? || schema.mutation == 'Mutation') &&
            (schema.subscription.nil? || schema.subscription == 'Subscription') &&
-           (schema.directives.none?)
+           (schema.directives.empty?)
           return
         end
 
