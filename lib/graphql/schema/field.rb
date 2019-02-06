@@ -620,17 +620,9 @@ MSG
           original_obj = obj
 
           memos = []
-          @extensions.each do |ext|
-            ext.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
-              # update this scope with the yielded value
-              obj = extended_obj
-              args = extended_args
-              # record the memo (or nil if none was yielded)
-              memos << memo
-            end
+          value = run_extensions_before_resolve(memos, obj, args, ctx) do |extended_obj, extended_args|
+            yield(extended_obj, extended_args)
           end
-          # Call the block which actually calls resolve
-          value = yield(obj, args)
 
           ctx.schema.after_lazy(value) do |resolved_value|
             @extensions.each_with_index do |ext, idx|
@@ -640,6 +632,18 @@ MSG
             end
             resolved_value
           end
+        end
+      end
+
+      def run_extensions_before_resolve(memos, obj, args, ctx, idx: 0)
+        extension = @extensions[idx]
+        if extension
+          extension.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
+            memos << memo
+            run_extensions_before_resolve(memos, extended_obj, extended_args, ctx, idx: idx + 1) { |o, a| yield(o, a) }
+          end
+        else
+          yield(obj, args)
         end
       end
     end
