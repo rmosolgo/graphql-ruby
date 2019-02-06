@@ -32,6 +32,23 @@ describe("sync operations", () => {
     })
   })
 
+  describe("verbose", () => {
+    it("Adds debug output", () => {
+      var spy = console.log
+      var payload = null
+      var options = {
+        client: "test-1",
+        path: "./__tests__/documents",
+        url: "bogus",
+        verbose: true,
+        send: (sendPayload, opts) => { payload = sendPayload },
+      }
+      return sync(options).then(function() {
+        expect(spy.mock.calls).toMatchSnapshot()
+      })
+    })
+  })
+
   describe("custom file processing options", () => {
     it("Adds .graphql to the glob if needed", () => {
       var payload = null
