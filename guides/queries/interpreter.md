@@ -112,7 +112,6 @@ All analyzers must be migrated at once; running _some_ legacy analyzers and _som
 
 You can migrate to `Interpreter` before migrating to `Analysis::AST`. In that case, the `irep_node` tree will still be constructed and used for analysis, even though it will not be used for execution.
 
-
 ## Implementation Notes
 
 Instead of a tree of `irep_nodes`, the interpreter consumes the AST directly. This removes a complicated concept from GraphQL-Ruby (`irep_node`s) and simplifies the query lifecycle. The main difference relates to how fragment spreads are resolved. In the previous runtime, the possible combinations of fields for a given object were calculated ahead of time, then some of those combinations were used during runtime, but many of them may not have been. In the new runtime, no precalculation is made; instead each object is checked against each fragment at runtime.

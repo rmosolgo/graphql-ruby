@@ -58,6 +58,19 @@ describe GraphQL::Schema::FieldExtension do
       extension MultiplyByContextAndOption, multiply_by: 10
     end
 
+    class MultiplyByArgumentUsingResolve < GraphQL::Schema::FieldExtension
+      def apply
+        field.argument(:factor, Integer, required: true)
+      end
+
+      # `yield` returns the user-returned value
+      # This method's return value is passed along
+      def before_resolve(object:, arguments:, context:)
+        factor = arguments.delete(:factor)
+        yield(object, arguments) * factor
+      end
+    end
+
     class BaseObject < GraphQL::Schema::Object
       field_class BaseField
     end
@@ -72,12 +85,16 @@ describe GraphQL::Schema::FieldExtension do
         input # return it as-is, it will be modified by extensions
       end
 
-      field :trippled_by_option, Integer, null: false, resolver_method: :pass_thru do
+      field :tripled_by_option, Integer, null: false, resolver_method: :pass_thru do
         extension(MultiplyByOption, factor: 3)
         argument :input, Integer, required: true
       end
 
       field :multiply_input, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgument] do
+        argument :input, Integer, required: true
+      end
+
+      field :multiply_input2, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgumentUsingResolve] do
         argument :input, Integer, required: true
       end
     end
@@ -124,10 +141,15 @@ describe GraphQL::Schema::FieldExtension do
       assert_equal 10, res["data"]["doubled"]
     end
 
+    it "returns the modified value from `yield`" do
+      res = exec_query("{ multiplyInput2(input: 5, factor: 5) }")
+      assert_equal 25, res["data"]["multiplyInput2"]
+    end
+
     it "has access to config options" do
       # The factor of three came from an option
-      res = exec_query("{ trippledByOption(input: 4) }")
-      assert_equal 12, res["data"]["trippledByOption"]
+      res = exec_query("{ tripledByOption(input: 4) }")
+      assert_equal 12, res["data"]["tripledByOption"]
     end
 
     it "can hide arguments from resolve methods" do

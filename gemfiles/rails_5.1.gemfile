@@ -10,7 +10,7 @@ gem "rails", "~> 5.1.0", require: "rails/all"
 gem "puma"
 gem "capybara", "~> 2.13"
 gem "selenium-webdriver"
-gem "sqlite3", platform: :ruby
+gem "sqlite3", "~> 1.3.6", platform: :ruby
 gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "sequel"
 

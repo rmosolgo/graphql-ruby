@@ -62,6 +62,16 @@ module GraphQL
       # @return [GraphQL::Schema:Field] an instance of `self
       # @see {.initialize} for other options
       def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, **kwargs, &block)
+        if kwargs[:field]
+          if kwargs[:field] == GraphQL::Relay::Node.field
+            warn("Legacy-style `GraphQL::Relay::Node.field` is being added to a class-based type. See `GraphQL::Types::Relay::NodeField` for a replacement.")
+            return GraphQL::Types::Relay::NodeField
+          elsif kwargs[:field] == GraphQL::Relay::Node.plural_field
+            warn("Legacy-style `GraphQL::Relay::Node.plural_field` is being added to a class-based type. See `GraphQL::Types::Relay::NodesField` for a replacement.")
+            return GraphQL::Types::Relay::NodesField
+          end
+        end
+
         if (parent_config = resolver || mutation)
           # Get the parent config, merge in local overrides
           kwargs = parent_config.field_options.merge(kwargs)
@@ -634,7 +644,7 @@ MSG
       # Written iteratively to avoid big stack traces.
       # @return [Object] Whatever the
       def with_extensions(obj, args, ctx)
-        if @extensions.none?
+        if @extensions.empty?
           yield(obj, args)
         else
           # Save these so that the originals can be re-given to `after_resolve` handlers.
@@ -642,17 +652,9 @@ MSG
           original_obj = obj
 
           memos = []
-          @extensions.each do |ext|
-            ext.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
-              # update this scope with the yielded value
-              obj = extended_obj
-              args = extended_args
-              # record the memo (or nil if none was yielded)
-              memos << memo
-            end
+          value = run_extensions_before_resolve(memos, obj, args, ctx) do |extended_obj, extended_args|
+            yield(extended_obj, extended_args)
           end
-          # Call the block which actually calls resolve
-          value = yield(obj, args)
 
           ctx.schema.after_lazy(value) do |resolved_value|
             @extensions.each_with_index do |ext, idx|
@@ -662,6 +664,18 @@ MSG
             end
             resolved_value
           end
+        end
+      end
+
+      def run_extensions_before_resolve(memos, obj, args, ctx, idx: 0)
+        extension = @extensions[idx]
+        if extension
+          extension.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
+            memos << memo
+            run_extensions_before_resolve(memos, extended_obj, extended_args, ctx, idx: idx + 1) { |o, a| yield(o, a) }
+          end
+        else
+          yield(obj, args)
         end
       end
     end

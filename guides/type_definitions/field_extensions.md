@@ -53,7 +53,7 @@ This way, an extension can encapsulate a behavior requiring several configuratio
 
 Extensions have two hooks that wrap field resolution. Since GraphQL-Ruby supports deferred execution, these hooks _might not_ be called back-to-back.
 
-First, {{ "GraphQL::Schema::FieldExtension#before_resolve" | api_doc }} is called. `before_resolve` should `yield(object, arguments)` to continue execution. If it doesn't `yield`, then the field won't resolve, and the methods return value will be returned to GraphQL instead.
+First, {{ "GraphQL::Schema::FieldExtension#before_resolve" | api_doc }} is called. `before_resolve` should `yield(object, arguments)` to continue execution. If it doesn't `yield`, then the field won't resolve, and the method's return value will be returned to GraphQL instead.
 
 After resolution, {{ "GraphQL::Schema::FieldExtension#after_resolve" | api_doc }} is called. Whatever that method returns will be used as the field's return value.
 
