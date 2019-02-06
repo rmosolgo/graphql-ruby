@@ -18,7 +18,7 @@ __NOTE:__ A new {% internal_link "Pundit integration", "/authorization/pundit_in
 
 Fields and types can be [authorized at runtime](#runtime-authorization), [rejected during validation](#access-authorization), or [hidden entirely](#visibility-authorization). Default authorization can be [applied at schema-level](#fallback-authorization)
 
-`GraphQL::Pro` integrates has out-of-the-box [Pundit support](#pundit) and [CanCan support](#cancan) and supports [custom authorization strategies](#custom-authorization-strategy)
+`GraphQL::Pro` integrates out-of-the-box [Pundit support](#pundit) and [CanCan support](#cancan) and supports [custom authorization strategies](#custom-authorization-strategy)
 
 ## Configuration
 
