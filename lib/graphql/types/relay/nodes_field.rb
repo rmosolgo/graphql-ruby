@@ -27,6 +27,7 @@ module GraphQL
         type: [GraphQL::Types::Relay::Node, null: true],
         null: false,
         description: "Fetches a list of objects given a list of IDs.",
+        relay_nodes_field: true,
       ) do
         argument :ids, "[ID!]!", required: true,
           description: "IDs of the objects."
