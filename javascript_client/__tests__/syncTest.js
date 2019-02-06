@@ -1,4 +1,4 @@
-var sync = require("../src/sync")
+var sync = require("../src/sync/index")
 var fs = require("fs")
 var nock = require("nock")
 var Logger = require("../src/sync/logger")

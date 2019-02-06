@@ -1,0 +1,9 @@
+{
+  "npmClient": "yarn",
+  "useWorkspaces": true,
+  "packages": [
+    "src/sync",
+    "src/subscriptions"
+  ],
+  "version": "0.0.0"
+}
