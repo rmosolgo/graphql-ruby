@@ -1,23 +1,18 @@
 {
-  "name": "graphql-ruby-client",
+  "name": "graphql-ruby-client-subscriptions",
   "version": "1.6.3",
   "description": "JavaScript client for graphql-ruby",
   "main": "index.js",
   "repository": "https://github.com/rmosolgo/graphql-ruby-client",
   "author": "Robert Mosolgo",
   "license": "LGPL-3.0",
-  "bin": "./cli.js",
-  "private": true,
-  "workspaces": [
-    "src/sync",
-    "src/subscriptions"
-  ],
   "devDependencies": {
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.2.3",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^23.6.0",
     "jest": "^23.6.0",
+    "lerna": "^3.10.7",
     "nock": "^9.0.14",
     "npm-run-all": "^4.1.5",
     "rollup": "^1.1.1",

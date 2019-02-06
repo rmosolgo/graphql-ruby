@@ -1,0 +1,16 @@
+{
+  "name": "graphql-ruby-client-sync",
+  "version": "1.6.3",
+  "description": "JavaScript client for graphql-ruby",
+  "main": "index.js",
+  "repository": "https://github.com/rmosolgo/graphql-ruby-client",
+  "author": "Robert Mosolgo",
+  "license": "LGPL-3.0",
+  "bin": "./cli.js",
+  "scripts": {
+    "test": "jest",
+    "build": "rimraf dist && run-p build:subscriptions && run-p make:indexes",
+    "build:subscriptions": "rollup -c rollup.config.subscriptions.js",
+    "make:indexes": "cp dist/subscriptions/graphql-ruby-client-subscriptions.esm.js dist/subscriptions/index.js"
+  }
+}
