@@ -336,4 +336,52 @@ describe GraphQL::Relay::Mutation do
       assert_equal(expected, result)
     end
   end
+
+  describe 'supports new input object definition with old mutation definition' do
+    let(:some_attribute_type) do
+      Class.new(GraphQL::Schema::InputObject) do
+        graphql_name 'SomeAttribute'
+        argument :something, String, required: false
+      end
+    end
+
+    let(:do_something_mutation) do
+      some_attribute = some_attribute_type
+
+      GraphQL::Relay::Mutation.define do
+        name 'DoSomethingMutation'
+        input_field :someAttributes, types[some_attribute.graphql_definition]
+
+        return_field :anything, types.String
+
+        resolve ->(_obj, inputs, _ctx) {
+          {
+            anything: inputs.to_h['someAttributes'][0].class.to_s
+          }
+        }
+      end
+    end
+
+    let(:mutation_type) do
+      do_something = do_something_mutation
+
+      Class.new(GraphQL::Schema::Object) do
+        graphql_name 'Mutation'
+        field :doSomething, field: do_something.field
+      end
+    end
+
+    let(:schema) do
+      mutation = mutation_type
+
+      Class.new(GraphQL::Schema) do
+        mutation mutation
+      end
+    end
+
+    it 'converts to hash the whole input' do
+      result = schema.execute('mutation { doSomething(input: {someAttributes: [{something: "string"}]}) { anything } }')
+      assert_equal 'Hash', result['data']['doSomething']['anything']
+    end
+  end
 end
