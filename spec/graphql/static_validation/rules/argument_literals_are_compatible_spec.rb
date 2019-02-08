@@ -10,7 +10,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       stringCheese: cheese(id: "aasdlkfj") { ...cheeseFields }
       cheese(id: 1) { source @skip(if: "whatever") }
       yakSource: searchDairy(product: [{source: COW, fatContent: 1.1}]) { __typename }
-      badSource: searchDairy(product: [{source: 1.1}]) { __typename }
+      badSource: searchDairy(product: {source: 1.1}) { __typename }
       missingSource: searchDairy(product: [{fatContent: 1.1}]) { __typename }
       listCoerce: cheese(id: 1) { similarCheese(source: YAK) { __typename } }
       missingInputField: searchDairy(product: [{source: YAK, wacky: 1}]) { __typename }
@@ -43,7 +43,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
         input_object_field_error = {
           "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
-          "locations"=>[{"line"=>6, "column"=>40}],
+          "locations"=>[{"line"=>6, "column"=>39}],
           "fields"=>["query getCheese", "badSource", "product", "source"],
         }
         assert_includes(errors, input_object_field_error)
@@ -83,7 +83,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
         input_object_field_error = {
           "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
-          "locations"=>[{"line"=>6, "column"=>40}],
+          "locations"=>[{"line"=>6, "column"=>39}],
           "fields"=>["query getCheese", "badSource", "product", "source"],
         }
         assert_includes(errors, input_object_field_error)
