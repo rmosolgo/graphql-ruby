@@ -4,6 +4,10 @@ module GraphQL
   class Schema
     class Field
       class ConnectionExtension < GraphQL::Schema::FieldExtension
+        def self.extend?(field:, options:)
+          field.connection?
+        end
+
         def apply
           field.argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
           field.argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false

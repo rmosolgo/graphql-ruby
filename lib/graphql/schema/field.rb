@@ -127,6 +127,9 @@ module GraphQL
         end
       end
 
+      extension ScopeExtension
+      extension ConnectionExtension
+
       # Can be set with `connection: true|false` or inferred from a type name ending in `*Connection`
       # @return [Boolean] if true, this field will be wrapped with Relay connection behavior
       def connection?
@@ -259,18 +262,10 @@ module GraphQL
         # Also apply the class's extensions
         extension_configs = extensions + self.class.extensions
 
+        # These run before the definition block so that the definition block
+        # can override arguments (eg, connection arguments)
         if extension_configs.any?
           self.extensions(extension_configs)
-        end
-        # This should run before connection extension,
-        # but should it run after the definition block?
-        if scoped?
-          self.extension(ScopeExtension)
-        end
-        # The problem with putting this after the definition_block
-        # is that it would override arguments
-        if connection?
-          self.extension(ConnectionExtension)
         end
 
         if definition_block
@@ -330,7 +325,9 @@ MSG
 
           # Initialize each class and stash the instance
           extensions_with_options.each do |extension_class, options|
-            @extensions << extension_class.new(field: self, options: options)
+            if extension_class.extend?(field: self, options: options)
+              @extensions << extension_class.new(field: self, options: options)
+            end
           end
         end
       end

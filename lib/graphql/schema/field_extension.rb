@@ -26,6 +26,13 @@ module GraphQL
         freeze
       end
 
+      # Call before initializing this extension and attaching to a field.
+      # If it returns false, this extension will be _bypassed_ for this field.
+      # @return [Boolean] Should this extension be applied to this field?
+      def self.extend?(field:, options:)
+        true
+      end
+
       # Called when this extension is attached to a field.
       # The field definition may be extended during this method.
       # @return [void]
