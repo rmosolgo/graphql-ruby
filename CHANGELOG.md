@@ -32,7 +32,13 @@
 - Support `hash_key:` fields when the key isn't a valid Ruby method name #2016
 - Fix lookahead with Fragments #1933
 
-## 1.8.13 (4 Jan 2019)
+## 1.8.14 (9 Feb 2018)
+
+### Bug Fixes
+
+- Fix single-item list inputs that aren't passed as lists #2095
+
+## 1.8.13 (4 Jan 2018)
 
 ### Bug fixes
 

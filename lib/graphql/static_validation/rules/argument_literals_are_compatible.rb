@@ -43,7 +43,7 @@ module GraphQL
               # the same as the node we were checking here.
               matched = if arg_defn.type.kind.list?
                 # for a list we claim an error if the node is contained in our list
-                node.value.include?(err.ast_value)
+                Array(node.value).include?(err.ast_value)
               elsif arg_defn.type.kind.input_object? && node.value.is_a?(GraphQL::Language::Nodes::InputObject)
                 # for an input object we check the arguments
                 node.value.arguments.include?(err.ast_value)
