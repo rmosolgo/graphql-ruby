@@ -174,10 +174,31 @@ describe GraphQL::Execution::Interpreter do
       field :nodes, field: GraphQL::Relay::Node.plural_field
     end
 
+    class Counter < GraphQL::Schema::Object
+      field :value, Integer, null: false
+      field :lazy_value, Integer, null: false
+
+      def lazy_value
+        Box.new { object.value }
+      end
+    end
+
+
+    class Mutation < GraphQL::Schema::Object
+      field :increment_counter, Counter, null: false
+
+      def increment_counter
+        counter = context[:counter]
+        counter.value += 1
+        counter
+      end
+    end
+
     class Schema < GraphQL::Schema
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
       query(Query)
+      mutation(Mutation)
       lazy_resolve(Box, :value)
 
       def self.object_from_id(id, ctx)
@@ -236,6 +257,25 @@ describe GraphQL::Execution::Interpreter do
       {"__typename" => "Expansion", "sym" => "RAV"},
     ]
     assert_equal expected_abstract_list, result["data"]["find"]
+  end
+
+  it "runs mutation roots atomically and sequentially" do
+    query_str = <<-GRAPHQL
+    mutation {
+      i1: incrementCounter { value lazyValue }
+      i2: incrementCounter { value lazyValue }
+      i3: incrementCounter { value lazyValue }
+    }
+    GRAPHQL
+
+    result = InterpreterTest::Schema.execute(query_str, context: { counter: OpenStruct.new(value: 0) })
+    pp result
+    expected_data = {
+      "i1" => { "value" => 1, "lazyValue" => 1},
+      "i2" => { "value" => 2, "lazyValue" => 2},
+      "i3" => { "value" => 3, "lazyValue" => 3},
+    }
+    assert_equal expected_data, result["data"]
   end
 
   it "runs skip and include" do
