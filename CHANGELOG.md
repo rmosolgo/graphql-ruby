@@ -16,7 +16,7 @@
 
 ### New Features
 
-- Better compat with legacy `.node` and `.nodes` fields #2089
+- Better compact with legacy `.node` and `.nodes` fields #2089
 - Allow field extensions to replace field return values #2092
 
 ### Bug fixes
