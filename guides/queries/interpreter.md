@@ -70,8 +70,9 @@ The new runtime works with class-based schemas only. Several features are no lon
   - Field Instrumentation
   - Middleware
   - Resolve procs
+  - `GraphQL::Function`
 
-  All these depend on the memory- and time-hungry per-field `ctx` object. To improve performance, only method-based resolves are supported. If need something from `ctx`, you can get it with the `extras: [...]` configuration option. To wrap resolve behaviors, try {% internal_link "Field Extensions", "/type_definitions/field_extensions" %}.
+  All these depend on the memory- and time-hungry per-field `ctx` object. To improve performance, only method-based resolves are supported. If need something from `ctx`, you can get it with the `extras: [...]` configuration option. To wrap resolve behaviors, try {% internal_link "Field Extensions", "/type_definitions/field_extensions" %}, {% internal_link "Tracing", "/queries/tracing" %}, or {% internal_link "GraphQL::Schema::Resolver", "/fields/resolvers" %}.
 
 - Query analyzers and `irep_node`s
 
