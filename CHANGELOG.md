@@ -8,6 +8,39 @@
 
 ### Bug fixes
 
+## 1.9.0-pre4 (11 Feb 2019)
+
+### Breaking changes
+
+- Rename `FieldExtension#before_resolve` -> `FieldExtension#resolve` #2098
+
+### New Features
+
+- Better compat with legacy `.node` and `.nodes` fields #2089
+- Allow field extensions to replace field return values #2092
+
+### Bug fixes
+
+- Fix AST analyzer when no operation is selected #2078
+- Fix list-type arguments passed with a single value #2085
+- Fix unwrapping inputobject types when turning arguments to hashes #2094
+- Properly resolve _each_ mutation root selection before resolving the next one #2097
+
+## 1.9.0-pre3 (30 Jan 2019)
+
+### Breaking Changes
+
+- Error `"problems"` are now in `"extensions" : { "problems" }` #2077
+- Change schema default to `error_bubbling false` #2069
+
+### New Features
+
+- Add class-based subscriptions with `GraphQL::Schema::Subscription` #1930
+
+### Bug fixes
+
+- Fix lookahead on typed fragments #2068
+
 ## 1.9.0-pre2 (17 Jan 2019)
 
 ### Breaking changes
