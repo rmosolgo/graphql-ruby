@@ -174,10 +174,38 @@ describe GraphQL::Execution::Interpreter do
       field :nodes, field: GraphQL::Relay::Node.plural_field
     end
 
+    class Counter < GraphQL::Schema::Object
+      field :value, Integer, null: false
+      field :lazy_value, Integer, null: false
+
+      def lazy_value
+        Box.new { object.value }
+      end
+
+      field :increment, Counter, null: false
+
+      def increment
+        object.value += 1
+        object
+      end
+    end
+
+
+    class Mutation < GraphQL::Schema::Object
+      field :increment_counter, Counter, null: false
+
+      def increment_counter
+        counter = context[:counter]
+        counter.value += 1
+        counter
+      end
+    end
+
     class Schema < GraphQL::Schema
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
       query(Query)
+      mutation(Mutation)
       lazy_resolve(Box, :value)
 
       def self.object_from_id(id, ctx)
@@ -236,6 +264,34 @@ describe GraphQL::Execution::Interpreter do
       {"__typename" => "Expansion", "sym" => "RAV"},
     ]
     assert_equal expected_abstract_list, result["data"]["find"]
+  end
+
+  it "runs mutation roots atomically and sequentially" do
+    query_str = <<-GRAPHQL
+    mutation {
+      i1: incrementCounter { value lazyValue
+        i2: increment { value lazyValue }
+        i3: increment { value lazyValue }
+      }
+      i4: incrementCounter { value lazyValue }
+      i5: incrementCounter { value lazyValue }
+    }
+    GRAPHQL
+
+    result = InterpreterTest::Schema.execute(query_str, context: { counter: OpenStruct.new(value: 0) })
+    expected_data = {
+      "i1" => {
+        "value" => 1,
+        # All of these get `3` as lazy value. They're resolved together,
+        # since they aren't _root_ mutation fields.
+        "lazyValue" => 3,
+        "i2" => { "value" => 2, "lazyValue" => 3 },
+        "i3" => { "value" => 3, "lazyValue" => 3 },
+      },
+      "i4" => { "value" => 4, "lazyValue" => 4},
+      "i5" => { "value" => 5, "lazyValue" => 5},
+    }
+    assert_equal expected_data, result["data"]
   end
 
   it "runs skip and include" do
