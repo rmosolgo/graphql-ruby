@@ -7,7 +7,7 @@ title: Root Types
 desc: Root types are the entry points for queries, mutations and subscriptions.
 ---
 
-GraphQL queries begin from [root types](http://graphql.org/learn/schema/#the-query-and-mutation-types): `query`, `mutation`, and `subscription` (experimental).
+GraphQL queries begin from [root types](https://graphql.org/learn/schema/#the-query-and-mutation-types): `query`, `mutation`, and `subscription` (experimental).
 
 Attach these to your schema using methods with the same name:
 

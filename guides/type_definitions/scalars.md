@@ -44,7 +44,7 @@ Custom scalars (see below) can also be used by name:
 field :homepage, Types::Url, null: true
 ```
 
-In the [Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL), scalars are simply named:
+In the [Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL), scalars are simply named:
 
 ```ruby
 scalar DateTime
