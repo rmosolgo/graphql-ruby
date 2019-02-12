@@ -14,8 +14,12 @@ module GraphQL
 
       def self.coerce_result(value, ctx)
         value = value.to_i
-        ctx.schema.type_error(GraphQL::IntegerEncodingError.new, ctx) unless value.between?(MIN, MAX)
-        value
+        if value >= MIN && value <= MAX
+          value
+        else
+          err = GraphQL::IntegerEncodingError.new(value)
+          ctx.schema.type_error(err, ctx)
+        end
       end
 
       default_scalar true

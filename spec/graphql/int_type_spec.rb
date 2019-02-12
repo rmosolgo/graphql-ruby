@@ -13,15 +13,23 @@ describe GraphQL::INT_TYPE do
       assert_nil GraphQL::INT_TYPE.coerce_isolated_input(true)
     end
 
-    it "accepts result values in bounds" do
-      assert_equal 0, GraphQL::INT_TYPE.coerce_result(0, nil)
-      assert_equal (2**31) - 1, GraphQL::INT_TYPE.coerce_result((2**31) - 1, nil)
-      assert_equal -(2**31), GraphQL::INT_TYPE.coerce_result(-(2**31), nil)
-    end
+    describe "handling boundaries" do
+      let(:context) { GraphQL::Query.new(Dummy::Schema, "{ __typename }").context }
 
-    it "raises on values out of bounds" do
-      assert_raises(GraphQL::IntegerEncodingError) { GraphQL::INT_TYPE.coerce_result(2**31, nil) }
-      assert_raises(GraphQL::IntegerEncodingError) { GraphQL::INT_TYPE.coerce_result(-(2**31 + 1), nil) }
+      it "accepts result values in bounds" do
+        assert_equal 0, GraphQL::INT_TYPE.coerce_result(0, context)
+        assert_equal (2**31) - 1, GraphQL::INT_TYPE.coerce_result((2**31) - 1, context)
+        assert_equal -(2**31), GraphQL::INT_TYPE.coerce_result(-(2**31), context)
+      end
+
+      it "replaces values, if configured to do so" do
+        assert_equal Dummy::Schema::MAGIC_INT_COERCE_VALUE, GraphQL::INT_TYPE.coerce_result(99**99, context)
+      end
+
+      it "raises on values out of bounds" do
+        assert_raises(GraphQL::IntegerEncodingError) { GraphQL::INT_TYPE.coerce_result(2**31, context) }
+        assert_raises(GraphQL::IntegerEncodingError) { GraphQL::INT_TYPE.coerce_result(-(2**31 + 1), context) }
+      end
     end
   end
 end
