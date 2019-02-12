@@ -1,7 +1,7 @@
-var sync = require("../src/sync/index")
+var sync = require("../sync")
 var fs = require("fs")
 var nock = require("nock")
-var Logger = require("../src/sync/logger")
+var Logger = require("../logger")
 var logger = new Logger
 
 describe("sync operations", () => {
@@ -19,7 +19,7 @@ describe("sync operations", () => {
       var url = null
       var options = {
         client: "test-1",
-        path: "./__tests__/documents",
+        path: "./src/sync/__tests__/documents",
         url: "bogus",
         quiet: true,
         send: (sendPayload, options) => {
@@ -37,7 +37,7 @@ describe("sync operations", () => {
       var payload = null
       var options = {
         client: "test-1",
-        path: "./__tests__/documents",
+        path: "./src/sync/__tests__/documents",
         url: "bogus",
         quiet: true,
         send: (sendPayload, opts) => { payload = sendPayload },
@@ -57,7 +57,7 @@ describe("sync operations", () => {
       var payload = null
       var options = {
         client: "test-1",
-        path: "./__tests__/documents",
+        path: "./src/sync/__tests__/documents",
         url: "bogus",
         quiet: true,
         hash: (graphQLBody) => {
@@ -78,7 +78,7 @@ describe("sync operations", () => {
       var options = {
         client: "test-1",
         quiet: true,
-        path: "./__generated__",
+        path: "./src/sync/__generated__",
         url: "bogus",
         send: (sendPayload, opts) => { payload = sendPayload },
       }
@@ -94,7 +94,7 @@ describe("sync operations", () => {
       var options = {
         client: "test-1",
         quiet: true,
-        path: "./__tests__/project/",
+        path: "./src/sync/__tests__/project/",
         url: "bogus",
         // mode: "project" is the default
         send: (sendPayload, opts) => { payload = sendPayload },
@@ -109,7 +109,7 @@ describe("sync operations", () => {
       var options = {
         client: "test-1",
         quiet: true,
-        path: "./__tests__/project",
+        path: "./src/sync/__tests__/project",
         url: "bogus",
         mode: "file",
         send: (sendPayload, opts) => { payload = sendPayload },
@@ -124,7 +124,7 @@ describe("sync operations", () => {
     it("Yields the payload and generated code", () => {
       var options = {
         client: "test-1",
-        path: "./__tests__/project",
+        path: "./src/sync/__tests__/project",
         url: "bogus",
         quiet: true,
         send: (sendPayload, opts) => { },
@@ -142,7 +142,7 @@ describe("sync operations", () => {
     it("Generates a usable artifact for middleware", () => {
       var options = {
         client: "test-1",
-        path: "./__tests__/project",
+        path: "./src/sync/__tests__/project",
         url: "bogus",
         quiet: true,
         send: (sendPayload, opts) => { },
@@ -159,7 +159,7 @@ describe("sync operations", () => {
     it("Takes an outfile option", () => {
       var options = {
         client: "test-2",
-        path: "./__tests__/project",
+        path: "./src/sync/__tests__/project",
         url: "bogus",
         quiet: true,
         outfile: "__crazy_outfile.js",
@@ -181,7 +181,7 @@ describe("sync operations", () => {
 
       var options = {
         client: "test-1",
-        path: "./__tests__/project",
+        path: "./src/sync/__tests__/project",
         url: "bogus",
         send: (sendPayload, opts) => { },
       }
@@ -195,7 +195,7 @@ describe("sync operations", () => {
 
       var options = {
         client: "test-1",
-        path: "./__tests__/project",
+        path: "./src/sync/__tests__/project",
         url: "bogus",
         quiet: true,
         send: (sendPayload, opts) => { },
@@ -224,7 +224,7 @@ describe("sync operations", () => {
 
       var options = {
         client: "test-1",
-        path: "./__tests__/project",
+        path: "./src/sync/__tests__/project",
         url: "http://example.com/stored_operations/sync",
         quiet: false,
       }
@@ -252,7 +252,7 @@ describe("sync operations", () => {
 
       var options = {
         client: "test-1",
-        path: "./__tests__/project",
+        path: "./src/sync/__tests__/project",
         url: "http://example.com/stored_operations/sync",
         quiet: false,
       }
