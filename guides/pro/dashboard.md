@@ -10,7 +10,7 @@ pro: true
 ---
 
 
-[GraphQL-Pro](http://graphql-pro) includes a web dashboard for monitoring {% internal_link "Operation Store", "/operation_store/overview" %} and {% internal_link "subscriptions", "/subscriptions/pusher_implementation" %}.
+[GraphQL-Pro](https://graphql.pro) includes a web dashboard for monitoring {% internal_link "Operation Store", "/operation_store/overview" %} and {% internal_link "subscriptions", "/subscriptions/pusher_implementation" %}.
 
 <!-- TODO image -->
 
@@ -42,7 +42,7 @@ You should only allow admin users to see `/graphql/dashboard` because it allows 
 
 ### Rails Routing Constraints
 
-Use [Rails routing constraints](http://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints) to restrict access to authorized users, for example:
+Use [Rails routing constraints](https://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints) to restrict access to authorized users, for example:
 
 ```ruby
 # Check the secure session for a staff flag:

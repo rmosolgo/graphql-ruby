@@ -47,7 +47,7 @@ There are lots of schema configuration options:
 
 A GraphQL schema is a web of interconnected types, and it has a few starting points for discovering the elements of that web:
 
-__Root types__ (`query`, `mutation`, and `subscription`) are the [entry points for queries to the system](http://graphql.org/learn/schema/#the-query-and-mutation-types). Each one is an object type which can be connected to the schema by a method with the same name:
+__Root types__ (`query`, `mutation`, and `subscription`) are the [entry points for queries to the system](https://graphql.org/learn/schema/#the-query-and-mutation-types). Each one is an object type which can be connected to the schema by a method with the same name:
 
 ```ruby
 class MySchema < GraphQL::Schema

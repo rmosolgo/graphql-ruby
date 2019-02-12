@@ -9,7 +9,7 @@ index: 2
 class_based_api: true
 ---
 
-Enum types are sets of discrete values. An enum field must return one of the possible values of the enum. In the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL), enums are described like this:
+Enum types are sets of discrete values. An enum field must return one of the possible values of the enum. In the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL), enums are described like this:
 
 ```ruby
 enum MediaCategory {
@@ -20,7 +20,7 @@ enum MediaCategory {
 }
 ```
 
-So, a `MediaCategory` value is one of: `AUDIO`, `IMAGE`, `TEXT`, or `VIDEO`. This is similar to [ActiveRecord enums](http://api.rubyonrails.org/classes/ActiveRecord/Enum.html).
+So, a `MediaCategory` value is one of: `AUDIO`, `IMAGE`, `TEXT`, or `VIDEO`. This is similar to [ActiveRecord enums](https://api.rubyonrails.org/classes/ActiveRecord/Enum.html).
 
 In a GraphQL query, enums are written as identifiers (not strings), for example:
 

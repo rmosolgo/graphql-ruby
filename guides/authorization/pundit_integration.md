@@ -8,7 +8,7 @@ index: 4
 pro: true
 ---
 
-[GraphQL::Pro](http://graphql.pro) includes an integration for powering GraphQL authorization with [Pundit](https://github.com/varvet/pundit) policies.
+[GraphQL::Pro](https://graphql.pro) includes an integration for powering GraphQL authorization with [Pundit](https://github.com/varvet/pundit) policies.
 
 __Why bother?__ You _could_ put your authorization code in your GraphQL types themselves, but writing a separate authorization layer gives you a few advantages:
 

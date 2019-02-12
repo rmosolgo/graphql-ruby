@@ -9,7 +9,7 @@ class_based_api: true
 index: 2
 ---
 
-A GraphQL schema has a [built-in introspection system](http://graphql.org/learn/introspection/) that publishes the schema's structure. In fact, the introspection system can be queried using GraphQL, for example:
+A GraphQL schema has a [built-in introspection system](https://graphql.org/learn/introspection/) that publishes the schema's structure. In fact, the introspection system can be queried using GraphQL, for example:
 
 ```graphql
 {

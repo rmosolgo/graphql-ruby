@@ -29,7 +29,7 @@ And get back values like this:
 }
 ```
 
-Generally speaking, GraphQL object types correspond to models in your application, like `User`, `Product`, or `Comment`.  Sometimes, object types are described using the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
+Generally speaking, GraphQL object types correspond to models in your application, like `User`, `Product`, or `Comment`.  Sometimes, object types are described using the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL):
 
 ```ruby
 type User {
@@ -55,11 +55,11 @@ class User < GraphQL::Schema::Object
 end
 ```
 
-The rest of this guide will describe how to define GraphQL object types in Ruby. To learn more about GraphQL object types in general, see the [GraphQL docs](http://graphql.org/learn/schema/#object-types-and-fields).
+The rest of this guide will describe how to define GraphQL object types in Ruby. To learn more about GraphQL object types in general, see the [GraphQL docs](https://graphql.org/learn/schema/#object-types-and-fields).
 
 ## Object classes
 
-Classes extending {{ "GraphQL::Schema::Object" | api_doc }} describe [Object types](http://graphql.org/learn/schema/#object-types-and-fields) and customize their behavior.
+Classes extending {{ "GraphQL::Schema::Object" | api_doc }} describe [Object types](https://graphql.org/learn/schema/#object-types-and-fields) and customize their behavior.
 
 Object fields can be created with the `field(...)` class method, [described in detail below](#fields)
 

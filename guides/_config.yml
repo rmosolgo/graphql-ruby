@@ -1,6 +1,6 @@
 title: GraphQL Ruby
 baseurl: ""
-url: "http://graphql-ruby.org"
+url: "https://graphql-ruby.org"
 
 exclude:
   - .gitignore

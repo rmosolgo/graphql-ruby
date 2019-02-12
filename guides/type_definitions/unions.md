@@ -9,7 +9,7 @@ index: 5
 class_based_api: true
 ---
 
-A union type is a set of object types which may appear in the same spot. Here's a union, expressed in [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
+A union type is a set of object types which may appear in the same spot. Here's a union, expressed in [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL):
 
 ```ruby
 union MediaItem = AudioClip | VideoClip | Image | TextSnippet
