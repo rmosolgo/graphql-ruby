@@ -19,10 +19,10 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.13/">API</a>
+          <a href="/api-doc/1.9.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="http://graphql.pro">Upgrade to Pro</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
           <input
             class="search-input"
             onkeyup="GraphQLRubySearch.run(this)"
@@ -62,7 +62,7 @@
 
 <p>An interface has fields, but it’s never actually instantiated. Instead, objects may <em>implement</em> interfaces, which makes them a <em>member</em> of that interface. Also, fields may <em>return</em> interface types. When this happens, the returned object may be any member of that interface.</p>
 
-<p>For example, let’s say a <code class="highlighter-rouge">Customer</code> (interface) may be either an <code class="highlighter-rouge">Individual</code> (object) or a <code class="highlighter-rouge">Company</code> (object). Here’s the structure in the <a href="http://graphql.org/learn/schema/#type-language">GraphQL Schema Definition Language</a> (SDL):</p>
+<p>For example, let’s say a <code class="highlighter-rouge">Customer</code> (interface) may be either an <code class="highlighter-rouge">Individual</code> (object) or a <code class="highlighter-rouge">Company</code> (object). Here’s the structure in the <a href="https://graphql.org/learn/schema/#type-language">GraphQL Schema Definition Language</a> (SDL):</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">interface</span><span class="w"> </span><span class="n">Customer</span><span class="w"> </span><span class="p">{</span><span class="w">
   </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
@@ -112,7 +112,7 @@
 
 <h2 id="defining-interface-types">Defining Interface Types</h2>
 
-<p>Interfaces are Ruby modules which include <a href="/api-doc/1.8.13/GraphQL/Schema/Interface" target="_blank" title="API docs for GraphQL::Schema::Interface"><code>GraphQL::Schema::Interface</code></a>. First, make a base module:</p>
+<p>Interfaces are Ruby modules which include <a href="/api-doc/1.9.0/GraphQL/Schema/Interface" target="_blank" title="API docs for GraphQL::Schema::Interface"><code>GraphQL::Schema::Interface</code></a>. First, make a base module:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Types::BaseInterface</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>

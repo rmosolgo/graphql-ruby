@@ -1,0 +1,350 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Subscription Classes</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.9.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#subscriptions-guides">Subscriptions</a>
+  &raquo; Subscription Classes
+</p>
+
+
+
+<h1 class="guide-header">Subscription Classes</h1>
+<div class="guide-container">
+  <p>You can extend <a href="/api-doc/1.9.0/GraphQL/Schema/Subscription" target="_blank" title="API docs for GraphQL::Schema::Subscription"><code>GraphQL::Schema::Subscription</code></a> to create fields that can be subscribed to.</p>
+
+<p>These classes support several behaviors:</p>
+
+<ul>
+  <li>Authorizing (or rejecting) initial subscription requests and subsequent updates</li>
+  <li>Returning values for initial subscription requests</li>
+  <li>Unsubscribing from the server</li>
+  <li>Skipping updates for certain clients (eg, don’t send updates to the person who triggered the event)</li>
+</ul>
+
+<h2 id="add-a-base-class">Add a base class</h2>
+
+<p>First, add a base class for your application. You can hook up your base classes there:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/subscriptions/base_subscription.rb</span>
+<span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Subscription</span>
+  <span class="c1"># Hook up base classes</span>
+  <span class="n">object_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
+  <span class="n">argument_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>(This base class is a lot like the <a href="/mutations/mutation_classes">mutation base class</a>. They’re both subclasses of <a href="/api-doc/1.9.0/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>.)</p>
+
+<h2 id="extend-the-base-class-and-hook-it-up">Extend the base class and hook it up</h2>
+
+<p>Define a class for each subscribable event in your system. For example, if you run a chat room, you might publish events whenever messages are posted in a room:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/subscriptions/message_was_posted.rb</span>
+<span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, hook up the new class to the <a href="/subscriptions/subscription_type">Subscription root type</a> with the <code class="highlighter-rouge">subscription:</code> option:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">SubscriptionType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="n">field</span> <span class="ss">:message_was_posted</span><span class="p">,</span> <span class="ss">subscription: </span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, it will be accessible as:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">subscription</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">messageWasPosted</span><span class="p">(</span><span class="n">roomId</span><span class="p">:</span><span class="w"> </span><span class="s2">"abcd"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="c"># ...</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="arguments">Arguments</h2>
+
+<p>Subscription fields take <a href="/fields/arguments">arguments</a> just like normal fields. They also accept a <a href="/mutations/mutation_classes#auto-loading-arguments"><code class="highlighter-rouge">loads:</code> option</a> just like mutations. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+  <span class="c1"># `room_id` loads a `room`</span>
+  <span class="n">argument</span> <span class="ss">:room_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span>
+
+  <span class="c1"># It's passed to other methods as `room`</span>
+  <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This can be invoked as</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">subscription</span><span class="p">(</span><span class="nv">$roomId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">messageWasPosted</span><span class="p">(</span><span class="n">roomId</span><span class="p">:</span><span class="w"> </span><span class="nv">$roomId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="c"># ...</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If the ID doesn’t find an object, then the subscription will be unsubscribed (with <code class="highlighter-rouge">#unsubscribe</code>, see below).</p>
+
+<h2 id="fields">Fields</h2>
+
+<p>Like mutations, you can use a generated return type for subscriptions. When you add <code class="highlighter-rouge">field(...)</code>s to a subscription, they’ll be added to the subscription’s generated return type. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+  <span class="n">field</span> <span class="ss">:room</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:message</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">MessageType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>will generate:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span><span class="w"> </span><span class="n">MessageWasPostedPayload</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">room</span><span class="p">:</span><span class="w"> </span><span class="n">Room</span><span class="p">!</span><span class="w">
+  </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="n">Message</span><span class="p">!</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Which you can use in queries like:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">subscription</span><span class="p">(</span><span class="nv">$roomId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">messageWasPosted</span><span class="p">(</span><span class="n">roomId</span><span class="p">:</span><span class="w"> </span><span class="nv">$roomId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">room</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">name</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="n">message</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">author</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">handle</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+      </span><span class="n">body</span><span class="w">
+      </span><span class="n">postedAt</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If you configure fields with <code class="highlighter-rouge">null: true</code>, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)</p>
+
+<p>Instead of a generated type, you can provide an already-configured type with <code class="highlighter-rouge">payload_type</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Just return a message</span>
+<span class="n">payload_type</span> <span class="no">Types</span><span class="o">::</span><span class="no">MessageType</span>
+</code></pre></div></div>
+
+<p>(In that case, don’t return a hash from <code class="highlighter-rouge">#subscribe</code> or <code class="highlighter-rouge">#update</code>, return a <code class="highlighter-rouge">message</code> object instead.)</p>
+
+<h2 id="check-permissions-with-authorized">Check Permissions with #authorized?</h2>
+
+<p>Suppose a client is subscribing to messages in a chat room:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">subscription</span><span class="p">(</span><span class="nv">$roomId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">messageWasPosted</span><span class="p">(</span><span class="n">roomId</span><span class="p">:</span><span class="w"> </span><span class="nv">$roomId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">message</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">author</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">handle</span><span class="w"> </span><span class="p">}</span><span class="w">
+      </span><span class="n">body</span><span class="w">
+      </span><span class="n">postedAt</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You can implement <code class="highlighter-rouge">#authorized?</code> to check that the user has permission to subscribe to these arguments (and receive updates for these arguments), for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
+  <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">can_read_messages?</span><span class="p">(</span><span class="n">room</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The method may return <code class="highlighter-rouge">false</code> or raise a <code class="highlighter-rouge">GraphQL::ExecutionError</code> to halt execution.</p>
+
+<p>This method is called <em>before</em> <code class="highlighter-rouge">#subscribe</code> and <code class="highlighter-rouge">#update</code>, described below. This way, if a user’s permissions have changed since they subscribed, they won’t receive updates unauthorized updates.</p>
+
+<p>Also, if this method fails before calling <code class="highlighter-rouge">#update</code>, then the client will be automatically unsubscribed (with <code class="highlighter-rouge">#unsubscribe</code>).</p>
+
+<h2 id="initial-subscription-with-subscribe">Initial Subscription with #subscribe</h2>
+
+<p><code class="highlighter-rouge">def subscribe(**args)</code> is called when a client <em>first</em> sends a <code class="highlighter-rouge">subscription { ... }</code> request. In this method, you can do a few things:</p>
+
+<ul>
+  <li>Raise <code class="highlighter-rouge">GraphQL::ExecutionError</code> to halt and return an error</li>
+  <li>Return a value to give the client an initial response</li>
+  <li>Return <code class="highlighter-rouge">:no_response</code> to skip the initial response</li>
+  <li>Return <code class="highlighter-rouge">super</code> to fall back to the default behavior (which is <code class="highlighter-rouge">:no_response</code>).</li>
+</ul>
+
+<p>You can define this method to add initial responses or perform other logic before subscribing.</p>
+
+<h3 id="adding-an-initial-response">Adding an Initial Response</h3>
+
+<p>By default, GraphQL-Ruby returns <em>nothing</em> (<code class="highlighter-rouge">:no_response</code>) on an initial subscription. But, you may choose to override this and return a value in <code class="highlighter-rouge">def subscribe</code>. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+  <span class="c1"># ...</span>
+  <span class="n">field</span> <span class="ss">:room</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+
+  <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
+    <span class="c1"># authorize, etc ...</span>
+    <span class="c1"># Return the room in the initial response</span>
+    <span class="p">{</span>
+      <span class="ss">room: </span><span class="n">room</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, a client can get some initial data with:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">subscription</span><span class="p">(</span><span class="nv">$roomId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">messageWasPosted</span><span class="p">(</span><span class="n">roomId</span><span class="p">:</span><span class="w"> </span><span class="nv">$roomId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">room</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">name</span><span class="w">
+      </span><span class="n">messages</span><span class="p">(</span><span class="n">last</span><span class="p">:</span><span class="w"> </span><span class="mi">40</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c"># ...</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="subsequent-updates-with-update">Subsequent Updates with #update</h2>
+
+<p>After a client has registered a subscription, the application may trigger subscription updates with <code class="highlighter-rouge">MySchema.subscriptions.trigger(...)</code> (see the <a href="/subscriptions/triggers">Triggers guide</a> for more). Then, <code class="highlighter-rouge">def update</code> will be called for each client’s subscription. In this method you can:</p>
+
+<ul>
+  <li>Unsubscribe the client with <code class="highlighter-rouge">unsubscribe</code></li>
+  <li>Return a value with <code class="highlighter-rouge">super</code> (which returns <code class="highlighter-rouge">object</code>) or by returning a different value.</li>
+  <li>Return <code class="highlighter-rouge">:no_update</code> to skip this update</li>
+</ul>
+
+<h3 id="skipping-subscription-updates">Skipping subscription updates</h3>
+
+<p>Perhaps you don’t want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push to push the new comment to <em>other</em> subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning <code class="highlighter-rouge">:no_update</code>.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CommentWasAdded</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+  <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">post_id</span><span class="p">:)</span>
+    <span class="n">comment</span> <span class="o">=</span> <span class="n">object</span> <span class="c1"># #&lt;Comment ...&gt;</span>
+    <span class="k">if</span> <span class="n">comment</span><span class="p">.</span><span class="nf">author</span> <span class="o">==</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">]</span>
+      <span class="ss">:no_update</span>
+    <span class="k">else</span>
+      <span class="c1"># Continue updating this client, since it's not the commenter</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="returning-a-different-object-for-subscription-updates">Returning a different object for subscription updates</h3>
+
+<p>By default, whatever object you pass to <code class="highlighter-rouge">.trigger(event_name, args, object)</code> will be used for responding to subscription fields. But, you can return a different object from <code class="highlighter-rouge">#update</code> to override this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:queue</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">QueueType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+<span class="c1"># eg, `MySchema.subscriptions.trigger("queueWasUpdated", {name: "low-priority"}, :low_priority)`</span>
+<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="nb">name</span><span class="p">:)</span>
+  <span class="c1"># Make a Queue object which _represents_ the queue with this name</span>
+  <span class="n">queue</span> <span class="o">=</span> <span class="no">JobQueue</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+
+  <span class="c1"># This object was passed to `.trigger`, but we're ignoring it:</span>
+  <span class="n">object</span> <span class="c1"># =&gt; :low_priority</span>
+
+  <span class="c1"># return the queue instead:</span>
+  <span class="p">{</span> <span class="ss">queue: </span><span class="n">queue</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="terminating-the-subscription-with-unsubscribe">Terminating the subscription with #unsubscribe</h2>
+
+<p>Within a subscription method, you may call <code class="highlighter-rouge">unsubscribe</code> to terminate the client’s subscription, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
+  <span class="k">if</span> <span class="n">room</span><span class="p">.</span><span class="nf">archived?</span>
+    <span class="c1"># Don't let anyone subscribe to messages on an archived room</span>
+    <span class="n">unsubscribe</span>
+  <span class="k">else</span>
+    <span class="k">super</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">#unsubscribe</code> has the following effects:</p>
+
+<ul>
+  <li>The subscription is unregistered from the backend (this is backend-specific)</li>
+  <li>The client is told to unsubscribe (this is transport-specific)</li>
+</ul>
+
+<p><code class="highlighter-rouge">#unsubscribe</code> does <em>not</em> halt the current update.</p>
+
+<p>Arguments with <code class="highlighter-rouge">loads:</code> configurations will call <code class="highlighter-rouge">unsubscribe</code> if they are <code class="highlighter-rouge">required: true</code> and their ID doesn’t return a value. (It’s assumed that the subscribed object was deleted.)</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/subscriptions/subscription_classes.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Subscription Classes">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

@@ -1,10 +1,16 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.13/GraphQL/UnauthorizedError" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.0/GraphQL/UnauthorizedError" />
   </head>
   <body>
     <p>Class: GraphQL::UnauthorizedError &lt; GraphQL::Error
+When an <code class="highlighter-rouge">authorized?</code> hook returns false, this error is used to
+communicate the failure. It’s passed to Schema.unauthorized_object. 
+Alternatively, custom code in <code class="highlighter-rouge">authorized?</code> may raise this error. It
+will be routed the same way. 
+Direct Known Subclasses:
+UnauthorizedFieldError
 Instance methods:
 initialize</p>
 

@@ -19,10 +19,10 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.13/">API</a>
+          <a href="/api-doc/1.9.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="http://graphql.pro">Upgrade to Pro</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
           <input
             class="search-input"
             onkeyup="GraphQLRubySearch.run(this)"
@@ -50,14 +50,14 @@
     <p>
       <strong>⚡️ Pro Feature ⚡️</strong>
       <span style="font-style: italic;">
-        This feature is bundled with <a href="http://graphql.pro">GraphQL-Pro</a>.
+        This feature is bundled with <a href="https://graphql.pro">GraphQL-Pro</a>.
       </span>
     </p>
   </div>
 
 <h1 class="guide-header">Pundit Integration</h1>
 <div class="guide-container">
-  <p><a href="http://graphql.pro">GraphQL::Pro</a> includes an integration for powering GraphQL authorization with <a href="https://github.com/varvet/pundit">Pundit</a> policies.</p>
+  <p><a href="https://graphql.pro">GraphQL::Pro</a> includes an integration for powering GraphQL authorization with <a href="https://github.com/varvet/pundit">Pundit</a> policies.</p>
 
 <p><strong>Why bother?</strong> You <em>could</em> put your authorization code in your GraphQL types themselves, but writing a separate authorization layer gives you a few advantages:</p>
 
@@ -95,6 +95,7 @@
   <li><a href="#authorizing-fields">Authorizing Fields</a></li>
   <li><a href="#authorizing-arguments">Authorizing Arguments</a></li>
   <li><a href="#authorizing-mutations">Authorizing Mutations</a></li>
+  <li><a href="#custom-policy-lookup">Custom Policy Lookup</a></li>
 </ul>
 
 <h2 id="authorizing-objects">Authorizing Objects</h2>
@@ -126,7 +127,7 @@
 
 <p>For each object returned by GraphQL, the integration matches it to a policy and method.</p>
 
-<p>The policy is found using <a href="https://www.rubydoc.info/gems/pundit/Pundit%2Epolicy!"><code class="highlighter-rouge">Pundit.policy!</code></a>, which looks up a policy using the object’s class name.</p>
+<p>The policy is found using <a href="https://www.rubydoc.info/gems/pundit/Pundit%2Epolicy!"><code class="highlighter-rouge">Pundit.policy!</code></a>, which looks up a policy using the object’s class name. (This can be customized, see below.)</p>
 
 <p>Then, GraphQL will call a method on the policy to see whether the object is permitted or not. This method is assigned in the object class, for example:</p>
 
@@ -140,6 +141,19 @@
 
 <p>That configuration will call <code class="highlighter-rouge">#employer_or_self?</code> on the corresponding Pundit policy.</p>
 
+<h4 id="custom-policy-class">Custom Policy Class</h4>
+
+<p>By default, the integration uses <code class="highlighter-rouge">Pundit.policy!(current_user, object)</code> to find a policy. You can specify a policy class using <code class="highlighter-rouge">pundit_policy_class(...)</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Employee</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="n">pundit_policy_class</span><span class="p">(</span><span class="no">Policies</span><span class="o">::</span><span class="no">CustomEmployeePolicy</span><span class="p">)</span>
+  <span class="c1"># Or, you could use a string:</span>
+  <span class="c1"># pundit_policy_class("Policies::CustomEmployeePolicy")</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>For really custom policy lookup, see <a href="#custom-policy-lookup">Custom Policy Lookup</a> below.</p>
+
 <h4 id="bypassing-policies">Bypassing Policies</h4>
 
 <p>The integration requires that every object with a <code class="highlighter-rouge">pundit_role</code> has a corresponding policy class. To allow objects to <em>skip</em> authorization, you can pass <code class="highlighter-rouge">nil</code> as the role:</p>
@@ -152,7 +166,7 @@
 
 <h4 id="handling-unauthorized-objects">Handling Unauthorized Objects</h4>
 
-<p>When any Policy method returns <code class="highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.8.13/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
+<p>When any Policy method returns <code class="highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.9.0/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
 
 <h2 id="scopes">Scopes</h2>
 
@@ -170,7 +184,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Note that Pundit scopes are best for database relations, but don’t play well with Arrays. See below for bypassing Pundit if you want to return an Array.</p>
+<p>Pundit scopes <a href="https://github.com/rmosolgo/graphql-ruby/issues/2008">don’t play well</a> with <code class="highlighter-rouge">Array</code>s, so the integration <em>skips</em> scopes on Arrays. You can also opt out on a field-by-field basis as described below.</p>
+
+<p>You can also customize how the scopes are looked up and applied, see below.</p>
 
 <h4 id="bypassing-scopes">Bypassing scopes</h4>
 
@@ -221,6 +237,25 @@
 </code></pre></div></div>
 
 <p>It will call the named role (eg, <code class="highlighter-rouge">#staff?</code>) on the parent object’s policy (eg <code class="highlighter-rouge">JobPostingPolicy</code>).</p>
+
+<h4 id="custom-policy-class-1">Custom Policy Class</h4>
+
+<p>You can override the policy class for a field using <code class="highlighter-rouge">pundit_policy_class:</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># Only allow `ApplicantsPolicy#staff?` users to see</span>
+  <span class="c1"># who has applied</span>
+  <span class="n">field</span> <span class="ss">:applicants</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+    <span class="ss">pundit_role: :staff</span><span class="p">,</span>
+    <span class="ss">pundit_policy_class: </span><span class="no">ApplicantsPolicy</span>
+    <span class="c1"># Or with a string:</span>
+    <span class="c1"># pundit_policy_class: "ApplicantsPolicy"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This will initialize an <code class="highlighter-rouge">ApplicantsPolicy</code> with the parent object (a <code class="highlighter-rouge">Job</code>) and call <code class="highlighter-rouge">#staff?</code> on it.</p>
+
+<p>For really custom policy lookup, see <a href="#custom-policy-lookup">Custom Policy Lookup</a> below.</p>
 
 <h2 id="authorizing-arguments">Authorizing Arguments</h2>
 
@@ -307,7 +342,7 @@
 
 <p>In the example above, <code class="highlighter-rouge">PromoteEmployeePolicy#admin?</code> will be checked before running the mutation.</p>
 
-<h4 id="custom-policy-class">Custom Policy Class</h4>
+<h4 id="custom-policy-class-2">Custom Policy Class</h4>
 
 <p>By default, Pundit uses the mutation’s class name to look up a policy. You can override this by defining <code class="highlighter-rouge">self.policy_class</code> on your mutation:</p>
 
@@ -391,6 +426,71 @@
     <span class="c1"># Return errors as data:</span>
     <span class="p">{</span> <span class="ss">errors: </span><span class="p">[</span><span class="s2">"Missing required permission: </span><span class="si">#{</span><span class="n">owner</span><span class="p">.</span><span class="nf">pundit_role</span><span class="si">}</span><span class="s2">, can't access </span><span class="si">#{</span><span class="n">value</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="p">}</span>
   <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="custom-policy-lookup">Custom Policy Lookup</h2>
+
+<p>By default, the integration uses <code class="highlighter-rouge">Pundit</code>’s top-level methods to interact with policies:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">Pundit.policy!(context[:current_user], object)</code> is called to find a policy instance</li>
+  <li><code class="highlighter-rouge">Pundit.policy_scope!(context[:current_user], items)</code> is called to filter <code class="highlighter-rouge">items</code></li>
+</ul>
+
+<p>You can override these by defining the following methods in your schema:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">pundit_policy(context, object)</code> to find a policy (or raise an error if one isn’t found)</li>
+  <li><code class="highlighter-rouge">scope_by_pundit_policy(context, items)</code> to apply a scope to <code class="highlighter-rouge">items</code> (or raise an error if one isn’t found)</li>
+</ul>
+
+<p>Since different objects have different lifecycles, the hooks are installed slightly different ways:</p>
+
+<ul>
+  <li>Your base argument, field, and mutation classes should have <em>instance methods</em> with those names</li>
+  <li>Your base type classes should have <em>class methods</em> with that name</li>
+</ul>
+
+<p>Here’s an example of how the custom hooks can be installed:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">CustomPolicyLookup</span>
+  <span class="c1"># Lookup policies in the `SystemAdmin::` namespace for system_admin users</span>
+  <span class="k">def</span> <span class="nf">pundit_policy</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">object</span><span class="p">)</span>
+    <span class="n">current_user</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">system_admin?</span>
+      <span class="n">policy_class</span> <span class="o">=</span> <span class="no">SystemAdmin</span><span class="p">.</span><span class="nf">const_get</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">object</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">Policy"</span><span class="p">)</span>
+      <span class="n">policy_class</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="n">object</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># Add policy hooks as class methods</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="kp">extend</span> <span class="no">CustomPolicyLookup</span>
+<span class="k">end</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseUnion</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Union</span>
+  <span class="kp">extend</span> <span class="no">CustomPolicyLookup</span>
+<span class="k">end</span>
+<span class="k">module</span> <span class="nn">Types::BaseInterface</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
+  <span class="c1"># Add this as a class method that will be "inherited" by other interfaces:</span>
+  <span class="n">definition_methods</span> <span class="k">do</span>
+    <span class="kp">include</span> <span class="no">CustomPolicyLookup</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># Add policy hooks as instance methods</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="kp">include</span> <span class="no">CustomPolicyLookup</span>
+<span class="k">end</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span>
+  <span class="kp">include</span> <span class="no">CustomPolicyLookup</span>
+<span class="k">end</span>
+<span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Mutation</span>
+  <span class="kp">include</span> <span class="no">CustomPolicyLookup</span>
 <span class="k">end</span>
 </code></pre></div></div>
 

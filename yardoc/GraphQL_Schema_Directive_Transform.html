@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.0/GraphQL/Schema/Directive/Transform" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Schema::Directive::Transform &lt; GraphQL::Schema::Dire…
+An example directive to show how you might interact with the
+runtime. 
+This directive takes the return value of the tagged part of the
+query, and if the named transform is whitelisted and applies to the
+return value, it’s applied by calling a method with that name. 
+Examples:</p>
+<h1 id="installing-the-directive">Installing the directive</h1>
+<p>class MySchema &lt; GraphQL::Schema
+directive(GraphQL::Schema::Directive::Transform)
+end</p>
+<h1 id="transforming-strings">Transforming strings</h1>
+<p>viewer {
+username @transform(by: “upcase”)
+}
+Class methods:
+resolve</p>
+
+
+  </body>
+</html>

@@ -19,10 +19,10 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.13/">API</a>
+          <a href="/api-doc/1.9.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="http://graphql.pro">Upgrade to Pro</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
           <input
             class="search-input"
             onkeyup="GraphQLRubySearch.run(this)"
@@ -48,7 +48,7 @@
 
 <h1 class="guide-header">Root Types</h1>
 <div class="guide-container">
-  <p>GraphQL queries begin from <a href="http://graphql.org/learn/schema/#the-query-and-mutation-types">root types</a>: <code class="highlighter-rouge">query</code>, <code class="highlighter-rouge">mutation</code>, and <code class="highlighter-rouge">subscription</code> (experimental).</p>
+  <p>GraphQL queries begin from <a href="https://graphql.org/learn/schema/#the-query-and-mutation-types">root types</a>: <code class="highlighter-rouge">query</code>, <code class="highlighter-rouge">mutation</code>, and <code class="highlighter-rouge">subscription</code> (experimental).</p>
 
 <p>Attach these to your schema using methods with the same name:</p>
 
@@ -57,7 +57,6 @@
   <span class="n">query</span> <span class="no">Types</span><span class="o">::</span><span class="no">QueryType</span>
   <span class="c1"># optional</span>
   <span class="n">mutation</span> <span class="no">Types</span><span class="o">::</span><span class="no">MutationType</span>
-  <span class="c1"># experimental</span>
   <span class="n">subscription</span> <span class="no">Types</span><span class="o">::</span><span class="no">SubscriptionType</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -91,7 +90,6 @@
   <span class="n">createPost</span><span class="p">(</span><span class="ss">attrs: </span><span class="vg">$postAttrs</span><span class="p">)</span>
 <span class="p">}</span>
 
-<span class="c1"># Experimental</span>
 <span class="n">subscription</span> <span class="no">CommentAdded</span> <span class="p">{</span>
   <span class="c1"># `Subscription.commentAdded`</span>
   <span class="n">commentAdded</span><span class="p">(</span><span class="ss">postId: </span><span class="mi">1</span><span class="p">)</span>

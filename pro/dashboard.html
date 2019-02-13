@@ -19,10 +19,10 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.13/">API</a>
+          <a href="/api-doc/1.9.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="http://graphql.pro">Upgrade to Pro</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
           <input
             class="search-input"
             onkeyup="GraphQLRubySearch.run(this)"
@@ -50,14 +50,14 @@
     <p>
       <strong>⚡️ Pro Feature ⚡️</strong>
       <span style="font-style: italic;">
-        This feature is bundled with <a href="http://graphql.pro">GraphQL-Pro</a>.
+        This feature is bundled with <a href="https://graphql.pro">GraphQL-Pro</a>.
       </span>
     </p>
   </div>
 
 <h1 class="guide-header">Dashboard</h1>
 <div class="guide-container">
-  <p><a href="http://graphql-pro">GraphQL-Pro</a> includes a web dashboard for monitoring <a href="/operation_store/overview">Operation Store</a> and <a href="/subscriptions/pusher_implementation">subscriptions</a>.</p>
+  <p><a href="https://graphql.pro">GraphQL-Pro</a> includes a web dashboard for monitoring <a href="/operation_store/overview">Operation Store</a> and <a href="/subscriptions/pusher_implementation">subscriptions</a>.</p>
 
 <!-- TODO image -->
 
@@ -88,7 +88,7 @@
 
 <h3 id="rails-routing-constraints">Rails Routing Constraints</h3>
 
-<p>Use <a href="http://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints">Rails routing constraints</a> to restrict access to authorized users, for example:</p>
+<p>Use <a href="https://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints">Rails routing constraints</a> to restrict access to authorized users, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Check the secure session for a staff flag:</span>
 <span class="no">STAFF_ONLY</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="p">{</span> <span class="n">request</span><span class="p">.</span><span class="nf">session</span><span class="p">[</span><span class="s2">"staff"</span><span class="p">]</span> <span class="o">==</span> <span class="kp">true</span> <span class="p">}</span>

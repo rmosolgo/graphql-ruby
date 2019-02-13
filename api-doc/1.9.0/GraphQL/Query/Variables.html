@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Query::Variables
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Query::Variables";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (V)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span>
+     &raquo; 
+    <span class="title">Variables</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Query::Variables
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Query::Variables</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  <dl>
+      <dt>Extended by:</dt>
+      <dd>Forwardable</dd>
+  </dl>
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/query/variables.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Read-only access to query variables, applying default values if needed.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#context-instance_method" title="#context (instance method)">#<strong>context</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute context.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#errors-instance_method" title="#errors (instance method)">#<strong>errors</strong>  &#x21d2; Array&lt;GraphQL::Query::VariableValidationError&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Any errors encountered when parsing the provided variables and literal values.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(ctx, ast_variables, provided_variables)  &#x21d2; Variables </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Variables.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(ctx, ast_variables, provided_variables)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Query::Variables (class)">Variables</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Variables</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query/variables.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='id identifier rubyid_ast_variables'>ast_variables</span><span class='comma'>,</span> <span class='id identifier rubyid_provided_variables'>provided_variables</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_schema'>schema</span> <span class='op'>=</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span>
+  <span class='ivar'>@context</span> <span class='op'>=</span> <span class='id identifier rubyid_ctx'>ctx</span>
+
+  <span class='ivar'>@provided_variables</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Argument.html" title="GraphQL::Argument (class)">Argument</a></span></span><span class='period'>.</span><span class='id identifier rubyid_deep_stringify'><span class='object_link'><a href="../Argument.html#deep_stringify-class_method" title="GraphQL::Argument.deep_stringify (method)">deep_stringify</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_provided_variables'>provided_variables</span><span class='rparen'>)</span>
+  <span class='ivar'>@errors</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@storage</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_variables'>ast_variables</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_ast_variable'>ast_variable</span><span class='comma'>,</span> <span class='id identifier rubyid_memo'>memo</span><span class='op'>|</span>
+    <span class='comment'># Find the right value for this variable:
+</span>    <span class='comment'># - First, use the value provided at runtime
+</span>    <span class='comment'># - Then, fall back to the default value from the query string
+</span>    <span class='comment'># If it&#39;s still nil, raise an error if it&#39;s required.
+</span>    <span class='id identifier rubyid_variable_type'>variable_type</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_type_from_ast'>type_from_ast</span><span class='lparen'>(</span><span class='id identifier rubyid_ast_variable'>ast_variable</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_variable_type'>variable_type</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+      <span class='comment'># Pass -- it will get handled by a validator
+</span>    <span class='kw'>else</span>
+      <span class='id identifier rubyid_variable_name'>variable_name</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_variable'>ast_variable</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+      <span class='id identifier rubyid_default_value'>default_value</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_variable'>ast_variable</span><span class='period'>.</span><span class='id identifier rubyid_default_value'>default_value</span>
+      <span class='id identifier rubyid_provided_value'>provided_value</span> <span class='op'>=</span> <span class='ivar'>@provided_variables</span><span class='lbracket'>[</span><span class='id identifier rubyid_variable_name'>variable_name</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_value_was_provided'>value_was_provided</span> <span class='op'>=</span>  <span class='ivar'>@provided_variables</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_variable_name'>variable_name</span><span class='rparen'>)</span>
+
+      <span class='kw'>begin</span>
+        <span class='id identifier rubyid_validation_result'>validation_result</span> <span class='op'>=</span> <span class='id identifier rubyid_variable_type'>variable_type</span><span class='period'>.</span><span class='id identifier rubyid_validate_input'>validate_input</span><span class='lparen'>(</span><span class='id identifier rubyid_provided_value'>provided_value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+      <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../CoercionError.html" title="GraphQL::CoercionError (class)">CoercionError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_ex'>ex</span>
+        <span class='id identifier rubyid_validation_result'>validation_result</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="InputValidationResult.html" title="GraphQL::Query::InputValidationResult (class)">InputValidationResult</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Query.html#initialize-instance_method" title="GraphQL::Query#initialize (method)">new</a></span></span>
+        <span class='id identifier rubyid_validation_result'>validation_result</span><span class='period'>.</span><span class='id identifier rubyid_add_problem'>add_problem</span><span class='lparen'>(</span><span class='id identifier rubyid_ex'>ex</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+
+      <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_validation_result'>validation_result</span><span class='period'>.</span><span class='id identifier rubyid_valid?'>valid?</span>
+        <span class='comment'># This finds variables that were required but not provided
+</span>        <span class='ivar'>@errors</span> <span class='op'>&lt;&lt;</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="VariableValidationError.html" title="GraphQL::Query::VariableValidationError (class)">VariableValidationError</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="VariableValidationError.html#initialize-instance_method" title="GraphQL::Query::VariableValidationError#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_ast_variable'>ast_variable</span><span class='comma'>,</span> <span class='id identifier rubyid_variable_type'>variable_type</span><span class='comma'>,</span> <span class='id identifier rubyid_provided_value'>provided_value</span><span class='comma'>,</span> <span class='id identifier rubyid_validation_result'>validation_result</span><span class='rparen'>)</span>
+      <span class='kw'>elsif</span> <span class='id identifier rubyid_value_was_provided'>value_was_provided</span>
+        <span class='comment'># Add the variable if a value was provided
+</span>        <span class='id identifier rubyid_memo'>memo</span><span class='lbracket'>[</span><span class='id identifier rubyid_variable_name'>variable_name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_variable_type'>variable_type</span><span class='period'>.</span><span class='id identifier rubyid_coerce_input'>coerce_input</span><span class='lparen'>(</span><span class='id identifier rubyid_provided_value'>provided_value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+      <span class='kw'>elsif</span> <span class='id identifier rubyid_default_value'>default_value</span> <span class='op'>!=</span> <span class='kw'>nil</span>
+        <span class='comment'># Add the variable if it wasn&#39;t provided but it has a default value (including `null`)
+</span>        <span class='id identifier rubyid_memo'>memo</span><span class='lbracket'>[</span><span class='id identifier rubyid_variable_name'>variable_name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="LiteralInput.html" title="GraphQL::Query::LiteralInput (class)">LiteralInput</a></span></span><span class='period'>.</span><span class='id identifier rubyid_coerce'><span class='object_link'><a href="LiteralInput.html#coerce-class_method" title="GraphQL::Query::LiteralInput.coerce (method)">coerce</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_variable_type'>variable_type</span><span class='comma'>,</span> <span class='id identifier rubyid_default_value'>default_value</span><span class='comma'>,</span> <span class='kw'>self</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="context-instance_method">
+  
+    #<strong>context</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute context</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+11
+12
+13</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query/variables.rb', line 11</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_context'>context</span>
+  <span class='ivar'>@context</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="errors-instance_method">
+  
+    #<strong>errors</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="VariableValidationError.html" title="GraphQL::Query::VariableValidationError (class)">GraphQL::Query::VariableValidationError</a></span>&gt;</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Any errors encountered when parsing the provided variables and literal values</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="VariableValidationError.html" title="GraphQL::Query::VariableValidationError (class)">GraphQL::Query::VariableValidationError</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Any errors encountered when parsing the provided variables and literal values</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+9
+10
+11</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query/variables.rb', line 9</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_errors'>errors</span>
+  <span class='ivar'>@errors</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+</div>
+
+      <div id="footer">
+  Generated on Wed Feb 13 14:49:15 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.12 (ruby-2.4.2).
+</div>
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Ahead-of-Time AST Analysis</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.9.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#queries-guides">Queries</a>
+  &raquo; Ahead-of-Time AST Analysis
+</p>
+
+
+
+<h1 class="guide-header">Ahead-of-Time AST Analysis</h1>
+<div class="guide-container">
+  <p>GraphQL-Ruby 1.9.0 includes a new way to do Ahead-of-Time analysis for your queries. Eventually, it will become the
+default.</p>
+
+<p>The new analysis runs on query ASTs instead of the GraphQL Ruby internal representation, which means some of the things you used to get for free need to be done in analyzers instead.</p>
+
+<p>The new primitive for analysis is <a href="/api-doc/1.9.0/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a>. New analyzers must inherit from this base class and implement the desired methods for analysis.</p>
+
+<h2 id="analyzer-api">Analyzer API</h2>
+
+<p>Analyzers respond to methods similar to AST visitors:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicCounterAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">query_or_multiplex</span><span class="p">)</span>
+    <span class="k">super</span>
+    <span class="vi">@fields</span> <span class="o">=</span> <span class="no">Set</span><span class="p">.</span><span class="nf">new</span>
+    <span class="vi">@arguments</span> <span class="o">=</span> <span class="no">Set</span><span class="p">.</span><span class="nf">new</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Visitor are all defined on the AST::Analyzer base class</span>
+  <span class="c1"># We override them for custom analyzers.</span>
+  <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">_visitor</span><span class="p">)</span>
+    <span class="vi">@fields</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">on_leave_argument</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">_visitor</span><span class="p">)</span>
+    <span class="vi">@arguments</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">result</span>
+    <span class="p">[</span><span class="vi">@fields</span><span class="p">,</span> <span class="vi">@arguments</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>In this example, we counted every field and argument, no matter if they were on fragment definitions
+or if they were skipped by directives. In the old API, this used to be handled automatically because
+the internal representation of the query took care of these concerns. With the new API, we can use helper
+methods to help us achieve this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicFieldAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">query_or_multiplex</span><span class="p">)</span>
+    <span class="k">super</span>
+    <span class="vi">@fields</span> <span class="o">=</span> <span class="no">Set</span><span class="p">.</span><span class="nf">new</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Visitor are all defined on the AST::Analyzer base class</span>
+  <span class="c1"># We override them for custom analyzers.</span>
+  <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">visitor</span><span class="p">.</span><span class="nf">skipping?</span> <span class="o">||</span> <span class="n">visitor</span><span class="p">.</span><span class="nf">visiting_fragment_definition?</span>
+      <span class="c1"># We don't want to count skipped fields or fields</span>
+      <span class="c1"># inside fragment definitions</span>
+    <span class="k">else</span>
+      <span class="vi">@fields</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># We want to visit fragment spreads as soon as we hit them</span>
+  <span class="c1"># instead of visiting the definitions. The visitor provides helper</span>
+  <span class="c1"># methods to achieve that.</span>
+  <span class="k">def</span> <span class="nf">on_enter_fragment_spread</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
+    <span class="n">visitor</span><span class="p">.</span><span class="nf">enter_fragment_spread_inline</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">on_leave_fragment_definition</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
+    <span class="n">visitor</span><span class="p">.</span><span class="nf">leave_fragment_spread_inline</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">result</span>
+    <span class="vi">@fields</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="errors">Errors</h3>
+
+<p>It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return <a href="/api-doc/1.9.0/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> in the <code class="highlighter-rouge">result</code> method:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NoFieldsCalledHello</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
+  <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="nf">name</span> <span class="o">==</span> <span class="s2">"hello"</span>
+      <span class="vi">@field_called_hello</span> <span class="o">=</span> <span class="kp">true</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">result</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">AnalysisError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"A field called `hello` was found."</span><span class="p">)</span> <span class="k">if</span> <span class="vi">@field_called_hello</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="conditional-analysis">Conditional Analysis</h3>
+
+<p>Some analyzers might only make sense in certain context, or some might be too expensive to run for every query. To handle these scenarios, your analyzers may answer to an <code class="highlighter-rouge">analyze?</code> method:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicFieldAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
+  <span class="c1"># Use the analyze? method to enable or disable a certain analyzer</span>
+  <span class="c1"># at query time.</span>
+  <span class="k">def</span> <span class="nf">analyze?</span>
+    <span class="o">!!</span><span class="n">query</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:should_analyze</span><span class="p">]</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">result</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="using-analyzers">Using Analyzers</h3>
+
+<p>The new query analyzers are added to the schema the same one as before with <code class="highlighter-rouge">query_analyzer</code>. However, to use the new analysis engine, you must opt in by using <code class="highlighter-rouge">use GraphQL::Analysis::AST</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
+  <span class="n">query_analyzer</span> <span class="no">MyQueryAnalyzer</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong>Make sure you pass the class and not an instance of your analyzer. The new analysis engine will take care of instantiating your analyzers with the query</strong>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/queries/ast_analysis.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Ahead-of-Time AST Analysis">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

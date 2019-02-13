@@ -19,10 +19,10 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.13/">API</a>
+          <a href="/api-doc/1.9.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="http://graphql.pro">Upgrade to Pro</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
           <input
             class="search-input"
             onkeyup="GraphQLRubySearch.run(this)"
@@ -149,6 +149,21 @@
   <span class="ss">hash_key: </span><span class="s2">"allPlayers"</span>
 </code></pre></div></div>
 
+<p>To pass-through the underlying object without calling a method on it, you can use <code class="highlighter-rouge">method: :itself</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:player</span><span class="p">,</span> <span class="no">User</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+  <span class="ss">method: :itself</span>
+</code></pre></div></div>
+
+<p>This is equivalent to:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:player</span><span class="p">,</span> <span class="no">User</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+<span class="k">def</span> <span class="nf">player</span>
+  <span class="n">object</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
 <p>If you don’t want to delegate to the underlying object, you can define a method for each field:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use the custom method below to resolve this field</span>
@@ -177,6 +192,25 @@
   <span class="c1"># Business logic goes here</span>
 <span class="k">end</span>
 </code></pre></div></div>
+
+<p>As the examples above show, by default the custom method name must match the field name. If you want to use a different custom method, the <code class="highlighter-rouge">resolver_method</code> option is available:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use the custom method with a non-default name below to resolve this field</span>
+<span class="n">field</span> <span class="ss">:total_games_played</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">resolver_method: :games_played</span>
+
+<span class="k">def</span> <span class="nf">games_played</span>
+  <span class="n">object</span><span class="p">.</span><span class="nf">games</span><span class="p">.</span><span class="nf">count</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">resolver_method</code> has two main use cases:</p>
+
+<ol>
+  <li>resolver re-use between multiple fields</li>
+  <li>dealing with method conflicts (specifically if you have fields named <code class="highlighter-rouge">context</code> or <code class="highlighter-rouge">object</code>)</li>
+</ol>
+
+<p>Note that <code class="highlighter-rouge">resolver_method</code> <em>cannot</em> be used in combination with <code class="highlighter-rouge">method</code> or <code class="highlighter-rouge">hash_key</code>.</p>
 
 <h3 id="field-arguments">Field Arguments</h3>
 

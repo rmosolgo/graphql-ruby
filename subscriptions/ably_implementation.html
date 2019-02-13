@@ -19,10 +19,10 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.13/">API</a>
+          <a href="/api-doc/1.9.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="http://graphql.pro">Upgrade to Pro</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
           <input
             class="search-input"
             onkeyup="GraphQLRubySearch.run(this)"
@@ -50,14 +50,14 @@
     <p>
       <strong>⚡️ Pro Feature ⚡️</strong>
       <span style="font-style: italic;">
-        This feature is bundled with <a href="http://graphql.pro">GraphQL-Pro</a>.
+        This feature is bundled with <a href="https://graphql.pro">GraphQL-Pro</a>.
       </span>
     </p>
   </div>
 
 <h1 class="guide-header">Ably Implementation</h1>
 <div class="guide-container">
-  <p><a href="http://graphql.pro">GraphQL Pro</a> includes a subscription system based on <a href="http://redis.io">Redis</a> and <a href="http://ably.io">Ably</a> which works with any Ruby web framework.</p>
+  <p><a href="https://graphql.pro">GraphQL Pro</a> includes a subscription system based on <a href="https://redis.io">Redis</a> and <a href="https://ably.io">Ably</a> which works with any Ruby web framework.</p>
 
 <p>After creating an app on Ably, you can hook it up to your GraphQL schema.</p>
 
@@ -145,7 +145,7 @@ appendonly <span class="nb">yes</span>
 
 <p>Otherwise, Redis will drop data that doesn’t fit in memory (read more in <a href="https://redis.io/topics/persistence">“Redis persistence”</a>).</p>
 
-<p>If you’re already using Redis in your application, see <a href="http://www.mikeperham.com/2015/09/24/storing-data-with-redis/">“Storing Data in Redis”</a> for options to isolate data and tune your configuration.</p>
+<p>If you’re already using Redis in your application, see <a href="https://www.mikeperham.com/2015/09/24/storing-data-with-redis/">“Storing Data in Redis”</a> for options to isolate data and tune your configuration.</p>
 
 <h2 id="schema-configuration">Schema configuration</h2>
 
@@ -237,7 +237,7 @@ appendonly <span class="nb">yes</span>
 
 <p>Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query <code class="highlighter-rouge">context</code>.</p>
 
-<p>By default, this is done with <a href="/api-doc/1.8.13/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="highlighter-rouge">dump</code> and <code class="highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="highlighter-rouge">GraphQL::Pro::Subscriptions</code> and override <code class="highlighter-rouge">#dump_context(ctx)</code> and <code class="highlighter-rouge">#load_context(ctx_string)</code>:</p>
+<p>By default, this is done with <a href="/api-doc/1.9.0/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="highlighter-rouge">dump</code> and <code class="highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="highlighter-rouge">GraphQL::Pro::Subscriptions</code> and override <code class="highlighter-rouge">#dump_context(ctx)</code> and <code class="highlighter-rouge">#load_context(ctx_string)</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomSubscriptions</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">AblySubscriptions</span>
   <span class="k">def</span> <span class="nf">dump_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>

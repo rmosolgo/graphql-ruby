@@ -1,0 +1,214 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - AST Visitor</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.9.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#language-tools-guides">Language Tools</a>
+  &raquo; AST Visitor
+</p>
+
+
+
+<h1 class="guide-header">AST Visitor</h1>
+<div class="guide-container">
+  <p>GraphQL code is usually contained in a string, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"query { user(id: </span><span class="se">\"</span><span class="s2">1</span><span class="se">\"</span><span class="s2">) { userName } }"</span>
+</code></pre></div></div>
+
+<p>You can perform programmatic analysis and modifications to GraphQL code using a three-step process:</p>
+
+<ul>
+  <li><strong>Parse</strong> the code into an abstract syntax tree</li>
+  <li><strong>Analyze/Modify</strong> the code with a visitor</li>
+  <li><strong>Print</strong> the code back to a string</li>
+</ul>
+
+<h2 id="parse">Parse</h2>
+
+<p><a href="/api-doc/1.9.0/GraphQL#parse-class_method" target="_blank" title="API docs for GraphQL.parse"><code>GraphQL.parse</code></a> turns a string into a GraphQL document:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">parsed_doc</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="s2">"{ user(id: </span><span class="se">\"</span><span class="s2">1</span><span class="se">\"</span><span class="s2">) { userName } }"</span><span class="p">)</span>
+<span class="c1"># =&gt; #&lt;GraphQL::Language::Nodes::Document ...&gt;</span>
+</code></pre></div></div>
+
+<p>Also, <a href="/api-doc/1.9.0/GraphQL#parse_file-class_method" target="_blank" title="API docs for GraphQL.parse_file"><code>GraphQL.parse_file</code></a> parses the contents of the named file and includes a <code class="highlighter-rouge">filename</code> in the parsed document.</p>
+
+<h4 id="ast-nodes">AST Nodes</h4>
+
+<p>The parsed document is a tree of nodes, called an <em>abstract syntax tree</em> (AST). This tree is <em>immutable</em>: once a document has been parsed, those Ruby objects can’t be changed. Modifications are performed by <em>copying</em> existing nodes, applying changes to the copy, then making a new tree to hold the copied node. Where possible, unmodified nodes are retained in the new tree (it’s <em>persistent</em>).</p>
+
+<p>The copy-and-modify workflow is supported by a few methods on the AST nodes:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">.merge(new_attrs)</code> returns a copy of the node with <code class="highlighter-rouge">new_attrs</code> applied. This new copy can replace the original node.</li>
+  <li><code class="highlighter-rouge">.add_{child}(new_child_attrs)</code> makes a new node with <code class="highlighter-rouge">new_child_attrs</code>, adds it to the array specified by <code class="highlighter-rouge">{child}</code>, and returns a copy whose <code class="highlighter-rouge">{children}</code> array contains the newly created node.</li>
+</ul>
+
+<p>For example, to rename a field and add an argument to it, you could:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">modified_node</span> <span class="o">=</span> <span class="n">field_node</span>
+  <span class="c1"># Apply a new name</span>
+  <span class="p">.</span><span class="nf">merge</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"newName"</span><span class="p">)</span>
+  <span class="c1"># Add an argument to this field's arguments</span>
+  <span class="p">.</span><span class="nf">add_argument</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"newArgument"</span><span class="p">,</span> <span class="ss">value: </span><span class="s2">"newValue"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Above, <code class="highlighter-rouge">field_node</code> is unmodified, but <code class="highlighter-rouge">modified_node</code> reflects the new name and new argument.</p>
+
+<h2 id="analyzemodify">Analyze/Modify</h2>
+
+<p>To inspect or modify a parsed document, extend <a href="/api-doc/1.9.0/GraphQL/Language/Visitor" target="_blank" title="API docs for GraphQL::Language::Visitor"><code>GraphQL::Language::Visitor</code></a> and implement its various hooks. It’s an implementation of the <a href="https://en.wikipedia.org/wiki/Visitor_pattern">visitor pattern</a>. In short, each node of the tree will be “visited” by calling a method, and those methods can gather information and perform modifications.</p>
+
+<p>In the visitor, each node class has a hook, for example:</p>
+
+<ul>
+  <li><a href="/api-doc/1.9.0/GraphQL/Language/Nodes/Field" target="_blank" title="API docs for GraphQL::Language::Nodes::Field"><code>GraphQL::Language::Nodes::Field</code></a>s are routed to <code class="highlighter-rouge">#on_field</code></li>
+  <li><a href="/api-doc/1.9.0/GraphQL/Language/Nodes/Argument" target="_blank" title="API docs for GraphQL::Language::Nodes::Argument"><code>GraphQL::Language::Nodes::Argument</code></a>s are routed to <code class="highlighter-rouge">#on_argument</code></li>
+</ul>
+
+<p>See the <a href="/api-doc/1.9.0/GraphQL/Language/Visitor" target="_blank" title="API docs for GraphQL::Language::Visitor"><code>GraphQL::Language::Visitor</code></a> API docs for a full list of methods.</p>
+
+<p>Each method is called with <code class="highlighter-rouge">(node, parent)</code>, where:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">node</code> is the AST node currently visited</li>
+  <li><code class="highlighter-rouge">parent</code> is the AST node above this node in the tree</li>
+</ul>
+
+<p>The method has a few options for analyzing or modifying the AST:</p>
+
+<h4 id="continuehalt">Continue/Halt</h4>
+
+<p>To continue visiting, the hook should call <code class="highlighter-rouge">super</code>. This allows the visit to continue to <code class="highlighter-rouge">node</code>’s children in the tree, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">on_field</span><span class="p">(</span><span class="n">_node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">)</span>
+  <span class="c1"># Do nothing, this is the default behavior:</span>
+  <span class="k">super</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>To <em>halt</em> the visit, a method may skip the call to <code class="highlighter-rouge">super</code>. For example, if the visitor encountered an error, it might want to return early instead of continuing to visit.</p>
+
+<h4 id="modify-a-node">Modify a Node</h4>
+
+<p>Visitor hooks are expected to return the <code class="highlighter-rouge">(node, parent)</code> they are called with. If they return a different node, then that node will replace the original <code class="highlighter-rouge">node</code>. When you call <code class="highlighter-rouge">super(node, parent)</code>, the <code class="highlighter-rouge">node</code> is returned. So, to modify a node and continue visiting:</p>
+
+<ul>
+  <li>Make a modified copy of <code class="highlighter-rouge">node</code></li>
+  <li>Pass the modified copy to <code class="highlighter-rouge">super(new_node, parent)</code></li>
+</ul>
+
+<p>For example, to rename an argument:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">on_argument</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+  <span class="c1"># make a copy of `node` with a new name</span>
+  <span class="n">modified_node</span> <span class="o">=</span> <span class="n">node</span><span class="p">.</span><span class="nf">merge</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"renamed"</span><span class="p">)</span>
+  <span class="c1"># continue visiting with the modified node and parent</span>
+  <span class="k">super</span><span class="p">(</span><span class="n">modified_node</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h4 id="delete-a-node">Delete a Node</h4>
+
+<p>To delete the currently-visited <code class="highlighter-rouge">node</code>, don’t pass <code class="highlighter-rouge">node</code> to <code class="highlighter-rouge">super(...)</code>. Instead, pass a magic constant, <code class="highlighter-rouge">DELETE_NODE</code>, in place of <code class="highlighter-rouge">node</code>.</p>
+
+<p>For example, to delete a directive:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">on_directive</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+  <span class="c1"># Don't pass `node` to `super`,</span>
+  <span class="c1"># instead, pass `DELETE_NODE`</span>
+  <span class="k">super</span><span class="p">(</span><span class="no">DELETE_NODE</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h4 id="insert-a-node">Insert a Node</h4>
+
+<p>Inserting nodes is similar to modifying nodes. To insert a new child into <code class="highlighter-rouge">node</code>, call one of its <code class="highlighter-rouge">.add_</code> helpers. This returns a copied node with a new child added. For example, to add a selection to a field’s selection set:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">on_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+  <span class="n">node_with_selection</span> <span class="o">=</span> <span class="n">node</span><span class="p">.</span><span class="nf">add_selection</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"emailAddress"</span><span class="p">)</span>
+  <span class="k">super</span><span class="p">(</span><span class="n">node_with_selection</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This will add <code class="highlighter-rouge">emailAddress</code> the fields selection on <code class="highlighter-rouge">node</code>.</p>
+
+<p>(These <code class="highlighter-rouge">.add_*</code> helpers are wrappers around <a href="/api-doc/1.9.0/GraphQL/Language/Nodes/AbstractNode#merge-instance_method" target="_blank" title="API docs for GraphQL::Language::Nodes::AbstractNode#merge"><code>GraphQL::Language::Nodes::AbstractNode#merge</code></a>.)</p>
+
+<h2 id="print">Print</h2>
+
+<p>The easiest way to turn an AST back into a string of GraphQL is <a href="/api-doc/1.9.0/GraphQL/Language/Nodes/AbstractNode#to_query_string-instance_method" target="_blank" title="API docs for GraphQL::Language::Nodes::AbstractNode#to_query_string"><code>GraphQL::Language::Nodes::AbstractNode#to_query_string</code></a>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">parsed_doc</span><span class="p">.</span><span class="nf">to_query_string</span>
+<span class="c1"># =&gt; '{ user(id: "1") { userName } }'</span>
+</code></pre></div></div>
+
+<p>You can also create a subclass of <a href="/api-doc/1.9.0/GraphQL/Language/Printer" target="_blank" title="API docs for GraphQL::Language::Printer"><code>GraphQL::Language::Printer</code></a> to customize how nodes are printed.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/language_tools/visitor.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: AST Visitor">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

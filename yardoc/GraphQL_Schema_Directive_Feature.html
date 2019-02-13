@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.0/GraphQL/Schema/Directive/Feature" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Schema::Directive::Feature &lt; GraphQL::Schema::Directive
+An example directive to show how you might interact with the
+runtime. 
+This directive might be used along with a server-side feature flag
+system like Flipper. 
+With that system, you could use this directive to exclude parts of a
+query if the current viewer doesn’t have certain flags enabled. (So,
+this flag would be for internal clients, like your iOS app, not
+third-party API clients.) 
+To use it, you have to implement <code class="highlighter-rouge">.enabled?</code>, for example: 
+Examples:</p>
+<h1 id="implementing-the-feature-directive">Implementing the Feature directive</h1>
+<h1 id="appgraphqldirectivesfeaturerb">app/graphql/directives/feature.rb</h1>
+<p>class Directives::Feature &lt; GraphQL::Schema::Directive::Feature
+def self.enabled?(flag_name, _obj, context)</p>
+<h1 id="translate-some-graphql-data-for-ruby">Translate some GraphQL data for Ruby:</h1>
+<p>flag_key = flag_name.underscore
+current_user = context[:viewer]</p>
+<h1 id="check-the-feature-flag-however-your-app-does-it">Check the feature flag however your app does it:</h1>
+<p>MyFeatureFlags.enabled?(current_user, flag_key)
+end
+end</p>
+<h1 id="flagging-a-part-of-the-query">Flagging a part of the query</h1>
+<p>viewer {</p>
+<h1 id="this-field-only-runs-if-enabledrecommendationengine-obj-context">This field only runs if <code class="highlighter-rouge">.enabled?("recommendationEngine", obj, context)</code></h1>
+<h1 id="returns-true-otherwise-its-treated-as-if-it-didnt-exist">returns true. Otherwise, it’s treated as if it didn’t exist.</h1>
+<p>recommendations @feature(flag: “recommendationEngine”) {
+name
+rating
+}
+}
+Class methods:
+enabled?, include?</p>
+
+
+  </body>
+</html>

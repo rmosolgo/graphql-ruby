@@ -1,25 +1,43 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.13/GraphQL/Language/Visitor" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.0/GraphQL/Language/Visitor" />
   </head>
   <body>
     <p>Class: GraphQL::Language::Visitor &lt; Object
 Depth-first traversal through the tree, calling hooks at each stop. 
 Examples:</p>
-<h1 id="create-a-visitor-add-hooks-then-search-a-document">Create a visitor, add hooks, then search a document</h1>
-<p>total_field_count = 0
-visitor = GraphQL::Language::Visitor.new(document)</p>
-<h1 id="whenever-you-find-a-field-increment-the-field-count">Whenever you find a field, increment the field count:</h1>
-<p>visitor[GraphQL::Language::Nodes::Field] « -&gt;(node) { total_field_count += 1 }</p>
-<h1 id="when-we-finish-print-the-field-count">When we finish, print the field count:</h1>
-<p>visitor[GraphQL::Language::Nodes::Document].leave « -&gt;(node) { p total_field_count }
-visitor.visit</p>
-<h1 id="-6">=&gt; 6</h1>
-<p>Class methods:
-apply_hooks
+<h1 id="create-a-visitor-counting-certain-field-names">Create a visitor counting certain field names</h1>
+<p>class NameCounter &lt; GraphQL::Language::Visitor
+def initialize(document, field_name)
+super(document)
+@field_name
+@count = 0
+end
+attr_reader :count
+def on_field(node, parent)</p>
+<h1 id="if-this-field-matches-our-search-increment-the-counter">if this field matches our search, increment the counter</h1>
+<p>if node.name == @field_name
+@count = 0
+end</p>
+<h1 id="continue-visiting-subfields">Continue visiting subfields:</h1>
+<p>super
+end
+end</p>
+<h1 id="initialize-a-visitor">Initialize a visitor</h1>
+<p>visitor = GraphQL::Language::Visitor.new(document, “name”)</p>
+<h1 id="run-it">Run it</h1>
+<p>visitor.visit</p>
+<h1 id="check-the-result">Check the result</h1>
+<p>visitor.count</p>
+<h1 id="-3">=&gt; 3</h1>
+<p>Direct Known Subclasses:
+Analysis::AST::Visitor, StaticValidation::BaseVisitor
+Class methods:
+apply_hooks, make_visit_method
 Instance methods:
-[], begin_visit, end_visit, initialize, visit, visit_node</p>
+[], begin_visit, end_visit, initialize, on_abstract_node,
+on_node_with_modifications, visit, visit_node</p>
 
 
   </body>

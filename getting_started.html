@@ -19,10 +19,10 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.13/">API</a>
+          <a href="/api-doc/1.9.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="http://graphql.pro">Upgrade to Pro</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
           <input
             class="search-input"
             onkeyup="GraphQLRubySearch.run(this)"
@@ -81,7 +81,7 @@ rails g graphql:object Post title:String rating:Int comments:[Comment]
 
 <h3 id="declare-types">Declare types</h3>
 
-<p>Types describe objects in your application and form the basis for <a href="http://graphql.org/learn/schema/#type-system">GraphQL’s type system</a>.</p>
+<p>Types describe objects in your application and form the basis for <a href="https://graphql.org/learn/schema/#type-system">GraphQL’s type system</a>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/post_type.rb</span>
 <span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
@@ -105,7 +105,7 @@ rails g graphql:object Post title:String rating:Int comments:[Comment]
 
 <h3 id="build-a-schema">Build a Schema</h3>
 
-<p>Before building a schema, you have to define an <a href="http://graphql.org/learn/schema/#the-query-and-mutation-types">entry point to your system, the “query root”</a>:</p>
+<p>Before building a schema, you have to define an <a href="https://graphql.org/learn/schema/#the-query-and-mutation-types">entry point to your system, the “query root”</a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="n">description</span> <span class="s2">"The query root of this schema"</span>
@@ -160,7 +160,7 @@ rails g graphql:object Post title:String rating:Int comments:[Comment]
 
 <h2 id="use-with-relay">Use with Relay</h2>
 
-<p>If you’re building a backend for <a href="http://facebook.github.io/relay/">Relay</a>, you’ll need:</p>
+<p>If you’re building a backend for <a href="https://facebook.github.io/relay/">Relay</a>, you’ll need:</p>
 
 <ul>
   <li>A JSON dump of the schema, which you can get by sending <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb"><code class="highlighter-rouge">GraphQL::Introspection::INTROSPECTION_QUERY</code></a></li>
@@ -169,7 +169,7 @@ rails g graphql:object Post title:String rating:Int comments:[Comment]
 
 <h2 id="use-with-apollo-client">Use with Apollo Client</h2>
 
-<p><a href="http://dev.apollodata.com/">Apollo Client</a> is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don’t need to do anything special to connect Apollo Client to a <code class="highlighter-rouge">graphql-ruby</code> server.</p>
+<p><a href="https://www.apollographql.com/">Apollo Client</a> is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don’t need to do anything special to connect Apollo Client to a <code class="highlighter-rouge">graphql-ruby</code> server.</p>
 
 <h2 id="use-with-graphqljs-client">Use with GraphQL.js Client</h2>
 

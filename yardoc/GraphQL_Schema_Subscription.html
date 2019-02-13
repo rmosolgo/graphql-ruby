@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.0/GraphQL/Schema/Subscription" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Schema::Subscription &lt; GraphQL::Schema::Resolver
+This class can be extended to create fields on your subscription
+root. 
+It provides hooks for the different parts of the subscription
+lifecycle:</p>
+<ul>
+  <li><code class="highlighter-rouge">#authorized?</code>: called before initial subscription and subsequent
+updates - <code class="highlighter-rouge">#subscribe</code>: called for the initial subscription -
+<code class="highlighter-rouge">#update</code>: called for subsequent update 
+Also, <code class="highlighter-rouge">#unsubscribe</code> terminates the subscription. 
+Extended by:
+GraphQL::Schema::Member::HasFields,
+GraphQL::Schema::Resolver::HasPayloadType
+Instance methods:
+initialize, load_application_object_failed, resolve,
+resolve_subscribe, resolve_update, subscribe, unsubscribe, update</li>
+</ul>
+
+
+  </body>
+</html>

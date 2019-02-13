@@ -19,10 +19,10 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.13/">API</a>
+          <a href="/api-doc/1.9.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="http://graphql.pro">Upgrade to Pro</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
           <input
             class="search-input"
             onkeyup="GraphQLRubySearch.run(this)"
@@ -83,10 +83,10 @@
 
 <h2 id="handling-unauthorized-objects">Handling Unauthorized Objects</h2>
 
-<p>By default, GraphQL-Ruby silently replaces unauthorized objects with <code class="highlighter-rouge">nil</code>, as if they didn’t exist. You can customize this behavior by implementing <a href="/api-doc/1.8.13/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> in your schema class, for example:</p>
+<p>By default, GraphQL-Ruby silently replaces unauthorized objects with <code class="highlighter-rouge">nil</code>, as if they didn’t exist. You can customize this behavior by implementing <a href="/api-doc/1.9.0/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> in your schema class, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="c1"># Override this hook to handle cases when `authorized?` returns false:</span>
+  <span class="c1"># Override this hook to handle cases when `authorized?` returns false for an object:</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">unauthorized_object</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
     <span class="c1"># Add a top-level error to the response instead of returning nil:</span>
     <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"An object of type </span><span class="si">#{</span><span class="n">error</span><span class="p">.</span><span class="nf">type</span><span class="p">.</span><span class="nf">graphql_name</span><span class="si">}</span><span class="s2"> was hidden due to permissions"</span>
@@ -97,6 +97,17 @@
 <p>Now, the custom hook will be called instead of the default one.</p>
 
 <p>If <code class="highlighter-rouge">.unauthorized_object</code> returns a non-<code class="highlighter-rouge">nil</code> object (and doesn’t <code class="highlighter-rouge">raise</code> an error), then that object will be used in place of the unauthorized object.</p>
+
+<p>A similar hook is available for unauthorized fields:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Override this hook to handle cases when `authorized?` returns false for a field:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">unauthorized_field</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+    <span class="c1"># Add a top-level error to the response instead of returning nil:</span>
+    <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"The field </span><span class="si">#{</span><span class="n">error</span><span class="p">.</span><span class="nf">field</span><span class="p">.</span><span class="nf">graphql_name</span><span class="si">}</span><span class="s2"> on an object of type </span><span class="si">#{</span><span class="n">error</span><span class="p">.</span><span class="nf">type</span><span class="p">.</span><span class="nf">graphql_name</span><span class="si">}</span><span class="s2"> was hidden due to permissions"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

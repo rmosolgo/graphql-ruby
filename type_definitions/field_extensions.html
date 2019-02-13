@@ -1,0 +1,176 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Field Extensions</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.9.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#type-definitions-guides">Type Definitions</a>
+  &raquo; Field Extensions
+</p>
+
+
+  <div class="class-based-header">
+    <p>
+      <strong>⚠ New Class-Based API ⚠</strong>
+    </p>
+    <p>
+      This describes a new API in <code>v1.8.0</code>.
+      Check the <a href="/schema/class_based_api">upgrade notes</a> for more info.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Field Extensions</h1>
+<div class="guide-container">
+  <p><a href="/api-doc/1.9.0/GraphQL/Schema/FieldExtension" target="_blank" title="API docs for GraphQL::Schema::FieldExtension"><code>GraphQL::Schema::FieldExtension</code></a> provides a way to modify user-defined fields in a programmatic way. For example, Relay connections are implemented as a field extension (<a href="/api-doc/1.9.0/GraphQL/Schema/Field/ConnectionExtension" target="_blank" title="API docs for GraphQL::Schema::Field::ConnectionExtension"><code>GraphQL::Schema::Field::ConnectionExtension</code></a>).</p>
+
+<h3 id="making-a-new-extension">Making a new extension</h3>
+
+<p>Field extensions are subclasses of <a href="/api-doc/1.9.0/GraphQL/Schema/FieldExtension" target="_blank" title="API docs for GraphQL::Schema::FieldExtension"><code>GraphQL::Schema::FieldExtension</code></a>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyExtension</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">FieldExtension</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="using-an-extension">Using an extension</h3>
+
+<p>Defined extensions can be added to fields using the <code class="highlighter-rouge">extensions: [...]</code> option or the <code class="highlighter-rouge">extension(...)</code> method:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">extensions: </span><span class="p">[</span><span class="no">UpcaseExtension</span><span class="p">]</span>
+<span class="c1"># or:</span>
+<span class="n">field</span> <span class="ss">:description</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="n">extension</span><span class="p">(</span><span class="no">UpcaseExtension</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>See below for how extensions may modify fields.</p>
+
+<h3 id="modifying-field-configuration">Modifying field configuration</h3>
+
+<p>When extensions are attached, they are initialized with a <code class="highlighter-rouge">field:</code> and <code class="highlighter-rouge">options:</code>. Then, <code class="highlighter-rouge">#apply</code> is called, when they may extend the field they’re attached to. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SearchableExtension</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">FieldExtension</span>
+  <span class="k">def</span> <span class="nf">apply</span>
+    <span class="c1"># add an argument to this field:</span>
+    <span class="n">field</span><span class="p">.</span><span class="nf">argument</span><span class="p">(</span><span class="ss">:query</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">description: </span><span class="s2">"A search query"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This way, an extension can encapsulate a behavior requiring several configuration options.</p>
+
+<h3 id="modifying-field-execution">Modifying field execution</h3>
+
+<p>Extensions have two hooks that wrap field resolution. Since GraphQL-Ruby supports deferred execution, these hooks <em>might not</em> be called back-to-back.</p>
+
+<p>First, <a href="/api-doc/1.9.0/GraphQL/Schema/FieldExtension#resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension#resolve"><code>GraphQL::Schema::FieldExtension#resolve</code></a> is called. <code class="highlighter-rouge">resolve</code> should <code class="highlighter-rouge">yield(object, arguments)</code> to continue execution. If it doesn’t <code class="highlighter-rouge">yield</code>, then the underlying field won’t be called. Whatever <code class="highlighter-rouge">#resolve</code> returns will be used for continuing execution.</p>
+
+<p>After resolution and <em>after</em> syncing lazy values (like <code class="highlighter-rouge">Promise</code>s from <code class="highlighter-rouge">graphql-batch</code>), <a href="/api-doc/1.9.0/GraphQL/Schema/FieldExtension#after_resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension#after_resolve"><code>GraphQL::Schema::FieldExtension#after_resolve</code></a> is called. Whatever that method returns will be used as the field’s return value.</p>
+
+<p>See the linked API docs for the parameters of those methods.</p>
+
+<h4 id="execution-memo">Execution “memo”</h4>
+
+<p>One parameter to <code class="highlighter-rouge">after_resolve</code> deserves special attention: <code class="highlighter-rouge">memo:</code>. <code class="highlighter-rouge">resolve</code> <em>may</em> yield a third value. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">object</span><span class="p">:,</span> <span class="n">arguments</span><span class="p">:,</span> <span class="o">**</span><span class="n">rest</span><span class="p">)</span>
+  <span class="c1"># yield the current time as `memo`</span>
+  <span class="k">yield</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">to_i</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>If a third value is yielded, it will be passed to <code class="highlighter-rouge">after_resolve</code> as <code class="highlighter-rouge">memo:</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">after_resolve</span><span class="p">(</span><span class="n">value</span><span class="p">:,</span> <span class="n">memo</span><span class="p">:,</span> <span class="o">**</span><span class="n">rest</span><span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"Elapsed: </span><span class="si">#{</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">to_i</span> <span class="o">-</span> <span class="n">memo</span><span class="si">}</span><span class="s2">"</span>
+  <span class="c1"># Return the original value</span>
+  <span class="n">value</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This allows the <code class="highlighter-rouge">resolve</code> hook to pass data to <code class="highlighter-rouge">after_resolve</code>.</p>
+
+<p>Instance variables may not be used because, in a given GraphQL query, the same field may be resolved several times concurrently, and that would result in overriding the instance variable in an unpredictable way. (In fact, extensions are frozen to prevent instance variable writes.)</p>
+
+<h3 id="extension-options">Extension options</h3>
+
+<p>The <code class="highlighter-rouge">extension(...)</code> method takes an optional second argument, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">extension</span><span class="p">(</span><span class="no">LimitExtension</span><span class="p">,</span> <span class="ss">limit: </span><span class="mi">20</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>In this case, <code class="highlighter-rouge">{limit: 20}</code> will be passed as <code class="highlighter-rouge">options:</code> to <code class="highlighter-rouge">#initialize</code> and <code class="highlighter-rouge">options[:limit]</code> will be <code class="highlighter-rouge">20</code>.</p>
+
+<p>For example, options can be used for modifying execution:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">after_resolve</span><span class="p">(</span><span class="n">value</span><span class="p">:,</span> <span class="o">**</span><span class="n">rest</span><span class="p">)</span>
+  <span class="c1"># Apply the limit from the options</span>
+  <span class="n">value</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="ss">:limit</span><span class="p">])</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/type_definitions/field_extensions.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Field Extensions">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

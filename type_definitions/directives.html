@@ -1,0 +1,167 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Directives</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.9.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#type-definitions-guides">Type Definitions</a>
+  &raquo; Directives
+</p>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+
+
+  <div class="class-based-header">
+    <p>
+      <strong>⚠ New Class-Based API ⚠</strong>
+    </p>
+    <p>
+      This describes a new API in <code>v1.8.0</code>.
+      Check the <a href="/schema/class_based_api">upgrade notes</a> for more info.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Directives</h1>
+<div class="guide-container">
+  <p>Directives are system-defined keywords that modify execution. All GraphQL systems have at least <em>two</em> directives, <code class="highlighter-rouge">@skip</code> and <code class="highlighter-rouge">@include</code>. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query</span> <span class="no">ProfileView</span><span class="p">(</span><span class="vg">$renderingDetailedProfile</span><span class="p">:</span> <span class="no">Boolean</span><span class="o">!</span><span class="p">){</span>
+  <span class="n">viewer</span> <span class="p">{</span>
+    <span class="n">handle</span>
+    <span class="c1"># These fields will be included only if the check passes:</span>
+    <span class="o">...</span> <span class="vi">@include</span><span class="p">(</span><span class="ss">if: </span><span class="vg">$renderingDetailedProfile</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">location</span>
+      <span class="n">homepageUrl</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here’s how the two built-in directives work:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">@skip(if: ...)</code> skips the selection if the <code class="highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.9.0/GraphQL/Schema/Directive/Skip" target="_blank" title="API docs for GraphQL::Schema::Directive::Skip"><code>GraphQL::Schema::Directive::Skip</code></a>)</li>
+  <li><code class="highlighter-rouge">@include(if: ...)</code> includes the selection if the <code class="highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.9.0/GraphQL/Schema/Directive/Include" target="_blank" title="API docs for GraphQL::Schema::Directive::Include"><code>GraphQL::Schema::Directive::Include</code></a>)</li>
+</ul>
+
+<p>GraphQL-Ruby also supports custom directives for use with the <a href="/queries/interpreter">interpreter runtime</a>.</p>
+
+<h2 id="custom-directives">Custom Directives</h2>
+
+<p>Custom directives extend <a href="/api-doc/1.9.0/GraphQL/Schema/Directive" target="_blank" title="API docs for GraphQL::Schema::Directive"><code>GraphQL::Schema::Directive</code></a>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/directives/my_directive.rb</span>
+<span class="k">class</span> <span class="nc">Directives</span><span class="o">::</span><span class="no">MyDirective</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Directive</span>
+  <span class="n">description</span> <span class="s2">"A nice runtime customization"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, they’re hooked up to the schema using <code class="highlighter-rouge">directive(...)</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Custom directives are only supported by the Interpreter runtime</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Execution</span><span class="o">::</span><span class="no">Interpreter</span>
+  <span class="c1"># Attach the custom directive to the schema</span>
+  <span class="n">directive</span><span class="p">(</span><span class="no">Directives</span><span class="o">::</span><span class="no">MyDirective</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><a href="/api-doc/1.9.0/GraphQL/Schema/Directive/Feature" target="_blank" title="API docs for GraphQL::Schema::Directive::Feature"><code>GraphQL::Schema::Directive::Feature</code></a> and <a href="/api-doc/1.9.0/GraphQL/Schema/Directive/Transform" target="_blank" title="API docs for GraphQL::Schema::Directive::Transform"><code>GraphQL::Schema::Directive::Transform</code></a> are included in the library as examples.</p>
+
+<h3 id="arguments">Arguments</h3>
+
+<p>Like fields, directives may have <a href="/fields/arguments">arguments</a> :</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:if</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span>
+  <span class="ss">description: </span><span class="s2">"Skips the selection if this condition is true"</span>
+</code></pre></div></div>
+
+<h3 id="runtime-hooks">Runtime hooks</h3>
+
+<p>Directive classes may implement the following class methods to interact with the runtime:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">def self.include?(obj, args, ctx)</code>: If this hook returns <code class="highlighter-rouge">false</code>, the nodes flagged by this directive will be skipped at runtime.</li>
+  <li><code class="highlighter-rouge">def self.resolve(obj, args, ctx)</code>: Wraps the resolution of flagged nodes. Resolution is passed as a <strong>block</strong>, so <code class="highlighter-rouge">yield</code> will continue resolution. The return value of this method will be treated as the return value of the flagged field.</li>
+</ul>
+
+<p>Looking for a runtime hook that isn’t listed here? <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=New directive hook: @something&amp;body=&lt;!-- Describe how the directive would be used and then how you might implement it --&gt; " target="_blank">open an issue</a> to start the conversation!</p>
+
+<h3 id="directive-object-lifecycle">Directive object lifecycle</h3>
+
+<p>Currently, Directive classes are never initialized. A later version of GraphQL may initialize these objects for runtime application.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/type_definitions/directives.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Directives">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
