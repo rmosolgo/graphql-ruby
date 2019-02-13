@@ -93,6 +93,20 @@ end
 
 That configuration will call `#employer_or_self?` on the corresponding Pundit policy.
 
+#### Custom Policy Class
+
+By default, the integration uses `Pundit.policy!(current_user, object)` to find a policy. You can specify a policy class using `pundit_policy_class(...)`:
+
+```ruby
+class Types::Employee < Types::BaseObject
+  pundit_policy_class(Policies::CustomEmployeePolicy)
+  # Or, you could use a string:
+  # pundit_policy_class("Policies::CustomEmployeePolicy")
+end
+```
+
+For really custom policy lookup, see [Custom Policy Lookup](#custom-policy-lookup) below.
+
 #### Bypassing Policies
 
 The integration requires that every object with a `pundit_role` has a corresponding policy class. To allow objects to _skip_ authorization, you can pass `nil` as the role:
@@ -182,6 +196,26 @@ end
 ```
 
 It will call the named role (eg, `#staff?`) on the parent object's policy (eg `JobPostingPolicy`).
+
+#### Custom Policy Class
+
+You can override the policy class for a field using `pundit_policy_class:`, for example:
+
+```ruby
+class Types::JobPosting < Types::BaseObject
+  # Only allow `ApplicantsPolicy#staff?` users to see
+  # who has applied
+  field :applicants, [Types::User], null: true,
+    pundit_role: :staff,
+    pundit_policy_class: ApplicantsPolicy
+    # Or with a string:
+    # pundit_policy_class: "ApplicantsPolicy"
+end
+```
+
+This will initialize an `ApplicantsPolicy` with the parent object (a `Job`) and call `#staff?` on it.
+
+For really custom policy lookup, see [Custom Policy Lookup](#custom-policy-lookup) below.
 
 ## Authorizing Arguments
 
