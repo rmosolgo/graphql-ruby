@@ -6,7 +6,7 @@ module GraphQL
         case type_error
         when GraphQL::InvalidNullError
           ctx.errors << type_error
-        when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError
+        when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
           raise type_error
         end
       end
