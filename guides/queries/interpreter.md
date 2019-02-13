@@ -91,6 +91,15 @@ The new runtime works with class-based schemas only. Several features are no lon
 
   The interpreter uses class-based schema definitions only, and never converts them to legacy GraphQL definition objects. Any custom definitions to GraphQL objects should be re-implemented on custom base classes.
 
+- `GraphQL::Schema::Field#resolve_field`
+
+  If you customized your base field's resolution method, it needs an update. The interpreter calls a different method: `#resolve(obj, args, ctx)`. There are two differences with the new method:
+
+  - `args` is plain ol' Ruby Hash, with symbol keys, instead of a `GraphQL::Query::Arguments`
+  - `ctx` is a `GraphQL::Query::Context` instead of a `GraphQL::Query::Context::FieldResolutionContext`
+
+  But besides that, it's largely the same.
+
 Maybe this section should have been called _incompatibility_ 🤔.
 
 ## Extending the Runtime
