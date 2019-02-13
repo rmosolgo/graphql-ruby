@@ -270,18 +270,20 @@ module GraphQL
             write_in_response(path, r)
             r
           when "UNION", "INTERFACE"
-            resolved_type = query.resolve_type(type, value)
-            possible_types = query.possible_types(type)
+            resolved_type_or_lazy = query.resolve_type(type, value)
+            after_lazy(resolved_type_or_lazy, path: path, field: field) do |resolved_type|
+              possible_types = query.possible_types(type)
 
-            if !possible_types.include?(resolved_type)
-              parent_type = field.owner
-              type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
-              schema.type_error(type_error, context)
-              write_in_response(path, nil)
-              nil
-            else
-              resolved_type = resolved_type.metadata[:type_class]
-              continue_field(path, value, field, resolved_type, ast_node, next_selections, is_non_null)
+              if !possible_types.include?(resolved_type)
+                parent_type = field.owner
+                type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
+                schema.type_error(type_error, context)
+                write_in_response(path, nil)
+                nil
+              else
+                resolved_type = resolved_type.metadata[:type_class]
+                continue_field(path, value, field, resolved_type, ast_node, next_selections, is_non_null)
+              end
             end
           when "OBJECT"
             object_proxy = begin
