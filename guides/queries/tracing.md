@@ -113,7 +113,7 @@ end
 
 ## Skylight
 
-To add [Skylight](http://skylight.io) instrumentation:
+To add [Skylight](https://www.skylight.io) instrumentation:
 
 ```ruby
 class MySchema < GraphQL::Schema

@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.date        = Date.today.to_s
   s.summary     = "A GraphQL language and runtime for Ruby"
   s.description = "A plain-Ruby implementation of GraphQL."
-  s.homepage    = "http://github.com/rmosolgo/graphql-ruby"
+  s.homepage    = "https://github.com/rmosolgo/graphql-ruby"
   s.authors     = ["Robert Mosolgo"]
   s.email       = ["rdmosolgo@gmail.com"]
   s.license     = "MIT"

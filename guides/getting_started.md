@@ -41,7 +41,7 @@ Or, you can build a GraphQL server by hand:
 
 ### Declare types
 
-Types describe objects in your application and form the basis for [GraphQL's type system](http://graphql.org/learn/schema/#type-system).
+Types describe objects in your application and form the basis for [GraphQL's type system](https://graphql.org/learn/schema/#type-system).
 
 ```ruby
 # app/graphql/types/post_type.rb
@@ -66,7 +66,7 @@ end
 
 ### Build a Schema
 
-Before building a schema, you have to define an [entry point to your system, the "query root"](http://graphql.org/learn/schema/#the-query-and-mutation-types):
+Before building a schema, you have to define an [entry point to your system, the "query root"](https://graphql.org/learn/schema/#the-query-and-mutation-types):
 
 ```ruby
 class QueryType < GraphQL::Schema::Object
@@ -124,14 +124,14 @@ See {% internal_link "Executing Queries","/queries/executing_queries" %} for mor
 
 ## Use with Relay
 
-If you're building a backend for [Relay](http://facebook.github.io/relay/), you'll need:
+If you're building a backend for [Relay](https://facebook.github.io/relay/), you'll need:
 
 - A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
 - Relay-specific helpers for GraphQL, see the `GraphQL::Relay` guides.
 
 ## Use with Apollo Client
 
-[Apollo Client](http://dev.apollodata.com/) is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don't need to do anything special to connect Apollo Client to a `graphql-ruby` server.
+[Apollo Client](https://www.apollographql.com/) is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don't need to do anything special to connect Apollo Client to a `graphql-ruby` server.
 
 ## Use with GraphQL.js Client
 

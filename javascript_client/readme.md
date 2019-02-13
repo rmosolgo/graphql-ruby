@@ -1,4 +1,4 @@
-Find the `graphql-ruby-client` docs on the [GraphQL-Ruby website](http://graphql-ruby.org/javascript_client/overview).
+Find the `graphql-ruby-client` docs on the [GraphQL-Ruby website](https://graphql-ruby.org/javascript_client/overview).
 
 ## License
 

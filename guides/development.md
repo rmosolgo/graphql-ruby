@@ -27,7 +27,7 @@ Then, install the dependencies:
 
 - Install SQLite3 and MongoDB (eg, `brew install sqlite && brew install mongodb`)
 - `bundle install`
-- Optional: [Ragel](http://www.colm.net/open-source/ragel/) is required to build the lexer
+- Optional: [Ragel](https://www.colm.net/open-source/ragel/) is required to build the lexer
 
 ### Running the Tests
 
@@ -121,7 +121,7 @@ BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake
 
 ### Debugging with Pry
 
-[`pry`](http://pryrepl.org/) is included with GraphQL-Ruby's development setup to help with debugging.
+[`pry`](https://pryrepl.org/) is included with GraphQL-Ruby's development setup to help with debugging.
 
 To pause execution in Ruby code, add:
 
@@ -224,7 +224,7 @@ Then, check them out locally:
 
 ```
 $ bundle exec rake site:serve
-# then visit localhost:4000/api-doc/1.8.0/
+# then visit http://localhost:4000/api-doc/1.8.0/
 ```
 
 Then, publish them as part of the whole site:

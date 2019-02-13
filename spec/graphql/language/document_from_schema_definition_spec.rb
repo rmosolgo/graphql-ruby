@@ -433,7 +433,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
         }
 
         # Represents signed double-precision fractional values as specified by [IEEE
-        # 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+        # 754](https://en.wikipedia.org/wiki/IEEE_floating_point).
         scalar Float
 
         # Represents a unique identifier that is Base64 obfuscated. It is often used to
@@ -698,7 +698,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
         }
 
         # Represents signed double-precision fractional values as specified by [IEEE
-        # 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+        # 754](https://en.wikipedia.org/wiki/IEEE_floating_point).
         scalar Float
 
         # Represents a unique identifier that is Base64 obfuscated. It is often used to
