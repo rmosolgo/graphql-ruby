@@ -147,6 +147,18 @@
 
     <p>The interpreter uses class-based schema definitions only, and never converts them to legacy GraphQL definition objects. Any custom definitions to GraphQL objects should be re-implemented on custom base classes.</p>
   </li>
+  <li>
+    <p><code class="highlighter-rouge">GraphQL::Schema::Field#resolve_field</code></p>
+
+    <p>If you customized your base field’s resolution method, it needs an update. The interpreter calls a different method: <code class="highlighter-rouge">#resolve(obj, args, ctx)</code>. There are two differences with the new method:</p>
+
+    <ul>
+      <li><code class="highlighter-rouge">args</code> is plain ol’ Ruby Hash, with symbol keys, instead of a <code class="highlighter-rouge">GraphQL::Query::Arguments</code></li>
+      <li><code class="highlighter-rouge">ctx</code> is a <code class="highlighter-rouge">GraphQL::Query::Context</code> instead of a <code class="highlighter-rouge">GraphQL::Query::Context::FieldResolutionContext</code></li>
+    </ul>
+
+    <p>But besides that, it’s largely the same.</p>
+  </li>
 </ul>
 
 <p>Maybe this section should have been called <em>incompatibility</em> 🤔.</p>
