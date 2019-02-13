@@ -43,7 +43,7 @@ module GraphQL
       event_name = event_name.to_s
 
       # Try with the verbatim input first:
-      field = @schema.get_field("Subscription", event_name)
+      field = @schema.get_field(@schema.subscription, event_name)
 
       if field.nil?
         # And if it wasn't found, normalize it:
