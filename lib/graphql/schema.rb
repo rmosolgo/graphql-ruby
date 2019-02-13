@@ -480,17 +480,20 @@ module GraphQL
         yield(type, object, ctx)
       end
 
-      if type_result.respond_to?(:graphql_definition)
-        type_result = type_result.graphql_definition
-      end
-
       if type_result.nil?
         nil
-      elsif !type_result.is_a?(GraphQL::BaseType)
-        type_str = "#{type_result} (#{type_result.class.name})"
-        raise "resolve_type(#{object}) returned #{type_str}, but it should return a GraphQL type"
       else
-        type_result
+        after_lazy(type_result) do |resolved_type_result|
+          if resolved_type_result.respond_to?(:graphql_definition)
+            resolved_type_result = resolved_type_result.graphql_definition
+          end
+          if !resolved_type_result.is_a?(GraphQL::BaseType)
+            type_str = "#{resolved_type_result} (#{resolved_type_result.class.name})"
+            raise "resolve_type(#{object}) returned #{type_str}, but it should return a GraphQL type"
+          else
+            resolved_type_result
+          end
+        end
       end
     end
 
