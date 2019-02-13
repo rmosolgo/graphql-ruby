@@ -8,6 +8,7 @@
 
 ### Bug fixes
 
+<<<<<<< HEAD
 ## 1.9.0-pre4 (11 Feb 2019)
 
 ### Breaking changes
@@ -64,6 +65,14 @@
 - Support `false` as an Enum value #2050
 - Support `hash_key:` fields when the key isn't a valid Ruby method name #2016
 - Fix lookahead with Fragments #1933
+=======
+## 1.8.15 (13 Feb 2019)
+
+### Bug fixes
+
+- Fix unwrapping inputobject types when turning arguments to hashes #2094
+- Support lazy objects from `.resolve_type` hooks #2108
+>>>>>>> 1.8.x
 
 ## 1.8.14 (9 Feb 2018)
 
