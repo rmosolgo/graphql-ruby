@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 1.8.15 (13 Feb 2019)
+
+### Bug fixes
+
+- Fix unwrapping inputobject types when turning arguments to hashes #2094
+- Support lazy objects from `.resolve_type` hooks #2108
+
 ## 1.8.14 (9 Feb 2018)
 
 ### Bug Fixes
