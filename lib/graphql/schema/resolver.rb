@@ -200,13 +200,13 @@ module GraphQL
         # See if any object can be found for this ID
         loaded_application_object = object_from_id(lookup_as_type, id, context)
         context.schema.after_lazy(loaded_application_object) do |application_object|
-          begin
-            if application_object.nil?
-              raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-            end
-            # Double-check that the located object is actually of this type
-            # (Don't want to allow arbitrary access to objects this way)
-            application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
+          if application_object.nil?
+            raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
+          end
+          # Double-check that the located object is actually of this type
+          # (Don't want to allow arbitrary access to objects this way)
+          resolved_application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
+          context.schema.after_lazy(resolved_application_object_type) do |application_object_type|
             possible_object_types = context.schema.possible_types(lookup_as_type)
             if !possible_object_types.include?(application_object_type)
               raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
@@ -230,11 +230,11 @@ module GraphQL
                 application_object
               end
             end
-          rescue LoadApplicationObjectFailedError => err
-            # pass it to a handler
-            load_application_object_failed(err)
           end
         end
+      rescue LoadApplicationObjectFailedError => err
+        # pass it to a handler
+        load_application_object_failed(err)
       end
 
       def load_application_object_failed(err)
