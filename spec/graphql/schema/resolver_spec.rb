@@ -171,11 +171,15 @@ describe GraphQL::Schema::Resolver do
       include GraphQL::Schema::Interface
       field :value, Integer, null: false
       def self.resolve_type(obj, ctx)
-        if obj.is_a?(Integer)
-          IntegerWrapper
-        else
-          raise "Unexpected: #{obj.inspect}"
-        end
+        LazyBlock.new {
+          if obj.is_a?(Integer)
+            IntegerWrapper
+          elsif obj == :resolve_type_as_wrong_type
+            GraphQL::Types::String
+          else
+            raise "Unexpected: #{obj.inspect}"
+          end
+        }
       end
     end
 
@@ -215,6 +219,30 @@ describe GraphQL::Schema::Resolver do
 
       def resolve(ints:)
         ints.map { |int| int * 3}
+      end
+    end
+
+    class ResolverWithErrorHandler < BaseResolver
+      argument :int, ID, required: true, loads: HasValue
+      type HasValue, null: true
+      def object_from_id(type, id, ctx)
+        LazyBlock.new {
+          if id == "failed_to_find"
+            nil
+          elsif id == "resolve_type_as_wrong_type"
+            :resolve_type_as_wrong_type
+          else
+            id.length
+          end
+        }
+      end
+
+      def resolve(int:)
+        int * 4
+      end
+
+      def load_application_object_failed(err)
+        raise GraphQL::ExecutionError.new("ResolverWithErrorHandler failed for id: #{err.id.inspect} (#{err.object.inspect}) (#{err.class.name})")
       end
     end
 
@@ -356,6 +384,7 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_12, resolver: PrepResolver12
       field :prep_resolver_13, resolver: PrepResolver13
       field :prep_resolver_14, resolver: PrepResolver14
+      field :resolver_with_error_handler, resolver: ResolverWithErrorHandler
     end
 
     class Schema < GraphQL::Schema
@@ -432,6 +461,51 @@ describe GraphQL::Schema::Resolver do
       assert_equal '["resolverWithPath"]', res["data"]["resolverWithPath"]
     end
   end
+
+  describe "load_application_object_failed hook" do
+    it "isn't called for successful queries" do
+      query_str = <<-GRAPHQL
+      {
+        resolverWithErrorHandler(int: "abcd") { value }
+      }
+      GRAPHQL
+
+      res = exec_query(query_str)
+      assert_equal 16, res["data"]["resolverWithErrorHandler"]["value"]
+      refute res.key?("errors")
+    end
+
+    describe "when the id doesn't find anything" do
+      it "passes an error to the handler" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "failed_to_find") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str)
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        expected_err = "ResolverWithErrorHandler failed for id: \"failed_to_find\" (nil) (GraphQL::Schema::Resolver::LoadApplicationObjectFailedError)"
+        assert_equal [expected_err], res["errors"].map { |e| e["message"] }
+      end
+    end
+
+    describe "when resolve_type returns a no-good type" do
+      it "calls the handler" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "resolve_type_as_wrong_type") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str)
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        expected_err = "ResolverWithErrorHandler failed for id: \"resolve_type_as_wrong_type\" (:resolve_type_as_wrong_type) (GraphQL::Schema::Resolver::LoadApplicationObjectFailedError)"
+        assert_equal [expected_err], res["errors"].map { |e| e["message"] }
+      end
+    end
+  end
+
 
   describe "extras" do
     it "is inherited" do
