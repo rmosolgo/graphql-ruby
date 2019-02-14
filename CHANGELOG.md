@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.9.1 (13 Feb 2019)
+
+### Bug fixes
+
+- Properly pass errors to Resolver `load_application_object_failed` methods #2110
+
 ## 1.9.0 (13 Feb 2019)
 
 ### Breaking Changes
