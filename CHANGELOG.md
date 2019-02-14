@@ -8,11 +8,13 @@
 
 ### Bug fixes
 
-## 1.8.16 (14 Feb 2019)
+## 1.8.17 (14 Feb 2019)
 
 ### Bug fixes
 
-- Fix direct calls to `.sync_lazy` on Schema classes #2112
+- Fix direct calls to `.sync_lazy` on Schema classes #2113
+
+_1.8.16 was published by mistake, with no changes 😢_
 
 ## 1.8.15 (13 Feb 2019)
 
