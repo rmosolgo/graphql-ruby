@@ -10,6 +10,13 @@ describe GraphQL::Execution::Lazy do
       assert_equal 3, res["data"]["int"]
     end
 
+    it "Works with Query.new" do
+      query_str = '{ int(value: 2, plus: 1) }'
+      query = GraphQL::Query.new(LazyHelpers::LazySchema, query_str)
+      res =  query.result
+      assert_equal 3, res["data"]["int"]
+    end
+
     it "can do nested lazy values" do
       res = run_query %|
       {
