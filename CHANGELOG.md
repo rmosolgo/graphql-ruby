@@ -8,7 +8,13 @@
 
 ### Bug fixes
 
-## 1.9.1 (13 Feb 2019)
+## 1.9.2 (15 Feb 2019)
+
+### Bug fixes
+
+- Properly support connection fields with resolve procs #2115
+
+## 1.9.1 (14 Feb 2019)
 
 ### Bug fixes
 
