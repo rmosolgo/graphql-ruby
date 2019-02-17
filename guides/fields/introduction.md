@@ -96,6 +96,14 @@ field :top_score, Integer, null: false
 
 The default behavior is to look for a `#top_score` method, or lookup a `Hash` key, `:top_score` (symbol) or `"top_score"` (string).
 
+In case field type is `Boolean` and object responds to `<field_name>?` (symbol) we will use that otherwise we will call `<field_name>` In following example:
+
+```ruby
+field :is_winner, Boolean, null: false
+```
+
+We first attempt calling `#is_winner?` if doesn't exist we attempt `#is_winner` and `Hash` key.
+
 You can override the method name with the `method:` keyword, or override the hash key with the `hash_key:` keyword, for example:
 
 ```ruby

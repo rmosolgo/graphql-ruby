@@ -24,11 +24,12 @@ module GraphQL
       # Resolve the field by `public_send`ing `@method_name`
       class MethodResolve < BuiltInResolve
         def initialize(field)
-          @method_name = field.property.to_sym
+          @method_name = field.property
+          @is_boolean = field.type == BOOLEAN_TYPE
         end
 
         def call(obj, args, ctx)
-          obj.public_send(@method_name)
+          @is_boolean && obj.respond_to?("#{@method_name}?".to_sym) ? obj.public_send("#{@method_name}?".to_sym) : obj.public_send(@method_name.to_sym)
         end
       end
 

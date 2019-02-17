@@ -32,6 +32,26 @@ describe GraphQL::Field do
     assert_equal([number], field.arguments)
   end
 
+  describe '#boolean_field' do
+    let(:field) do
+      GraphQL::Field.define do
+        name "Boolean Field"
+        type types.Boolean
+        property :boolean_prop
+      end
+    end
+    it 'resolve boolean fields with <field_name>? if exist' do
+      object = OpenStruct.new(boolean_prop?: true, boolean_prop: false)
+      resolved_boolean_prop = field.resolve(object, nil, nil)
+      assert_equal true, resolved_boolean_prop
+    end
+    it 'resolve boolean fields with <field_name> if <field_name>? does not exist' do
+      object = OpenStruct.new(boolean_prop: true)
+      resolved_boolean_prop = field.resolve(object, nil, nil)
+      assert_equal true, resolved_boolean_prop
+    end
+  end
+
   describe ".property " do
     let(:field) do
       GraphQL::Field.define do
