@@ -19,8 +19,16 @@ function prepareRelay(filenames) {
     // Require the file to get values from the JavaScript code
     var absoluteFilename = path.resolve(currentDirectory, filename)
     var operation = require(absoluteFilename)
-    var operationBody = operation.text
-    var operationName = operation.name
+    var operationBody, operationName
+    // Support Relay version ^2.0.0
+    if (operation.params) {
+      operationBody = operation.params.text
+      operationName = operation.params.name
+    } else {
+      // Support Relay versions < 2.0.0
+      operationBody = operation.text
+      operationName = operation.name
+    }
 
     // Search the file for the relayHash
     var textContent = fs.readFileSync(filename, "utf8")
