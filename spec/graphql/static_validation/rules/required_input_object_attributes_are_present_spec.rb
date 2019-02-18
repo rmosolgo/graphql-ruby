@@ -61,7 +61,6 @@ describe GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent do
         refute_includes(errors, missing_required_field_error)
       end
     end
-    # focus
     it 'works with error bubbling enabled' do
       with_error_bubbling(schema) do
         assert_includes(errors, missing_required_field_error)
