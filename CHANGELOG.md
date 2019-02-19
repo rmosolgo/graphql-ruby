@@ -43,6 +43,7 @@
   end
   ```
 
+- `field(...)` configurations don't create implicit method definitions (#1961). If one resolver method depended on the implicitly-created method from another field, you'll have to refactor that call or manually add a `def ...` for that field.
 - Calling `super` in a field method doesn't work anymore (#1961)
 - Error `"problems"` are now in `"extensions" : { "problems": ... }` #2077
 - Change schema default to `error_bubbling false` #2069

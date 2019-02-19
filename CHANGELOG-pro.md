@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.9.10 (19 Feb 2019)
+
+### Bug Fix
+
+- Support inheritance with `pundit_policy_class(...)`
+
 ## 1.9.9 (13 Feb 2019)
 
 ### New Features
