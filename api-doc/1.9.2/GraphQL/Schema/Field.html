@@ -1,0 +1,3793 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Schema::Field
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Schema::Field";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (F)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span>
+     &raquo; 
+    <span class="title">Field</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Schema::Field
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Schema::Field</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd><span class='object_link'><a href="Member/AcceptsDefinition.html" title="GraphQL::Schema::Member::AcceptsDefinition (module)">Member::AcceptsDefinition</a></span>, <span class='object_link'><a href="Member/CachedGraphQLDefinition.html" title="GraphQL::Schema::Member::CachedGraphQLDefinition (module)">Member::CachedGraphQLDefinition</a></span>, <span class='object_link'><a href="Member/HasArguments.html" title="GraphQL::Schema::Member::HasArguments (module)">Member::HasArguments</a></span>, <span class='object_link'><a href="Member/HasPath.html" title="GraphQL::Schema::Member::HasPath (module)">Member::HasPath</a></span></dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/field.rb<span class="defines">,<br />
+  lib/graphql/schema/field/scope_extension.rb,<br /> lib/graphql/schema/field/connection_extension.rb</span>
+</dd>
+  </dl>
+  
+</div>
+
+<div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="../Types/Relay/BaseField.html" title="GraphQL::Types::Relay::BaseField (class)">Types::Relay::BaseField</a></span></p>
+</div>
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Field/ConnectionExtension.html" title="GraphQL::Schema::Field::ConnectionExtension (class)">ConnectionExtension</a></span>, <span class='object_link'><a href="Field/ScopeExtension.html" title="GraphQL::Schema::Field::ScopeExtension (class)">ScopeExtension</a></span>
+    
+  
+</p>
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#deprecation_reason-instance_method" title="#deprecation_reason (instance method)">#<strong>deprecation_reason</strong>  &#x21d2; String<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>If present, the field is marked as deprecated with this documentation.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#description-instance_method" title="#description (instance method)">#<strong>description</strong>(text = nil)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#extras-instance_method" title="#extras (instance method)">#<strong>extras</strong>  &#x21d2; Array&lt;Symbol&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#max_page_size-instance_method" title="#max_page_size (instance method)">#<strong>max_page_size</strong>  &#x21d2; Integer<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Applied to connections if present.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#method_str-instance_method" title="#method_str (instance method)">#<strong>method_str</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Method or hash key on the underlying object to look up.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#method_sym-instance_method" title="#method_sym (instance method)">#<strong>method_sym</strong>  &#x21d2; Symbol </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Method or hash key on the underlying object to look up.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#name-instance_method" title="#name (instance method)">#<strong>name</strong>  &#x21d2; String </a>
+    
+
+    
+      (also: #graphql_name)
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The GraphQL name for this field, camelized unless <code>camelize: false</code> is provided.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#original_name-instance_method" title="#original_name (instance method)">#<strong>original_name</strong>  &#x21d2; Symobol </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The original name of the field, passed in by the user.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#owner-instance_method" title="#owner (instance method)">#<strong>owner</strong>  &#x21d2; Class </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The type that this field belongs to.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolver_method-instance_method" title="#resolver_method (instance method)">#<strong>resolver_method</strong>  &#x21d2; Symbol </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The method on the type to look up.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#subscription_scope-instance_method" title="#subscription_scope (instance method)">#<strong>subscription_scope</strong>  &#x21d2; String<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#trace-instance_method" title="#trace (instance method)">#<strong>trace</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Apply tracing to this field? (Default: skip scalars, this is the override value).</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#from_options-class_method" title="from_options (class method)">.<strong>from_options</strong>(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil, **kwargs, &amp;block)  &#x21d2; GraphQL::Schema:Field </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create a field instance from a list of arguments, keyword arguments, and a block.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#accessible%3F-instance_method" title="#accessible? (instance method)">#<strong>accessible?</strong>(context)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#authorized%3F-instance_method" title="#authorized? (instance method)">#<strong>authorized?</strong>(object, context)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#complexity-instance_method" title="#complexity (instance method)">#<strong>complexity</strong>(new_complexity)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#connection%3F-instance_method" title="#connection? (instance method)">#<strong>connection?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Can be set with <code>connection: true|false</code> or inferred from a type name ending in <code>*Connection</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#extension-instance_method" title="#extension (instance method)">#<strong>extension</strong>(extension, options = nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Add <code>extension</code> to this field, initialized with <code>options</code> if provided.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#extensions-instance_method" title="#extensions (instance method)">#<strong>extensions</strong>(new_extensions = nil)  &#x21d2; Array&lt;GraphQL::Schema::FieldExtension&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Read extension instances from this field, or add new classes/options to be initialized on this field.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fetch_extra-instance_method" title="#fetch_extra (instance method)">#<strong>fetch_extra</strong>(extra_name, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &amp;definition_block)  &#x21d2; Field </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Field.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve-instance_method" title="#resolve (instance method)">#<strong>resolve</strong>(object, args, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>This method is called by the interpreter for each field.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve_field-instance_method" title="#resolve_field (instance method)">#<strong>resolve_field</strong>(obj, args, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Implement <span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">Field</a></span>’s resolve API.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve_field_method-instance_method" title="#resolve_field_method (instance method)">#<strong>resolve_field_method</strong>(obj, ruby_kwargs, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Find a way to resolve this field, checking:.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolver-instance_method" title="#resolver (instance method)">#<strong>resolver</strong>  &#x21d2; Class<sup>?</sup> </a>
+    
+
+    
+      (also: #mutation)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The <span class='object_link'><a href="Resolver.html" title="GraphQL::Schema::Resolver (class)">Resolver</a></span> this field was derived from, if there is one.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scoped%3F-instance_method" title="#scoped? (instance method)">#<strong>scoped?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>If true, the return type’s <code>.scope_items</code> method will be applied to this field’s return value.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_graphql-instance_method" title="#to_graphql (instance method)">#<strong>to_graphql</strong>  &#x21d2; GraphQL::Field </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#type-instance_method" title="#type (instance method)">#<strong>type</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible%3F-instance_method" title="#visible? (instance method)">#<strong>visible?</strong>(context)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/HasPath.html" title="GraphQL::Schema::Member::HasPath (module)">Member::HasPath</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/HasPath.html#path-instance_method" title="GraphQL::Schema::Member::HasPath#path (method)">#path</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/HasArguments.html" title="GraphQL::Schema::Member::HasArguments (module)">Member::HasArguments</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/HasArguments.html#add_argument-instance_method" title="GraphQL::Schema::Member::HasArguments#add_argument (method)">#add_argument</a></span>, <span class='object_link'><a href="Member/HasArguments.html#argument-instance_method" title="GraphQL::Schema::Member::HasArguments#argument (method)">#argument</a></span>, <span class='object_link'><a href="Member/HasArguments.html#argument_class-instance_method" title="GraphQL::Schema::Member::HasArguments#argument_class (method)">#argument_class</a></span>, <span class='object_link'><a href="Member/HasArguments.html#arguments-instance_method" title="GraphQL::Schema::Member::HasArguments#arguments (method)">#arguments</a></span>, <span class='object_link'><a href="Member/HasArguments.html#own_arguments-instance_method" title="GraphQL::Schema::Member::HasArguments#own_arguments (method)">#own_arguments</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/CachedGraphQLDefinition.html" title="GraphQL::Schema::Member::CachedGraphQLDefinition (module)">Member::CachedGraphQLDefinition</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/CachedGraphQLDefinition.html#graphql_definition-instance_method" title="GraphQL::Schema::Member::CachedGraphQLDefinition#graphql_definition (method)">#graphql_definition</a></span>, <span class='object_link'><a href="Member/CachedGraphQLDefinition.html#initialize_copy-instance_method" title="GraphQL::Schema::Member::CachedGraphQLDefinition#initialize_copy (method)">#initialize_copy</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &amp;definition_block)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Schema::Field (class)">Field</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Field</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>name</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The underscore-cased version of this field name (will be camelized for the GraphQL API)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>type</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>, <tt><span class='object_link'><a href="../BaseType.html" title="GraphQL::BaseType (class)">GraphQL::BaseType</a></span></tt>, <tt>Array</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The return type of this field</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>owner</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The type that this field belongs to</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>null</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><code>true</code> if this field may return <code>null</code>, <code>false</code> if it is never <code>null</code></p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>description</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Field description</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>deprecation_reason</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>If present, the field is marked “deprecated” with this message</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>method</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The method to call on the underlying object to resolve this field (defaults to <code>name</code>)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>hash_key</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to <code>name</code> or <code>name.to_s</code>)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>resolver_method</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The method on the type to call to resolve this field (defaults to <code>name</code>)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>connection</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><code>true</code> if this field should get automagic connection behavior; default is to infer by <code>*Connection</code> in the return type name</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>max_page_size</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>For connections, the maximum number of items to return from this field</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>introspection</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>If true, this field will be marked as <code>#introspection?</code> and the name may begin with <code>__</code></p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>resolve</span>
+      
+      
+        <span class='type'>(<tt>&lt;#call(obj, args, ctx)&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><strong>deprecated</strong> for compatibility with &lt;1.8.0</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>field</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">GraphQL::Field</a></span></tt>, <tt><span class='object_link'><a href="" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><strong>deprecated</strong> for compatibility with &lt;1.8.0</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>function</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Function.html" title="GraphQL::Function (class)">GraphQL::Function</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><strong>deprecated</strong> for compatibility with &lt;1.8.0</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>resolver_class</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>(Private) A <span class='object_link'><a href="Resolver.html" title="GraphQL::Schema::Resolver (class)">Resolver</a></span> which this field was derived from. Use <code>resolver:</code> to create a field with a resolver.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>arguments</span>
+      
+      
+        <span class='type'>(<tt>{String=&gt;<span class='object_link'><a href="Argument.html" title="GraphQL::Schema::Argument (class)">GraphQL::Schema::Argument</a></span>, Hash}</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Arguments for this field (may be added in the block, also)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>camelize</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>If true, the field name will be camelized when building the schema</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>complexity</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>When provided, set the complexity for this field</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>scope</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>If true, the return type’s <code>.scope_items</code> method will be called on the return value</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>subscription_scope</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A key in <code>context</code> which will be used to scope subscription payloads</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>extensions</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Class&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Named extensions to apply to this field (see also <span class='object_link'><a href="#extension-instance_method" title="GraphQL::Schema::Field#extension (method)">#extension</a></span>)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>trace</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>If true, a <span class='object_link'><a href="../Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span> tracer will measure this scalar field</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 160</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>type:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>name:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>owner:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>null:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>field:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>function:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>description:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>deprecation_reason:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>method:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>hash_key:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>resolver_method:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>resolve:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>connection:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>max_page_size:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>scope:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>introspection:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>camelize:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>trace:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>complexity:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>extras:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>extensions:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>resolver_class:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>subscription_scope:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>relay_node_field:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>relay_nodes_field:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_definition_block'>definition_block</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>missing first `name` argument or keyword `name:`</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span> <span class='op'>||</span> <span class='id identifier rubyid_function'>function</span> <span class='op'>||</span> <span class='id identifier rubyid_resolver_class'>resolver_class</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>missing second `type` argument or keyword `type:`</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_null'>null</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>missing keyword argument null:</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span> <span class='op'>||</span> <span class='id identifier rubyid_function'>function</span> <span class='op'>||</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_extras'>extras</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>keyword `extras:` may only be used with method-based resolve and class-based field such as mutation class, please remove `field:`, `function:` or `resolve:`</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@original_name</span> <span class='op'>=</span> <span class='id identifier rubyid_name'>name</span>
+  <span class='ivar'>@underscored_name</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Member/BuildType.html" title="GraphQL::Schema::Member::BuildType (module)">BuildType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_underscore'><span class='object_link'><a href="Member/BuildType.html#underscore-class_method" title="GraphQL::Schema::Member::BuildType.underscore (method)">underscore</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span>
+  <span class='ivar'>@name</span> <span class='op'>=</span> <span class='id identifier rubyid_camelize'>camelize</span> <span class='op'>?</span> <span class='const'><span class='object_link'><a href="Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Member/BuildType.html" title="GraphQL::Schema::Member::BuildType (module)">BuildType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_camelize'><span class='object_link'><a href="Member/BuildType.html#camelize-class_method" title="GraphQL::Schema::Member::BuildType.camelize (method)">camelize</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
+  <span class='ivar'>@description</span> <span class='op'>=</span> <span class='id identifier rubyid_description'>description</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="GraphQL::Schema::Field (class)">Field</a></span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Instead of passing a field as `field:`, use `add_field(field)` to add an already-defined field.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@field</span> <span class='op'>=</span> <span class='id identifier rubyid_field'>field</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@function</span> <span class='op'>=</span> <span class='id identifier rubyid_function'>function</span>
+  <span class='ivar'>@resolve</span> <span class='op'>=</span> <span class='id identifier rubyid_resolve'>resolve</span>
+  <span class='ivar'>@deprecation_reason</span> <span class='op'>=</span> <span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_method'>method</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_hash_key'>hash_key</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Provide `method:` _or_ `hash_key:`, not both. (called with: `method: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_method'>method</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, hash_key: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_hash_key'>hash_key</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>`)</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_resolver_method'>resolver_method</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_method'>method</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Provide `method:` _or_ `resolver_method:`, not both. (called with: `method: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_method'>method</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, resolver_method: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_resolver_method'>resolver_method</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>`)</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+
+    <span class='kw'>if</span> <span class='id identifier rubyid_hash_key'>hash_key</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Provide `hash_key:` _or_ `resolver_method:`, not both. (called with: `hash_key: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_hash_key'>hash_key</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, resolver_method: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_resolver_method'>resolver_method</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>`)</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
+</span>  <span class='id identifier rubyid_method_name'>method_name</span> <span class='op'>=</span> <span class='id identifier rubyid_method'>method</span> <span class='op'>||</span> <span class='id identifier rubyid_hash_key'>hash_key</span> <span class='op'>||</span> <span class='ivar'>@underscored_name</span>
+  <span class='id identifier rubyid_resolver_method'>resolver_method</span> <span class='op'>||=</span> <span class='ivar'>@underscored_name</span>
+
+  <span class='ivar'>@method_str</span> <span class='op'>=</span> <span class='id identifier rubyid_method_name'>method_name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
+  <span class='ivar'>@method_sym</span> <span class='op'>=</span> <span class='id identifier rubyid_method_name'>method_name</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span>
+  <span class='ivar'>@resolver_method</span> <span class='op'>=</span> <span class='id identifier rubyid_resolver_method'>resolver_method</span>
+  <span class='ivar'>@complexity</span> <span class='op'>=</span> <span class='id identifier rubyid_complexity'>complexity</span>
+  <span class='ivar'>@return_type_expr</span> <span class='op'>=</span> <span class='id identifier rubyid_type'>type</span>
+  <span class='ivar'>@return_type_null</span> <span class='op'>=</span> <span class='id identifier rubyid_null'>null</span>
+  <span class='ivar'>@connection</span> <span class='op'>=</span> <span class='id identifier rubyid_connection'>connection</span>
+  <span class='ivar'>@max_page_size</span> <span class='op'>=</span> <span class='id identifier rubyid_max_page_size'>max_page_size</span>
+  <span class='ivar'>@introspection</span> <span class='op'>=</span> <span class='id identifier rubyid_introspection'>introspection</span>
+  <span class='ivar'>@extras</span> <span class='op'>=</span> <span class='id identifier rubyid_extras'>extras</span>
+  <span class='ivar'>@resolver_class</span> <span class='op'>=</span> <span class='id identifier rubyid_resolver_class'>resolver_class</span>
+  <span class='ivar'>@scope</span> <span class='op'>=</span> <span class='id identifier rubyid_scope'>scope</span>
+  <span class='ivar'>@trace</span> <span class='op'>=</span> <span class='id identifier rubyid_trace'>trace</span>
+  <span class='ivar'>@relay_node_field</span> <span class='op'>=</span> <span class='id identifier rubyid_relay_node_field'>relay_node_field</span>
+  <span class='ivar'>@relay_nodes_field</span> <span class='op'>=</span> <span class='id identifier rubyid_relay_nodes_field'>relay_nodes_field</span>
+
+  <span class='comment'># Override the default from HasArguments
+</span>  <span class='ivar'>@own_arguments</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_arguments'>arguments</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_arg'>arg</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_arg'>arg</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_argument'>argument</span><span class='lparen'>(</span><span class='label'>name:</span> <span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_arg'>arg</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='ivar'>@own_arguments</span><span class='lbracket'>[</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_arg'>arg</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@owner</span> <span class='op'>=</span> <span class='id identifier rubyid_owner'>owner</span>
+  <span class='ivar'>@subscription_scope</span> <span class='op'>=</span> <span class='id identifier rubyid_subscription_scope'>subscription_scope</span>
+
+  <span class='comment'># Do this last so we have as much context as possible when initializing them:
+</span>  <span class='ivar'>@extensions</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_extensions'>extensions</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>
+    <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_extensions'>extensions</span><span class='lparen'>(</span><span class='id identifier rubyid_extensions'>extensions</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='comment'># This should run before connection extension,
+</span>  <span class='comment'># but should it run after the definition block?
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_scoped?'>scoped?</span>
+    <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_extension'>extension</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Field/ScopeExtension.html" title="GraphQL::Schema::Field::ScopeExtension (class)">ScopeExtension</a></span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='comment'># The problem with putting this after the definition_block
+</span>  <span class='comment'># is that it would override arguments
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_connection?'>connection?</span>
+    <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_extension'>extension</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Field/ConnectionExtension.html" title="GraphQL::Schema::Field::ConnectionExtension (class)">ConnectionExtension</a></span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_definition_block'>definition_block</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_definition_block'>definition_block</span><span class='period'>.</span><span class='id identifier rubyid_arity'>arity</span> <span class='op'>==</span> <span class='int'>1</span>
+      <span class='kw'>yield</span> <span class='kw'>self</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_instance_eval'>instance_eval</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_definition_block'>definition_block</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="deprecation_reason=-instance_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="deprecation_reason-instance_method">
+  
+    #<strong>deprecation_reason</strong>  &#x21d2; <tt>String</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns If present, the field is marked as deprecated with this documentation</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>If present, the field is marked as deprecated with this documentation</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+21
+22
+23</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 21</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span>
+  <span class='ivar'>@deprecation_reason</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="description=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="description-instance_method">
+  
+    #<strong>description</strong>(text = nil)  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>text</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+262
+263
+264
+265
+266
+267
+268</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 262</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_description'>description</span><span class='lparen'>(</span><span class='id identifier rubyid_text'>text</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_text'>text</span>
+    <span class='ivar'>@description</span> <span class='op'>=</span> <span class='id identifier rubyid_text'>text</span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@description</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="extras-instance_method">
+  
+    #<strong>extras</strong>  &#x21d2; <tt>Array&lt;Symbol&gt;</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Symbol&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+46
+47
+48</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 46</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_extras'>extras</span>
+  <span class='ivar'>@extras</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="max_page_size-instance_method">
+  
+    #<strong>max_page_size</strong>  &#x21d2; <tt>Integer</tt><sup>?</sup>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Applied to connections if present</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Applied to connections if present</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+323
+324
+325</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 323</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_max_page_size'>max_page_size</span>
+  <span class='ivar'>@max_page_size</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="method_str-instance_method">
+  
+    #<strong>method_str</strong>  &#x21d2; <tt>String</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Method or hash key on the underlying object to look up</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Method or hash key on the underlying object to look up</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_method_str'>method_str</span>
+  <span class='ivar'>@method_str</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="method_sym-instance_method">
+  
+    #<strong>method_sym</strong>  &#x21d2; <tt>Symbol</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Method or hash key on the underlying object to look up</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Method or hash key on the underlying object to look up</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_method_sym'>method_sym</span>
+  <span class='ivar'>@method_sym</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="name-instance_method">
+  
+    #<strong>name</strong>  &#x21d2; <tt>String</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='graphql_name-instance_method'>graphql_name</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the GraphQL name for this field, camelized unless <code>camelize: false</code> is provided</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the GraphQL name for this field, camelized unless <code>camelize: false</code> is provided</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+15
+16
+17</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 15</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
+  <span class='ivar'>@name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="original_name-instance_method">
+  
+    #<strong>original_name</strong>  &#x21d2; <tt>Symobol</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the original name of the field, passed in by the user</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Symobol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the original name of the field, passed in by the user</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+36
+37
+38</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 36</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_original_name'>original_name</span>
+  <span class='ivar'>@original_name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="owner-instance_method">
+  
+    #<strong>owner</strong>  &#x21d2; <tt>Class</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The type that this field belongs to</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The type that this field belongs to</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+33
+34
+35</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 33</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_owner'>owner</span>
+  <span class='ivar'>@owner</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="resolver_method-instance_method">
+  
+    #<strong>resolver_method</strong>  &#x21d2; <tt>Symbol</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The method on the type to look up</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The method on the type to look up</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+30
+31
+32</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 30</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_resolver_method'>resolver_method</span>
+  <span class='ivar'>@resolver_method</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="subscription_scope-instance_method">
+  
+    #<strong>subscription_scope</strong>  &#x21d2; <tt>String</tt><sup>?</sup>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+52
+53
+54</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 52</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_subscription_scope'>subscription_scope</span>
+  <span class='ivar'>@subscription_scope</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="trace-instance_method">
+  
+    #<strong>trace</strong>  &#x21d2; <tt>Boolean</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Apply tracing to this field? (Default: skip scalars, this is the override value)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Apply tracing to this field? (Default: skip scalars, this is the override value)</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+49
+50
+51</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 49</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_trace'>trace</span>
+  <span class='ivar'>@trace</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="from_options-class_method">
+  
+    .<strong>from_options</strong>(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil, **kwargs, &amp;block)  &#x21d2; <tt>GraphQL::Schema:Field</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Create a field instance from a list of arguments, keyword arguments, and a block.</p>
+
+<p>This method implements prioritization between the <code>resolver</code> or <code>mutation</code> defaults
+and the local overrides via other keywords.</p>
+
+<p>It also normalizes positional arguments into keywords for <span class='object_link'><a href="#initialize-instance_method" title="GraphQL::Schema::Field#initialize (method)">#initialize</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>resolver</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A <span class='object_link'><a href="Resolver.html" title="GraphQL::Schema::Resolver (class)">Resolver</a></span> class to use for field configuration</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>mutation</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A <span class='object_link'><a href="Mutation.html" title="GraphQL::Schema::Mutation (class)">Mutation</a></span> class to use for field configuration</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>subscription</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A <span class='object_link'><a href="Subscription.html" title="GraphQL::Schema::Subscription (class)">Subscription</a></span> class to use for field configuration</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>GraphQL::Schema:Field</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>an instance of `self</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li>for other options</li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_from_options'>from_options</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_desc'>desc</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>resolver:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>mutation:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>subscription:</span> <span class='kw'>nil</span><span class='comma'>,</span><span class='op'>**</span><span class='id identifier rubyid_kwargs'>kwargs</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:field</span><span class='rbracket'>]</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:field</span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay.html" title="GraphQL::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay/Node.html" title="GraphQL::Relay::Node (module)">Node</a></span></span><span class='period'>.</span><span class='id identifier rubyid_field'><span class='object_link'><a href="../Relay/Node.html#field-class_method" title="GraphQL::Relay::Node.field (method)">field</a></span></span>
+      <span class='id identifier rubyid_warn'>warn</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Legacy-style `GraphQL::Relay::Node.field` is being added to a class-based type. See `GraphQL::Types::Relay::NodeField` for a replacement.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='kw'>return</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Types.html" title="GraphQL::Types (module)">Types</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Types/Relay.html" title="GraphQL::Types::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Types/Relay.html#NodeField-constant" title="GraphQL::Types::Relay::NodeField (constant)">NodeField</a></span></span>
+    <span class='kw'>elsif</span> <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:field</span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay.html" title="GraphQL::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay/Node.html" title="GraphQL::Relay::Node (module)">Node</a></span></span><span class='period'>.</span><span class='id identifier rubyid_plural_field'><span class='object_link'><a href="../Relay/Node.html#plural_field-class_method" title="GraphQL::Relay::Node.plural_field (method)">plural_field</a></span></span>
+      <span class='id identifier rubyid_warn'>warn</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Legacy-style `GraphQL::Relay::Node.plural_field` is being added to a class-based type. See `GraphQL::Types::Relay::NodesField` for a replacement.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='kw'>return</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Types.html" title="GraphQL::Types (module)">Types</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Types/Relay.html" title="GraphQL::Types::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Types/Relay.html#NodesField-constant" title="GraphQL::Types::Relay::NodesField (constant)">NodesField</a></span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_parent_config'>parent_config</span> <span class='op'>=</span> <span class='id identifier rubyid_resolver'>resolver</span> <span class='op'>||</span> <span class='id identifier rubyid_mutation'>mutation</span> <span class='op'>||</span> <span class='id identifier rubyid_subscription'>subscription</span><span class='rparen'>)</span>
+    <span class='comment'># Get the parent config, merge in local overrides
+</span>    <span class='id identifier rubyid_kwargs'>kwargs</span> <span class='op'>=</span> <span class='id identifier rubyid_parent_config'>parent_config</span><span class='period'>.</span><span class='id identifier rubyid_field_options'>field_options</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='id identifier rubyid_kwargs'>kwargs</span><span class='rparen'>)</span>
+    <span class='comment'># Add a reference to that parent class
+</span>    <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:resolver_class</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_parent_config'>parent_config</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_name'>name</span>
+    <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_name'>name</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A GraphQL::Field was passed as the second argument, use the `field:` keyword for this instead.</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_desc'>desc</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:description</span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Provide description as a positional argument or `description:` keyword, but not both (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_desc'>desc</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:description</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>end</span>
+
+      <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:description</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_desc'>desc</span>
+      <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:type</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_type'>type</span>
+    <span class='kw'>elsif</span> <span class='lparen'>(</span><span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:field</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:function</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id identifier rubyid_resolver'>resolver</span> <span class='op'>||</span> <span class='id identifier rubyid_mutation'>mutation</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span>
+      <span class='comment'># The return type should be copied from `field` or `function`, and the second positional argument is the description
+</span>      <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:description</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_type'>type</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:type</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_type'>type</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>**</span><span class='id identifier rubyid_kwargs'>kwargs</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="accessible?-instance_method">
+  
+    #<strong>accessible?</strong>(context)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+408
+409
+410
+411
+412
+413
+414</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 408</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_accessible?'>accessible?</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@resolver_class</span>
+    <span class='ivar'>@resolver_class</span><span class='period'>.</span><span class='id identifier rubyid_accessible?'>accessible?</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='kw'>true</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="authorized?-instance_method">
+  
+    #<strong>authorized?</strong>(object, context)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 416</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_authorized?'>authorized?</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_self_auth'>self_auth</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ivar'>@resolver_class</span>
+    <span class='ivar'>@resolver_class</span><span class='period'>.</span><span class='id identifier rubyid_authorized?'>authorized?</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='kw'>true</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_self_auth'>self_auth</span>
+    <span class='comment'># Faster than `.any?`
+</span>    <span class='id identifier rubyid_arguments'>arguments</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_arg'>arg</span><span class='op'>|</span>
+      <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_arg'>arg</span><span class='period'>.</span><span class='id identifier rubyid_authorized?'>authorized?</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+        <span class='kw'>return</span> <span class='kw'>false</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='kw'>true</span>
+  <span class='kw'>else</span>
+    <span class='kw'>false</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="complexity-instance_method">
+  
+    #<strong>complexity</strong>(new_complexity)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 304</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_complexity'>complexity</span><span class='lparen'>(</span><span class='id identifier rubyid_new_complexity'>new_complexity</span><span class='rparen'>)</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_new_complexity'>new_complexity</span>
+  <span class='kw'>when</span> <span class='const'>Proc</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_new_complexity'>new_complexity</span><span class='period'>.</span><span class='id identifier rubyid_parameters'>parameters</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>!=</span> <span class='int'>3</span>
+      <span class='id identifier rubyid_fail'>fail</span><span class='lparen'>(</span>
+        <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A complexity proc should always accept 3 parameters: ctx, args, child_complexity. </span><span class='tstring_end'>&quot;</span></span>\
+        <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>E.g.: complexity -&gt;(ctx, args, child_complexity) { child_complexity * args[:limit] }</span><span class='tstring_end'>&quot;</span></span>
+      <span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='ivar'>@complexity</span> <span class='op'>=</span> <span class='id identifier rubyid_new_complexity'>new_complexity</span>
+    <span class='kw'>end</span>
+  <span class='kw'>when</span> <span class='const'>Numeric</span>
+    <span class='ivar'>@complexity</span> <span class='op'>=</span> <span class='id identifier rubyid_new_complexity'>new_complexity</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid complexity: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_new_complexity'>new_complexity</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> on </span><span class='embexpr_beg'>#{</span><span class='ivar'>@name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="connection?-instance_method">
+  
+    #<strong>connection?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Can be set with <code>connection: true|false</code> or inferred from a type name ending in <code>*Connection</code></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if true, this field will be wrapped with Relay connection behavior</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 110</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_connection?'>connection?</span>
+  <span class='kw'>if</span> <span class='ivar'>@connection</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='comment'># Provide default based on type name
+</span>    <span class='id identifier rubyid_return_type_name'>return_type_name</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_contains_type'>contains_type</span> <span class='op'>=</span> <span class='ivar'>@field</span> <span class='op'>||</span> <span class='ivar'>@function</span><span class='rparen'>)</span>
+      <span class='const'><span class='object_link'><a href="Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Member/BuildType.html" title="GraphQL::Schema::Member::BuildType (module)">BuildType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_to_type_name'><span class='object_link'><a href="Member/BuildType.html#to_type_name-class_method" title="GraphQL::Schema::Member::BuildType.to_type_name (method)">to_type_name</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_contains_type'>contains_type</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+    <span class='kw'>elsif</span> <span class='ivar'>@return_type_expr</span>
+      <span class='const'><span class='object_link'><a href="Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Member/BuildType.html" title="GraphQL::Schema::Member::BuildType (module)">BuildType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_to_type_name'><span class='object_link'><a href="Member/BuildType.html#to_type_name-class_method" title="GraphQL::Schema::Member::BuildType.to_type_name (method)">to_type_name</a></span></span><span class='lparen'>(</span><span class='ivar'>@return_type_expr</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='comment'># As a last ditch, try to force loading the return type:
+</span>      <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+    <span class='kw'>end</span>
+    <span class='ivar'>@connection</span> <span class='op'>=</span> <span class='id identifier rubyid_return_type_name'>return_type_name</span><span class='period'>.</span><span class='id identifier rubyid_end_with?'>end_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Connection</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@connection</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="extension-instance_method">
+  
+    #<strong>extension</strong>(extension, options = nil)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Add <code>extension</code> to this field, initialized with <code>options</code> if provided.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>extension</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>subclass of Schema::Fieldextension</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>if provided, given as <code>options:</code> when initializing <code>extension</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+300
+301
+302</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 300</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_extension'>extension</span><span class='lparen'>(</span><span class='id identifier rubyid_extension'>extension</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_extensions'>extensions</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='lbrace'>{</span><span class='id identifier rubyid_extension'>extension</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_options'>options</span><span class='rbrace'>}</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="extensions-instance_method">
+  
+    #<strong>extensions</strong>(new_extensions = nil)  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="FieldExtension.html" title="GraphQL::Schema::FieldExtension (class)">GraphQL::Schema::FieldExtension</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Read extension instances from this field,
+or add new classes/options to be initialized on this field.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>extensions</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Class&gt;</tt>, <tt>Hash&lt;Class =&gt; <span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Add extensions to this field</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="FieldExtension.html" title="GraphQL::Schema::FieldExtension (class)">GraphQL::Schema::FieldExtension</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>extensions to apply to this field</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 275</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_extensions'>extensions</span><span class='lparen'>(</span><span class='id identifier rubyid_new_extensions'>new_extensions</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_new_extensions'>new_extensions</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='comment'># Read the value
+</span>    <span class='ivar'>@extensions</span>
+  <span class='kw'>else</span>
+    <span class='comment'># Normalize to a Hash of {name =&gt; options}
+</span>    <span class='id identifier rubyid_extensions_with_options'>extensions_with_options</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_new_extensions'>new_extensions</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_new_extensions'>new_extensions</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>
+    <span class='kw'>else</span>
+      <span class='lbrace'>{</span><span class='rbrace'>}</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_new_extensions'>new_extensions</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span>
+      <span class='id identifier rubyid_extensions_with_options'>extensions_with_options</span><span class='lbracket'>[</span><span class='id identifier rubyid_f'>f</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>nil</span>
+    <span class='kw'>end</span>
+
+    <span class='comment'># Initialize each class and stash the instance
+</span>    <span class='id identifier rubyid_extensions_with_options'>extensions_with_options</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_extension_class'>extension_class</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='op'>|</span>
+      <span class='ivar'>@extensions</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_extension_class'>extension_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>field:</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='label'>options:</span> <span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="fetch_extra-instance_method">
+  
+    #<strong>fetch_extra</strong>(extra_name, ctx)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>ctx</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context/FieldResolutionContext.html" title="GraphQL::Query::Context::FieldResolutionContext (class)">GraphQL::Query::Context::FieldResolutionContext</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+552
+553
+554
+555
+556
+557
+558
+559
+560</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 552</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fetch_extra'>fetch_extra</span><span class='lparen'>(</span><span class='id identifier rubyid_extra_name'>extra_name</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_extra_name'>extra_name</span> <span class='op'>!=</span> <span class='symbol'>:path</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='id identifier rubyid_extra_name'>extra_name</span><span class='rparen'>)</span>
+    <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='id identifier rubyid_extra_name'>extra_name</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='id identifier rubyid_extra_name'>extra_name</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='id identifier rubyid_extra_name'>extra_name</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>NotImplementedError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unknown field extra for </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span><span class='embexpr_end'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_extra_name'>extra_name</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolve-instance_method">
+  
+    #<strong>resolve</strong>(object, args, ctx)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>This method is called by the interpreter for each field.
+You can extend it in your base field classes.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>object</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">GraphQL::Schema::Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>An instance of some type class, wrapping an application object</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A symbol-keyed hash of Ruby keyword arguments. (Empty if no args)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ctx</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 471</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@resolve_proc</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Can&#39;t run resolve proc for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_path'>path</span><span class='embexpr_end'>}</span><span class='tstring_content'> when using GraphQL::Execution::Interpreter</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='kw'>begin</span>
+    <span class='comment'># Unwrap the GraphQL object to get the application object.
+</span>    <span class='id identifier rubyid_application_object'>application_object</span> <span class='op'>=</span> <span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span>
+    <span class='kw'>if</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_authorized?'>authorized?</span><span class='lparen'>(</span><span class='id identifier rubyid_application_object'>application_object</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+      <span class='comment'># Apply field extensions
+</span>      <span class='id identifier rubyid_with_extensions'>with_extensions</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_extended_obj'>extended_obj</span><span class='comma'>,</span> <span class='id identifier rubyid_extended_args'>extended_args</span><span class='op'>|</span>
+        <span class='id identifier rubyid_field_receiver'>field_receiver</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ivar'>@resolver_class</span>
+          <span class='id identifier rubyid_resolver_obj'>resolver_obj</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_extended_obj'>extended_obj</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></span><span class='rparen'>)</span>
+            <span class='id identifier rubyid_extended_obj'>extended_obj</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span>
+          <span class='kw'>else</span>
+            <span class='id identifier rubyid_extended_obj'>extended_obj</span>
+          <span class='kw'>end</span>
+          <span class='ivar'>@resolver_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>object:</span> <span class='id identifier rubyid_resolver_obj'>resolver_obj</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+        <span class='kw'>else</span>
+          <span class='id identifier rubyid_extended_obj'>extended_obj</span>
+        <span class='kw'>end</span>
+
+        <span class='kw'>if</span> <span class='id identifier rubyid_field_receiver'>field_receiver</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='ivar'>@resolver_method</span><span class='rparen'>)</span>
+          <span class='comment'># Call the method with kwargs, if there are any
+</span>          <span class='kw'>if</span> <span class='id identifier rubyid_extended_args'>extended_args</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>
+            <span class='id identifier rubyid_field_receiver'>field_receiver</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='ivar'>@resolver_method</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_extended_args'>extended_args</span><span class='rparen'>)</span>
+          <span class='kw'>else</span>
+            <span class='id identifier rubyid_field_receiver'>field_receiver</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='ivar'>@resolver_method</span><span class='rparen'>)</span>
+          <span class='kw'>end</span>
+        <span class='kw'>else</span>
+          <span class='id identifier rubyid_resolve_field_method'>resolve_field_method</span><span class='lparen'>(</span><span class='id identifier rubyid_field_receiver'>field_receiver</span><span class='comma'>,</span> <span class='id identifier rubyid_extended_args'>extended_args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_err'>err</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../UnauthorizedFieldError.html" title="GraphQL::UnauthorizedFieldError (class)">UnauthorizedFieldError</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../UnauthorizedFieldError.html#initialize-instance_method" title="GraphQL::UnauthorizedFieldError#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>object:</span> <span class='id identifier rubyid_application_object'>application_object</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='label'>field:</span> <span class='kw'>self</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_unauthorized_field'>unauthorized_field</span><span class='lparen'>(</span><span class='id identifier rubyid_err'>err</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../UnauthorizedError.html" title="GraphQL::UnauthorizedError (class)">UnauthorizedError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_err'>err</span>
+    <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_unauthorized_object'>unauthorized_object</span><span class='lparen'>(</span><span class='id identifier rubyid_err'>err</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ExecutionError.html" title="GraphQL::ExecutionError (class)">ExecutionError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_err'>err</span>
+  <span class='id identifier rubyid_err'>err</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolve_field-instance_method">
+  
+    #<strong>resolve_field</strong>(obj, args, ctx)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Implement <span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">Field</a></span>’s resolve API.</p>
+
+<p>Eventually, we might hook up field instances to execution in another way. TBD.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#resolve-instance_method" title="GraphQL::Schema::Field#resolve (method)">for how the interpreter hooks up to it</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 440</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_resolve_field'>resolve_field</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_after_lazy'>after_lazy</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_after_obj'>after_obj</span><span class='op'>|</span>
+    <span class='comment'># First, apply auth ...
+</span>    <span class='id identifier rubyid_query_ctx'>query_ctx</span> <span class='op'>=</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span>
+    <span class='comment'># Some legacy fields can have `nil` here, not exactly sure why.
+</span>    <span class='comment'># @see https://github.com/rmosolgo/graphql-ruby/issues/1990 before removing
+</span>    <span class='id identifier rubyid_inner_obj'>inner_obj</span> <span class='op'>=</span> <span class='id identifier rubyid_after_obj'>after_obj</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_after_obj'>after_obj</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_authorized?'>authorized?</span><span class='lparen'>(</span><span class='id identifier rubyid_inner_obj'>inner_obj</span><span class='comma'>,</span> <span class='id identifier rubyid_query_ctx'>query_ctx</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_ruby_args'>ruby_args</span> <span class='op'>=</span> <span class='id identifier rubyid_to_ruby_args'>to_ruby_args</span><span class='lparen'>(</span><span class='id identifier rubyid_after_obj'>after_obj</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+      <span class='comment'># Then if it passed, resolve the field
+</span>      <span class='kw'>if</span> <span class='ivar'>@resolve_proc</span>
+        <span class='comment'># Might be nil, still want to call the func in that case
+</span>        <span class='id identifier rubyid_with_extensions'>with_extensions</span><span class='lparen'>(</span><span class='id identifier rubyid_inner_obj'>inner_obj</span><span class='comma'>,</span> <span class='id identifier rubyid_ruby_args'>ruby_args</span><span class='comma'>,</span> <span class='id identifier rubyid_query_ctx'>query_ctx</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_extended_obj'>extended_obj</span><span class='comma'>,</span> <span class='id identifier rubyid_extended_args'>extended_args</span><span class='op'>|</span>
+          <span class='comment'># Pass the GraphQL args here for compatibility:
+</span>          <span class='ivar'>@resolve_proc</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_extended_obj'>extended_obj</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+        <span class='kw'>end</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_public_send_field'>public_send_field</span><span class='lparen'>(</span><span class='id identifier rubyid_after_obj'>after_obj</span><span class='comma'>,</span> <span class='id identifier rubyid_ruby_args'>ruby_args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_err'>err</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../UnauthorizedFieldError.html" title="GraphQL::UnauthorizedFieldError (class)">UnauthorizedFieldError</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../UnauthorizedFieldError.html#initialize-instance_method" title="GraphQL::UnauthorizedFieldError#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>object:</span> <span class='id identifier rubyid_inner_obj'>inner_obj</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='label'>field:</span> <span class='kw'>self</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_query_ctx'>query_ctx</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_unauthorized_field'>unauthorized_field</span><span class='lparen'>(</span><span class='id identifier rubyid_err'>err</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolve_field_method-instance_method">
+  
+    #<strong>resolve_field_method</strong>(obj, ruby_kwargs, ctx)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Find a way to resolve this field, checking:</p>
+
+<ul>
+  <li>Hash keys, if the wrapped object is a hash;</li>
+  <li>A method on the wrapped object;</li>
+  <li>Or, raise not implemented.</li>
+</ul>
+
+<p>This can be overridden by defining a method on the object type.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>obj</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">GraphQL::Schema::Object</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ruby_kwargs</span>
+      
+      
+        <span class='type'>(<tt>Hash&lt;Symbol =&gt; <span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ctx</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546
+547
+548
+549</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 524</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_resolve_field_method'>resolve_field_method</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_ruby_kwargs'>ruby_kwargs</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_inner_object'>inner_object</span> <span class='op'>=</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_inner_object'>inner_object</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='ivar'>@method_sym</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_inner_object'>inner_object</span><span class='lbracket'>[</span><span class='ivar'>@method_sym</span><span class='rbracket'>]</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_inner_object'>inner_object</span><span class='lbracket'>[</span><span class='ivar'>@method_str</span><span class='rbracket'>]</span>
+    <span class='kw'>end</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='ivar'>@method_sym</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_ruby_kwargs'>ruby_kwargs</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>
+      <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='ivar'>@method_sym</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_ruby_kwargs'>ruby_kwargs</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='ivar'>@method_sym</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='heredoc_beg'>&lt;&lt;-ERR</span>
+<span class='tstring_content'>  Failed to implement </span><span class='embexpr_beg'>#{</span><span class='ivar'>@owner</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='ivar'>@name</span><span class='embexpr_end'>}</span><span class='tstring_content'>, tried:
+
+  - `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'>#</span><span class='embexpr_beg'>#{</span><span class='ivar'>@resolver_method</span><span class='embexpr_end'>}</span><span class='tstring_content'>`, which did not exist
+  - `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'>#</span><span class='embexpr_beg'>#{</span><span class='ivar'>@method_sym</span><span class='embexpr_end'>}</span><span class='tstring_content'>`, which did not exist
+  - Looking up hash key `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@method_sym</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>` or `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@method_str</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>` on `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span><span class='embexpr_end'>}</span><span class='tstring_content'>`, but it wasn&#39;t a Hash
+
+  To implement this field, define one of the methods above (and check for typos)
+</span><span class='heredoc_end'>  ERR
+</span>  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolver-instance_method">
+  
+    #<strong>resolver</strong>  &#x21d2; <tt>Class</tt><sup>?</sup> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='mutation-instance_method'>mutation</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The <span class='object_link'><a href="Resolver.html" title="GraphQL::Schema::Resolver (class)">Resolver</a></span> this field was derived from, if there is one</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Class</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The <span class='object_link'><a href="Resolver.html" title="GraphQL::Schema::Resolver (class)">Resolver</a></span> this field was derived from, if there is one</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+39
+40
+41</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 39</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_resolver'>resolver</span>
+  <span class='ivar'>@resolver_class</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="scoped?-instance_method">
+  
+    #<strong>scoped?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns if true, the return type’s <code>.scope_items</code> method will be applied to this field’s return value</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if true, the return type’s <code>.scope_items</code> method will be applied to this field’s return value</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+128
+129
+130
+131
+132
+133
+134
+135</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 128</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_scoped?'>scoped?</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='ivar'>@scope</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='comment'># The default was overridden
+</span>    <span class='ivar'>@scope</span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@return_type_expr</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='ivar'>@return_type_expr</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@return_type_expr</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_connection?'>connection?</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_graphql-instance_method">
+  
+    #<strong>to_graphql</strong>  &#x21d2; <tt><span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">GraphQL::Field</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">GraphQL::Field</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 326</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_graphql'>to_graphql</span>
+  <span class='id identifier rubyid_field_defn'>field_defn</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ivar'>@field</span>
+    <span class='ivar'>@field</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@function</span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Function.html" title="GraphQL::Function (class)">Function</a></span></span><span class='period'>.</span><span class='id identifier rubyid_build_field'><span class='object_link'><a href="../Function.html#build_field-class_method" title="GraphQL::Function.build_field (method)">build_field</a></span></span><span class='lparen'>(</span><span class='ivar'>@function</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Field.html#initialize-instance_method" title="GraphQL::Field#initialize (method)">new</a></span></span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='ivar'>@name</span>
+  <span class='kw'>if</span> <span class='ivar'>@return_type_expr</span>
+    <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span> <span class='op'>=</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_type'>type</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@description</span>
+    <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span> <span class='op'>=</span> <span class='ivar'>@description</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@deprecation_reason</span>
+    <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span> <span class='op'>=</span> <span class='ivar'>@deprecation_reason</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@resolver_class</span>
+    <span class='kw'>if</span> <span class='ivar'>@resolver_class</span> <span class='op'>&lt;</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Mutation.html" title="GraphQL::Schema::Mutation (class)">Mutation</a></span></span>
+      <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_mutation'>mutation</span> <span class='op'>=</span> <span class='ivar'>@resolver_class</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_metadata'>metadata</span><span class='lbracket'>[</span><span class='symbol'>:resolver</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='ivar'>@resolver_class</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='op'>!</span><span class='ivar'>@trace</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_trace'>trace</span> <span class='op'>=</span> <span class='ivar'>@trace</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@relay_node_field</span>
+    <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_relay_node_field'>relay_node_field</span> <span class='op'>=</span> <span class='ivar'>@relay_node_field</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@relay_nodes_field</span>
+    <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_relay_nodes_field'>relay_nodes_field</span> <span class='op'>=</span> <span class='ivar'>@relay_nodes_field</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_resolve'>resolve</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_method'>method</span><span class='lparen'>(</span><span class='symbol'>:resolve_field</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_connection'>connection</span> <span class='op'>=</span> <span class='id identifier rubyid_connection?'>connection?</span>
+  <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_connection_max_page_size'>connection_max_page_size</span> <span class='op'>=</span> <span class='id identifier rubyid_max_page_size'>max_page_size</span>
+  <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_introspection'>introspection</span> <span class='op'>=</span> <span class='ivar'>@introspection</span>
+  <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_complexity'>complexity</span> <span class='op'>=</span> <span class='ivar'>@complexity</span>
+  <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_subscription_scope'>subscription_scope</span> <span class='op'>=</span> <span class='ivar'>@subscription_scope</span>
+
+  <span class='id identifier rubyid_arguments'>arguments</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_defn'>defn</span><span class='op'>|</span>
+    <span class='id identifier rubyid_arg_graphql'>arg_graphql</span> <span class='op'>=</span> <span class='id identifier rubyid_defn'>defn</span><span class='period'>.</span><span class='id identifier rubyid_to_graphql'>to_graphql</span>
+    <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_graphql'>arg_graphql</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_graphql'>arg_graphql</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Support a passed-in proc, one way or another
+</span>  <span class='ivar'>@resolve_proc</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ivar'>@resolve</span>
+    <span class='ivar'>@resolve</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@function</span>
+    <span class='ivar'>@function</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@field</span>
+    <span class='ivar'>@field</span><span class='period'>.</span><span class='id identifier rubyid_resolve_proc'>resolve_proc</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Ok, `self` isn&#39;t a class, but this is for consistency with the classes
+</span>  <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_metadata'>metadata</span><span class='lbracket'>[</span><span class='symbol'>:type_class</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>self</span>
+
+  <span class='id identifier rubyid_field_defn'>field_defn</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="type-instance_method">
+  
+    #<strong>type</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+394
+395
+396
+397
+398</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 394</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_type'>type</span>
+  <span class='ivar'>@type</span> <span class='op'>||=</span> <span class='const'><span class='object_link'><a href="Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Member/BuildType.html" title="GraphQL::Schema::Member::BuildType (module)">BuildType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse_type'><span class='object_link'><a href="Member/BuildType.html#parse_type-class_method" title="GraphQL::Schema::Member::BuildType.parse_type (method)">parse_type</a></span></span><span class='lparen'>(</span><span class='ivar'>@return_type_expr</span><span class='comma'>,</span> <span class='label'>null:</span> <span class='ivar'>@return_type_null</span><span class='rparen'>)</span>
+<span class='kw'>rescue</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Failed to build return type for </span><span class='embexpr_beg'>#{</span><span class='ivar'>@owner</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> from </span><span class='embexpr_beg'>#{</span><span class='ivar'>@return_type_expr</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='gvar'>$!</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='gvar'>$!</span><span class='period'>.</span><span class='id identifier rubyid_backtrace'>backtrace</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible?-instance_method">
+  
+    #<strong>visible?</strong>(context)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+400
+401
+402
+403
+404
+405
+406</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field.rb', line 400</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@resolver_class</span>
+    <span class='ivar'>@resolver_class</span><span class='period'>.</span><span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='kw'>true</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Feb 19 20:29:13 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.12 (ruby-2.4.2).
+</div>
+
+    </div>
+  </body>
+</html>
