@@ -35,7 +35,8 @@ module GraphQL
             # Lots of duplicated work here, can this be done ahead of time?
             platform_key = platform_field_key(field.owner, field)
             return_type = field.type.unwrap
-            trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+            # Handle LateBoundTypes, which don't have `#kind`
+            trace_field = if return_type.respond_to?(:kind) && (return_type.kind.scalar? || return_type.kind.enum?)
               (field.trace.nil? && @trace_scalars) || field.trace
             else
               true
