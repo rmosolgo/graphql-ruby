@@ -9,6 +9,7 @@ module GraphQL
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasArguments
+      include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
@@ -157,7 +158,8 @@ module GraphQL
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       # @param extensions [Array<Class>] Named extensions to apply to this field (see also {#extension})
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &definition_block)
+      # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -218,6 +220,7 @@ module GraphQL
         @trace = trace
         @relay_node_field = relay_node_field
         @relay_nodes_field = relay_nodes_field
+        @ast_node = ast_node
 
         # Override the default from HasArguments
         @own_arguments = {}
@@ -370,6 +373,7 @@ module GraphQL
         field_defn.introspection = @introspection
         field_defn.complexity = @complexity
         field_defn.subscription_scope = @subscription_scope
+        field_defn.ast_node = ast_node
 
         arguments.each do |name, defn|
           arg_graphql = defn.to_graphql

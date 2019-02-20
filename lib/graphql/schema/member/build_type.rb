@@ -72,6 +72,8 @@ module GraphQL
               # Eg `String` => GraphQL::STRING_TYPE
               parse_type(type_expr.name, null: true)
             end
+          when Proc
+            parse_type(type_expr.call, null: true)
           when false
             raise ArgumentError, "Received `false` instead of a type, maybe a `!` should be replaced with `null: true` (for fields) or `required: true` (for arguments)"
           end
