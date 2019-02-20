@@ -9,7 +9,7 @@ index: 7
 class_based_api: true
 ---
 
-GraphQL's concept of _non-null_ is expressed in the [Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL) with `!`, for example:
+GraphQL's concept of _non-null_ is expressed in the [Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL) with `!`, for example:
 
 ```graphql
 type User {

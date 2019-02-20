@@ -8,6 +8,18 @@
 
 ### Bug Fix
 
+## 1.9.10 (19 Feb 2019)
+
+### Bug Fix
+
+- Support inheritance with `pundit_policy_class(...)`
+
+## 1.9.9 (13 Feb 2019)
+
+### New Features
+
+- Support `pundit_policy_class(...)` and `pundit_policy_class:` to manually specify a class or class name.
+
 ## 1.9.8 (30 Jan 2019)
 
 ### New Features

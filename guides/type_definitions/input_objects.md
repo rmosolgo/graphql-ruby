@@ -19,7 +19,7 @@ mutation {
 }
 ```
 
-Like a Ruby `Hash`, an input object consists of keys and values. Unlike a Hash, its keys and value types must be defined statically, as part of the GraphQL system. For example, here's an input object, expressed in the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
+Like a Ruby `Hash`, an input object consists of keys and values. Unlike a Hash, its keys and value types must be defined statically, as part of the GraphQL system. For example, here's an input object, expressed in the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL):
 
 ```ruby
 input PostAttributes {

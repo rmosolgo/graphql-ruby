@@ -4,6 +4,8 @@ module GraphQL
   module Execution
     class Interpreter
       module Resolve
+        # Continue field results in `results` until there's nothing else to continue.
+        # @return [void]
         def self.resolve_all(results)
           while results.any?
             results = resolve(results)

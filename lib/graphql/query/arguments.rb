@@ -168,7 +168,7 @@ module GraphQL
             memo[key] = unwrap_value(value)
             memo
           end
-        when GraphQL::Query::Arguments
+        when GraphQL::Query::Arguments, GraphQL::Schema::InputObject
           value.to_h
         else
           value

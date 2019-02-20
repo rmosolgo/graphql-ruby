@@ -134,7 +134,7 @@ module GraphQL
           # That way, we can use the remainder to identify cycles
           @defdep_immediate_dependencies.delete(fragment_node)
           fragment_usages = @defdep_dependent_definitions[fragment_node]
-          if fragment_usages.none?
+          if fragment_usages.empty?
             # If we didn't record any usages during the visit,
             # then this fragment is unused.
             dependency_map.unused_dependencies << @defdep_node_paths[fragment_node]
@@ -151,7 +151,7 @@ module GraphQL
               if block_given?
                 yield(definition_node, removed, fragment_node)
               end
-              if remaining.none? && definition_node.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
+              if remaining.empty? && definition_node.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
                 # If all of this definition's dependencies have
                 # been resolved, we can now resolve its
                 # own dependents.
@@ -171,7 +171,7 @@ module GraphQL
               deps.delete(spread)
             end
           end
-          if deps.none?
+          if deps.empty?
             @defdep_immediate_dependencies.delete(defn_node)
           end
         end

@@ -16,6 +16,8 @@ It's called `GraphQL::Execution::Interpreter` and you can hook it up with `use .
 ```ruby
 class MySchema < GraphQL::Schema
   use GraphQL::Execution::Interpreter
+  # And, when you have updated your analyzers:
+  use GraphQL::Analysis::AST
 end
 ```
 
@@ -36,6 +38,8 @@ You can opt in to the interpreter in your schema class:
 ```ruby
 class MySchema < GraphQL::Schema
   use GraphQL::Execution::Interpreter
+  # And, after you have updated your analyzers:
+  use GraphQL::Analysis::AST
 end
 ```
 
@@ -66,8 +70,9 @@ The new runtime works with class-based schemas only. Several features are no lon
   - Field Instrumentation
   - Middleware
   - Resolve procs
+  - `GraphQL::Function`
 
-  All these depend on the memory- and time-hungry per-field `ctx` object. To improve performance, only method-based resolves are supported. If need something from `ctx`, you can get it with the `extras: [...]` configuration option. To wrap resolve behaviors, try {% internal_link "Field Extensions", "/type_definitions/field_extensions" %}.
+  All these depend on the memory- and time-hungry per-field `ctx` object. To improve performance, only method-based resolves are supported. If need something from `ctx`, you can get it with the `extras: [...]` configuration option. To wrap resolve behaviors, try {% internal_link "Field Extensions", "/type_definitions/field_extensions" %}, {% internal_link "Tracing", "/queries/tracing" %}, or {% internal_link "GraphQL::Schema::Resolver", "/fields/resolvers" %}.
 
 - Query analyzers and `irep_node`s
 
@@ -86,13 +91,36 @@ The new runtime works with class-based schemas only. Several features are no lon
 
   The interpreter uses class-based schema definitions only, and never converts them to legacy GraphQL definition objects. Any custom definitions to GraphQL objects should be re-implemented on custom base classes.
 
+- `GraphQL::Schema::Field#resolve_field`
+
+  If you customized your base field's resolution method, it needs an update. The interpreter calls a different method: `#resolve(obj, args, ctx)`. There are two differences with the new method:
+
+  - `args` is plain ol' Ruby Hash, with symbol keys, instead of a `GraphQL::Query::Arguments`
+  - `ctx` is a `GraphQL::Query::Context` instead of a `GraphQL::Query::Context::FieldResolutionContext`
+
+  But besides that, it's largely the same.
+
 Maybe this section should have been called _incompatibility_ 🤔.
 
 ## Extending the Runtime
 
-🚧 👷🚧
+See {% internal_link "Directives", "/type_definitions/directives" %}.
 
-The internals aren't clean enough to build on yet. Stay tuned.
+## Analyzers
+
+GraphQL-Ruby has "analyzers" that run _before_ execution and may reject a query. With the interpreter, you can use {% internal_link "AST Analyzers", "/queries/ast_analysis" %} to get better performance.
+
+To make the migration, convert your previous analyzers to extend {{ "GraphQL::Analysis::AST::Analyzer" | api_doc }} as described in the guide, then add to your schema:
+
+```ruby
+use GraphQL::Analysis::AST
+```
+
+When you use _both_ `Interpreter` and `Analysis::AST`, GraphQL-Ruby will skip the slow process of building `irep_nodes`.
+
+All analyzers must be migrated at once; running _some_ legacy analyzers and _some_ AST analyzers is not supported.
+
+You can migrate to `Interpreter` before migrating to `Analysis::AST`. In that case, the `irep_node` tree will still be constructed and used for analysis, even though it will not be used for execution.
 
 ## Implementation Notes
 

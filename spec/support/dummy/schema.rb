@@ -473,6 +473,18 @@ module Dummy
     def self.resolve_type(type, obj, ctx)
       Schema.types[obj.class.name.split("::").last]
     end
+
+    # This is used to confirm that the hook is called:
+    MAGIC_INT_COERCE_VALUE = -1
+
+    def self.type_error(err, ctx)
+      if err.is_a?(GraphQL::IntegerEncodingError) && err.integer_value == 99**99
+        MAGIC_INT_COERCE_VALUE
+      else
+        super
+      end
+    end
+
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
     end

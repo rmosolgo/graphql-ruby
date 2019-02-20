@@ -1,7 +1,7 @@
 ---
 layout: guide
 doc_stub: false
-outbound_url: http://graphql.pro
+outbound_url: https://graphql.pro
 title: GraphQL::Pro Home
 section: GraphQL Pro
 desc: Overview of GraphQL::Pro features

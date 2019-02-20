@@ -63,6 +63,16 @@ module GraphQL
       # @return [GraphQL::Schema:Field] an instance of `self
       # @see {.initialize} for other options
       def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
+        if kwargs[:field]
+          if kwargs[:field] == GraphQL::Relay::Node.field
+            warn("Legacy-style `GraphQL::Relay::Node.field` is being added to a class-based type. See `GraphQL::Types::Relay::NodeField` for a replacement.")
+            return GraphQL::Types::Relay::NodeField
+          elsif kwargs[:field] == GraphQL::Relay::Node.plural_field
+            warn("Legacy-style `GraphQL::Relay::Node.plural_field` is being added to a class-based type. See `GraphQL::Types::Relay::NodesField` for a replacement.")
+            return GraphQL::Types::Relay::NodesField
+          end
+        end
+
         if (parent_config = resolver || mutation || subscription)
           # Get the parent config, merge in local overrides
           kwargs = parent_config.field_options.merge(kwargs)
@@ -267,15 +277,6 @@ module GraphQL
           # Read the value
           @extensions
         else
-          if @resolve || @function
-            raise ArgumentError, <<-MSG
-Extensions are not supported with resolve procs or functions,
-but #{owner.name}.#{name} has: #{@resolve || @function}
-So, it can't have extensions: #{extensions}.
-Use a method or a Schema::Resolver instead.
-MSG
-          end
-
           # Normalize to a Hash of {name => options}
           extensions_with_options = if new_extensions.last.is_a?(Hash)
             new_extensions.pop
@@ -444,12 +445,16 @@ MSG
           # @see https://github.com/rmosolgo/graphql-ruby/issues/1990 before removing
           inner_obj = after_obj && after_obj.object
           if authorized?(inner_obj, query_ctx)
+            ruby_args = to_ruby_args(after_obj, args, ctx)
             # Then if it passed, resolve the field
             if @resolve_proc
               # Might be nil, still want to call the func in that case
-              @resolve_proc.call(inner_obj, args, ctx)
+              with_extensions(inner_obj, ruby_args, query_ctx) do |extended_obj, extended_args|
+                # Pass the GraphQL args here for compatibility:
+                @resolve_proc.call(extended_obj, args, ctx)
+              end
             else
-              public_send_field(after_obj, args, ctx)
+              public_send_field(after_obj, ruby_args, ctx)
             end
           else
             err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
@@ -558,7 +563,13 @@ MSG
 
       NO_ARGS = {}.freeze
 
-      def public_send_field(obj, graphql_args, field_ctx)
+      # Convert a GraphQL arguments instance into a Ruby-style hash.
+      #
+      # @param obj [GraphQL::Schema::Object] The object where this field is being resolved
+      # @param graphql_args [GraphQL::Query::Arguments]
+      # @param field_ctx [GraphQL::Query::Context::FieldResolutionContext]
+      # @return [Hash<Symbol => Any>]
+      def to_ruby_args(obj, graphql_args, field_ctx)
         if graphql_args.any? || @extras.any?
           # Splat the GraphQL::Arguments to Ruby keyword arguments
           ruby_kwargs = graphql_args.to_kwargs
@@ -573,10 +584,14 @@ MSG
           @extras.each do |extra_arg|
             ruby_kwargs[extra_arg] = fetch_extra(extra_arg, field_ctx)
           end
-        else
-          ruby_kwargs = NO_ARGS
-        end
 
+          ruby_kwargs
+        else
+          NO_ARGS
+        end
+      end
+
+      def public_send_field(obj, ruby_kwargs, field_ctx)
         query_ctx = field_ctx.query.context
         with_extensions(obj, ruby_kwargs, query_ctx) do |extended_obj, extended_args|
           if @resolver_class
@@ -602,7 +617,7 @@ MSG
       # Written iteratively to avoid big stack traces.
       # @return [Object] Whatever the
       def with_extensions(obj, args, ctx)
-        if @extensions.none?
+        if @extensions.empty?
           yield(obj, args)
         else
           # Save these so that the originals can be re-given to `after_resolve` handlers.
@@ -610,17 +625,9 @@ MSG
           original_obj = obj
 
           memos = []
-          @extensions.each do |ext|
-            ext.before_resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
-              # update this scope with the yielded value
-              obj = extended_obj
-              args = extended_args
-              # record the memo (or nil if none was yielded)
-              memos << memo
-            end
+          value = run_extensions_before_resolve(memos, obj, args, ctx) do |extended_obj, extended_args|
+            yield(extended_obj, extended_args)
           end
-          # Call the block which actually calls resolve
-          value = yield(obj, args)
 
           ctx.schema.after_lazy(value) do |resolved_value|
             @extensions.each_with_index do |ext, idx|
@@ -630,6 +637,18 @@ MSG
             end
             resolved_value
           end
+        end
+      end
+
+      def run_extensions_before_resolve(memos, obj, args, ctx, idx: 0)
+        extension = @extensions[idx]
+        if extension
+          extension.resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
+            memos << memo
+            run_extensions_before_resolve(memos, extended_obj, extended_args, ctx, idx: idx + 1) { |o, a| yield(o, a) }
+          end
+        else
+          yield(obj, args)
         end
       end
     end

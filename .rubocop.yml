@@ -1,3 +1,6 @@
+require:
+  - ./cop/none_without_block_cop
+
 AllCops:
   DisabledByDefault: true
   TargetRubyVersion: 2.3

@@ -102,13 +102,13 @@ module GraphQL
           @rewrite_skip_nodes.add(node)
         end
 
-        if @rewrite_skip_nodes.none?
+        if @rewrite_skip_nodes.empty?
           @rewrite_scopes_stack.push(@rewrite_scopes_stack.last.enter(context.type_definition))
         end
 
         super
 
-        if @rewrite_skip_nodes.none?
+        if @rewrite_skip_nodes.empty?
           @rewrite_scopes_stack.pop
         end
 
@@ -122,7 +122,7 @@ module GraphQL
           @rewrite_skip_nodes.add(ast_node)
         end
 
-        if @rewrite_skip_nodes.none?
+        if @rewrite_skip_nodes.empty?
           node_name = ast_node.alias || ast_node.name
           parent_nodes = @rewrite_nodes_stack.last
           next_nodes = []
@@ -156,7 +156,7 @@ module GraphQL
 
         super
 
-        if @rewrite_skip_nodes.none?
+        if @rewrite_skip_nodes.empty?
           @rewrite_nodes_stack.pop
           @rewrite_scopes_stack.pop
         end
@@ -167,7 +167,7 @@ module GraphQL
       end
 
       def on_fragment_spread(ast_node, ast_parent)
-        if @rewrite_skip_nodes.none? && !skip?(ast_node)
+        if @rewrite_skip_nodes.empty? && !skip?(ast_node)
           # Register the irep nodes that depend on this AST node:
           @rewrite_spread_parents[ast_node].merge(@rewrite_nodes_stack.last)
           @rewrite_spread_scopes[ast_node] = @rewrite_scopes_stack.last

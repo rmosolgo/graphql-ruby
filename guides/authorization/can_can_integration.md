@@ -9,7 +9,7 @@ pro: true
 ---
 
 
-[GraphQL::Pro](http://graphql.pro) includes an integration for powering GraphQL authorization with [CanCan](https://github.com/CanCanCommunity/cancancan).
+[GraphQL::Pro](https://graphql.pro) includes an integration for powering GraphQL authorization with [CanCan](https://github.com/CanCanCommunity/cancancan).
 
 __Why bother?__ You _could_ put your authorization code in your GraphQL types themselves, but writing a separate authorization layer gives you a few advantages:
 

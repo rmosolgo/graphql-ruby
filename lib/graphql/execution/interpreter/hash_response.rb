@@ -21,7 +21,7 @@ module GraphQL
         # Add `value` at `path`.
         # @return [void]
         def write(path, value)
-          if path.size == 0 # faster than #none?
+          if path.empty?
             @result = value
           elsif (write_target = @result)
             i = 0

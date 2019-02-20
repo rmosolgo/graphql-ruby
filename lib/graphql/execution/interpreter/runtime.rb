@@ -192,17 +192,26 @@ module GraphQL
               field_ast_nodes.each { |f| next_selections.concat(f.selections) }
             end
 
-            resolve_with_directives(object, ast_node) do
+            field_result = resolve_with_directives(object, ast_node) do
               # Actually call the field resolver and capture the result
               app_result = query.trace("execute_field", {field: field_defn, path: next_path}) do
                 field_defn.resolve(object, kwarg_arguments, context)
               end
-              after_lazy(app_result, field: field_defn, path: next_path, eager: root_operation_type == "mutation") do |inner_result|
+              after_lazy(app_result, field: field_defn, path: next_path) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, field_defn, return_type.non_null?, ast_node)
                 if HALT != continue_value
                   continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false)
                 end
               end
+            end
+
+            # If this field is a root mutation field, immediately resolve
+            # all of its child fields before moving on to the next root mutation field.
+            # (Subselections of this mutation will still be resolved level-by-level.)
+            if root_operation_type == "mutation"
+              Interpreter::Resolve.resolve_all([field_result])
+            else
+              field_result
             end
           end
         end
@@ -261,18 +270,20 @@ module GraphQL
             write_in_response(path, r)
             r
           when "UNION", "INTERFACE"
-            resolved_type = query.resolve_type(type, value)
-            possible_types = query.possible_types(type)
+            resolved_type_or_lazy = query.resolve_type(type, value)
+            after_lazy(resolved_type_or_lazy, path: path, field: field) do |resolved_type|
+              possible_types = query.possible_types(type)
 
-            if !possible_types.include?(resolved_type)
-              parent_type = field.owner
-              type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
-              schema.type_error(type_error, context)
-              write_in_response(path, nil)
-              nil
-            else
-              resolved_type = resolved_type.metadata[:type_class]
-              continue_field(path, value, field, resolved_type, ast_node, next_selections, is_non_null)
+              if !possible_types.include?(resolved_type)
+                parent_type = field.owner
+                type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
+                schema.type_error(type_error, context)
+                write_in_response(path, nil)
+                nil
+              else
+                resolved_type = resolved_type.metadata[:type_class]
+                continue_field(path, value, field, resolved_type, ast_node, next_selections, is_non_null)
+              end
             end
           when "OBJECT"
             object_proxy = begin

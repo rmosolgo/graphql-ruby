@@ -78,6 +78,8 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class FieldCounter < GraphQL::Schema::Object
+      implements GraphQL::Types::Relay::Node
+
       field :field_counter, FieldCounter, null: false
       def field_counter; :field_counter; end
 
@@ -167,13 +169,52 @@ describe GraphQL::Execution::Interpreter do
 
       field :field_counter, FieldCounter, null: false
       def field_counter; :field_counter; end
+
+      field :node, field: GraphQL::Relay::Node.field
+      field :nodes, field: GraphQL::Relay::Node.plural_field
+    end
+
+    class Counter < GraphQL::Schema::Object
+      field :value, Integer, null: false
+      field :lazy_value, Integer, null: false
+
+      def lazy_value
+        Box.new { object.value }
+      end
+
+      field :increment, Counter, null: false
+
+      def increment
+        object.value += 1
+        object
+      end
+    end
+
+
+    class Mutation < GraphQL::Schema::Object
+      field :increment_counter, Counter, null: false
+
+      def increment_counter
+        counter = context[:counter]
+        counter.value += 1
+        counter
+      end
     end
 
     class Schema < GraphQL::Schema
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
       query(Query)
+      mutation(Mutation)
       lazy_resolve(Box, :value)
+
+      def self.object_from_id(id, ctx)
+        OpenStruct.new(id: id)
+      end
+
+      def self.resolve_type(type, obj, ctx)
+        FieldCounter
+      end
     end
   end
 
@@ -223,6 +264,34 @@ describe GraphQL::Execution::Interpreter do
       {"__typename" => "Expansion", "sym" => "RAV"},
     ]
     assert_equal expected_abstract_list, result["data"]["find"]
+  end
+
+  it "runs mutation roots atomically and sequentially" do
+    query_str = <<-GRAPHQL
+    mutation {
+      i1: incrementCounter { value lazyValue
+        i2: increment { value lazyValue }
+        i3: increment { value lazyValue }
+      }
+      i4: incrementCounter { value lazyValue }
+      i5: incrementCounter { value lazyValue }
+    }
+    GRAPHQL
+
+    result = InterpreterTest::Schema.execute(query_str, context: { counter: OpenStruct.new(value: 0) })
+    expected_data = {
+      "i1" => {
+        "value" => 1,
+        # All of these get `3` as lazy value. They're resolved together,
+        # since they aren't _root_ mutation fields.
+        "lazyValue" => 3,
+        "i2" => { "value" => 2, "lazyValue" => 3 },
+        "i3" => { "value" => 3, "lazyValue" => 3 },
+      },
+      "i4" => { "value" => 4, "lazyValue" => 4},
+      "i5" => { "value" => 5, "lazyValue" => 5},
+    }
+    assert_equal expected_data, result["data"]
   end
 
   it "runs skip and include" do
@@ -277,6 +346,9 @@ describe GraphQL::Execution::Interpreter do
 
   describe "CI setup" do
     it "sets interpreter based on a constant" do
+      # Force the plugins to be applied
+      Jazz::Schema.graphql_definition
+      Dummy::Schema.graphql_definition
       if TESTING_INTERPRETER
         assert_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
         assert_equal GraphQL::Execution::Interpreter, Dummy::Schema.query_execution_strategy
@@ -286,6 +358,7 @@ describe GraphQL::Execution::Interpreter do
       end
     end
   end
+
   describe "null propagation" do
     it "propagates nulls" do
       query_str = <<-GRAPHQL
@@ -397,6 +470,16 @@ describe GraphQL::Execution::Interpreter do
       # It will raise an error if it doesn't match the expectation
       res = InterpreterTest::Schema.execute(query_str, context: { calls: 0 })
       assert_equal 3, res["data"]["fieldCounter"]["fieldCounter"]["c3"]
+    end
+  end
+
+  describe "backwards compatibility" do
+    it "handles a legacy nodes field" do
+      res = InterpreterTest::Schema.execute('{ node(id: "abc") { id } }')
+      assert_equal "abc", res["data"]["node"]["id"]
+
+      res = InterpreterTest::Schema.execute('{ nodes(ids: ["abc", "xyz"]) { id } }')
+      assert_equal ["abc", "xyz"], res["data"]["nodes"].map { |n| n["id"] }
     end
   end
 end

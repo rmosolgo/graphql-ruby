@@ -33,25 +33,33 @@ module GraphQL
       end
 
       # Called before resolving {#field}. It should either:
+      #
       # - `yield` values to continue execution; OR
       # - return something else to shortcut field execution.
+      #
+      # Whatever this method returns will be used for execution.
+      #
       # @param object [Object] The object the field is being resolved on
       # @param arguments [Hash] Ruby keyword arguments for resolving this field
       # @param context [Query::Context] the context for this query
       # @yieldparam object [Object] The object to continue resolving the field on
       # @yieldparam arguments [Hash] The keyword arguments to continue resolving with
       # @yieldparam memo [Object] Any extension-specific value which will be passed to {#after_resolve} later
-      def before_resolve(object:, arguments:, context:)
+      # @return [Object] The return value for this field.
+      def resolve(object:, arguments:, context:)
         yield(object, arguments, nil)
       end
 
-      # Called after {#field} was resolved, but before the value was added to the GraphQL response.
+      # Called after {#field} was resolved, and after any lazy values (like `Promise`s) were synced,
+      # but before the value was added to the GraphQL response.
+      #
       # Whatever this hook returns will be used as the return value.
+      #
       # @param object [Object] The object the field is being resolved on
       # @param arguments [Hash] Ruby keyword arguments for resolving this field
       # @param context [Query::Context] the context for this query
       # @param value [Object] Whatever the field previously returned
-      # @param memo [Object] The third value yielded by {#before_resolve}, or `nil` if there wasn't one
+      # @param memo [Object] The third value yielded by {#resolve}, or `nil` if there wasn't one
       # @return [Object] The return value for this field.
       def after_resolve(object:, arguments:, context:, value:, memo:)
         value

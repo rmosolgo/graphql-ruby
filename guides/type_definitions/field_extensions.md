@@ -53,18 +53,18 @@ This way, an extension can encapsulate a behavior requiring several configuratio
 
 Extensions have two hooks that wrap field resolution. Since GraphQL-Ruby supports deferred execution, these hooks _might not_ be called back-to-back.
 
-First, {{ "GraphQL::Schema::FieldExtension#before_resolve" | api_doc }} is called. `before_resolve` should `yield(object, arguments)` to continue execution. If it doesn't `yield`, then the field won't resolve, and the methods return value will be returned to GraphQL instead.
+First, {{ "GraphQL::Schema::FieldExtension#resolve" | api_doc }} is called. `resolve` should `yield(object, arguments)` to continue execution. If it doesn't `yield`, then the underlying field won't be called. Whatever `#resolve` returns will be used for continuing execution.
 
-After resolution, {{ "GraphQL::Schema::FieldExtension#after_resolve" | api_doc }} is called. Whatever that method returns will be used as the field's return value.
+After resolution and _after_ syncing lazy values (like `Promise`s from `graphql-batch`), {{ "GraphQL::Schema::FieldExtension#after_resolve" | api_doc }} is called. Whatever that method returns will be used as the field's return value.
 
 See the linked API docs for the parameters of those methods.
 
 #### Execution "memo"
 
-One parameter to `after_resolve` deserves special attention: `memo:`. `before_resolve` _may_ yield a third value. For example:
+One parameter to `after_resolve` deserves special attention: `memo:`. `resolve` _may_ yield a third value. For example:
 
 ```ruby
-def before_resolve(object:, arguments:, **rest)
+def resolve(object:, arguments:, **rest)
   # yield the current time as `memo`
   yield(object, arguments, Time.now.to_i)
 end
@@ -80,7 +80,7 @@ def after_resolve(value:, memo:, **rest)
 end
 ```
 
-This allows the `before_resolve` hook to pass data to `after_resolve`.
+This allows the `resolve` hook to pass data to `after_resolve`.
 
 Instance variables may not be used because, in a given GraphQL query, the same field may be resolved several times concurrently, and that would result in overriding the instance variable in an unpredictable way. (In fact, extensions are frozen to prevent instance variable writes.)
 

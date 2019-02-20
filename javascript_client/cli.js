@@ -27,6 +27,7 @@ optional arguments:
                                     - otherwise, "project"
   --add-typename                  Automatically adds the "__typename" field to your queries
   --quiet                         Suppress status logging
+  --verbose                       Print debug output
   --help                          Print this message
 `)
 } else {
@@ -46,6 +47,7 @@ optional arguments:
       mode: argv.mode,
       addTypename: argv["add-typename"],
       quiet: argv.hasOwnProperty("quiet"),
+      verbose: argv.hasOwnProperty("verbose"),
     })
 
     result.then(function(res) {

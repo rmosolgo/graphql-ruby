@@ -15,7 +15,7 @@ Interfaces are lists of fields which may be implemented by object types.
 
 An interface has fields, but it's never actually instantiated. Instead, objects may _implement_ interfaces, which makes them a _member_ of that interface. Also, fields may _return_ interface types. When this happens, the returned object may be any member of that interface.
 
-For example, let's say a `Customer` (interface) may be either an `Individual` (object) or a `Company` (object). Here's the structure in the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
+For example, let's say a `Customer` (interface) may be either an `Individual` (object) or a `Company` (object). Here's the structure in the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL):
 
 ```graphql
 interface Customer {

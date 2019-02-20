@@ -215,7 +215,7 @@ module GraphQL
         case node
         when GraphQL::Language::Nodes::Field
           if node.name == field_name
-            if arguments.nil? || arguments.none?
+            if arguments.nil? || arguments.empty?
               # No constraint applied
               matches << node
             else

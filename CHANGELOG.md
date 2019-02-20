@@ -8,17 +8,49 @@
 
 ### Bug fixes
 
-## 1.9.0-pre2 (17 Jan 2019)
+## 1.9.2 (15 Feb 2019)
 
-### Breaking changes
+### Bug fixes
+
+- Properly support connection fields with resolve procs #2115
+
+## 1.9.1 (14 Feb 2019)
+
+### Bug fixes
+
+- Properly pass errors to Resolver `load_application_object_failed` methods #2110
+
+## 1.9.0 (13 Feb 2019)
+
+### Breaking Changes
 
 - AST nodes are immutable. To modify a parsed GraphQL query, see `GraphQL::Language::Visitor` for its mutation API, which builds a new AST with the specified mutations applied. #1338, #1740
 - Cursors use urlsafe Base64. This won't break your clients (it's backwards-compatible), but it might break your tests, so it's listed here. #1698
 - Add `field(..., resolver_method:)` for when GraphQL-Ruby should call a method _other than_ the one whose name matches the field name (#1961). This means that if you're using `method:` to call a different method _on the Schema::Object subclass_, you should update that configuration to `resolver_method:`. (`method:` is still used to call a different method on the _underlying application object_.)
+- `Int` type now applies boundaries as [described in the spec](https://facebook.github.io/graphql/June2018/#sec-Int) #2101. To preserve the previous, unbounded behavior, handle the error in your schema's `.type_error(err, ctx)` hook, for example:
+
+  ```ruby
+  class MySchema < GraphQL::Schema
+    def self.type_error(err, ctx)
+      if err.is_a?(GraphQL::IntegerEncodingError)
+        # Preserve the previous unbounded behavior
+        # by returning the out-of-bounds value
+        err.integer_value
+      else
+        super
+      end
+    end
+  end
+  ```
+
+- `field(...)` configurations don't create implicit method definitions (#1961). If one resolver method depended on the implicitly-created method from another field, you'll have to refactor that call or manually add a `def ...` for that field.
 - Calling `super` in a field method doesn't work anymore (#1961)
+- Error `"problems"` are now in `"extensions" : { "problems": ... }` #2077
+- Change schema default to `error_bubbling false` #2069
 
-### New features
+### New Features
 
+- Add class-based subscriptions with `GraphQL::Schema::Subscription` #1930
 - Add `GraphQL::Execution::Interpreter` (#1394) and `GraphQL::Analysis::AST` (#1824) which together cut GraphQL overhead by half (time and memory)
 - Add `Schema.unauthorized_field(err)` for when `Field#authorized?` checks fail (#1994)
 - Add class-based custom directives for the interpreter (#2055)
@@ -28,11 +60,24 @@
 
 ### Bug fixes
 
+- Fix list-type arguments passed with a single value #2085
 - Support `false` as an Enum value #2050
 - Support `hash_key:` fields when the key isn't a valid Ruby method name #2016
-- Fix lookahead with Fragments #1933
 
-## 1.8.13 (4 Jan 2019)
+## 1.8.15 (13 Feb 2019)
+
+### Bug fixes
+
+- Fix unwrapping inputobject types when turning arguments to hashes #2094
+- Support lazy objects from `.resolve_type` hooks #2108
+
+## 1.8.14 (9 Feb 2018)
+
+### Bug Fixes
+
+- Fix single-item list inputs that aren't passed as lists #2095
+
+## 1.8.13 (4 Jan 2018)
 
 ### Bug fixes
 

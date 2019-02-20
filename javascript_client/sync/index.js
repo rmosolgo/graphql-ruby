@@ -23,6 +23,7 @@ var fs = require("fs")
  * @param {String} options.client - the Client ID that these operations belong to
  * @param {Function} options.send - A function for sending the payload to the server, with the signature `options.send(payload)`. (Default is an HTTP `POST` request)
  * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
+ * @param {Boolean} options.verbose - If true, log debug output
  * @return {Promise} Rejects with an Error or String if something goes wrong. Resolves with the operation payload if successful.
 */
 function sync(options) {
@@ -30,7 +31,7 @@ function sync(options) {
     options = {}
   }
   var logger = new Logger(options.quiet)
-
+  var verbose = !!options.verbose
   var url = options.url
   if (!url) {
     throw new Error("URL must be provided for sync")
@@ -53,6 +54,7 @@ function sync(options) {
     addTypename: options.addTypename,
     clientType: options.outfileType,
     client: clientName,
+    verbose: verbose,
   })
 
   var outfile

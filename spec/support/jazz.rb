@@ -321,10 +321,12 @@ module Jazz
     possible_types Musician, Ensemble
 
     def self.resolve_type(object, context)
-      if object.is_a?(Models::Ensemble)
-        Ensemble
-      else
-        Musician
+      GraphQL::Execution::Lazy.new do
+        if object.is_a?(Models::Ensemble)
+          Ensemble
+        else
+          Musician
+        end
       end
     end
   end
@@ -353,7 +355,7 @@ module Jazz
     def now_playing; Models.data["Ensemble"].first; end
 
     # For asserting that the object is initialized once:
-    field :object_id, Integer, null: false
+    field :object_id, String, null: false
     field :inspect_context, [String], null: false
     field :hashyEnsemble, Ensemble, null: false
 

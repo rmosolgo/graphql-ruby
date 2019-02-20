@@ -57,8 +57,17 @@ describe GraphQL::Schema::Member::Scoped do
         resolver_method: :items
       field :french_items, [FrenchItem], null: false,
         resolver_method: :items
-      field :items_connection, Item.connection_type, null: false,
-        resolver_method: :items
+      if TESTING_INTERPRETER
+        field :items_connection, Item.connection_type, null: false,
+          resolver_method: :items
+      else
+        field :items_connection, Item.connection_type, null: false, resolve: ->(obj, args, ctx) {
+          [
+            OpenStruct.new(name: "Trombone"),
+            OpenStruct.new(name: "Paperclip"),
+          ]
+        }
+      end
 
       def items
         [
@@ -67,9 +76,20 @@ describe GraphQL::Schema::Member::Scoped do
         ]
       end
 
-      field :things, [Thing], null: false
-      def things
-        items + [OpenStruct.new(name: "Turbine")]
+      if TESTING_INTERPRETER
+        field :things, [Thing], null: false
+        def things
+          items + [OpenStruct.new(name: "Turbine")]
+        end
+      else
+        # Make sure it works with resolve procs, too
+        field :things, [Thing], null: false, resolve: ->(obj, args, ctx) {
+          [
+            OpenStruct.new(name: "Trombone"),
+            OpenStruct.new(name: "Paperclip"),
+            OpenStruct.new(name: "Turbine"),
+          ]
+        }
       end
     end
 

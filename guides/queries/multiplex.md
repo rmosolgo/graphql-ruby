@@ -8,7 +8,7 @@ desc: Run multiple queries concurrently
 index: 10
 ---
 
-Some clients may send _several_ queries to the server at once (for example, [Apollo Client's query batching](http://dev.apollodata.com/core/network.html#query-batching)). You can execute them concurrently with {{ "Schema#multiplex" | api_doc }}.
+Some clients may send _several_ queries to the server at once (for example, [Apollo Client's query batching](https://www.apollographql.com/docs/react/advanced/network-layer.html#query-batching)). You can execute them concurrently with {{ "Schema#multiplex" | api_doc }}.
 
 Multiplex runs have their own context, analyzers and instrumentation.
 
@@ -56,7 +56,7 @@ def execute
   context = {}
 
   # Apollo sends the params in a _json variable when batching is enabled
-  # see the Apollo Documentation about query batching: http://dev.apollodata.com/core/network.html#query-batching
+  # see the Apollo Documentation about query batching: https://www.apollographql.com/docs/react/advanced/network-layer.html#query-batching
   result = if params[:_json]
     queries = params[:_json].map do |param|
       {
