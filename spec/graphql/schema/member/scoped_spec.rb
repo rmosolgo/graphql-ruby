@@ -138,7 +138,6 @@ describe GraphQL::Schema::Member::Scoped do
       }
       "
       res = ScopeSchema.execute(query_str)
-      pp res
       refute res.key?("errors")
       assert_nil res.fetch("data").fetch("nilItems")
     end
