@@ -13,7 +13,8 @@ describe GraphQL::Schema::Member::Scoped do
         elsif context[:english]
           items.select { |i| i.name == "Paperclip" }
         else
-          []
+          # boot everything
+          items.reject { true }
         end
       end
 
@@ -55,6 +56,12 @@ describe GraphQL::Schema::Member::Scoped do
       field :unscoped_items, [Item], null: false,
         scope: false,
         resolver_method: :items
+
+      field :nil_items, [Item], null: true
+      def nil_items
+        nil
+      end
+
       field :french_items, [FrenchItem], null: false,
         resolver_method: :items
       if TESTING_INTERPRETER
@@ -120,6 +127,20 @@ describe GraphQL::Schema::Member::Scoped do
 
     it "is bypassed when scope: false" do
       assert_equal ["Trombone", "Paperclip"], get_item_names_with_context({}, field_name: "unscopedItems")
+    end
+
+    it "returns null when the value is nil" do
+      query_str = "
+      {
+        nilItems {
+          name
+        }
+      }
+      "
+      res = ScopeSchema.execute(query_str)
+      pp res
+      refute res.key?("errors")
+      assert_nil res.fetch("data").fetch("nilItems")
     end
 
     it "is inherited" do
