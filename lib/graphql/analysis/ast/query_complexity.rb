@@ -13,7 +13,7 @@ module GraphQL
 
         # Overide this method to use the complexity result
         def result
-          raise NotImplementedError
+          max_possible_complexity
         end
 
         def on_enter_field(node, parent, visitor)
