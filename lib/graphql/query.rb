@@ -137,7 +137,7 @@ module GraphQL
 
     # If a document was provided to `GraphQL::Schema#execute` instead of the raw query string, we will need to get it from the document
     def query_string
-      @query_string || (document ? document.to_query_string : nil)
+      @query_string ||= (document ? document.to_query_string : nil)
     end
 
     def_delegators :@schema, :interpreter?
