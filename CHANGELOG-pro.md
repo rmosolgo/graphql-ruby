@@ -8,6 +8,13 @@
 
 ### Bug Fix
 
+## 1.9.11 (20 Feb 2019)
+
+### Bug Fix
+
+- Pundit integration: Fields use the owner's configured `pundit_policy_class` if there is one
+- Pundit integration: avoid conflicts with `#initialize` for schema classes that don't need it
+
 ## 1.9.10 (19 Feb 2019)
 
 ### Bug Fix
