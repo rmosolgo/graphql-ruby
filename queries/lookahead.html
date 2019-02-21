@@ -1,0 +1,160 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Lookahead</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.9.3/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#queries-guides">Queries</a>
+  &raquo; Lookahead
+</p>
+
+
+
+<h1 class="guide-header">Lookahead</h1>
+<div class="guide-container">
+  <p>GraphQL-Ruby 1.9+ includes <a href="/api-doc/1.9.3/GraphQL/Execution/Lookahead" target="_blank" title="API docs for GraphQL::Execution::Lookahead"><code>GraphQL::Execution::Lookahead</code></a> for checking whether child fields are selected. You can use this to optimize database access, for example, selecting only the <em>needed</em> fields from the database.</p>
+
+<h2 id="getting-a-lookahead">Getting a Lookahead</h2>
+
+<p>Add <code class="highlighter-rouge">extras: [:lookahead]</code> to your field configuration to recieve an injected lookahead:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:files</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">File</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">extras: </span><span class="p">[</span><span class="ss">:lookahead</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>Then, update your resolver method to accept a <code class="highlighter-rouge">lookahead:</code> argument:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">files</span><span class="p">(</span><span class="n">lookahead</span><span class="p">:)</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>That argument will be injected by the GraphQL runtime.</p>
+
+<h2 id="using-a-lookahead">Using a lookahead</h2>
+
+<p>Inside your field resolver, you can use the lookahead to check for child fields. For example, you can check for a <strong>specific selection</strong>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">files</span><span class="p">(</span><span class="n">lookahead</span><span class="p">:)</span>
+  <span class="k">if</span> <span class="n">lookahead</span><span class="p">.</span><span class="nf">selects?</span><span class="p">(</span><span class="ss">:full_path</span><span class="p">)</span>
+    <span class="c1"># This is a query like `files { fullPath ... }`</span>
+  <span class="k">else</span>
+    <span class="c1"># This query doesn't have `fullPath`</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Or, you can list <strong>all the selected fields</strong>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">files</span><span class="p">(</span><span class="n">lookahead</span><span class="p">:)</span>
+  <span class="n">all_selections</span> <span class="o">=</span> <span class="n">lookahead</span><span class="p">.</span><span class="nf">selections</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:name</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">all_selections</span> <span class="o">==</span> <span class="p">[</span><span class="ss">:name</span><span class="p">]</span>
+    <span class="c1"># Only `files { name }` was selected, use a fast cached value:</span>
+    <span class="n">object</span><span class="p">.</span><span class="nf">file_names</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span> <span class="p">{</span> <span class="ss">name: </span><span class="n">n</span> <span class="p">}}</span>
+  <span class="k">else</span>
+    <span class="c1"># Lots of fields were selected, fall back to a more resource-intensive approach</span>
+    <span class="no">FileSystemHelper</span><span class="p">.</span><span class="nf">load_files_for</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Lookaheads are <em>chainable</em>, so you can use them to check <strong>nested selections</strong> too:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">files</span><span class="p">(</span><span class="n">lookahead</span><span class="p">:)</span>
+  <span class="k">if</span> <span class="n">lookahead</span><span class="p">.</span><span class="nf">selection</span><span class="p">(</span><span class="ss">:history</span><span class="p">).</span><span class="nf">selects?</span><span class="p">(</span><span class="ss">:author</span><span class="p">)</span>
+    <span class="c1"># For example, `files { history { author { ... } } }`</span>
+    <span class="c1"># We're checking for commit authors, so load those objects appropriately ...</span>
+  <span class="k">else</span>
+    <span class="c1"># Not selecting commit authors ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Nested lookaheads return empty objects when there’s no selection (not <code class="highlighter-rouge">nil</code>), so the code above will never have a “no method error on <code class="highlighter-rouge">nil</code>”.</p>
+
+<h2 id="lookaheads-with-connections">Lookaheads with connections</h2>
+
+<p>If you want to see what selections were made on the items in a connection, you can use nested lookaheads. However, don’t forget to check for <code class="highlighter-rouge">edges { node }</code> <em>and</em> <code class="highlighter-rouge">nodes { ... }</code>, if you support that shortcut field. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:products</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Product</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">extras: </span><span class="p">[</span><span class="ss">:lookahead</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">products</span><span class="p">(</span><span class="n">lookahead</span><span class="p">:)</span>
+  <span class="n">selects_quantity_available</span> <span class="o">=</span> <span class="n">lookahead</span><span class="p">.</span><span class="nf">selection</span><span class="p">(</span><span class="ss">:nodes</span><span class="p">).</span><span class="nf">selects?</span><span class="p">(</span><span class="ss">:quantity_available</span><span class="p">)</span> <span class="o">||</span>
+                               <span class="c1"># ^^ check for `products { nodes { quantityAvailable } }`</span>
+    <span class="n">lookahead</span><span class="p">.</span><span class="nf">selection</span><span class="p">(</span><span class="ss">:edges</span><span class="p">).</span><span class="nf">selection</span><span class="p">(</span><span class="ss">:node</span><span class="p">).</span><span class="nf">selects?</span><span class="p">(</span><span class="ss">:quantity_available</span><span class="p">)</span>
+    <span class="c1"># ^^ check for `products { edges { node { quantityAvailable } } }`</span>
+
+  <span class="k">if</span> <span class="n">selects_quantity_available</span>
+    <span class="c1"># ...</span>
+  <span class="k">else</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>That way, you can check for specific selections on the nodes in a connection.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/queries/lookahead.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Lookahead">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
