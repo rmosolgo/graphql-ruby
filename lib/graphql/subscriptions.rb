@@ -43,12 +43,12 @@ module GraphQL
       event_name = event_name.to_s
 
       # Try with the verbatim input first:
-      field = @schema.get_field("Subscription", event_name)
+      field = @schema.get_field(@schema.subscription, event_name)
 
       if field.nil?
         # And if it wasn't found, normalize it:
         normalized_event_name = normalize_name(event_name)
-        field = @schema.get_field("Subscription", normalized_event_name)
+        field = @schema.get_field(@schema.subscription, normalized_event_name)
         if field.nil?
           raise InvalidTriggerError, "No subscription matching trigger: #{event_name} (looked for #{@schema.subscription.graphql_name}.#{normalized_event_name})"
         end
