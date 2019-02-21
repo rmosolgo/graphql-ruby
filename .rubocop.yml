@@ -26,6 +26,9 @@ Layout/EndAlignment:
 Lint/UselessAssignment:
   Enabled: true
 
+Lint/DuplicateMethods:
+  Enabled: true
+
 Metrics/ParameterLists:
   Max: 7
   CountKeywordArgs: false
