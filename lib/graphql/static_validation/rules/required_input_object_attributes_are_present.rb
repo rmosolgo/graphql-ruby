@@ -12,7 +12,20 @@ module GraphQL
       private
 
       def get_parent_type(context, parent)
-        defn = context.field_definition
+        # If argument_definition is defined we're at nested object
+        # and need to refer to the containing input object type rather
+        # than the field_definition.
+        # h/t @rmosolgo
+        arg_defn = context.argument_definition
+
+        # Double checking that arg_defn is an input object as nested
+        # scalars, namely JSON, can make it to this branch
+        defn = if arg_defn && arg_defn.type.unwrap.kind.input_object?
+          arg_defn.type.unwrap
+        else
+          context.field_definition
+        end
+
         parent_type = context.warden.arguments(defn)
           .find{|f| f.name == parent_name(parent, defn) }
         parent_type ? parent_type.type.unwrap : nil
