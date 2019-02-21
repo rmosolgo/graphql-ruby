@@ -57,7 +57,7 @@ module GraphQL
       # `:no_response` to return nothing.
       #
       # The default is `:no_response`.
-      def subscribe(args)
+      def subscribe(args = {})
         :no_response
       end
 
