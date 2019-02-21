@@ -13,19 +13,23 @@ module GraphQL
 
       attr_reader :items, :context
 
+      attr_reader :first, :after, :last, :before, :max_page_size
+
       # @param items [Object] some unpaginated collection item, like an `Array` or `ActiveRecord::Relation`
       # @param context [Query::Context]
       # @param first [Integer, nil] The limit parameter from the client, if it provided one
       # @param after [String, nil] A cursor for pagination, if the client provided one
       # @param last [Integer, nil] Limit parameter from the client, if provided
       # @param before [String, nil] A cursor for pagination, if the client provided one.
-      def initialize(items, context, first: nil, after: nil, last: nil, before: nil)
+      def initialize(items, context, first: nil, after: nil, max_page_size: nil, last: nil, before: nil)
+        max_page_size ||= context.schema.default_max_page_size
         @items = items
         @context = context
-        @first = first
-        @after = afte
-        @last = last
+        @first = limit_pagination_argument(first, max_page_size)
+        @after = after
+        @last = limit_pagination_argument(last, max_page_size)
         @before = before
+        @max_page_size = max_page_size
       end
 
       # @return [Array<Edge>] {nodes}, but wrapped with Edge instances
@@ -70,12 +74,36 @@ module GraphQL
         raise PaginationImplementationMissingError, "Implement #{self.class}#cursor_for(item) to return the cursor for #{item.inspect}"
       end
 
+      private
+
+      # @param argument [nil, Integer] `before` or `after`, as provided by the client
+      # @param max_page_size [nil, Integer]
+      # @return [nil, Integer] `nil` if the input was `nil`, otherwise a value between `0` and `max_page_size`
+      def limit_pagination_argument(argument, max_page_size)
+        if argument
+          if argument < 0
+            argument = 0
+          elsif max_page_size && argument > max_page_size
+            argument = max_page_size
+          end
+        end
+        argument
+      end
+
+      def decode(cursor)
+        context.schema.cursor_encoder.decode(cursor)
+      end
+
       # A wrapper around paginated items. It includes a {cursor} for pagination
       # and could be extended with custom relationship-level data.
       class Edge
         def initialize(connection, item)
           @connection = connection
           @item = item
+        end
+
+        def node
+          @item
         end
 
         def cursor
