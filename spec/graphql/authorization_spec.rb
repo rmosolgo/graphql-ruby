@@ -236,6 +236,10 @@ describe GraphQL::Authorization do
     end
 
     class Query < BaseObject
+      def self.authorized?(obj, ctx)
+        !ctx[:query_unauthorized]
+      end
+
       field :hidden, Integer, null: false
       field :unauthorized, Integer, null: true, method: :itself
       field :int2, Integer, null: true do
@@ -386,7 +390,7 @@ describe GraphQL::Authorization do
         elsif err.object == :replace
           33
         else
-          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object}"
+          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object.inspect}"
         end
       end
 
@@ -679,7 +683,7 @@ describe GraphQL::Authorization do
             it "adds the error to the errors key" do
               query = "{ unauthorized }"
               response = AuthTest::Schema.execute(query, root_value: :hide)
-              assert_equal ["Unauthorized Query: hide"], response["errors"].map { |e| e["message"] }
+              assert_equal ["Unauthorized Query: :hide"], response["errors"].map { |e| e["message"] }
             end
           end
         end
@@ -820,7 +824,7 @@ describe GraphQL::Authorization do
       assert_nil unauthorized_res["data"].fetch("a")
       assert_equal "b", unauthorized_res["data"]["b"]["value"]
       # Also, the custom handler was called:
-      assert_equal ["Unauthorized UnauthorizedCheckBox: a"], unauthorized_res["errors"].map { |e| e["message"] }
+      assert_equal ["Unauthorized UnauthorizedCheckBox: \"a\""], unauthorized_res["errors"].map { |e| e["message"] }
     end
 
     it "Works for lazy connections" do
@@ -885,7 +889,7 @@ describe GraphQL::Authorization do
 
       res = auth_execute(query)
       # An error from two, values from the others
-      assert_equal ["Unauthorized UnauthorizedCheckBox: a", "Unauthorized UnauthorizedCheckBox: a"], res["errors"].map { |e| e["message"] }
+      assert_equal ["Unauthorized UnauthorizedCheckBox: \"a\"", "Unauthorized UnauthorizedCheckBox: \"a\""], res["errors"].map { |e| e["message"] }
       assert_equal [{"value" => "z"}, {"value" => "z2"}, nil, nil], res["data"]["unauthorizedLazyListInterface"]
     end
 
@@ -896,6 +900,16 @@ describe GraphQL::Authorization do
 
       res = auth_execute(query, context: { replace_me: false })
       assert_equal false, res["data"]["replacedObject"]["replaced"]
+    end
+
+    it "works when the query hook returns false and there's no root object" do
+      query = "{ __typename }"
+      res = auth_execute(query)
+      assert_equal "Query", res["data"]["__typename"]
+
+      unauth_res = auth_execute(query, context: { query_unauthorized: true })
+      assert_nil unauth_res["data"]
+      assert_equal [{"message"=>"Unauthorized Query: nil"}], unauth_res["errors"]
     end
   end
 end
