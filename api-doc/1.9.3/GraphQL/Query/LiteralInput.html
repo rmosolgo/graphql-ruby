@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Query::LiteralInput
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Query::LiteralInput";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (L)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span>
+     &raquo; 
+    <span class="title">LiteralInput</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Query::LiteralInput
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Query::LiteralInput</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/query/literal_input.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Turn query string values into something useful for query execution</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce-class_method" title="coerce (class method)">.<strong>coerce</strong>(type, ast_node, variables)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#from_arguments-class_method" title="from_arguments (class method)">.<strong>from_arguments</strong>(ast_arguments, argument_owner, variables)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="coerce-class_method">
+  
+    .<strong>coerce</strong>(type, ast_node, variables)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query/literal_input.rb', line 6</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_coerce'>coerce</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_ast_node'>ast_node</span><span class='comma'>,</span> <span class='id identifier rubyid_variables'>variables</span><span class='rparen'>)</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_ast_node'>ast_node</span>
+  <span class='kw'>when</span> <span class='kw'>nil</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/NullValue.html" title="GraphQL::Language::Nodes::NullValue (class)">NullValue</a></span></span>
+    <span class='kw'>nil</span>
+  <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/VariableIdentifier.html" title="GraphQL::Language::Nodes::VariableIdentifier (class)">VariableIdentifier</a></span></span>
+    <span class='id identifier rubyid_variables'>variables</span><span class='lbracket'>[</span><span class='id identifier rubyid_ast_node'>ast_node</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span>
+  <span class='kw'>else</span>
+    <span class='kw'>case</span> <span class='id identifier rubyid_type'>type</span>
+    <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ScalarType.html" title="GraphQL::ScalarType (class)">ScalarType</a></span></span>
+      <span class='comment'># TODO smell
+</span>      <span class='comment'># This gets used for plain values during subscriber.trigger
+</span>      <span class='kw'>if</span> <span class='id identifier rubyid_variables'>variables</span>
+        <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_coerce_input'>coerce_input</span><span class='lparen'>(</span><span class='id identifier rubyid_ast_node'>ast_node</span><span class='comma'>,</span> <span class='id identifier rubyid_variables'>variables</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_coerce_isolated_input'>coerce_isolated_input</span><span class='lparen'>(</span><span class='id identifier rubyid_ast_node'>ast_node</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../EnumType.html" title="GraphQL::EnumType (class)">EnumType</a></span></span>
+      <span class='comment'># TODO smell
+</span>      <span class='comment'># This gets used for plain values sometimes
+</span>      <span class='id identifier rubyid_v'>v</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_node'>ast_node</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/Enum.html" title="GraphQL::Language::Nodes::Enum (class)">Enum</a></span></span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_ast_node'>ast_node</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>:</span> <span class='id identifier rubyid_ast_node'>ast_node</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_variables'>variables</span>
+        <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_coerce_input'>coerce_input</span><span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='id identifier rubyid_variables'>variables</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_coerce_isolated_input'>coerce_isolated_input</span><span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../NonNullType.html" title="GraphQL::NonNullType (class)">NonNullType</a></span></span>
+      <span class='const'><span class='object_link'><a href="" title="GraphQL::Query::LiteralInput (class)">LiteralInput</a></span></span><span class='period'>.</span><span class='id identifier rubyid_coerce'>coerce</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span><span class='comma'>,</span> <span class='id identifier rubyid_ast_node'>ast_node</span><span class='comma'>,</span> <span class='id identifier rubyid_variables'>variables</span><span class='rparen'>)</span>
+    <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ListType.html" title="GraphQL::ListType (class)">ListType</a></span></span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_ast_node'>ast_node</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_ast_node'>ast_node</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_element_ast'>element_ast</span><span class='op'>|</span> <span class='const'><span class='object_link'><a href="" title="GraphQL::Query::LiteralInput (class)">LiteralInput</a></span></span><span class='period'>.</span><span class='id identifier rubyid_coerce'>coerce</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span><span class='comma'>,</span> <span class='id identifier rubyid_element_ast'>element_ast</span><span class='comma'>,</span> <span class='id identifier rubyid_variables'>variables</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+      <span class='kw'>else</span>
+        <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="" title="GraphQL::Query::LiteralInput (class)">LiteralInput</a></span></span><span class='period'>.</span><span class='id identifier rubyid_coerce'>coerce</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span><span class='comma'>,</span> <span class='id identifier rubyid_ast_node'>ast_node</span><span class='comma'>,</span> <span class='id identifier rubyid_variables'>variables</span><span class='rparen'>)</span><span class='rbracket'>]</span>
+      <span class='kw'>end</span>
+    <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../InputObjectType.html" title="GraphQL::InputObjectType (class)">InputObjectType</a></span></span>
+      <span class='comment'># TODO smell: handling AST vs handling plain Ruby
+</span>      <span class='id identifier rubyid_next_args'>next_args</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_node'>ast_node</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_ast_node'>ast_node</span> <span class='op'>:</span> <span class='id identifier rubyid_ast_node'>ast_node</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span>
+      <span class='id identifier rubyid_from_arguments'>from_arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_next_args'>next_args</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_variables'>variables</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="from_arguments-class_method">
+  
+    .<strong>from_arguments</strong>(ast_arguments, argument_owner, variables)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/query/literal_input.rb', line 49</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_from_arguments'>from_arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_ast_arguments'>ast_arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_argument_owner'>argument_owner</span><span class='comma'>,</span> <span class='id identifier rubyid_variables'>variables</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_context'>context</span> <span class='op'>=</span> <span class='id identifier rubyid_variables'>variables</span> <span class='op'>?</span> <span class='id identifier rubyid_variables'>variables</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span> <span class='op'>:</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_values_hash'>values_hash</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_defaults_used'>defaults_used</span> <span class='op'>=</span> <span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+
+  <span class='id identifier rubyid_indexed_arguments'>indexed_arguments</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_ast_arguments'>ast_arguments</span>
+  <span class='kw'>when</span> <span class='const'>Hash</span>
+    <span class='id identifier rubyid_ast_arguments'>ast_arguments</span>
+  <span class='kw'>when</span> <span class='const'>Array</span>
+    <span class='id identifier rubyid_ast_arguments'>ast_arguments</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_memo'>memo</span><span class='op'>|</span> <span class='id identifier rubyid_memo'>memo</span><span class='lbracket'>[</span><span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_a'>a</span> <span class='rbrace'>}</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unexpected ast_arguments: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_ast_arguments'>ast_arguments</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_argument_defns'>argument_defns</span> <span class='op'>=</span> <span class='id identifier rubyid_argument_owner'>argument_owner</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span>
+  <span class='id identifier rubyid_argument_defns'>argument_defns</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='op'>|</span>
+    <span class='id identifier rubyid_ast_arg'>ast_arg</span> <span class='op'>=</span> <span class='id identifier rubyid_indexed_arguments'>indexed_arguments</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='rbracket'>]</span>
+    <span class='comment'># First, check the argument in the AST.
+</span>    <span class='comment'># If the value is a variable,
+</span>    <span class='comment'># only add a value if the variable is actually present.
+</span>    <span class='comment'># Otherwise, coerce the value in the AST, prepare the value and add it.
+</span>    <span class='comment'>#
+</span>    <span class='comment'># TODO: since indexed_arguments can come from a plain Ruby hash,
+</span>    <span class='comment'># have to check for `false` or `nil` as hash values. This is getting smelly :S
+</span>    <span class='kw'>if</span> <span class='id identifier rubyid_indexed_arguments'>indexed_arguments</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_arg_value'>arg_value</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_arg'>ast_arg</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/Argument.html" title="GraphQL::Language::Nodes::Argument (class)">Argument</a></span></span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_ast_arg'>ast_arg</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>:</span> <span class='id identifier rubyid_ast_arg'>ast_arg</span>
+
+      <span class='id identifier rubyid_value_is_a_variable'>value_is_a_variable</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/VariableIdentifier.html" title="GraphQL::Language::Nodes::VariableIdentifier (class)">VariableIdentifier</a></span></span><span class='rparen'>)</span>
+
+      <span class='kw'>if</span> <span class='lparen'>(</span><span class='op'>!</span><span class='id identifier rubyid_value_is_a_variable'>value_is_a_variable</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_value_is_a_variable'>value_is_a_variable</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_variables'>variables</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='rparen'>)</span>
+
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_coerce'>coerce</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='comma'>,</span> <span class='id identifier rubyid_variables'>variables</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_prepare'>prepare</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+
+        <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ExecutionError.html" title="GraphQL::ExecutionError (class)">ExecutionError</a></span></span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_ast_node'>ast_node</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_arg'>ast_arg</span>
+          <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_value'>value</span>
+        <span class='kw'>end</span>
+
+        <span class='id identifier rubyid_values_hash'>values_hash</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+
+    <span class='comment'># Then, the definition for a default value.
+</span>    <span class='comment'># If the definition has a default value and
+</span>    <span class='comment'># a value wasn&#39;t provided from the AST,
+</span>    <span class='comment'># then add the default value.
+</span>    <span class='kw'>if</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_default_value?'>default_value?</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_values_hash'>values_hash</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_default_value'>default_value</span>
+      <span class='id identifier rubyid_defaults_used'>defaults_used</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_arg_name'>arg_name</span>
+      <span class='comment'># `context` isn&#39;t present when pre-calculating defaults
+</span>      <span class='kw'>if</span> <span class='id identifier rubyid_context'>context</span>
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_prepare'>prepare</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ExecutionError.html" title="GraphQL::ExecutionError (class)">ExecutionError</a></span></span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_ast_node'>ast_node</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_arg'>ast_arg</span>
+          <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_value'>value</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_values_hash'>values_hash</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_argument_owner'>argument_owner</span><span class='period'>.</span><span class='id identifier rubyid_arguments_class'>arguments_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_values_hash'>values_hash</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='label'>defaults_used:</span> <span class='id identifier rubyid_defaults_used'>defaults_used</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Wed Feb 20 20:26:59 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.12 (ruby-2.4.2).
+</div>
+
+    </div>
+  </body>
+</html>
