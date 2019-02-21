@@ -268,6 +268,44 @@ describe GraphQL::Subscriptions do
         end
       end
 
+      describe "passing a document into #execute" do
+        it "sends the updated data" do
+          query_str = <<-GRAPHQL
+        subscription ($id: ID!){
+          payload(id: $id) { str, int }
+        }
+          GRAPHQL
+
+          document = GraphQL.parse(query_str)
+
+          # Initial subscriptions
+          response = schema.execute(nil, document: document, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
+
+          # This difference is because of how `SKIP` is handled.
+          # Honestly the new way is probably better, since it puts a value there.
+          empty_response = if TESTING_INTERPRETER && schema == ClassBasedInMemoryBackend::Schema
+            {}
+          else
+            nil
+          end
+
+          # Initial response is nil, no broadcasts yet
+          assert_equal(empty_response, response["data"])
+          assert_equal [], deliveries["1"]
+
+          # Application stuff happens.
+          # The application signals graphql via `subscriptions.trigger`:
+          schema.subscriptions.trigger(:payload, {"id" => "100"}, root_object.payload)
+          # Symobls are OK too
+          schema.subscriptions.trigger(:payload, {:id => "100"}, root_object.payload)
+          schema.subscriptions.trigger("payload", {"id" => "300"}, nil)
+
+          # Let's see what GraphQL sent over the wire:
+          assert_equal({"str" => "Update", "int" => 1}, deliveries["1"][0]["data"]["payload"])
+          assert_equal({"str" => "Update", "int" => 2}, deliveries["1"][1]["data"]["payload"])
+        end
+      end
+
       describe "subscribing" do
         it "doesn't call the subscriptions for invalid queries" do
           query_str = <<-GRAPHQL
