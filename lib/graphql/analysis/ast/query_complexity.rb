@@ -57,7 +57,8 @@ module GraphQL
           visitor.leave_fragment_spread_inline(node)
         end
 
-        def result
+        # @return [Integer]
+        def max_possible_complexity
           @complexities_on_type.last.max_possible_complexity
         end
 
