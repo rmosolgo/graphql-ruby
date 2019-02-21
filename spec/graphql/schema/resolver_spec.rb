@@ -485,7 +485,7 @@ describe GraphQL::Schema::Resolver do
 
         res = exec_query(query_str)
         assert_nil res["data"].fetch("resolverWithErrorHandler")
-        expected_err = "ResolverWithErrorHandler failed for id: \"failed_to_find\" (nil) (GraphQL::Schema::Resolver::LoadApplicationObjectFailedError)"
+        expected_err = "ResolverWithErrorHandler failed for id: \"failed_to_find\" (nil) (GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader::LoadApplicationObjectFailedError)"
         assert_equal [expected_err], res["errors"].map { |e| e["message"] }
       end
     end
@@ -500,7 +500,7 @@ describe GraphQL::Schema::Resolver do
 
         res = exec_query(query_str)
         assert_nil res["data"].fetch("resolverWithErrorHandler")
-        expected_err = "ResolverWithErrorHandler failed for id: \"resolve_type_as_wrong_type\" (:resolve_type_as_wrong_type) (GraphQL::Schema::Resolver::LoadApplicationObjectFailedError)"
+        expected_err = "ResolverWithErrorHandler failed for id: \"resolve_type_as_wrong_type\" (:resolve_type_as_wrong_type) (GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader::LoadApplicationObjectFailedError)"
         assert_equal [expected_err], res["errors"].map { |e| e["message"] }
       end
     end
