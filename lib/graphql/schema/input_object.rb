@@ -81,24 +81,24 @@ module GraphQL
         # @return [Class<GraphQL::Arguments>]
         attr_accessor :arguments_class
 
-        def argument(*args, &block)
-          argument_with_loads(*args) do |name, type, *rest, loads:, **kwargs|
-            argument_defn = super(name, type, *rest, **kwargs, &block)
-
-            # Add a method access
-            method_name = argument_defn.keyword
-            define_method(method_name) do
-              value = @ruby_style_hash[method_name]
-              if loads && argument_defn.type.list?
-                GraphQL::Execution::Lazy.all(value.map { |val| load_application_object(argument_defn, loads, val) })
-              elsif loads
-                load_application_object(argument_defn, loads, value)
-              else
+        def argument(name, type, *rest, loads: nil, **kwargs, &block)
+          if loads
+            kwargs[:prepare] ||= Proc.new do |value, context|
+              if value.nil?
                 value
+              elsif value.is_a? Enumerable
+                value.map { |id| context.schema.object_from_id(id, context) }
+              else
+                context.schema.object_from_id(value, context)
               end
             end
+          end
 
-            argument_defn
+          argument_defn = super(*argument_with_loads(name, type, *rest, loads: loads, **kwargs, &block))
+          # Add a method access
+          method_name = argument_defn.keyword
+          define_method(method_name) do
+            @ruby_style_hash[method_name]
           end
         end
 
