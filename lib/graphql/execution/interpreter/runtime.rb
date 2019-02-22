@@ -49,9 +49,15 @@ module GraphQL
           root_type = legacy_root_type.metadata[:type_class] || raise("Invariant: type must be class-based: #{legacy_root_type}")
           object_proxy = root_type.authorized_new(query.root_value, context)
           object_proxy = schema.sync_lazy(object_proxy)
-          path = []
-          evaluate_selections(path, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
-          nil
+          if object_proxy.nil?
+            # Root .authorized? returned false.
+            write_in_response([], nil)
+            nil
+          else
+            path = []
+            evaluate_selections(path, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
+            nil
+          end
         end
 
         def gather_selections(owner_object, owner_type, selections, selections_by_name)

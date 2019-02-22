@@ -912,4 +912,30 @@ describe GraphQL::Authorization do
       assert_equal [{"message"=>"Unauthorized Query: nil"}], unauth_res["errors"]
     end
   end
+
+  describe "returning false" do
+    class FalseSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          false
+        end
+
+        field :int, Integer, null: false
+
+        def int
+          1
+        end
+      end
+      query(Query)
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
+    end
+
+    it "works out-of-the-box" do
+      res = FalseSchema.execute("{ int }")
+      assert_nil res.fetch("data")
+      refute res.key?("errors")
+    end
+  end
 end
