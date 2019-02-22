@@ -35,7 +35,7 @@ optional arguments:
   if (commandName !== "sync") {
     console.log("Only `graphql-ruby-client sync` is supported")
   } else {
-    var sync = require("./index")
+    var sync = require("./sync")
     var result = sync({
       path: argv.path,
       url: argv.url,
