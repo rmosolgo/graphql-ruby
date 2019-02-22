@@ -9,6 +9,8 @@ module GraphQL
     # to serve lists (like Arrays, ActiveRecord::Relations) via GraphQL.
     #
     # Unlike the previous connection implementation, these default to bidirectional pagination.
+    #
+    # Pagination arguments and context may be provided at initialization or assigned later (see {Schema::Field::ConnectionExtension}).
     class Connection
       class PaginationImplementationMissingError < GraphQL::Error
       end
@@ -17,8 +19,9 @@ module GraphQL
       attr_reader :items
 
       # @return [GraphQL::Query::Context]
-      attr_reader :context
-      attr_reader :first, :after, :last, :before, :max_page_size
+      attr_accessor :context
+
+      attr_accessor :before, :after
 
       # @param items [Object] some unpaginated collection item, like an `Array` or `ActiveRecord::Relation`
       # @param context [Query::Context]
@@ -26,15 +29,29 @@ module GraphQL
       # @param after [String, nil] A cursor for pagination, if the client provided one
       # @param last [Integer, nil] Limit parameter from the client, if provided
       # @param before [String, nil] A cursor for pagination, if the client provided one.
-      def initialize(items, context, first: nil, after: nil, max_page_size: nil, last: nil, before: nil)
-        max_page_size ||= context.schema.default_max_page_size
+      def initialize(items, context: nil, first: nil, after: nil, max_page_size: nil, last: nil, before: nil)
         @items = items
         @context = context
-        @first = limit_pagination_argument(first, max_page_size)
+        @first = first
         @after = after
-        @last = limit_pagination_argument(last, max_page_size)
+        @last = last
         @before = before
         @max_page_size = max_page_size
+      end
+
+      attr_writer :max_page_size
+      def max_page_size
+        @max_page_size ||= context.schema.default_max_page_size
+      end
+
+      attr_writer :first
+      def first
+        limit_pagination_argument(@first, max_page_size)
+      end
+
+      attr_writer :last
+      def last
+        limit_pagination_argument(@last, max_page_size)
       end
 
       # @return [Array<Edge>] {nodes}, but wrapped with Edge instances

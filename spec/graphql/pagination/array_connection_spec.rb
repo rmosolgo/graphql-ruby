@@ -3,6 +3,14 @@ require "spec_helper"
 
 describe GraphQL::Pagination::ArrayConnection do
   class TestSchema < GraphQL::Schema
+    default_max_page_size 6
+
+    class ArrayConnectionWithTotalCount < GraphQL::Pagination::ArrayConnection
+      def total_count
+        items.size
+      end
+    end
+
     ITEMS = [
       { name: "Avocado" },
       { name: "Beet" },
@@ -20,17 +28,29 @@ describe GraphQL::Pagination::ArrayConnection do
       field :name, String, null: false
     end
 
+    class CustomItemEdge < GraphQL::Types::Relay::BaseEdge
+      node_type Item
+      graphql_name "CustomItemEdge"
+    end
+
+    class CustomItemConnection < GraphQL::Types::Relay::BaseConnection
+      edge_type CustomItemEdge
+      field :total_count, Integer, null: false
+    end
+
     class Query < GraphQL::Schema::Object
-      # TODO don't require `connection: false`
-      field :items, Item.connection_type, null: false, connection: false do
-        argument :first, Integer, required: false
-        argument :last, Integer, required: false
-        argument :before, String, required: false
-        argument :after, String, required: false
+      field :items, Item.connection_type, null: false do
+        argument :max_page_size_override, Integer, required: false
       end
 
-      def items(**args)
-        GraphQL::Pagination::ArrayConnection.new(ITEMS, context, max_page_size: 6, **args)
+      def items(max_page_size_override: nil)
+        GraphQL::Pagination::ArrayConnection.new(ITEMS, max_page_size: max_page_size_override)
+      end
+
+      field :custom_items, CustomItemConnection, null: false
+
+      def custom_items
+        ArrayConnectionWithTotalCount.new(ITEMS)
       end
     end
 
@@ -142,7 +162,63 @@ describe GraphQL::Pagination::ArrayConnection do
   end
 
   describe "customizing" do
-    it "serves custom fields"
-    it "applies local max-page-size settings"
+    it "serves custom fields" do
+      res = TestSchema.execute <<-GRAPHQL
+      {
+        items: customItems(first: 3) {
+          nodes {
+            name
+          }
+          edges {
+            node  {
+              name
+            }
+          }
+          totalCount
+        }
+      }
+      GRAPHQL
+
+      check_names(["Avocado", "Beet", "Cucumber"], res)
+      assert_equal 10, res["data"]["items"]["totalCount"]
+    end
+
+    it "applies local max-page-size settings" do
+      # Smaller default:
+      res = TestSchema.execute <<-GRAPHQL
+      {
+        items(first: 10, maxPageSizeOverride: 3) {
+          nodes {
+            name
+          }
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+      GRAPHQL
+
+      check_names(["Avocado", "Beet", "Cucumber"], res)
+
+      # Larger than the default:
+      res = TestSchema.execute <<-GRAPHQL
+      {
+        items(first: 10, maxPageSizeOverride: 7) {
+          nodes {
+            name
+          }
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+      GRAPHQL
+
+      check_names(["Avocado", "Beet", "Cucumber", "Dill", "Eggplant", "Fennel", "Ginger"], res)
+    end
   end
 end
