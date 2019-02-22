@@ -20,7 +20,7 @@ module GraphQL
       end
 
       def cursor_for(item)
-        idx = (after ? index_from_cursor(after) : 0) + nodes.find_index(item) + 1
+        idx = items.find_index(item) + 1
         context.schema.cursor_encoder.encode(idx.to_s)
       end
 
@@ -47,7 +47,7 @@ module GraphQL
           @has_previous_page = if last
             # There are items preceding the ones in this result
             sliced_nodes.count > last
-          elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && after
+          elsif after
             # We've paginated into the Array a bit, there are some behind us
             index_from_cursor(after) > 0
           else
@@ -57,9 +57,9 @@ module GraphQL
           @has_next_page = if first
             # There are more items after these items
             sliced_nodes.count > first
-          elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && before
+          elsif before
             # The original array is longer than the `before` index
-            index_from_cursor(before) < nodes.length
+            index_from_cursor(before) < items.length
           else
             false
           end

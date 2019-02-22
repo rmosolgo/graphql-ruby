@@ -7,12 +7,17 @@ module GraphQL
     # Connections were introduced by Facebook's `Relay` front-end framework, but
     # proved to be generally useful for GraphQL APIs. When in doubt, use connections
     # to serve lists (like Arrays, ActiveRecord::Relations) via GraphQL.
+    #
+    # Unlike the previous connection implementation, these default to bidirectional pagination.
     class Connection
       class PaginationImplementationMissingError < GraphQL::Error
       end
 
-      attr_reader :items, :context
+      # @return [Object] A list object, from the application. This is the unpaginated value passed into the connection.
+      attr_reader :items
 
+      # @return [GraphQL::Query::Context]
+      attr_reader :context
       attr_reader :first, :after, :last, :before, :max_page_size
 
       # @param items [Object] some unpaginated collection item, like an `Array` or `ActiveRecord::Relation`
@@ -59,12 +64,12 @@ module GraphQL
 
       # @return [String] The cursor of the first item in {nodes}
       def start_cursor
-        cursor_for(nodes.first)
+        nodes.first && cursor_for(nodes.first)
       end
 
       # @return [String] The cursor of the last item in {nodes}
       def end_cursor
-        cursor_for(nodes.last)
+        nodes.last && cursor_for(nodes.last)
       end
 
       # Return a cursor for this item.
