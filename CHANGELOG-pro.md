@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.9.12 (22 Feb 2019)
+
+- Pundit integration: use overriden `pundit_policy_class` for scoping and mutation authorization
+
 ## 1.9.11 (20 Feb 2019)
 
 ### Bug Fix
