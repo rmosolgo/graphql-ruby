@@ -11,7 +11,7 @@ module GraphQL
         nil
       end
 
-      def self.coerce_result(value, ctx)
+      def self.coerce_result(value, _ctx)
         value.to_i.to_s
       end
     end
