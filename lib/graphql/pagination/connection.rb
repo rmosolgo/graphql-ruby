@@ -56,12 +56,18 @@ module GraphQL
 
       # @return [Array<Edge>] {nodes}, but wrapped with Edge instances
       def edges
-        @edges ||= nodes.map { |n| self.class::Edge.new(self, n) }
+        @edges ||= nodes.map { |n| self.class::Edge.new(n, self) }
       end
 
       # @return [Array<Object>] A slice of {items}, constrained by {@first}/{@after}/{@last}/{@before}
       def nodes
         raise PaginationImplementationMissingError, "Implement #{self.class}#nodes to paginate `@items`"
+      end
+
+      # A dynamic alias for compatibility with {Relay::BaseConnection}.
+      # @deprecated use {#nodes} instead
+      def edge_nodes
+        nodes
       end
 
       # The connection object itself implements `PageInfo` fields
@@ -119,7 +125,7 @@ module GraphQL
       # A wrapper around paginated items. It includes a {cursor} for pagination
       # and could be extended with custom relationship-level data.
       class Edge
-        def initialize(connection, item)
+        def initialize(item, connection)
           @connection = connection
           @item = item
         end
