@@ -15,6 +15,11 @@ module GraphQL
       class PaginationImplementationMissingError < GraphQL::Error
       end
 
+      # @return [Class] The class to use for wrapping items as `edges { ... }`. Defaults to `Connection::Edge`
+      def self.edge_class
+        self::Edge
+      end
+
       # @return [Object] A list object, from the application. This is the unpaginated value passed into the connection.
       attr_reader :items
 
@@ -56,7 +61,7 @@ module GraphQL
 
       # @return [Array<Edge>] {nodes}, but wrapped with Edge instances
       def edges
-        @edges ||= nodes.map { |n| self.class::Edge.new(n, self) }
+        @edges ||= nodes.map { |n| self.class.edge_class.new(n, self) }
       end
 
       # @return [Array<Object>] A slice of {items}, constrained by {@first}/{@after}/{@last}/{@before}
