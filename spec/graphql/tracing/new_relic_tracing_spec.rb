@@ -55,7 +55,7 @@ describe GraphQL::Tracing::NewRelicTracing do
 
   it "works with the built-in node field, even though it doesn't have an @owner" do
     res = NewRelicTest::SchemaWithoutTransactionName.execute '{ node(id: "1") { __typename } }'
-    assert_equal "Think", res["data"]["node"]["__typename"]
+    assert_equal "Thing", res["data"]["node"]["__typename"]
   end
 
   it "can leave the transaction name in place" do

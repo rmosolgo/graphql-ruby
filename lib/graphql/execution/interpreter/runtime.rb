@@ -388,7 +388,7 @@ module GraphQL
           @interpreter_context[:current_path] = path
           @interpreter_context[:current_field] = field
           if schema.lazy?(obj)
-            lazy = GraphQL::Execution::Lazy.new(owner: owner, path: path, field: field) do
+            lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
               @interpreter_context[:current_path] = path
               @interpreter_context[:current_field] = field
               # Wrap the execution of _this_ method with tracing,
