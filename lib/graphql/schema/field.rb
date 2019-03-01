@@ -504,6 +504,9 @@ module GraphQL
             err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
             ctx.schema.unauthorized_field(err)
           end
+        rescue GraphQL::UnauthorizedFieldError => err
+          err.field ||= self
+          ctx.schema.unauthorized_field(err)
         rescue GraphQL::UnauthorizedError => err
           ctx.schema.unauthorized_object(err)
         end
