@@ -18,6 +18,15 @@ describe GraphQL::Schema::IntrospectionSystem do
       assert_equal "Set", res["data"]["__classname"]
     end
 
+    it "calls authorization methods of those types" do
+      res = Jazz::Schema.execute(%|{ __type(name: "Ensemble") { name } }|)
+      assert_equal "ENSEMBLE", res["data"]["__type"]["name"]
+
+      unauth_res = Jazz::Schema.execute(%|{ __type(name: "Ensemble") { name } }|, context: { cant_introspect: true })
+      assert_nil unauth_res["data"].fetch("__type")
+      assert_equal ["You're not allowed to introspect here"], unauth_res["errors"].map { |e| e["message"] }
+    end
+
     it "serves custom dynamic fields" do
       res = Jazz::Schema.execute("{ nowPlaying { __typename __typenameLength __astNodeClass } }")
       assert_equal "Ensemble", res["data"]["nowPlaying"]["__typename"]

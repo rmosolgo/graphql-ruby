@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.9.13 (4 Mar 2019)
+
+- Pundit integration: correctly authorize fields when Query root is nil
+
 ## 1.9.12 (22 Feb 2019)
 
 - Pundit integration: use overriden `pundit_policy_class` for scoping and mutation authorization
