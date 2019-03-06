@@ -73,7 +73,9 @@
 
 <p>Without <code class="highlighter-rouge">@defer</code>, the whole query is blocked until the last field is done resolving:</p>
 
-<p><img src="https://user-images.githubusercontent.com/2231765/53442028-4a122b00-39d6-11e9-8e33-b91791bf3b98.gif" alt="rails-without-defer" /></p>
+<p><a href="https://user-images.githubusercontent.com/2231765/53442028-4a122b00-39d6-11e9-8e33-b91791bf3b98.gif" target="_blank" class="img-link">
+  <img src="https://user-images.githubusercontent.com/2231765/53442028-4a122b00-39d6-11e9-8e33-b91791bf3b98.gif" title="Rails without defer" alt="Rails without defer" />
+</a></p>
 
 <p>But, we can add <code class="highlighter-rouge">@defer</code> to slow fields:</p>
 
@@ -91,7 +93,9 @@
 
 <p>Then, the response will stream to the client bit by bit, so the page can load progressively:</p>
 
-<p><img src="https://user-images.githubusercontent.com/2231765/53442027-4a122b00-39d6-11e9-8d7b-feb7a4f7962a.gif" alt="rails-with-defer" /></p>
+<p><a href="https://user-images.githubusercontent.com/2231765/53442027-4a122b00-39d6-11e9-8d7b-feb7a4f7962a.gif" target="_blank" class="img-link">
+  <img src="https://user-images.githubusercontent.com/2231765/53442027-4a122b00-39d6-11e9-8d7b-feb7a4f7962a.gif" title="Rails with defer" alt="Rails with defer" />
+</a></p>
 
 <p>This way, clients get a snappy feel from the app even while data is still loading.</p>
 
