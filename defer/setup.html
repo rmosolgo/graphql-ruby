@@ -1,0 +1,216 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Pro - Defer - Server Setup</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.9.3/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-pro-defer-guides">GraphQL Pro - Defer</a>
+  &raquo; Server Setup
+</p>
+
+
+
+  <div class="pro-header">
+    <p>
+      <strong>⚡️ Pro Feature ⚡️</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro">GraphQL-Pro</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Server Setup</h1>
+<div class="guide-container">
+  <p>Before using <code class="highlighter-rouge">@defer</code> in queries, you have to:</p>
+
+<ul>
+  <li>Update <code class="highlighter-rouge">graphql</code> and <code class="highlighter-rouge">graphql-pro</code> gems</li>
+  <li>Add <code class="highlighter-rouge">@defer</code> to your GraphQL schema</li>
+  <li>Update your HTTP handlers (eg, Rails controllers) to send streaming responses</li>
+</ul>
+
+<p>You can also see a <a href="https://github.com/rmosolgo/graphql_defer_example">full Rails &amp; Apollo-Client demo</a>.</p>
+
+<h2 id="updating-the-gems">Updating the gems</h2>
+
+<p><code class="highlighter-rouge">GraphQL::Pro::Defer</code> is included in <code class="highlighter-rouge">graphql-pro 1.10+</code>, and it requires the new <a href="/queries/interpreter">Interpreter runtime</a> in <code class="highlighter-rouge">graphql 1.9+</code>, so update your gemfile:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 1.9+ for Interpreter</span>
+<span class="n">gem</span> <span class="s2">"graphql"</span><span class="p">,</span> <span class="s2">"~&gt;1.9.0"</span>
+<span class="c1"># 1.10+ for `@defer`</span>
+<span class="n">gem</span> <span class="s2">"graphql-pro"</span><span class="p">,</span> <span class="s2">"~&gt;1.10.0"</span>
+</code></pre></div></div>
+
+<p>And then install them:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle update graphql graphql-pro
+</code></pre></div></div>
+
+<h2 id="adding-defer-to-your-schema">Adding <code class="highlighter-rouge">@defer</code> to your schema</h2>
+
+<p>Then, add <code class="highlighter-rouge">GraphQL::Pro::Defer</code> to your schema as a plugin:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># The new interpreter runtime (1.9+) is required:</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Execution</span><span class="o">::</span><span class="no">Interpreter</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
+
+  <span class="c1"># Then add the directive:</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Defer</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This will:</p>
+
+<ul>
+  <li>Attach a <a href="/type_definitions/directives">custom directive</a> called <code class="highlighter-rouge">@defer</code></li>
+  <li>Add instrumentation to queries to track deferred work and execute it later</li>
+</ul>
+
+<h2 id="sending-streaming-responses">Sending streaming responses</h2>
+
+<p>Many web frameworks have support for streaming responses, for example:</p>
+
+<ul>
+  <li>Rails has <a href="https://api.rubyonrails.org/classes/ActionController/Live.html">ActionController::Live</a></li>
+  <li>Sinatra has <a href="http://sinatrarb.com/contrib/streaming.html">Sinatra::Streaming</a></li>
+  <li>Hanami::Controller can <a href="https://github.com/hanami/controller#streamed-responses">stream responses</a></li>
+</ul>
+
+<p>See below for how to integrate GraphQL’s deferred patches with a streaming response API.</p>
+
+<p>To investigate support with a web framework, please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Server support for @defer with ..." target="_blank">open an issue</a> or email <code class="highlighter-rouge">support@graphql.pro</code>.</p>
+
+<h3 id="checking-for-deferrals">Checking for deferrals</h3>
+
+<p>When a query has any <code class="highlighter-rouge">@defer</code>ed fields, you can check for <code class="highlighter-rouge">context[:defer]</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:defer</span><span class="p">]</span>
+  <span class="c1"># some fields were `@defer`ed</span>
+<span class="k">else</span>
+  <span class="c1"># normal GraphQL, no `@defer`</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="working-with-deferrals">Working with deferrals</h3>
+
+<p>To handle deferrals, you can enumerate over <code class="highlighter-rouge">context[:defer]</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">context</span><span class="p">[</span><span class="ss">:defer</span><span class="p">].</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">deferral</span><span class="o">|</span>
+  <span class="c1"># do something with the `deferral`, eg</span>
+  <span class="c1"># stream_to_client(deferral.to_h)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The initial result is <em>also</em> present in the deferrals, so you can treat it just like a patch.</p>
+
+<p>Each deferred patch has a few methods for building a response:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">.to_h</code> returns a hash with <code class="highlighter-rouge">path:</code>, <code class="highlighter-rouge">data:</code>, and/or <code class="highlighter-rouge">errors:</code>. (There is no <code class="highlighter-rouge">path:</code> for the root result.)</li>
+  <li><code class="highlighter-rouge">.to_http_multipart</code> returns a string which works with Apollo client’s <code class="highlighter-rouge">@defer</code> support.</li>
+  <li><code class="highlighter-rouge">.path</code> returns the path to this patch in the response</li>
+  <li><code class="highlighter-rouge">.data</code> returns successfully-resolved results of the patch</li>
+  <li><code class="highlighter-rouge">.errors</code> returns an array of errors, if there were any</li>
+</ul>
+
+<p>Calling <code class="highlighter-rouge">.data</code> or <code class="highlighter-rouge">.errors</code> on a deferral will resume GraphQL execution until the patch is complete.</p>
+
+<h3 id="example-rails-with-apollo-client">Example: Rails with Apollo Client</h3>
+
+<p>In this example, a Rails controller will stream HTTP Multipart patches to the client, in Apollo Client’s supported format.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GraphqlController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># Support `response.stream` below:</span>
+  <span class="kp">include</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Live</span>
+
+  <span class="k">def</span> <span class="nf">execute</span>
+    <span class="c1"># ...</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="ss">variables: </span><span class="n">variables</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">,</span> <span class="ss">operation_name: </span><span class="n">operation_name</span><span class="p">)</span>
+
+    <span class="c1"># Check if this is a deferred query:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">deferred</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:defer</span><span class="p">])</span>
+      <span class="c1"># Use built-in `stream_http_multipart` with Apollo-Client &amp; ActionController::Live</span>
+      <span class="n">deferred</span><span class="p">.</span><span class="nf">stream_http_multipart</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="c1"># Return a plain, non-deferred result</span>
+      <span class="n">render</span> <span class="ss">json: </span><span class="n">result</span>
+    <span class="k">end</span>
+  <span class="k">ensure</span>
+    <span class="c1"># Always make sure to close the stream</span>
+    <span class="n">response</span><span class="p">.</span><span class="nf">stream</span><span class="p">.</span><span class="nf">close</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>You can also investigate a <a href="https://github.com/rmosolgo/graphql_defer_example">full Rails &amp; Apollo-Client demo</a></p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>Read about <a href="/defer/usage">client usage</a> of <code class="highlighter-rouge">@defer</code>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/defer/setup.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Server Setup">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

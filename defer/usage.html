@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Pro - Defer - Usage</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.9.3/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-pro-defer-guides">GraphQL Pro - Defer</a>
+  &raquo; Usage
+</p>
+
+
+
+  <div class="pro-header">
+    <p>
+      <strong>⚡️ Pro Feature ⚡️</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro">GraphQL-Pro</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Usage</h1>
+<div class="guide-container">
+  <p><code class="highlighter-rouge">@defer</code> is a <a href="https://graphql.org/learn/queries/#directives">GraphQL directive</a> which instructs the server to execute the field in a special way:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">query</span><span class="w"> </span><span class="n">GetPlayerInfo</span><span class="p">(</span><span class="nv">$handle</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!){</span><span class="w">
+  </span><span class="n">player</span><span class="p">(</span><span class="n">handle</span><span class="p">:</span><span class="w"> </span><span class="nv">$handle</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">name</span><span class="w">
+    </span><span class="c"># Send this field later, to avoid slowing down the initial response:</span><span class="w">
+    </span><span class="n">topScore</span><span class="p">(</span><span class="n">from</span><span class="p">:</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span><span class="w"> </span><span class="n">to</span><span class="p">:</span><span class="w"> </span><span class="mi">2020</span><span class="p">)</span><span class="w"> </span><span class="k">@defer</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The directives <code class="highlighter-rouge">@skip</code> and <code class="highlighter-rouge">@include</code> are built into any GraphQL server and client, but <code class="highlighter-rouge">@defer</code> requires special attention.</p>
+
+<p>Apollo-Client has <a href="https://www.apollographql.com/docs/react/features/defer-support.html">experimental support</a>
+but it may <a href="https://github.com/apollographql/apollo-client/issues/4484">have some issues</a>, so you can try <a href="https://github.com/rmosolgo/apollo-client">this updated fork</a> while they’re worked out.</p>
+
+<p>Want to use <code class="highlighter-rouge">@defer</code> with another client? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Client support for @defer with ..." target="_blank">open an issue</a> or email <code class="highlighter-rouge">support@graphql.pro</code> and we’ll dig in!</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p><a href="/defer/setup">Set up your server</a> to support <code class="highlighter-rouge">@defer</code>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/defer/usage.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Usage">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
