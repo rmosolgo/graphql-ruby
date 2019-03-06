@@ -25,7 +25,7 @@ In this example, the local server maintains an index of items ("decks"), but the
 
 Without `@defer`, the whole query is blocked until the last field is done resolving:
 
-![rails-without-defer](https://user-images.githubusercontent.com/2231765/53442028-4a122b00-39d6-11e9-8e33-b91791bf3b98.gif)
+{{ "https://user-images.githubusercontent.com/2231765/53442028-4a122b00-39d6-11e9-8e33-b91791bf3b98.gif" | link_to_img:"Rails without defer" }}
 
 But, we can add `@defer` to slow fields:
 
@@ -44,7 +44,8 @@ But, we can add `@defer` to slow fields:
 
 Then, the response will stream to the client bit by bit, so the page can load progressively:
 
-![rails-with-defer](https://user-images.githubusercontent.com/2231765/53442027-4a122b00-39d6-11e9-8d7b-feb7a4f7962a.gif)
+{{ "https://user-images.githubusercontent.com/2231765/53442027-4a122b00-39d6-11e9-8d7b-feb7a4f7962a.gif" | link_to_img:"Rails with defer" }}
+
 
 This way, clients get a snappy feel from the app even while data is still loading.
 
