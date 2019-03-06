@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.10.0 (5 Mar 2019)
+
+- Add `GraphQL::Pro::Defer`, implementing `@defer` for streaming responses
+
 ## 1.9.13 (4 Mar 2019)
 
 - Pundit integration: correctly authorize fields when Query root is nil

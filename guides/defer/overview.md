@@ -54,3 +54,7 @@ View the full demo at https://github.com/rmosolgo/graphql_defer_example.
 
 - `@defer` adds some overhead to the response, so only apply it judiciously.
 - `@defer` is single-threaded. `@defer`ed fields are still evaluated in sequence, but in a chunk-by-chunk way.
+
+## Next Steps
+
+{% internal_link "Set up your server", "/defer/setup" %} to support `@defer` or read about {% internal_link "client usage", "/defer/usage" %} of it.

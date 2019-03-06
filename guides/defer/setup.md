@@ -11,12 +11,32 @@ pro: true
 
 Before using `@defer` in queries, you have to:
 
+- Update `graphql` and `graphql-pro` gems
 - Add `@defer` to your GraphQL schema
 - Update your HTTP handlers (eg, Rails controllers) to send streaming responses
 
+You can also see a [full Rails & Apollo-Client demo](https://github.com/rmosolgo/graphql_defer_example).
+
+## Updating the gems
+
+`GraphQL::Pro::Defer` is included in `graphql-pro 1.10+`, and it requires the new {% internal_link "Interpreter runtime", "/queries/interpreter" %} in `graphql 1.9+`, so update your gemfile:
+
+```ruby
+# 1.9+ for Interpreter
+gem "graphql", "~>1.9.0"
+# 1.10+ for `@defer`
+gem "graphql-pro", "~>1.10.0"
+```
+
+And then install them:
+
+```
+$ bundle update graphql graphql-pro
+```
+
 ## Adding `@defer` to your schema
 
-Add it to your schema as a plugin:
+Then, add `GraphQL::Pro::Defer` to your schema as a plugin:
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -44,7 +64,7 @@ Many web frameworks have support for streaming responses, for example:
 
 See below for how to integrate GraphQL's deferred patches with a streaming response API.
 
-For help with another framework, [email me](mailto:support@graphql.pro).
+To investigate support with a web framework, please {% open_an_issue "Server support for @defer with ..." %} or email `support@graphql.pro`.
 
 ### Checking for deferrals
 
@@ -64,7 +84,8 @@ To handle deferrals, you can enumerate over `context[:defer]`, for example:
 
 ```ruby
 context[:defer].each do |deferral|
-  stream_to_client(deferral.to_h)
+  # do something with the `deferral`, eg
+  # stream_to_client(deferral.to_h)
 end
 ```
 
@@ -95,12 +116,8 @@ class GraphqlController < ApplicationController
 
     # Check if this is a deferred query:
     if (deferred = result.context[:defer])
-      # Add the multipart header
-      response.headers["Content-Type"] = deferred.http_multipart_content_type_header
-      # Send each deferral to the client
-      deferred.each do |deferral|
-        response.stream.write(deferral.to_http_multipart(pretty: true))
-      end
+      # Use built-in `stream_http_multipart` with Apollo-Client & ActionController::Live
+      deferred.stream_http_multipart(response)
     else
       # Return a plain, non-deferred result
       render json: result
@@ -112,4 +129,8 @@ class GraphqlController < ApplicationController
 end
 ```
 
-You can see the whole demo at https://github.com/rmosolgo/graphql_defer_example.
+You can also investigate a [full Rails & Apollo-Client demo](https://github.com/rmosolgo/graphql_defer_example)
+
+## Next Steps
+
+Read about {% internal_link "client usage", "/defer/usage" %} of `@defer`.
