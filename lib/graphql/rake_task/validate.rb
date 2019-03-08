@@ -37,7 +37,7 @@ module GraphQL
       # Remove final newline from .txt file
       github_digest = Net::HTTP.get(github_uri).chomp
 
-      docs_uri = URI("https://raw.githubusercontent.com/rmosolgo/graphql-ruby/master/guides/pro/checksums/graphql-pro-#{version}.txt")
+      docs_uri = URI("https://graphql-ruby.org/pro/checksums/graphql-pro-#{version}.txt")
       docs_digest = Net::HTTP.get(docs_uri).chomp
 
       if docs_digest == gem_digest && github_digest == gem_digest
