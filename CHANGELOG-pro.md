@@ -8,15 +8,27 @@
 
 ### Bug Fix
 
+## 1.10.1 (8 Mar 2019)
+
+### Bug Fix
+
+- Pundit integration: support `pundit_policy_class` String names when scoping connections
+
 ## 1.10.0 (5 Mar 2019)
+
+### New Features
 
 - Add `GraphQL::Pro::Defer`, implementing `@defer` for streaming responses
 
 ## 1.9.13 (4 Mar 2019)
 
+### Bug Fix
+
 - Pundit integration: correctly authorize fields when Query root is nil
 
 ## 1.9.12 (22 Feb 2019)
+
+### Bug Fix
 
 - Pundit integration: use overriden `pundit_policy_class` for scoping and mutation authorization
 
