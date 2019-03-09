@@ -6,7 +6,6 @@ section: Fields
 title: Arguments
 desc: Fields may take arguments as inputs
 index: 10
-class_based_api: true
 ---
 
 Fields can take **arguments** as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in `MutationType`).

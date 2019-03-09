@@ -6,7 +6,6 @@ section: Type Definitions
 title: Field Extensions
 desc: Programmatically modify field configuration and resolution
 index: 10
-class_based_api: true
 ---
 
 {{ "GraphQL::Schema::FieldExtension" | api_doc }} provides a way to modify user-defined fields in a programmatic way. For example, Relay connections are implemented as a field extension ({{ "GraphQL::Schema::Field::ConnectionExtension" | api_doc }}).
