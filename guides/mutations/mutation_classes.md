@@ -5,7 +5,6 @@ search: true
 section: Mutations
 title: Mutation Classes
 desc: Use mutation classes to implement behavior, then hook them up to your schema.
-class_based_api: true
 index: 1
 redirect_from:
   - /queries/mutations/
