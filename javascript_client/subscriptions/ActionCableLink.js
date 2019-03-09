@@ -32,7 +32,7 @@ function ActionCableLink(options) {
           )
         },
         received: function(payload) {
-          if (payload.result.data) {
+          if (payload.result.data || payload.result.errors) {
             observer.next(payload.result)
           }
 
