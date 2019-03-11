@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.10.2 (11 Mar 2019)
+
+### Bug Fix
+
+- Support stable connections on realized views (which don't have primary keys)
+
 ## 1.10.1 (8 Mar 2019)
 
 ### Bug Fix
