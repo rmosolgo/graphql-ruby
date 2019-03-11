@@ -41,7 +41,7 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
         input_obj_record = {
           "message"=>"InputObject 'DairyProductInput' doesn't accept argument 'wacky'",
           "locations"=>[{"line"=>5, "column"=>30}],
-          "path"=>["query getCheese", "searchDairy", "product", "wacky"],
+          "path"=>["query getCheese", "searchDairy", "product", 0, "wacky"],
           "extensions"=>{
             "code"=>"argumentNotAccepted",
             "name"=>"DairyProductInput",

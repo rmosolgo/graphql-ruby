@@ -47,7 +47,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         input_object_field_error = {
           "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
           "locations"=>[{"line"=>6, "column"=>39}],
-          "path"=>["query getCheese", "badSource", "product", "source"],
+          "path"=>["query getCheese", "badSource", "product", 0, "source"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"InputObject", "argumentName"=>"source"},
         }
         assert_includes(errors, input_object_field_error)
@@ -92,7 +92,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         input_object_field_error = {
           "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
           "locations"=>[{"line"=>6, "column"=>39}],
-          "path"=>["query getCheese", "badSource", "product", "source"],
+          "path"=>["query getCheese", "badSource", "product", 0, "source"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"InputObject", "argumentName"=>"source"},
         }
         assert_includes(errors, input_object_field_error)
