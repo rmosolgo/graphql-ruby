@@ -45,17 +45,6 @@
 </p>
 
 
-  <div class="class-based-header">
-    <p>
-      <strong>⚠ New Class-Based API ⚠</strong>
-    </p>
-    <p>
-      This describes a new API in <code>v1.8.0</code>.
-      Check the <a href="/schema/class_based_api">upgrade notes</a> for more info.
-    </p>
-  </div>
-
-
 <h1 class="guide-header">Mutation Classes</h1>
 <div class="guide-container">
   <p>GraphQL <em>mutations</em> are special fields: instead of reading data or performing calculations, they may <em>modify</em> the application state. For example, mutation fields may:</p>
@@ -93,6 +82,13 @@
 <p>You should add a base class to your application, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+  <span class="c1"># Add your custom classes if you have them:</span>
+  <span class="c1"># This is used for generating payload types</span>
+  <span class="n">object_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># This is used for return fields on the mutation's payload</span>
+  <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
+  <span class="c1"># This is used for generating the `input: { ... }` object type</span>
+  <span class="n">input_object_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInputObject</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
