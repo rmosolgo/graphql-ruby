@@ -13,8 +13,6 @@ With lazy execution, you can optimize access to external services (such as datab
 - Connect it to your schema with {{ "GraphQL::Schema#lazy_resolve" | api_doc }}
 - In `resolve` functions, return instances of the lazy-loading class
 
-Lazy resolution can be {% internal_link "instrumented","/fields/instrumentation" %}.
-
 ## Example: Batched Find
 
 Here's a way to find many objects by ID using one database call, preventing N+1 queries.
