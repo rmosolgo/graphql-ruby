@@ -648,10 +648,10 @@ describe GraphQL::Relay::RelationConnection do
         result = nil
         io = StringIO.new
         begin
-          StarWars::DB.loggers << Logger.new(io)
+          SequelDB.loggers << Logger.new(io)
           result = star_wars_query(query_str, "first" => 2)
         ensure
-          StarWars::DB.loggers.pop
+          SequelDB.loggers.pop
         end
         assert_equal 2, io.string.scan("SELECT").count
         assert_equal 3, result["data"]["empire"]["basesAsSequelDataset"]["totalCount"]
