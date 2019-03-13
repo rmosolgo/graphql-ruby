@@ -161,8 +161,15 @@ describe GraphQL::Language::Visitor do
       end
 
       def on_argument(node, parent)
+        # https://github.com/rmosolgo/graphql-ruby/issues/2148
+        # Parent could become a random value, double check that it's a node
+        # to actually fail the test
+        raise RuntimeError, "Parent isn't a Node!" unless parent.class < GraphQL::Language::Nodes::AbstractNode
+
         if node.name == "deleteMe"
           super(DELETE_NODE, parent)
+        elsif node.name.include?("nope")
+          [1]
         else
           super
         end
@@ -349,6 +356,18 @@ GRAPHQL
       document, new_document = get_result(before_query)
       assert_equal before_query, document.to_query_string
       assert_equal after_query, new_document.to_query_string
+    end
+
+    it "ignore non-Nodes::AbstractNode return values" do
+      query = <<-GRAPHQL.chop
+query {
+  doesntDoAnything(stillNothing: {nope: 1, alsoNope: 2, stillNope: 3})
+}
+GRAPHQL
+
+      document, new_document = get_result(query)
+      assert_equal query, document.to_query_string
+      assert_equal query, new_document.to_query_string
     end
 
     it "can modify inline fragments" do

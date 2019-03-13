@@ -15,7 +15,7 @@ module GraphQL
     attr_reader :context
 
     def initialize(message = nil, object: nil, type: nil, context: nil)
-      if message.nil? && object.nil?
+      if message.nil? && object.nil? && type.nil?
         raise ArgumentError, "#{self.class.name} requires either a message or keywords"
       end
 

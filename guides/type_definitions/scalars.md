@@ -6,7 +6,6 @@ section: Type Definitions
 title: Scalars
 desc: Scalars are "simple" data types like integers and strings
 index: 1
-class_based_api: true
 ---
 
 Scalars are "leaf" values in GraphQL. There are several built-in scalars, and you can define custom scalars, too. ({% internal_link "Enums", "/type_definitions/enums" %} are also leaf values.) The built-in scalars are:

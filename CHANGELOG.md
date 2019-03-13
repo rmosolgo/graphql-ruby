@@ -8,6 +8,17 @@
 
 ### Bug fixes
 
+## 1.9.3 (20 Feb 2019)
+
+### Bug fixes
+
+- Fix `Schema::Subscription` when it has no arguments #2135
+- Don't try to scope `nil`, just skip scoping altogether #2134
+- Fix when a root `.authorized?` returns `false` and there's no `root_value` #2136
+- Fix platform tracing with interpreter & introspection #2137
+- Support root Subscription types with name other than `Subscription` #2102
+- Fix nested list-type input object nullability validation #2123
+
 ## 1.9.2 (15 Feb 2019)
 
 ### Bug fixes

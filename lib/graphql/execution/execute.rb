@@ -50,12 +50,16 @@ module GraphQL
             operation = query.selected_operation
             op_type = operation.operation_type
             root_type = query.root_type_for_operation(op_type)
-            resolve_selection(
-              query.root_value,
-              root_type,
-              query.context,
-              mutation: query.mutation?
-            )
+            if query.context[:__root_unauthorized]
+              # This was set by member/instrumentation.rb so that we wouldn't continue.
+            else
+              resolve_selection(
+                query.root_value,
+                root_type,
+                query.context,
+                mutation: query.mutation?
+              )
+            end
           end
         end
 

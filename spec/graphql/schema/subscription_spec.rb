@@ -87,10 +87,18 @@ describe GraphQL::Schema::Subscription do
       end
     end
 
+    # Like above, but doesn't override #subscription,
+    # to make sure it works without arguments
+    class NewUsersJoined < BaseSubscription
+      field :users, [User], null: true,
+        description: "Includes newly-created users, or all users on the initial load"
+    end
+
     class Subscription < GraphQL::Schema::Object
       extend GraphQL::Subscriptions::SubscriptionRoot
       field :toot_was_tooted, subscription: TootWasTooted
       field :users_joined, subscription: UsersJoined
+      field :new_users_joined, subscription: NewUsersJoined
     end
 
     class Mutation < GraphQL::Schema::Object
@@ -288,6 +296,22 @@ describe GraphQL::Schema::Subscription do
       subscription {
         tootWasTooted(handle: "matz") {
           toot { body }
+        }
+      }
+      GRAPHQL
+      assert_equal({"data" => {}}, res)
+      assert_equal 1, in_memory_subscription_count
+    end
+
+    it "works when there are no arguments" do
+      assert_equal 0, in_memory_subscription_count
+
+      res = exec_query <<-GRAPHQL
+      subscription {
+        newUsersJoined {
+          users {
+            handle
+          }
         }
       }
       GRAPHQL

@@ -40,7 +40,7 @@ module GraphQL
     # @return [Boolean] if false, static validation is skipped (execution behavior for invalid queries is undefined)
     attr_accessor :validate
 
-    attr_accessor :query_string
+    attr_writer :query_string
 
     # @return [GraphQL::Language::Nodes::Document]
     def document
@@ -133,6 +133,11 @@ module GraphQL
       if @schema.respond_to?(:visible?)
         merge_filters(only: @schema.method(:visible?))
       end
+    end
+
+    # If a document was provided to `GraphQL::Schema#execute` instead of the raw query string, we will need to get it from the document
+    def query_string
+      @query_string ||= (document ? document.to_query_string : nil)
     end
 
     def_delegators :@schema, :interpreter?

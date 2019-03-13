@@ -145,6 +145,14 @@ module GraphQL
           @path.pop
         end
 
+        def on_input_object(node, parent)
+          is_list = @argument_definitions.last&.type&.list? == true
+
+          @path.push(parent.children.index(node)) if is_list
+          super
+          @path.pop if is_list
+        end
+
         # @return [GraphQL::BaseType] The current object type
         def type_definition
           @object_types.last

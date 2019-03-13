@@ -5,7 +5,6 @@ search: true
 section: Schema
 title: Definition
 desc: Defining your schema
-class_based_api: true
 index: 1
 ---
 
