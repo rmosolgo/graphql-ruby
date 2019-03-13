@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.10.3 (13 Mar 2019)
+
+### Bug Fix
+
+- Support stable connections ordered by Arel SQL literals
+
 ## 1.10.2 (11 Mar 2019)
 
 ### Bug Fix
