@@ -102,11 +102,7 @@ module GraphQL
         # By default this calls through to the ConnectionWrapper's edge nodes method,
         # but sometimes you need to override it to support the `nodes` field
         def nodes
-          if @object.is_a?(GraphQL::Pagination::Connection)
-            @object.nodes
-          else
-            @object.edge_nodes
-          end
+          @object.edge_nodes
         end
 
         def edges
