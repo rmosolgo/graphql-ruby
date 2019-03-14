@@ -18,10 +18,10 @@ module GraphQL
       # Called when the extension is mounted with `extension(name, options)`.
       # The instance is frozen to avoid improper use of state during execution.
       # @param field [GraphQL::Schema::Field] The field where this extension was mounted
-      # @param options [Object] The second argument to `extension`, or `nil` if nothing was passed.
+      # @param options [Object] The second argument to `extension`, or `{}` if nothing was passed.
       def initialize(field:, options:)
         @field = field
-        @options = options
+        @options = options || {}
         apply
         freeze
       end
