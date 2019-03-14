@@ -5,7 +5,6 @@ search: true
 section: Mutations
 title: Mutation Root
 desc: The Mutation object is the entry point for mutation operations.
-class_based_api: true
 index: 0
 ---
 

@@ -14,6 +14,7 @@ describe GraphQL::Schema::Argument do
         argument :aliased_arg, String, required: false, as: :renamed
         argument :prepared_arg, Int, required: false, prepare: :multiply
         argument :prepared_by_proc_arg, Int, required: false, prepare: ->(val, context) { context[:multiply_by] * val }
+        argument :keys, [String], required: false
 
         class Multiply
           def call(val, context)
@@ -38,6 +39,13 @@ describe GraphQL::Schema::Argument do
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
       end
+    end
+  end
+
+  describe "#keys" do
+    it "is not overwritten by the 'keys' argument" do
+      expected_keys = ["aliasedArg", "arg", "argWithBlock", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg"]
+      assert_equal expected_keys, SchemaArgumentTest::Query.fields["field"].arguments.keys.sort
     end
   end
 

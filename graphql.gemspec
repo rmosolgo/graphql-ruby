@@ -15,6 +15,13 @@ Gem::Specification.new do |s|
   s.email       = ["rdmosolgo@gmail.com"]
   s.license     = "MIT"
   s.required_ruby_version = ">= 2.2.0" # bc `.to_sym` used on user input
+  s.metadata    = {
+    "homepage_uri" => "https://graphql-ruby.org",
+    "changelog_uri" => "https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md",
+    "source_code_uri" => "https://github.com/rmosolgo/graphql-ruby",
+    "bug_tracker_uri" => "https://github.com/rmosolgo/graphql-ruby/issues",
+    "mailing_list_uri"  => "https://tinyletter.com/graphql-ruby",
+  }
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
   s.test_files = Dir["spec/**/*"]

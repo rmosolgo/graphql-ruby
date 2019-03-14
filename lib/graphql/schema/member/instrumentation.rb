@@ -28,6 +28,12 @@ module GraphQL
             wrapper_class = root_type.metadata[:type_class]
             if wrapper_class
               new_root_value = wrapper_class.authorized_new(query.root_value, query.context)
+              new_root_value = query.schema.sync_lazy(new_root_value)
+              if new_root_value.nil?
+                # This is definitely a hack,
+                # but we need some way to tell execute.rb not to run.
+                query.context[:__root_unauthorized] = true
+              end
               query.root_value = new_root_value
             end
           end

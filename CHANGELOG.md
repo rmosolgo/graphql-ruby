@@ -8,6 +8,17 @@
 
 ### Bug fixes
 
+## 1.9.3 (20 Feb 2019)
+
+### Bug fixes
+
+- Fix `Schema::Subscription` when it has no arguments #2135
+- Don't try to scope `nil`, just skip scoping altogether #2134
+- Fix when a root `.authorized?` returns `false` and there's no `root_value` #2136
+- Fix platform tracing with interpreter & introspection #2137
+- Support root Subscription types with name other than `Subscription` #2102
+- Fix nested list-type input object nullability validation #2123
+
 ## 1.9.2 (15 Feb 2019)
 
 ### Bug fixes
@@ -43,6 +54,7 @@
   end
   ```
 
+- `field(...)` configurations don't create implicit method definitions (#1961). If one resolver method depended on the implicitly-created method from another field, you'll have to refactor that call or manually add a `def ...` for that field.
 - Calling `super` in a field method doesn't work anymore (#1961)
 - Error `"problems"` are now in `"extensions" : { "problems": ... }` #2077
 - Change schema default to `error_bubbling false` #2069

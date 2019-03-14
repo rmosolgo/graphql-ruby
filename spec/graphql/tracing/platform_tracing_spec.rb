@@ -37,6 +37,10 @@ describe GraphQL::Tracing::PlatformTracing do
       CustomPlatformTracer::TRACE.clear
     end
 
+    it "runs the introspection query (handles late-bound types)" do
+      assert schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+    end
+
     it "calls the platform's own method with its own keys" do
       schema.execute(" { cheese(id: 1) { flavor } }")
       # This is different because schema/member/instrumentation

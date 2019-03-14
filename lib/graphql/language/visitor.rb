@@ -168,6 +168,8 @@ module GraphQL
       # Run the hooks for `node`, and if the hooks return a copy of `node`,
       # copy `parent` so that it contains the copy of that node as a child,
       # then return the copies
+      # If a non-array value is returned, consuming functions should ignore
+      # said value
       def on_node_with_modifications(node, parent)
         new_node_and_new_parent = visit_node(node, parent)
         if new_node_and_new_parent.is_a?(Array)
@@ -181,6 +183,10 @@ module GraphQL
             # The user-provided hook requested to remove this node
             new_parent = new_parent && new_parent.delete_child(node)
             return nil, new_parent
+          elsif new_node_and_new_parent.none? { |n| n == nil || n.class < Nodes::AbstractNode }
+            # The user-provided hook returned an array of who-knows-what
+            # return nil here to signify that no changes should be made
+            nil
           else
             new_node_and_new_parent
           end

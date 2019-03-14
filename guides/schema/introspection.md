@@ -5,7 +5,6 @@ search: true
 title: Introspection
 section: Schema
 desc: GraphQL has an introspection system that tells about the schema.
-class_based_api: true
 index: 2
 ---
 

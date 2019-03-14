@@ -6,7 +6,6 @@ section: Type Definitions
 title: Input Objects
 desc: Input objects are sets of key-value pairs which can be used as field arguments.
 index: 3
-class_based_api: true
 ---
 
 Input object types are complex inputs for GraphQL operations. They're great for fields that need a lot of structured input, like mutations or search fields. In a GraphQL request, it might look like this:
