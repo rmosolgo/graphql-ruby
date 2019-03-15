@@ -37,9 +37,15 @@ describe GraphQL::Schema::InputObject do
         argument :arg3, Integer, required: true
       end
 
+      ensemble_class = Class.new(subclass) do
+        argument :ensemble_id, GraphQL::Types::ID, required: false, loads: Jazz::Ensemble
+      end
+      
       assert_equal 3, subclass.arguments.size
       assert_equal ["arg1", "arg2", "arg3"], subclass.arguments.keys
       assert_equal ["String!", "Int!", "Int!"], subclass.arguments.values.map { |a| a.type.to_type_signature }
+      assert_equal ["String!", "Int!", "Int!", "ID"], ensemble_class.arguments.values.map { |a| a.type.to_type_signature }
+      assert_equal :ensemble, ensemble_class.arguments["ensembleId"].keyword
     end
   end
 
@@ -55,7 +61,7 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-  describe "prepare: / as:" do
+  describe "prepare: / loads: / as:" do
     module InputObjectPrepareTest
       class InputObj < GraphQL::Schema::InputObject
         argument :a, Integer, required: true
@@ -63,6 +69,7 @@ describe GraphQL::Schema::InputObject do
         argument :c, Integer, required: true, prepare: :prep
         argument :d, Integer, required: true, prepare: :prep, as: :d2
         argument :e, Integer, required: true, prepare: ->(val, ctx) { val * ctx[:multiply_by] * 2 }, as: :e2
+        argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
 
         def prep(val)
           val * context[:multiply_by]
@@ -70,12 +77,12 @@ describe GraphQL::Schema::InputObject do
       end
 
       class Query < GraphQL::Schema::Object
-        field :inputs, String, null: false do
+        field :inputs, [String], null: false do
           argument :input, InputObj, required: true
         end
 
         def inputs(input:)
-          input.to_kwargs.inspect
+          [input.to_kwargs.inspect, input.instrument.name]
         end
       end
 
@@ -84,16 +91,24 @@ describe GraphQL::Schema::InputObject do
         if TESTING_INTERPRETER
           use GraphQL::Execution::Interpreter
         end
+
+        def self.object_from_id(id, ctx)
+          Jazz::GloballyIdentifiableType.find(id)
+        end
+
+        def self.resolve_type(type, obj, ctx)
+          type
+        end
       end
     end
 
     it "calls methods on the input object" do
       query_str = <<-GRAPHQL
-      { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5 }) }
+      { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5, instrumentId: "Instrument/Drum Kit" }) }
       GRAPHQL
 
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
-      expected_obj = { a: 1, b2: 2, c: 9, d2: 12, e2: 30 }.inspect
+      expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: "Instrument/Drum Kit" }.inspect, "Drum Kit"]
       assert_equal expected_obj, res["data"]["inputs"]
     end
   end
@@ -139,6 +154,7 @@ describe GraphQL::Schema::InputObject do
         graphql_name "TestInput1"
         argument :d, Int, required: true
         argument :e, Int, required: true
+        argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
       end
 
       class TestInput2 < GraphQL::Schema::InputObject
@@ -153,7 +169,7 @@ describe GraphQL::Schema::InputObject do
     end
 
     it "returns a symbolized, aliased, ruby keyword style hash" do
-      arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
+      arg_values = {a: 1, b: 2, c: { d: 3, e: 4, instrumentId: "Instrument/Drum Kit"}}
 
       input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
@@ -161,7 +177,7 @@ describe GraphQL::Schema::InputObject do
         defaults_used: Set.new
       )
 
-      assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4 } }, input_object.to_h)
+      assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4, instrument: "Instrument/Drum Kit" } }, input_object.to_h)
     end
   end
 
