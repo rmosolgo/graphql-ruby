@@ -146,6 +146,10 @@ module Types::BaseInterface
   # ...
   field_class Types::BaseField
 end
+# app/graphql/mutations/base_mutation.rb
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
+  field_class Types::BaseField
+end
 ```
 
 Then, you can add `can_can_action:` options to your fields:
@@ -182,6 +186,10 @@ class Types::BaseField < GraphQL::Schema::Field
 end
 
 class Types::BaseInputObject < GraphQL::Schema::InputObject
+  argument_class Types::BaseArgument
+end
+
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   argument_class Types::BaseArgument
 end
 ```
@@ -236,6 +244,7 @@ And hook it up to your base mutation:
 ```ruby
 class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   object_class Types::BaseMutationPayload
+  field_class Types::BaseField
 end
 ```
 

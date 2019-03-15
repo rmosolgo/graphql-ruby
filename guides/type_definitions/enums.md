@@ -6,7 +6,6 @@ section: Type Definitions
 title: Enums
 desc: Enums are sets of discrete values
 index: 2
-class_based_api: true
 ---
 
 Enum types are sets of discrete values. An enum field must return one of the possible values of the enum. In the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL), enums are described like this:

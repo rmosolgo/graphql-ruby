@@ -685,6 +685,14 @@ module Jazz
 
   module Introspection
     class TypeType < GraphQL::Introspection::TypeType
+      def self.authorized?(_obj, ctx)
+        if ctx[:cant_introspect]
+          raise GraphQL::ExecutionError, "You're not allowed to introspect here"
+        else
+          super
+        end
+      end
+
       def name
         n = object.graphql_name
         n && n.upcase

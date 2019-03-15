@@ -9,7 +9,7 @@ module GraphQL
         def result
           return if query.max_complexity.nil?
 
-          total_complexity = super
+          total_complexity = max_possible_complexity
 
           if total_complexity > query.max_complexity
             GraphQL::AnalysisError.new("Query has complexity of #{total_complexity}, which exceeds max complexity of #{query.max_complexity}")

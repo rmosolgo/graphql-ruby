@@ -5,7 +5,6 @@ search: true
 section: Schema
 title: Class-based API
 desc: Define your GraphQL schema with Ruby classes (1.8.x alpha releases)
-class_based_api: true
 index: 10
 ---
 

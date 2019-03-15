@@ -6,7 +6,6 @@ section: Fields
 title: Resolvers
 desc: Reusable, extendable resolution logic for complex fields
 index: 9
-class_based_api: true
 redirect_from:
   - /fields/functions
 ---

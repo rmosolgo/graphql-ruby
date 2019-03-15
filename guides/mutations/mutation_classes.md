@@ -5,7 +5,6 @@ search: true
 section: Mutations
 title: Mutation Classes
 desc: Use mutation classes to implement behavior, then hook them up to your schema.
-class_based_api: true
 index: 1
 redirect_from:
   - /queries/mutations/
@@ -41,6 +40,13 @@ You should add a base class to your application, for example:
 
 ```ruby
 class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
+  # Add your custom classes if you have them:
+  # This is used for generating payload types
+  object_class Types::BaseObject
+  # This is used for return fields on the mutation's payload
+  field_class Types::BaseField
+  # This is used for generating the `input: { ... }` object type
+  input_object_class Types::BaseInputObject
 end
 ```
 

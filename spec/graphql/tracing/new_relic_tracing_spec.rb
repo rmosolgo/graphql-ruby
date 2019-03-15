@@ -3,7 +3,13 @@ require "spec_helper"
 
 describe GraphQL::Tracing::NewRelicTracing do
   module NewRelicTest
+    class Thing < GraphQL::Schema::Object
+      implements GraphQL::Types::Relay::Node
+    end
+
     class Query < GraphQL::Schema::Object
+      add_field GraphQL::Types::Relay::NodeField
+
       field :int, Integer, null: false
 
       def int
@@ -14,6 +20,16 @@ describe GraphQL::Tracing::NewRelicTracing do
     class SchemaWithoutTransactionName < GraphQL::Schema
       query(Query)
       use(GraphQL::Tracing::NewRelicTracing)
+      orphan_types(Thing)
+
+      def self.object_from_id(_id, _ctx)
+        :thing
+      end
+
+      def self.resolve_type(_type, _obj, _ctx)
+        Thing
+      end
+
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
       end
@@ -35,6 +51,11 @@ describe GraphQL::Tracing::NewRelicTracing do
 
   before do
     NewRelic.clear_all
+  end
+
+  it "works with the built-in node field, even though it doesn't have an @owner" do
+    res = NewRelicTest::SchemaWithoutTransactionName.execute '{ node(id: "1") { __typename } }'
+    assert_equal "Thing", res["data"]["node"]["__typename"]
   end
 
   it "can leave the transaction name in place" do

@@ -9,6 +9,12 @@ describe GraphQL::Schema::FieldExtension do
       end
     end
 
+    class PowerOfFilter < GraphQL::Schema::FieldExtension
+      def after_resolve(object:, value:, arguments:, context:, memo:)
+        value**options.fetch(:power, 2)
+      end
+    end
+
     class MultiplyByOption < GraphQL::Schema::FieldExtension
       def after_resolve(object:, value:, arguments:, context:, memo:)
         value * options[:factor]
@@ -52,8 +58,13 @@ describe GraphQL::Schema::FieldExtension do
         argument :input, Integer, required: true
       end
 
-      def pass_thru(input:)
-        input # return it as-is, it will be modified by extensions
+      field :square, Integer, null: false, resolver_method: :pass_thru, extensions: [PowerOfFilter] do
+        argument :input, Integer, required: true
+      end
+
+      field :cube, Integer, null: false, resolver_method: :pass_thru do
+        extension(PowerOfFilter, power: 3)
+        argument :input, Integer, required: true
       end
 
       field :tripled_by_option, Integer, null: false, resolver_method: :pass_thru do
@@ -67,6 +78,10 @@ describe GraphQL::Schema::FieldExtension do
 
       field :multiply_input2, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgumentUsingResolve] do
         argument :input, Integer, required: true
+      end
+
+      def pass_thru(input:, **args)
+        input # return it as-is, it will be modified by extensions
       end
     end
 
@@ -105,6 +120,13 @@ describe GraphQL::Schema::FieldExtension do
       # The factor of three came from an option
       res = exec_query("{ tripledByOption(input: 4) }")
       assert_equal 12, res["data"]["tripledByOption"]
+    end
+
+    it "provides an empty hash as default options" do 
+      res = exec_query("{ square(input: 4) }")
+      assert_equal 16, res["data"]["square"]
+      res = exec_query("{ cube(input: 4) }")
+      assert_equal 64, res["data"]["cube"]
     end
 
     it "can hide arguments from resolve methods" do
