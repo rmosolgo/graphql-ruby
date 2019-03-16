@@ -113,6 +113,80 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
+  describe "loading application object(s)" do
+    module InputObjectLoadsTest
+      class SingleLoadInputObj < GraphQL::Schema::InputObject
+        argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+      end
+
+      class MultiLoadInputObj < GraphQL::Schema::InputObject
+        argument :instrument_ids, [ID], required: true, loads: Jazz::InstrumentType
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :single_load_input, Jazz::InstrumentType, null: false do
+          argument :input, SingleLoadInputObj, required: true
+        end
+        field :multi_load_input, [Jazz::InstrumentType], null: false do
+          argument :input, MultiLoadInputObj, required: true
+        end
+
+        def single_load_input(input:)
+          input.instrument
+        end
+
+        def multi_load_input(input:)
+          input.instruments
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query(Query)
+        if TESTING_INTERPRETER
+          use GraphQL::Execution::Interpreter
+        end
+
+        def self.object_from_id(id, ctx)
+          Jazz::GloballyIdentifiableType.find(id)
+        end
+
+        def self.resolve_type(type, obj, ctx)
+          type
+        end
+      end
+    end
+
+    let(:single_query_str) {
+      <<-GRAPHQL
+        query($id: ID!) {
+          singleLoadInput(input: {instrumentId: $id}) {
+            id
+          }
+        }
+      GRAPHQL
+    }
+
+    let(:multi_query_str) {
+      <<-GRAPHQL
+        query($ids: [ID!]!) {
+          multiLoadInput(input: {instrumentIds: $ids}) {
+            id
+          }
+        }
+      GRAPHQL
+    }
+
+    it "loads arguments as objects of the given type and strips `_id` suffix off argument name" do
+      res = InputObjectLoadsTest::Schema.execute(single_query_str, variables: { id: "Ensemble/Robert Glasper Experiment" })
+      assert_equal "Ensemble/Robert Glasper Experiment", res["data"]["singleLoadInput"]["id"]
+    end
+
+    it "loads arguments as objects of the given type and strips `_ids` suffix off argument name and appends `s`" do
+      res = InputObjectLoadsTest::Schema.execute(multi_query_str, variables: { ids: ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"]})
+      assert_equal ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"], res["data"]["multiLoadInput"].map { |e| e["id"] }
+    end
+  end
+
   describe "in queries" do
     it "is passed to the field method" do
       query_str = <<-GRAPHQL
