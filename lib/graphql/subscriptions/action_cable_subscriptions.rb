@@ -46,7 +46,7 @@ module GraphQL
     #       # Track the subscription here so we can remove it
     #       # on unsubscribe.
     #       if result.context[:subscription_id]
-    #         @subscription_ids << context[:subscription_id]
+    #         @subscription_ids << result.context[:subscription_id]
     #       end
     #
     #       transmit(payload)
