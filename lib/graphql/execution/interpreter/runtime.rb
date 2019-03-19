@@ -164,8 +164,13 @@ module GraphQL
               object = field_defn.owner.authorized_new(object, context)
             end
 
+            begin
+              kwarg_arguments = arguments(object, field_defn, ast_node)
+            rescue GraphQL::ExecutionError => e
+              continue_value(next_path, e, field_defn, return_type.non_null?, ast_node)
+              next
+            end
 
-            kwarg_arguments = arguments(object, field_defn, ast_node)
             # It might turn out that making arguments for every field is slow.
             # If we have to cache them, we'll need a more subtle approach here.
             field_defn.extras.each do |extra|
