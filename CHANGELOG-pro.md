@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.10.4 (26 Mar 2019)
+
+### Bug Fix
+
+- Include content-length and content-type headers in OperationStore JSON responses
+
 ## 1.10.3 (13 Mar 2019)
 
 ### Bug Fix
