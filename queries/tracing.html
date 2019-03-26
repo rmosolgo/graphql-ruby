@@ -174,9 +174,45 @@
 <p>To add <a href="https://www.datadoghq.com">Datadog</a> instrumentation:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">DataDogTracing</span><span class="p">)</span>
+  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">DataDogTracing</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
+
+<p>You may provide <code class="highlighter-rouge">options</code> as a <code class="highlighter-rouge">Hash</code> with the following values:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">analytics_enabled</code></td>
+      <td>Enable analytics for spans. <code class="highlighter-rouge">true</code> for on, <code class="highlighter-rouge">nil</code> to defer to Datadog global setting, <code class="highlighter-rouge">false</code> for off.</td>
+      <td><code class="highlighter-rouge">false</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">analytics_sample_rate</code></td>
+      <td>Rate which tracing data should be sampled for Datadog analytics. Must be a float between <code class="highlighter-rouge">0</code> and <code class="highlighter-rouge">1.0</code>.</td>
+      <td><code class="highlighter-rouge">1.0</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">service_name</code></td>
+      <td>Service name used for <code class="highlighter-rouge">graphql</code> instrumentation</td>
+      <td><code class="highlighter-rouge">'ruby-graphql'</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">tracer</code></td>
+      <td><code class="highlighter-rouge">Datadog::Tracer</code> used to perform instrumentation. Usually you don’t need to set this.</td>
+      <td><code class="highlighter-rouge">Datadog.tracer</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>For more details about Datadog’s tracing API, check out the <a href="https://github.com/DataDog/dd-trace-rb/blob/master/docs/GettingStarted.md">Ruby documentation</a> or the <a href="https://docs.datadoghq.com/tracing/">APM documentation</a> for more product information.</p>
 
 <h2 id="prometheus">Prometheus</h2>
 

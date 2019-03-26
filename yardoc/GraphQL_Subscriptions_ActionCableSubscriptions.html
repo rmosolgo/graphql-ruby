@@ -45,7 +45,7 @@ more: result.subscription?,
     <h1 id="track-the-subscription-here-so-we-can-remove-it">Track the subscription here so we can remove it</h1>
     <h1 id="on-unsubscribe">on unsubscribe.</h1>
     <p>if result.context[:subscription_id]
-@subscription_ids « context[:subscription_id]
+@subscription_ids « result.context[:subscription_id]
 end
 transmit(payload)
 end

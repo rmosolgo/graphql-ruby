@@ -254,7 +254,7 @@
 
 <h3 id="field-parameter-default-values">Field Parameter Default Values</h3>
 
-<p>The field method requires you to pass <code class="highlighter-rouge">null:</code> keyword argument to determine whether the field is nullable or not. Another field you may want to overrid is <code class="highlighter-rouge">camelize</code>, which is <code class="highlighter-rouge">true</code> by default. You can override this behavior by adding a custom field.</p>
+<p>The field method requires you to pass <code class="highlighter-rouge">null:</code> keyword argument to determine whether the field is nullable or not. For another field you may want to override <code class="highlighter-rouge">camelize</code>, which is <code class="highlighter-rouge">true</code> by default. You can override this behavior by adding a custom field with overwritten <code class="highlighter-rouge">camelize</code> option, which is <code class="highlighter-rouge">true</code> by default.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
   <span class="c1"># Add `null: false` and `camelize: false` which provide default values</span>
