@@ -31,6 +31,10 @@ module GraphQL
           end
         end
 
+        def default_directive?
+          default_directive
+        end
+
         def to_graphql
           defn = GraphQL::Directive.new
           defn.name = self.graphql_name

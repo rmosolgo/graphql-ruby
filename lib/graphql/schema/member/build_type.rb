@@ -64,6 +64,8 @@ module GraphQL
             else
               raise ArgumentError, LIST_TYPE_ERROR
             end
+          when GraphQL::Schema::NonNull, GraphQL::Schema::List
+            type_expr
           when Module
             # This is a way to check that it's the right kind of module:
             if type_expr.respond_to?(:graphql_definition)

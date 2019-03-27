@@ -397,8 +397,11 @@ module GraphQL
 
       def type
         @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
-      rescue
-        raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: #{$!.message}", $!.backtrace
+      rescue GraphQL::Schema::InvalidDocumentError => err
+        # Let this propagate up
+        raise err
+      rescue StandardError => err
+        raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: (#{err.class}) #{err.message}", err.backtrace
       end
 
       def visible?(context)
@@ -554,7 +557,7 @@ module GraphQL
 
       # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
       def fetch_extra(extra_name, ctx)
-        if extra_name != :path && respond_to?(extra_name)
+        if extra_name != :path && extra_name != :ast_node && respond_to?(extra_name)
           self.public_send(extra_name)
         elsif ctx.respond_to?(extra_name)
           ctx.public_send(extra_name)

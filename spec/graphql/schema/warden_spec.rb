@@ -447,7 +447,7 @@ describe GraphQL::Schema::Warden do
       "
 
       schema = GraphQL::Schema.from_definition(sdl)
-      schema.orphan_types = []
+      schema.orphan_types.clear
 
       query_string = %|
         {
@@ -470,7 +470,7 @@ describe GraphQL::Schema::Warden do
       assert_equal [], res["data"]["Query"]["fields"]
 
       # Unreferenced but still visible because orphan type
-      schema.orphan_types = [schema.find("BagOfThings")]
+      schema.graphql_definition.orphan_types = [schema.find("BagOfThings")]
       res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
       assert res["data"]["BagOfThings"]
     end

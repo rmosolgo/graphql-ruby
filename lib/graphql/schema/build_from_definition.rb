@@ -89,25 +89,30 @@ module GraphQL
 
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
-          schema = Schema.define do
-            raise_definition_error true
-
+          Class.new(GraphQL::Schema) do
             query query_root_type
             mutation mutation_root_type
             subscription subscription_root_type
             orphan_types types.values
             if default_resolve.respond_to?(:resolve_type)
-              resolve_type(default_resolve.method(:resolve_type))
+              define_singleton_method(:resolve_type) do |*args|
+                default_resolve.resolve_type(*args)
+              end
             else
-              resolve_type(NullResolveType)
+              define_singleton_method(:resolve_type) do |*args|
+                NullResolveType.call(*args)
+              end
             end
 
             directives directives.values
+
+            if schema_definition
+              ast_node(schema_definition)
+            end
+
+            # Load caches, check for errors
+            graphql_definition
           end
-
-          schema.ast_node = schema_definition if schema_definition
-
-          schema
         end
 
         NullResolveType = ->(type, obj, ctx) {
@@ -188,15 +193,13 @@ module GraphQL
         end
 
         def build_input_object_type(input_object_type_definition, type_resolver)
-          input = GraphQL::InputObjectType.define(
-            name: input_object_type_definition.name,
-            description: input_object_type_definition.description,
-            arguments: Hash[build_input_arguments(input_object_type_definition, type_resolver)],
-          )
-
-          input.ast_node = input_object_type_definition
-
-          input
+          builder = self
+          Class.new(GraphQL::Schema::InputObject) do
+            graphql_name(input_object_type_definition.name)
+            description(input_object_type_definition.description)
+            ast_node(input_object_type_definition)
+            builder.build_arguments(self, input_object_type_definition.fields, type_resolver)
+          end
         end
 
         def build_default_value(default_value)
@@ -214,64 +217,35 @@ module GraphQL
           end
         end
 
-        def build_input_arguments(input_object_type_definition, type_resolver)
-          input_object_type_definition.fields.map do |input_argument|
-            kwargs = {}
+        def build_arguments(type_class, arguments, type_resolver)
+          builder = self
 
-            if !input_argument.default_value.nil?
-              kwargs[:default_value] = build_default_value(input_argument.default_value)
+          arguments.each do |argument_defn|
+            default_value_kwargs = {}
+            if !argument_defn.default_value.nil?
+              default_value_kwargs[:default_value] = builder.build_default_value(argument_defn.default_value)
             end
 
-            argument = GraphQL::Argument.define(
-              name: input_argument.name,
-              type: type_resolver.call(input_argument.type),
-              description: input_argument.description,
-              **kwargs,
+            type_class.argument(
+              argument_defn.name,
+              type: type_resolver.call(argument_defn.type),
+              required: false,
+              description: argument_defn.description,
+              ast_node: argument_defn,
+              camelize: false,
+              **default_value_kwargs
             )
-
-            argument.ast_node = input_argument
-
-            [
-              input_argument.name,
-              argument
-            ]
           end
         end
 
         def build_directive(directive_definition, type_resolver)
-          directive = GraphQL::Directive.define(
-            name: directive_definition.name,
-            description: directive_definition.description,
-            arguments: Hash[build_directive_arguments(directive_definition, type_resolver)],
-            locations: directive_definition.locations.map { |location| location.name.to_sym },
-          )
-
-          directive.ast_node = directive_definition
-
-          directive
-        end
-
-        def build_directive_arguments(directive_definition, type_resolver)
-          directive_definition.arguments.map do |directive_argument|
-            kwargs = {}
-
-            if !directive_argument.default_value.nil?
-              kwargs[:default_value] = build_default_value(directive_argument.default_value)
-            end
-
-            argument = GraphQL::Argument.define(
-              name: directive_argument.name,
-              type: type_resolver.call(directive_argument.type),
-              description: directive_argument.description,
-              **kwargs,
-            )
-
-            argument.ast_node = directive_argument
-
-            [
-              directive_argument.name,
-              argument
-            ]
+          builder = self
+          Class.new(GraphQL::Schema::Directive) do
+            graphql_name(directive_definition.name)
+            description(directive_definition.description)
+            locations(*directive_definition.locations.map { |location| location.name.to_sym })
+            ast_node(directive_definition)
+            builder.build_arguments(self, directive_definition.arguments, type_resolver)
           end
         end
 
@@ -304,22 +278,7 @@ module GraphQL
               ast_node: field_definition,
               camelize: false,
             ) do
-              field_definition.arguments.map do |argument_defn|
-                default_value_kwargs = {}
-                if !argument_defn.default_value.nil?
-                  default_value_kwargs[:default_value] = builder.build_default_value(argument_defn.default_value)
-                end
-
-                argument(
-                  argument_defn.name,
-                  type: type_resolver.call(argument_defn.type),
-                  required: false,
-                  description: argument_defn.description,
-                  ast_node: argument_defn,
-                  camelize: false,
-                  **default_value_kwargs
-                )
-              end
+              builder.build_arguments(self, field_definition.arguments, type_resolver)
             end
           end
         end
