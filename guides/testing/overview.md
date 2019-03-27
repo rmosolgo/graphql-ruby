@@ -6,6 +6,8 @@ section: Testing
 title: Overview
 desc: Testing a GraphQL system
 index: 0
+redirect_from:
+  - /schema/testing
 ---
 
 
