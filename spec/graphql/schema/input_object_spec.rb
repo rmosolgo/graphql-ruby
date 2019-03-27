@@ -70,6 +70,7 @@ describe GraphQL::Schema::InputObject do
         argument :d, Integer, required: true, prepare: :prep, as: :d2
         argument :e, Integer, required: true, prepare: ->(val, ctx) { val * ctx[:multiply_by] * 2 }, as: :e2
         argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+        argument :danger, Integer, required: false, prepare: ->(val, ctx) { raise GraphQL::ExecutionError.new('boom!') }
 
         def prep(val)
           val * context[:multiply_by]
@@ -110,6 +111,21 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
       expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: "Instrument/Drum Kit" }.inspect, "Drum Kit"]
       assert_equal expected_obj, res["data"]["inputs"]
+    end
+
+    it "handles exceptions preparing variable input objects" do
+      query_str = <<-GRAPHQL
+      query($input: InputObj!){ inputs(input: $input) }
+      GRAPHQL
+
+      input = { "a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5, "danger" => 1 }
+      res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 },
+                                                   variables: { input: input})
+      assert_nil(res["data"])
+      assert_equal("Variable input of type InputObj! was provided invalid value", res["errors"][0]["message"])
+      assert_equal([{ "line" => 1, "column" => 13 }], res["errors"][0]["locations"])
+      assert_equal("boom!", res["errors"][0]["extensions"]["problems"][0]["explanation"])
+      assert_equal(input, res["errors"][0]["extensions"]["value"])
     end
   end
 

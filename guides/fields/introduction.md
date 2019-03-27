@@ -213,7 +213,7 @@ __Custom extras__ are also possible. Any method on your field class can be passe
 
 ### Field Parameter Default Values
 
-The field method requires you to pass `null:` keyword argument to determine whether the field is nullable or not. Another field you may want to overrid is `camelize`, which is `true` by default. You can override this behavior by adding a custom field.
+The field method requires you to pass `null:` keyword argument to determine whether the field is nullable or not. For another field you may want to override `camelize`, which is `true` by default. You can override this behavior by adding a custom field with overwritten `camelize` option, which is `true` by default.
 
 ```ruby
 class CustomField < GraphQL::Schema::Field
