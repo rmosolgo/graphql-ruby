@@ -47,7 +47,7 @@ module GraphQL
   #
   # Note that `execute_field` and `execute_field_lazy` receive different data in different settings:
   #
-  # - When using {GraphQL::Execution::Interpreter}, they receive `{field:, path:}`
+  # - When using {GraphQL::Execution::Interpreter}, they receive `{field:, path:, query:}`
   # - Otherwise, they receive `{context: ...}`
   #
   module Tracing
