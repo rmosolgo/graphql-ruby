@@ -12,6 +12,7 @@ module GraphQL
         include GraphQL::Schema::Member::HasPath
         include GraphQL::Schema::Member::RelayShortcuts
         include GraphQL::Schema::Member::Scoped
+        include GraphQL::Schema::Member::HasAstNode
 
         # Methods defined in this block will be:
         # - Added as class methods to this interface
@@ -89,6 +90,7 @@ module GraphQL
           type_defn.name = graphql_name
           type_defn.description = description
           type_defn.orphan_types = orphan_types
+          type_defn.ast_node = ast_node
           fields.each do |field_name, field_inst|
             field_defn = field_inst.graphql_definition
             type_defn.fields[field_defn.name] = field_defn

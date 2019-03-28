@@ -79,6 +79,7 @@ module GraphQL
   class Schema
     extend Forwardable
     extend GraphQL::Schema::Member::AcceptsDefinition
+    extend GraphQL::Schema::Member::HasAstNode
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
       :query, :mutation, :subscription,
@@ -1008,7 +1009,7 @@ module GraphQL
 
       def directives(new_directives = nil)
         if new_directives
-          @directives = new_directives.reduce({}) { |m, d| m[d.name] = d; m }
+          @directives = new_directives.reduce({}) { |m, d| m[d.graphql_name] = d; m }
         end
 
         @directives ||= default_directives
