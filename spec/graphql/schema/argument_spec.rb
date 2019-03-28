@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::Argument do
   module SchemaArgumentTest
     class Query < GraphQL::Schema::Object
-      field :field, String, null: false do
+      field :field, String, null: true do
         argument :arg, String, description: "test", required: false
 
         argument :arg_with_block, String, required: false do
@@ -14,6 +14,10 @@ describe GraphQL::Schema::Argument do
         argument :aliased_arg, String, required: false, as: :renamed
         argument :prepared_arg, Int, required: false, prepare: :multiply
         argument :prepared_by_proc_arg, Int, required: false, prepare: ->(val, context) { context[:multiply_by] * val }
+        argument :exploding_prepared_arg, Int, required: false, prepare: ->(val, context) do
+          raise GraphQL::ExecutionError.new('boom!')
+        end
+
         argument :keys, [String], required: false
 
         class Multiply
@@ -44,7 +48,7 @@ describe GraphQL::Schema::Argument do
 
   describe "#keys" do
     it "is not overwritten by the 'keys' argument" do
-      expected_keys = ["aliasedArg", "arg", "argWithBlock", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg"]
+      expected_keys = ["aliasedArg", "arg", "argWithBlock", "explodingPreparedArg", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg"]
       assert_equal expected_keys, SchemaArgumentTest::Query.fields["field"].arguments.keys.sort
     end
   end
@@ -113,6 +117,7 @@ describe GraphQL::Schema::Argument do
       # Make sure it's getting the renamed symbol:
       assert_equal '{:prepared_arg=>15}', res["data"]["field"]
     end
+
     it "calls the method on the provided Proc" do
       query_str = <<-GRAPHQL
       { field(preparedByProcArg: 5) }
@@ -122,6 +127,7 @@ describe GraphQL::Schema::Argument do
       # Make sure it's getting the renamed symbol:
       assert_equal '{:prepared_by_proc_arg=>15}', res["data"]["field"]
     end
+
     it "calls the method on the provided callable object" do
       query_str = <<-GRAPHQL
       { field(preparedByCallableArg: 5) }
@@ -130,6 +136,17 @@ describe GraphQL::Schema::Argument do
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
       assert_equal '{:prepared_by_callable_arg=>15}', res["data"]["field"]
+    end
+
+    it "handles exceptions raised by prepare" do
+      query_str = <<-GRAPHQL
+        { f1: field(arg: "echo"), f2: field(explodingPreparedArg: 5) }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
+      assert_equal({ 'f1' => '{:arg=>"echo"}', 'f2' => nil }, res['data'])
+      assert_equal(res['errors'][0]['message'], 'boom!')
+      assert_equal(res['errors'][0]['path'], ['f2'])
     end
   end
 end
