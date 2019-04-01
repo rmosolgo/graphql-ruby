@@ -9,10 +9,6 @@ module GraphQL
     # A field may get access to its lookahead by adding `extras: [:lookahead]`
     # to its configuration.
     #
-    # __NOTE__: Lookahead for typed fragments (eg `node { ... on Thing { ... } }`)
-    # hasn't been implemented yet. It's possible, I just didn't need it yet.
-    # Feel free to open a PR or an issue if you want to add it.
-    #
     # @example looking ahead in a field
     #   field :articles, [Types::Article], null: false,
     #     extras: [:lookahead]
