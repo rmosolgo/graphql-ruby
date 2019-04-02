@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 if testing_rails?
   # Remove the old sqlite database
   `rm -f ./_test_.db`
