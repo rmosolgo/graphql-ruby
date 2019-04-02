@@ -24,7 +24,12 @@ if testing_rails?
 
       class RelationConnectionWithTotalCount < GraphQL::Pagination::RelationConnection
         def total_count
-          items.unscope(:order).count(:all)
+          if items.respond_to?(:unscope)
+            items.unscope(:order).count(:all)
+          else
+            # rails 3
+            items.count
+          end
         end
       end
 
