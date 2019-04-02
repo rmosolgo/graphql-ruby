@@ -2,7 +2,7 @@
 require "spec_helper"
 
 if testing_rails?
-  describe GraphQL::Pagination::RelationConnection do
+  describe GraphQL::Pagination::ActiveRecordRelationConnection do
     class Food < ActiveRecord::Base
     end
 
@@ -54,7 +54,7 @@ if testing_rails?
 
         def items(max_page_size_override: nil)
           relation = Food.all
-          GraphQL::Pagination::RelationConnection.new(relation, max_page_size: max_page_size_override)
+          GraphQL::Pagination::ActiveRecordRelationConnection.new(relation, max_page_size: max_page_size_override)
         end
 
         field :custom_items, CustomItemConnection, null: false

@@ -1,3 +1,3 @@
 # frozen_string_literal: true
 require "graphql/pagination/array_connection"
-require "graphql/pagination/relation_connection"
+require "graphql/pagination/active_record_relation_connection"

@@ -3,7 +3,7 @@ require "graphql/pagination/connection"
 
 module GraphQL
   module Pagination
-    class RelationConnection < Pagination::Connection
+    class ActiveRecordRelationConnection < Pagination::Connection
       def nodes
         load_nodes
         @nodes
@@ -59,7 +59,12 @@ module GraphQL
           end
 
 
-          sliced_nodes_count = sliced_nodes.unscope(:order).count(:all)
+          sliced_nodes_count = if sliced_nodes.respond_to?(:unscope)
+            sliced_nodes.unscope(:order).count(:all)
+          else
+            # Rails 3
+            sliced_nodes.count
+          end
           paged_nodes = sliced_nodes
 
           if first && (paged_nodes.limit_value.nil? || paged_nodes.limit_value > first)
@@ -95,7 +100,7 @@ module GraphQL
 
           @has_previous_page = !!(
             (after_offset && after_offset > 0) ||
-            (last && sliced_nodes.unscope(:order).count(:all) > last)
+            (last && sliced_nodes_count > last)
           )
 
           paged_nodes
