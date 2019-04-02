@@ -22,7 +22,7 @@ if testing_rails?
     class TestSchema < GraphQL::Schema
       default_max_page_size 6
 
-      class RelationConnectionWithTotalCount < GraphQL::Pagination::RelationConnection
+      class RelationConnectionWithTotalCount < GraphQL::Pagination::ActiveRecordRelationConnection
         def total_count
           if items.respond_to?(:unscope)
             items.unscope(:order).count(:all)
