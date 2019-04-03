@@ -8,11 +8,11 @@ desc: Cutting off GraphQL execution
 index: 5
 ---
 
-You can apply a timeout to query execution with `TimeoutMiddleware`. For example:
+You can apply a timeout to query execution with the `GraphQL::Schema::Timeout` plugin. For example:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  middleware(GraphQL::Schema::TimeoutMiddleware.new(max_seconds: 2))
+  use GraphQL::Schema::Timeout, max_seconds: 2
 end
 ```
 
@@ -24,8 +24,8 @@ To log the error, pass a block to the middleware:
 
 ```ruby
 class MySchema < GraphQL::Schema
- middleware(GraphQL::Schema::TimeoutMiddleware.new(max_seconds: 2) do |err, query|
-   Rails.logger.info("GraphQL Timeout: #{query.query_string}")
- end)
+  use GraphQL::Schema::Timeout, max_seconds: 2, timeout_callback: ->(err, query) do
+    Rails.logger.info("GraphQL Timeout: #{query.query_string}")
+  end
 end
 ```
