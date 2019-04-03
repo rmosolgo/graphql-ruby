@@ -9,7 +9,7 @@ module GraphQL
           @used_deprecated_fields = Set.new
         end
 
-        def on_leave_field(parent,  node, visitor)
+        def on_leave_field(node, parent, visitor)
           field_defn = visitor.field_definition
           field = "#{visitor.parent_type_definition.name}.#{field_defn.name}"
           @used_fields << field
