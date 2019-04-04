@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Schema::Timeout do
   let(:max_seconds) { 1 }
-  let(:timeout_options) { { max_seconds: max_seconds } }
+  let(:timeout_class) { GraphQL::Schema::Timeout }
   let(:timeout_schema) {
     nested_sleep_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "NestedSleep"
@@ -52,7 +52,7 @@ describe GraphQL::Schema::Timeout do
         use GraphQL::Execution::Interpreter
       end
     end
-    schema.use GraphQL::Schema::Timeout, **timeout_options
+    schema.use timeout_class, max_seconds: max_seconds
     schema
   }
 
@@ -180,14 +180,14 @@ describe GraphQL::Schema::Timeout do
   end
 
   describe "with a custom block" do
-    let(:timeout_options) {
-      {
-        max_seconds: max_seconds,
-        timeout_callback: ->(err, query) do
+    let(:timeout_class) do
+      Class.new(GraphQL::Schema::Timeout) do
+        def handle_timeout(err, query)
           raise("Query timed out after 2s: #{err.message}")
         end
-      }
-    }
+      end
+    end
+
     let(:query_string) {%|
       {
         a: sleepFor(seconds: 0.4)

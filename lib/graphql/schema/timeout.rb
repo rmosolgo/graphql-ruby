@@ -7,7 +7,8 @@ module GraphQL
     # to the `errors` key. Any already-resolved fields will be in the `data` key, so
     # you'll get a partial response.
     #
-    # You can provide a block which will be called with any timeout errors that occur.
+    # You can subclass `GraphQL::Schema::Timeout` and override the `handle_timeout` method
+    # to provide custom logic when a timeout error occurs.
     #
     # Note that this will stop a query _in between_ field resolutions, but
     # it doesn't interrupt long-running `resolve` functions. Be sure to use
@@ -19,15 +20,20 @@ module GraphQL
     #     use GraphQL::Schema::Timeout, max_seconds: 2
     #   end
     #
-    # @example Notifying Bugsnag on a timeout
-    #   class MySchema < GraphQL::Schema
-    #     use GraphQL::Schema::Timeout, max_seconds: 2, timeout_callback: ->(timeout_error, query) do
-    #       Bugsnag.notify(timeout_error, {query_string: query.query_string})
+    # @example Notifying Bugsnag and logging a timeout
+    #   class MyTimeout < GraphQL::Schema::Timeout
+    #     def handle_timeout(error, query)
+    #        Rails.logger.warn("GraphQL Timeout: #{error.message}: #{query.query_string}")
+    #        Bugsnag.notify(error, {query_string: query.query_string})
     #     end
     #   end
     #
+    #   class MySchema < GraphQL::Schema
+    #     use MyTimeout, max_seconds: 2
+    #   end
+    #
     class Timeout
-      attr_reader :max_seconds, :timeout_callback
+      attr_reader :max_seconds
 
       def self.use(schema, **options)
         tracer = new(**options)
@@ -35,10 +41,8 @@ module GraphQL
       end
 
       # @param max_seconds [Numeric] how many seconds the query should be allowed to resolve new fields
-      # @param timeout_callback [Proc] callback invoked when a query times out
-      def initialize(max_seconds:, timeout_callback: nil)
+      def initialize(max_seconds:)
         @max_seconds = max_seconds
-        @timeout_callback = timeout_callback || Proc.new {}
       end
 
       def trace(key, data)
@@ -69,7 +73,7 @@ module GraphQL
             # Only invoke the timeout callback for the first timeout
             unless timeout_state[:timed_out]
               timeout_state[:timed_out] = true
-              timeout_callback.call(error, query)
+              handle_timeout(error, query)
             end
 
             error
@@ -79,6 +83,13 @@ module GraphQL
         else
           yield
         end
+      end
+
+      # Invoked when a query times out.
+      # @param error [GraphQL::Schema::Timeout::TimeoutError]
+      # @param query [GraphQL::Error]
+      def handle_timeout(error, query)
+        # override to do something interesting
       end
 
       # This error is raised when a query exceeds `max_seconds`.
