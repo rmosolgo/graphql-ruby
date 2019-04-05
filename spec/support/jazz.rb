@@ -249,16 +249,6 @@ module Jazz
     end
   end
 
-  class RawJson < GraphQL::Schema::Scalar
-    def self.coerce_input(val, ctx)
-      val
-    end
-
-    def self.coerce_result(val, ctx)
-      val
-    end
-  end
-
   class Musician < BaseObject
     implements GloballyIdentifiableType
     implements NamedEntity
@@ -358,12 +348,12 @@ module Jazz
     field :inspect_context, [String], null: false
     field :hashyEnsemble, Ensemble, null: false
 
-    field :echo_json, RawJson, null: false do
-      argument :input, RawJson, required: true
+    field :echo_json, GraphQL::Types::JSON, null: false do
+      argument :input, GraphQL::Types::JSON, required: true
     end
 
-    field :echo_first_json, RawJson, null: false do
-      argument :input, [RawJson], required: true
+    field :echo_first_json, GraphQL::Types::JSON, null: false do
+      argument :input, [GraphQL::Types::JSON], required: true
     end
 
     field :upcase_check_1, String, null: true, resolver_method: :upcase_check, extras: [:upcase]
