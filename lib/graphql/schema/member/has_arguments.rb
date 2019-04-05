@@ -77,21 +77,6 @@ module GraphQL
         end
 
         module ArgumentObjectLoader
-          class LoadApplicationObjectFailedError < GraphQL::ExecutionError
-            # @return [GraphQL::Schema::Argument] the argument definition for the argument that was looked up
-            attr_reader :argument
-            # @return [String] The ID provided by the client
-            attr_reader :id
-            # @return [Object] The value found with this ID
-            attr_reader :object
-            def initialize(argument:, id:, object:)
-              @id = id
-              @argument = argument
-              @object = object
-              super("No object found for `#{argument.graphql_name}: #{id.inspect}`")
-            end
-          end
-
           # Look up the corresponding object for a provided ID.
           # By default, it uses Relay-style {Schema.object_from_id},
           # override this to find objects another way.
@@ -108,7 +93,7 @@ module GraphQL
             loaded_application_object = object_from_id(lookup_as_type, id, context)
             context.schema.after_lazy(loaded_application_object) do |application_object|
               if application_object.nil?
-                err = LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
+                err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
                 load_application_object_failed(err)
               end
               # Double-check that the located object is actually of this type
@@ -117,7 +102,7 @@ module GraphQL
               context.schema.after_lazy(resolved_application_object_type) do |application_object_type|
                 possible_object_types = context.schema.possible_types(lookup_as_type)
                 if !possible_object_types.include?(application_object_type)
-                  err = LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
+                  err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
                   load_application_object_failed(err)
                 else
                   # This object was loaded successfully
