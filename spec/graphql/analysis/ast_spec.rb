@@ -71,6 +71,17 @@ describe GraphQL::Analysis::AST do
     end
   end
 
+  class AstArguments < GraphQL::Analysis::AST::Analyzer
+    def on_enter_argument(node, parent, visitor)
+      @argument = visitor.argument_definition
+      @previous_argument = visitor.previous_argument_definition
+    end
+
+    def result
+      [@argument, @previous_argument]
+    end
+  end
+
   describe "using the AST analysis engine" do
     let(:schema) do
       query_type = Class.new(GraphQL::Schema::Object) do
@@ -177,6 +188,22 @@ describe GraphQL::Analysis::AST do
         it "it runs the analyzer" do
           prev_field = reduce_result.first
           assert_equal "__Schema.types", prev_field.metadata[:type_class].path
+        end
+      end
+
+      describe "Visitor#argument_definition" do
+        let(:analyzers) { [AstArguments] }
+        let(:query) do
+          GraphQL::Query.new(
+            Dummy::Schema,
+            '{ searchDairy(product: [{ source: "SHEEP" }]) { ... on Cheese { id } } }'
+          )
+        end
+
+        it "it runs the analyzer" do
+          argument, prev_argument = reduce_result.first
+          assert_equal "DairyProductInput.source", argument.metadata[:type_class].path
+          assert_equal "Query.searchDairy.product", prev_argument.metadata[:type_class].path
         end
       end
     end
