@@ -31,9 +31,6 @@ module GraphQL
           def node_type(node_type = nil)
             if node_type
               @node_type = node_type
-              wrapped_type_name = node_type.graphql_name
-              # Set this to be named like the node type, but suffixed with `Edge`
-              graphql_name("#{wrapped_type_name}Edge")
               # Add a default `node` field
               field :node, node_type, null: true, description: "The item at the end of the edge."
             end
