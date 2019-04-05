@@ -292,6 +292,7 @@ module Jazz
   end
 
   class InspectableInput < GraphQL::Schema::InputObject
+    argument :ensemble_id, ID, required: false, loads: Ensemble
     argument :string_value, String, required: true, description: "Test description kwarg"
     argument :nested_input, InspectableInput, required: false
     argument :legacy_input, LegacyInputType, required: false
@@ -407,6 +408,8 @@ module Jazz
         input.key?(:string_value).to_s,
         # ~~Access by legacy key~~ # not anymore
         input[:string_value],
+        input.ensemble,
+        input.key?(:ensemble).to_s,
       ]
     end
 
