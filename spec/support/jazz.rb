@@ -503,6 +503,17 @@ module Jazz
     end
   end
 
+  class AddEnsembleRelay < GraphQL::Schema::RelayClassicMutation
+    argument :ensemble, EnsembleInput, required: true
+    field :ensemble, Ensemble, null: false
+
+    def resolve(ensemble:)
+      ens = Models::Ensemble.new(ensemble.name)
+      Models.data["Ensemble"] << ens
+      { ensemble: ens }
+    end
+  end
+
   class AddSitar < GraphQL::Schema::RelayClassicMutation
     null true
     description "Get Sitar to musical instrument"
@@ -633,6 +644,7 @@ module Jazz
     end
 
     field :add_instrument, mutation: AddInstrument
+    field :add_ensemble_relay, mutation: AddEnsembleRelay
     field :add_sitar, mutation: AddSitar
     field :rename_ensemble, mutation: RenameEnsemble
     field :rename_named_entity, mutation: RenameNamedEntity
