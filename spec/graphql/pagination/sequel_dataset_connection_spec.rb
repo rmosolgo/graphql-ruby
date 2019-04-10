@@ -2,11 +2,12 @@
 require "spec_helper"
 
 if testing_rails?
-  describe GraphQL::Pagination::ActiveRecordRelationConnection do
-    class Food < ActiveRecord::Base
+  describe GraphQL::Pagination::SequelDatasetConnection do
+    class SequelFood < Sequel::Model(:foods)
     end
 
-    if Food.none?
+    # TODO this requires fixture data from active_record_relation_connection_spec.rb
+    if SequelFood.none?
       [
         { name: "Avocado" },
         { name: "Beet" },
@@ -18,13 +19,13 @@ if testing_rails?
         { name: "Horseradish" },
         { name: "I Can't Believe It's Not Butter" },
         { name: "Jicama" },
-      ].each { |f| Food.create!(f) }
+      ].each { |f| SequelFood.create(f) }
     end
 
     class TestSchema < GraphQL::Schema
       default_max_page_size 6
 
-      class RelationConnectionWithTotalCount < GraphQL::Pagination::ActiveRecordRelationConnection
+      class SequelDatasetConnectionWithTotalCount < GraphQL::Pagination::SequelDatasetConnection
         def total_count
           if items.respond_to?(:unscope)
             items.unscope(:order).count(:all)
@@ -55,15 +56,15 @@ if testing_rails?
         end
 
         def items(max_page_size_override: nil)
-          relation = Food.all
-          GraphQL::Pagination::ActiveRecordRelationConnection.new(relation, max_page_size: max_page_size_override)
+          dataset = SequelFood.dataset
+          GraphQL::Pagination::SequelDatasetConnection.new(dataset, max_page_size: max_page_size_override)
         end
 
         field :custom_items, CustomItemConnection, null: false
 
         def custom_items
-          relation = Food.all
-          RelationConnectionWithTotalCount.new(relation)
+          dataset = SequelFood.dataset
+          SequelDatasetConnectionWithTotalCount.new(dataset)
         end
       end
 
