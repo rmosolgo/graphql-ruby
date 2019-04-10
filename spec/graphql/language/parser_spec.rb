@@ -129,6 +129,14 @@ describe GraphQL::Language::Parser do
     assert_equal schema_string, document.to_query_string
   end
 
+  describe "parse errors" do
+    it "raises parse errors for nil" do
+      assert_raises(GraphQL::ParseError) {
+        GraphQL.parse(nil)
+      }
+    end
+  end
+
   describe ".parse_file" do
     it "assigns filename to all nodes" do
       example_filename = "spec/support/parser/filename_example.graphql"
