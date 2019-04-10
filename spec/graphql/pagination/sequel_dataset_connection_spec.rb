@@ -7,7 +7,7 @@ if testing_rails?
     end
 
     # TODO this requires fixture data from active_record_relation_connection_spec.rb
-    if SequelFood.none?
+    if SequelFood.empty?
       [
         { name: "Avocado" },
         { name: "Beet" },

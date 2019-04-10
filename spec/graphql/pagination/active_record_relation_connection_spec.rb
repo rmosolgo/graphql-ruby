@@ -6,7 +6,7 @@ if testing_rails?
     class Food < ActiveRecord::Base
     end
 
-    if Food.none?
+    if Food.empty?
       [
         { name: "Avocado" },
         { name: "Beet" },
