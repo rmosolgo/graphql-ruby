@@ -173,8 +173,8 @@ module GraphQL
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve and class-based field such as mutation class, please remove `field:`, `function:` or `resolve:`"
         end
         @original_name = name
-        @underscored_name = Member::BuildType.underscore(name.to_s)
-        @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
+        @underscored_name = -Member::BuildType.underscore(name.to_s)
+        @name = -(camelize ? Member::BuildType.camelize(name.to_s) : name.to_s)
         @description = description
         if field.is_a?(GraphQL::Schema::Field)
           raise ArgumentError, "Instead of passing a field as `field:`, use `add_field(field)` to add an already-defined field."
