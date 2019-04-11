@@ -817,7 +817,7 @@ describe GraphQL::Schema::Warden do
       res = MaskHelpers.query_with_mask(query_string, mask, variables: { "manners" => ["STOP", "TRILL"] })
       # It's not a good error message ... but it's something!
       expected_errors = [
-        "Variable manners of type [Manner!]! was provided invalid value",
+        "Variable manners of type [Manner!]! was provided invalid value for 1",
       ]
       assert_equal expected_errors, error_messages(res)
     end

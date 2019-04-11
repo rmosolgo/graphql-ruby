@@ -9,6 +9,11 @@ module GraphQL
         @validation_result = validation_result
 
         msg = "Variable #{variable_ast.name} of type #{type} was provided invalid value"
+
+        if problem_fields.any?
+          msg += " for #{problem_fields.join(", ")}"
+        end
+
         super(msg)
         self.ast_node = variable_ast
       end
@@ -24,6 +29,15 @@ module GraphQL
             newValue
           end
         end
+      end
+
+      private
+
+      def problem_fields
+        @problem_fields ||= @validation_result
+          .problems
+          .reject { |problem| problem["path"].empty? }
+          .map { |problem| problem["path"].join(".") }
       end
     end
   end

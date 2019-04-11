@@ -275,7 +275,7 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value",
+              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value for values",
               "locations" => [{ "line" => 1, "column" => 13 }],
               "extensions" => {
                 "value" => {},
@@ -295,7 +295,7 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type [DairyProductInput] was provided invalid value",
+              "message" => "Variable input of type [DairyProductInput] was provided invalid value for 0.foo, 0.source",
               "locations" => [{ "line" => 1, "column" => 10 }],
               "extensions" => {
                 "value" => [{ "foo" => "bar" }],
