@@ -434,6 +434,7 @@ end
 ---- inner ----
 
 def initialize(query_string, filename:, tracer: Tracing::NullTracer)
+  raise GraphQL::ParseError.new("No query string was present", nil, nil, query_string) if query_string.nil?
   @query_string = query_string
   @filename = filename
   @tracer = tracer
