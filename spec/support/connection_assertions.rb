@@ -85,7 +85,6 @@ module ConnectionAssertions
     end
   end
 
-
   def self.included(child_module)
     child_module.class_exec do
       def exec_query(query_str, variables)
