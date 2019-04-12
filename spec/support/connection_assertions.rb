@@ -19,6 +19,73 @@ module ConnectionAssertions
     "Jicama",
   ]
 
+  def self.build_schema(get_items:, connection_class:, total_count_connection_class:)
+    Class.new(GraphQL::Schema) do
+      use GraphQL::Pagination::Connections
+      use GraphQL::Execution::Interpreter
+
+      default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
+
+      # Make a way to get local variables (passed in as args)
+      # into method resolvers below
+      class << self
+        attr_accessor :get_items, :connection_class, :total_count_connection_class
+      end
+
+      self.get_items = get_items
+      self.connection_class = connection_class
+      self.total_count_connection_class = total_count_connection_class
+
+      item = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Item"
+        field :name, String, null: false
+      end
+
+      custom_item_edge = Class.new(GraphQL::Types::Relay::BaseEdge) do
+        node_type item
+        graphql_name "CustomItemEdge"
+      end
+
+      custom_item_connection = Class.new(GraphQL::Types::Relay::BaseConnection) do
+        graphql_name "CustomItemConnection"
+        edge_type custom_item_edge
+        field :total_count, Integer, null: false
+      end
+
+      query = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :items, item.connection_type, null: false do
+          argument :max_page_size_override, Integer, required: false
+        end
+
+        def items(max_page_size_override: nil)
+          context.schema.class.connection_class.new(get_items, max_page_size: max_page_size_override)
+        end
+
+        field :custom_items, custom_item_connection, null: false
+
+        def custom_items
+          context.schema.class.total_count_connection_class.new(get_items)
+        end
+
+        field :limited_items, item.connection_type, null: false, max_page_size: 2
+
+        def limited_items
+          get_items
+        end
+
+        private
+
+        def get_items
+          context.schema.class.get_items.call
+        end
+      end
+
+      query(query)
+    end
+  end
+
+
   def self.included(child_module)
     child_module.class_exec do
       def exec_query(query_str, variables)
@@ -191,6 +258,24 @@ module ConnectionAssertions
           GRAPHQL
 
           assert_names(["Avocado", "Beet", "Cucumber", "Dill", "Eggplant", "Fennel", "Ginger"], res)
+        end
+
+        it "applies a field-level max-page-size configuration" do
+          res = TestSchema.execute <<-GRAPHQL
+          {
+            items: limitedItems(first: 10) {
+              nodes {
+                name
+              }
+              edges {
+                node {
+                  name
+                }
+              }
+            }
+          }
+          GRAPHQL
+          assert_names(["Avocado", "Beet"], res)
         end
       end
     end

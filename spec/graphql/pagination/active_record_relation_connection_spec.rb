@@ -10,59 +10,28 @@ if testing_rails?
       ConnectionAssertions::NAMES.each { |n| Food.create!(name: n) }
     end
 
-    class TestSchema < GraphQL::Schema
-      default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
-
-      class RelationConnectionWithTotalCount < GraphQL::Pagination::ActiveRecordRelationConnection
-        def total_count
-          if items.respond_to?(:unscope)
-            items.unscope(:order).count(:all)
-          else
-            # rails 3
-            items.count
-          end
+    class RelationConnectionWithTotalCount < GraphQL::Pagination::ActiveRecordRelationConnection
+      def total_count
+        if items.respond_to?(:unscope)
+          items.unscope(:order).count(:all)
+        else
+          # rails 3
+          items.count
         end
       end
-
-      class FoodItem < GraphQL::Schema::Object
-        field :name, String, null: false
-      end
-
-      class CustomItemEdge < GraphQL::Types::Relay::BaseEdge
-        node_type FoodItem
-        graphql_name "CustomItemEdge"
-      end
-
-      class CustomItemConnection < GraphQL::Types::Relay::BaseConnection
-        edge_type CustomItemEdge
-        field :total_count, Integer, null: false
-      end
-
-      class Query < GraphQL::Schema::Object
-        field :items, FoodItem.connection_type, null: false do
-          argument :max_page_size_override, Integer, required: false
-        end
-
-        def items(max_page_size_override: nil)
-          relation = Food.respond_to?(:scoped) ?
-            Food.scoped # Rails 3-friendly version of .all
-            : Food.all
-
-          GraphQL::Pagination::ActiveRecordRelationConnection.new(relation, max_page_size: max_page_size_override)
-        end
-
-        field :custom_items, CustomItemConnection, null: false
-
-        def custom_items
-          relation = Food.respond_to?(:scoped) ?
-            Food.scoped # Rails 3-friendly version of .all
-            : Food.all
-          RelationConnectionWithTotalCount.new(relation)
-        end
-      end
-
-      query(Query)
     end
+
+    TestSchema = ConnectionAssertions.build_schema(
+      connection_class: GraphQL::Pagination::ActiveRecordRelationConnection,
+      total_count_connection_class: RelationConnectionWithTotalCount,
+      get_items: -> {
+        if Food.respond_to?(:scoped)
+          Food.scoped # Rails 3-friendly version of .all
+        else
+          Food.all
+        end
+      }
+    )
 
     include ConnectionAssertions
   end

@@ -2,49 +2,19 @@
 require "spec_helper"
 
 describe GraphQL::Pagination::ArrayConnection do
-  class TestSchema < GraphQL::Schema
-    default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
+  ITEMS = ConnectionAssertions::NAMES.map { |n| { name: n } }
 
-    class ArrayConnectionWithTotalCount < GraphQL::Pagination::ArrayConnection
-      def total_count
-        items.size
-      end
+  class ArrayConnectionWithTotalCount < GraphQL::Pagination::ArrayConnection
+    def total_count
+      items.size
     end
-
-    ITEMS = ConnectionAssertions::NAMES.map { |n| { name: n } }
-
-    class Item < GraphQL::Schema::Object
-      field :name, String, null: false
-    end
-
-    class CustomItemEdge < GraphQL::Types::Relay::BaseEdge
-      node_type Item
-      graphql_name "CustomItemEdge"
-    end
-
-    class CustomItemConnection < GraphQL::Types::Relay::BaseConnection
-      edge_type CustomItemEdge
-      field :total_count, Integer, null: false
-    end
-
-    class Query < GraphQL::Schema::Object
-      field :items, Item.connection_type, null: false do
-        argument :max_page_size_override, Integer, required: false
-      end
-
-      def items(max_page_size_override: nil)
-        GraphQL::Pagination::ArrayConnection.new(ITEMS, max_page_size: max_page_size_override)
-      end
-
-      field :custom_items, CustomItemConnection, null: false
-
-      def custom_items
-        ArrayConnectionWithTotalCount.new(ITEMS)
-      end
-    end
-
-    query(Query)
   end
+
+  TestSchema = ConnectionAssertions.build_schema(
+    connection_class: GraphQL::Pagination::ArrayConnection,
+    total_count_connection_class: ArrayConnectionWithTotalCount,
+    get_items: -> { ITEMS }
+  )
 
   include ConnectionAssertions
 end

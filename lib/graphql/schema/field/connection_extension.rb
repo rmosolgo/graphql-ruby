@@ -37,6 +37,8 @@ module GraphQL
             value.before ||= arguments[:before]
             value.max_page_size ||= field.max_page_size
             value
+          elsif context.schema.new_connections?
+            context.schema.connections.wrap(field, value, arguments, context)
           else
             if object.is_a?(GraphQL::Schema::Object)
               object = object.object
