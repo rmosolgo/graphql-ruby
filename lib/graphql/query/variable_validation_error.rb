@@ -37,7 +37,7 @@ module GraphQL
         @problem_fields ||= @validation_result
           .problems
           .reject { |problem| problem["path"].empty? }
-          .map { |problem| problem["path"].join(".") }
+          .map { |problem| "#{problem['path'].join('.')} (#{problem['explanation']})" }
       end
     end
   end
