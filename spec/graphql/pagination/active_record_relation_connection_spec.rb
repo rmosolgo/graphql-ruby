@@ -44,14 +44,19 @@ if testing_rails?
         end
 
         def items(max_page_size_override: nil)
-          relation = Food.all
+          relation = Food.respond_to?(:scoped) ?
+            Food.scoped # Rails 3-friendly version of .all
+            : Food.all
+
           GraphQL::Pagination::ActiveRecordRelationConnection.new(relation, max_page_size: max_page_size_override)
         end
 
         field :custom_items, CustomItemConnection, null: false
 
         def custom_items
-          relation = Food.all
+          relation = Food.respond_to?(:scoped) ?
+            Food.scoped # Rails 3-friendly version of .all
+            : Food.all
           RelationConnectionWithTotalCount.new(relation)
         end
       end

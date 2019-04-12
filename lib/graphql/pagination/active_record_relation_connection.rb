@@ -23,7 +23,12 @@ module GraphQL
       end
 
       def null_relation(relation)
-        relation.none
+        if relation.respond_to?(:none)
+          relation.none
+        else
+          # Rails 3
+          relation.where("1=2")
+        end
       end
     end
   end
