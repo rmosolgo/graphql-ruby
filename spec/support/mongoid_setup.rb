@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 if testing_mongoid?
   # TODO make this work with existing fixtures
   Mongoid.load_configuration({

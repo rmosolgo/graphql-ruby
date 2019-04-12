@@ -6,7 +6,7 @@ if testing_rails?
     class Food < ActiveRecord::Base
     end
 
-    if Food.empty?
+    if Food.none? # rubocop:disable Cop/NoneWithoutBlockCop
       ConnectionAssertions::NAMES.each { |n| Food.create!(name: n) }
     end
 
