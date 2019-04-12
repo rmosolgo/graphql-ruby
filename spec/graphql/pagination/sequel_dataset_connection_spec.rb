@@ -12,7 +12,7 @@ if testing_rails?
     end
 
     class TestSchema < GraphQL::Schema
-      default_max_page_size 6
+      default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
 
       class SequelDatasetConnectionWithTotalCount < GraphQL::Pagination::SequelDatasetConnection
         def total_count

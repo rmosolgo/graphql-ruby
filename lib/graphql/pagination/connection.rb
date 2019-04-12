@@ -50,11 +50,13 @@ module GraphQL
       end
 
       attr_writer :first
+      # @return [Integer, nil] a clamped `first` value. (The underlying instance variable doesn't have limits on it)
       def first
         limit_pagination_argument(@first, max_page_size)
       end
 
       attr_writer :last
+      # @return [Integer, nil] a clamped `last` value. (The underlying instance variable doesn't have limits on it)
       def last
         limit_pagination_argument(@last, max_page_size)
       end
@@ -109,7 +111,7 @@ module GraphQL
 
       private
 
-      # @param argument [nil, Integer] `before` or `after`, as provided by the client
+      # @param argument [nil, Integer] `first` or `last`, as provided by the client
       # @param max_page_size [nil, Integer]
       # @return [nil, Integer] `nil` if the input was `nil`, otherwise a value between `0` and `max_page_size`
       def limit_pagination_argument(argument, max_page_size)

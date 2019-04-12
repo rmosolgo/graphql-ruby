@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Pagination::ArrayConnection do
   class TestSchema < GraphQL::Schema
-    default_max_page_size 6
+    default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
 
     class ArrayConnectionWithTotalCount < GraphQL::Pagination::ArrayConnection
       def total_count

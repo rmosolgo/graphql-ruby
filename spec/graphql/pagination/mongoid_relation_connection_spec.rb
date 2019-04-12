@@ -13,7 +13,7 @@ if testing_mongoid?
     ConnectionAssertions::NAMES.each { |n| Food.create(name: n) }
 
     class TestSchema < GraphQL::Schema
-      default_max_page_size 6
+      default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
 
       class MongoidRelationConnectionWithTotalCount < GraphQL::Pagination::MongoidRelationConnection
         def total_count
