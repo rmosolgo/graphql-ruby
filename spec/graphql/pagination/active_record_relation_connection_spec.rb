@@ -7,18 +7,7 @@ if testing_rails?
     end
 
     if Food.empty?
-      [
-        { name: "Avocado" },
-        { name: "Beet" },
-        { name: "Cucumber" },
-        { name: "Dill" },
-        { name: "Eggplant" },
-        { name: "Fennel" },
-        { name: "Ginger"},
-        { name: "Horseradish" },
-        { name: "I Can't Believe It's Not Butter" },
-        { name: "Jicama" },
-      ].each { |f| Food.create!(f) }
+      ConnectionAssertions::NAMES.each { |n| Food.create!(name: n) }
     end
 
     class TestSchema < GraphQL::Schema

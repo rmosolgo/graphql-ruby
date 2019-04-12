@@ -1,27 +1,23 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-if testing_rails?
-  describe GraphQL::Pagination::SequelDatasetConnection do
-    class SequelFood < Sequel::Model(:foods)
+if testing_mongoid?
+  describe GraphQL::Pagination::MongoidRelationConnection do
+    class Food
+      include Mongoid::Document
+      field :name, type: String
     end
 
-    # TODO this requires fixture data from active_record_relation_connection_spec.rb
-    if SequelFood.empty?
-      ConnectionAssertions::NAMES.each { |n| SequelFood.create(name: n) }
-    end
+    # Populate the DB
+    Food.collection.drop
+    ConnectionAssertions::NAMES.each { |n| Food.create(name: n) }
 
     class TestSchema < GraphQL::Schema
       default_max_page_size 6
 
-      class SequelDatasetConnectionWithTotalCount < GraphQL::Pagination::SequelDatasetConnection
+      class MongoidRelationConnectionWithTotalCount < GraphQL::Pagination::MongoidRelationConnection
         def total_count
-          if items.respond_to?(:unscope)
-            items.unscope(:order).count(:all)
-          else
-            # rails 3
-            items.count
-          end
+          items.count
         end
       end
 
@@ -45,15 +41,15 @@ if testing_rails?
         end
 
         def items(max_page_size_override: nil)
-          dataset = SequelFood.dataset
-          GraphQL::Pagination::SequelDatasetConnection.new(dataset, max_page_size: max_page_size_override)
+          relation = Food.all
+          GraphQL::Pagination::MongoidRelationConnection.new(relation, max_page_size: max_page_size_override)
         end
 
         field :custom_items, CustomItemConnection, null: false
 
         def custom_items
-          dataset = SequelFood.dataset
-          SequelDatasetConnectionWithTotalCount.new(dataset)
+          relation = Food.all
+          MongoidRelationConnectionWithTotalCount.new(relation)
         end
       end
 

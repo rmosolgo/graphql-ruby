@@ -59,6 +59,10 @@ def testing_rails?
   defined?(::Rails)
 end
 
+def testing_mongoid?
+  defined?(::Mongoid)
+end
+
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
   require f

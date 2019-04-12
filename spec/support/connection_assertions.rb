@@ -5,6 +5,19 @@
 #
 # The test must implement `TestSchema` to serve the queries below with the expected results.
 module ConnectionAssertions
+  NAMES = [
+    "Avocado",
+    "Beet",
+    "Cucumber",
+    "Dill",
+    "Eggplant",
+    "Fennel",
+    "Ginger",
+    "Horseradish",
+    "I Can't Believe It's Not Butter",
+    "Jicama",
+  ]
+
   def self.included(child_module)
     child_module.class_exec do
       def exec_query(query_str, variables)

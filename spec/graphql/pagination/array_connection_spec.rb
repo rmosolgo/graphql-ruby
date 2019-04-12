@@ -11,18 +11,7 @@ describe GraphQL::Pagination::ArrayConnection do
       end
     end
 
-    ITEMS = [
-      { name: "Avocado" },
-      { name: "Beet" },
-      { name: "Cucumber" },
-      { name: "Dill" },
-      { name: "Eggplant" },
-      { name: "Fennel" },
-      { name: "Ginger"},
-      { name: "Horseradish" },
-      { name: "I Can't Believe It's Not Butter" },
-      { name: "Jicama" },
-    ]
+    ITEMS = ConnectionAssertions::NAMES.map { |n| { name: n } }
 
     class Item < GraphQL::Schema::Object
       field :name, String, null: false
