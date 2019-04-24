@@ -130,7 +130,7 @@ module GraphQL
           # The default was overridden
           @scope
         else
-          @return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.include?("[")) || connection?
+          @return_type_expr && (@return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.include?("[")) || connection?)
         end
       end
 
