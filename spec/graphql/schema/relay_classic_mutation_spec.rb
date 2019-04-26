@@ -37,6 +37,10 @@ describe GraphQL::Schema::RelayClassicMutation do
   end
 
   describe "execution" do
+    after do
+      Jazz::Models.reset
+    end
+
     it "works with no arguments" do
       res = Jazz::Schema.execute <<-GRAPHQL
       mutation {
@@ -49,6 +53,20 @@ describe GraphQL::Schema::RelayClassicMutation do
       GRAPHQL
 
       assert_equal "Sitar", res["data"]["addSitar"]["instrument"]["name"]
+    end
+
+    it "works with InputObject arguments" do
+      res = Jazz::Schema.execute <<-GRAPHQL
+      mutation {
+        addEnsembleRelay(input: { ensemble: { name: "Miles Davis Quartet" } }) {
+          ensemble {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal "Miles Davis Quartet", res["data"]["addEnsembleRelay"]["ensemble"]["name"]
     end
 
     it "supports extras" do
