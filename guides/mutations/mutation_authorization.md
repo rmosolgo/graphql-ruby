@@ -25,6 +25,8 @@ This check can be implemented using the `#ready?` method in a mutation:
 ```ruby
 class Mutations::PromoteEmployee < Mutations::BaseMutation
   def ready?(**args)
+    # Called with mutation args.
+    # Use keyword args such as employee_id: or **args to collect them
     if !context[:current_user].admin?
       raise GraphQL::ExecutionError, "Only admins can run this mutation"
     else
