@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Schema do
   let(:schema) { Dummy::Schema }
+  let(:admin_schema) { Dummy::AdminSchema }
   let(:relay_schema)  { StarWars::Schema }
   let(:empty_schema) { GraphQL::Schema.define }
 
@@ -431,6 +432,18 @@ type Query {
     it "accepts a list of custom rules" do
       custom_rules = GraphQL::StaticValidation::ALL_RULES - [GraphQL::StaticValidation::FragmentsAreNamed]
       errors = schema.validate("fragment on Cheese { id }", rules: custom_rules)
+      assert_equal([], errors)
+    end
+
+    it "accepts a context hash" do
+      context = { admin: false }
+      # AdminSchema is a barebones dummy schema, where fields are visible only with context[:admin] == true
+      errors = admin_schema.validate('query { adminOnlyMessage }', context: context)
+      assert_equal 1, errors.length
+      assert_equal("Field 'adminOnlyMessage' doesn't exist on type 'AdminDairyAppQuery'", errors.first.message)
+
+      context = { admin: true }
+      errors = admin_schema.validate('query { adminOnlyMessage }', context: context)
       assert_equal([], errors)
     end
   end
