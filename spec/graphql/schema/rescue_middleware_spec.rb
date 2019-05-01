@@ -49,6 +49,20 @@ describe GraphQL::Schema::RescueMiddleware do
         assert_equal("there was an example error: SecondSpecExampleError", result.message)
       end
     end
+
+    describe "with GraphQL::ExecutionError as an argument" do
+      let(:rescue_middleware) do
+        middleware = GraphQL::Schema::RescueMiddleware.new
+        middleware.rescue_from(SpecExampleError) { |err| GraphQL::ExecutionError.new("there was an example error: #{err.class.name}", extensions: { code: "EXAMPLE_ERROR" }) }
+        middleware
+      end
+
+      it "has the extensions key" do
+        result = middleware_chain.invoke([])
+        assert_equal("there was an example error: SpecExampleError", result.message)
+        assert_equal({ code: "EXAMPLE_ERROR" }, result.extensions)
+      end
+    end
   end
 
   describe "unknown errors" do
