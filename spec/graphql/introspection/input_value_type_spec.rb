@@ -66,6 +66,46 @@ describe GraphQL::Introspection::InputValueType do
     assert_equal('["COW"]', arg['defaultValue'])
   end
 
+  focus
+  it "supports list of enum default values" do
+    schema = GraphQL::Schema.from_definition(%|
+      type Query {
+        hello(enums: [MyEnum] = [A, B]): String
+      }
+
+      enum MyEnum {
+        A
+        B
+      }
+    |)
+
+    result = schema.execute(%|
+      {
+        __type(name: "Query") {
+          fields {
+            args {
+              defaultValue
+            }
+          }
+        }
+      }
+    |)
+
+    expected = {
+      "data" => {
+        "__type" => {
+          "fields" => [{
+            "args" => [{
+              "defaultValue" => "[A, B]"
+            }]
+          }]
+        }
+      }
+    }
+
+    assert_equal expected, result
+  end
+
   it "supports null default values" do
     schema = GraphQL::Schema.from_definition(%|
       type Query {
