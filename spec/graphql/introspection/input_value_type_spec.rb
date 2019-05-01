@@ -66,7 +66,6 @@ describe GraphQL::Introspection::InputValueType do
     assert_equal('["COW"]', arg['defaultValue'])
   end
 
-  focus
   it "supports list of enum default values" do
     schema = GraphQL::Schema.from_definition(%|
       type Query {
