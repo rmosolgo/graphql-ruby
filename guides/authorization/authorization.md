@@ -13,7 +13,7 @@ While a query is running, you can check each object to see whether the current u
 
 Schema members have `.authorized?(value, context)` methods which will be called during execution:
 
-- Type and mutation classes have `.authorized?(value, context)` class methods
+- Type classes have `.authorized?(value, context)` class methods
 - Fields and arguments have `#authorized?(value, context)` instance methods
 
 These methods are called with:
