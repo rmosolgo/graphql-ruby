@@ -63,7 +63,7 @@ describe GraphQL::Introspection::InputValueType do
     field = cheese_type['data']['__type']['fields'].detect { |f| f['name'] == 'similarCheese' }
     arg = field['args'].detect { |a| a['name'] == 'nullableSource' }
 
-    assert_equal('["COW"]', arg['defaultValue'])
+    assert_equal('[COW]', arg['defaultValue'])
   end
 
   it "supports list of enum default values" do
