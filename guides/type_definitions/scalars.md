@@ -8,7 +8,7 @@ desc: Scalars are "simple" data types like integers and strings
 index: 1
 ---
 
-Scalars are "leaf" values in GraphQL. There are several built-in scalars, and you can define custom scalars, too. ({% internal_link "Enums", "/type_definitions/enums" %} are also leaf values.) The built-in scalars are:
+Scalars are "leaf" values in GraphQL. There are several built-in scalars, and you can define custom scalars, too. ([Enums](/type_definitions/enums) are also leaf values.) The built-in scalars are:
 
 - `String`, like a JSON or Ruby string
 - `Int`, like a JSON or Ruby integer
