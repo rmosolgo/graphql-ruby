@@ -373,7 +373,7 @@ describe GraphQL::Execution::Lookahead do
       node_lookahead = query.lookahead.selection("node")
       assert_equal(
         [[LookaheadTest::Node, :id], [LookaheadTest::BirdSpecies, :name], [LookaheadTest::BirdGenus, :name]],
-        node_lookahead.selections.map { |s| [s.field_selected_on_type, s.name] }
+        node_lookahead.selections.map { |s| [s.owner_type, s.name] }
       )
     end
 

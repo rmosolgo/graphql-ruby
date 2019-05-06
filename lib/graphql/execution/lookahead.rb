@@ -31,13 +31,13 @@ module GraphQL
       # @param ast_nodes [Array<GraphQL::Language::Nodes::Field>, Array<GraphQL::Language::Nodes::OperationDefinition>]
       # @param field [GraphQL::Schema::Field] if `ast_nodes` are fields, this is the field definition matching those nodes
       # @param root_type [Class] if `ast_nodes` are operation definition, this is the root type for that operation
-      def initialize(query:, ast_nodes:, field: nil, root_type: nil, field_selected_on_type: nil)
+      def initialize(query:, ast_nodes:, field: nil, root_type: nil, owner_type: nil)
         @ast_nodes = ast_nodes.freeze
         @field = field
         @root_type = root_type
         @query = query
         @selected_type = @field ? @field.type.unwrap : root_type
-        @field_selected_on_type = field_selected_on_type
+        @owner_type = owner_type
       end
 
       # @return [Array<GraphQL::Language::Nodes::Field>]
@@ -47,7 +47,7 @@ module GraphQL
       attr_reader :field
 
       # @return [GraphQL::Schema::Object, GraphQL::Schema::Union, GraphQL::Schema::Interface]
-      attr_reader :field_selected_on_type
+      attr_reader :owner_type
 
       # @return [Hash<Symbol, Object>]
       def arguments
@@ -91,7 +91,7 @@ module GraphQL
           end
 
           if next_nodes.any?
-            Lookahead.new(query: @query, ast_nodes: next_nodes, field: next_field_defn, field_selected_on_type: selected_type)
+            Lookahead.new(query: @query, ast_nodes: next_nodes, field: next_field_defn, owner_type: selected_type)
           else
             NULL_LOOKAHEAD
           end
@@ -128,7 +128,7 @@ module GraphQL
         subselections_by_type.each do |type, ast_nodes_by_response_key|
           ast_nodes_by_response_key.each do |response_key, ast_nodes|
             field_defn = FieldHelpers.get_field(@query.schema, type, ast_nodes.first.name)
-            lookahead = Lookahead.new(query: @query, ast_nodes: ast_nodes, field: field_defn, field_selected_on_type: type)
+            lookahead = Lookahead.new(query: @query, ast_nodes: ast_nodes, field: field_defn, owner_type: type)
             subselections.push(lookahead)
           end
         end
