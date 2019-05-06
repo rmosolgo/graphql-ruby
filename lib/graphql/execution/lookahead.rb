@@ -31,12 +31,13 @@ module GraphQL
       # @param ast_nodes [Array<GraphQL::Language::Nodes::Field>, Array<GraphQL::Language::Nodes::OperationDefinition>]
       # @param field [GraphQL::Schema::Field] if `ast_nodes` are fields, this is the field definition matching those nodes
       # @param root_type [Class] if `ast_nodes` are operation definition, this is the root type for that operation
-      def initialize(query:, ast_nodes:, field: nil, root_type: nil)
+      def initialize(query:, ast_nodes:, field: nil, root_type: nil, owner_type: nil)
         @ast_nodes = ast_nodes.freeze
         @field = field
         @root_type = root_type
         @query = query
         @selected_type = @field ? @field.type.unwrap : root_type
+        @owner_type = owner_type
       end
 
       # @return [Array<GraphQL::Language::Nodes::Field>]
@@ -44,6 +45,14 @@ module GraphQL
 
       # @return [GraphQL::Schema::Field]
       attr_reader :field
+
+      # @return [GraphQL::Schema::Object, GraphQL::Schema::Union, GraphQL::Schema::Interface]
+      attr_reader :owner_type
+
+      # @return [Hash<Symbol, Object>]
+      def arguments
+        @arguments ||= @field && ArgumentHelpers.arguments(@query, nil, @field, ast_nodes.first)
+      end
 
       # True if this node has a selection on `field_name`.
       # If `field_name` is a String, it is treated as a GraphQL-style (camelized)
@@ -82,7 +91,7 @@ module GraphQL
           end
 
           if next_nodes.any?
-            Lookahead.new(query: @query, ast_nodes: next_nodes, field: next_field_defn)
+            Lookahead.new(query: @query, ast_nodes: next_nodes, field: next_field_defn, owner_type: selected_type)
           else
             NULL_LOOKAHEAD
           end
@@ -107,13 +116,24 @@ module GraphQL
       # @param arguments [Hash] Arguments which must match in the selection
       # @return [Array<GraphQL::Execution::Lookahead>]
       def selections(arguments: nil)
-        subselections_by_name = {}
+        subselections_by_type = {}
+        subselections_on_type = subselections_by_type[@selected_type] = {}
+
         @ast_nodes.each do |node|
-          find_selections(subselections_by_name, @selected_type, node.selections, arguments)
+          find_selections(subselections_by_type, subselections_on_type, @selected_type, node.selections, arguments)
         end
 
-        # Items may be filtered out if `arguments` doesn't match
-        subselections_by_name.values.select(&:selected?)
+        subselections = []
+
+        subselections_by_type.each do |type, ast_nodes_by_response_key|
+          ast_nodes_by_response_key.each do |response_key, ast_nodes|
+            field_defn = FieldHelpers.get_field(@query.schema, type, ast_nodes.first.name)
+            lookahead = Lookahead.new(query: @query, ast_nodes: ast_nodes, field: field_defn, owner_type: type)
+            subselections.push(lookahead)
+          end
+        end
+
+        subselections
       end
 
       # The method name of the field.
@@ -183,22 +203,36 @@ module GraphQL
         end
       end
 
-      def find_selections(subselections_by_name, selected_type, ast_selections, arguments)
+      def find_selections(subselections_by_type, selections_on_type, selected_type, ast_selections, arguments)
         ast_selections.each do |ast_selection|
           case ast_selection
           when GraphQL::Language::Nodes::Field
-            subselections_by_name[ast_selection.name] ||= selection(ast_selection.name, selected_type: selected_type, arguments: arguments)
+            response_key = ast_selection.alias || ast_selection.name
+            if selections_on_type.key?(response_key)
+              selections_on_type[response_key] << ast_selection
+            elsif arguments.nil? || arguments.empty?
+              selections_on_type[response_key] = [ast_selection]
+            else
+              field_defn = FieldHelpers.get_field(@query.schema, selected_type, ast_selection.name)
+              if arguments_match?(arguments, field_defn, ast_selection)
+                selections_on_type[response_key] = [ast_selection]
+              end
+            end
           when GraphQL::Language::Nodes::InlineFragment
+            on_type = selected_type
+            subselections_on_type = selections_on_type
             if (t = ast_selection.type)
               # Assuming this is valid, that `t` will be found.
-              selected_type = @query.schema.types[t.name].metadata[:type_class]
+              on_type = @query.schema.types[t.name].metadata[:type_class]
+              subselections_on_type = subselections_by_type[on_type] ||= {}
             end
-            find_selections(subselections_by_name, selected_type, ast_selection.selections, arguments)
+            find_selections(subselections_by_type, subselections_on_type, on_type, ast_selection.selections, arguments)
           when GraphQL::Language::Nodes::FragmentSpread
             frag_defn = @query.fragments[ast_selection.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{ast_selection.name} (found: #{@query.fragments.keys})")
             # Again, assuming a valid AST
-            selected_type = @query.schema.types[frag_defn.type.name].metadata[:type_class]
-            find_selections(subselections_by_name, selected_type, frag_defn.selections, arguments)
+            on_type = @query.schema.types[frag_defn.type.name].metadata[:type_class]
+            subselections_on_type = subselections_by_type[on_type] ||= {}
+            find_selections(subselections_by_type, subselections_on_type, on_type, frag_defn.selections, arguments)
           else
             raise "Invariant: Unexpected selection type: #{ast_selection.class}"
           end
@@ -214,16 +248,8 @@ module GraphQL
             if arguments.nil? || arguments.empty?
               # No constraint applied
               matches << node
-            else
-              query_kwargs = ArgumentHelpers.arguments(@query, nil, field_defn, node)
-              passes_args = arguments.all? do |arg_name, arg_value|
-                arg_name = normalize_keyword(arg_name)
-                # Make sure the constraint is present with a matching value
-                query_kwargs.key?(arg_name) && query_kwargs[arg_name] == arg_value
-              end
-              if passes_args
-                matches << node
-              end
+            elsif arguments_match?(arguments, field_defn, node)
+              matches << node
             end
           end
         when GraphQL::Language::Nodes::InlineFragment
@@ -233,6 +259,15 @@ module GraphQL
           frag_defn.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
         else
           raise "Unexpected selection comparison on #{node.class.name} (#{node})"
+        end
+      end
+
+      def arguments_match?(arguments, field_defn, field_node)
+        query_kwargs = ArgumentHelpers.arguments(@query, nil, field_defn, field_node)
+        arguments.all? do |arg_name, arg_value|
+          arg_name = normalize_keyword(arg_name)
+          # Make sure the constraint is present with a matching value
+          query_kwargs.key?(arg_name) && query_kwargs[arg_name] == arg_value
         end
       end
 

@@ -20,6 +20,7 @@ describe GraphQL::Execution::Lookahead do
     end
 
     class BirdGenus < GraphQL::Schema::Object
+      field :name, String, null: false
       field :latin_name, String, null: false
       field :id, ID, null: false, method: :latin_name
     end
@@ -69,7 +70,7 @@ describe GraphQL::Execution::Lookahead do
 
     class LookaheadInstrumenter
       def self.before_query(query)
-        query.context[:root_lookahead_names] = query.lookahead.selections.map(&:name)
+        query.context[:root_lookahead_selections] = query.lookahead.selections
       end
 
       def self.after_query(q)
@@ -265,7 +266,11 @@ describe GraphQL::Execution::Lookahead do
       res = LookaheadTest::Schema.execute(query_str, context: context)
       refute res.key?("errors")
       assert_equal 2, context[:lookahead_latin_name]
-      assert_equal [:find_bird_species], context[:root_lookahead_names]
+      assert_equal [:find_bird_species], context[:root_lookahead_selections].map(&:name).uniq
+      assert_equal(
+        [{ by_name: "Cardinal" }, { by_name: "Scarlet Tanager" }, { by_name: "Great Blue Heron" }],
+        context[:root_lookahead_selections].map(&:arguments)
+      )
     end
 
     it "works for invalid queries" do
@@ -348,6 +353,28 @@ describe GraphQL::Execution::Lookahead do
       assert_equal 2, root_selections.first.ast_nodes.size, "It represents both nodes"
 
       assert_equal [:name, :similar_species], root_selections.first.selections.map(&:name), "Subselections are merged"
+    end
+
+    it "avoids merging selections for same field name on distinct types" do
+      query = GraphQL::Query.new(LookaheadTest::Schema, <<~GRAPHQL)
+        query {
+          node(id: "Cardinal") {
+            ... on BirdSpecies {
+              name
+            }
+            ... on BirdGenus {
+              name
+            }
+            id
+          }
+        }
+      GRAPHQL
+
+      node_lookahead = query.lookahead.selection("node")
+      assert_equal(
+        [[LookaheadTest::Node, :id], [LookaheadTest::BirdSpecies, :name], [LookaheadTest::BirdGenus, :name]],
+        node_lookahead.selections.map { |s| [s.owner_type, s.name] }
+      )
     end
 
     it "works for missing selections" do
