@@ -30,8 +30,6 @@ class PostType < GraphQL::Schema::Object
 end
 ```
 
-(GraphQL-Ruby applies connection logic because the return type's name ends in `Connection`. You can manually override this with `connection: true` or `connection: false`.)
-
 You can also define custom arguments and a custom resolve function for connections, just like other fields:
 
 ```ruby
