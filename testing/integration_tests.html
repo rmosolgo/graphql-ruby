@@ -1,0 +1,194 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Integration Tests</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.9.4/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#testing-guides">Testing</a>
+  &raquo; Integration Tests
+</p>
+
+
+<h1 class="guide-header">Integration Tests</h1>
+<div class="guide-container">
+  <p>Besides testing <a href="/testing/schema_structure">schema structure</a>, you should also test your GraphQL system’s behavior. There are really a few levels to this:</p>
+
+<ul>
+  <li><strong>Application-level</strong> behaviors, like business logic, permissions, and persistence. These behaviors may be shared by your API and user interface.</li>
+  <li><strong>Interface-level</strong> behaviors, like GraphQL fields, mutations, error scenarios, and HTTP-specific behaviors. These are unique to your GraphQL system.</li>
+  <li><strong>Transport-level</strong> behaviors, like HTTP headers, parameters and status codes</li>
+</ul>
+
+<h2 id="testing-application-level-behaviors">Testing Application-Level Behaviors</h2>
+
+<p>When it comes to <em>how your application behaves</em>, you should lean on <em>unit tests</em> which exercise application primitives directly. For example, if postings require a title and a body, you should write a test for <code class="highlighter-rouge">Post</code> which asserts that invalid <code class="highlighter-rouge">Post</code>s fail to save. Several other components of the application may be tested this way:</p>
+
+<ul>
+  <li>Permissions: test your authorization system using example resources and actors. Dedicated, high-level frameworks like <a href="https://github.com/varvet/pundit">Pundit</a> make it easy to test authorization in isolation.</li>
+  <li>Business logic: What are the <em>operations</em> that a user can perform in your system? For example, on a blog, they might be: drafting and publishing posts, moderating comments, filtering posts by category, or blocking users. Test these operations in isolation so you can be confident that the core code is correct.</li>
+  <li>Persistence (and other external services): how does your app interact with the “outside world”, like databases, files, and third-party APIs? These interactions also deserve specific tests.</li>
+</ul>
+
+<p>By testing these (and other) application-level behaviors <em>without</em> GraphQL, you can reduce the overhead of your test suite and simplify your testing scenarios.</p>
+
+<h2 id="testing-interface-level-behaviors">Testing Interface-Level Behaviors</h2>
+
+<p>After building your application, you give it an interface so that people (or other software) can interact with it. Sometimes the interface is a website, other times it’s a GraphQL API. The interface has transport-specific primitives that map to your application’s primitives. For example, a React app might have components that correspond to <code class="highlighter-rouge">Post</code>, <code class="highlighter-rouge">Comment</code>, and a <code class="highlighter-rouge">Moderation</code> operation. (These components might even be context-specific, like <code class="highlighter-rouge">ThreadComment</code> or <code class="highlighter-rouge">DraftPost</code>.) Similarly, a GraphQL interface has types and fields that correspond to the underlying application primitives (like <code class="highlighter-rouge">Post</code> and <code class="highlighter-rouge">Comment</code> types, a <code class="highlighter-rouge">Post.isDraft</code> field, or a <code class="highlighter-rouge">ModerateComment</code> mutation).</p>
+
+<p>The best way to test a GraphQL interface is with <em>integration tests</em> which run the whole GraphQL system (using <code class="highlighter-rouge">MySchema.execute(...)</code>). By using an integration test, you can be sure that all of GraphQL-Ruby’s internal systems are engaged (validation, analysis, authorization, data loading, response type-checking, etc.).</p>
+
+<p>An basic integration test might look like:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">it</span> <span class="s2">"loads posts by ID"</span> <span class="k">do</span>
+  <span class="n">query_string</span> <span class="o">=</span> <span class="o">&lt;&lt;-</span><span class="no">GRAPHQL</span><span class="sh">
+    query($id: ID!){
+      node(id: $id) {
+        ... on Post {
+          title
+          id
+          isDraft
+          comments(first: 5) {
+            nodes {
+              body
+            }
+          }
+        }
+      }
+    }
+</span><span class="no">  GRAPHQL</span>
+
+  <span class="n">post</span> <span class="o">=</span> <span class="n">create</span><span class="p">(</span><span class="ss">:post_with_comments</span><span class="p">,</span> <span class="ss">title: </span><span class="s2">"My Cool Thoughts"</span><span class="p">)</span>
+  <span class="n">post_id</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="p">{})</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">variables: </span><span class="p">{</span> <span class="ss">id: </span><span class="n">post_id</span> <span class="p">})</span>
+
+  <span class="n">post_result</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"node"</span><span class="p">]</span>
+  <span class="c1"># Make sure the query worked</span>
+  <span class="n">assert_equal</span> <span class="n">post_id</span><span class="p">,</span> <span class="n">post_result</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span>
+  <span class="n">assert_equal</span> <span class="s2">"My Cool Thoughts"</span><span class="p">,</span> <span class="n">post_result</span><span class="p">[</span><span class="s2">"title"</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>To make sure that different parts of the system are properly engaged, you can add integration tests for specific scenarios, too. For example, you could add a test to make sure that data is hidden from some users:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">it</span> <span class="s2">"doesn't show draft posts to anyone except their author"</span> <span class="k">do</span>
+  <span class="n">author</span> <span class="o">=</span> <span class="n">create</span><span class="p">(</span><span class="ss">:user</span><span class="p">)</span>
+  <span class="n">non_author</span> <span class="o">=</span> <span class="n">create</span><span class="p">(</span><span class="ss">:non_user</span><span class="p">)</span>
+  <span class="n">draft_post</span> <span class="o">=</span> <span class="n">create</span><span class="p">(</span><span class="ss">:post</span><span class="p">,</span> <span class="ss">draft: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">author: </span><span class="n">author</span><span class="p">)</span>
+
+  <span class="n">query_string</span> <span class="o">=</span> <span class="o">&lt;&lt;-</span><span class="no">GRAPHQL</span><span class="sh">
+  query($id: ID!) {
+    node(id: $id) {
+      ... on Post {
+        isDraft
+      }
+    }
+  }
+</span><span class="no">  GRAPHQL</span>
+
+  <span class="n">post_id</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="p">{})</span>
+
+  <span class="c1"># Authors can see their drafts:</span>
+  <span class="n">author_result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">viewer: </span><span class="n">author</span> <span class="p">},</span> <span class="ss">variables: </span><span class="p">{</span> <span class="ss">id: </span><span class="n">post_id</span> <span class="p">})</span>
+  <span class="n">assert_equal</span> <span class="kp">true</span><span class="p">,</span> <span class="n">author_result</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"node"</span><span class="p">][</span><span class="s2">"isDraft"</span><span class="p">]</span>
+
+  <span class="c1"># Other users can't see others' drafts</span>
+  <span class="n">non_author_result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">viewer: </span><span class="n">non_author</span> <span class="p">},</span> <span class="ss">variables: </span><span class="p">{</span> <span class="ss">id: </span><span class="n">post_id</span> <span class="p">})</span>
+  <span class="n">assert_nil</span> <span class="n">author_result</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"node"</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This test engages the underlying authorization and business logic, and provides a sanity check at the GraphQL interface layer.</p>
+
+<h2 id="testing-transport-level-behaviors">Testing Transport-Level Behaviors</h2>
+
+<p>GraphQL is usually served over HTTP. You probably want tests that make sure that HTTP inputs are correctly prepared for GraphQL. For example, you might test that:</p>
+
+<ul>
+  <li>POST data is correctly turned into query variables</li>
+  <li>Authentication headers are used to load a <code class="highlighter-rouge">context[:viewer]</code></li>
+</ul>
+
+<p>In Rails, you might use a <a href="https://guides.rubyonrails.org/testing.html#functional-tests-for-your-controllers">functional test</a> for this, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">it</span> <span class="s2">"loads user token into the viewer"</span> <span class="k">do</span>
+  <span class="n">query_string</span> <span class="o">=</span> <span class="s2">"{ viewer { username } }"</span>
+  <span class="n">post</span> <span class="n">graphql_path</span><span class="p">,</span> <span class="ss">params: </span><span class="p">{</span> <span class="ss">query: </span><span class="n">query_string</span> <span class="p">}</span>
+  <span class="n">json_response</span> <span class="o">=</span> <span class="no">JSON</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="vi">@response</span><span class="p">.</span><span class="nf">body</span><span class="p">)</span>
+  <span class="n">assert_nil</span> <span class="n">json_response</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"viewer"</span><span class="p">],</span> <span class="s2">"Unauthenticated requests have no viewer"</span>
+
+  <span class="c1"># This time, add some authentication to the HTTP request</span>
+  <span class="n">user</span> <span class="o">=</span> <span class="n">create</span><span class="p">(</span><span class="ss">:user</span><span class="p">)</span>
+  <span class="n">post</span> <span class="n">graphql_path</span><span class="p">,</span>
+    <span class="ss">params: </span><span class="p">{</span> <span class="ss">query: </span><span class="n">query_string</span> <span class="p">},</span>
+    <span class="ss">headers: </span><span class="p">{</span> <span class="s2">"Authentication"</span> <span class="o">=&gt;</span> <span class="s2">"Bearer </span><span class="si">#{</span><span class="n">user</span><span class="p">.</span><span class="nf">auth_token</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+
+  <span class="n">json_response</span> <span class="o">=</span> <span class="no">JSON</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="vi">@response</span><span class="p">.</span><span class="nf">body</span><span class="p">)</span>
+  <span class="n">assert_equal</span> <span class="n">user</span><span class="p">.</span><span class="nf">username</span><span class="p">,</span> <span class="n">json_response</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"viewer"</span><span class="p">],</span> <span class="s2">"Authenticated requests load the viewer"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/testing/integration_tests.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Integration Tests">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

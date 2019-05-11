@@ -1,12 +1,21 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.3/GraphQL/IntegerEncodingError" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.4/GraphQL/IntegerEncodingError" />
   </head>
   <body>
     <p>Class: GraphQL::IntegerEncodingError &lt; GraphQL::RuntimeTypeError
+This error is raised when <code class="highlighter-rouge">Types::Int</code> is asked to return a value
+outside of 32-bit integer range. 
+For values outside that range, consider:</p>
+<ul>
+  <li><code class="highlighter-rouge">ID</code> for database primary keys or other identifiers -
+<code class="highlighter-rouge">GraphQL::Types::BigInt</code> for really big integer values 
+See Also:</li>
+  <li>GraphQL::Types::Int - which raises this error
 Instance methods:
-initialize</p>
+initialize</li>
+</ul>
 
 
   </body>

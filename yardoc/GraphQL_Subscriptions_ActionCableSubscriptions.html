@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.3/GraphQL/Subscriptions/ActionCableSubscriptions" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.4/GraphQL/Subscriptions/ActionCableSubscriptions" />
   </head>
   <body>
     <p>Class: GraphQL::Subscriptions::ActionCableSubscriptions &lt; GraphQL::S…
@@ -27,8 +27,10 @@ def execute(data)
 query = data[“query”]
 variables = ensure_hash(data[“variables”])
 operation_name = data[“operationName”]
-context = {
-current_user: current_user,</p>
+context = {</p>
+    <h1 id="re-implement-whatever-context-methods-you-need">Re-implement whatever context methods you need</h1>
+    <h1 id="in-this-channel-or-applicationcablechannel">in this channel or ApplicationCable::Channel</h1>
+    <h1 id="current_user-current_user">current_user: current_user,</h1>
     <h1 id="make-sure-the-channel-is-in-the-context">Make sure the channel is in the context</h1>
     <p>channel: self,
 }

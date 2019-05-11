@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.3/GraphQL/ExecutionError" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.4/GraphQL/ExecutionError" />
   </head>
   <body>
     <p>Class: GraphQL::ExecutionError &lt; GraphQL::Error
@@ -9,9 +9,8 @@ If a field’s resolve function returns a ExecutionError, the error
 will be inserted into the response’s <code class="highlighter-rouge">"errors"</code> key and the field
 will resolve to <code class="highlighter-rouge">nil</code>. 
 Direct Known Subclasses:
-AnalysisError, InvalidNameError, Query::OperationNameMissingError,
-Query::VariableValidationError,
-Schema::Resolver::LoadApplicationObjectFailedError,
+AnalysisError, InvalidNameError, LoadApplicationObjectFailedError,
+Query::OperationNameMissingError, Query::VariableValidationError,
 Schema::TimeoutMiddleware::TimeoutError
 Instance methods:
 initialize, to_h</p>

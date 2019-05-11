@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.3/GraphQL/Execution/Lookahead" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.4/GraphQL/Execution/Lookahead" />
   </head>
   <body>
     <p>Class: GraphQL::Execution::Lookahead &lt; Object
@@ -12,10 +12,6 @@ to use during execution, but if you’re using it directly, be sure to
 validate first.) 
 A field may get access to its lookahead by adding <code class="highlighter-rouge">extras:
 [:lookahead]</code> to its configuration. 
-<strong>NOTE</strong>: Lookahead for typed fragments (eg <code class="highlighter-rouge">node { ... on Thing {
-... } }</code>) hasn’t been implemented yet. It’s possible, I just didn’t
-need it yet. Feel free to open a PR or an issue if you want to add
-it. 
 Examples:</p>
 <h1 id="looking-ahead-in-a-field">looking ahead in a field</h1>
 <p>field :articles, [Types::Article], null: false,
@@ -36,9 +32,9 @@ end
 Direct Known Subclasses:
 NullLookahead
 Instance methods:
-find_selected_nodes, find_selections, initialize, inspect, name,
-normalize_keyword, normalize_name, selected?, selection, selections,
-selects?</p>
+arguments, arguments_match?, find_selected_nodes, find_selections,
+initialize, inspect, name, normalize_keyword, normalize_name,
+selected?, selection, selections, selects?</p>
 
 
   </body>
