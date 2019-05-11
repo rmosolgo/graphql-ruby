@@ -76,6 +76,7 @@ function sync(options) {
         url: url,
         client: clientName,
         secret: encryptionKey,
+        verbose: verbose,
       }
       var sendPromise = Promise.resolve(sendFunc(payload, sendOpts))
       return sendPromise.then(function(response) {
