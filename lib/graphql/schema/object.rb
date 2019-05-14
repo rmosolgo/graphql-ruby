@@ -71,7 +71,7 @@ module GraphQL
       end
 
       class << self
-        def implements(*new_interfaces)
+        def implements(*new_interfaces, **kwargs, &block)
           new_interfaces.each do |int|
             if int.is_a?(Module)
               unless int.include?(GraphQL::Schema::Interface)
