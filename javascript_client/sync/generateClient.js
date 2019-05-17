@@ -45,8 +45,6 @@ function gatherOperations(options) {
   var graphqlGlob = options.path || "./"
   var hashFunc = options.hash || md5
   var filesMode = options.mode || (graphqlGlob.indexOf("__generated__") > -1 ? "relay" : "project")
-  var clientName = options.client
-  var clientType = options.clientType
   var addTypename = options.addTypename
   var verbose = options.verbose
 
