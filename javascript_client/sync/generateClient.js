@@ -24,7 +24,7 @@ var generators = {
 */
 function generateClient(options) {
   var payload = gatherOperations(options)
-  var generatedCode = generateClientCode(options.clientName, payload.operations, options.clientType)
+  var generatedCode = generateClientCode(options.client, payload.operations, options.clientType)
   return generatedCode
 }
 
