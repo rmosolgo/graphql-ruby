@@ -1,7 +1,5 @@
 var sendPayload = require("./sendPayload")
-var prepareRelay = require("./prepareRelay")
-var prepareIsolatedFiles = require("./prepareIsolatedFiles")
-var prepareProject = require("./prepareProject")
+
 var { generateClientCode, gatherOperations } = require("./generateClient")
 var Logger = require("./logger")
 
@@ -68,7 +66,7 @@ function sync(options) {
 
   return new Promise(function(resolve, reject) {
     if (payload.operations.length === 0) {
-      logger.log("No operations found in " + graphqlGlob + ", not syncing anything")
+      logger.log("No operations found in " + options.path + ", not syncing anything")
       resolve(payload)
     } else {
       logger.log("Syncing " + payload.operations.length + " operations to " + logger.bright(url) + "...")
