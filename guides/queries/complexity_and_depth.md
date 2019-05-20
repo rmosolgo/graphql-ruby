@@ -10,7 +10,7 @@ index: 4
 
 ## Prevent complex queries
 
-Fields have a "complexity" value which can be configured in their definition. It can be a constant (numeric) value, or a proc. It can be defined as a keyword _or_ inside the configuration block. For example:
+Fields have a "complexity" value which can be configured in their definition. It can be a constant (numeric) value, or a proc. If no `complexity` is defined for a field, it will default to a value of `1`. It can be defined as a keyword _or_ inside the configuration block. For example:
 
 ```ruby
 # Constant complexity:
