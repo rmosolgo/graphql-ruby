@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::BackwardsCompatibility
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::BackwardsCompatibility";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (B)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span>
+     &raquo; 
+    <span class="title">BackwardsCompatibility</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::BackwardsCompatibility
+  
+  
+  <span class="private note title">Private</span>
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/backwards_compatibility.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This module is part of a private API.</strong>
+  You should avoid using this module if possible, as it may be removed or be changed in the future.
+</p>
+<p>Helpers for migrating in a backwards-compatible way</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="BackwardsCompatibility/FirstArgumentsWrapper.html" title="GraphQL::BackwardsCompatibility::FirstArgumentsWrapper (class)">FirstArgumentsWrapper</a></span>, <span class='object_link'><a href="BackwardsCompatibility/LastArgumentsWrapper.html" title="GraphQL::BackwardsCompatibility::LastArgumentsWrapper (class)">LastArgumentsWrapper</a></span>
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#get_arity-class_method" title="get_arity (class method)">.<strong>get_arity</strong>(callable)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wrap_arity-class_method" title="wrap_arity (class method)">.<strong>wrap_arity</strong>(callable, from:, to:, name:, last: false)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Given a callable whose API used to take <code>from</code> arguments, check its arity, and if needed, apply a wrapper so that it can be called with <code>to</code> arguments.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="get_arity-class_method">
+  
+    .<strong>get_arity</strong>(callable)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+32
+33
+34
+35
+36
+37
+38
+39</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/backwards_compatibility.rb', line 32</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get_arity'>get_arity</span><span class='lparen'>(</span><span class='id identifier rubyid_callable'>callable</span><span class='rparen'>)</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_callable'>callable</span>
+  <span class='kw'>when</span> <span class='const'>Method</span><span class='comma'>,</span> <span class='const'>Proc</span>
+    <span class='id identifier rubyid_callable'>callable</span><span class='period'>.</span><span class='id identifier rubyid_arity'>arity</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_callable'>callable</span><span class='period'>.</span><span class='id identifier rubyid_method'>method</span><span class='lparen'>(</span><span class='symbol'>:call</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_arity'>arity</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="wrap_arity-class_method">
+  
+    .<strong>wrap_arity</strong>(callable, from:, to:, name:, last: false)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Given a callable whose API used to take <code>from</code> arguments,
+check its arity, and if needed, apply a wrapper so that
+it can be called with <code>to</code> arguments.
+If a wrapper is applied, warn the application with <code>name</code>.</p>
+
+<p>If <code>last</code>, then use the last arguments to call the function.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/backwards_compatibility.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_wrap_arity'>wrap_arity</span><span class='lparen'>(</span><span class='id identifier rubyid_callable'>callable</span><span class='comma'>,</span> <span class='label'>from:</span><span class='comma'>,</span> <span class='label'>to:</span><span class='comma'>,</span> <span class='label'>name:</span><span class='comma'>,</span> <span class='label'>last:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_arity'>arity</span> <span class='op'>=</span> <span class='id identifier rubyid_get_arity'>get_arity</span><span class='lparen'>(</span><span class='id identifier rubyid_callable'>callable</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_arity'>arity</span> <span class='op'>==</span> <span class='id identifier rubyid_to'>to</span> <span class='op'>||</span> <span class='id identifier rubyid_arity'>arity</span> <span class='op'>&lt;</span> <span class='int'>0</span>
+    <span class='comment'># It already matches, return it as is
+</span>    <span class='id identifier rubyid_callable'>callable</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_arity'>arity</span> <span class='op'>==</span> <span class='id identifier rubyid_from'>from</span>
+    <span class='comment'># It has the old arity, so wrap it with an arity converter
+</span>    <span class='id identifier rubyid_message'>message</span> <span class='op'>=</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> with </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_from'>from</span><span class='embexpr_end'>}</span><span class='tstring_content'> arguments is deprecated, it now accepts </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_to'>to</span><span class='embexpr_end'>}</span><span class='tstring_content'> arguments, see:</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_backtrace'>backtrace</span> <span class='op'>=</span> <span class='id identifier rubyid_caller'>caller</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='int'>20</span><span class='rparen'>)</span>
+    <span class='comment'># Find the first line in the trace that isn&#39;t library internals:
+</span>    <span class='id identifier rubyid_user_line'>user_line</span> <span class='op'>=</span> <span class='id identifier rubyid_backtrace'>backtrace</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_l'>l</span><span class='op'>|</span> <span class='id identifier rubyid_l'>l</span> <span class='op'>!~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>lib\/graphql</span><span class='regexp_end'>/</span></span> <span class='rbrace'>}</span>
+    <span class='id identifier rubyid_warn'>warn</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span> <span class='op'>+</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_user_line'>user_line</span> <span class='op'>+</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_wrapper'>wrapper</span> <span class='op'>=</span> <span class='id identifier rubyid_last'>last</span> <span class='op'>?</span> <span class='const'><span class='object_link'><a href="BackwardsCompatibility/LastArgumentsWrapper.html" title="GraphQL::BackwardsCompatibility::LastArgumentsWrapper (class)">LastArgumentsWrapper</a></span></span> <span class='op'>:</span> <span class='const'><span class='object_link'><a href="BackwardsCompatibility/FirstArgumentsWrapper.html" title="GraphQL::BackwardsCompatibility::FirstArgumentsWrapper (class)">FirstArgumentsWrapper</a></span></span>
+    <span class='id identifier rubyid_wrapper'>wrapper</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_callable'>callable</span><span class='comma'>,</span> <span class='id identifier rubyid_from'>from</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Can&#39;t wrap </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_callable'>callable</span><span class='embexpr_end'>}</span><span class='tstring_content'> (arity: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arity'>arity</span><span class='embexpr_end'>}</span><span class='tstring_content'>) to have arity </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_to'>to</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon May 20 07:17:48 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.12 (ruby-2.5.1).
+</div>
+
+    </div>
+  </body>
+</html>
