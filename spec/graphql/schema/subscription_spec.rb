@@ -33,6 +33,16 @@ describe GraphQL::Schema::Subscription do
     class BaseSubscription < GraphQL::Schema::Subscription
     end
 
+    class ScopedSubscription < BaseSubscription
+      field :test, Boolean, null: false
+
+      subscription_scope :test
+
+      def subscribe
+        { test: true }
+      end
+    end
+
     class TootWasTooted < BaseSubscription
       argument :handle, String, required: true, loads: User, as: :user
       field :toot, Toot, null: false
@@ -99,6 +109,7 @@ describe GraphQL::Schema::Subscription do
       field :toot_was_tooted, subscription: TootWasTooted
       field :users_joined, subscription: UsersJoined
       field :new_users_joined, subscription: NewUsersJoined
+      field :scoped_subscription, subscription: ScopedSubscription
     end
 
     class Mutation < GraphQL::Schema::Object
@@ -203,6 +214,13 @@ describe GraphQL::Schema::Subscription do
     assert_equal "UsersJoinedManualPayload", return_type.graphql_name
     assert_equal ["users"], return_type.fields.keys
     assert_equal SubscriptionFieldSchema::UsersJoined::UsersJoinedManualPayload, return_type
+  end
+
+  it "can set `subscription_scope` from the resolver" do
+    scoped_subscription = SubscriptionFieldSchema::get_field("Subscription", "scopedSubscription")
+
+    # The subscription should have a scope of value `:test`
+    assert_equal :test, scoped_subscription.subscription_scope
   end
 
   describe "initial subscription" do

@@ -92,6 +92,25 @@ module GraphQL
       def unsubscribe
         raise UnsubscribedError
       end
+
+      # Call this method to provide a new subscription_scope; OR
+      # call it without an argument to get the subscription_scope
+      # @param new_scope [Symbol]
+      # @return [Symbol]
+      def self.subscription_scope(new_scope = nil)
+        if new_scope
+          @subscription_scope = new_scope
+        else
+          @subscription_scope || find_inherited_method(:subscription_scope, nil)
+        end
+      end
+
+      # Overriding Resolver#field_options to include subscription_scope
+      def self.field_options
+        super.merge(
+          subscription_scope: subscription_scope
+        )
+      end
     end
   end
 end
