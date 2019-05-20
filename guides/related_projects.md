@@ -34,6 +34,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/
 - http://mgiroux.me/2015/uploading-files-using-relay-with-rails/
 - http://mgiroux.me/2016/journey-into-graphql-ruby-query-execution/
+- https://jonsimpson.ca/parallel-graphql-resolvers-with-futures/
 
 ## Screencasts
 
