@@ -217,6 +217,8 @@
 
 <h3 id="adding-an-initial-response">Adding an Initial Response</h3>
 
+<p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
+
 <p>By default, GraphQL-Ruby returns <em>nothing</em> (<code class="highlighter-rouge">:no_response</code>) on an initial subscription. But, you may choose to override this and return a value in <code class="highlighter-rouge">def subscribe</code>. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
@@ -249,6 +251,8 @@
 
 <h2 id="subsequent-updates-with-update">Subsequent Updates with #update</h2>
 
+<p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
+
 <p>After a client has registered a subscription, the application may trigger subscription updates with <code class="highlighter-rouge">MySchema.subscriptions.trigger(...)</code> (see the <a href="/subscriptions/triggers">Triggers guide</a> for more). Then, <code class="highlighter-rouge">def update</code> will be called for each client’s subscription. In this method you can:</p>
 
 <ul>
@@ -258,6 +262,8 @@
 </ul>
 
 <h3 id="skipping-subscription-updates">Skipping subscription updates</h3>
+
+<p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
 <p>Perhaps you don’t want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push to push the new comment to <em>other</em> subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning <code class="highlighter-rouge">:no_update</code>.</p>
 
@@ -275,6 +281,8 @@
 </code></pre></div></div>
 
 <h3 id="returning-a-different-object-for-subscription-updates">Returning a different object for subscription updates</h3>
+
+<p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
 <p>By default, whatever object you pass to <code class="highlighter-rouge">.trigger(event_name, args, object)</code> will be used for responding to subscription fields. But, you can return a different object from <code class="highlighter-rouge">#update</code> to override this:</p>
 
