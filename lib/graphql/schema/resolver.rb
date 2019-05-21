@@ -52,17 +52,13 @@ module GraphQL
       # @api private
       def resolve_with_support(**args)
         # First call the ready? hook which may raise
-        ready_val = if args.any?
-          ready?(**args)
-        else
-          ready?
-        end
+        ready_val = ready?(**args)
         context.schema.after_lazy(ready_val) do |is_ready, ready_early_return|
           if ready_early_return
-            if is_ready != false
-              raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{ready_early_return.inspect}]"
-            else
+            if is_ready == false
               ready_early_return
+            else
+              raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{ready_early_return.inspect}]"
             end
           elsif is_ready
             # Then call each prepare hook, which may return a different value
@@ -70,11 +66,7 @@ module GraphQL
             load_arguments_val = load_arguments(args)
             context.schema.after_lazy(load_arguments_val) do |loaded_args|
               # Then call `authorized?`, which may raise or may return a lazy object
-              authorized_val = if loaded_args.any?
-                authorized?(loaded_args)
-              else
-                authorized?
-              end
+              authorized_val = authorized?(**loaded_args)
               context.schema.after_lazy(authorized_val) do |(authorized_result, early_return)|
                 # If the `authorized?` returned two values, `false, early_return`,
                 # then use the early return value instead of continuing
