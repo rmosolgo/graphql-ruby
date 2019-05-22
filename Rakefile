@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 require "bundler/setup"
+Bundler.require
 Bundler::GemHelper.install_tasks
 
 require "rake/testtask"
 require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
 
-Bundler.require
 
 Rake::TestTask.new do |t|
   t.libs << "spec" << "lib"
@@ -34,6 +34,8 @@ end
 
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
+require 'rubocop/version'
+puts "RUBOCOP_VERSION: #{RuboCop::Version.version}"
 
 default_tasks = [:test, :rubocop, "js:all"]
 if ENV["SYSTEM_TESTS"]
