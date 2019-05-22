@@ -34,8 +34,6 @@ end
 
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
-require 'rubocop/version'
-puts "RUBOCOP_VERSION: #{RuboCop::Version.version}"
 
 default_tasks = [:test, :rubocop, "js:all"]
 if ENV["SYSTEM_TESTS"]
