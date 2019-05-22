@@ -356,7 +356,7 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "avoids merging selections for same field name on distinct types" do
-      query = GraphQL::Query.new(LookaheadTest::Schema, <<~GRAPHQL)
+      query = GraphQL::Query.new(LookaheadTest::Schema, <<-GRAPHQL)
         query {
           node(id: "Cardinal") {
             ... on BirdSpecies {
