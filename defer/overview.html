@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.4/">API</a>
+          <a href="/api-doc/1.9.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -56,13 +56,13 @@
 
 <h1 class="guide-header">Overview</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">@defer</code> is a <a href="/type_definitions/directives">directive</a> for streaming GraphQL responses from the server to the client.</p>
+  <p><code class="highlighter-rouge">@defer</code> is a       <a href="/type_definitions/directives">directive</a> for streaming GraphQL responses from the server to the client.</p>
 
 <p>By streaming the response, the server can send the most critical (or most available) data <em>first</em>, following up with secondary data shortly afterward.</p>
 
 <p><code class="highlighter-rouge">@defer</code> was first described by <a href="https://youtu.be/ViXL0YQnioU?t=768">Lee Byron at React Europe 2015</a> and got experimental support in <a href="https://blog.apollographql.com/introducing-defer-in-apollo-server-f6797c4e9d6e">Apollo in 2018</a>.</p>
 
-<p><code class="highlighter-rouge">@defer</code> requires the new <a href="/queries/interpreter">interpreter runtime</a> which ships with GraphQL-Ruby 1.9+.</p>
+<p><code class="highlighter-rouge">@defer</code> requires the new       <a href="/queries/interpreter">interpreter runtime</a> which ships with GraphQL-Ruby 1.9+.</p>
 
 <h2 id="example">Example</h2>
 
@@ -72,9 +72,10 @@
 
 <p>Without <code class="highlighter-rouge">@defer</code>, the whole query is blocked until the last field is done resolving:</p>
 
-<p><a href="https://user-images.githubusercontent.com/2231765/53442028-4a122b00-39d6-11e9-8e33-b91791bf3b98.gif" target="_blank" class="img-link">
-  <img src="https://user-images.githubusercontent.com/2231765/53442028-4a122b00-39d6-11e9-8e33-b91791bf3b98.gif" title="Rails without defer" alt="Rails without defer" />
-</a></p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;a href="https://user-images.githubusercontent.com/2231765/53442028-4a122b00-39d6-11e9-8e33-b91791bf3b98.gif" target="_blank" class="img-link"&gt;
+      &lt;img src="https://user-images.githubusercontent.com/2231765/53442028-4a122b00-39d6-11e9-8e33-b91791bf3b98.gif" title="Rails without defer" alt="Rails without defer" /&gt;
+    &lt;/a&gt;
+</code></pre></div></div>
 
 <p>But, we can add <code class="highlighter-rouge">@defer</code> to slow fields:</p>
 
@@ -92,9 +93,10 @@
 
 <p>Then, the response will stream to the client bit by bit, so the page can load progressively:</p>
 
-<p><a href="https://user-images.githubusercontent.com/2231765/53442027-4a122b00-39d6-11e9-8d7b-feb7a4f7962a.gif" target="_blank" class="img-link">
-  <img src="https://user-images.githubusercontent.com/2231765/53442027-4a122b00-39d6-11e9-8d7b-feb7a4f7962a.gif" title="Rails with defer" alt="Rails with defer" />
-</a></p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;a href="https://user-images.githubusercontent.com/2231765/53442027-4a122b00-39d6-11e9-8d7b-feb7a4f7962a.gif" target="_blank" class="img-link"&gt;
+      &lt;img src="https://user-images.githubusercontent.com/2231765/53442027-4a122b00-39d6-11e9-8d7b-feb7a4f7962a.gif" title="Rails with defer" alt="Rails with defer" /&gt;
+    &lt;/a&gt;
+</code></pre></div></div>
 
 <p>This way, clients get a snappy feel from the app even while data is still loading.</p>
 
@@ -109,7 +111,8 @@
 
 <h2 id="next-steps">Next Steps</h2>
 
-<p><a href="/defer/setup">Set up your server</a> to support <code class="highlighter-rouge">@defer</code> or read about <a href="/defer/usage">client usage</a> of it.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  &lt;a href="/defer/setup"&gt;Set up your server&lt;/a&gt; to support `@defer` or read about       &lt;a href="/defer/usage"&gt;client usage&lt;/a&gt; of it.
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

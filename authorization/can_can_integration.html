@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.4/">API</a>
+          <a href="/api-doc/1.9.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -128,13 +128,13 @@
 
 <h3 id="handling-unauthorized-objects">Handling Unauthorized Objects</h3>
 
-<p>When any CanCan check returns <code class="highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.9.4/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
+<p>When any CanCan check returns <code class="highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.9.5/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in       <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
 
 <h2 id="scopes">Scopes</h2>
 
 <h4 id="activerecordrelation">ActiveRecord::Relation</h4>
 
-<p>The CanCan integration adds <a href="https://github.com/cancancommunity/cancancan/wiki/Fetching-Records">CanCan’s <code class="highlighter-rouge">.accessible_by</code></a> to GraphQL-Ruby’s <a href="/authorization/scoping">list scoping</a></p>
+<p>The CanCan integration adds <a href="https://github.com/cancancommunity/cancancan/wiki/Fetching-Records">CanCan’s <code class="highlighter-rouge">.accessible_by</code></a> to GraphQL-Ruby’s       <a href="/authorization/scoping">list scoping</a></p>
 
 <p>To scope lists of interface or union type, include the integration in your base union class and base interface module <em>and</em> set a base <code class="highlighter-rouge">can_can_action</code>, if desired:</p>
 
@@ -333,7 +333,7 @@
 
 <p>Since it’s a mutation method, you can also access <code class="highlighter-rouge">context</code> in that method.</p>
 
-<p>Whatever that method returns will be treated as an early return value for the mutation, so for example, you could return <a href="/mutations/mutation_errors">errors as data</a>:</p>
+<p>Whatever that method returns will be treated as an early return value for the mutation, so for example, you could return       <a href="/mutations/mutation_errors">errors as data</a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="n">field</span> <span class="ss">:errors</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>

@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.4/">API</a>
+          <a href="/api-doc/1.9.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -49,7 +49,7 @@
 <div class="guide-container">
   <h2 id="prevent-complex-queries">Prevent complex queries</h2>
 
-<p>Fields have a “complexity” value which can be configured in their definition. It can be a constant (numeric) value, or a proc. It can be defined as a keyword <em>or</em> inside the configuration block. For example:</p>
+<p>Fields have a “complexity” value which can be configured in their definition. It can be a constant (numeric) value, or a proc. If no <code class="highlighter-rouge">complexity</code> is defined for a field, it will default to a value of <code class="highlighter-rouge">1</code>. It can be defined as a keyword <em>or</em> inside the configuration block. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Constant complexity:</span>
 <span class="n">field</span> <span class="ss">:top_score</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">complexity: </span><span class="mi">10</span>

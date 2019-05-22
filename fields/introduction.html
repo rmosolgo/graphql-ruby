@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.4/">API</a>
+          <a href="/api-doc/1.9.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -52,7 +52,8 @@
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"The unique name of this list"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 </code></pre></div></div>
 
-<p><a href="/type_definitions/objects">Objects</a> and <a href="/type_definitions/interfaces">Interfaces</a> have fields.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  &lt;a href="/type_definitions/objects"&gt;Objects&lt;/a&gt; and       &lt;a href="/type_definitions/interfaces"&gt;Interfaces&lt;/a&gt; have fields.
+</code></pre></div></div>
 
 <p>The different elements of field definition are addressed below:</p>
 
@@ -72,12 +73,12 @@
 <ul>
   <li>A built-in GraphQL type (<code class="highlighter-rouge">Integer</code>, <code class="highlighter-rouge">Float</code>, <code class="highlighter-rouge">String</code>, <code class="highlighter-rouge">ID</code>, or <code class="highlighter-rouge">Boolean</code>)</li>
   <li>A GraphQL type from your application</li>
-  <li>An <em>array</em> of any of the above, which denotes a <a href="/type_definitions/lists">list type</a>.</li>
-</ul>
+  <li>
+    <p>An <em>array</em> of any of the above, which denotes a       <a href="/type_definitions/lists">list type</a>.</p>
 
-<p><a href="/type_definitions/non_nulls">Nullability</a> is expressed with the required <code class="highlighter-rouge">null:</code> keyword:</p>
-
-<ul>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;a href="/type_definitions/non_nulls"&gt;Nullability&lt;/a&gt; is expressed with the required `null:` keyword:
+</code></pre></div>    </div>
+  </li>
   <li><code class="highlighter-rouge">null: true</code> means that the field <em>may</em> return <code class="highlighter-rouge">nil</code></li>
   <li><code class="highlighter-rouge">null: false</code> means the field is non-nullable; it may not return <code class="highlighter-rouge">nil</code>. If the implementation returns <code class="highlighter-rouge">nil</code>, GraphQL-Ruby will return an error to the client.</li>
 </ul>
@@ -221,7 +222,7 @@
   <li>An <code class="highlighter-rouge">attachments()</code> field may take a <code class="highlighter-rouge">type:</code> argument, which filters the result by file type, eg <code class="highlighter-rouge">attachments(type: PHOTO)</code></li>
 </ul>
 
-<p>Read more in the <a href="/fields/arguments">Arguments guide</a></p>
+<p>Read more in the       <a href="/fields/arguments">Arguments guide</a></p>
 
 <h3 id="extra-field-metadata">Extra Field Metadata</h3>
 

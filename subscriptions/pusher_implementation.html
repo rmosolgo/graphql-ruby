@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.4/">API</a>
+          <a href="/api-doc/1.9.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -193,9 +193,10 @@ appendonly <span class="nb">yes</span>
 
 <p>In the Pusher web UI, Add a webhook for “Channel existence”</p>
 
-<p><a href="/subscriptions/pusher_webhook_configuration.png" target="_blank" class="img-link">
-  <img src="/subscriptions/pusher_webhook_configuration.png" title="Pusher Webhook Configuration" alt="Pusher Webhook Configuration" />
-</a></p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;a href="/subscriptions/pusher_webhook_configuration.png" target="_blank" class="img-link"&gt;
+      &lt;img src="/subscriptions/pusher_webhook_configuration.png" title="Pusher Webhook Configuration" alt="Pusher Webhook Configuration" /&gt;
+    &lt;/a&gt;
+</code></pre></div></div>
 
 <p>Then, mount the Rack app for handling webhooks from Pusher. For example, on Rails:</p>
 
@@ -245,7 +246,7 @@ appendonly <span class="nb">yes</span>
 
 <p>Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query <code class="highlighter-rouge">context</code>.</p>
 
-<p>By default, this is done with <a href="/api-doc/1.9.4/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="highlighter-rouge">dump</code> and <code class="highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="highlighter-rouge">GraphQL::Pro::Subscriptions</code> and override <code class="highlighter-rouge">#dump_context(ctx)</code> and <code class="highlighter-rouge">#load_context(ctx_string)</code>:</p>
+<p>By default, this is done with <a href="/api-doc/1.9.5/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="highlighter-rouge">dump</code> and <code class="highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="highlighter-rouge">GraphQL::Pro::Subscriptions</code> and override <code class="highlighter-rouge">#dump_context(ctx)</code> and <code class="highlighter-rouge">#load_context(ctx_string)</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomSubscriptions</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Subscriptions</span>
   <span class="k">def</span> <span class="nf">dump_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
@@ -273,21 +274,23 @@ appendonly <span class="nb">yes</span>
 
 <h2 id="dashboard">Dashboard</h2>
 
-<p>You can monitor subscription state in the <a href="/pro/dashboard">GraphQL-Pro Dashboard</a>:</p>
+<p>You can monitor subscription state in the       <a href="/pro/dashboard">GraphQL-Pro Dashboard</a>:</p>
 
-<p><a href="/subscriptions/redis_dashboard_1.png" target="_blank" class="img-link">
-  <img src="/subscriptions/redis_dashboard_1.png" title="Redis Subscription Dashboard" alt="Redis Subscription Dashboard" />
-</a></p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;a href="/subscriptions/redis_dashboard_1.png" target="_blank" class="img-link"&gt;
+      &lt;img src="/subscriptions/redis_dashboard_1.png" title="Redis Subscription Dashboard" alt="Redis Subscription Dashboard" /&gt;
+    &lt;/a&gt;
 
-<p><a href="/subscriptions/redis_dashboard_2.png" target="_blank" class="img-link">
-  <img src="/subscriptions/redis_dashboard_2.png" title="Redis Subscription Detail" alt="Redis Subscription Detail" />
-</a></p>
+
+    &lt;a href="/subscriptions/redis_dashboard_2.png" target="_blank" class="img-link"&gt;
+      &lt;img src="/subscriptions/redis_dashboard_2.png" title="Redis Subscription Detail" alt="Redis Subscription Detail" /&gt;
+    &lt;/a&gt;
+</code></pre></div></div>
 
 <h2 id="development-tips">Development Tips</h2>
 
 <h4 id="clear-subscription-data">Clear subscription data</h4>
 
-<p>At any time, you can reset your subscription database with the <strong>“Reset”</strong> button in the <a href="/pro/dashboard">GraphQL-Pro Dashboard</a>, or in Ruby:</p>
+<p>At any time, you can reset your subscription database with the <strong>“Reset”</strong> button in the       <a href="/pro/dashboard">GraphQL-Pro Dashboard</a>, or in Ruby:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Wipe all subscription data from the DB:</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">clear</span>
@@ -299,7 +302,7 @@ appendonly <span class="nb">yes</span>
 
 <h2 id="client-configuration">Client configuration</h2>
 
-<p>Install the <a href="https://github.com/pusher/pusher-js">Pusher JS client</a> then see docs for <a href="/javascript_client/apollo_subscriptions">Apollo Client</a> or <a href="/javascript_client/relay_subscriptions">Relay Modern</a>.</p>
+<p>Install the <a href="https://github.com/pusher/pusher-js">Pusher JS client</a> then see docs for       <a href="/javascript_client/apollo_subscriptions">Apollo Client</a> or       <a href="/javascript_client/relay_subscriptions">Relay Modern</a>.</p>
 
 </div>
 <p class="guide-footer">

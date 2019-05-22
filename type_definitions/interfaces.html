@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.4/">API</a>
+          <a href="/api-doc/1.9.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -97,11 +97,11 @@
 
 <p>This means, “if the customer is an <code class="highlighter-rouge">Individual</code>, also get the customer’s company name”.</p>
 
-<p>Interfaces are a good choice whenever a set of objects are used interchangeably, and they have several significant fields in common. When they don’t have fields in common, use a <a href="/type_definitions/unions">Union</a> instead.</p>
+<p>Interfaces are a good choice whenever a set of objects are used interchangeably, and they have several significant fields in common. When they don’t have fields in common, use a       <a href="/type_definitions/unions">Union</a> instead.</p>
 
 <h2 id="defining-interface-types">Defining Interface Types</h2>
 
-<p>Interfaces are Ruby modules which include <a href="/api-doc/1.9.4/GraphQL/Schema/Interface" target="_blank" title="API docs for GraphQL::Schema::Interface"><code>GraphQL::Schema::Interface</code></a>. First, make a base module:</p>
+<p>Interfaces are Ruby modules which include <a href="/api-doc/1.9.5/GraphQL/Schema/Interface" target="_blank" title="API docs for GraphQL::Schema::Interface"><code>GraphQL::Schema::Interface</code></a>. First, make a base module:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Types::BaseInterface</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
@@ -164,7 +164,7 @@
 <p>This method will be called by objects who implement the interface. To override this implementation,
 object classes can override the <code class="highlighter-rouge">#price</code> method.</p>
 
-<p>Read more in the <a href="/fields/introduction">Fields guide</a>.</p>
+<p>Read more in the       <a href="/fields/introduction">Fields guide</a>.</p>
 
 <h3 id="definition-methods">Definition Methods</h3>
 

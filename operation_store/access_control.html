@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.4/">API</a>
+          <a href="/api-doc/1.9.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -81,13 +81,14 @@
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s2">"GraphQL::Pro </span><span class="si">#{</span><span class="n">client_name</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">hmac</span><span class="si">}</span><span class="s2">"</span>
 </code></pre></div></div>
 
-<p><a href="/javascript_client/sync">graphql-ruby-client</a> adds this header to outgoing requests by using the provided <code class="highlighter-rouge">--client</code> and <code class="highlighter-rouge">--secret</code> values.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  &lt;a href="/javascript_client/sync"&gt;graphql-ruby-client&lt;/a&gt; adds this header to outgoing requests by using the provided `--client` and `--secret` values.
+</code></pre></div></div>
 
 <h2 id="authorization">Authorization</h2>
 
-<p>Incoming operations are validated. If you’re using <code class="highlighter-rouge">GraphQL::Pro</code>’s <a href="/pro/authorization#visibility-authorization">visibility authorization</a>, you must determine whether the current client can <em>see</em> the types and fields which are used in the operation.</p>
+<p>Incoming operations are validated. If you’re using <code class="highlighter-rouge">GraphQL::Pro</code>’s       <a href="/pro/authorization#visibility-authorization">visibility authorization</a>, you must determine whether the current client can <em>see</em> the types and fields which are used in the operation.</p>
 
-<p>You can implement authorization for incoming queries with the <code class="highlighter-rouge">authorize(..., operation_store:)</code> option, which accepts a <a href="/pro/authorization#custom-authorization-strategy">auth strategy class</a>, for example:</p>
+<p>You can implement authorization for incoming queries with the <code class="highlighter-rouge">authorize(..., operation_store:)</code> option, which accepts a       <a href="/pro/authorization#custom-authorization-strategy">auth strategy class</a>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">authorize</span><span class="p">(</span><span class="ss">:pundit</span><span class="p">,</span> <span class="ss">operation_store: </span><span class="no">OperationStoreStrategy</span><span class="p">)</span>
 <span class="c1"># Or:</span>

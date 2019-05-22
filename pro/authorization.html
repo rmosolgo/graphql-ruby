@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.4/">API</a>
+          <a href="/api-doc/1.9.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -56,7 +56,7 @@
 
 <h1 class="guide-header">Authorization Framework</h1>
 <div class="guide-container">
-  <p><strong>NOTE:</strong> A new <a href="/authorization/pundit_integration">Pundit integration</a> and <a href="/authorization/can_can_integration">CanCan integration</a> are available. They leverage GraphQL-Ruby’s new <a href="/authorization/overview">built-in auth</a> system and has better support for inheritance and customization. If possible, use those instead!</p>
+  <p><strong>NOTE:</strong> A new       <a href="/authorization/pundit_integration">Pundit integration</a> and       <a href="/authorization/can_can_integration">CanCan integration</a> are available. They leverage GraphQL-Ruby’s new       <a href="/authorization/overview">built-in auth</a> system and has better support for inheritance and customization. If possible, use those instead!</p>
 
 <hr />
 
@@ -264,11 +264,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The hook should return a <a href="/api-doc/1.9.4/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a>. It is called with:</p>
+<p>The hook should return a <a href="/api-doc/1.9.5/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a>. It is called with:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">irep_nodes</code>: an array of <a href="/api-doc/1.9.4/GraphQL/InternalRepresentation/Node" target="_blank" title="API docs for GraphQL::InternalRepresentation::Node"><code>GraphQL::InternalRepresentation::Node</code></a>s which represent unpermitted fields in the incoming query.</li>
-  <li><code class="highlighter-rouge">ctx</code>: the <a href="/api-doc/1.9.4/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> (which includes <code class="highlighter-rouge">:current_user</code>).</li>
+  <li><code class="highlighter-rouge">irep_nodes</code>: an array of <a href="/api-doc/1.9.5/GraphQL/InternalRepresentation/Node" target="_blank" title="API docs for GraphQL::InternalRepresentation::Node"><code>GraphQL::InternalRepresentation::Node</code></a>s which represent unpermitted fields in the incoming query.</li>
+  <li><code class="highlighter-rouge">ctx</code>: the <a href="/api-doc/1.9.5/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> (which includes <code class="highlighter-rouge">:current_user</code>).</li>
 </ul>
 
 <h2 id="visibility-authorization">Visibility Authorization</h2>
@@ -293,7 +293,7 @@
 
 <h2 id="pundit">Pundit</h2>
 
-<p><strong>NOTE:</strong> A new <a href="/authorization/pundit_integration">Pundit integration</a> is available. It leverages GraphQL-Ruby’s new <a href="/authorization/overview">built-in auth</a> system and has better support for inheritance and customization. If possible, use that one instead!</p>
+<p><strong>NOTE:</strong> A new       <a href="/authorization/pundit_integration">Pundit integration</a> is available. It leverages GraphQL-Ruby’s new       <a href="/authorization/overview">built-in auth</a> system and has better support for inheritance and customization. If possible, use that one instead!</p>
 
 <p><code class="highlighter-rouge">GraphQL::Pro</code> includes built-in support for <a href="https://github.com/elabs/pundit">Pundit</a>:</p>
 
@@ -356,7 +356,7 @@
 
 <h2 id="cancan">CanCan</h2>
 
-<p><strong>NOTE:</strong> A new <a href="/authorization/can_can_integration">CanCan integration</a> is available. It leverages GraphQL-Ruby’s new <a href="/authorization/overview">built-in auth</a> system and has better support for inheritance and customization. If possible, use that one instead!</p>
+<p><strong>NOTE:</strong> A new       <a href="/authorization/can_can_integration">CanCan integration</a> is available. It leverages GraphQL-Ruby’s new       <a href="/authorization/overview">built-in auth</a> system and has better support for inheritance and customization. If possible, use that one instead!</p>
 
 <p><code class="highlighter-rouge">GraphQL::Pro</code> includes built-in support for <a href="https://github.com/CanCanCommunity/cancancan">CanCan</a>:</p>
 
