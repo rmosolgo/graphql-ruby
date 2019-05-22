@@ -8,11 +8,32 @@
 
 ### Bug fixes
 
+## 1.9.5 (22 May 2019)
+
+### New features
+
+- Support `rescue_from` returning `GraphQL::ExecutionError` #2140
+- Accept `context:` in `Schema.validate` #2256
+- Include `query:` in interpreter tracing for `execute_field` and `execute_field_lazy` #2236
+- Add `Types::JSON` #2227
+- Add `null:` option to `BaseEdge.node_type` #2249
+
+### Bug fixes
+
+- Fix Ruby 2.2 compatibility #2302
+- Distinguish aliased selections in lookahead #2266
+- Properly show list enum default values in introspection #2263
+- Performance improvements: #2289, #2244, #2258, #2257, #2240
+- Don't recursively unwrap inputs for RelayClassicMutation #2236
+- Fix `Schema::Field#scoped?` when no return type #2255
+- Properly forward more authorization errors  #2165
+- Raise `ParseError` for `.parse(nil)` #2238
+
 ## 1.9.4 (5 Apr 2019)
 
-### Breaking Changes 
+### Breaking Changes
 
-- `GraphQL::Schema::Resolver::LoadApplicationObjectFailedError` was renamed to `GraphQL::LoadApplicationObjectFailedError`. (This will only break if you're referencing the class by name and running Ruby 2.5+) #2080 
+- `GraphQL::Schema::Resolver::LoadApplicationObjectFailedError` was renamed to `GraphQL::LoadApplicationObjectFailedError`. (This will only break if you're referencing the class by name and running Ruby 2.5+) #2080
 
 ### New features
 
