@@ -3,7 +3,7 @@ require:
 
 AllCops:
   DisabledByDefault: true
-  TargetRubyVersion: 2.3
+  TargetRubyVersion: 2.2
   Exclude:
     - 'lib/graphql/language/lexer.rb'
     - 'lib/graphql/language/parser.rb'
