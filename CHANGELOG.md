@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.9.6 (23 May 2019)
+
+### Bug fixes
+
+- Backport `String#-@` for Ruby 2.2 support #2305
+
 ## 1.9.5 (22 May 2019)
 
 ### New features
