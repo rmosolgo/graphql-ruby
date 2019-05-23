@@ -32,7 +32,8 @@ module GraphQL
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
       def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, description: nil, default_value: NO_DEFAULT, as: nil, camelize: true, prepare: nil, owner:, &definition_block)
         arg_name ||= name
-        @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
+        name_str = camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s
+        @name = name_str.freeze
         @type_expr = type_expr || type
         @description = desc || description
         @null = !required
