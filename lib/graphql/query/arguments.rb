@@ -14,8 +14,8 @@ module GraphQL
           self.argument_definitions = argument_definitions
 
           argument_definitions.each do |_arg_name, arg_definition|
-            expose_as = -arg_definition.expose_as.to_s
-            expose_as_underscored = -GraphQL::Schema::Member::BuildType.underscore(expose_as)
+            expose_as = arg_definition.expose_as.to_s.freeze
+            expose_as_underscored = GraphQL::Schema::Member::BuildType.underscore(expose_as).freeze
             method_names = [expose_as, expose_as_underscored].uniq
             method_names.each do |method_name|
               # Don't define a helper method if it would override something.
