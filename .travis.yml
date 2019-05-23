@@ -37,6 +37,10 @@ matrix:
     gemfile: spec/dummy/Gemfile
     script:
       - cd spec/dummy && bundle exec rails test:system
+  - rvm: 2.2.10
+    before_install:
+      - gem uninstall -v '>= 2' -i $(rvm gemdir)@global -ax bundler || true
+      - gem install bundler -v '< 2'
   - env:
       - TESTING_INTERPRETER=yes
     rvm: 2.4.3
