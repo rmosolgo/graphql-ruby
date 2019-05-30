@@ -1,8 +1,12 @@
 # frozen_string_literal: true
-
+require 'graphql/rails_integration/serialize_as_json'
 
 module GraphQL
   class Railtie < Rails::Railtie
+    initializer 'graphql.active_support extensions' do
+      GraphQL::Schema::InputObject.include RailsIntegration::SerializeAsJSON
+    end
+
     rake_tasks do
       # Defer this so that you only need the `parser` gem when you _run_ the upgrader
       def load_upgraders
