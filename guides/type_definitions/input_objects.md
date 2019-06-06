@@ -82,7 +82,22 @@ end
 
 ## Customizing Input Objects
 
-You can add or override methods on input object classes to customize them.  They have two instance variables by default:
+You can customize the `GraphQL::Schema::Argument` class which is used for input objects: 
+
+```ruby 
+class Types::BaseArgument < GraphQL::Schema::Argument 
+  # your customization here ... 
+end 
+
+
+class Types::BaseInputObject < GraphQL::Schema::InputObject 
+  # Hook up the customized argument class 
+  argument_class(Types::BaseArgument)  
+end 
+```
+
+
+You can also add or override methods on input object classes to customize them.  They have two instance variables by default:
 
 - `@arguments`: A {{ "GraphQL::Query::Arguments" | api_doc }} instance
 - `@context`: The current {{ "GraphQL::Query::Context" | api_doc }}
