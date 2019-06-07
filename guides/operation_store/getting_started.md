@@ -23,7 +23,7 @@ To use `GraphQL::Pro::OperationStore` with your app, follow these steps:
 `OperationStore` requires two gems in your application environment:
 
 - `ActiveRecord` to access tables in your database. (Using another ORM or backend? Please {% open_an_issue "Backend support request for OperationStore" %} to request support!)
-- `Rack`: to serve the Dashboard and Sync API. (In Rails, this is provided by `config/routes.md`.)
+- `Rack`: to serve the Dashboard and Sync API. (In Rails, this is provided by `config/routes.rb`.)
 
 These are bundled with Rails by default.
 

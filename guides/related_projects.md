@@ -34,6 +34,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/
 - http://mgiroux.me/2015/uploading-files-using-relay-with-rails/
 - http://mgiroux.me/2016/journey-into-graphql-ruby-query-execution/
+- https://jonsimpson.ca/parallel-graphql-resolvers-with-futures/
 
 ## Screencasts
 
@@ -41,3 +42,8 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 
 ## Presentations
 - [Rescuing Legacy Codebases with GraphQL](https://speakerdeck.com/nettofarah/rescuing-legacy-codebases-with-graphql-1) by [@nettofarah](https://twitter.com/nettofarah)
+
+## Tutorials
+- [How To GraphQL](https://www.howtographql.com/graphql-ruby/0-introduction/) by [@rstankov](https://github.com/rstankov)
+
+- [GraphQL Ruby CRUD Tutorial](https://www.blook.pub/books/graphql-rails-tutorial) by [@kohheepeace](https://twitter.com/kohheepeace)

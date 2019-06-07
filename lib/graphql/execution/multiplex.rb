@@ -175,7 +175,11 @@ module GraphQL
             schema = multiplex.schema
             multiplex_analyzers = schema.multiplex_analyzers
             if multiplex.max_complexity
-              multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(multiplex.max_complexity)]
+              multiplex_analyzers += if schema.using_ast_analysis?
+                [GraphQL::Analysis::AST::MaxQueryComplexity]
+              else
+                [GraphQL::Analysis::MaxQueryComplexity.new(multiplex.max_complexity)]
+              end
             end
 
             schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)

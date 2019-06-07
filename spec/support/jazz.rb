@@ -249,16 +249,6 @@ module Jazz
     end
   end
 
-  class RawJson < GraphQL::Schema::Scalar
-    def self.coerce_input(val, ctx)
-      val
-    end
-
-    def self.coerce_result(val, ctx)
-      val
-    end
-  end
-
   class Musician < BaseObject
     implements GloballyIdentifiableType
     implements NamedEntity
@@ -292,6 +282,7 @@ module Jazz
   end
 
   class InspectableInput < GraphQL::Schema::InputObject
+    argument :ensemble_id, ID, required: false, loads: Ensemble
     argument :string_value, String, required: true, description: "Test description kwarg"
     argument :nested_input, InspectableInput, required: false
     argument :legacy_input, LegacyInputType, required: false
@@ -358,12 +349,12 @@ module Jazz
     field :inspect_context, [String], null: false
     field :hashyEnsemble, Ensemble, null: false
 
-    field :echo_json, RawJson, null: false do
-      argument :input, RawJson, required: true
+    field :echo_json, GraphQL::Types::JSON, null: false do
+      argument :input, GraphQL::Types::JSON, required: true
     end
 
-    field :echo_first_json, RawJson, null: false do
-      argument :input, [RawJson], required: true
+    field :echo_first_json, GraphQL::Types::JSON, null: false do
+      argument :input, [GraphQL::Types::JSON], required: true
     end
 
     field :upcase_check_1, String, null: true, resolver_method: :upcase_check, extras: [:upcase]
@@ -407,6 +398,8 @@ module Jazz
         input.key?(:string_value).to_s,
         # ~~Access by legacy key~~ # not anymore
         input[:string_value],
+        input.ensemble,
+        input.key?(:ensemble).to_s,
       ]
     end
 
@@ -497,6 +490,17 @@ module Jazz
       instrument = Jazz::Models::Instrument.new(name, family)
       Jazz::Models.data["Instrument"] << instrument
       {instrument: instrument, entries: Jazz::Models.data["Instrument"], ee: execution_errors.class.name}
+    end
+  end
+
+  class AddEnsembleRelay < GraphQL::Schema::RelayClassicMutation
+    argument :ensemble, EnsembleInput, required: true
+    field :ensemble, Ensemble, null: false
+
+    def resolve(ensemble:)
+      ens = Models::Ensemble.new(ensemble.name)
+      Models.data["Ensemble"] << ens
+      { ensemble: ens }
     end
   end
 
@@ -630,6 +634,7 @@ module Jazz
     end
 
     field :add_instrument, mutation: AddInstrument
+    field :add_ensemble_relay, mutation: AddEnsembleRelay
     field :add_sitar, mutation: AddSitar
     field :rename_ensemble, mutation: RenameEnsemble
     field :rename_named_entity, mutation: RenameNamedEntity

@@ -2,7 +2,7 @@
 module GraphQL
   class UnauthorizedFieldError < GraphQL::UnauthorizedError
     # @return [Field] the field that failed the authorization check
-    attr_reader :field
+    attr_accessor :field
 
     def initialize(message = nil, object: nil, type: nil, context: nil, field: nil)
       if message.nil? && [field, type].any?(&:nil?)

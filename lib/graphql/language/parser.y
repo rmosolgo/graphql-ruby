@@ -59,7 +59,7 @@ rule
     | name
 
   variable_definitions_opt:
-      /* none */                              { return [] }
+      /* none */                              { return EMPTY_ARRAY }
     | LPAREN variable_definitions_list RPAREN { return val[1] }
 
   variable_definitions_list:
@@ -89,7 +89,7 @@ rule
       LCURLY selection_list RCURLY { return val[1] }
 
   selection_set_opt:
-      /* none */    { return [] }
+      /* none */    { return EMPTY_ARRAY }
     | selection_set { return val[0] }
 
   selection_list:
@@ -164,8 +164,8 @@ rule
     | enum_value_definitions enum_value_definition { return val[0] << val[1] }
 
   arguments_opt:
-      /* none */                    { return [] }
-    | LPAREN RPAREN                 { return [] }
+      /* none */                    { return EMPTY_ARRAY }
+    | LPAREN RPAREN                 { return EMPTY_ARRAY }
     | LPAREN arguments_list RPAREN  { return val[1] }
 
   arguments_list:
@@ -195,7 +195,7 @@ rule
   variable: VAR_SIGN name { return make_node(:VariableIdentifier, name: val[1], position_source: val[0]) }
 
   list_value:
-      LBRACKET RBRACKET                 { return [] }
+      LBRACKET RBRACKET                 { return EMPTY_ARRAY }
     | LBRACKET list_value_list RBRACKET { return val[1] }
 
   list_value_list:
@@ -228,7 +228,7 @@ rule
   enum_value: enum_name { return make_node(:Enum, name: val[0], position_source: val[0]) }
 
   directives_list_opt:
-      /* none */      { return [] }
+      /* none */      { return  EMPTY_ARRAY }
     | directives_list
 
   directives_list:
@@ -355,7 +355,7 @@ rule
       }
 
   implements_opt:
-      /* none */ { return [] }
+      /* none */ { return EMPTY_ARRAY }
     | implements
 
   implements:
@@ -381,7 +381,7 @@ rule
     | input_value_definition_list input_value_definition { val[0] << val[1] }
 
   arguments_definitions_opt:
-      /* none */ { return [] }
+      /* none */ { return EMPTY_ARRAY }
     | LPAREN input_value_definition_list RPAREN { return val[1] }
 
   field_definition:
@@ -390,7 +390,7 @@ rule
       }
 
   field_definition_list:
-    /* none */ { return [] }
+    /* none */ { return EMPTY_ARRAY }
     | field_definition                       { return [val[0]] }
     | field_definition_list field_definition { val[0] << val[1] }
 
@@ -433,7 +433,10 @@ end
 
 ---- inner ----
 
+EMPTY_ARRAY = [].freeze
+
 def initialize(query_string, filename:, tracer: Tracing::NullTracer)
+  raise GraphQL::ParseError.new("No query string was present", nil, nil, query_string) if query_string.nil?
   @query_string = query_string
   @filename = filename
   @tracer = tracer

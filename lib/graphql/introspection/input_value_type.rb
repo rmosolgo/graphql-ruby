@@ -19,7 +19,11 @@ module GraphQL
           else
             coerced_default_value = @object.type.coerce_result(value, @context)
             if @object.type.unwrap.is_a?(GraphQL::EnumType)
-              coerced_default_value
+              if @object.type.list? 
+                "[#{coerced_default_value.join(", ")}]"
+              else
+                coerced_default_value
+              end
             else
               GraphQL::Language.serialize(coerced_default_value)
             end

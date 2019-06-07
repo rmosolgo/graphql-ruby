@@ -37,9 +37,15 @@ describe GraphQL::Schema::InputObject do
         argument :arg3, Integer, required: true
       end
 
+      ensemble_class = Class.new(subclass) do
+        argument :ensemble_id, GraphQL::Types::ID, required: false, loads: Jazz::Ensemble
+      end
+      
       assert_equal 3, subclass.arguments.size
       assert_equal ["arg1", "arg2", "arg3"], subclass.arguments.keys
       assert_equal ["String!", "Int!", "Int!"], subclass.arguments.values.map { |a| a.type.to_type_signature }
+      assert_equal ["String!", "Int!", "Int!", "ID"], ensemble_class.arguments.values.map { |a| a.type.to_type_signature }
+      assert_equal :ensemble, ensemble_class.arguments["ensembleId"].keyword
     end
   end
 
@@ -55,7 +61,7 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-  describe "prepare: / as:" do
+  describe "prepare: / loads: / as:" do
     module InputObjectPrepareTest
       class InputObj < GraphQL::Schema::InputObject
         argument :a, Integer, required: true
@@ -63,6 +69,8 @@ describe GraphQL::Schema::InputObject do
         argument :c, Integer, required: true, prepare: :prep
         argument :d, Integer, required: true, prepare: :prep, as: :d2
         argument :e, Integer, required: true, prepare: ->(val, ctx) { val * ctx[:multiply_by] * 2 }, as: :e2
+        argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+        argument :danger, Integer, required: false, prepare: ->(val, ctx) { raise GraphQL::ExecutionError.new('boom!') }
 
         def prep(val)
           val * context[:multiply_by]
@@ -70,12 +78,12 @@ describe GraphQL::Schema::InputObject do
       end
 
       class Query < GraphQL::Schema::Object
-        field :inputs, String, null: false do
+        field :inputs, [String], null: false do
           argument :input, InputObj, required: true
         end
 
         def inputs(input:)
-          input.to_kwargs.inspect
+          [input.to_kwargs.inspect, input.instrument.name]
         end
       end
 
@@ -84,17 +92,114 @@ describe GraphQL::Schema::InputObject do
         if TESTING_INTERPRETER
           use GraphQL::Execution::Interpreter
         end
+
+        def self.object_from_id(id, ctx)
+          Jazz::GloballyIdentifiableType.find(id)
+        end
+
+        def self.resolve_type(type, obj, ctx)
+          type
+        end
       end
     end
 
     it "calls methods on the input object" do
       query_str = <<-GRAPHQL
-      { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5 }) }
+      { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5, instrumentId: "Instrument/Drum Kit" }) }
       GRAPHQL
 
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
-      expected_obj = { a: 1, b2: 2, c: 9, d2: 12, e2: 30 }.inspect
+      expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: "Instrument/Drum Kit" }.inspect, "Drum Kit"]
       assert_equal expected_obj, res["data"]["inputs"]
+    end
+
+    it "handles exceptions preparing variable input objects" do
+      query_str = <<-GRAPHQL
+      query($input: InputObj!){ inputs(input: $input) }
+      GRAPHQL
+
+      input = { "a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5, "instrumentId" => "Instrument/Drum Kit", "danger" => 1 }
+      res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 },
+                                                   variables: { input: input})
+      assert_nil(res["data"])
+      assert_equal("Variable input of type InputObj! was provided invalid value", res["errors"][0]["message"])
+      assert_equal([{ "line" => 1, "column" => 13 }], res["errors"][0]["locations"])
+      assert_equal("boom!", res["errors"][0]["extensions"]["problems"][0]["explanation"])
+      assert_equal(input, res["errors"][0]["extensions"]["value"])
+    end
+  end
+
+  describe "loading application object(s)" do
+    module InputObjectLoadsTest
+      class SingleLoadInputObj < GraphQL::Schema::InputObject
+        argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+      end
+
+      class MultiLoadInputObj < GraphQL::Schema::InputObject
+        argument :instrument_ids, [ID], required: true, loads: Jazz::InstrumentType
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :single_load_input, Jazz::InstrumentType, null: false do
+          argument :input, SingleLoadInputObj, required: true
+        end
+        field :multi_load_input, [Jazz::InstrumentType], null: false do
+          argument :input, MultiLoadInputObj, required: true
+        end
+
+        def single_load_input(input:)
+          input.instrument
+        end
+
+        def multi_load_input(input:)
+          input.instruments
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query(Query)
+        if TESTING_INTERPRETER
+          use GraphQL::Execution::Interpreter
+        end
+
+        def self.object_from_id(id, ctx)
+          Jazz::GloballyIdentifiableType.find(id)
+        end
+
+        def self.resolve_type(type, obj, ctx)
+          type
+        end
+      end
+    end
+
+    let(:single_query_str) {
+      <<-GRAPHQL
+        query($id: ID!) {
+          singleLoadInput(input: {instrumentId: $id}) {
+            id
+          }
+        }
+      GRAPHQL
+    }
+
+    let(:multi_query_str) {
+      <<-GRAPHQL
+        query($ids: [ID!]!) {
+          multiLoadInput(input: {instrumentIds: $ids}) {
+            id
+          }
+        }
+      GRAPHQL
+    }
+
+    it "loads arguments as objects of the given type and strips `_id` suffix off argument name" do
+      res = InputObjectLoadsTest::Schema.execute(single_query_str, variables: { id: "Ensemble/Robert Glasper Experiment" })
+      assert_equal "Ensemble/Robert Glasper Experiment", res["data"]["singleLoadInput"]["id"]
+    end
+
+    it "loads arguments as objects of the given type and strips `_ids` suffix off argument name and appends `s`" do
+      res = InputObjectLoadsTest::Schema.execute(multi_query_str, variables: { ids: ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"]})
+      assert_equal ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"], res["data"]["multiLoadInput"].map { |e| e["id"] }
     end
   end
 
@@ -105,7 +210,8 @@ describe GraphQL::Schema::InputObject do
         inspectInput(input: {
           stringValue: "ABC",
           legacyInput: { intValue: 4 },
-          nestedInput: { stringValue: "xyz"}
+          nestedInput: { stringValue: "xyz"},
+          ensembleId: "Ensemble/Robert Glasper Experiment"
         })
       }
       GRAPHQL
@@ -118,6 +224,8 @@ describe GraphQL::Schema::InputObject do
         "ABC",
         "true",
         "ABC",
+        Jazz::Models::Ensemble.new("Robert Glasper Experiment").to_s,
+        "true",
       ]
       assert_equal expected_info, res["data"]["inspectInput"]
     end
@@ -136,6 +244,7 @@ describe GraphQL::Schema::InputObject do
         graphql_name "TestInput1"
         argument :d, Int, required: true
         argument :e, Int, required: true
+        argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
       end
 
       class TestInput2 < GraphQL::Schema::InputObject
@@ -150,7 +259,7 @@ describe GraphQL::Schema::InputObject do
     end
 
     it "returns a symbolized, aliased, ruby keyword style hash" do
-      arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
+      arg_values = {a: 1, b: 2, c: { d: 3, e: 4, instrumentId: "Instrument/Drum Kit"}}
 
       input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
@@ -158,7 +267,7 @@ describe GraphQL::Schema::InputObject do
         defaults_used: Set.new
       )
 
-      assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4 } }, input_object.to_h)
+      assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4, instrument: "Instrument/Drum Kit" } }, input_object.to_h)
     end
   end
 
@@ -228,11 +337,11 @@ describe GraphQL::Schema::InputObject do
           }
         }')
       # Test __type
-      assert_equal ["stringValue", "nestedInput", "legacyInput"], res["data"]["__type"]["inputFields"].map { |f| f["name"] }
+      assert_equal ["ensembleId", "stringValue", "nestedInput", "legacyInput"], res["data"]["__type"]["inputFields"].map { |f| f["name"] }
       # Test __schema { types }
       # It's upcased to test custom introspection
       input_type = res["data"]["__schema"]["types"].find { |t| t["name"] == "INSPECTABLEINPUT" }
-      assert_equal ["stringValue", "nestedInput", "legacyInput"], input_type["inputFields"].map { |f| f["name"] }
+      assert_equal ["ensembleId", "stringValue", "nestedInput", "legacyInput"], input_type["inputFields"].map { |f| f["name"] }
     end
   end
 end

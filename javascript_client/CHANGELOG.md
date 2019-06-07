@@ -1,5 +1,11 @@
 # graphql-ruby-client
 
+## 1.6.4 (11 May 2019)
+
+- Add `--verbose` option to `sync` #2075
+- Support Relay 2.0.0 #2121
+- ActionCableLink: support subscriber when there are errors but no data #2176
+
 ## 1.6.3 (11 Jan 2019)
 
 - Fix `.unsubscribe()` for PusherLink #2042

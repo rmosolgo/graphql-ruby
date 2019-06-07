@@ -6,6 +6,10 @@ require "graphql/schema/field/scope_extension"
 module GraphQL
   class Schema
     class Field
+      if !String.method_defined?(:-@)
+        using GraphQL::StringDedupBackport
+      end
+
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasArguments
@@ -130,7 +134,7 @@ module GraphQL
           # The default was overridden
           @scope
         else
-          @return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.include?("[")) || connection?
+          @return_type_expr && (@return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.include?("[")) || connection?)
         end
       end
 
@@ -173,8 +177,8 @@ module GraphQL
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve and class-based field such as mutation class, please remove `field:`, `function:` or `resolve:`"
         end
         @original_name = name
-        @underscored_name = Member::BuildType.underscore(name.to_s)
-        @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
+        @underscored_name = -Member::BuildType.underscore(name.to_s)
+        @name = -(camelize ? Member::BuildType.camelize(name.to_s) : name.to_s)
         @description = description
         if field.is_a?(GraphQL::Schema::Field)
           raise ArgumentError, "Instead of passing a field as `field:`, use `add_field(field)` to add an already-defined field."
@@ -504,6 +508,9 @@ module GraphQL
             err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
             ctx.schema.unauthorized_field(err)
           end
+        rescue GraphQL::UnauthorizedFieldError => err
+          err.field ||= self
+          ctx.schema.unauthorized_field(err)
         rescue GraphQL::UnauthorizedError => err
           ctx.schema.unauthorized_object(err)
         end

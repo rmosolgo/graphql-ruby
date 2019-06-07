@@ -8,6 +8,24 @@
 
 ### Bug Fix
 
+## 1.10.5 (11 May 2019)
+
+### New Features
+
+- Include expected HMAC digest in OperationStore debug output
+
+## 1.10.4 (26 Mar 2019)
+
+### Bug Fix
+
+- Include content-length and content-type headers in OperationStore JSON responses
+
+## 1.10.3 (13 Mar 2019)
+
+### Bug Fix
+
+- Support stable connections ordered by Arel SQL literals
+
 ## 1.10.2 (11 Mar 2019)
 
 ### Bug Fix

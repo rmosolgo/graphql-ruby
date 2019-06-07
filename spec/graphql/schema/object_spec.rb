@@ -105,6 +105,77 @@ describe GraphQL::Schema::Object do
     end
   end
 
+  describe "using GraphQL::Function" do
+    new_test_func_payload = Class.new(GraphQL::Schema::Object) do
+      graphql_name "TestFuncPayload"
+      field :name, String, null: false
+    end
+
+    it "returns data on a field" do
+      new_func_class = Class.new(GraphQL::Function) do
+        argument :name, GraphQL::STRING_TYPE
+        type new_test_func_payload
+
+        def call(o, a, c)
+          { name: a[:name] }
+        end
+      end
+
+      new_object_class = Class.new(GraphQL::Schema::Object) do
+        graphql_name "GraphQL"
+        field :test, function: new_func_class.new
+      end
+
+      schema = Class.new(GraphQL::Schema) do
+        query(new_object_class)
+      end
+
+      query_str = <<-GRAPHQL
+      {
+        test(name: "graphql") {
+          name
+        }
+      }
+      GRAPHQL
+      res = schema.execute(query_str)
+      assert_equal "graphql", res["data"]["test"]["name"]
+    end
+
+    it "returns data on a connection" do
+      new_func_class = Class.new(GraphQL::Function) do
+        argument :name, GraphQL::STRING_TYPE
+        type new_test_func_payload.connection_type
+
+        def call(o, a, c)
+          [{ name: a[:name] }]
+        end
+      end
+
+      new_object_class = Class.new(GraphQL::Schema::Object) do
+        graphql_name "GraphQL"
+        field :test_conn, function: new_func_class.new
+      end
+
+      schema = Class.new(GraphQL::Schema) do
+        query(new_object_class)
+      end
+
+      query_str = <<-GRAPHQL
+      {
+        testConn(name: "graphql") {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+      GRAPHQL
+      res = schema.execute(query_str)
+      assert_equal "graphql", res["data"]["testConn"]["edges"][0]["node"]["name"]
+    end
+  end
+
   describe "wrapping a Hash" do
     it "automatically looks up symbol and string keys" do
       query_str = <<-GRAPHQL
