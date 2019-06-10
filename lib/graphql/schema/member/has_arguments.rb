@@ -13,8 +13,9 @@ module GraphQL
           cls.include(ArgumentObjectLoader)
         end
 
-        def argument_with_loads(name, type, *rest, loads: nil, **kwargs)
+        def argument_with_loads(*args, loads: nil, **kwargs)
           if loads
+            name = args[0]
             name_as_string = name.to_s
 
             inferred_arg_name = case name_as_string
@@ -31,7 +32,7 @@ module GraphQL
             kwargs[:as] ||= inferred_arg_name
           end
 
-          return [name, type, *rest, **kwargs]
+          return [*args, **kwargs]
         end
 
         # @see {GraphQL::Schema::Argument#initialize} for parameters
