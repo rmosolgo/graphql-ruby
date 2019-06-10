@@ -28,7 +28,7 @@ Run `-a` to replace this with `.empty?`.
 
     def autocorrect(node)
       lambda do |corrector|
-        corrector.replace(node.source_range, ".empty?")
+        corrector.replace(node.location.selector, "empty?")
       end
     end
   end

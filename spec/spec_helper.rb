@@ -55,6 +55,19 @@ NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
   raise "this should never be called"
 }
 
+def testing_rails?
+  defined?(::Rails)
+end
+
+def testing_mongoid?
+  defined?(::Mongoid)
+end
+
+# Load support files
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
+  require f
+end
+
 # Load dependencies
 ['Mongoid', 'Rails'].each do |integration|
   begin
@@ -65,11 +78,6 @@ NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
   rescue NameError
     # ignore
   end
-end
-
-# Load support files
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
-  require f
 end
 
 def star_trek_query(string, variables={}, context: {})

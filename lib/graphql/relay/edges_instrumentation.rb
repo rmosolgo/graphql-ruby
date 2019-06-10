@@ -31,7 +31,7 @@ module GraphQL
           if ctx.schema.lazy?(nodes)
             nodes
           else
-            nodes.map { |item| @edge_class.new(item, parent) }
+            nodes.map { |item| item.is_a?(GraphQL::Pagination::Connection::Edge) ? item : @edge_class.new(item, parent) }
           end
         end
       end

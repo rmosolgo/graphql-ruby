@@ -37,7 +37,7 @@ module GraphQL
       # @return [Class] The type that this field belongs to
       attr_reader :owner
 
-      # @return [Symobol] the original name of the field, passed in by the user
+      # @return [Symbol] the original name of the field, passed in by the user
       attr_reader :original_name
 
       # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one

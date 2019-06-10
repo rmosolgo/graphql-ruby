@@ -2,11 +2,6 @@
 require_relative 'spec_helper'
 require 'ostruct'
 
-# platform helper
-def jruby?
-  RUBY_ENGINE == 'jruby'
-end
-
 module StarWars
   names = [
     'X-Wing',
@@ -18,33 +13,6 @@ module StarWars
     'TIE Interceptor',
     'Executor',
   ]
-
-  `rm -f ./_test_.db`
-  # Set up "Bases" in ActiveRecord
-
-  if jruby?
-    ActiveRecord::Base.establish_connection(adapter: "jdbcsqlite3", database: "./_test_.db")
-    DB = Sequel.connect('jdbc:sqlite:./_test_.db')
-  elsif ENV['DATABASE'] == 'POSTGRESQL'
-    ActiveRecord::Base.establish_connection(
-      adapter: "postgresql",
-      username: "postgres",
-      database: "graphql_ruby_test"
-    )
-    DB = Sequel.connect('postgres://postgres:@localhost:5432/graphql_ruby_test')
-  else
-    ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: "./_test_.db")
-    DB = Sequel.sqlite("./_test_.db")
-  end
-
-  ActiveRecord::Schema.define do
-    self.verbose = false
-    create_table :bases, force: true do |t|
-      t.column :name, :string
-      t.column :planet, :string
-      t.column :faction_id, :integer
-    end
-  end
 
   class Base < ActiveRecord::Base
   end
