@@ -106,13 +106,13 @@ To define types that implement this interface use the `implements` method:
 
 ```ruby
 class Types::Car < Types::BaseObject
-  implements Types::RetailObject
+  implements Types::RetailItem
 
   # ... additional fields
 end
 
 class Types::Purse < Types::BaseObject
-  implements Types::RetailObject
+  implements Types::RetailItem
 
   # ... additional fields
 end

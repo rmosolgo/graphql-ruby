@@ -26,7 +26,9 @@ module GraphQL
     #       variables = ensure_hash(data["variables"])
     #       operation_name = data["operationName"]
     #       context = {
-    #         current_user: current_user,
+    #         # Re-implement whatever context methods you need 
+    #         # in this channel or ApplicationCable::Channel
+    #         # current_user: current_user,
     #         # Make sure the channel is in the context
     #         channel: self,
     #       }

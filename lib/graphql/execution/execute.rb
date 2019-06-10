@@ -128,6 +128,9 @@ module GraphQL
               field_ctx.trace("execute_field", { context: field_ctx }) do
                 field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
               end
+            rescue GraphQL::UnauthorizedFieldError => err
+              err.field ||= field
+              field_ctx.schema.unauthorized_field(err)
             rescue GraphQL::UnauthorizedError => err
               field_ctx.schema.unauthorized_object(err)
             end

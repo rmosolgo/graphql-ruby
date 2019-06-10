@@ -205,7 +205,7 @@ module GraphQL
 
             field_result = resolve_with_directives(object, ast_node) do
               # Actually call the field resolver and capture the result
-              app_result = query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path}) do
+              app_result = query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, query: query}) do
                 field_defn.resolve(object, kwarg_arguments, context)
               end
               after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path) do |inner_result|
@@ -398,7 +398,7 @@ module GraphQL
               @interpreter_context[:current_field] = field
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
-              inner_obj = query.trace("execute_field_lazy", {owner: owner, field: field, path: path}) do
+              inner_obj = query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query}) do
                 begin
                   schema.sync_lazy(obj)
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err

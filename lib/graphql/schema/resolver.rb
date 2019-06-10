@@ -168,78 +168,6 @@ module GraphQL
         public_send("load_#{name}", value)
       end
 
-      class LoadApplicationObjectFailedError < GraphQL::ExecutionError
-        # @return [GraphQL::Schema::Argument] the argument definition for the argument that was looked up
-        attr_reader :argument
-        # @return [String] The ID provided by the client
-        attr_reader :id
-        # @return [Object] The value found with this ID
-        attr_reader :object
-        def initialize(argument:, id:, object:)
-          @id = id
-          @argument = argument
-          @object = object
-          super("No object found for `#{argument.graphql_name}: #{id.inspect}`")
-        end
-      end
-
-      # Look up the corresponding object for a provided ID.
-      # By default, it uses Relay-style {Schema.object_from_id},
-      # override this to find objects another way.
-      #
-      # @param type [Class, Module] A GraphQL type definition
-      # @param id [String] A client-provided to look up
-      # @param context [GraphQL::Query::Context] the current context
-      def object_from_id(type, id, context)
-        context.schema.object_from_id(id, context)
-      end
-
-      def load_application_object(arg_kwarg, id)
-        argument = @arguments_by_keyword[arg_kwarg]
-        lookup_as_type = @arguments_loads_as_type[arg_kwarg]
-        # See if any object can be found for this ID
-        loaded_application_object = object_from_id(lookup_as_type, id, context)
-        context.schema.after_lazy(loaded_application_object) do |application_object|
-          if application_object.nil?
-            err = LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-            load_application_object_failed(err)
-          end
-          # Double-check that the located object is actually of this type
-          # (Don't want to allow arbitrary access to objects this way)
-          resolved_application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
-          context.schema.after_lazy(resolved_application_object_type) do |application_object_type|
-            possible_object_types = context.schema.possible_types(lookup_as_type)
-            if !possible_object_types.include?(application_object_type)
-              err = LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-              load_application_object_failed(err)
-            else
-              # This object was loaded successfully
-              # and resolved to the right type,
-              # now apply the `.authorized?` class method if there is one
-              if (class_based_type = application_object_type.metadata[:type_class])
-                context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
-                  if authed
-                    application_object
-                  else
-                    raise GraphQL::UnauthorizedError.new(
-                      object: application_object,
-                      type: class_based_type,
-                      context: context,
-                    )
-                  end
-                end
-              else
-                application_object
-              end
-            end
-          end
-        end
-      end
-
-      def load_application_object_failed(err)
-        raise err
-      end
-
       class << self
         # Default `:resolve` set below.
         # @return [Symbol] The method to call on instances of this object to resolve the field
@@ -327,36 +255,24 @@ module GraphQL
         # also add some preparation hook methods which will be used for this argument
         # @see {GraphQL::Schema::Argument#initialize} for the signature
         def argument(name, type, *rest, loads: nil, **kwargs, &block)
-          if loads
-            name_as_string = name.to_s
+          arg_defn = super(*argument_with_loads(name, type, *rest, loads: loads, **kwargs, &block))
 
-            inferred_arg_name = case name_as_string
-            when /_id$/
-              name_as_string.sub(/_id$/, "").to_sym
-            when /_ids$/
-              name_as_string.sub(/_ids$/, "")
-                .sub(/([^s])$/, "\\1s")
-                .to_sym
-            else
-              name
-            end
-
-            kwargs[:as] ||= inferred_arg_name
-            own_arguments_loads_as_type[kwargs[:as]] = loads
-          end
-
-          arg_defn = super(name, type, *rest, **kwargs, &block)
+          own_arguments_loads_as_type[arg_defn.keyword] = loads if loads
 
           if loads && arg_defn.type.list?
             class_eval <<-RUBY, __FILE__, __LINE__ + 1
             def load_#{arg_defn.keyword}(values)
-              GraphQL::Execution::Lazy.all(values.map { |value| load_application_object(:#{arg_defn.keyword}, value) })
+              argument = @arguments_by_keyword[:#{arg_defn.keyword}]
+              lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
+              GraphQL::Execution::Lazy.all(values.map { |value| load_application_object(argument, lookup_as_type, value) })
             end
             RUBY
           elsif loads
             class_eval <<-RUBY, __FILE__, __LINE__ + 1
             def load_#{arg_defn.keyword}(value)
-              load_application_object(:#{arg_defn.keyword}, value)
+              argument = @arguments_by_keyword[:#{arg_defn.keyword}]
+              lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
+              load_application_object(argument, lookup_as_type, value)
             end
             RUBY
           else

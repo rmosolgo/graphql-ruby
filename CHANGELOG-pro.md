@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.10.5 (11 May 2019)
+
+### New Features
+
+- Include expected HMAC digest in OperationStore debug output
+
 ## 1.10.4 (26 Mar 2019)
 
 ### Bug Fix

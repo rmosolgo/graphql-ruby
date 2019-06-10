@@ -41,7 +41,12 @@ describe("sync operations", () => {
         path: "./__tests__/documents",
         url: "bogus",
         verbose: true,
-        send: (sendPayload, opts) => { payload = sendPayload },
+        send: (sendPayload, opts) => {
+          payload = sendPayload
+          if (opts.verbose) {
+            console.log("Verbose!")
+          }
+        },
       }
       return sync(options).then(function() {
         expect(spy.mock.calls).toMatchSnapshot()

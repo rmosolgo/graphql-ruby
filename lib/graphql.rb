@@ -37,6 +37,19 @@ module GraphQL
   def self.scan_with_ragel(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
+
+  # Support Ruby 2.2 by implementing `-"str"`. If we drop 2.2 support, we can remove this backport.
+  module StringDedupBackport
+    refine String do
+      def -@
+        if frozen?
+          self
+        else
+          self.dup.freeze
+        end
+      end
+    end
+  end
 end
 
 # Order matters for these:
@@ -106,3 +119,4 @@ require "graphql/deprecated_dsl"
 require "graphql/authorization"
 require "graphql/unauthorized_error"
 require "graphql/unauthorized_field_error"
+require "graphql/load_application_object_failed_error"

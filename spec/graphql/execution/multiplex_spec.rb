@@ -134,6 +134,17 @@ describe GraphQL::Execution::Multiplex do
     end
   end
 
+  describe "max_complexity" do
+    it "can successfully calculate complexity" do
+      message = "Query has complexity of 11, which exceeds max complexity of 10"
+      results = multiplex(queries, max_complexity: 10)
+
+      results.each do |res|
+        assert_equal message, res["errors"][0]["message"]
+      end
+    end
+  end
+
   describe "after_query when errors are raised" do
     class InspectQueryInstrumentation
       class << self

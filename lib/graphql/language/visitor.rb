@@ -24,7 +24,7 @@ module GraphQL
     #   end
     #
     #   # Initialize a visitor
-    #   visitor = GraphQL::Language::Visitor.new(document, "name")
+    #   visitor = NameCounter.new(document, "name")
     #   # Run it
     #   visitor.visit
     #   # Check the result

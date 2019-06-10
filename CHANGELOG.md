@@ -8,6 +8,57 @@
 
 ### Bug fixes
 
+## 1.9.6 (23 May 2019)
+
+### Bug fixes
+
+- Backport `String#-@` for Ruby 2.2 support #2305
+
+## 1.9.5 (22 May 2019)
+
+### New features
+
+- Support `rescue_from` returning `GraphQL::ExecutionError` #2140
+- Accept `context:` in `Schema.validate` #2256
+- Include `query:` in interpreter tracing for `execute_field` and `execute_field_lazy` #2236
+- Add `Types::JSON` #2227
+- Add `null:` option to `BaseEdge.node_type` #2249
+
+### Bug fixes
+
+- Fix Ruby 2.2 compatibility #2302
+- Distinguish aliased selections in lookahead #2266
+- Properly show list enum default values in introspection #2263
+- Performance improvements: #2289, #2244, #2258, #2257, #2240
+- Don't recursively unwrap inputs for RelayClassicMutation #2236
+- Fix `Schema::Field#scoped?` when no return type #2255
+- Properly forward more authorization errors  #2165
+- Raise `ParseError` for `.parse(nil)` #2238
+
+## 1.9.4 (5 Apr 2019)
+
+### Breaking Changes
+
+- `GraphQL::Schema::Resolver::LoadApplicationObjectFailedError` was renamed to `GraphQL::LoadApplicationObjectFailedError`. (This will only break if you're referencing the class by name and running Ruby 2.5+) #2080
+
+### New features
+
+- Add `Types::BigInt` #2150
+- Add auto-loading arguments support in Input Object types #2080
+- Add analytics tag to Datadog tracing #2154
+
+### Bug fixes
+
+- Fix `Query#execute` when no explicit query string is passed in #2142
+- Fix when a root type returns nil because unauthorized #2144
+- Fix tracing `node` by threading `owner:` through field tracing #2156
+- Fix interpreter handling of exceptions raised during argument preparation #2198
+- Fix ActionCableLink when there are errors but no data #2176
+- Provide empty hash as default option for field resolvers #2189
+- Prevent argument names from overwriting Arguments methods #2171
+- Include array indices in error paths #2162
+- Handle non-node arrays in AST visitor #2161
+
 ## 1.9.3 (20 Feb 2019)
 
 ### Bug fixes

@@ -12,11 +12,16 @@ module GraphQL
       # @param object [Object] something to be validated
       # @return [String, Nil] error message, if there was one
       def self.validate(object)
-        rules = RULES.reduce([]) do |memo, (parent_class, validations)|
-          memo + (object.is_a?(parent_class) ? validations : [])
+        RULES.each do |parent_class, validations|
+          if object.is_a?(parent_class)
+            validations.each do |rule|
+              if error = rule.call(object)
+                return error
+              end
+            end
+          end
         end
-        # Stops after the first error
-        rules.reduce(nil) { |memo, rule| memo || rule.call(object) }
+        nil
       end
 
       module Rules

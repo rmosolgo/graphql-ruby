@@ -48,6 +48,9 @@ describe GraphQL::Authorization do
       end
 
       def authorized?(object, context)
+        if object == :raise
+          raise GraphQL::UnauthorizedFieldError.new("raised authorized field error", object: object)
+        end
         super && object != :hide && object != :replace
       end
     end
@@ -149,8 +152,13 @@ describe GraphQL::Authorization do
 
     class UnauthorizedObject < BaseObject
       def self.authorized?(value, context)
+        if context[:raise]
+          raise GraphQL::UnauthorizedError.new("raised authorized object error", object: value.object)
+        end
         super && !context[:hide]
       end
+
+      field :value, String, null: false, method: :itself
     end
 
     class UnauthorizedBox < BaseObject
@@ -389,6 +397,8 @@ describe GraphQL::Authorization do
           err.object.replacement
         elsif err.object == :replace
           33
+        elsif err.object == :raise_from_object
+          raise GraphQL::ExecutionError, err.message
         else
           raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object.inspect}"
         end
@@ -398,11 +408,16 @@ describe GraphQL::Authorization do
     end
 
     class SchemaWithFieldHook < GraphQL::Schema
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
       query(Query)
 
       def self.unauthorized_field(err)
         if err.object == :replace
           42
+        elsif err.object == :raise
+          raise GraphQL::ExecutionError, "#{err.message} in field #{err.field.name}"
         else
           raise GraphQL::ExecutionError, "Unauthorized field #{err.field.graphql_name} on #{err.type.graphql_name}: #{err.object}"
         end
@@ -663,6 +678,14 @@ describe GraphQL::Authorization do
               assert_equal ["Unauthorized field unauthorized on Query: hide"], response["errors"].map { |e| e["message"] }
             end
           end
+
+          describe "when the field authorization raises an UnauthorizedFieldError" do
+            it "receives the raised error" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :raise)
+              assert_equal ["raised authorized field error in field unauthorized"], response["errors"].map { |e| e["message"] }
+            end
+          end
         end
 
         describe "with an unauthorized field hook not configured" do
@@ -893,23 +916,33 @@ describe GraphQL::Authorization do
       assert_equal [{"value" => "z"}, {"value" => "z2"}, nil, nil], res["data"]["unauthorizedLazyListInterface"]
     end
 
-    it "replaces objects from the unauthorized_object hook" do
-      query = "{ replacedObject { replaced } }"
-      res = auth_execute(query, context: { replace_me: true })
-      assert_equal true, res["data"]["replacedObject"]["replaced"]
+    describe "with an unauthorized field hook configured" do
+      it "replaces objects from the unauthorized_object hook" do
+        query = "{ replacedObject { replaced } }"
+        res = auth_execute(query, context: { replace_me: true })
+        assert_equal true, res["data"]["replacedObject"]["replaced"]
 
-      res = auth_execute(query, context: { replace_me: false })
-      assert_equal false, res["data"]["replacedObject"]["replaced"]
-    end
+        res = auth_execute(query, context: { replace_me: false })
+        assert_equal false, res["data"]["replacedObject"]["replaced"]
+      end
 
-    it "works when the query hook returns false and there's no root object" do
-      query = "{ __typename }"
-      res = auth_execute(query)
-      assert_equal "Query", res["data"]["__typename"]
+      it "works when the query hook returns false and there's no root object" do
+        query = "{ __typename }"
+        res = auth_execute(query)
+        assert_equal "Query", res["data"]["__typename"]
 
-      unauth_res = auth_execute(query, context: { query_unauthorized: true })
-      assert_nil unauth_res["data"]
-      assert_equal [{"message"=>"Unauthorized Query: nil"}], unauth_res["errors"]
+        unauth_res = auth_execute(query, context: { query_unauthorized: true })
+        assert_nil unauth_res["data"]
+        assert_equal [{"message"=>"Unauthorized Query: nil"}], unauth_res["errors"]
+      end
+
+      describe "when the object authorization raises an UnauthorizedFieldError" do
+        it "receives the raised error" do
+          query = "{ unauthorizedObject { value } }"
+          response = auth_execute(query, context: { raise: true }, root_value: :raise_from_object)
+          assert_equal ["raised authorized object error"], response["errors"].map { |e| e["message"] }
+        end
+      end
     end
   end
 

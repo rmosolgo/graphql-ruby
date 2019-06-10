@@ -11,6 +11,12 @@ module Dummy
     accepts_definition :joins
   end
 
+  class AdminField < GraphQL::Schema::Field
+    def visible?(context)
+      context[:admin] == true
+    end
+  end
+
   module BaseInterface
     include GraphQL::Schema::Interface
   end
@@ -427,6 +433,15 @@ module Dummy
     def deep_non_null; :deep_non_null; end
   end
 
+  class AdminDairyAppQuery < BaseObject
+    field_class AdminField
+
+    field :admin_only_message, String, null: true
+    def admin_only_message
+      "This field is only visible to admin"
+    end
+  end
+
   GLOBAL_VALUES = []
 
   class ReplaceValuesInput < BaseInputObject
@@ -488,5 +503,9 @@ module Dummy
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
     end
+  end
+
+  class AdminSchema < GraphQL::Schema
+    query AdminDairyAppQuery
   end
 end

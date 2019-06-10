@@ -44,11 +44,11 @@ module GraphQL
         # @api private
         def spawn_child(key:, irep_node:, object:)
           FieldResolutionContext.new(
-            context: @context,
-            parent: self,
-            object: object,
-            key: key,
-            irep_node: irep_node,
+            @context,
+            key,
+            irep_node,
+            self,
+            object
           )
         end
 
@@ -203,7 +203,7 @@ module GraphQL
         attr_reader :irep_node, :field, :parent_type, :query, :schema, :parent, :key, :type
         alias :selection :irep_node
 
-        def initialize(context:, key:, irep_node:, parent:, object:)
+        def initialize(context, key, irep_node, parent, object)
           @context = context
           @key = key
           @parent = parent
