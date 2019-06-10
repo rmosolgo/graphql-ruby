@@ -24,6 +24,7 @@ module GraphQL
           type_defn.coerce_input = method(:coerce_input)
           type_defn.metadata[:type_class] = self
           type_defn.default_scalar = default_scalar
+          type_defn.ast_node = ast_node
           type_defn
         end
 
