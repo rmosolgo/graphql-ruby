@@ -9,6 +9,23 @@ describe GraphQL::Schema::Scalar do
   end
 
   describe "in queries" do
+    it "weird infinity bug" do
+      query_str = <<-GRAPHQL
+      {
+        find(id: 2718e2718) {
+          ... on Musician {
+            name
+            favoriteKey
+          }
+        }
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str)
+      assert_equal "B♭", res["data"]["find"]["favoriteKey"]
+    end
+
+
     it "becomes output" do
       query_str = <<-GRAPHQL
       {
