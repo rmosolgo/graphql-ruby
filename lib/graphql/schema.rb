@@ -90,6 +90,7 @@ module GraphQL
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
+      :disable_introspection_entry_points,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
       directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
@@ -140,6 +141,9 @@ module GraphQL
     # @return [Class] Instantiated for each query
     attr_accessor :context_class
 
+    # [Boolean] True if this object disables the introspection entry point fields
+    attr_accessor :disable_introspection_entry_points
+
     class << self
       attr_writer :default_execution_strategy
     end
@@ -186,6 +190,7 @@ module GraphQL
       @introspection_system = nil
       @interpreter = false
       @error_bubbling = false
+      @disable_introspection_entry_points = false
     end
 
     # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
@@ -712,7 +717,8 @@ module GraphQL
         :subscriptions,
         :union_memberships,
         :get_field, :root_types, :references_to, :type_from_ast,
-        :possible_types
+        :possible_types,
+        :disable_introspection_entry_points=
 
       def graphql_definition
         @graphql_definition ||= to_graphql
@@ -737,6 +743,7 @@ module GraphQL
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
+        schema_defn.disable_introspection_entry_points = @disable_introspection_entry_points
 
         prepped_dirs = {}
         directives.each { |k, v| prepped_dirs[k] = v.graphql_definition}
@@ -885,6 +892,10 @@ module GraphQL
         else
           @max_depth
         end
+      end
+
+      def disable_introspection_entry_points
+        @disable_introspection_entry_points = true
       end
 
       def orphan_types(*new_orphan_types)
