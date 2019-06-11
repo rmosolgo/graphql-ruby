@@ -188,6 +188,8 @@ You can define this method to add initial responses or perform other logic befor
 
 (__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
 
+(__Known Bug__: the `subscribe` method is currently not supported when using `GraphQL::Subscriptions::ActionCableSubscriptions` in your schema. See issue [2261](https://github.com/rmosolgo/graphql-ruby/issues/2261))
+
 By default, GraphQL-Ruby returns _nothing_ (`:no_response`) on an initial subscription. But, you may choose to override this and return a value in `def subscribe`. For example:
 
 ```ruby
