@@ -40,7 +40,7 @@ describe GraphQL::Schema::InputObject do
       ensemble_class = Class.new(subclass) do
         argument :ensemble_id, GraphQL::Types::ID, required: false, loads: Jazz::Ensemble
       end
-      
+
       assert_equal 3, subclass.arguments.size
       assert_equal ["arg1", "arg2", "arg3"], subclass.arguments.keys
       assert_equal ["String!", "Int!", "Int!"], subclass.arguments.values.map { |a| a.type.to_type_signature }
@@ -87,8 +87,32 @@ describe GraphQL::Schema::InputObject do
         end
       end
 
+      class Mutation < GraphQL::Schema::Object
+        class TouchInstrument < GraphQL::Schema::Mutation
+          class InstrumentInput < GraphQL::Schema::InputObject
+            argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+          end
+
+          argument :input_obj, InstrumentInput, required: true
+          field :instrument_name_method, String, null: false
+          field :instrument_name_key, String, null: false
+
+          def resolve(input_obj:)
+            # Make sure both kinds of access work the same:
+            {
+              instrument_name_method: input_obj.instrument.name,
+              instrument_name_key: input_obj[:instrument].name,
+            }
+          end
+        end
+
+        field :touch_instrument, mutation: TouchInstrument
+      end
+
+
       class Schema < GraphQL::Schema
         query(Query)
+        mutation(Mutation)
         if TESTING_INTERPRETER
           use GraphQL::Execution::Interpreter
         end
@@ -109,7 +133,7 @@ describe GraphQL::Schema::InputObject do
       GRAPHQL
 
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
-      expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: "Instrument/Drum Kit" }.inspect, "Drum Kit"]
+      expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") }.inspect, "Drum Kit"]
       assert_equal expected_obj, res["data"]["inputs"]
     end
 
@@ -126,6 +150,21 @@ describe GraphQL::Schema::InputObject do
       assert_equal([{ "line" => 1, "column" => 13 }], res["errors"][0]["locations"])
       assert_equal("boom!", res["errors"][0]["extensions"]["problems"][0]["explanation"])
       assert_equal(input, res["errors"][0]["extensions"]["value"])
+    end
+
+    it "loads input object arguments" do
+      query_str = <<-GRAPHQL
+      mutation {
+        touchInstrument(inputObj: { instrumentId: "Instrument/Drum Kit" }) {
+          instrumentNameMethod
+          instrumentNameKey
+        }
+      }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(query_str)
+      assert_equal "Drum Kit", res["data"]["touchInstrument"]["instrumentNameMethod"]
+      assert_equal "Drum Kit", res["data"]["touchInstrument"]["instrumentNameKey"]
     end
   end
 

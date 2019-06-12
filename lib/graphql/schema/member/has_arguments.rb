@@ -13,7 +13,8 @@ module GraphQL
           cls.include(ArgumentObjectLoader)
         end
 
-        def argument_with_loads(*args, loads: nil, **kwargs)
+        def argument_with_loads(*args, **kwargs)
+          loads = kwargs[:loads]
           if loads
             name = args[0]
             name_as_string = name.to_s
