@@ -302,11 +302,11 @@ describe GraphQL::Schema::InputObject do
 
       input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
-        context: nil,
+        context: OpenStruct.new(schema: Jazz::Schema),
         defaults_used: Set.new
       )
 
-      assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4, instrument: "Instrument/Drum Kit" } }, input_object.to_h)
+      assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") } }, input_object.to_h)
     end
   end
 

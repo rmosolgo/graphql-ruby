@@ -255,8 +255,11 @@ module GraphQL
         # also add some preparation hook methods which will be used for this argument
         # @see {GraphQL::Schema::Argument#initialize} for the signature
         def argument(name, type, *rest, loads: nil, **kwargs, &block)
-          arg_defn = super(*argument_with_loads(name, type, *rest, loads: loads, **kwargs, &block))
-
+          *args, kwargs = argument_with_loads(name, type, *rest, loads: loads, **kwargs, &block)
+          # Short-circuit the InputObject's own `loads:` implementation
+          # so that we can support `#load_{x}` methods below.
+          kwargs.delete(:loads)
+          arg_defn = super(*args, **kwargs)
           own_arguments_loads_as_type[arg_defn.keyword] = loads if loads
 
           if loads && arg_defn.type.list?
