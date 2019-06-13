@@ -21,6 +21,17 @@ module GraphQL
         self.class.arguments.each do |name, arg_defn|
           @arguments_by_keyword[arg_defn.keyword] = arg_defn
           ruby_kwargs_key = arg_defn.keyword
+          loads = arg_defn.loads
+
+          if @ruby_style_hash.key?(ruby_kwargs_key) && loads
+            value = @ruby_style_hash[ruby_kwargs_key]
+            @ruby_style_hash[ruby_kwargs_key] = if arg_defn.type.list?
+              GraphQL::Execution::Lazy.all(value.map { |val| load_application_object(arg_defn, loads, val) })
+            else
+              load_application_object(arg_defn, loads, value)
+            end
+          end
+
           if @ruby_style_hash.key?(ruby_kwargs_key) && arg_defn.prepare
             @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
           end
@@ -83,20 +94,14 @@ module GraphQL
         # @return [Class<GraphQL::Arguments>]
         attr_accessor :arguments_class
 
-        def argument(name, type, *rest, loads: nil, **kwargs, &block)
-          argument_defn = super(*argument_with_loads(name, type, *rest, loads: loads, **kwargs, &block))
+        def argument(*args, **kwargs, &block)
+          # Translate `loads:` to `as:` if needed`
+          *args, kwargs = argument_with_loads(*args, **kwargs, &block)
+          argument_defn = super(*args, **kwargs, &block)
           # Add a method access
           method_name = argument_defn.keyword
           define_method(method_name) do
-            value = @ruby_style_hash[method_name]
-            argument = @arguments_by_keyword[method_name]
-            if loads && argument_defn.type.list?
-              GraphQL::Execution::Lazy.all(value.map { |val| load_application_object(argument, loads, val) })
-            elsif loads
-              load_application_object(argument, loads, value)
-            else
-              value
-            end
+            self[method_name]
           end
         end
 
