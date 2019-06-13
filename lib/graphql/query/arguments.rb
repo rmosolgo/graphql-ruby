@@ -45,7 +45,9 @@ module GraphQL
           arg_default_used = defaults_used.include?(arg_name)
           arg_value = wrap_value(inner_value, arg_defn.type, context)
           string_key = arg_defn.expose_as
+          snake_key = Schema::Member::BuildType.underscore(string_key)
           memo[string_key] = ArgumentValue.new(string_key, arg_value, arg_defn, arg_default_used)
+          memo[snake_key] = ArgumentValue.new(snake_key, arg_value, arg_defn, arg_default_used)
           memo
         end
       end

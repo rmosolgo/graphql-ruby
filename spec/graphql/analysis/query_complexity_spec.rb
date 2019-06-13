@@ -298,4 +298,66 @@ describe GraphQL::Analysis::QueryComplexity do
       end
     end
   end
+
+  describe "case of complexity arguments" do
+    let(:query) { GraphQL::Query.new(complexity_schema, query_string) }
+    let(:complexity_schema) {
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :snakes, [String], null: false do
+          argument :snake_case, [Integer], required: true
+          complexity ->(_ctx, args, _child_complexity) do
+            args[:snake_case] ? args[:snake_case].size : 0
+          end
+        end
+
+        def snakes(**_args)
+          []
+        end
+
+        field :camels, [String], null: false do
+          argument :camel_case, [Integer], required: true
+          complexity ->(_ctx, args, _child_complexity) do
+            args[:camelCase] ? args[:camelCase].size : 0
+          end
+        end
+
+        def camels(**_args)
+          []
+        end
+      end
+
+      Class.new(GraphQL::Schema) do
+        query query_type
+      end
+    }
+
+    describe "snake case" do
+      let(:query_string) {%|
+        {
+          snakes(snakeCase: [1, 2, 3])
+        }
+      |}
+
+      it "sums the complexity" do
+        reduce_result
+
+        assert_equal complexities, [query, 3]
+      end
+    end
+
+    describe "camel case" do
+      let(:query_string) {%|
+        {
+          camels(camelCase: [1, 2, 3])
+        }
+      |}
+
+      it "sums the complexity" do
+        reduce_result
+
+        assert_equal complexities, [query, 3]
+      end
+    end
+  end
 end
