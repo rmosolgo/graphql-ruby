@@ -286,6 +286,10 @@ module GraphQL
         end
       end
 
+      def print_scalar(node)
+        GraphQL::Language.serialize(node)
+      end
+
       def print_node(node, indent: "")
         case node
         when Nodes::Document
@@ -343,13 +347,13 @@ module GraphQL
         when Nodes::DirectiveDefinition
           print_directive_definition(node)
         when FalseClass, Float, Integer, NilClass, String, TrueClass, Symbol
-          GraphQL::Language.serialize(node)
+          print_scalar(node)
         when Array
           "[#{node.map { |v| print_node(v) }.join(", ")}]".dup
         when Hash
           "{#{node.map { |k, v| "#{k}: #{print_node(v)}" }.join(", ")}}".dup
         else
-          GraphQL::Language.serialize(node.to_s)
+          print_scalar(node.to_s)
         end
       end
 
