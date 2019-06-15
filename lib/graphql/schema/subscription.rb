@@ -97,11 +97,14 @@ module GraphQL
       # call it without an argument to get the subscription_scope
       # @param new_scope [Symbol]
       # @return [Symbol]
-      def self.subscription_scope(new_scope = nil)
-        if new_scope
+      READING_SCOPE = ::Object.new
+      def self.subscription_scope(new_scope = READING_SCOPE)
+        if new_scope != READING_SCOPE
           @subscription_scope = new_scope
+        elsif defined?(@subscription_scope)
+          @subscription_scope
         else
-          @subscription_scope || find_inherited_method(:subscription_scope, nil)
+          find_inherited_method(:subscription_scope, nil)
         end
       end
 
