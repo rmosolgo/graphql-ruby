@@ -483,9 +483,12 @@ describe GraphQL::Schema::Subscription do
       assert_equal expected_response, mailbox.first
     end
 
-    it "allows for proper inheritance of the class's configuration through `field_options`" do
-      direct_toot_options = SubscriptionFieldSchema::DirectTootWasTooted.field_options
-
+    it "allows for proper inheritance of the class's configuration in subclasses" do
+      # Make a subclass without an explicit configuration
+      class DirectTootSubclass < SubscriptionFieldSchema::DirectTootWasTooted
+      end
+      # Then check if the field options got the inherited value
+      direct_toot_options = DirectTootSubclass.field_options
       assert_equal :viewer, direct_toot_options[:subscription_scope]
     end
 
