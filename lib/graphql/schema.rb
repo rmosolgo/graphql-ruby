@@ -90,7 +90,7 @@ module GraphQL
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
-      :disable_introspection_entry_points,
+      disable_introspection_entry_points: ->(schema) { schema.disable_introspection_entry_points = true },
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
       directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
@@ -110,6 +110,8 @@ module GraphQL
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block) },
       tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
+
+    ensure_defined :introspection_system
 
     attr_accessor \
       :query, :mutation, :subscription,
