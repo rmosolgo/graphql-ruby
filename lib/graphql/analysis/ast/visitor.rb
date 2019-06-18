@@ -220,8 +220,11 @@ module GraphQL
 
         # @return [GraphQL::Argument, nil] The most-recently-entered GraphQL::Argument, if currently inside one
         def argument_definition
-          # Don't get the _last_ one because that's the current one.
-          # Get the second-to-last one, which is the parent of the current one.
+          @argument_definitions.last
+        end
+
+        # @return [GraphQL::Argument, nil] The previous GraphQL argument
+        def previous_argument_definition
           @argument_definitions[-2]
         end
 
