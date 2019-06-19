@@ -412,7 +412,7 @@ module StarTrek
     end
 
     def self.id_from_object(object, type, ctx)
-      GraphQL::Schema::UniqueWithinType.encode(type.name, object.id)
+      GraphQL::Schema::UniqueWithinType.encode(type.graphql_name, object.id)
     end
 
     lazy_resolve(LazyWrapper, :value)
