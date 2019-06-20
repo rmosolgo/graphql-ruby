@@ -1,3 +1,4 @@
+# typed: strong
 # frozen_string_literal: true
 # The introspection query to end all introspection queries, copied from
 # https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js

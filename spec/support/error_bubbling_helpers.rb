@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 # helpers to enable / disable error bubbling in a block scope
 module ErrorBubblingHelpers

@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 require "graphql/compatibility/lazy_execution_specification/lazy_schema"
 

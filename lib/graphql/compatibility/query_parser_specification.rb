@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 require "graphql/compatibility/query_parser_specification/query_assertions"
 require "graphql/compatibility/query_parser_specification/parse_error_specification"

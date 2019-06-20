@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 module LazyHelpers
   MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK = 44

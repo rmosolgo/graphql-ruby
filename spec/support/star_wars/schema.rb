@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 module StarWars
   # Adapted from graphql-relay-js

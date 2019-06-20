@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 module GraphQL
   # There are two ways to apply the deprecated `!` DSL to class-style schema definitions:

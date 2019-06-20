@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 module GraphQL
   # {InputObjectType}s are key-value inputs for fields.

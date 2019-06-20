@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 module GraphQL
   # Raised automatically when a field's resolve function returns `nil`

@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 require "spec_helper"
 require "generators/graphql/loader_generator"

@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 # test_via: ../object.rb
 require "graphql/schema/field/connection_extension"

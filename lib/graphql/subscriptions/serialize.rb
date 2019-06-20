@@ -1,3 +1,4 @@
+# typed: ignore
 # frozen_string_literal: true
 # test_via: ../subscriptions.rb
 require "set"

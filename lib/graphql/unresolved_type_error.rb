@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 module GraphQL
   # Error raised when the value provided for a field

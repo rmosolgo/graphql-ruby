@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 module GraphQL
   # A Union is is a collection of object types which may appear in the same place.

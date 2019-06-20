@@ -1,3 +1,4 @@
+# typed: strong
 # frozen_string_literal: true
 
 require 'graphql/relay/page_info'

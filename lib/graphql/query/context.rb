@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 # test_via: ../execution/execute.rb
 # test_via: ../execution/lazy.rb

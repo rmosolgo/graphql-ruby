@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 module GraphQL
   # When an `authorized?` hook returns false, this error is used to communicate the failure.

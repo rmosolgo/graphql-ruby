@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 require "graphql/language/block_string"
 require "graphql/language/printer"

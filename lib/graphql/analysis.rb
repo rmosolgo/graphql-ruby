@@ -1,3 +1,4 @@
+# typed: strong
 # frozen_string_literal: true
 require "graphql/analysis/ast"
 require "graphql/analysis/max_query_complexity"

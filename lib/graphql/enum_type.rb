@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 module GraphQL
   # Represents a collection of related values.

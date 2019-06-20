@@ -1,3 +1,4 @@
+# typed: strong
 # frozen_string_literal: true
 require "graphql/types/relay/base_field"
 require "graphql/types/relay/base_object"

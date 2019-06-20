@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 module GraphQL
   # A reusable container for field logic, including arguments, resolve, return type, and documentation.

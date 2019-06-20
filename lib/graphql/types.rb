@@ -1,3 +1,4 @@
+# typed: strong
 # frozen_string_literal: true
 require "graphql/types/boolean"
 require "graphql/types/big_int"

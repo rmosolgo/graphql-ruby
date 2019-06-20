@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 # test_via: ../subscriptions.rb
 module GraphQL

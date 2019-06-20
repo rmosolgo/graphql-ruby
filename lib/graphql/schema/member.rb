@@ -1,3 +1,4 @@
+# typed: strong
 # frozen_string_literal: true
 require 'graphql/schema/member/accepts_definition'
 require 'graphql/schema/member/base_dsl_methods'

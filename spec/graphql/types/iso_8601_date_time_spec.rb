@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 require "spec_helper"
 require "graphql/types/iso_8601_date_time"

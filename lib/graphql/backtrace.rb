@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 require "graphql/backtrace/inspect_result"
 require "graphql/backtrace/table"

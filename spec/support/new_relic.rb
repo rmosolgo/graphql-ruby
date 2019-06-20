@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 # A stub for the NewRelic agent, so we can make assertions about how it is used
 if defined?(NewRelic)

@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 module GraphQL
   # If a field's resolve function returns a {ExecutionError},

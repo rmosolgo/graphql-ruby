@@ -1,3 +1,4 @@
+# typed: strong
 # frozen_string_literal: true
 require "graphql/define/assign_argument"
 require "graphql/define/assign_connection"

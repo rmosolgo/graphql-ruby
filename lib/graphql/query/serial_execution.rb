@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 require "graphql/query/serial_execution/value_resolution"
 require "graphql/query/serial_execution/field_resolution"

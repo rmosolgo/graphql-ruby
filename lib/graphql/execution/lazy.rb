@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 require "graphql/execution/lazy/lazy_method_map"
 require "graphql/execution/lazy/resolve"

@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 require "graphql/execution/interpreter/execution_errors"
 require "graphql/execution/interpreter/hash_response"

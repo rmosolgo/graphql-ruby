@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 GraphQL::Directive::DeprecatedDirective = GraphQL::Directive.define do
   name "deprecated"

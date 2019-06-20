@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 TESTING_INTERPRETER = !!ENV["TESTING_INTERPRETER"]
 require File.expand_path('../../config/environment', __FILE__)

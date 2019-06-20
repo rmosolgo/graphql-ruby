@@ -1,3 +1,4 @@
+# typed: strong
 # frozen_string_literal: true
 require "graphql/execution/directive_checks"
 require "graphql/execution/execute"

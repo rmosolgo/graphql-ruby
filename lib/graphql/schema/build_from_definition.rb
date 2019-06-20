@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 require "graphql/schema/build_from_definition/resolve_map"
 

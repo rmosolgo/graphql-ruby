@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 module GraphQL
   # A list type modifies another type.

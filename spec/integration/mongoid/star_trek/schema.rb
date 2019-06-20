@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 module StarTrek
   # Adapted from graphql-relay-js

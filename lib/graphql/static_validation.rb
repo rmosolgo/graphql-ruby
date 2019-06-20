@@ -1,3 +1,4 @@
+# typed: strong
 # frozen_string_literal: true
 require "graphql/static_validation/error"
 require "graphql/static_validation/definition_dependencies"

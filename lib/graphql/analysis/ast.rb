@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 require "graphql/analysis/ast/visitor"
 require "graphql/analysis/ast/analyzer"

@@ -1,3 +1,4 @@
+# typed: false
 module GraphQL
 module Language
 module Lexer

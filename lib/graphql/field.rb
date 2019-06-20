@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 require "graphql/field/resolve"
 
