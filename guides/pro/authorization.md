@@ -94,7 +94,6 @@ Also, you can specify authentication at __type-level__, for example:
 
 ```ruby
 class AccountBalanceType < GraphQL::ObjectType
-  graphql_name "AccountBalance"
   # Only billing administrators can see
   # objects of this type:
   authorize :billing_administrator
@@ -114,9 +113,8 @@ You can also limit access to fields based on their parent objects with `parent_r
 
 ```ruby
 class StudentType < GraphQL::ObjectType
-  graphql_name "Student"
   field :name, String, null: false
-  field :gpa, Float
+  field :gpa, Float, null: true do 
     # only show `Student.gpa` if the
     # student is the viewer:
     authorize parent_role: :current_user
@@ -156,11 +154,10 @@ You can prevent access to fields and types from certain users. (They can see the
 ```ruby
 class AddressType < GraphQL::ObjectType
   # Non-owners may see this type, but they may not request them. 
-  graphql_name "Address"
   access :owner
 
   # Non-owners may see this field, but they may not request them. 
-  field :telephone_number, String, access: :owner
+  field :telephone_number, String, null: true, access: :owner
 end
 ```
 
@@ -188,12 +185,11 @@ The `view` keyword specifies visibility permission:
 
 ```ruby
 class PassportApplicationType < GraphQL::ObjectType
-  graphql_name "PassportApplication"
   # Every field on this type is invisible to non-admins
   view :admin 
 
   # This field is invisible to non-admins
-  field :social_security_number, String, view: :admin
+  field :social_security_number, String, null: true, view: :admin
   # ...
 end
 ```
@@ -252,7 +248,6 @@ Now, policies will be looked up by name inside `Policies::`, for example:
 
 ```ruby
 class AccountType < GraphQL::ObjectType
-  graphql_name "Account"
   access :admin # will use Policies::AccountPolicy#admin?
   # ...
 end
@@ -286,7 +281,7 @@ field :phone_number, PhoneNumberType, authorize: :view
 For compile-time checks (`view` and `access`), the object is always `nil`.
 
 ```ruby
-field :social_security_number, String, view: :admin
+field :social_security_number, String, null: true, view: :admin
 # => calls `can?(:admin, nil)`
 ```
 
