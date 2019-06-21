@@ -93,7 +93,7 @@ end
 Also, you can specify authentication at __type-level__, for example:
 
 ```ruby
-class AccountBalanceType < GraphQL::ObjectType
+class AccountBalanceType < GraphQL::Schema::Object
   # Only billing administrators can see
   # objects of this type:
   authorize :billing_administrator
@@ -112,7 +112,7 @@ If an object doesn't pass permission checks, it is removed from the response. If
 You can also limit access to fields based on their parent objects with `parent_role:`. For example, to restrict a student's GPA to that student:
 
 ```ruby
-class StudentType < GraphQL::ObjectType
+class StudentType < GraphQL::Schema::Object
   field :name, String, null: false
   field :gpa, Float, null: true do 
     # only show `Student.gpa` if the
@@ -152,7 +152,7 @@ You could refer to the basic authorization {% internal_link "guide", "/authoriza
 You can prevent access to fields and types from certain users. (They can see them, but if they request them, the request is rejected with an error message.) Use the `access:` keyword for this feature.
 
 ```ruby
-class AddressType < GraphQL::ObjectType
+class AddressType < GraphQL::Schema::Object
   # Non-owners may see this type, but they may not request them. 
   access :owner
 
@@ -184,7 +184,7 @@ You can hide fields and types from certain users. If they request these types or
 The `view` keyword specifies visibility permission:
 
 ```ruby
-class PassportApplicationType < GraphQL::ObjectType
+class PassportApplicationType < GraphQL::Schema::Object
   # Every field on this type is invisible to non-admins
   view :admin 
 
@@ -247,7 +247,7 @@ authorize(:pundit, namespace: Policies)
 Now, policies will be looked up by name inside `Policies::`, for example:
 
 ```ruby
-class AccountType < GraphQL::ObjectType
+class AccountType < GraphQL::Schema::Object
   access :admin # will use Policies::AccountPolicy#admin?
   # ...
 end
