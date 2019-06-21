@@ -277,7 +277,7 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-  describe "#to_h" do
+  describe 'hash conversion behavior' do
     module InputObjectToHTest
       class TestInput1 < GraphQL::Schema::InputObject
         graphql_name "TestInput1"
@@ -297,18 +297,29 @@ describe GraphQL::Schema::InputObject do
       TestInput2.to_graphql
     end
 
-    it "returns a symbolized, aliased, ruby keyword style hash" do
+    before do
       arg_values = {a: 1, b: 2, c: { d: 3, e: 4, instrumentId: "Instrument/Drum Kit"}}
 
-      input_object = InputObjectToHTest::TestInput2.new(
+      @input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
         context: OpenStruct.new(schema: Jazz::Schema),
         defaults_used: Set.new
       )
+    end
 
-      assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") } }, input_object.to_h)
+    describe "#to_h" do
+      it "returns a symbolized, aliased, ruby keyword style hash" do
+        assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") } }, @input_object.to_h)
+      end
+    end
+
+    describe "#to_hash" do
+      it "returns the same results as #to_h (aliased)" do
+        assert_equal(@input_object.to_h, @input_object.to_hash)
+      end
     end
   end
+
 
   describe "#dig" do
     module InputObjectDigTest
