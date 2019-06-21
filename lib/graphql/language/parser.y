@@ -451,7 +451,7 @@ def parse_document
     # From the tokens, build an AST
     @tracer.trace("parse", {query_string: @query_string}) do
       if @tokens.empty?
-        make_node(:Document, definitions: [], filename: @filename)
+        raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string)
       else
         do_parse
       end
