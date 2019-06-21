@@ -4,6 +4,14 @@ require "spec_helper"
 describe GraphQL::Language::Parser do
   subject { GraphQL::Language::Parser }
 
+  describe "when there are no selections" do
+    it 'raises a ParseError' do
+      assert_raises(GraphQL::ParseError) {
+        GraphQL.parse('# comment')
+      }
+    end
+  end
+
   describe "anonymous fragment extension" do
     let(:document) { GraphQL.parse(query_string) }
     let(:query_string) {%|
