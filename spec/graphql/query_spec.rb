@@ -140,17 +140,6 @@ describe GraphQL::Query do
         end
       end
 
-      describe "when there are no operations" do
-        let(:query_string) { <<-GRAPHQL
-          # Only Comments
-          # In this Query
-        GRAPHQL
-        }
-
-        it "returns the inferred operation name" do
-          assert_nil query.selected_operation_name
-        end
-      end
     end
 
     describe "assigning operation_name=" do
@@ -741,11 +730,6 @@ describe GraphQL::Query do
     it "returns the irep for the selected operation" do
       assert_kind_of GraphQL::InternalRepresentation::Node, query.irep_selection
       assert_equal 'getFlavor', query.irep_selection.name
-    end
-
-    it "returns nil when there is no selected operation" do
-      query = GraphQL::Query.new(schema, '# Only a comment')
-      assert_nil query.irep_selection
     end
   end
 
