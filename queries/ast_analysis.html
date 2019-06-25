@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.6/">API</a>
+          <a href="/api-doc/1.9.7/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -52,7 +52,7 @@ default.</p>
 
 <p>The new analysis runs on query ASTs instead of the GraphQL Ruby internal representation, which means some of the things you used to get for free need to be done in analyzers instead.</p>
 
-<p>The new primitive for analysis is <a href="/api-doc/1.9.6/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a>. New analyzers must inherit from this base class and implement the desired methods for analysis.</p>
+<p>The new primitive for analysis is <a href="/api-doc/1.9.7/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a>. New analyzers must inherit from this base class and implement the desired methods for analysis.</p>
 
 <h2 id="analyzer-api">Analyzer API</h2>
 
@@ -122,7 +122,7 @@ methods to help us achieve this:</p>
 
 <h3 id="errors">Errors</h3>
 
-<p>It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return <a href="/api-doc/1.9.6/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> in the <code class="highlighter-rouge">result</code> method:</p>
+<p>It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return <a href="/api-doc/1.9.7/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> in the <code class="highlighter-rouge">result</code> method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NoFieldsCalledHello</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
   <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>

@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::ScalarType
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::ScalarType";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (S)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span>
+     &raquo; 
+    <span class="title">ScalarType</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::ScalarType
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="BaseType.html" title="GraphQL::BaseType (class)">BaseType</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="BaseType.html" title="GraphQL::BaseType (class)">BaseType</a></span></li>
+          
+            <li class="next">GraphQL::ScalarType</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/scalar_type.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <h1 id="graphqlscalartype">GraphQL::ScalarType</h1>
+
+<p>Scalars are plain values. They are leaf nodes in a GraphQL query tree.</p>
+
+<h2 id="built-in-scalars">Built-in Scalars</h2>
+
+<p><code>GraphQL</code> comes with standard built-in scalars:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Constant</th>
+      <th><code>.define</code> helper</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>GraphQL::STRING_TYPE</code></td>
+      <td><code>types.String</code></td>
+    </tr>
+    <tr>
+      <td><code>GraphQL::INT_TYPE</code></td>
+      <td><code>types.Int</code></td>
+    </tr>
+    <tr>
+      <td><code>GraphQL::FLOAT_TYPE</code></td>
+      <td><code>types.Float</code></td>
+    </tr>
+    <tr>
+      <td><code>GraphQL::ID_TYPE</code></td>
+      <td><code>types.ID</code></td>
+    </tr>
+    <tr>
+      <td><code>GraphQL::BOOLEAN_TYPE</code></td>
+      <td><code>types.Boolean</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>(<code>types</code> is an instance of <code>GraphQL::Definition::TypeDefiner</code>; <code>.String</code>, <code>.Float</code>, etc are methods which return built-in scalars.)</p>
+
+<h2 id="custom-scalars">Custom Scalars</h2>
+
+<p>You can define custom scalars for your GraphQL server. It requires some special functions:</p>
+
+<ul>
+  <li><code>coerce_input</code> is used to prepare incoming values for GraphQL execution. (Incoming values come from variables or literal values in the query string.)</li>
+  <li><code>coerce_result</code> is used to turn Ruby values <em>back</em> into serializable values for query responses.</li>
+</ul>
+
+<p>You can customize the error message for invalid input values by raising a <code>GraphQL::CoercionError</code> within <code>coerce_input</code>:</p>
+
+<p>This will result in the message of the <code>GraphQL::CoercionError</code> being used in the error response:</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'><p>defining a type for Time</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='const'>TimeType</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>ScalarType</span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Time</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Time since epoch in seconds</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='id identifier rubyid_coerce_input'>coerce_input</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_at'>at</span><span class='lparen'>(</span><span class='const'>Float</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_coerce_result'>coerce_result</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></code></pre>
+    
+      
+        <p class="example_title"><div class='inline'><p>raising a custom error message</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='const'>TimeType</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>ScalarType</span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Time</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Time since epoch in seconds</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='id identifier rubyid_coerce_input'>coerce_input</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='kw'>begin</span>
+      <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_at'>at</span><span class='lparen'>(</span><span class='const'>Float</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='kw'>rescue</span> <span class='const'>ArgumentError</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="CoercionError.html" title="GraphQL::CoercionError (class)">CoercionError</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>cannot coerce `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>` to Float</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_coerce_result'>coerce_result</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></code></pre>
+    
+      
+        <p class="example_title"><div class='inline'><p>custom error response</p>
+</div></p>
+      
+      <pre class="example code"><code>{&quot;message&quot;=&gt;&quot;cannot coerce `&quot;2&quot;` to Float&quot;, &quot;locations&quot;=&gt;[{&quot;line&quot;=&gt;3, &quot;column&quot;=&gt;9}], &quot;fields&quot;=&gt;[&quot;arg&quot;]}</code></pre>
+    
+  </div>
+
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="ScalarType/NoOpCoerce.html" title="GraphQL::ScalarType::NoOpCoerce (module)">NoOpCoerce</a></span>
+    
+  
+    
+  
+</p>
+
+
+
+
+
+
+  <h2>Instance Attribute Summary</h2>
+  
+  <h3 class="inherited">Attributes inherited from <span class='object_link'><a href="BaseType.html" title="GraphQL::BaseType (class)">BaseType</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="BaseType.html#ast_node-instance_method" title="GraphQL::BaseType#ast_node (method)">#ast_node</a></span>, <span class='object_link'><a href="BaseType.html#default_relay=-instance_method" title="GraphQL::BaseType#default_relay= (method)">#default_relay</a></span>, <span class='object_link'><a href="BaseType.html#default_scalar=-instance_method" title="GraphQL::BaseType#default_scalar= (method)">#default_scalar</a></span>, <span class='object_link'><a href="BaseType.html#description-instance_method" title="GraphQL::BaseType#description (method)">#description</a></span>, <span class='object_link'><a href="BaseType.html#introspection=-instance_method" title="GraphQL::BaseType#introspection= (method)">#introspection</a></span>, <span class='object_link'><a href="BaseType.html#name-instance_method" title="GraphQL::BaseType#name (method)">#name</a></span></p>
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce=-instance_method" title="#coerce= (instance method)">#<strong>coerce=</strong>(proc)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce_input=-instance_method" title="#coerce_input= (instance method)">#<strong>coerce_input=</strong>(coerce_input_fn)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce_result-instance_method" title="#coerce_result (instance method)">#<strong>coerce_result</strong>(value, ctx = nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce_result=-instance_method" title="#coerce_result= (instance method)">#<strong>coerce_result=</strong>(coerce_result_fn)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>  &#x21d2; ScalarType </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of ScalarType.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#kind-instance_method" title="#kind (instance method)">#<strong>kind</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="BaseType.html" title="GraphQL::BaseType (class)">BaseType</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="BaseType.html#==-instance_method" title="GraphQL::BaseType#== (method)">#==</a></span>, <span class='object_link'><a href="BaseType.html#coerce_input-instance_method" title="GraphQL::BaseType#coerce_input (method)">#coerce_input</a></span>, <span class='object_link'><a href="BaseType.html#coerce_isolated_input-instance_method" title="GraphQL::BaseType#coerce_isolated_input (method)">#coerce_isolated_input</a></span>, <span class='object_link'><a href="BaseType.html#coerce_isolated_result-instance_method" title="GraphQL::BaseType#coerce_isolated_result (method)">#coerce_isolated_result</a></span>, <span class='object_link'><a href="BaseType.html#default_relay%3F-instance_method" title="GraphQL::BaseType#default_relay? (method)">#default_relay?</a></span>, <span class='object_link'><a href="BaseType.html#default_scalar%3F-instance_method" title="GraphQL::BaseType#default_scalar? (method)">#default_scalar?</a></span>, <span class='object_link'><a href="BaseType.html#get_field-instance_method" title="GraphQL::BaseType#get_field (method)">#get_field</a></span>, <span class='object_link'><a href="BaseType.html#initialize_copy-instance_method" title="GraphQL::BaseType#initialize_copy (method)">#initialize_copy</a></span>, <span class='object_link'><a href="BaseType.html#introspection%3F-instance_method" title="GraphQL::BaseType#introspection? (method)">#introspection?</a></span>, <span class='object_link'><a href="BaseType.html#list%3F-instance_method" title="GraphQL::BaseType#list? (method)">#list?</a></span>, <span class='object_link'><a href="BaseType.html#non_null%3F-instance_method" title="GraphQL::BaseType#non_null? (method)">#non_null?</a></span>, <span class='object_link'><a href="BaseType.html#resolve_related_type-class_method" title="GraphQL::BaseType.resolve_related_type (method)">resolve_related_type</a></span>, <span class='object_link'><a href="BaseType.html#resolve_type-instance_method" title="GraphQL::BaseType#resolve_type (method)">#resolve_type</a></span>, <span class='object_link'><a href="BaseType.html#to_definition-instance_method" title="GraphQL::BaseType#to_definition (method)">#to_definition</a></span>, <span class='object_link'><a href="BaseType.html#to_list_type-instance_method" title="GraphQL::BaseType#to_list_type (method)">#to_list_type</a></span>, <span class='object_link'><a href="BaseType.html#to_non_null_type-instance_method" title="GraphQL::BaseType#to_non_null_type (method)">#to_non_null_type</a></span>, <span class='object_link'><a href="BaseType.html#to_s-instance_method" title="GraphQL::BaseType#to_s (method)">#to_s</a></span>, <span class='object_link'><a href="BaseType.html#unwrap-instance_method" title="GraphQL::BaseType#unwrap (method)">#unwrap</a></span>, <span class='object_link'><a href="BaseType.html#valid_input%3F-instance_method" title="GraphQL::BaseType#valid_input? (method)">#valid_input?</a></span>, <span class='object_link'><a href="BaseType.html#valid_isolated_input%3F-instance_method" title="GraphQL::BaseType#valid_isolated_input? (method)">#valid_isolated_input?</a></span>, <span class='object_link'><a href="BaseType.html#validate_input-instance_method" title="GraphQL::BaseType#validate_input (method)">#validate_input</a></span>, <span class='object_link'><a href="BaseType.html#validate_isolated_input-instance_method" title="GraphQL::BaseType#validate_isolated_input (method)">#validate_isolated_input</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Relay/TypeExtensions.html" title="GraphQL::Relay::TypeExtensions (module)">Relay::TypeExtensions</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Relay/TypeExtensions.html#connection_type-instance_method" title="GraphQL::Relay::TypeExtensions#connection_type (method)">#connection_type</a></span>, <span class='object_link'><a href="Relay/TypeExtensions.html#define_connection-instance_method" title="GraphQL::Relay::TypeExtensions#define_connection (method)">#define_connection</a></span>, <span class='object_link'><a href="Relay/TypeExtensions.html#define_edge-instance_method" title="GraphQL::Relay::TypeExtensions#define_edge (method)">#define_edge</a></span>, <span class='object_link'><a href="Relay/TypeExtensions.html#edge_type-instance_method" title="GraphQL::Relay::TypeExtensions#edge_type (method)">#edge_type</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Define/InstanceDefinable.html" title="GraphQL::Define::InstanceDefinable (module)">Define::InstanceDefinable</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">#define</a></span>, <span class='object_link'><a href="Define/InstanceDefinable.html#initialize_copy-instance_method" title="GraphQL::Define::InstanceDefinable#initialize_copy (method)">#initialize_copy</a></span>, <span class='object_link'><a href="Define/InstanceDefinable.html#metadata-instance_method" title="GraphQL::Define::InstanceDefinable#metadata (method)">#metadata</a></span>, <span class='object_link'><a href="Define/InstanceDefinable.html#redefine-instance_method" title="GraphQL::Define::InstanceDefinable#redefine (method)">#redefine</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Define/NonNullWithBang.html" title="GraphQL::Define::NonNullWithBang (module)">Define::NonNullWithBang</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Define/NonNullWithBang.html#!-instance_method" title="GraphQL::Define::NonNullWithBang#! (method)">#!</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::ScalarType (class)">ScalarType</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of ScalarType</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+71
+72
+73
+74</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/scalar_type.rb', line 71</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+  <span class='kw'>super</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_coerce'>coerce</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="ScalarType/NoOpCoerce.html" title="GraphQL::ScalarType::NoOpCoerce (module)">NoOpCoerce</a></span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="coerce=-instance_method">
+  
+    #<strong>coerce=</strong>(proc)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+76
+77
+78
+79</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/scalar_type.rb', line 76</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_coerce='>coerce=</span><span class='lparen'>(</span><span class='id identifier rubyid_proc'>proc</span><span class='rparen'>)</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_coerce_input'>coerce_input</span> <span class='op'>=</span> <span class='id identifier rubyid_proc'>proc</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_coerce_result'>coerce_result</span> <span class='op'>=</span> <span class='id identifier rubyid_proc'>proc</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="coerce_input=-instance_method">
+  
+    #<strong>coerce_input=</strong>(coerce_input_fn)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+81
+82
+83
+84
+85</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/scalar_type.rb', line 81</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_coerce_input='>coerce_input=</span><span class='lparen'>(</span><span class='id identifier rubyid_coerce_input_fn'>coerce_input_fn</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_coerce_input_fn'>coerce_input_fn</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='ivar'>@coerce_input_proc</span> <span class='op'>=</span> <span class='id identifier rubyid_ensure_two_arg'>ensure_two_arg</span><span class='lparen'>(</span><span class='id identifier rubyid_coerce_input_fn'>coerce_input_fn</span><span class='comma'>,</span> <span class='symbol'>:coerce_input</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="coerce_result-instance_method">
+  
+    #<strong>coerce_result</strong>(value, ctx = nil)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+87
+88
+89
+90
+91
+92
+93</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/scalar_type.rb', line 87</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_coerce_result'>coerce_result</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='id identifier rubyid_warn_deprecated_coerce'>warn_deprecated_coerce</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>coerce_isolated_result</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_ctx'>ctx</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Query/NullContext.html" title="GraphQL::Query::NullContext (class)">NullContext</a></span></span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@coerce_result_proc</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="coerce_result=-instance_method">
+  
+    #<strong>coerce_result=</strong>(coerce_result_fn)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+95
+96
+97
+98
+99</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/scalar_type.rb', line 95</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_coerce_result='>coerce_result=</span><span class='lparen'>(</span><span class='id identifier rubyid_coerce_result_fn'>coerce_result_fn</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_coerce_result_fn'>coerce_result_fn</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='ivar'>@coerce_result_proc</span> <span class='op'>=</span> <span class='id identifier rubyid_ensure_two_arg'>ensure_two_arg</span><span class='lparen'>(</span><span class='id identifier rubyid_coerce_result_fn'>coerce_result_fn</span><span class='comma'>,</span> <span class='symbol'>:coerce_result</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="kind-instance_method">
+  
+    #<strong>kind</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+101
+102
+103</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/scalar_type.rb', line 101</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_kind'>kind</span>
+  <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="TypeKinds.html" title="GraphQL::TypeKinds (module)">TypeKinds</a></span></span><span class='op'>::</span><span class='const'>SCALAR</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Jun 25 15:48:37 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.19 (ruby-2.6.2).
+</div>
+
+    </div>
+  </body>
+</html>
