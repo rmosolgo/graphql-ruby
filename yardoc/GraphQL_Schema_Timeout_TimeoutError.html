@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.6/GraphQL/Schema/Timeout/TimeoutError" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Schema::Timeout::TimeoutError &lt; GraphQL::ExecutionError
+This error is raised when a query exceeds <code class="highlighter-rouge">max_seconds</code>. Since it’s
+a child of GraphQL::ExecutionError, its message will be added to the
+response’s <code class="highlighter-rouge">errors</code> key. 
+To raise an error that will stop query resolution, use a custom
+block to take this error and raise a new one which <em>doesn’t</em> descend
+from GraphQL::ExecutionError, such as <code class="highlighter-rouge">RuntimeError</code>. 
+Instance methods:
+initialize</p>
+
+
+  </body>
+</html>

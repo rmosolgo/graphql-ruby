@@ -121,7 +121,20 @@
 
 <h2 id="customizing-input-objects">Customizing Input Objects</h2>
 
-<p>You can add or override methods on input object classes to customize them.  They have two instance variables by default:</p>
+<p>You can customize the <code class="highlighter-rouge">GraphQL::Schema::Argument</code> class which is used for input objects:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span> 
+  <span class="c1"># your customization here ... </span>
+<span class="k">end</span> 
+
+
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span> 
+  <span class="c1"># Hook up the customized argument class </span>
+  <span class="n">argument_class</span><span class="p">(</span><span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span><span class="p">)</span>  
+<span class="k">end</span> 
+</code></pre></div></div>
+
+<p>You can also add or override methods on input object classes to customize them.  They have two instance variables by default:</p>
 
 <ul>
   <li><code class="highlighter-rouge">@arguments</code>: A <a href="/api-doc/1.9.6/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a> instance</li>

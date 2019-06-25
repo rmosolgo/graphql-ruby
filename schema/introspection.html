@@ -269,6 +269,15 @@
 
 <p>Any fields defined there will be available in any selection, but ignored in introspection (just like <code class="highlighter-rouge">__typename</code>).</p>
 
+<h2 id="disabling-introspection">Disabling Introspection</h2>
+
+<p>In case you want to turn off introspection entry points <code class="highlighter-rouge">__schema</code> and <code class="highlighter-rouge">__type</code> (for instance in the production environment) you can use a <code class="highlighter-rouge">#disable_introspection_entry_points</code> shorthand method:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">disable_introspection_entry_points</span> <span class="k">if</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">.</span><span class="nf">production?</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?

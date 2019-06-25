@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.6/GraphQL/Schema/Timeout" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Schema::Timeout &lt; Object
+This plugin will stop resolving new fields after <code class="highlighter-rouge">max_seconds</code> have
+elapsed. After the time has passed, any remaining fields will be
+<code class="highlighter-rouge">nil</code>, with errors added to the <code class="highlighter-rouge">errors</code> key. Any already-resolved
+fields will be in the <code class="highlighter-rouge">data</code> key, so you’ll get a partial response. 
+You can subclass <code class="highlighter-rouge">GraphQL::Schema::Timeout</code> and override the
+<code class="highlighter-rouge">handle_timeout</code> method to provide custom logic when a timeout error
+occurs. 
+Note that this will stop a query <em>in between</em> field resolutions, but
+it doesn’t interrupt long-running <code class="highlighter-rouge">resolve</code> functions. Be sure to
+use timeout options for external connections. For more info, see
+www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/ 
+Examples:</p>
+<h1 id="stop-resolving-fields-after-2-seconds">Stop resolving fields after 2 seconds</h1>
+<p>class MySchema &lt; GraphQL::Schema
+use GraphQL::Schema::Timeout, max_seconds: 2
+end</p>
+<h1 id="notifying-bugsnag-and-logging-a-timeout">Notifying Bugsnag and logging a timeout</h1>
+<p>class MyTimeout &lt; GraphQL::Schema::Timeout
+def handle_timeout(error, query)
+Rails.logger.warn(“GraphQL Timeout: #{error.message}: #{query.query_string}”)
+Bugsnag.notify(error, {query_string: query.query_string})
+end
+end
+class MySchema &lt; GraphQL::Schema
+use MyTimeout, max_seconds: 2
+end
+Class methods:
+use
+Instance methods:
+handle_timeout, initialize, trace</p>
+
+
+  </body>
+</html>

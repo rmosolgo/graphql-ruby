@@ -70,7 +70,7 @@
 
 <p>To use authorization, specify an authorization strategy in your schema:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># ...</span>
   <span class="n">authorization</span> <span class="ss">:pundit</span>
   <span class="c1"># or:</span>
@@ -95,7 +95,7 @@
 
 <p>You can specify a fallback auth configuration for the entire schema:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Always require logged-in users to see anything:</span>
   <span class="n">authorization</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">fallback: </span><span class="p">{</span> <span class="ss">view: :logged_in</span> <span class="p">})</span>
 <span class="k">end</span>
@@ -107,7 +107,7 @@
 
 <p>You can customize the <code class="highlighter-rouge">current_user:</code> context key with <code class="highlighter-rouge">authorization(..., current_user: ...)</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Current user is identified as `ctx[:viewer]`</span>
   <span class="n">authorization</span> <span class="ss">:pundit</span><span class="p">,</span> <span class="ss">current_user: :viewer</span>
 <span class="k">end</span>
@@ -133,8 +133,7 @@
 
 <p>Also, you can specify authentication at <strong>type-level</strong>, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">AccountBalanceType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"AccountBalance"</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AccountBalanceType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Only billing administrators can see</span>
   <span class="c1"># objects of this type:</span>
   <span class="n">authorize</span> <span class="ss">:billing_administrator</span>
@@ -152,10 +151,9 @@
 
 <p>You can also limit access to fields based on their parent objects with <code class="highlighter-rouge">parent_role:</code>. For example, to restrict a student’s GPA to that student:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">StudentType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Student"</span>
-  <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
-  <span class="n">field</span> <span class="ss">:gpa</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Float</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">StudentType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="n">field</span> <span class="ss">:gpa</span><span class="p">,</span> <span class="no">Float</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="k">do</span> 
     <span class="c1"># only show `Student.gpa` if the</span>
     <span class="c1"># student is the viewer:</span>
     <span class="n">authorize</span> <span class="ss">parent_role: :current_user</span>
@@ -176,100 +174,46 @@
 
 <p>You can override this behavior by providing a schema-level <code class="highlighter-rouge">unauthorized_object</code> function:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">unauthorized_object</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
-<span class="k">end</span>
-<span class="c1"># OR</span>
-<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">unauthorized_object</span><span class="p">(</span><span class="no">MyUnauthorizedObjectHook</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Override this hook to handle cases when `authorized?` returns false for an object:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">unauthorized_object</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+    <span class="c1"># Add a top-level error to the response instead of returning nil:</span>
+    <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"An object of type </span><span class="si">#{</span><span class="n">error</span><span class="p">.</span><span class="nf">type</span><span class="p">.</span><span class="nf">graphql_name</span><span class="si">}</span><span class="s2"> was hidden due to permissions"</span>
+  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The function is called with two arguments:</p>
+<p>The function is used to handle unauthorized objects:</p>
 
-<ul>
-  <li><code class="highlighter-rouge">obj</code> is the object which failed a runtime check</li>
-  <li><code class="highlighter-rouge">ctx</code> is the field context for the failed check</li>
-</ul>
-
-<p>Within the function, you can:</p>
-
-<ul>
-  <li>Write log entries</li>
-  <li>
-    <p>Add GraphQL errors, for example:</p>
-
-    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Add an error to the graphql response:</span>
-<span class="n">err</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"You don't have permission to see </span><span class="si">#{</span><span class="n">obj</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="n">ctx</span><span class="p">.</span><span class="nf">add_error</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-</code></pre></div>    </div>
-  </li>
-  <li>
-    <p>Return a different value for the query.</p>
-
-    <p>To return a different value, use <code class="highlighter-rouge">yield</code> (or <code class="highlighter-rouge">next</code> for a Proc). For example:</p>
-
-    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">MyUnauthorizedObjectHook</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">obj</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">User</span><span class="p">)</span>
-      <span class="c1"># Write a log entry</span>
-      <span class="n">logger</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="s2">"Invalid user access: </span><span class="si">#{</span><span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="si">}</span><span class="s2"> tried to access </span><span class="si">#{</span><span class="n">obj</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-      <span class="c1"># Replace an unauthorized object with a null object</span>
-      <span class="k">yield</span><span class="p">(</span><span class="no">AnonymousUser</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div>    </div>
-
-    <p>For procs, use <code class="highlighter-rouge">next</code> instead of <code class="highlighter-rouge">yield</code>:</p>
-
-    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">-&gt;</span> <span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">if</span> <span class="n">obj</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">User</span><span class="p">)</span>
-    <span class="c1"># Write a log entry</span>
-    <span class="n">logger</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="s2">"Invalid user access: </span><span class="si">#{</span><span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="si">}</span><span class="s2"> tried to access </span><span class="si">#{</span><span class="n">obj</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="c1"># Replace an unauthorized object with a null object</span>
-    <span class="k">next</span><span class="p">(</span><span class="no">AnonymousUser</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="p">}</span>
-</code></pre></div>    </div>
-
-    <p>(<code class="highlighter-rouge">yield</code> isn’t valid for procs. Long story 😅.)</p>
-
-    <p>Using <code class="highlighter-rouge">yield</code> allows the library to skip objects entirely when nothing is yielded.</p>
-  </li>
-</ul>
+<p>You could refer to the basic authorization       <a href="/authorization/authorization">guide</a> for more details.</p>
 
 <h2 id="access-authorization">Access Authorization</h2>
 
 <p>You can prevent access to fields and types from certain users. (They can see them, but if they request them, the request is rejected with an error message.) Use the <code class="highlighter-rouge">access:</code> keyword for this feature.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Non-owners may _see_ these,</span>
-<span class="c1"># but they may not request them:</span>
-<span class="n">field</span> <span class="ss">:telephone_number</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">access: :owner</span>
-
-<span class="no">AddressType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Address"</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AddressType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="c1"># Non-owners may see this type, but they may not request them. </span>
   <span class="n">access</span> <span class="ss">:owner</span>
-  <span class="c1"># ...</span>
+
+  <span class="c1"># Non-owners may see this field, but they may not request them. </span>
+  <span class="n">field</span> <span class="ss">:telephone_number</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">access: :owner</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <p>When a user requests access to an unpermitted field, GraphQL returns an error message. You can customize this error message by providing an <code class="highlighter-rouge">unauthorized_fields</code> hook:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-  <span class="n">unauthorized_fields</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">irep_nodes</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="no">GraphQL</span><span class="o">::</span><span class="no">AnalysisError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Sorry, you're not allowed to see that!"</span><span class="p">)</span>
-  <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Override this hook to handle cases when `authorized?` returns false for a field:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">unauthorized_field</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+    <span class="c1"># Add a top-level error to the response instead of returning nil:</span>
+    <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"The field </span><span class="si">#{</span><span class="n">error</span><span class="p">.</span><span class="nf">field</span><span class="p">.</span><span class="nf">graphql_name</span><span class="si">}</span><span class="s2"> on an object of type </span><span class="si">#{</span><span class="n">error</span><span class="p">.</span><span class="nf">type</span><span class="p">.</span><span class="nf">graphql_name</span><span class="si">}</span><span class="s2"> was hidden due to permissions"</span>
+  <span class="k">end</span>  
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The hook should return a <a href="/api-doc/1.9.6/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a>. It is called with:</p>
+<p>The function is used to handle unauthorized fields:</p>
 
-<ul>
-  <li><code class="highlighter-rouge">irep_nodes</code>: an array of <a href="/api-doc/1.9.6/GraphQL/InternalRepresentation/Node" target="_blank" title="API docs for GraphQL::InternalRepresentation::Node"><code>GraphQL::InternalRepresentation::Node</code></a>s which represent unpermitted fields in the incoming query.</li>
-  <li><code class="highlighter-rouge">ctx</code>: the <a href="/api-doc/1.9.6/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> (which includes <code class="highlighter-rouge">:current_user</code>).</li>
-</ul>
+<p>You could refer to the basic authorization       <a href="/authorization/authorization">guide</a> for more details.</p>
 
 <h2 id="visibility-authorization">Visibility Authorization</h2>
 
@@ -277,16 +221,12 @@
 
 <p>The <code class="highlighter-rouge">view</code> keyword specifies visibility permission:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># These types and fields are</span>
-<span class="c1"># invisible to non-admins:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PassportApplicationType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="c1"># Every field on this type is invisible to non-admins</span>
+  <span class="n">view</span> <span class="ss">:admin</span> 
 
-<span class="c1"># field-level:</span>
-<span class="n">field</span> <span class="ss">:social_security_number</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">view: :admin</span>
-
-<span class="c1"># type-level:</span>
-<span class="no">PassportApplicationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"PassportApplication"</span>
-  <span class="n">view</span> <span class="ss">:admin</span>
+  <span class="c1"># This field is invisible to non-admins</span>
+  <span class="n">field</span> <span class="ss">:social_security_number</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">view: :admin</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -297,7 +237,7 @@
 
 <p><code class="highlighter-rouge">GraphQL::Pro</code> includes built-in support for <a href="https://github.com/elabs/pundit">Pundit</a>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">authorization</span><span class="p">(</span><span class="ss">:pundit</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -341,8 +281,7 @@
 
 <p>Now, policies will be looked up by name inside <code class="highlighter-rouge">Policies::</code>, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">AccountType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Account"</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AccountType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="n">access</span> <span class="ss">:admin</span> <span class="c1"># will use Policies::AccountPolicy#admin?</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
@@ -360,7 +299,7 @@
 
 <p><code class="highlighter-rouge">GraphQL::Pro</code> includes built-in support for <a href="https://github.com/CanCanCommunity/cancancan">CanCan</a>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">authorization</span><span class="p">(</span><span class="ss">:cancan</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -373,7 +312,7 @@
 
 <p>For compile-time checks (<code class="highlighter-rouge">view</code> and <code class="highlighter-rouge">access</code>), the object is always <code class="highlighter-rouge">nil</code>.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:social_security_number</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">view: :admin</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:social_security_number</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">view: :admin</span>
 <span class="c1"># =&gt; calls `can?(:admin, nil)`</span>
 </code></pre></div></div>
 
@@ -387,7 +326,7 @@
 
 <p>By default, GraphQL looks for a top-level <code class="highlighter-rouge">Ability</code> class. You can specify a different class with the <code class="highlighter-rouge">ability_class:</code> option. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">authorization</span><span class="p">(</span><span class="ss">:cancan</span><span class="p">,</span> <span class="ss">ability_class: </span><span class="no">Permissions</span><span class="o">::</span><span class="no">CustomAbility</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -398,7 +337,7 @@
 
 <p>You can provide custom authorization logic by providing a class:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Custom authorization strategy class:</span>
   <span class="n">authorization</span><span class="p">(</span><span class="no">MyAuthStrategy</span><span class="p">)</span>
 <span class="k">end</span>
