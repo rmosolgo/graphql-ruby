@@ -44,7 +44,12 @@ module GraphQL
 
     # @return [GraphQL::Language::Nodes::Document]
     def document
-      with_prepared_ast { @document }
+      # It's ok if this hasn't been assigned yet
+      if @query_string || @document
+        with_prepared_ast { @document }
+      else
+        nil
+      end
     end
 
     def inspect
