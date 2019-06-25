@@ -62,23 +62,45 @@ describe GraphQL::Schema do
       end
     end
 
+    # This is how you might add queries from a persisted query backend
+
+    class QueryStringInstrumenter
+      def before_query(query)
+        if query.context[:extra_query_string] && query.query_string.nil?
+          query.query_string = query.context[:extra_query_string]
+        end
+      end
+
+      def after_query(query)
+      end
+    end
+
     let(:query_type) {
-      GraphQL::ObjectType.define do
-        name "Query"
-        field :int, types.Int do
-          argument :value, types.Int
-          resolve ->(obj, args, ctx) { args.value }
+      Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :int, Integer, null: true do
+          argument :value, Integer, required: false
+        end
+
+        def int(value:)
+          value
         end
       end
     }
 
     let(:schema) {
       spec = self
-      GraphQL::Schema.define do
+      Class.new(GraphQL::Schema) do
         query(spec.query_type)
         instrument(:query, FirstInstrumenter.new)
         instrument(:query, SecondInstrumenter.new)
         instrument(:query, ExecutionErrorInstrumenter.new)
+        instrument(:query, QueryStringInstrumenter.new)
+
+        if TESTING_INTERPRETER
+          use GraphQL::Analysis::AST
+          use GraphQL::Execution::Interpreter
+        end
       end
     }
 
@@ -113,6 +135,12 @@ describe GraphQL::Schema do
         res = schema.execute(" { int(value: 2) } ", context: context)
         assert_equal "Raised from instrumenter before_query", res["errors"].first["message"]
         refute res.key?("data"), "The query doesn't run"
+      end
+
+      it "can assign a query string there" do
+        context = { extra_query_string: "{ __typename }"}
+        res = schema.execute(nil, context: context)
+        assert_equal "Query", res["data"]["__typename"]
       end
     end
 
