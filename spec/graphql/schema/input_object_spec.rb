@@ -320,7 +320,6 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-
   describe "#dig" do
     module InputObjectDigTest
       class TestInput1 < GraphQL::Schema::InputObject
