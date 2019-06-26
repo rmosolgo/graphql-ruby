@@ -165,7 +165,6 @@ rule
 
   arguments_opt:
       /* none */                    { return EMPTY_ARRAY }
-    | LPAREN RPAREN                 { return EMPTY_ARRAY }
     | LPAREN arguments_list RPAREN  { return val[1] }
 
   arguments_list:
