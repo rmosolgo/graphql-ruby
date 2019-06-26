@@ -27,6 +27,33 @@ module Graphql
     #     - {app_name}_schema.rb
     # ```
     #
+    # Or when given the `--modules` option:
+    #
+    # ```
+    # - app/
+    #   - graphql/
+    #     - resolvers/
+    #     - types/
+    #       - fields/
+    #         - base_field.rb
+    #       - enums/
+    #         - base_enum.rb
+    #       - inputs/
+    #         - base_input_object.rb
+    #       - interfaces/
+    #         - base_interface.rb
+    #       - objects/
+    #         - base_object.rb
+    #       - scalars/
+    #         - base_scalar.rb
+    #       - unions/
+    #         - base_union.rb
+    #       - query_type.rb
+    #     - loaders/
+    #     - mutations/
+    #     - {app_name}_schema.rb
+    # ```
+    #  
     # (Add `.gitkeep`s by default, support `--skip-keeps`)
     #
     # Add a controller for serving GraphQL queries:
@@ -46,6 +73,8 @@ module Graphql
     # The root `node(id: ID!)` field.
     #
     # Accept a `--batch` option which adds `GraphQL::Batch` setup.
+    #
+    # Accept a `--modules` option which sets up a modular file structure
     #
     # Use `--no-graphiql` to skip `graphiql-rails` installation.
     #
@@ -86,7 +115,12 @@ module Graphql
         default: false,
         desc: "Include GraphQL::Batch installation"
 
-      # These two options are taken from Rails' own generators'
+      class_option :modules,
+        type: :boolean,
+        default: false,
+        desc: "Create a modular file structure for types"
+
+      # These two options are taken from Rails' own generators
       class_option :api,
         type: :boolean,
         desc: "Preconfigure smaller stack for API only apps"
@@ -96,7 +130,7 @@ module Graphql
         template("schema.erb", schema_file_path)
 
         ["base_object", "base_argument", "base_field", "base_enum", "base_input_object", "base_interface", "base_scalar", "base_union"].each do |base_type|
-          template("#{base_type}.erb", "#{options[:directory]}/types/#{base_type}.rb")
+          template("#{base_type}.erb", base_type_directory(base_type))
         end
 
         # Note: You can't have a schema without the query type, otherwise introspection breaks
@@ -153,6 +187,26 @@ RUBY
       def gem(*args)
         @gemfile_modified = true
         super(*args)
+      end
+
+      # Determines the name of the module in which a base type definition file lives
+      # @param base_type [String]
+      # @return string
+      def base_module_name(base_type)
+        return "Types" unless options[:modules]
+
+        module_name = base_type.split("_")[1].capitalize
+        "Types::#{module_name}"
+      end
+
+      # Creates a directory for installation of base types based on the options provided to the generator
+      # @param base_type [String]
+      # @return [String]
+      def base_type_directory(base_type)
+        return "#{options[:directory]}/types/#{base_type}.rb" unless options[:modules]
+
+        dir_name = base_type.split("_")[1] + "s"
+        "#{options[:directory]}/types/#{dir_name}/#{base_type}.rb"
       end
     end
   end
