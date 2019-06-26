@@ -157,49 +157,36 @@ RUBY
     run_generator(["--modules"])
 
     assert_file "app/graphql/types/enums/base_enum.rb" do |contents|
-      assert_includes "module Types::Enums"
+      assert_includes contents, "module Types::Enums"
     end
 
     assert_file "app/graphql/types/fields/base_field.rb" do |contents|
-      assert_includes "module Types::Fields"
+      assert_includes contents, "module Types::Fields"
     end
 
     assert_file "app/graphql/types/inputs/base_input_object.rb" do |contents|
-      assert_includes "module Types::Inputs"
+      assert_includes contents, "module Types::Inputs"
     end
 
     assert_file "app/graphql/types/interfaces/base_interface.rb" do |contents|
-      assert_includes "module Types::Interfaces"
+      assert_includes contents, "module Types::Interfaces"
     end
 
     assert_file "app/graphql/types/objects/base_object.rb" do |contents|
-      assert_includes "module Types::Objects"
+      assert_includes contents, "module Types::Objects"
     end
 
     assert_file "app/graphql/types/scalars/base_scalar.rb" do |contents|
-      assert_includes "module Types::Scalars"
+      assert_includes contents, "module Types::Scalars"
     end
 
     assert_file "app/graphql/types/unions/base_union.rb" do |contents|
-      assert_includes "module Types::Unions"
+      assert_includes contents, "module Types::Unions"
     end
 
     assert_file "app/graphql/types/arguments/base_arguments.rb" do |contents|
       assert_includes "module Types::Arguments"
     end
-  end
-
-  test "it adds `.keep` files to all the base type folders when given the `--modules` option" do
-    ["base_input_object",
-     "base_interface",
-     "base_argument",
-     "base_scalar",
-     "base_object",
-     "base_union",
-     "base_field",
-     "base_enum"].each do |base_type|
-        assert_file "app/graphql/types/#{base_type}/.keep"
-      end
   end
 
   EXPECTED_GRAPHQLS_CONTROLLER = <<-'RUBY'

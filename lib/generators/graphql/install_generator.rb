@@ -130,6 +130,7 @@ module Graphql
         template("schema.erb", schema_file_path)
 
         ["base_object", "base_argument", "base_field", "base_enum", "base_input_object", "base_interface", "base_scalar", "base_union"].each do |base_type|
+          @template_module_name = base_module_name(base_type)
           template("#{base_type}.erb", base_type_directory(base_type))
         end
 
@@ -195,7 +196,7 @@ RUBY
       def base_module_name(base_type)
         return "Types" unless options[:modules]
 
-        module_name = base_type.split("_")[1].capitalize
+        module_name = base_type.split("_")[1].capitalize + "s"
         "Types::#{module_name}"
       end
 
