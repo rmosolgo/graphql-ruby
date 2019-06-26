@@ -117,10 +117,9 @@ describe GraphQL::Language::Parser do
     end
   end
 
-  it "parses empty arguments" do
+  it "parses query without arguments" do
     strings = [
-      "{ field { inner } }",
-      "{ field() { inner }}",
+      "{ field { inner } }"
     ]
     strings.each do |query_str|
       doc = subject.parse(query_str)
@@ -141,6 +140,14 @@ describe GraphQL::Language::Parser do
     it "raises parse errors for nil" do
       assert_raises(GraphQL::ParseError) {
         GraphQL.parse(nil)
+      }
+    end
+
+    it 'raises parse errors for empty argument sets' do
+      query_with_empty_arguments = '{ node() { id } }'
+
+      assert_raises(GraphQL::ParseError) {
+        subject.parse(query_with_empty_arguments)
       }
     end
   end
