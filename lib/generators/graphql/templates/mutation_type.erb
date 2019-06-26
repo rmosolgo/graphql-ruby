@@ -1,5 +1,5 @@
 module Types
-  class MutationType < Types::BaseObject
+  class MutationType < <%= base_type_class_name("base_object") %>
     # TODO: remove me
     field :test_field, String, null: false,
       description: "An example field added by the generator"

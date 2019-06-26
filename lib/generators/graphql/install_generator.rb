@@ -74,7 +74,7 @@ module Graphql
     #
     # Accept a `--batch` option which adds `GraphQL::Batch` setup.
     #
-    # Accept a `--modules` option which sets up a modular file structure
+    # Accept a `--modules` option which sets up a modular file structure.
     #
     # Use `--no-graphiql` to skip `graphiql-rails` installation.
     #
@@ -130,7 +130,6 @@ module Graphql
         template("schema.erb", schema_file_path)
 
         ["base_object", "base_argument", "base_field", "base_enum", "base_input_object", "base_interface", "base_scalar", "base_union"].each do |base_type|
-          @template_module_name = base_module_name(base_type)
           template("#{base_type}.erb", base_type_directory(base_type))
         end
 
@@ -188,16 +187,6 @@ RUBY
       def gem(*args)
         @gemfile_modified = true
         super(*args)
-      end
-
-      # Determines the name of the module in which a base type definition file lives
-      # @param base_type [String]
-      # @return string
-      def base_module_name(base_type)
-        return "Types" unless options[:modules]
-
-        module_name = base_type.split("_")[1].capitalize + "s"
-        "Types::#{module_name}"
       end
 
       # Creates a directory for installation of base types based on the options provided to the generator

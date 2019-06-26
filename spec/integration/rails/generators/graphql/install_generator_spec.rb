@@ -184,8 +184,16 @@ RUBY
       assert_includes contents, "module Types::Unions"
     end
 
-    assert_file "app/graphql/types/arguments/base_arguments.rb" do |contents|
-      assert_includes "module Types::Arguments"
+    assert_file "app/graphql/types/arguments/base_argument.rb" do |contents|
+      assert_includes contents, "module Types::Arguments"
+    end
+
+    assert_file "app/graphql/types/query_type.rb" do |contents|
+      assert_includes contents, "class QueryType < Types::Objects::BaseObject"
+    end
+
+    assert_file "app/graphql/types/mutation_type.rb" do |contents|
+      assert_includes contents, "class MutationType < Types::Objects::BaseObject"
     end
   end
 

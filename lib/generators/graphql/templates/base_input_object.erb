@@ -1,4 +1,4 @@
-module <%= @template_module_name %>
+module <%= base_type_module_name("base_input_object") %>
   class BaseInputObject < GraphQL::Schema::InputObject
     argument_class Types::BaseArgument
   end

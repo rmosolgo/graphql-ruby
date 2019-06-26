@@ -40,6 +40,29 @@ module Graphql
         end
       end
 
+      # Determines the name of the module in which a base type definition file lives
+      # Used in the erb template files
+      # @param file_name [String]
+      # @return string
+      def base_type_module_name(file_name)
+        return "Types" unless options[:modules]
+
+        module_name_dirty = file_name.split("_")[1]
+        module_name = module_name_dirty.capitalize + "s"
+
+        "Types::#{module_name}"
+      end
+
+      # Determines the name of the class in which a base type definition file lives
+      # Used in the erb template files
+      # @param file_name [String]
+      # @return string
+      def base_type_class_name(file_name)
+        module_name = base_type_module_name(file_name)
+
+        "#{module_name}::#{file_name.camelize}"
+      end
+
       private
 
       def schema_name
