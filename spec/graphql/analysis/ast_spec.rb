@@ -138,7 +138,7 @@ describe GraphQL::Analysis::AST do
     let(:analyzers) { [AstTypeCollector, AstNodeCounter] }
     let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, analyzers) }
     let(:variables) { {} }
-    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
+    let(:query) { GraphQL::Query.new(Dummy::Schema.graphql_definition, query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -147,6 +147,18 @@ describe GraphQL::Analysis::AST do
         }
       }
     |}
+
+    describe "without a valid operation" do
+      let(:query_string) {%|
+        # A comment
+        # is an invalid operation
+        # Should not break
+      |}
+
+      it "bails early when there is no selected operation to be executed" do
+        assert_equal 2, reduce_result.size
+      end
+    end
 
     describe "conditional analysis" do
       let(:analyzers) { [AstTypeCollector, AstConditionalAnalyzer] }

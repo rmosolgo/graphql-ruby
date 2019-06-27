@@ -70,6 +70,13 @@ module GraphQL
           ")
         end
 
+        def test_it_rejects_blank_queries
+          assert_raises_parse_error("")
+          assert_raises_parse_error(" ")
+          assert_raises_parse_error("\t \t")
+          assert_raises_parse_error(" # comment ")
+        end
+
         def test_it_restricts_on
           assert_raises_parse_error("{ ...on }")
           assert_raises_parse_error("fragment on on Type { field }")
