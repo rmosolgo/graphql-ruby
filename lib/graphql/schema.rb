@@ -715,7 +715,7 @@ module GraphQL
         :id_from_object=, :object_from_id=,
         :remove_handler,
         # Members
-        :types, :get_fields, :find,
+        :get_fields, :find,
         :root_type_for_operation,
         :subscriptions,
         :union_memberships,
@@ -802,9 +802,20 @@ module GraphQL
         schema_defn
       end
 
+      # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
+      def types
+        @types ||= {}
+      end
+
       def query(new_query_object = nil)
         if new_query_object
-          @query_object = new_query_object
+          if @query_object
+            raise GraphQL::Error, "Second definition of `query(...)` (#{new_query_object.inspect}) is invalid, already configured with #{@query_object.inspect}"
+          else
+            @query_object = new_query_object
+            add_root_type(new_query_object)
+            nil
+          end
         else
           @query_object.respond_to?(:graphql_definition) ? @query_object.graphql_definition : @query_object
         end
@@ -812,7 +823,13 @@ module GraphQL
 
       def mutation(new_mutation_object = nil)
         if new_mutation_object
-          @mutation_object = new_mutation_object
+          if @mutation_object
+            raise GraphQL::Error, "Second definition of `query(...)` (#{new_mutation_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
+          else
+            @mutation_object = new_mutation_object
+            add_root_type(new_mutation_object)
+            nil
+          end
         else
           @mutation_object.respond_to?(:graphql_definition) ? @mutation_object.graphql_definition : @mutation_object
         end
@@ -820,7 +837,13 @@ module GraphQL
 
       def subscription(new_subscription_object = nil)
         if new_subscription_object
-          @subscription_object = new_subscription_object
+          if @subscription_object
+            raise GraphQL::Error, "Second definition of `query(...)` (#{new_subscription_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
+          else
+            @subscription_object = new_subscription_object
+            add_root_type(new_subscription_object)
+            nil
+          end
         else
           @subscription_object.respond_to?(:graphql_definition) ? @subscription_object.graphql_definition : @subscription_object
         end
