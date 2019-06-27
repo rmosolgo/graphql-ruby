@@ -186,7 +186,7 @@ rule
     | object_literal_value
 
   input_value:
-    | literal_value
+    literal_value
     | variable
     | object_value
 

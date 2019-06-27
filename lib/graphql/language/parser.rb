@@ -107,16 +107,16 @@ end
 ##### State transition tables begin ###
 
 racc_action_table = [
-    -2,  -165,    11,   -99,    12,    13,    14,   279,    11,   -99,
-    12,    13,    14,   -99,   -99,   -99,    19,   177,   168,   272,
+    -2,  -164,    11,   -98,    12,    13,    14,   279,    11,   -98,
+    12,    13,    14,   -98,   -98,   -98,    19,   177,   168,   272,
    168,   283,    19,   168,   168,   221,    15,   283,    71,    35,
-    35,    35,    15,    71,    71,    28,   -99,    35,    12,    13,
-    14,    28,    71,  -165,    71,    71,    71,    35,  -151,    43,
+    35,    35,    15,    71,    71,    28,   -98,    35,    12,    13,
+    14,    28,    71,  -164,    71,    71,    71,    35,  -150,    43,
     44,    45,    46,    47,    48,    49,    50,    51,    52,    53,
-    54,    55,    56,   222,    12,    13,    14,    71,  -165,  -165,
+    54,    55,    56,   222,    12,    13,    14,    71,  -164,  -164,
    180,    35,   298,   159,   120,    43,    44,    45,    46,    47,
     48,    49,    50,    51,    52,    53,    54,    55,    56,    60,
-    12,    13,    14,   294,    66,   262,    35,    35,  -165,    38,
+    12,    13,    14,   294,    66,   262,    35,    35,  -164,    38,
     35,    43,    44,    45,    46,    47,    48,    49,    50,    51,
     52,    53,    54,    55,    56,    90,    12,    13,    14,   278,
     66,    35,   277,    35,   267,   276,    35,    43,    44,    45,
@@ -255,8 +255,8 @@ racc_action_table = [
     45,    46,    47,    48,    49,    50,    51,    52,    53,    54,
     55,    56,    12,    13,    14,   nil,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   199,    44,    45,    46,    47,    48,    49,
-    50,    51,    52,   197,   198,  -157,   nil,   nil,   nil,  -157,
-   nil,   nil,   nil,   nil,   nil,  -157,   nil,  -157,  -157 ]
+    50,    51,    52,   197,   198,  -156,   nil,   nil,   nil,  -156,
+   nil,   nil,   nil,   nil,   nil,  -156,   nil,  -156,  -156 ]
 
 racc_action_check = [
      3,   243,     3,   146,     3,     3,     3,   248,     0,   144,
@@ -445,38 +445,38 @@ racc_action_pointer = [
    nil,   297,     0,   nil,   nil ]
 
 racc_action_default = [
-  -146,  -177,    -1,  -146,    -3,    -5,    -6,    -7,    -8,    -9,
-   -16,  -177,   -13,   -14,   -15,  -107,  -109,  -110,  -111,   -98,
-  -116,  -117,  -118,  -119,  -120,  -121,  -122,  -123,  -177,  -126,
-  -127,  -128,  -129,  -130,  -131,  -145,  -147,  -177,  -177,    -4,
+  -145,  -176,    -1,  -145,    -3,    -5,    -6,    -7,    -8,    -9,
+   -16,  -176,   -13,   -14,   -15,  -106,  -108,  -109,  -110,   -97,
+  -115,  -116,  -117,  -118,  -119,  -120,  -121,  -122,  -176,  -125,
+  -126,  -127,  -128,  -129,  -130,  -144,  -146,  -176,  -176,    -4,
    -18,   -17,   -38,   -39,   -40,   -41,   -42,   -43,   -44,   -45,
-   -46,   -47,   -48,   -49,   -50,   -51,   -52,   -53,   -54,  -177,
-   -12,   -31,   -33,   -34,   -35,   -63,   -98,  -177,  -108,   -99,
-  -100,  -177,  -177,   -98,  -177,  -177,  -177,  -177,  -177,  -177,
-  -177,  -177,  -177,  -177,  -177,  -177,  -177,   315,   -98,  -177,
-   -11,   -32,   -98,  -177,  -177,   -98,  -177,  -177,  -177,  -101,
-   -63,  -177,  -125,  -177,  -177,  -150,   -98,   -98,   -98,   -98,
-   -98,  -150,   -98,   -98,   -98,   -98,  -177,  -177,  -177,   -20,
-  -177,   -29,   -63,  -177,   -65,  -177,  -103,   -23,   -98,  -177,
-  -177,  -105,   -98,  -102,  -177,  -113,  -177,  -177,  -132,  -136,
-   -98,  -177,  -138,  -177,  -140,  -177,  -142,  -177,  -144,  -177,
-  -148,   -98,  -151,  -177,  -177,  -177,  -177,  -162,   -10,   -19,
-   -21,  -177,   -30,   -36,   -98,   -64,   -66,   -77,   -24,  -177,
-  -177,  -177,  -177,  -112,  -114,  -177,  -177,  -146,  -135,  -177,
-  -177,  -153,  -154,  -155,  -146,  -177,  -146,  -146,  -177,  -146,
-  -177,  -146,  -146,  -146,  -177,  -177,   -29,   -55,   -56,   -57,
+   -46,   -47,   -48,   -49,   -50,   -51,   -52,   -53,   -54,  -176,
+   -12,   -31,   -33,   -34,   -35,   -63,   -97,  -176,  -107,   -98,
+   -99,  -176,  -176,   -97,  -176,  -176,  -176,  -176,  -176,  -176,
+  -176,  -176,  -176,  -176,  -176,  -176,  -176,   315,   -97,  -176,
+   -11,   -32,   -97,  -176,  -176,   -97,  -176,  -176,  -176,  -100,
+   -63,  -176,  -124,  -176,  -176,  -149,   -97,   -97,   -97,   -97,
+   -97,  -149,   -97,   -97,   -97,   -97,  -176,  -176,  -176,   -20,
+  -176,   -29,   -63,  -176,   -65,  -176,  -102,   -23,   -97,  -176,
+  -176,  -104,   -97,  -101,  -176,  -112,  -176,  -176,  -131,  -135,
+   -97,  -176,  -137,  -176,  -139,  -176,  -141,  -176,  -143,  -176,
+  -147,   -97,  -150,  -176,  -176,  -176,  -176,  -161,   -10,   -19,
+   -21,  -176,   -30,   -36,   -97,   -64,   -66,  -176,   -24,  -176,
+  -176,  -176,  -176,  -111,  -113,  -176,  -176,  -145,  -134,  -176,
+  -176,  -152,  -153,  -154,  -145,  -176,  -145,  -145,  -176,  -145,
+  -176,  -145,  -145,  -145,  -176,  -176,   -29,   -55,   -56,   -57,
    -58,   -59,   -67,   -68,   -69,   -70,   -71,   -72,   -73,   -74,
-   -75,   -76,   -78,   -79,   -80,   -81,  -177,  -177,  -177,   -97,
-  -104,   -25,   -28,  -106,  -115,  -124,  -146,  -177,  -166,  -146,
-  -152,  -155,  -177,  -158,  -146,  -139,  -169,  -177,   -61,  -146,
-  -146,  -177,  -160,  -146,  -146,  -171,  -146,  -146,  -146,  -177,
-   -26,   -37,   -82,   -83,  -177,   -85,   -87,  -177,   -89,  -177,
-  -177,   -94,  -133,  -167,  -162,  -146,  -156,  -137,  -177,   -98,
-   -62,  -141,  -143,  -161,  -177,  -146,  -168,  -172,  -173,  -163,
-  -174,  -175,   -22,  -177,   -84,   -86,   -88,   -90,  -177,   -77,
-   -93,   -95,  -177,  -177,  -134,  -170,   -60,  -177,  -149,  -177,
-   -27,  -177,   -77,   -78,   -91,  -177,  -177,   -26,  -176,   -92,
-   -96,   -98,   -98,  -164,  -159 ]
+   -75,   -76,   -77,   -78,   -79,   -80,  -176,  -176,  -176,   -96,
+  -103,   -25,   -28,  -105,  -114,  -123,  -145,  -176,  -165,  -145,
+  -151,  -154,  -176,  -157,  -145,  -138,  -168,  -176,   -61,  -145,
+  -145,  -176,  -159,  -145,  -145,  -170,  -145,  -145,  -145,  -176,
+   -26,   -37,   -81,   -82,  -176,   -84,   -86,  -176,   -88,  -176,
+  -176,   -93,  -132,  -166,  -161,  -145,  -155,  -136,  -176,   -97,
+   -62,  -140,  -142,  -160,  -176,  -145,  -167,  -171,  -172,  -162,
+  -173,  -174,   -22,  -176,   -83,   -85,   -87,   -89,  -176,  -176,
+   -92,   -94,  -176,  -176,  -133,  -169,   -60,  -176,  -148,  -176,
+   -27,  -176,  -176,   -77,   -90,  -176,  -176,   -26,  -175,   -91,
+   -95,   -97,   -97,  -163,  -158 ]
 
 racc_goto_table = [
     10,    72,    59,    10,   128,   194,   132,    91,   102,    68,
@@ -664,45 +664,44 @@ racc_reduce_table = [
   1, 59, :_reduce_none,
   1, 59, :_reduce_none,
   1, 59, :_reduce_none,
-  0, 74, :_reduce_none,
   1, 74, :_reduce_none,
   1, 74, :_reduce_none,
   1, 74, :_reduce_none,
-  1, 75, :_reduce_81,
-  2, 79, :_reduce_82,
-  2, 77, :_reduce_83,
-  3, 77, :_reduce_84,
-  1, 81, :_reduce_85,
-  2, 81, :_reduce_86,
-  2, 80, :_reduce_87,
-  3, 80, :_reduce_88,
-  1, 82, :_reduce_89,
-  2, 82, :_reduce_90,
-  3, 83, :_reduce_91,
-  2, 78, :_reduce_92,
-  3, 78, :_reduce_93,
-  1, 84, :_reduce_94,
-  2, 84, :_reduce_95,
-  3, 85, :_reduce_96,
-  1, 76, :_reduce_97,
-  0, 51, :_reduce_98,
+  1, 75, :_reduce_80,
+  2, 79, :_reduce_81,
+  2, 77, :_reduce_82,
+  3, 77, :_reduce_83,
+  1, 81, :_reduce_84,
+  2, 81, :_reduce_85,
+  2, 80, :_reduce_86,
+  3, 80, :_reduce_87,
+  1, 82, :_reduce_88,
+  2, 82, :_reduce_89,
+  3, 83, :_reduce_90,
+  2, 78, :_reduce_91,
+  3, 78, :_reduce_92,
+  1, 84, :_reduce_93,
+  2, 84, :_reduce_94,
+  3, 85, :_reduce_95,
+  1, 76, :_reduce_96,
+  0, 51, :_reduce_97,
   1, 51, :_reduce_none,
-  1, 86, :_reduce_100,
-  2, 86, :_reduce_101,
-  3, 87, :_reduce_102,
-  3, 63, :_reduce_103,
-  5, 64, :_reduce_104,
-  3, 64, :_reduce_105,
-  6, 47, :_reduce_106,
-  0, 88, :_reduce_107,
+  1, 86, :_reduce_99,
+  2, 86, :_reduce_100,
+  3, 87, :_reduce_101,
+  3, 63, :_reduce_102,
+  5, 64, :_reduce_103,
+  3, 64, :_reduce_104,
+  6, 47, :_reduce_105,
+  0, 88, :_reduce_106,
   1, 88, :_reduce_none,
   1, 44, :_reduce_none,
   1, 44, :_reduce_none,
   1, 44, :_reduce_none,
-  5, 89, :_reduce_112,
+  5, 89, :_reduce_111,
   1, 92, :_reduce_none,
-  2, 92, :_reduce_114,
-  3, 93, :_reduce_115,
+  2, 92, :_reduce_113,
+  3, 93, :_reduce_114,
   1, 90, :_reduce_none,
   1, 90, :_reduce_none,
   1, 90, :_reduce_none,
@@ -711,61 +710,61 @@ racc_reduce_table = [
   1, 90, :_reduce_none,
   1, 45, :_reduce_none,
   1, 45, :_reduce_none,
-  6, 100, :_reduce_124,
-  3, 100, :_reduce_125,
+  6, 100, :_reduce_123,
+  3, 100, :_reduce_124,
   1, 101, :_reduce_none,
   1, 101, :_reduce_none,
   1, 101, :_reduce_none,
   1, 101, :_reduce_none,
   1, 101, :_reduce_none,
   1, 101, :_reduce_none,
-  4, 102, :_reduce_132,
-  7, 103, :_reduce_133,
-  8, 103, :_reduce_134,
-  5, 103, :_reduce_135,
-  4, 103, :_reduce_136,
-  7, 104, :_reduce_137,
-  4, 104, :_reduce_138,
-  6, 105, :_reduce_139,
-  4, 105, :_reduce_140,
-  7, 106, :_reduce_141,
-  4, 106, :_reduce_142,
-  7, 107, :_reduce_143,
-  4, 107, :_reduce_144,
+  4, 102, :_reduce_131,
+  7, 103, :_reduce_132,
+  8, 103, :_reduce_133,
+  5, 103, :_reduce_134,
+  4, 103, :_reduce_135,
+  7, 104, :_reduce_136,
+  4, 104, :_reduce_137,
+  6, 105, :_reduce_138,
+  4, 105, :_reduce_139,
+  7, 106, :_reduce_140,
+  4, 106, :_reduce_141,
+  7, 107, :_reduce_142,
+  4, 107, :_reduce_143,
   1, 113, :_reduce_none,
   0, 70, :_reduce_none,
   1, 70, :_reduce_none,
-  4, 94, :_reduce_148,
-  8, 95, :_reduce_149,
-  0, 110, :_reduce_150,
+  4, 94, :_reduce_147,
+  8, 95, :_reduce_148,
+  0, 110, :_reduce_149,
   1, 110, :_reduce_none,
-  3, 108, :_reduce_152,
+  3, 108, :_reduce_151,
+  2, 108, :_reduce_152,
   2, 108, :_reduce_153,
-  2, 108, :_reduce_154,
-  1, 114, :_reduce_155,
-  3, 114, :_reduce_156,
-  1, 115, :_reduce_157,
-  2, 115, :_reduce_158,
-  6, 116, :_reduce_159,
-  1, 112, :_reduce_160,
-  2, 112, :_reduce_161,
-  0, 117, :_reduce_162,
-  3, 117, :_reduce_163,
-  6, 118, :_reduce_164,
-  0, 109, :_reduce_165,
-  1, 109, :_reduce_166,
-  2, 109, :_reduce_167,
-  7, 96, :_reduce_168,
-  1, 111, :_reduce_169,
-  3, 111, :_reduce_170,
-  6, 97, :_reduce_171,
-  7, 98, :_reduce_172,
-  7, 99, :_reduce_173,
-  7, 91, :_reduce_174,
-  1, 119, :_reduce_175,
-  3, 119, :_reduce_176 ]
+  1, 114, :_reduce_154,
+  3, 114, :_reduce_155,
+  1, 115, :_reduce_156,
+  2, 115, :_reduce_157,
+  6, 116, :_reduce_158,
+  1, 112, :_reduce_159,
+  2, 112, :_reduce_160,
+  0, 117, :_reduce_161,
+  3, 117, :_reduce_162,
+  6, 118, :_reduce_163,
+  0, 109, :_reduce_164,
+  1, 109, :_reduce_165,
+  2, 109, :_reduce_166,
+  7, 96, :_reduce_167,
+  1, 111, :_reduce_168,
+  3, 111, :_reduce_169,
+  6, 97, :_reduce_170,
+  7, 98, :_reduce_171,
+  7, 99, :_reduce_172,
+  7, 91, :_reduce_173,
+  1, 119, :_reduce_174,
+  3, 119, :_reduce_175 ]
 
-racc_reduce_n = 177
+racc_reduce_n = 176
 
 racc_shift_n = 315
 
@@ -1349,166 +1348,164 @@ module_eval(<<'.,.,', 'parser.y', 181)
 
 # reduce 79 omitted
 
-# reduce 80 omitted
-
 module_eval(<<'.,.,', 'parser.y', 192)
-  def _reduce_81(val, _values, result)
+  def _reduce_80(val, _values, result)
      return make_node(:NullValue, name: val[0], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 193)
-  def _reduce_82(val, _values, result)
+  def _reduce_81(val, _values, result)
      return make_node(:VariableIdentifier, name: val[1], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 196)
-  def _reduce_83(val, _values, result)
+  def _reduce_82(val, _values, result)
      return EMPTY_ARRAY 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 197)
-  def _reduce_84(val, _values, result)
+  def _reduce_83(val, _values, result)
      return val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 200)
-  def _reduce_85(val, _values, result)
+  def _reduce_84(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 201)
-  def _reduce_86(val, _values, result)
+  def _reduce_85(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 204)
-  def _reduce_87(val, _values, result)
+  def _reduce_86(val, _values, result)
      return make_node(:InputObject, arguments: [], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 205)
-  def _reduce_88(val, _values, result)
+  def _reduce_87(val, _values, result)
      return make_node(:InputObject, arguments: val[1], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 208)
-  def _reduce_89(val, _values, result)
+  def _reduce_88(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 209)
-  def _reduce_90(val, _values, result)
+  def _reduce_89(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 212)
-  def _reduce_91(val, _values, result)
+  def _reduce_90(val, _values, result)
      return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 216)
-  def _reduce_92(val, _values, result)
+  def _reduce_91(val, _values, result)
      return make_node(:InputObject, arguments: [], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 217)
-  def _reduce_93(val, _values, result)
+  def _reduce_92(val, _values, result)
      return make_node(:InputObject, arguments: val[1], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 220)
-  def _reduce_94(val, _values, result)
+  def _reduce_93(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 221)
-  def _reduce_95(val, _values, result)
+  def _reduce_94(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 224)
-  def _reduce_96(val, _values, result)
+  def _reduce_95(val, _values, result)
      return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 226)
-  def _reduce_97(val, _values, result)
+  def _reduce_96(val, _values, result)
      return make_node(:Enum, name: val[0], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 229)
-  def _reduce_98(val, _values, result)
+  def _reduce_97(val, _values, result)
      return  EMPTY_ARRAY 
     result
   end
 .,.,
 
-# reduce 99 omitted
+# reduce 98 omitted
 
 module_eval(<<'.,.,', 'parser.y', 233)
-  def _reduce_100(val, _values, result)
+  def _reduce_99(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 234)
-  def _reduce_101(val, _values, result)
+  def _reduce_100(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 236)
-  def _reduce_102(val, _values, result)
+  def _reduce_101(val, _values, result)
      return make_node(:Directive, name: val[1], arguments: val[2], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 239)
-  def _reduce_103(val, _values, result)
+  def _reduce_102(val, _values, result)
      return make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 243)
-  def _reduce_104(val, _values, result)
+  def _reduce_103(val, _values, result)
             return make_node(:InlineFragment, {
           type: val[2],
           directives: val[3],
@@ -1521,7 +1518,7 @@ module_eval(<<'.,.,', 'parser.y', 243)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 251)
-  def _reduce_105(val, _values, result)
+  def _reduce_104(val, _values, result)
             return make_node(:InlineFragment, {
           type: nil,
           directives: val[1],
@@ -1534,7 +1531,7 @@ module_eval(<<'.,.,', 'parser.y', 251)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 261)
-  def _reduce_106(val, _values, result)
+  def _reduce_105(val, _values, result)
           return make_node(:FragmentDefinition, {
           name:       val[1],
           type:       val[3],
@@ -1549,11 +1546,13 @@ module_eval(<<'.,.,', 'parser.y', 261)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 272)
-  def _reduce_107(val, _values, result)
+  def _reduce_106(val, _values, result)
      return nil 
     result
   end
 .,.,
+
+# reduce 107 omitted
 
 # reduce 108 omitted
 
@@ -1561,30 +1560,30 @@ module_eval(<<'.,.,', 'parser.y', 272)
 
 # reduce 110 omitted
 
-# reduce 111 omitted
-
 module_eval(<<'.,.,', 'parser.y', 281)
-  def _reduce_112(val, _values, result)
+  def _reduce_111(val, _values, result)
      return make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0].line, directives: val[1], **val[3]) 
     result
   end
 .,.,
 
-# reduce 113 omitted
+# reduce 112 omitted
 
 module_eval(<<'.,.,', 'parser.y', 285)
-  def _reduce_114(val, _values, result)
+  def _reduce_113(val, _values, result)
      return val[0].merge(val[1]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 288)
-  def _reduce_115(val, _values, result)
+  def _reduce_114(val, _values, result)
      return { val[0].to_s.to_sym => val[2] } 
     result
   end
 .,.,
+
+# reduce 115 omitted
 
 # reduce 116 omitted
 
@@ -1600,21 +1599,21 @@ module_eval(<<'.,.,', 'parser.y', 288)
 
 # reduce 122 omitted
 
-# reduce 123 omitted
-
 module_eval(<<'.,.,', 'parser.y', 303)
-  def _reduce_124(val, _values, result)
+  def _reduce_123(val, _values, result)
      return make_node(:SchemaExtension, position_source: val[0], directives: val[2], **val[4]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 304)
-  def _reduce_125(val, _values, result)
+  def _reduce_124(val, _values, result)
      return make_node(:SchemaExtension, position_source: val[0], directives: val[2]) 
     result
   end
 .,.,
+
+# reduce 125 omitted
 
 # reduce 126 omitted
 
@@ -1626,107 +1625,105 @@ module_eval(<<'.,.,', 'parser.y', 304)
 
 # reduce 130 omitted
 
-# reduce 131 omitted
-
 module_eval(<<'.,.,', 'parser.y', 314)
-  def _reduce_132(val, _values, result)
+  def _reduce_131(val, _values, result)
      return make_node(:ScalarTypeExtension, name: val[2], directives: val[3], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 318)
-  def _reduce_133(val, _values, result)
+  def _reduce_132(val, _values, result)
      return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[5], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 319)
-  def _reduce_134(val, _values, result)
+  def _reduce_133(val, _values, result)
      return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 320)
-  def _reduce_135(val, _values, result)
+  def _reduce_134(val, _values, result)
      return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 321)
-  def _reduce_136(val, _values, result)
+  def _reduce_135(val, _values, result)
      return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 324)
-  def _reduce_137(val, _values, result)
+  def _reduce_136(val, _values, result)
      return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 325)
-  def _reduce_138(val, _values, result)
+  def _reduce_137(val, _values, result)
      return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 328)
-  def _reduce_139(val, _values, result)
+  def _reduce_138(val, _values, result)
      return make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: val[5], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 329)
-  def _reduce_140(val, _values, result)
+  def _reduce_139(val, _values, result)
      return make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: [], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 332)
-  def _reduce_141(val, _values, result)
+  def _reduce_140(val, _values, result)
      return make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: val[5], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 333)
-  def _reduce_142(val, _values, result)
+  def _reduce_141(val, _values, result)
      return make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: [], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 336)
-  def _reduce_143(val, _values, result)
+  def _reduce_142(val, _values, result)
      return make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 337)
-  def _reduce_144(val, _values, result)
+  def _reduce_143(val, _values, result)
      return make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) 
     result
   end
 .,.,
 
+# reduce 144 omitted
+
 # reduce 145 omitted
 
 # reduce 146 omitted
 
-# reduce 147 omitted
-
 module_eval(<<'.,.,', 'parser.y', 347)
-  def _reduce_148(val, _values, result)
+  def _reduce_147(val, _values, result)
             return make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
@@ -1734,7 +1731,7 @@ module_eval(<<'.,.,', 'parser.y', 347)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 352)
-  def _reduce_149(val, _values, result)
+  def _reduce_148(val, _values, result)
             return make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
@@ -1742,65 +1739,65 @@ module_eval(<<'.,.,', 'parser.y', 352)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 356)
-  def _reduce_150(val, _values, result)
+  def _reduce_149(val, _values, result)
      return EMPTY_ARRAY 
     result
   end
 .,.,
 
-# reduce 151 omitted
+# reduce 150 omitted
 
 module_eval(<<'.,.,', 'parser.y', 360)
-  def _reduce_152(val, _values, result)
+  def _reduce_151(val, _values, result)
      return val[2] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 361)
-  def _reduce_153(val, _values, result)
+  def _reduce_152(val, _values, result)
      return val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 362)
-  def _reduce_154(val, _values, result)
+  def _reduce_153(val, _values, result)
      return val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 365)
-  def _reduce_155(val, _values, result)
+  def _reduce_154(val, _values, result)
      return [make_node(:TypeName, name: val[0], position_source: val[0])] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 366)
-  def _reduce_156(val, _values, result)
+  def _reduce_155(val, _values, result)
      val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 369)
-  def _reduce_157(val, _values, result)
+  def _reduce_156(val, _values, result)
      return [make_node(:TypeName, name: val[0], position_source: val[0])] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 370)
-  def _reduce_158(val, _values, result)
+  def _reduce_157(val, _values, result)
      val[0] << make_node(:TypeName, name: val[1], position_source: val[1]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 374)
-  def _reduce_159(val, _values, result)
+  def _reduce_158(val, _values, result)
             return make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
@@ -1808,35 +1805,35 @@ module_eval(<<'.,.,', 'parser.y', 374)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 378)
-  def _reduce_160(val, _values, result)
+  def _reduce_159(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 379)
-  def _reduce_161(val, _values, result)
+  def _reduce_160(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 382)
-  def _reduce_162(val, _values, result)
+  def _reduce_161(val, _values, result)
      return EMPTY_ARRAY 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 383)
-  def _reduce_163(val, _values, result)
+  def _reduce_162(val, _values, result)
      return val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 387)
-  def _reduce_164(val, _values, result)
+  def _reduce_163(val, _values, result)
             return make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
@@ -1844,28 +1841,28 @@ module_eval(<<'.,.,', 'parser.y', 387)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 391)
-  def _reduce_165(val, _values, result)
+  def _reduce_164(val, _values, result)
      return EMPTY_ARRAY 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 392)
-  def _reduce_166(val, _values, result)
+  def _reduce_165(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 393)
-  def _reduce_167(val, _values, result)
+  def _reduce_166(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 397)
-  def _reduce_168(val, _values, result)
+  def _reduce_167(val, _values, result)
             return make_node(:InterfaceTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
@@ -1873,21 +1870,21 @@ module_eval(<<'.,.,', 'parser.y', 397)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 401)
-  def _reduce_169(val, _values, result)
+  def _reduce_168(val, _values, result)
      return [make_node(:TypeName, name: val[0], position_source: val[0])]
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 402)
-  def _reduce_170(val, _values, result)
+  def _reduce_169(val, _values, result)
      val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 406)
-  def _reduce_171(val, _values, result)
+  def _reduce_170(val, _values, result)
             return make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
@@ -1895,7 +1892,7 @@ module_eval(<<'.,.,', 'parser.y', 406)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 411)
-  def _reduce_172(val, _values, result)
+  def _reduce_171(val, _values, result)
              return make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
@@ -1903,7 +1900,7 @@ module_eval(<<'.,.,', 'parser.y', 411)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 416)
-  def _reduce_173(val, _values, result)
+  def _reduce_172(val, _values, result)
             return make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
@@ -1911,7 +1908,7 @@ module_eval(<<'.,.,', 'parser.y', 416)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 421)
-  def _reduce_174(val, _values, result)
+  def _reduce_173(val, _values, result)
             return make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
@@ -1919,14 +1916,14 @@ module_eval(<<'.,.,', 'parser.y', 421)
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 425)
-  def _reduce_175(val, _values, result)
+  def _reduce_174(val, _values, result)
      return [make_node(:DirectiveLocation, name: val[0].to_s, position_source: val[0])] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 426)
-  def _reduce_176(val, _values, result)
+  def _reduce_175(val, _values, result)
      val[0] << make_node(:DirectiveLocation, name: val[2].to_s, position_source: val[2]) 
     result
   end
