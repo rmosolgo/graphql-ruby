@@ -144,10 +144,20 @@ describe GraphQL::Language::Parser do
     end
 
     it 'raises parse errors for empty argument sets' do
+      # Regression spec from https://github.com/rmosolgo/graphql-ruby/pull/2344
       query_with_empty_arguments = '{ node() { id } }'
 
       assert_raises(GraphQL::ParseError) {
         subject.parse(query_with_empty_arguments)
+      }
+    end
+
+    it 'raises parse errors for argument sets without value' do
+      # Regression spec from https://github.com/rmosolgo/graphql-ruby/pull/2344
+      query_with_malformed_argument_value = '{ node(id:) { name } }'
+
+      assert_raises(GraphQL::ParseError) {
+        subject.parse(query_with_malformed_argument_value)
       }
     end
   end
