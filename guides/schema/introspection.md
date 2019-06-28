@@ -187,3 +187,13 @@ end
 ```
 
 Any fields defined there will be available in any selection, but ignored in introspection (just like `__typename`).
+
+## Disabling Introspection
+
+In case you want to turn off introspection entry points `__schema` and `__type` (for instance in the production environment) you can use a `#disable_introspection_entry_points` shorthand method:
+
+```ruby
+class MySchema < GraphQL::Schema
+  disable_introspection_entry_points if Rails.env.production?
+end
+```

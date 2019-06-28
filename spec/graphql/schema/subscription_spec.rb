@@ -68,6 +68,12 @@ describe GraphQL::Schema::Subscription do
       end
     end
 
+    class DirectTootWasTooted < BaseSubscription
+      subscription_scope :viewer
+      field :toot, Toot, null: false
+      field :user, User, null: false
+    end
+
     # Test initial response, which returns all users
     class UsersJoined < BaseSubscription
       class UsersJoinedManualPayload < GraphQL::Schema::Object
@@ -97,6 +103,7 @@ describe GraphQL::Schema::Subscription do
     class Subscription < GraphQL::Schema::Object
       extend GraphQL::Subscriptions::SubscriptionRoot
       field :toot_was_tooted, subscription: TootWasTooted
+      field :direct_toot_was_tooted, subscription: DirectTootWasTooted
       field :users_joined, subscription: UsersJoined
       field :new_users_joined, subscription: NewUsersJoined
     end
@@ -435,6 +442,64 @@ describe GraphQL::Schema::Subscription do
       assert_equal ["Can't subscribe to private user"], mailbox.last["errors"].map { |e| e["message"] }
       # The subscription remains in place
       assert_equal 1, in_memory_subscription_count
+    end
+  end
+
+  describe "`subscription_scope` method" do
+    it "provdes a subscription scope that is recognized in the schema" do
+      scoped_subscription = SubscriptionFieldSchema::get_field("Subscription", "directTootWasTooted")
+  
+      assert_equal :viewer, scoped_subscription.subscription_scope
+    end
+  
+    it "provides a subscription scope that is used in execution" do
+      res = exec_query <<-GRAPHQL, context: { viewer: :me }
+        subscription {
+          directTootWasTooted {
+            toot { body }
+          }
+        }
+      GRAPHQL
+      assert_equal 1, in_memory_subscription_count
+
+      # Only the subscription with scope :me should be in the mailbox
+      obj = OpenStruct.new(toot: { body: "Hello from matz!" }, user: SubscriptionFieldSchema::USERS["matz"])
+      SubscriptionFieldSchema.subscriptions.trigger(:direct_toot_was_tooted, {}, obj, scope: :me)
+      SubscriptionFieldSchema.subscriptions.trigger(:direct_toot_was_tooted, {}, obj, scope: :not_me)
+      mailbox = res.context[:subscription_mailbox]
+
+      assert_equal 1, mailbox.length
+
+      expected_response = {
+        "data" => {
+          "directTootWasTooted" => {
+            "toot" => {
+              "body" => "Hello from matz!"
+            }
+          }
+        }
+      }
+
+      assert_equal expected_response, mailbox.first
+    end
+
+    it "allows for proper inheritance of the class's configuration in subclasses" do
+      # Make a subclass without an explicit configuration
+      class DirectTootSubclass < SubscriptionFieldSchema::DirectTootWasTooted
+      end
+      # Then check if the field options got the inherited value
+      direct_toot_options = DirectTootSubclass.field_options
+      assert_equal :viewer, direct_toot_options[:subscription_scope]
+    end
+
+    it "allows for setting the subscription scope value to nil" do
+      class PrivateSubscription < SubscriptionFieldSchema::BaseSubscription
+        subscription_scope :private
+      end
+
+      PrivateSubscription.subscription_scope nil
+
+      assert_nil PrivateSubscription.subscription_scope
     end
   end
 end

@@ -39,7 +39,7 @@ An unencrypted ID generator is provided in the gem. It uses `Base64` to encode v
 class MySchema < GraphQL::Schema
   # Create UUIDs by joining the type name & ID, then base64-encoding it
   def self.id_from_object(object, type_definition, query_ctx)
-    GraphQL::Schema::UniqueWithinType.encode(type_definition.name, object.id)
+    GraphQL::Schema::UniqueWithinType.encode(type_definition.graphql_name, object.id)
   end
 
   def self.object_from_id(id, query_ctx)

@@ -55,7 +55,6 @@ module StarTrek
 
   class CustomBaseEdgeType < GraphQL::Types::Relay::BaseEdge
     node_type(BaseType)
-    graphql_name "CustomBaseEdge"
     field :upcased_name, String, null: true
     field :upcased_parent_name, String, null: true
     field :edge_class_name, String, null: true
@@ -413,7 +412,7 @@ module StarTrek
     end
 
     def self.id_from_object(object, type, ctx)
-      GraphQL::Schema::UniqueWithinType.encode(type.name, object.id)
+      GraphQL::Schema::UniqueWithinType.encode(type.graphql_name, object.id)
     end
 
     lazy_resolve(LazyWrapper, :value)

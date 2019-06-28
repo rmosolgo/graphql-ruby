@@ -769,4 +769,10 @@ module Jazz
       use GraphQL::Analysis::AST
     end
   end
+
+  class SchemaWithoutIntrospection < GraphQL::Schema
+    query(Query)
+
+    disable_introspection_entry_points
+  end
 end
