@@ -118,6 +118,7 @@ module GraphQL
           obj_type.interfaces = interfaces
           obj_type.introspection = introspection
           obj_type.mutation = mutation
+          obj_type.ast_node = ast_node
           fields.each do |field_name, field_inst|
             field_defn = field_inst.to_graphql
             obj_type.fields[field_defn.name] = field_defn

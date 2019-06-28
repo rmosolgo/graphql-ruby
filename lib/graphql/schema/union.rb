@@ -20,6 +20,7 @@ module GraphQL
           type_defn.name = graphql_name
           type_defn.description = description
           type_defn.possible_types = possible_types
+          type_defn.ast_node = ast_node
           if respond_to?(:resolve_type)
             type_defn.resolve_type = method(:resolve_type)
           end
