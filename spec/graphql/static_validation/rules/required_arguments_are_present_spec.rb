@@ -10,7 +10,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
     }
 
     fragment cheeseFields on Cheese {
-      similarCheese() { __typename }
+      similarCheese { __typename }
       flavor @include(if: true)
       id @skip
     }
