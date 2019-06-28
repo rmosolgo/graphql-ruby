@@ -152,7 +152,7 @@ describe GraphQL::Analysis::AST do
       let(:query_string) {%|
         # A comment
         # is an invalid operation
-        # Should not break
+         # Should break
       |}
 
       it "bails early when there is no selected operation to be executed" do
