@@ -23,7 +23,7 @@ module GraphQL
           ruby_kwargs_key = arg_defn.keyword
           loads = arg_defn.loads
 
-          if @ruby_style_hash.key?(ruby_kwargs_key) && loads
+          if @ruby_style_hash.key?(ruby_kwargs_key) && loads && !arg_defn.from_resolver?
             value = @ruby_style_hash[ruby_kwargs_key]
             @ruby_style_hash[ruby_kwargs_key] = if arg_defn.type.list?
               GraphQL::Execution::Lazy.all(value.map { |val| load_application_object(arg_defn, loads, val) })
