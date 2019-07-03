@@ -99,8 +99,6 @@ module GraphQL
         attr_accessor :arguments_class
 
         def argument(*args, **kwargs, &block)
-          # Translate `loads:` to `as:` if needed`
-          *args, kwargs = argument_with_loads(*args, **kwargs, &block)
           argument_defn = super(*args, **kwargs, &block)
           # Add a method access
           method_name = argument_defn.keyword
