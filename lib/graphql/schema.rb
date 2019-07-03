@@ -53,7 +53,6 @@ module GraphQL
   #  - types for exposing your application
   #  - query analyzers for assessing incoming queries (including max depth & max complexity restrictions)
   #  - execution strategies for running incoming queries
-  #  - middleware for interacting with execution
   #
   # Schemas start with root types, {Schema#query}, {Schema#mutation} and {Schema#subscription}.
   # The schema will traverse the tree of fields & types, using those as starting points.
@@ -65,14 +64,10 @@ module GraphQL
   # Schemas can specify how queries should be executed against them.
   # `query_execution_strategy`, `mutation_execution_strategy` and `subscription_execution_strategy`
   # each apply to corresponding root types.
-  #
-  # A schema accepts a `Relay::GlobalNodeIdentification` instance for use with Relay IDs.
-  #
+  #  #
   # @example defining a schema
-  #   MySchema = GraphQL::Schema.define do
+  #   class MySchema < GraphQL::Schema
   #     query QueryType
-  #     middleware PermissionMiddleware
-  #     rescue_from(ActiveRecord::RecordNotFound) { "Not found" }
   #     # If types are only connected by way of interfaces, they must be added here
   #     orphan_types ImageType, AudioType
   #   end
@@ -407,8 +402,8 @@ module GraphQL
     def get_field(parent_type, field_name)
       with_definition_error_check do
         parent_type_name = case parent_type
-        when GraphQL::BaseType
-          parent_type.name
+        when GraphQL::BaseType, Class, Module
+          parent_type.graphql_name
         when String
           parent_type
         else
@@ -716,7 +711,6 @@ module GraphQL
         :remove_handler,
         # Members
         :get_fields, :find,
-        :root_type_for_operation,
         :subscriptions,
         :union_memberships,
         :get_field, :root_types, :references_to, :type_from_ast,
@@ -849,6 +843,25 @@ module GraphQL
         end
       end
 
+      # @see [GraphQL::Schema::Warden] Resticted access to root types
+      # @return [GraphQL::ObjectType, nil]
+      def root_type_for_operation(operation)
+        case operation
+        when "query"
+          query
+        when "mutation"
+          mutation
+        when "subscription"
+          subscription
+        else
+          raise ArgumentError, "unknown operation type: #{operation}"
+        end
+      end
+
+      def root_types
+        @root_types
+      end
+
       def introspection(new_introspection_namespace = nil)
         if new_introspection_namespace
           @introspection = new_introspection_namespace
@@ -926,7 +939,9 @@ module GraphQL
 
       def orphan_types(*new_orphan_types)
         if new_orphan_types.any?
-          @orphan_types = new_orphan_types.flatten
+          new_orphan_types = new_orphan_types.flatten
+          new_orphan_types.each { |t| add_root_type(t) }
+          @orphan_types = new_orphan_types
         else
           @orphan_types || []
         end
@@ -1132,6 +1147,77 @@ module GraphQL
           member.public_send(method_name, *args)
         else
           default
+        end
+      end
+
+      # @return [void]
+      def add_root_type(t)
+        @root_types ||= []
+        @root_types << t
+        late_types = []
+        add_type(t, late_types: late_types)
+        while lt = late_types.shift
+          if lt.is_a?(String)
+            type = Member::BuildType.constantize(lt)
+            add_type(type, late_types: late_types)
+          elsif lt.is_a?(LateBoundType)
+            if (type = types[lt.graphql_name])
+              # OK
+            else
+              raise ArgumentError, "Late bound type was never found: #{lt.inspect}"
+            end
+          else
+            raise ArgumentError, "Unexpected late type: #{lt.inspect}"
+          end
+        end
+        nil
+      end
+
+
+      def add_type(type, late_types:)
+        if type.respond_to?(:metadata) && type.metadata.is_a?(Hash)
+          type_class = type.metadata[:type_class]
+          if type_class.nil?
+            raise ArgumentError, "Can't add legacy type: #{type} (#{type.class})"
+          else
+            type = type_class
+          end
+        elsif type.is_a?(String) || type.is_a?(GraphQL::Schema::LateBoundType)
+          late_types << type
+          return
+        end
+
+        if (prev_type = types[type.graphql_name])
+          if prev_type != type
+            raise ArgumentError, "Conflicting type definitions for `#{type.graphql_name}`: #{prev_type} (#{prev_type.class}), #{type} #{type.class}"
+          else
+            # This type was already added
+          end
+        else
+          types[type.graphql_name] = type
+          if type.kind.fields?
+            type.fields.each do |_name, field|
+              add_type(field.type.unwrap, late_types: late_types)
+              field.arguments.each do |_name, arg|
+                add_type(arg.type.unwrap, late_types: late_types)
+              end
+            end
+          end
+          if type.kind.input_object?
+            type.arguments.each do |_name, arg|
+              add_type(arg.type.unwrap, late_types: late_types)
+            end
+          end
+          if type.kind.union?
+            type.possible_types.each do |t|
+              add_type(t, late_types: late_types)
+            end
+          end
+          if type.kind.object?
+            type.interfaces.each do |i|
+              add_type(i, late_types: late_types)
+            end
+          end
         end
       end
     end

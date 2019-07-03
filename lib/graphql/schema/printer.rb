@@ -54,7 +54,6 @@ module GraphQL
         )
 
         @document = @document_from_schema.document
-
         @schema = schema
       end
 

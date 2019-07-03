@@ -37,6 +37,10 @@ module GraphQL
           end
           @default_scalar
         end
+
+        def default_scalar?
+          @default_scalar ||= false
+        end
       end
     end
   end

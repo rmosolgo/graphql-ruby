@@ -15,19 +15,21 @@ module GraphQL
         when GraphQL::Language::Nodes::NonNullType
           ast_inner_type = ast_node.of_type
           inner_type = build_type(types, ast_inner_type)
-          wrap_type(inner_type, GraphQL::NonNullType)
+          wrap_type(inner_type, :to_non_null_type)
         when GraphQL::Language::Nodes::ListType
           ast_inner_type = ast_node.of_type
           inner_type = build_type(types, ast_inner_type)
-          wrap_type(inner_type, GraphQL::ListType)
+          wrap_type(inner_type, :to_list_type)
         end
       end
 
-      def self.wrap_type(type, wrapper)
+      def self.wrap_type(type, wrapper_method)
         if type.nil?
           nil
+        elsif wrapper_method == :to_list_type || wrapper_method == :to_non_null_type
+          type.public_send(wrapper_method)
         else
-          wrapper.new(of_type: type)
+          raise ArgumentError, "Unexpected wrapper method: #{wrapper_method.inspect}"
         end
       end
     end

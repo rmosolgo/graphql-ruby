@@ -396,7 +396,11 @@ module GraphQL
       end
 
       def type
-        @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+        @type ||= if @function
+            Member::BuildType.parse_type(@function.type, null: false)
+          else
+            Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+          end
       rescue
         raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: #{$!.message}", $!.backtrace
       end
