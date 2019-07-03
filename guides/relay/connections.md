@@ -40,6 +40,8 @@ field :featured_comments, CommentType.connection_type do
   argument :since, String, required: false
 end
 
+
+# inside app/models/post.rb
 def featured_comments(since: nil)
   comments = post.comments.featured
   if since
