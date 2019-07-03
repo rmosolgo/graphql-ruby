@@ -41,9 +41,8 @@ field :featured_comments, CommentType.connection_type do
 end
 
 
-# inside app/models/post.rb
 def featured_comments(since: nil)
-  comments = post.comments.featured
+  comments = object.comments.featured
   if since
     comments = comments.where("created_at >= ?", since)
   end
