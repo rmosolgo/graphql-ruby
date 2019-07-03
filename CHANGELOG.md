@@ -158,13 +158,13 @@
 - Fix unwrapping inputobject types when turning arguments to hashes #2094
 - Support lazy objects from `.resolve_type` hooks #2108
 
-## 1.8.14 (9 Feb 2018)
+## 1.8.14 (9 Feb 2019)
 
 ### Bug Fixes
 
 - Fix single-item list inputs that aren't passed as lists #2095
 
-## 1.8.13 (4 Jan 2018)
+## 1.8.13 (4 Jan 2019)
 
 ### Bug fixes
 
