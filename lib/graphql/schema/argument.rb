@@ -25,6 +25,11 @@ module GraphQL
       # @return [Class, Module, nil] If this argument should load an application object, this is the type of object to load
       attr_reader :loads
 
+      # @return [Boolean] true if a resolver defined this argument
+      def from_resolver?
+        @from_resolver
+      end
+
       # @param arg_name [Symbol]
       # @param type_expr
       # @param desc [String]
@@ -34,7 +39,8 @@ module GraphQL
       # @param as [Symbol] Override the keyword name when passed to a method
       # @param prepare [Symbol] A method to call to transform this argument's valuebefore sending it to field resolution
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, camelize: true, prepare: nil, owner:, &definition_block)
+      # @param from_resolver [Boolean] if true, a Resolver class defined this argument
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, &definition_block)
         arg_name ||= name
         name_str = camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s
         @name = name_str.freeze
@@ -48,6 +54,7 @@ module GraphQL
         @keyword = as || Schema::Member::BuildType.underscore(@name).to_sym
         @prepare = prepare
         @ast_node = ast_node
+        @from_resolver = from_resolver
 
         if definition_block
           if definition_block.arity == 1
