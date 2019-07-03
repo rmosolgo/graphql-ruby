@@ -130,7 +130,7 @@ module GraphQL
             field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name)
             is_introspection = false
             if field_defn.nil?
-              field_defn = if owner_type == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
+              field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
                 is_introspection = true
                 entry_point_field.metadata[:type_class]
               elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))

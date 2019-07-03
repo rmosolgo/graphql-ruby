@@ -57,12 +57,11 @@ module GraphQL
           return
         end
         if !ast_var.default_value.nil?
-          unless var_type.is_a?(GraphQL::NonNullType)
+          unless var_type.kind.non_null?
             # If the value is required, but the argument is not,
             # and yet there's a non-nil default, then we impliclty
             # make the argument also a required type.
-
-            var_type = GraphQL::NonNullType.new(of_type: var_type)
+            var_type = var_type.to_non_null_type
           end
         end
 
@@ -85,7 +84,7 @@ module GraphQL
 
       def create_error(error_message, var_type, ast_var, arg_defn, arg_node)
         add_error(GraphQL::StaticValidation::VariableUsagesAreAllowedError.new(
-          "#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})",
+          "#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_type_signature} / #{arg_defn.type.to_type_signature})",
           nodes: arg_node,
           name: ast_var.name,
           type: var_type.to_s,

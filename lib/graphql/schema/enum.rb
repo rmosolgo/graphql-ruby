@@ -21,6 +21,7 @@ module GraphQL
   class Schema
     class Enum < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::AcceptsDefinition
+      extend GraphQL::Schema::Member::ValidatesInput
 
       class << self
         extend Forwardable
@@ -70,6 +71,18 @@ module GraphQL
 
         def kind
           GraphQL::TypeKinds::ENUM
+        end
+
+        def validate_input(value_name, ctx)
+          result = GraphQL::Query::InputValidationResult.new
+          allowed_values = ctx.warden.enum_values(self)
+          matching_value = allowed_values.find { |v| v.graphql_name == value_name }
+
+          if matching_value.nil?
+            result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:graphql_name).join(', ')}")
+          end
+
+          result
         end
 
         private
