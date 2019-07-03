@@ -138,6 +138,9 @@ module GraphQL
         end
       end
 
+      # @return Boolean
+      attr_reader :relay_node_field
+
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param type [Class, GraphQL::BaseType, Array] The return type of this field
       # @param owner [Class] The type that this field belongs to

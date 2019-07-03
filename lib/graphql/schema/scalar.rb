@@ -3,6 +3,7 @@ module GraphQL
   class Schema
     class Scalar < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::AcceptsDefinition
+      extend GraphQL::Schema::Member::ValidatesInput
 
       class << self
         extend Forwardable
@@ -40,6 +41,14 @@ module GraphQL
 
         def default_scalar?
           @default_scalar ||= false
+        end
+
+        def validate_input(value, ctx)
+          result = Query::InputValidationResult.new
+          if !value.nil? && coerce_input(value, ctx).nil?
+            result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{name}")
+          end
+          result
         end
       end
     end

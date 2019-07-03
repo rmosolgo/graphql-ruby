@@ -7,6 +7,7 @@ require 'graphql/schema/member/has_path'
 require 'graphql/schema/member/relay_shortcuts'
 require 'graphql/schema/member/scoped'
 require 'graphql/schema/member/type_system_helpers'
+require 'graphql/schema/member/validates_input'
 require "graphql/relay/type_extensions"
 
 module GraphQL

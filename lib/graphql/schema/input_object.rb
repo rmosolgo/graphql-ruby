@@ -5,6 +5,8 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
       extend Forwardable
       extend GraphQL::Schema::Member::HasArguments
+      extend GraphQL::Schema::Member::ValidatesInput
+
       include GraphQL::Dig
 
       def initialize(values = nil, ruby_kwargs: nil, context:, defaults_used:)
@@ -127,6 +129,55 @@ module GraphQL
 
         def kind
           GraphQL::TypeKinds::INPUT_OBJECT
+        end
+
+        # @api private
+        INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object responding to `to_h` or `to_unsafe_h`."
+
+
+        def validate_input(input, ctx)
+          warden = ctx.warden
+          result = GraphQL::Query::InputValidationResult.new
+
+          if input.is_a?(Array)
+            result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+            return result
+          end
+
+          # We're not actually _using_ the coerced result, we're just
+          # using these methods to make sure that the object will
+          # behave like a hash below, when we call `each` on it.
+          begin
+            input.to_h
+          rescue
+            begin
+              # Handle ActionController::Parameters:
+              input.to_unsafe_h
+            rescue
+              # We're not sure it'll act like a hash, so reject it:
+              result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+              return result
+            end
+          end
+
+          visible_arguments_map = warden.arguments(self).reduce({}) { |m, f| m[f.name] = f; m}
+
+          # Items in the input that are unexpected
+          input.each do |name, value|
+            if visible_arguments_map[name].nil?
+              result.add_problem("Argument is not defined on #{self.name}", [name])
+            end
+          end
+
+          # Items in the input that are expected, but have invalid values
+          visible_arguments_map.map do |name, argument|
+            argument_result = argument.type.validate_input(input[name], ctx)
+            if !argument_result.valid?
+              result.merge_result!(name, argument_result)
+            end
+          end
+
+          result
         end
       end
     end

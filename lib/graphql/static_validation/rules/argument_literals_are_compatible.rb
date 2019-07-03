@@ -59,12 +59,13 @@ module GraphQL
             end
 
             if !valid
+              binding.pry
               error ||= begin
                 kind_of_node = node_type(parent)
                 error_arg_name = parent_name(parent, parent_defn)
 
                 GraphQL::StaticValidation::ArgumentLiteralsAreCompatibleError.new(
-                  "Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value. Expected type '#{arg_defn.type}'.",
+                  "Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value (#{node.value}). Expected type '#{arg_defn.type.to_type_signature}'.",
                   nodes: parent,
                   type: kind_of_node,
                   argument: node.name

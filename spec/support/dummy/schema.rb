@@ -500,9 +500,8 @@ module Dummy
       end
     end
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-    end
+    use GraphQL::Execution::Interpreter
+    use GraphQL::Analysis::AST
   end
 
   class AdminSchema < GraphQL::Schema

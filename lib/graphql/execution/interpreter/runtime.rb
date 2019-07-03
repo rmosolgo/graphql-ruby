@@ -45,8 +45,7 @@ module GraphQL
         def run_eager
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
-          legacy_root_type = schema.root_type_for_operation(root_op_type)
-          root_type = legacy_root_type.metadata[:type_class] || raise("Invariant: type must be class-based: #{legacy_root_type}")
+          root_type = schema.root_type_for_operation(root_op_type)
           object_proxy = root_type.authorized_new(query.root_value, context)
           object_proxy = schema.sync_lazy(object_proxy)
           if object_proxy.nil?
@@ -87,10 +86,9 @@ module GraphQL
             when GraphQL::Language::Nodes::InlineFragment
               if node.type
                 type_defn = schema.types[node.type.name]
-                type_defn = type_defn.metadata[:type_class]
                 # Faster than .map{}.include?()
                 query.warden.possible_types(type_defn).each do |t|
-                  if t.metadata[:type_class] == owner_type
+                  if t == owner_type
                     gather_selections(owner_object, owner_type, node.selections, selections_by_name)
                     break
                   end
@@ -102,9 +100,8 @@ module GraphQL
             when GraphQL::Language::Nodes::FragmentSpread
               fragment_def = query.fragments[node.name]
               type_defn = schema.types[fragment_def.type.name]
-              type_defn = type_defn.metadata[:type_class]
               schema.possible_types(type_defn).each do |t|
-                if t.metadata[:type_class] == owner_type
+                if t == owner_type
                   gather_selections(owner_object, owner_type, fragment_def.selections, selections_by_name)
                   break
                 end

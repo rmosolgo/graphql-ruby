@@ -713,8 +713,7 @@ module GraphQL
         :get_fields, :find,
         :subscriptions,
         :union_memberships,
-        :get_field, :root_types, :references_to, :type_from_ast,
-        :possible_types,
+        :references_to, :type_from_ast,
         :disable_introspection_entry_points=
 
       def graphql_definition
@@ -811,7 +810,7 @@ module GraphQL
             nil
           end
         else
-          @query_object.respond_to?(:graphql_definition) ? @query_object.graphql_definition : @query_object
+          @query_object
         end
       end
 
@@ -825,7 +824,7 @@ module GraphQL
             nil
           end
         else
-          @mutation_object.respond_to?(:graphql_definition) ? @mutation_object.graphql_definition : @mutation_object
+          @mutation_object
         end
       end
 
@@ -839,7 +838,7 @@ module GraphQL
             nil
           end
         else
-          @subscription_object.respond_to?(:graphql_definition) ? @subscription_object.graphql_definition : @subscription_object
+          @subscription_object
         end
       end
 
@@ -860,6 +859,32 @@ module GraphQL
 
       def root_types
         @root_types
+      end
+
+      def possible_types(type)
+        @possible_types ||= {}
+        @possible_types[type.graphql_name] || [type]
+      end
+
+      def get_field(type_or_name, field_name)
+        parent_type = case type_or_name
+        when String
+          types.fetch(type_or_name)
+        when Module
+          type_or_name
+        else
+          raise ArgumentError, "unexpected field owner: #{type_or_name} (#{type_or_name.class})"
+        end
+
+        if (field = parent_type.fields[field_name])
+          field
+        elsif parent_type == query && (entry_point_field = introspection_system.entry_point(name: field_name))
+          entry_point_field
+        elsif (dynamic_field = introspection_system.dynamic_field(name: field_name))
+          dynamic_field
+        else
+          nil
+        end
       end
 
       def introspection(new_introspection_namespace = nil)
@@ -1152,6 +1177,7 @@ module GraphQL
 
       # @return [void]
       def add_root_type(t)
+        @possible_types ||= {}
         @root_types ||= []
         @root_types << t
         late_types = []
@@ -1172,7 +1198,6 @@ module GraphQL
         end
         nil
       end
-
 
       def add_type(type, late_types:)
         if type.respond_to?(:metadata) && type.metadata.is_a?(Hash)
@@ -1209,12 +1234,15 @@ module GraphQL
             end
           end
           if type.kind.union?
+            @possible_types[type.graphql_name] = type.possible_types
             type.possible_types.each do |t|
               add_type(t, late_types: late_types)
             end
           end
           if type.kind.object?
             type.interfaces.each do |i|
+              implementers = @possible_types[i.graphql_name] ||= []
+              implementers << type
               add_type(i, late_types: late_types)
             end
           end

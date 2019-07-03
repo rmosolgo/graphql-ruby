@@ -154,7 +154,7 @@ module GraphQL
       end
 
       def referenced?(type_defn)
-        members = @schema.references_to(type_defn.unwrap.name)
+        members = @schema.references_to(type_defn.unwrap.graphql_name)
         members.any? { |m| visible?(m) }
       end
 
