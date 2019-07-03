@@ -40,7 +40,6 @@ field :featured_comments, CommentType.connection_type do
   argument :since, String, required: false
 end
 
-
 def featured_comments(since: nil)
   comments = object.comments.featured
   if since
