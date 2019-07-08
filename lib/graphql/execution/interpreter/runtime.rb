@@ -132,10 +132,10 @@ module GraphQL
             if field_defn.nil?
               field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
                 is_introspection = true
-                entry_point_field.metadata[:type_class]
+                entry_point_field
               elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
                 is_introspection = true
-                dynamic_field.metadata[:type_class]
+                dynamic_field
               else
                 raise "Invariant: no field for #{owner_type}.#{field_name}"
               end
@@ -289,7 +289,6 @@ module GraphQL
                 write_in_response(path, nil)
                 nil
               else
-                resolved_type = resolved_type.metadata[:type_class]
                 continue_field(path, value, field, resolved_type, ast_node, next_selections, is_non_null)
               end
             end
@@ -375,7 +374,7 @@ module GraphQL
 
         def resolve_if_late_bound_type(type)
           if type.is_a?(GraphQL::Schema::LateBoundType)
-            query.warden.get_type(type.name).metadata[:type_class]
+            query.warden.get_type(type.name)
           else
             type
           end

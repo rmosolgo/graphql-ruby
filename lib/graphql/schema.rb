@@ -713,7 +713,7 @@ module GraphQL
         :get_fields, :find,
         :subscriptions,
         :union_memberships,
-        :references_to, :type_from_ast,
+        :references_to
         :disable_introspection_entry_points=
 
       def graphql_definition
@@ -866,6 +866,10 @@ module GraphQL
         @possible_types[type.graphql_name] || [type]
       end
 
+      def type_from_ast(ast_node)
+        GraphQL::Schema::TypeExpression.build_type(self.types, ast_node)
+      end
+
       def get_field(type_or_name, field_name)
         parent_type = case type_or_name
         when String
@@ -876,7 +880,7 @@ module GraphQL
           raise ArgumentError, "unexpected field owner: #{type_or_name} (#{type_or_name.class})"
         end
 
-        if (field = parent_type.fields[field_name])
+        if parent_type.kind.fields? && (field = parent_type.fields[field_name])
           field
         elsif parent_type == query && (entry_point_field = introspection_system.entry_point(name: field_name))
           entry_point_field
@@ -1181,13 +1185,15 @@ module GraphQL
         @root_types ||= []
         @root_types << t
         late_types = []
-        add_type(t, late_types: late_types)
-        while lt = late_types.shift
+        add_type(t, owner: nil, late_types: late_types)
+        while (type_owner, lt = late_types.shift)
           if lt.is_a?(String)
             type = Member::BuildType.constantize(lt)
-            add_type(type, late_types: late_types)
+            update_type_owner(type_owner, type)
+            add_type(type, owner: type_owner, late_types: late_types)
           elsif lt.is_a?(LateBoundType)
             if (type = types[lt.graphql_name])
+              update_type_owner(type_owner, type)
               # OK
             else
               raise ArgumentError, "Late bound type was never found: #{lt.inspect}"
@@ -1199,7 +1205,20 @@ module GraphQL
         nil
       end
 
-      def add_type(type, late_types:)
+      def update_type_owner(owner, type)
+        case owner
+        when Class
+          # It's a union with possible_types
+          # Replace the item by class name
+          new_possible_types = owner.possible_types.map { |t| t.is_a?(String) && t == type.name ? type : t }
+          owner.possible_types(*new_possible_types)
+          @possible_types[owner.graphql_name] = owner.possible_types
+        else
+          raise "Unexpected update: #{owner} #{type}"
+        end
+      end
+
+      def add_type(type, owner:, late_types:)
         if type.respond_to?(:metadata) && type.metadata.is_a?(Hash)
           type_class = type.metadata[:type_class]
           if type_class.nil?
@@ -1208,7 +1227,7 @@ module GraphQL
             type = type_class
           end
         elsif type.is_a?(String) || type.is_a?(GraphQL::Schema::LateBoundType)
-          late_types << type
+          late_types << [owner, type]
           return
         end
 
@@ -1222,46 +1241,30 @@ module GraphQL
           types[type.graphql_name] = type
           if type.kind.fields?
             type.fields.each do |_name, field|
-              add_type(field.type.unwrap, late_types: late_types)
+              add_type(field.type.unwrap, owner: field, late_types: late_types)
               field.arguments.each do |_name, arg|
-                add_type(arg.type.unwrap, late_types: late_types)
+                add_type(arg.type.unwrap, owner: arg, late_types: late_types)
               end
             end
           end
           if type.kind.input_object?
             type.arguments.each do |_name, arg|
-              add_type(arg.type.unwrap, late_types: late_types)
+              add_type(arg.type.unwrap, owner: arg, late_types: late_types)
             end
           end
           if type.kind.union?
             @possible_types[type.graphql_name] = type.possible_types
             type.possible_types.each do |t|
-              add_type(t, late_types: late_types)
+              add_type(t, owner: type, late_types: late_types)
             end
           end
           if type.kind.object?
             type.interfaces.each do |i|
               implementers = @possible_types[i.graphql_name] ||= []
               implementers << type
-              add_type(i, late_types: late_types)
+              add_type(i, owner: nil, late_types: late_types)
             end
           end
-        end
-      end
-    end
-
-
-    def self.inherited(child_class)
-      child_class.singleton_class.class_eval do
-        prepend(MethodWrappers)
-      end
-    end
-
-    module MethodWrappers
-      # Wrap the user-provided resolve-type in a correctness check
-      def resolve_type(type, obj, ctx = :__undefined__)
-        graphql_definition.check_resolved_type(type, obj, ctx) do |ok_type, ok_obj, ok_ctx|
-          super(ok_type, ok_obj, ok_ctx)
         end
       end
     end

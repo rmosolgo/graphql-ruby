@@ -120,7 +120,7 @@ module GraphQL
           argument_defn = if (arg = @argument_definitions.last)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
-              arg_type.input_fields[node.name]
+              arg_type.arguments[node.name]
             else
               nil
             end

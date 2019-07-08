@@ -32,6 +32,20 @@ module GraphQL
       def inspect
         "#<#{self.class.name} @of_type=#{@of_type.inspect}>"
       end
+
+      def validate_input(value, ctx)
+        if value.nil?
+          result = GraphQL::Query::InputValidationResult.new
+          result.add_problem("Expected value to not be null")
+          result
+        else
+          of_type.validate_input(value, ctx)
+        end
+      end
+
+      def coerce_input(value, ctx)
+        of_type.coerce_input(value, ctx)
+      end
     end
   end
 end
