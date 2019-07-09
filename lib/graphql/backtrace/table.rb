@@ -36,6 +36,13 @@ module GraphQL
 
       private
 
+      def parameter_filter(params)
+        return params if Rails.application.config.filter_parameters.blank?
+
+        parameter_filter = ActionDispatch::Http::ParameterFilter.new(Rails.application.config.filter_parameters)
+        parameter_filter.filter(params)
+      end
+
       def rows
         @rows ||= build_rows(@context, rows: [HEADERS], top: true)
       end
@@ -88,7 +95,7 @@ module GraphQL
             "#{position}",
             "#{field_name}#{field_alias ? " as #{field_alias}" : ""}",
             "#{ctx.object.inspect}",
-            ctx.irep_node.arguments.to_h.inspect,
+            parameter_filter(ctx.irep_node.arguments.to_h).inspect,
             Backtrace::InspectResult.inspect_result(top && @override_value ? @override_value : ctx.value),
           ]
 
@@ -108,7 +115,7 @@ module GraphQL
             "#{position}",
             "#{op_type}#{op_name ? " #{op_name}" : ""}",
             "#{query.root_value.inspect}",
-            query.variables.to_h.inspect,
+            parameter_filter(query.variables.to_h).inspect,
             Backtrace::InspectResult.inspect_result(query.context.value),
           ]
         else
