@@ -207,7 +207,7 @@ module GraphQL
         end
         # TODO: replace with `String#match?` when we support only Ruby 2.4+
         # (It's faster: https://bugs.ruby-lang.org/issues/8110)
-        if value !~ VALID_STRING
+        if !value.valid_encoding? || value !~ VALID_STRING
           meta[:tokens] << token = GraphQL::Language::Token.new(
             name: :BAD_UNICODE_ESCAPE,
             value: value,
