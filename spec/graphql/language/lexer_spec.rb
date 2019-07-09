@@ -67,6 +67,11 @@ describe GraphQL::Language::Lexer do
       assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\u0XXF \\u0009"').first.name
     end
 
+    it "rejects truly invalid UTF-8 bytes" do
+      error_filename = "spec/support/parser/filename_example_invalid_utf8.graphql"
+      assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize(File.read(error_filename)).first.name
+    end
+
     it "clears the previous_token between runs" do
       tok_2 = subject.tokenize(query_string)
       assert_nil tok_2[0].prev_token
