@@ -78,7 +78,7 @@
 <span class="k">end</span>
 
 <span class="k">def</span> <span class="nf">featured_comments</span><span class="p">(</span><span class="ss">since: </span><span class="kp">nil</span><span class="p">)</span>
-  <span class="n">comments</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">featured</span>
+  <span class="n">comments</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">featured</span>
   <span class="k">if</span> <span class="n">since</span>
     <span class="n">comments</span> <span class="o">=</span> <span class="n">comments</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &gt;= ?"</span><span class="p">,</span> <span class="n">since</span><span class="p">)</span>
   <span class="k">end</span>

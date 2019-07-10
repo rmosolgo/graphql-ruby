@@ -51,7 +51,7 @@
 
 <p>Always limit the number of items which can be returned from a list field. For example, use a <code class="highlighter-rouge">limit:</code> argument and make sure it’s not too big. The <code class="highlighter-rouge">prepare:</code> function provides a convenient place to cap the number of items:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">ItemType</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">ItemType</span><span class="p">]</span> <span class="k">do</span>
   <span class="c1"># Cap the number of items at 30</span>
   <span class="n">argument</span> <span class="ss">:limit</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">default_value: </span><span class="mi">20</span><span class="p">,</span> <span class="ss">prepare: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{[</span><span class="n">limit</span><span class="p">,</span> <span class="mi">30</span><span class="p">].</span><span class="nf">min</span><span class="p">}</span>
 <span class="k">end</span>
