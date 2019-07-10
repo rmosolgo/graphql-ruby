@@ -12,6 +12,8 @@ Some clients may send _several_ queries to the server at once (for example, [Apo
 
 Multiplex runs have their own context, analyzers and instrumentation.
 
+__NOTE:__ As an implementation detail, _all_ queries are run inside multiplexes. That is, a stand-alone query is executed as a "multiplex of one", so instrumentation and multiplex analyzers and instrumentation _will_ apply to standalone queries run with `MySchema.execute(...)`.
+
 ## Concurrent Execution
 
 To run queries concurrently, build an array of query options, using `query:` for the query string. For example:
