@@ -6,6 +6,36 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
 
   describe "#document" do
     let(:schema_idl) { <<-GRAPHQL
+      type User {
+        name: String
+      }
+      extend type User {
+        email: String!
+      }
+      type Query {
+        user: User
+      }
+      GRAPHQL
+    }
+
+    let(:expected_document) { GraphQL.parse(schema_idl) }
+    let(:schema) { GraphQL::Schema.from_definition(schema_idl) }
+
+    let(:document) {
+        a = subject.new(
+          schema
+        ).document
+      }
+
+      it "returns the IDL without introspection, built ins and schema root" do
+        assert equivalent_node?(expected_document, document)
+      end
+      it "extends types"
+      it "generates IDL with extends keywords"
+  end
+
+  describe "#document" do
+    let(:schema_idl) { <<-GRAPHQL
       type QueryType {
         foo: Foo
       }

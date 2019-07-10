@@ -47,6 +47,25 @@ module GraphQL
             when GraphQL::Language::Nodes::SchemaDefinition
               raise InvalidDocumentError.new('Must provide only one schema definition.') if schema_definition
               schema_definition = definition
+
+            when GraphQL::Language::Nodes::ScalarTypeExtension
+              raise "ScalarTypeExtension"
+
+            when GraphQL::Language::Nodes::ObjectTypeExtension
+              raise "ObjectTypeExtension"
+
+            when GraphQL::Language::Nodes::InterfaceTypeExtension
+              raise "InterfaceTypeExtension"
+
+            when GraphQL::Language::Nodes::UnionTypeExtension
+              raise "UnionTypeExtension"
+
+            when GraphQL::Language::Nodes::EnumTypeExtension
+              raise "EnumTypeExtension"
+
+            when GraphQL::Language::Nodes::InputObjectTypeExtension
+              raise "InputObjectTypeExtension"
+
             when GraphQL::Language::Nodes::EnumTypeDefinition
               types[definition.name] = build_enum_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ObjectTypeDefinition
