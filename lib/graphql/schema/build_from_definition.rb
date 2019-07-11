@@ -233,6 +233,7 @@ module GraphQL
               description: argument_defn.description,
               ast_node: argument_defn,
               camelize: false,
+              method_access: false,
               **default_value_kwargs
             )
           end

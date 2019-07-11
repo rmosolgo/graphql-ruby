@@ -35,13 +35,14 @@ module GraphQL
 
   class Argument
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :type, :description, :default_value, :as, :prepare
+    accepts_definitions :name, :type, :description, :default_value, :as, :prepare, :method_access
     attr_reader :default_value
     attr_accessor :description, :name, :as
     attr_accessor :ast_node
+    attr_accessor :method_access
     alias :graphql_name :name
 
-    ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as, :prepare)
+    ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as, :prepare, :method_access)
 
     # @api private
     module DefaultPrepare
@@ -58,6 +59,11 @@ module GraphQL
 
     def default_value?
       !!@has_default_value
+    end
+
+    def method_access?
+      # Treat unset as true -- only `false` should override
+      @method_access != false
     end
 
     def default_value=(new_default_value)

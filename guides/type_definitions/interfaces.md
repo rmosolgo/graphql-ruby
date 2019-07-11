@@ -100,9 +100,9 @@ end
 
 Interface classes are never instantiated. At runtime, only their `.resolve_type` methods are called (if they're defined).
 
-### Implementing Variant Types
+### Implementing Interfaces
 
-To define types that implement this interface use the `implements` method:
+To define object types that implement this interface use the `implements` method:
 
 ```ruby
 class Types::Car < Types::BaseObject
@@ -117,6 +117,8 @@ class Types::Purse < Types::BaseObject
   # ... additional fields
 end
 ```
+
+Those object types will _inherit_ field definitions from those interfaces.
 
 ### Implementing Fields
 
