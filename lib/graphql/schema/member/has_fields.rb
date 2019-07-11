@@ -54,7 +54,7 @@ module GraphQL
         # @return [void]
         def add_field(field_defn)
           if CONFLICT_FIELD_NAMES.include?(field_defn.method_sym)
-            warn "#{self.graphql_name}'s `field :#{field_defn.name}` conflicts with a built-in method, use `method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.method_sym}` and `def resolve_#{field_defn.method_sym}`)"
+            warn "#{self.graphql_name}'s `field :#{field_defn.name}` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.method_sym}` and `def resolve_#{field_defn.method_sym}`)"
           end
           own_fields[field_defn.name] = field_defn
           nil

@@ -65,6 +65,26 @@ RUBY
 
     assert_file "app/graphql/types/query_type.rb", expected_query_type
     assert_file "app/controllers/graphql_controller.rb", EXPECTED_GRAPHQLS_CONTROLLER
+    expected_base_field = <<-RUBY
+module Types
+  class BaseField < GraphQL::Schema::Field
+    argument_class Types::BaseArgument
+
+    def resolve_field(obj, args, ctx)
+      resolve(obj, args, ctx)
+    end
+  end
+end
+RUBY
+    assert_file "app/graphql/types/base_field.rb", expected_base_field
+
+    expected_base_argument = <<-RUBY
+module Types
+  class BaseArgument < GraphQL::Schema::Argument
+  end
+end
+RUBY
+    assert_file "app/graphql/types/base_argument.rb", expected_base_argument
   end
 
   test "it allows for a user-specified install directory" do
