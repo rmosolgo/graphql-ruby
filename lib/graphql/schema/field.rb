@@ -418,13 +418,10 @@ module GraphQL
       end
 
       def authorized?(object, context)
-        self_auth = if @resolver_class
-          @resolver_class.authorized?(object, context)
-        else
+        if @resolver_class
+          # The resolver will check itself during `resolve()`
           true
-        end
-
-        if self_auth
+        else
           # Faster than `.any?`
           arguments.each_value do |arg|
             if !arg.authorized?(object, context)
@@ -432,8 +429,6 @@ module GraphQL
             end
           end
           true
-        else
-          false
         end
       end
 
