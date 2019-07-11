@@ -420,7 +420,7 @@ module GraphQL
       def authorized?(object, context)
         if @resolver_class
           # The resolver will check itself during `resolve()`
-          true
+          @resolver_class.authorized?(object, context)
         else
           # Faster than `.any?`
           arguments.each_value do |arg|
