@@ -51,6 +51,8 @@
 
 <p>Multiplex runs have their own context, analyzers and instrumentation.</p>
 
+<p><strong>NOTE:</strong> As an implementation detail, <em>all</em> queries are run inside multiplexes. That is, a stand-alone query is executed as a “multiplex of one”, so instrumentation and multiplex analyzers and instrumentation <em>will</em> apply to standalone queries run with <code class="highlighter-rouge">MySchema.execute(...)</code>.</p>
+
 <h2 id="concurrent-execution">Concurrent Execution</h2>
 
 <p>To run queries concurrently, build an array of query options, using <code class="highlighter-rouge">query:</code> for the query string. For example:</p>

@@ -132,9 +132,9 @@
 
 <p>Interface classes are never instantiated. At runtime, only their <code class="highlighter-rouge">.resolve_type</code> methods are called (if they’re defined).</p>
 
-<h3 id="implementing-variant-types">Implementing Variant Types</h3>
+<h3 id="implementing-interfaces">Implementing Interfaces</h3>
 
-<p>To define types that implement this interface use the <code class="highlighter-rouge">implements</code> method:</p>
+<p>To define object types that implement this interface use the <code class="highlighter-rouge">implements</code> method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Car</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">implements</span> <span class="no">Types</span><span class="o">::</span><span class="no">RetailItem</span>
@@ -148,6 +148,8 @@
   <span class="c1"># ... additional fields</span>
 <span class="k">end</span>
 </code></pre></div></div>
+
+<p>Those object types will <em>inherit</em> field definitions from those interfaces.</p>
 
 <h3 id="implementing-fields">Implementing Fields</h3>
 
