@@ -13,7 +13,6 @@ module GraphQL
           cls.include(ArgumentObjectLoader)
         end
 
-
         # @see {GraphQL::Schema::Argument#initialize} for parameters
         # @return [GraphQL::Schema::Argument] An instance of {arguments_class}, created from `*args`
         def argument(*args, **kwargs, &block)
