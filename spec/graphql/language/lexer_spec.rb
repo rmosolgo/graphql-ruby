@@ -92,7 +92,7 @@ describe GraphQL::Language::Lexer do
       assert_equal 8, str_token.col
       assert_equal '(STRING "c" [1:8])', str_token.inspect
       rparen_token = tokens[6]
-      assert_equal '(RPAREN ")" [1:10])', rparen_token.inspect
+      assert_equal '(RPAREN ")" [1:11])', rparen_token.inspect
     end
 
     it "counts block string line properly" do
