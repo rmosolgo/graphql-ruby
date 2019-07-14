@@ -53,6 +53,13 @@ describe GraphQL::Language::Lexer do
         tokens = subject.tokenize('"""{"foo":"bar"}"""')
         assert_equal '{"foo":"bar"}', tokens[0].value
       end
+
+      it "tokenizes empty block strings correctly" do
+        empty_block_string = '""""""'
+        tokens = subject.tokenize(empty_block_string)
+
+        assert_equal '', tokens[0].value
+      end
     end
 
     it "unescapes escaped characters" do
