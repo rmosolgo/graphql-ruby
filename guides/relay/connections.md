@@ -87,8 +87,9 @@ class PostConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConnection
     object.nodes.size
   end
 end
-
 ```
+
+__Note:__  If you use _classes_ for an object's connection or edge types, then all of that object's connection and edge types should be classes. Otherwise, the auto-generated types from the `.edge_type` or `.connection_type` helpers will conflict with the class-based types.
 
 Now, you can use `PostConnectionWithTotalCountType` to define a connection with the "totalCount" field:
 
