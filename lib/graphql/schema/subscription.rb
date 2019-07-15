@@ -104,7 +104,7 @@ module GraphQL
         elsif defined?(@subscription_scope)
           @subscription_scope
         else
-          find_inherited_method(:subscription_scope, nil)
+          find_inherited_value(:subscription_scope)
         end
       end
 

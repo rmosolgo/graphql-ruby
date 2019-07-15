@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "graphql/schema/find_inherited_value"
+
 module GraphQL
   class Schema
     class Member
@@ -7,6 +9,8 @@ module GraphQL
       # @api private
       # @see Classes that extend this, eg {GraphQL::Schema::Object}
       module BaseDSLMethods
+        include GraphQL::Schema::FindInheritedValue
+
         # Call this with a new name to override the default name for this schema member; OR
         # call it without an argument to get the name of this schema member
         #
@@ -42,7 +46,7 @@ module GraphQL
           if new_description
             @description = new_description
           else
-            @description || find_inherited_method(:description, nil)
+            @description || find_inherited_value(:description)
           end
         end
 
@@ -51,7 +55,7 @@ module GraphQL
           if !new_introspection.nil?
             @introspection = new_introspection
           else
-            @introspection || find_inherited_method(:introspection, false)
+            @introspection || find_inherited_value(:introspection, false)
           end
         end
 
@@ -76,7 +80,7 @@ module GraphQL
         alias :unwrap :itself
 
         def overridden_graphql_name
-          @graphql_name || find_inherited_method(:overridden_graphql_name, nil)
+          @graphql_name || find_inherited_value(:overridden_graphql_name)
         end
 
         # Creates the default name for a schema member.
@@ -111,21 +115,6 @@ module GraphQL
             @mutation.authorized?(object, context)
           else
             true
-          end
-        end
-
-        private
-
-        def find_inherited_method(method_name, default_value)
-          if self.is_a?(Class)
-            superclass.respond_to?(method_name) ? superclass.public_send(method_name) : default_value
-          else
-            ancestors[1..-1].each do |ancestor|
-              if ancestor.respond_to?(method_name)
-                return ancestor.public_send(method_name)
-              end
-            end
-            default_value
           end
         end
       end

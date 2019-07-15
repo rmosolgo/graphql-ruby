@@ -2,14 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Analysis::AST::MaxQueryDepth do
-  before do
-    @prev_max_depth = Dummy::Schema.max_depth
-  end
-
-  after do
-    Dummy::Schema.max_depth = @prev_max_depth
-  end
-
+  let(:schema) { Class.new(Dummy::Schema) }
   let(:query_string) { "
     {
       cheese(id: 1) {
@@ -30,7 +23,7 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
   let(:max_depth) { nil }
   let(:query) {
     GraphQL::Query.new(
-      Dummy::Schema.graphql_definition,
+      schema.graphql_definition,
       query_string,
       variables: {},
       max_depth: max_depth
@@ -58,7 +51,7 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
 
   describe "When the query is not deeper than max_depth" do
     before do
-      Dummy::Schema.max_depth = 100
+      schema.max_depth = 100
     end
 
     it "doesn't add an error" do
@@ -68,7 +61,7 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
 
   describe "when the max depth isn't set" do
     before do
-      Dummy::Schema.max_depth = nil
+      schema.max_depth = nil
     end
 
     it "doesn't add an error message" do
@@ -78,7 +71,7 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
 
   describe "when a fragment exceeds max depth" do
     before do
-      Dummy::Schema.max_depth = 4
+      schema.max_depth = 4
     end
 
     let(:query_string) { "
