@@ -472,7 +472,7 @@ end
 By default, the Pundit integration looks for the current user in `context[:current_user]`. You can override this by implementing `#pundit_user` on your custom query context class. For example:
 
 ```ruby
-# app/graphql/query_context
+# app/graphql/query_context.rb
 class QueryContext < GraphQL::Query::Context
   def pundit_user
     # Lookup `context[:viewer]` instead:

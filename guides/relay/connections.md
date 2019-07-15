@@ -19,7 +19,7 @@ To define a connection field, use the `field` method. For a return type, get a t
 For example:
 
 ```ruby
-class PostType < GraphQL::Schema::Object
+class Types::PostType < GraphQL::Schema::Object
   # `Post#comments` returns an ActiveRecord::Relation
   # The GraphQL field returns a Connection
   field :comments, CommentType.connection_type, null: false
@@ -72,12 +72,12 @@ You can customize connection and edge types by using the class-based API:
 
 ```ruby
 # Make an edge class for use in the connection below:
-class PostEdgeType < GraphQL::Types::Relay::BaseEdge
+class Types::PostEdgeType < GraphQL::Types::Relay::BaseEdge
   node_type(PostType)
 end
 
 # Make a customized connection type
-class PostConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConnection
+class Types::PostConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConnection
   edge_type(PostEdgeType)
 
   field :total_count, Integer, null: false
@@ -94,7 +94,7 @@ __Note:__  If you use _classes_ for an object's connection or edge types, then a
 Now, you can use `PostConnectionWithTotalCountType` to define a connection with the "totalCount" field:
 
 ```ruby
-class AuthorType < GraphQL::Schema::Object
+class Types::AuthorType < GraphQL::Schema::Object
   # Use the custom connection type:
   field :posts, PostConnectionWithTotalCountType, null: false, connection: true
 end
@@ -139,7 +139,7 @@ For more robust custom edges, you can define a custom edge class. It will be `ob
 ```ruby
 # Make sure to familiarize yourself with GraphQL::Relay::Edge --
 # you have to avoid naming conflicts here!
-class MembershipSinceEdge < GraphQL::Relay::Edge
+class Types::MembershipSinceEdge < GraphQL::Relay::Edge
   # Cache `membership` to avoid multiple DB queries
   def membership
     @membership ||= begin
@@ -165,7 +165,7 @@ Then, hook it up with custom edge type and custom connection type:
 
 ```ruby
 # Person => Membership => Team
-class MembershipSinceEdgeType < GraphQL::Types::Relay::BaseEdge
+class Types::MembershipSinceEdgeType < GraphQL::Types::Relay::BaseEdge
   node_type(TeamType)
 
   field :member_since, Integer, null: false,
@@ -175,7 +175,7 @@ class MembershipSinceEdgeType < GraphQL::Types::Relay::BaseEdge
     method: :primary?
 end
 
-class TeamMembershipsConnectionType < GraphQL::Types::Relay::BaseConnection
+class Types::TeamMembershipsConnectionType < GraphQL::Types::Relay::BaseConnection
   # Here, hook up your custom class with `edge_class:`
   edge_type(MembershipSinceEdgeType, edge_class: MembershipSinceEdge)
 end
