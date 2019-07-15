@@ -40,7 +40,7 @@ Another important note: after GraphQL-Ruby converts a class to a "legacy" object
 In your custom classes, you can override `.to_graphql` to customize the type that will be used at runtime. For example, to assign metadata values to an ObjectType:
 
 ```ruby
-class BaseObject < GraphQL::Schema::Object
+class Types::BaseObject < GraphQL::Schema::Object
   # Call this method in an Object class to set the permission level:
   def self.required_permission(permission_level)
     @required_permission = permission_level
@@ -88,7 +88,7 @@ So, you can customize this process by:
 For example, you can create a custom class which accepts a new parameter to `initialize`:
 
 ```ruby
-class AuthorizedField < GraphQL::Schema::Field
+class Types::AuthorizedField < GraphQL::Schema::Field
   # Override #initialize to take a new argument:
   def initialize(*args, required_permission:, **kwargs, &block)
     @required_permission = required_permission
@@ -107,13 +107,13 @@ end
 Then, pass the field class as `field_class(...)` wherever it should be used:
 
 ```ruby
-class BaseObject < GraphQL::Schema::Object
+class Types::BaseObject < GraphQL::Schema::Object
   # Use this class for defining fields
   field_class AuthorizedField
 end
 
 # And/Or
-class BaseInterface < GraphQL::Schema::Interface
+class Types::BaseInterface < GraphQL::Schema::Interface
   field_class AuthorizedField
 end
 ```
@@ -130,7 +130,7 @@ Connections may be customized in a similar way to Fields.
 For example, you can create a custom connection:
 
 ```ruby
-class MyCustomConnection < GraphQL::Types::Relay::BaseConnection
+class Types::MyCustomConnection < GraphQL::Types::Relay::BaseConnection
   field :total_count, Integer, null: false
 
   def total_count
@@ -143,7 +143,7 @@ Then, pass the field class as `connection_type_class(...)` wherever it should be
 
 ```ruby
 module Types
-  class BaseObject < GraphQL::Schema::Object
+  class Types::BaseObject < GraphQL::Schema::Object
     # Use this class for defining connections
     connection_type_class MyCustomConnection
   end
@@ -194,12 +194,12 @@ __Pass-through with `accepts_definition`__. New schema classes have an `accepts_
 GraphQL::ObjectType.accepts_definitions({ permission_level: ->(...) { ... } })
 
 # Prepare the config method in the base class:
-class BaseObject < GraphQL::Schema::Object
+class Types::BaseObject < GraphQL::Schema::Object
   accepts_definition :permission_level
 end
 
 # Call the config method in the object class:
-class Account < BaseObject
+class Types::Account < BaseObject
   permission_level 1
 end
 
@@ -213,7 +213,7 @@ See {{ "GraphQL::Schema::Member::AcceptsDefinition" | api_doc }} for the impleme
 __Invoke `.call` directly__. If you defined a module with a `.call` method, you can invoke that method during `.to_graphql`. For example:
 
 ```ruby
-class BaseObject < GraphQL::Schema::Object
+class Types::BaseObject < GraphQL::Schema::Object
   def self.to_graphql
     type_defn = super
     # Re-use the accepts_definition callback manually:
@@ -226,7 +226,7 @@ end
 __Use `.redefine`__. You can re-open a `.define` block at any time with `.redefine`. It returns a new, updated instance based on the old one. For example:
 
 ```ruby
-class BaseObject < GraphQL::Schema::Object
+class Types::BaseObject < GraphQL::Schema::Object
   def self.to_graphql
     type_defn = super
     # Read the value from the instance variable, since ivars don't work in `.define {...}` blocks

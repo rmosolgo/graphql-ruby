@@ -53,6 +53,13 @@ describe GraphQL::Language::Lexer do
         tokens = subject.tokenize('"""{"foo":"bar"}"""')
         assert_equal '{"foo":"bar"}', tokens[0].value
       end
+
+      it "tokenizes empty block strings correctly" do
+        empty_block_string = '""""""'
+        tokens = subject.tokenize(empty_block_string)
+
+        assert_equal '', tokens[0].value
+      end
     end
 
     it "unescapes escaped characters" do
@@ -85,7 +92,7 @@ describe GraphQL::Language::Lexer do
       assert_equal 8, str_token.col
       assert_equal '(STRING "c" [1:8])', str_token.inspect
       rparen_token = tokens[6]
-      assert_equal '(RPAREN ")" [1:10])', rparen_token.inspect
+      assert_equal '(RPAREN ")" [1:11])', rparen_token.inspect
     end
 
     it "counts block string line properly" do

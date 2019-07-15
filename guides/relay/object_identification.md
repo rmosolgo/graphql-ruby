@@ -117,7 +117,7 @@ end
 You can also provide a root-level `nodes` field so that Relay can refetch objects by IDs. Similarly, it is provided as `GraphQL::Relay::Node.plural_field`:
 
 ```ruby
-class QueryType < GraphQL::Schema::Object
+class Types::QueryType < GraphQL::Schema::Object
   # Fetches a list of objects given a list of IDs
   field :nodes, field: GraphQL::Relay::Node.plural_field
   # ...

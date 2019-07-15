@@ -1415,10 +1415,10 @@ UTF_8_ENCODING = "UTF-8"
 
 def self.emit_string(ts, te, meta, block:)
 quotes_length = block ? 3 : 1
-ts += quotes_length
-value = meta[:data][ts...te - quotes_length].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
+content_range = (ts + quotes_length)...(te - quotes_length)
+value = meta[:data][content_range].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING) || ''
 line_incr = 0
-if block
+if block && !value.length.zero?
 line_incr = value.count("\n")
 value = GraphQL::Language::BlockString.trim_whitespace(value)
 end
