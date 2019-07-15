@@ -328,7 +328,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :method, String, null: true, method: :resolve_method
+          field :method, String, null: true, resolver_method: :resolve_method
         end
       end
     end
