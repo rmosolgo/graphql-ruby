@@ -53,6 +53,10 @@ module GraphQL
         end
       end
 
+      def to_hash
+        to_h
+      end
+
       def unwrap_value(value)
         case value
         when Array

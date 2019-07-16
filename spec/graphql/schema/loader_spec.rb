@@ -275,7 +275,71 @@ describe GraphQL::Schema::Loader do
       assert type.arguments['sub'].default_value.nil?
     end
 
-    it "sets correct default values `null` on complex field arguments" do
+    it "doesnt warn about method conflicts (because it doesn't make method accesses)" do
+      assert_output "", "" do
+        GraphQL::Schema.from_introspection({
+          "data" => {
+            "__schema" => {
+              "queryType" => {
+                "name" => "Query"
+              },
+              "mutationType" => nil,
+              "subscriptionType" => nil,
+              "types" => [
+                {
+                  "kind" => "OBJECT",
+                  "name" => "Query",
+                  "description" => nil,
+                  "fields" => [
+                    {
+                      "name" => "int",
+                      "description" => nil,
+                      "args" => [
+                        {
+                          "name" => "method",
+                          "description" => nil,
+                          "type" => {
+                            "kind" => "SCALAR",
+                            "name" => "Int",
+                            "ofType" => nil
+                          },
+                          "defaultValue" => nil
+                        }
+                      ],
+                      "type" => {
+                        "kind" => "SCALAR",
+                        "name" => "Int",
+                        "ofType" => nil
+                      },
+                      "isDeprecated" => false,
+                      "deprecationReason" => nil
+                    }
+                  ],
+                  "inputFields" => nil,
+                  "interfaces" => [
+
+                  ],
+                  "enumValues" => nil,
+                  "possibleTypes" => nil
+                },
+                {
+                  "kind" => "SCALAR",
+                  "name" => "Int",
+                  "description" => "Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.",
+                  "fields" => nil,
+                  "inputFields" => nil,
+                  "interfaces" => nil,
+                  "enumValues" => nil,
+                  "possibleTypes" => nil
+                },
+              ]
+            }
+          }
+        })
+      end
+    end
+
+    it "sets correct default values `nil` on complex field arguments" do
       type = loaded_schema.types['Query']
       field = type.fields['post']
       arg = field.arguments['variedWithNull']

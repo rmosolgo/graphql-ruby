@@ -129,6 +129,24 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "#disable_introspection_entry_points" do
+    it "enables entry points by default" do
+      refute_empty empty_schema.introspection_system.entry_points
+    end
+
+    describe "when disable_introspection_entry_points is configured" do
+      let(:schema) do
+        GraphQL::Schema.define do
+          disable_introspection_entry_points
+        end
+      end
+
+      it "clears entry points" do
+        assert_empty schema.introspection_system.entry_points
+      end
+    end
+  end
+
   describe "object_from_id" do
     describe "when the hook wasn't implemented" do
       it "raises not implemented" do

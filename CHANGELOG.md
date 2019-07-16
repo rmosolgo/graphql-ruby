@@ -8,6 +8,31 @@
 
 ### Bug fixes
 
+## 1.9.7 (25 June 2019)
+
+### Breaking changes
+
+- `Analysis::AST::Visitor#argument_definition` no longer returns the _previous_ argument definition. Instead, it returns the _current_ argument definition and `#previous_argument_definition` returns the previous one. You might have to replace calls to `.argument_definition` with `.previous_argument_definition` for compatibility. #2226
+
+### New features
+
+- Accept a `subscription_scope` configuration in Subscription classes #2297
+- Add a `disable_introspection_entry_points` configuration in Schema classes #2327
+- Add `Analysis::AST::Visitor#argument_definition` which returns the _current_ argument definition, `#previous_argument_definition` returns the _previous_ one  #2226
+- Run CI on Ruby 2.6 #2328
+- Autogenerate base field class #2216
+- Add timeout support with interpreter #2220
+
+### Bug fixes
+
+- Fix Stack overflow when calling `.to_json` on input objects #2343
+- Fix off-by-one error with hasNextPage and ArrayConnections #2349
+- Fix GraphQL-Pro operation store compatibility #2350
+- Fix class-based transformer when multiple mutations are in one file #2309
+- Use `default_graphql_name` for Edge classes #2224
+- Support nested `loads:` with input objects #2323
+- Support `max_complexity` with multiplex & AST analysis #2306
+
 ## 1.9.6 (23 May 2019)
 
 ### Bug fixes
@@ -133,13 +158,13 @@
 - Fix unwrapping inputobject types when turning arguments to hashes #2094
 - Support lazy objects from `.resolve_type` hooks #2108
 
-## 1.8.14 (9 Feb 2018)
+## 1.8.14 (9 Feb 2019)
 
 ### Bug Fixes
 
 - Fix single-item list inputs that aren't passed as lists #2095
 
-## 1.8.13 (4 Jan 2018)
+## 1.8.13 (4 Jan 2019)
 
 ### Bug fixes
 

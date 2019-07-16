@@ -13,7 +13,7 @@ module GraphQL
           sliced_nodes.count > first
         elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && before
           # The original array is longer than the `before` index
-          index_from_cursor(before) < nodes.length
+          index_from_cursor(before) < nodes.length + 1
         else
           false
         end

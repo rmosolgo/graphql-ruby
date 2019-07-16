@@ -466,3 +466,27 @@ class Mutations::BaseMutation < GraphQL::Schema::Mutation
   include CustomPolicyLookup
 end
 ```
+
+## Custom User Lookup
+
+By default, the Pundit integration looks for the current user in `context[:current_user]`. You can override this by implementing `#pundit_user` on your custom query context class. For example:
+
+```ruby
+# app/graphql/query_context.rb
+class QueryContext < GraphQL::Query::Context
+  def pundit_user
+    # Lookup `context[:viewer]` instead:
+    self[:viewer]
+  end
+end
+```
+
+Then be sure to hook up your custom class in the schema:
+
+```ruby
+class MySchema < GraphQL::Schema
+  context_class(QueryContext)
+end
+```
+
+Then, the Pundit integration will use your `def pundit_user` to get the current user at runtime.

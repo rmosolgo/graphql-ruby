@@ -33,7 +33,8 @@ module GraphQL
       # @param as [Symbol] Override the keyword name when passed to a method
       # @param prepare [Symbol] A method to call to transform this argument's valuebefore sending it to field resolution
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, default_value: NO_DEFAULT, as: nil, camelize: true, prepare: nil, owner:, &definition_block)
+      # @param method_access [Boolean] If false, don't build method access on legacy {Query::Arguments} instances.
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, default_value: NO_DEFAULT, as: nil, camelize: true, prepare: nil, method_access: true, owner:, &definition_block)
         arg_name ||= name
         name_str = camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s
         @name = name_str.freeze
@@ -46,6 +47,7 @@ module GraphQL
         @loads = loads
         @keyword = as || Schema::Member::BuildType.underscore(@name).to_sym
         @prepare = prepare
+        @method_access = method_access
 
         if definition_block
           if definition_block.arity == 1
@@ -94,6 +96,7 @@ module GraphQL
         argument.description = @description
         argument.metadata[:type_class] = self
         argument.as = @as
+        argument.method_access = @method_access
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value
         end

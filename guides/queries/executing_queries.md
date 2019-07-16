@@ -135,7 +135,7 @@ MySchema.execute(query_string, root_value: current_org)
 That value will be provided to root-level fields, such as mutation fields. For example:
 
 ```ruby
-class MutationType < GraphQL::Schema::Object
+class Types::MutationType < GraphQL::Schema::Object
   field :create_post, Post, null: true
 
   def create_post(**args)

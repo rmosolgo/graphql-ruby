@@ -237,7 +237,7 @@ After a client has registered a subscription, the application may trigger subscr
 Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `:no_update`.
 
 ```ruby
-class CommentWasAdded < Subscriptions::BaseSubscription
+class Subscriptions::CommentWasAdded < Subscriptions::BaseSubscription
   def update(post_id:)
     comment = object # #<Comment ...>
     if comment.author == context[:viewer]

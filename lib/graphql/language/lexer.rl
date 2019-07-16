@@ -198,16 +198,16 @@ module GraphQL
 
       def self.emit_string(ts, te, meta, block:)
         quotes_length = block ? 3 : 1
-        ts += quotes_length
-        value = meta[:data][ts...te - quotes_length].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
+        content_range = (ts + quotes_length)...(te - quotes_length)
+        value = meta[:data][content_range].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING) || ''
         line_incr = 0
-        if block
+        if block && !value.length.zero?
           line_incr = value.count("\n")
           value = GraphQL::Language::BlockString.trim_whitespace(value)
         end
         # TODO: replace with `String#match?` when we support only Ruby 2.4+
         # (It's faster: https://bugs.ruby-lang.org/issues/8110)
-        if value !~ VALID_STRING
+        if !value.valid_encoding? || value !~ VALID_STRING
           meta[:tokens] << token = GraphQL::Language::Token.new(
             name: :BAD_UNICODE_ESCAPE,
             value: value,
