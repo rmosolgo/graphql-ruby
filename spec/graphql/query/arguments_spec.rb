@@ -53,7 +53,6 @@ describe GraphQL::Query::Arguments do
       ["a", 1, "Int"],
       ["b", 2, "Int"],
       ["inputObject", { "d" => 3, "e" => 4 }, "TestInput1"],
-      ["input_object", { "d" => 3, "e" => 4 }, "TestInput1"]
     ]
     assert_equal expected_type_info, type_info
   end

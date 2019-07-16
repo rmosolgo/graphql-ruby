@@ -57,7 +57,8 @@ module GraphQL
         defined_complexity = field_defn.complexity
         case defined_complexity
         when Proc
-          defined_complexity.call(irep_node.query.context, irep_node.arguments, child_complexity)
+          args = !!field_defn.metadata[:type_class] ? irep_node.arguments.to_kwargs : irep_node.arguments
+          defined_complexity.call(irep_node.query.context, args, child_complexity)
         when Numeric
           defined_complexity + (child_complexity || 0)
         else

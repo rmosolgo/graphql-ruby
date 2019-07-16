@@ -356,7 +356,8 @@ describe GraphQL::Analysis::QueryComplexity do
       it "sums the complexity" do
         reduce_result
 
-        assert_equal complexities, [query, 3]
+        # the arg will be called camel_case (not camelCase)
+        assert_equal complexities, [query, 0]
       end
     end
   end
