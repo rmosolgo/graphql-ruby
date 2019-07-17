@@ -17,7 +17,7 @@ module GraphQL
       def __type(name:)
         type = context.warden.get_type(name)
 
-        if type && context.interpreter?
+        if type && context.interpreter? && !type.is_a?(Module)
           type = type.metadata[:type_class] || raise("Invariant: interpreter requires class-based type for #{name}")
         end
 

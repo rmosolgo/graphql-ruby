@@ -142,6 +142,10 @@ module GraphQL
     # [Boolean] True if this object disables the introspection entry point fields
     attr_accessor :disable_introspection_entry_points
 
+    def disable_introspection_entry_points?
+      !!@disable_introspection_entry_points
+    end
+
     class << self
       attr_writer :default_execution_strategy
     end
@@ -694,8 +698,7 @@ module GraphQL
         # Schema structure
         :as_json, :to_json, :to_document, :to_definition,
         # Execution
-        :execute, :multiplex,
-        :static_validator, :introspection_system,
+        :static_validator,
         :query_analyzers, :tracers, :instrumenters,
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
@@ -797,7 +800,11 @@ module GraphQL
 
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       def types
-        @types ||= {}
+        @types ||= Hash.new do |h, k|
+          # TODO this won't support `{ __types { ... } }` since these items aren't in the hash.
+          # We can't cache them here because they'll become stale.
+          introspection_system.object_types.find { |t| t.graphql_name == k }
+        end
       end
 
       def query(new_query_object = nil)
@@ -872,6 +879,8 @@ module GraphQL
 
       def get_field(type_or_name, field_name)
         parent_type = case type_or_name
+        when LateBoundType
+          types[type_or_name.name]
         when String
           types.fetch(type_or_name)
         when Module
@@ -894,9 +903,15 @@ module GraphQL
       def introspection(new_introspection_namespace = nil)
         if new_introspection_namespace
           @introspection = new_introspection_namespace
+          # clear this cached value:
+          @introspection_system = nil
         else
           @introspection
         end
+      end
+
+      def introspection_system
+        @introspection_system ||= Schema::IntrospectionSystem.new(self)
       end
 
       def cursor_encoder(new_encoder = nil)
@@ -966,6 +981,10 @@ module GraphQL
         @disable_introspection_entry_points = true
       end
 
+      def disable_introspection_entry_points?
+        !!@disable_introspection_entry_points
+      end
+
       def orphan_types(*new_orphan_types)
         if new_orphan_types.any?
           new_orphan_types = new_orphan_types.flatten
@@ -1002,6 +1021,8 @@ module GraphQL
       def resolve_type(type, obj, ctx)
         if type.kind.object?
           type
+        elsif type.respond_to?(:resolve_type)
+          type.resolve_type(obj, ctx)
         else
           raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
         end
@@ -1128,6 +1149,51 @@ module GraphQL
 
       def multiplex_analyzer(new_analyzer)
         defined_multiplex_analyzers << new_analyzer
+      end
+
+
+      # Execute a query on itself.
+      # @see {Query#initialize} for arguments.
+      # @return [Hash] query result, ready to be serialized as JSON
+      def execute(query_str = nil, **kwargs)
+        if query_str
+          kwargs[:query] = query_str
+        end
+        # Some of the query context _should_ be passed to the multiplex, too
+        multiplex_context = if (ctx = kwargs[:context])
+          {
+            backtrace: ctx[:backtrace],
+            tracers: ctx[:tracers],
+          }
+        else
+          {}
+        end
+        # Since we're running one query, don't run a multiplex-level complexity analyzer
+        all_results = multiplex([kwargs], max_complexity: nil, context: multiplex_context)
+        all_results[0]
+      end
+
+      # Execute several queries on itself, concurrently.
+      #
+      # @example Run several queries at once
+      #   context = { ... }
+      #   queries = [
+      #     { query: params[:query_1], variables: params[:variables_1], context: context },
+      #     { query: params[:query_2], variables: params[:variables_2], context: context },
+      #   ]
+      #   results = MySchema.multiplex(queries)
+      #   render json: {
+      #     result_1: results[0],
+      #     result_2: results[1],
+      #   }
+      #
+      # @see {Query#initialize} for query keyword arguments
+      # @see {Execution::Multiplex#run_queries} for multiplex keyword arguments
+      # @param queries [Array<Hash>] Keyword arguments for each query
+      # @param context [Hash] Multiplex-level context
+      # @return [Array<Hash>] One result for each query in the input
+      def multiplex(queries, **kwargs)
+        GraphQL::Execution::Multiplex.run_all(self, queries, **kwargs)
       end
 
       private
