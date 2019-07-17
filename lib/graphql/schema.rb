@@ -705,7 +705,6 @@ module GraphQL
         # Configuration
         :analysis_engine, :analysis_engine=, :using_ast_analysis?, :interpreter?,
         :max_complexity=, :max_depth=,
-        :error_bubbling=,
         :metadata,
         :default_mask,
         :default_filter, :redefine,
@@ -713,10 +712,11 @@ module GraphQL
         :id_from_object=, :object_from_id=,
         :remove_handler,
         # Members
-        :get_fields, :find,
+        :find,
         :subscriptions,
+        # TODO: these must be ported for warden to work.
         :union_memberships,
-        :references_to
+        :references_to,
         :disable_introspection_entry_points=
 
       def graphql_definition
@@ -900,6 +900,10 @@ module GraphQL
         end
       end
 
+      def get_fields(type)
+        type.fields
+      end
+
       def introspection(new_introspection_namespace = nil)
         if new_introspection_namespace
           @introspection = new_introspection_namespace
@@ -968,6 +972,8 @@ module GraphQL
           @error_bubbling
         end
       end
+
+      attr_writer :error_bubbling
 
       def max_depth(new_max_depth = nil)
         if new_max_depth
@@ -1228,7 +1234,7 @@ module GraphQL
       # @see {.accessible?}
       # @see {.authorized?}
       def call_on_type_class(member, method_name, *args, default:)
-        member = if member.respond_to?(:metadata) && member.metadata
+        member = if member.respond_to?(:metadata) && member.metadata.is_a?(Hash)
           member.metadata[:type_class] || member
         else
           member

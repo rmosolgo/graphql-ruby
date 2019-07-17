@@ -11,7 +11,12 @@ module GraphQL
         # Apply wrapping manually since this field isn't wrapped by instrumentation
         schema = @context.query.schema
         schema_type = schema.introspection_system.schema_type
-        schema_type.metadata[:type_class].authorized_new(schema, @context)
+        type_class = if !schema_type.is_a?(Module)
+          schema_type.metadata[:type_class]
+        else
+          schema_type
+        end
+        type_class.authorized_new(schema, @context)
       end
 
       def __type(name:)

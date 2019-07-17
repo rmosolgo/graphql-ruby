@@ -26,6 +26,10 @@ module GraphQL
         "[#{@of_type.to_type_signature}]"
       end
 
+      # This is for introspection, where it's expected the name will be `null`
+      def graphql_name
+        nil
+      end
 
       def validate_input(value, ctx)
 

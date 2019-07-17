@@ -25,7 +25,7 @@ module GraphQL
 
       class << self
         extend Forwardable
-        def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result, :coerce_input, :coerce_result
+        def_delegators :graphql_definition
 
         # Define a value for this enum
         # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`
@@ -83,6 +83,17 @@ module GraphQL
           end
 
           result
+        end
+
+        def coerce_result(value, ctx)
+          warden = ctx.warden
+          all_values = warden ? warden.enum_values(self) : values.each_value
+          enum_value = all_values.find { |val| val.value == value }
+          if enum_value
+            enum_value.name
+          else
+            raise(GraphQL::EnumType::UnresolvedValueError, "Can't resolve enum #{graphql_name} for #{value.inspect}")
+          end
         end
 
         private

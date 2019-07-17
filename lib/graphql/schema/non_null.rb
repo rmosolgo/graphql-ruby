@@ -43,6 +43,11 @@ module GraphQL
         end
       end
 
+      # This is for introspection, where it's expected the name will be `null`
+      def graphql_name
+        nil
+      end
+
       def coerce_input(value, ctx)
         of_type.coerce_input(value, ctx)
       end
