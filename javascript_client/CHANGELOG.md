@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.6.5 (17 July 2019)
+
+- Update dependencies #2335
+
 ## 1.6.4 (11 May 2019)
 
 - Add `--verbose` option to `sync` #2075
