@@ -1435,13 +1435,23 @@ prev_token: meta[:previous_token],
 else
 replace_escaped_characters_in_place(value)
 
-meta[:tokens] << token = GraphQL::Language::Token.new(
-name: :STRING,
-value: value,
-line: meta[:line],
-col: meta[:col],
-prev_token: meta[:previous_token],
-)
+if !value.valid_encoding?
+	meta[:tokens] << token = GraphQL::Language::Token.new(
+	name: :BAD_UNICODE_ESCAPE,
+	value: value,
+	line: meta[:line],
+	col: meta[:col],
+	prev_token: meta[:previous_token],
+	)
+	else
+	meta[:tokens] << token = GraphQL::Language::Token.new(
+	name: :STRING,
+	value: value,
+	line: meta[:line],
+	col: meta[:col],
+	prev_token: meta[:previous_token],
+	)
+	end
 end
 
 meta[:previous_token] = token
