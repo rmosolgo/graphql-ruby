@@ -60,6 +60,11 @@ module GraphQL
           @response_path.dup
         end
 
+        # @return String The a stringified path to the response key for the current field
+        def response_path_str(separator = '.')
+          @response_path.join(separator)
+        end
+
         # Visitor Hooks
 
         def on_operation_definition(node, parent)
