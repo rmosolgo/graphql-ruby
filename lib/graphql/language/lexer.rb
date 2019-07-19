@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module GraphQL
 module Language
 module Lexer
@@ -1369,7 +1371,7 @@ end
 def self.record_comment(ts, te, meta)
 token = GraphQL::Language::Token.new(
 name: :COMMENT,
-value: meta[:data][ts...te].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
+value: meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
 line: meta[:line],
 col: meta[:col],
 prev_token: meta[:previous_token],
@@ -1383,7 +1385,7 @@ end
 def self.emit(token_name, ts, te, meta)
 meta[:tokens] << token = GraphQL::Language::Token.new(
 name: token_name,
-value: meta[:data][ts...te].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
+value: meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
 line: meta[:line],
 col: meta[:col],
 prev_token: meta[:previous_token],
@@ -1415,8 +1417,7 @@ UTF_8_ENCODING = "UTF-8"
 
 def self.emit_string(ts, te, meta, block:)
 quotes_length = block ? 3 : 1
-content_range = (ts + quotes_length)...(te - quotes_length)
-value = meta[:data][content_range].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING) || ''
+value = meta[:data][ts + quotes_length, te - ts - 2 * quotes_length].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING) || ''
 line_incr = 0
 if block && !value.length.zero?
 line_incr = value.count("\n")
