@@ -353,7 +353,7 @@ describe GraphQL::Analysis::QueryComplexity do
         }
       |}
 
-      it "sums the complexity" do
+      it "miss the complexity because of camelCase" do
         reduce_result
 
         # the arg will be called camel_case (not camelCase)
