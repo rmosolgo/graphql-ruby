@@ -40,7 +40,7 @@ module GraphQL
           own_complexity = get_complexity(node, visitor.field_definition, child_complexity, visitor)
 
           if @complexities_on_type.last.is_a?(AbstractTypeComplexity)
-            key = selection_key(visitor.response_path_str, visitor.query)
+            key = selection_key(visitor.response_path, visitor.query)
             parent_type = visitor.parent_type_definition
             query.possible_types(parent_type).each do |type|
               @complexities_on_type.last.merge(type, key, own_complexity)
@@ -69,7 +69,7 @@ module GraphQL
           # We add the query object id to support multiplex queries
           # even if they have the same response path, they should
           # always be added.
-          "#{response_path}-#{query.object_id}"
+          "#{response_path.join(".")}-#{query.object_id}"
         end
 
         # Get a complexity value for a field,
