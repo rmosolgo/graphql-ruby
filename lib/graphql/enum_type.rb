@@ -179,7 +179,7 @@ module GraphQL
     end
 
     def validate_non_null_input(value_name, ctx)
-      result = GraphQL::Query::InputValidationResult.new
+      result = GraphQL::Query::InputValidationResult.new(ctx.schema)
       allowed_values = ctx.warden.enum_values(self)
       matching_value = allowed_values.find { |v| v.name == value_name }
 

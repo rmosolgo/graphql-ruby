@@ -86,7 +86,7 @@ module GraphQL
 
     accepts_definitions \
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :max_depth, :max_complexity, :default_max_page_size,
+      :max_depth, :max_complexity, :max_validation_errors, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
       :error_bubbling,
       :raise_definition_error,
@@ -123,7 +123,7 @@ module GraphQL
     attr_accessor \
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :max_depth, :max_complexity, :default_max_page_size,
+      :max_depth, :max_complexity, :max_validation_errors, :default_max_page_size,
       :orphan_types, :directives,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
@@ -168,6 +168,7 @@ module GraphQL
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"].freeze
     EMPTY_ARRAY = [].freeze
     EMPTY_HASH = {}.freeze
+    DEFAULT_MAX_VALIDATION_ERRORS = 100
 
     attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
 
@@ -202,6 +203,7 @@ module GraphQL
       @interpreter = false
       @error_bubbling = false
       @disable_introspection_entry_points = false
+      @max_validation_errors = DEFAULT_MAX_VALIDATION_ERRORS
     end
 
     # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
@@ -714,7 +716,7 @@ module GraphQL
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
         :analysis_engine, :analysis_engine=, :using_ast_analysis?, :interpreter?,
-        :max_complexity=, :max_depth=,
+        :max_complexity=, :max_depth=, :max_validation_errors=,
         :error_bubbling=,
         :metadata,
         :default_mask,
@@ -750,6 +752,7 @@ module GraphQL
         schema_defn.mutation = mutation
         schema_defn.subscription = subscription
         schema_defn.max_complexity = max_complexity
+        schema_defn.max_validation_errors = max_validation_errors
         schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
@@ -887,6 +890,14 @@ module GraphQL
           @max_complexity = max_complexity
         else
           @max_complexity || find_inherited_value(:max_complexity)
+        end
+      end
+
+      def max_validation_errors(max_validation_errors = nil)
+        if max_validation_errors
+          @max_validation_errors = max_validation_errors
+        else
+          @max_validation_errors || find_inherited_value(:max_validation_errors, DEFAULT_MAX_VALIDATION_ERRORS)
         end
       end
 

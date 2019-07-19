@@ -125,7 +125,7 @@ module GraphQL
     end
 
     def validate_non_null_input(value, ctx)
-      result = Query::InputValidationResult.new
+      result = Query::InputValidationResult.new(ctx.schema)
       if coerce_non_null_input(value, ctx).nil?
         result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{name}")
       end

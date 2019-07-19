@@ -107,7 +107,7 @@ module GraphQL
 
     def validate_non_null_input(input, ctx)
       warden = ctx.warden
-      result = GraphQL::Query::InputValidationResult.new
+      result = GraphQL::Query::InputValidationResult.new(ctx.schema)
 
       if input.is_a?(Array)
         result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
@@ -136,6 +136,7 @@ module GraphQL
       input.each do |name, value|
         if visible_arguments_map[name].nil?
           result.add_problem("Field is not defined on #{self.name}", [name])
+          break if result.too_many_errors?
         end
       end
 
@@ -144,6 +145,7 @@ module GraphQL
         field_result = field.type.validate_input(input[name], ctx)
         if !field_result.valid?
           result.merge_result!(name, field_result)
+          break if result.too_many_errors?
         end
       end
 

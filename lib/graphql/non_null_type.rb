@@ -54,7 +54,7 @@ module GraphQL
 
     def validate_input(value, ctx)
       if value.nil?
-        result = GraphQL::Query::InputValidationResult.new
+        result = GraphQL::Query::InputValidationResult.new(ctx.schema)
         result.add_problem("Expected value to not be null")
         result
       else

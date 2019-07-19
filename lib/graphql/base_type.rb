@@ -148,7 +148,7 @@ module GraphQL
       end
 
       if value.nil?
-        GraphQL::Query::InputValidationResult.new
+        GraphQL::Query::InputValidationResult.new(ctx.schema)
       else
         validate_non_null_input(value, ctx)
       end
