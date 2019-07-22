@@ -86,7 +86,7 @@
 
 <p>In your custom classes, you can override <code class="highlighter-rouge">.to_graphql</code> to customize the type that will be used at runtime. For example, to assign metadata values to an ObjectType:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Call this method in an Object class to set the permission level:</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">required_permission</span><span class="p">(</span><span class="n">permission_level</span><span class="p">)</span>
     <span class="vi">@required_permission</span> <span class="o">=</span> <span class="n">permission_level</span>
@@ -134,7 +134,7 @@
 
 <p>For example, you can create a custom class which accepts a new parameter to <code class="highlighter-rouge">initialize</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AuthorizedField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">AuthorizedField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
   <span class="c1"># Override #initialize to take a new argument:</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">required_permission</span><span class="p">:,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
     <span class="vi">@required_permission</span> <span class="o">=</span> <span class="n">required_permission</span>
@@ -152,13 +152,13 @@
 
 <p>Then, pass the field class as <code class="highlighter-rouge">field_class(...)</code> wherever it should be used:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Use this class for defining fields</span>
   <span class="n">field_class</span> <span class="no">AuthorizedField</span>
 <span class="k">end</span>
 
 <span class="c1"># And/Or</span>
-<span class="k">class</span> <span class="nc">BaseInterface</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseInterface</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
   <span class="n">field_class</span> <span class="no">AuthorizedField</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -176,7 +176,7 @@
 
 <p>For example, you can create a custom connection:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyCustomConnection</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">MyCustomConnection</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span>
   <span class="n">field</span> <span class="ss">:total_count</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 
   <span class="k">def</span> <span class="nf">total_count</span>
@@ -188,7 +188,7 @@
 <p>Then, pass the field class as <code class="highlighter-rouge">connection_type_class(...)</code> wherever it should be used:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Types</span>
-  <span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
     <span class="c1"># Use this class for defining connections</span>
     <span class="n">connection_type_class</span> <span class="no">MyCustomConnection</span>
   <span class="k">end</span>
@@ -248,12 +248,12 @@
 <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">accepts_definitions</span><span class="p">({</span> <span class="ss">permission_level: </span><span class="o">-&gt;</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span> <span class="p">})</span>
 
 <span class="c1"># Prepare the config method in the base class:</span>
-<span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="n">accepts_definition</span> <span class="ss">:permission_level</span>
 <span class="k">end</span>
 
 <span class="c1"># Call the config method in the object class:</span>
-<span class="k">class</span> <span class="nc">Account</span> <span class="o">&lt;</span> <span class="no">BaseObject</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Account</span> <span class="o">&lt;</span> <span class="no">BaseObject</span>
   <span class="n">permission_level</span> <span class="mi">1</span>
 <span class="k">end</span>
 
@@ -266,7 +266,7 @@
 
 <p><strong>Invoke <code class="highlighter-rouge">.call</code> directly</strong>. If you defined a module with a <code class="highlighter-rouge">.call</code> method, you can invoke that method during <code class="highlighter-rouge">.to_graphql</code>. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">to_graphql</span>
     <span class="n">type_defn</span> <span class="o">=</span> <span class="k">super</span>
     <span class="c1"># Re-use the accepts_definition callback manually:</span>
@@ -278,7 +278,7 @@
 
 <p><strong>Use <code class="highlighter-rouge">.redefine</code></strong>. You can re-open a <code class="highlighter-rouge">.define</code> block at any time with <code class="highlighter-rouge">.redefine</code>. It returns a new, updated instance based on the old one. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">to_graphql</span>
     <span class="n">type_defn</span> <span class="o">=</span> <span class="k">super</span>
     <span class="c1"># Read the value from the instance variable, since ivars don't work in `.define {...}` blocks</span>

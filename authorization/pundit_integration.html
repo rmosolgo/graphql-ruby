@@ -506,7 +506,7 @@
 
 <p>By default, the Pundit integration looks for the current user in <code class="highlighter-rouge">context[:current_user]</code>. You can override this by implementing <code class="highlighter-rouge">#pundit_user</code> on your custom query context class. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/query_context</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/query_context.rb</span>
 <span class="k">class</span> <span class="nc">QueryContext</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Query</span><span class="o">::</span><span class="no">Context</span>
   <span class="k">def</span> <span class="nf">pundit_user</span>
     <span class="c1"># Lookup `context[:viewer]` instead:</span>

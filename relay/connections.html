@@ -57,7 +57,7 @@
 
 <p>For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># `Post#comments` returns an ActiveRecord::Relation</span>
   <span class="c1"># The GraphQL field returns a Connection</span>
   <span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
@@ -106,12 +106,12 @@
 <p>You can customize connection and edge types by using the class-based API:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Make an edge class for use in the connection below:</span>
-<span class="k">class</span> <span class="nc">PostEdgeType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseEdge</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostEdgeType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseEdge</span>
   <span class="n">node_type</span><span class="p">(</span><span class="no">PostType</span><span class="p">)</span>
 <span class="k">end</span>
 
 <span class="c1"># Make a customized connection type</span>
-<span class="k">class</span> <span class="nc">PostConnectionWithTotalCountType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostConnectionWithTotalCountType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span>
   <span class="n">edge_type</span><span class="p">(</span><span class="no">PostEdgeType</span><span class="p">)</span>
 
   <span class="n">field</span> <span class="ss">:total_count</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
@@ -121,12 +121,13 @@
     <span class="n">object</span><span class="p">.</span><span class="nf">nodes</span><span class="p">.</span><span class="nf">size</span>
   <span class="k">end</span>
 <span class="k">end</span>
-
 </code></pre></div></div>
+
+<p><strong>Note:</strong>  If you use <em>classes</em> for an object’s connection or edge types, then all of that object’s connection and edge types should be classes. Otherwise, the auto-generated types from the <code class="highlighter-rouge">.edge_type</code> or <code class="highlighter-rouge">.connection_type</code> helpers will conflict with the class-based types.</p>
 
 <p>Now, you can use <code class="highlighter-rouge">PostConnectionWithTotalCountType</code> to define a connection with the “totalCount” field:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AuthorType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">AuthorType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Use the custom connection type:</span>
   <span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="no">PostConnectionWithTotalCountType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">connection: </span><span class="kp">true</span>
 <span class="k">end</span>
@@ -168,7 +169,7 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Make sure to familiarize yourself with GraphQL::Relay::Edge --</span>
 <span class="c1"># you have to avoid naming conflicts here!</span>
-<span class="k">class</span> <span class="nc">MembershipSinceEdge</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Edge</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">MembershipSinceEdge</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Edge</span>
   <span class="c1"># Cache `membership` to avoid multiple DB queries</span>
   <span class="k">def</span> <span class="nf">membership</span>
     <span class="vi">@membership</span> <span class="o">||=</span> <span class="k">begin</span>
@@ -193,7 +194,7 @@
 <p>Then, hook it up with custom edge type and custom connection type:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Person =&gt; Membership =&gt; Team</span>
-<span class="k">class</span> <span class="nc">MembershipSinceEdgeType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseEdge</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">MembershipSinceEdgeType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseEdge</span>
   <span class="n">node_type</span><span class="p">(</span><span class="no">TeamType</span><span class="p">)</span>
 
   <span class="n">field</span> <span class="ss">:member_since</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
@@ -203,7 +204,7 @@
     <span class="ss">method: :primary?</span>
 <span class="k">end</span>
 
-<span class="k">class</span> <span class="nc">TeamMembershipsConnectionType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">TeamMembershipsConnectionType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span>
   <span class="c1"># Here, hook up your custom class with `edge_class:`</span>
   <span class="n">edge_type</span><span class="p">(</span><span class="no">MembershipSinceEdgeType</span><span class="p">,</span> <span class="ss">edge_class: </span><span class="no">MembershipSinceEdge</span><span class="p">)</span>
 <span class="k">end</span>
