@@ -2,7 +2,11 @@
 require "spec_helper"
 
 describe GraphQL::Analysis::AST::MaxQueryDepth do
-  let(:schema) { Class.new(Dummy::Schema) }
+  let(:schema) {
+    schema = Class.new(Dummy::Schema)
+    schema.analysis_engine = GraphQL::Analysis::AST
+    schema
+  }
   let(:query_string) { "
     {
       cheese(id: 1) {
@@ -32,12 +36,33 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
   let(:result) {
     GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::MaxQueryDepth]).first
   }
+  let(:multiplex) {
+    GraphQL::Execution::Multiplex.new(
+      schema: schema,
+      queries: [query.dup, query.dup],
+      context: {},
+      max_complexity: nil
+    )
+  }
+  let(:multiplex_result) {
+    GraphQL::Analysis::AST.analyze_multiplex(multiplex, [GraphQL::Analysis::AST::MaxQueryDepth]).first
+  }
 
   describe "when the query is deeper than max depth" do
     let(:max_depth) { 5 }
 
     it "adds an error message for a too-deep query" do
       assert_equal "Query has depth of 7, which exceeds max depth of 5", result.message
+    end
+  end
+
+  describe "when a multiplex queries is deeper than max depth" do
+    before do
+      schema.max_depth = 5
+    end
+
+    it "adds an error message for a too-deep query on from multiplex analyzer" do
+      assert_equal "Query has depth of 7, which exceeds max depth of 5", multiplex_result.message
     end
   end
 

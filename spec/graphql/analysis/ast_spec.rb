@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Analysis::AST do
   class AstTypeCollector < GraphQL::Analysis::AST::Analyzer
-    def initialize(query)
+    def initialize(query, multiplex: nil)
       super
       @types = []
     end
@@ -22,7 +22,7 @@ describe GraphQL::Analysis::AST do
   end
 
   class AstNodeCounter < GraphQL::Analysis::AST::Analyzer
-    def initialize(query)
+    def initialize(query, multiplex: nil)
       super
       @nodes = Hash.new { |h,k| h[k] = 0 }
     end
@@ -37,7 +37,7 @@ describe GraphQL::Analysis::AST do
   end
 
   class AstConditionalAnalyzer < GraphQL::Analysis::AST::Analyzer
-    def initialize(query)
+    def initialize(query, multiplex: nil)
       super
       @i_have_been_called = false
     end
@@ -135,10 +135,15 @@ describe GraphQL::Analysis::AST do
   end
 
   describe ".analyze_query" do
+    let(:schema) {
+      schema = Class.new(Dummy::Schema)
+      schema.analysis_engine = GraphQL::Analysis::AST
+      schema
+    }
     let(:analyzers) { [AstTypeCollector, AstNodeCounter] }
     let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, analyzers) }
     let(:variables) { {} }
-    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
+    let(:query) { GraphQL::Query.new(schema, query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -290,6 +295,119 @@ describe GraphQL::Analysis::AST do
           :connections => 2
         }
         assert_equal expected_connection_counts, connection_counts
+      end
+    end
+  end
+
+  describe ".analyze_multiplex" do
+    # before do
+    #   @old =  Dummy::Schema.analysis_engine
+    #   Dummy::Schema.analysis_engine = GraphQL::Analysis::AST
+    # end
+    # after do
+    #   Dummy::Schema.analysis_engine = @old
+    # end
+    let(:schema) {
+      schema = Class.new(Dummy::Schema)
+      schema.analysis_engine = GraphQL::Analysis::AST
+      schema
+    }
+    let(:variables) { {} }
+    let(:query) {
+      GraphQL::Query.new(
+        schema,
+        query_string,
+        variables: variables
+      )
+    }
+    let(:analyzers) { [AstTypeCollector, AstNodeCounter] }
+    let(:multiplex) {
+      GraphQL::Execution::Multiplex.new(
+        schema: schema,
+        queries: [query.dup, query.dup],
+        context: {},
+        max_complexity: 10
+      )
+    }
+    let(:reduce_multiplex_result) { GraphQL::Analysis::AST.analyze_multiplex(multiplex, analyzers) }
+
+    let(:query_string) {%|
+      {
+        cheese(id: 1) {
+          id
+          flavor
+        }
+      }
+    |}
+
+    describe "when analyzer has an error" do
+      let(:analyzers) { [AstErrorAnalyzer] }
+      it "it is attached to all query objects anaylzer errors set" do
+        reduce_multiplex_result
+        error_set = multiplex.queries.map(&:analysis_errors)
+        assert_equal 2, error_set.size
+        error = error_set.first.first
+        assert_equal "An Error!", error.message
+      end
+    end
+
+    describe "when there are multiple queries in a multiplex" do
+      class QueryChange < GraphQL::Analysis::AST::Analyzer
+        def initialize(query, multiplex: true)
+          super
+          @query_change = 0
+        end
+
+        def set_current_query(query)
+          super
+          @query_change += 1
+        end
+
+        def result
+          @query_change
+        end
+      end
+
+
+      let(:analyzers) { [QueryChange] }
+      it "each query is passed to the multiplex anaylzer" do
+        assert_equal 2, reduce_multiplex_result.first
+      end
+    end
+
+    describe "invalid queries" do
+      let(:query_string) { %|
+        {
+          invalid_query {
+            id
+            flavor
+          }
+        }
+      |}
+      it "do not run analyzers" do
+        assert_equal true, reduce_multiplex_result.first.empty?
+        assert_equal true, reduce_multiplex_result.last.empty?
+      end
+    end
+
+    describe "conditional analysis" do
+      let(:analyzers) { [AstTypeCollector, AstConditionalAnalyzer] }
+
+      describe "when analyze? returns false" do
+        let(:query) { GraphQL::Query.new(schema, query_string, variables: variables, context: { analyze: false }) }
+
+        it "does not run the analyzer" do
+          # Only type_collector ran
+          assert_equal 1, reduce_multiplex_result.size
+        end
+      end
+
+      describe "when analyze? returns true" do
+        let(:query) { GraphQL::Query.new(schema, query_string, variables: variables, context: { analyze: true }) }
+
+        it "it runs the multiplex analyzer" do
+          assert_equal 2, reduce_multiplex_result.size
+        end
       end
     end
   end

@@ -7,12 +7,18 @@ module GraphQL
       # see {Schema#max_complexity} and {Query#max_complexity}
       class MaxQueryComplexity < QueryComplexity
         def result
-          return if query.max_complexity.nil?
+          max_complexity = if multiplex?
+            multiplex.max_complexity
+          else
+            query.max_complexity
+          end
+
+          return if max_complexity.nil?
 
           total_complexity = max_possible_complexity
 
-          if total_complexity > query.max_complexity
-            GraphQL::AnalysisError.new("Query has complexity of #{total_complexity}, which exceeds max complexity of #{query.max_complexity}")
+          if total_complexity > max_complexity
+            GraphQL::AnalysisError.new("Query has complexity of #{total_complexity}, which exceeds max complexity of #{max_complexity}")
           else
             nil
           end

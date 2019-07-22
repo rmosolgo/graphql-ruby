@@ -15,7 +15,7 @@ module GraphQL
     #
     module AST
       class QueryDepth < Analyzer
-        def initialize(query)
+        def initialize(query, multiplex: nil)
           @max_depth = 0
           @current_depth = 0
           @skip_depth = 0

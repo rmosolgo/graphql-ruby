@@ -5,10 +5,12 @@ module GraphQL
       # Query analyzer for query ASTs. Query analyzers respond to visitor style methods
       # but are prefixed by `enter` and `leave`.
       #
-      # @param [GraphQL::Query] The query to analyze
+      # @param query [GraphQL::Query] The queries to analyze
+      # @param multiplex [Graphql::Execute::Multiplex]
       class Analyzer
-        def initialize(query)
+        def initialize(query, multiplex: nil)
           @query = query
+          @multiplex = multiplex
         end
 
         # Analyzer hook to decide at analysis time whether a query should
@@ -23,6 +25,21 @@ module GraphQL
         # @return [Any] The analyzer result
         def result
           raise NotImplementedError
+        end
+
+        # Return true or false based on wether this Analyzer is being used as a
+        # multiplex analyzer or a query analyzer
+        # @return [Boolean] Is or is not a multiplex analyzer
+        def multiplex?
+          !multiplex.nil?
+        end
+
+        # Accessor to change what GraphQL::Query the @query variable points to. This
+        # is used in a multiplex query to change the current query being visited as each
+        # query is being analyzed.
+        # @param [GraphQL::Query] The current query being visited
+        def set_current_query(current_query)
+          @query = current_query
         end
 
         # Don't use make_visit_method because it breaks `super`
@@ -56,6 +73,7 @@ module GraphQL
         protected
 
         attr_reader :query
+        attr_reader :multiplex
       end
     end
   end
