@@ -13,6 +13,23 @@ describe GraphQL::UnionType do
       possible_types(types)
     }
   }
+  let(:filtered_union) {
+    class FilteredUnion < GraphQL::UnionType 
+      def filter_possible_types(types, ctx)
+        if ctx[:no_type_2]
+          types.delete_if { |type| type.kind == GraphQL::TypeKinds::OBJECT }
+        end
+        types
+      end
+    end
+
+    base_types = [type_2, type_3]
+    FilteredUnion.define {
+      name("FilteredUnion")
+      description("Union with Filters")
+      possible_types(base_types)
+    }
+  }
 
   it "has a name" do
     assert_equal("MyUnion", union.name)
@@ -36,6 +53,15 @@ describe GraphQL::UnionType do
     assert_raises(RuntimeError) {
       union.resolve_type(test_str, fake_ctx)
     }
+  end
+
+  it '#possible_types returns only filtered types if context is present' do
+    context = { no_type_2: true }
+    assert_equal [type_3], filtered_union.possible_types(context)
+  end
+
+  it '#possible_types returns all possible types if no context provided' do
+    assert_equal [type_2, type_3], filtered_union.possible_types
   end
 
   describe "#resolve_type" do

@@ -448,10 +448,11 @@ module GraphQL
 
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @param type_defn [GraphQL::InterfaceType, GraphQL::UnionType] the type whose members you want to retrieve
+    # @param context [GraphQL::Query::Context] The context for the current query
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
-    def possible_types(type_defn)
+    def possible_types(type_defn, context=nil)
       @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
-      @possible_types.possible_types(type_defn)
+      @possible_types.possible_types(type_defn, context)
     end
 
     # @see [GraphQL::Schema::Warden] Resticted access to root types

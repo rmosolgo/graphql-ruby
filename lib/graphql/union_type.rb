@@ -27,7 +27,7 @@ module GraphQL
     accepts_definitions :possible_types, :resolve_type
     ensure_defined :possible_types, :resolve_type, :resolve_type_proc
 
-    attr_accessor :resolve_type_proc
+    attr_accessor :resolve_type_proc, :filter_possible_types_proc
 
     def initialize
       super
@@ -47,8 +47,8 @@ module GraphQL
     end
 
     # @return [Boolean] True if `child_type_defn` is a member of this {UnionType}
-    def include?(child_type_defn)
-      possible_types.include?(child_type_defn)
+    def include?(child_type_defn, ctx=nil)
+      possible_types(ctx).include?(child_type_defn)
     end
 
     def possible_types=(new_possible_types)
@@ -57,7 +57,7 @@ module GraphQL
     end
 
     # @return [Array<GraphQL::ObjectType>] Types which may be found in this union
-    def possible_types
+    def possible_types(ctx=nil)
       @clean_possible_types ||= begin
         if @dirty_possible_types.respond_to?(:map)
           @dirty_possible_types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
@@ -65,6 +65,8 @@ module GraphQL
           @dirty_possible_types
         end
       end
+
+      ctx ? filter_possible_types(@clean_possible_types, ctx) : @clean_possible_types
     end
 
     # Get a possible type of this {UnionType} by type name
@@ -73,7 +75,7 @@ module GraphQL
     # @return [GraphQL::ObjectType, nil] The type named `type_name` if it exists and is a member of this {UnionType}, (else `nil`)
     def get_possible_type(type_name, ctx)
       type = ctx.query.get_type(type_name)
-      type if type && ctx.query.schema.possible_types(self).include?(type)
+      type if type && ctx.query.schema.possible_types(self, ctx).include?(type)
     end
 
     # Check if a type is a possible type of this {UnionType}
@@ -85,12 +87,28 @@ module GraphQL
       !get_possible_type(type_name, ctx).nil?
     end
 
+    # Filter possible types based on the current context
+    # @param types [Array<GraphQL::ObjectType>] Types to be filtered
+    # @param ctx [GraphQL::Query::Context] The context for the current query
+    # @return [Array<GraphQL::ObjectType>] The types remaining after the filter is applied
+    def filter_possible_types(types, ctx)
+      if @filter_possible_types_proc && ctx
+        @filter_possible_types_proc.call(types, ctx)
+      else
+        types
+      end
+    end
+
     def resolve_type(value, ctx)
       ctx.query.resolve_type(self, value)
     end
 
     def resolve_type=(new_resolve_type_proc)
       @resolve_type_proc = new_resolve_type_proc
+    end
+
+    def filter_possible_types=(new_filter_possible_types_proc)
+      @filter_possible_types_proc = new_filter_possible_types_proc
     end
 
     protected

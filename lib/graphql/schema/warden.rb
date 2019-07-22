@@ -40,7 +40,8 @@ module GraphQL
       # @param deep_check [Boolean]
       def initialize(filter, context:, schema:)
         @schema = schema
-        @visibility_cache = read_through { |m| filter.call(m, context) }
+        @context = context
+        @visibility_cache = read_through { |m| filter.call(m, @context) }
       end
 
       # @return [Array<GraphQL::BaseType>] Visible types in the schema
@@ -81,7 +82,7 @@ module GraphQL
 
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
-        @visible_possible_types ||= read_through { |type_defn| @schema.possible_types(type_defn).select { |t| visible_type?(t) } }
+        @visible_possible_types ||= read_through { |type_defn| @schema.possible_types(type_defn, @context).select { |t| visible_type?(t) } }
         @visible_possible_types[type_defn]
       end
 
@@ -170,7 +171,7 @@ module GraphQL
       end
 
       def visible_possible_types?(type_defn)
-        @schema.possible_types(type_defn).any? { |t| visible_type?(t) }
+        @schema.possible_types(type_defn, @context).any? { |t| visible_type?(t) }
       end
 
       def visible?(member)

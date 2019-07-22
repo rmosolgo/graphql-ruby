@@ -319,6 +319,14 @@ module Jazz
         end
       end
     end
+
+    def self.filter_possible_types(types, ctx)
+      types = types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
+      if ctx[:no_ensemble]
+        types -= [GraphQL::BaseType.resolve_related_type(Ensemble)]
+      end
+      types
+    end
   end
 
   class HashKeyTest < BaseObject
