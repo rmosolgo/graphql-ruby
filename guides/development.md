@@ -176,7 +176,7 @@ The lexer and parser use a multistep build process:
 - Run the generator (Ragel or Racc) to create `.rb` files (`lexer.rb` or `parser.rb`)
 - `require` those `.rb` files in GraphQL-Ruby
 
-To update the lexer or parser, you should update their corresponding _definitions_ (`lexer.rl` or `parser.y`). Then, you can run `bundle exec build_parser` to re-generate the `.rb` files.
+To update the lexer or parser, you should update their corresponding _definitions_ (`lexer.rl` or `parser.y`). Then, you can run `bundle exec rake build_parser` to re-generate the `.rb` files.
 
 You will need Ragel to build the lexer (see above).
 

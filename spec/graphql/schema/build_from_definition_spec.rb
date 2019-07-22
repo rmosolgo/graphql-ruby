@@ -1063,6 +1063,16 @@ SCHEMA
 
       assert_equal({ "str" => "abc", "int" => 123 }, result["data"])
     end
+
+    it "doesn't warn about method conflicts" do
+      assert_output "", "" do
+        GraphQL::Schema.from_definition "
+        type Query {
+          int(method: Int): Int
+        }
+        "
+      end
+    end
   end
 
   describe "executable schemas from string" do

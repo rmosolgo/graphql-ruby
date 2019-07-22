@@ -148,6 +148,7 @@ module GraphQL
               name: type["name"],
               type: type_resolver.call(type["type"]),
               description: type["description"],
+              method_access: false,
               **kwargs
             )
           when "SCALAR"

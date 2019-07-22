@@ -47,7 +47,7 @@ This means that `User` objects have three fields:
 The same object can be defined using Ruby:
 
 ```ruby
-class User < GraphQL::Schema::Object
+class Types::User < GraphQL::Schema::Object
   field :email, String, null: true
   field :handle, String, null: false
   field :friends, [User], null: false

@@ -205,7 +205,7 @@ module GraphQL
 
         # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
         method_name = method || hash_key || @underscored_name
-        resolver_method ||= @underscored_name
+        resolver_method ||= @underscored_name.to_sym
 
         @method_str = method_name.to_s
         @method_sym = method_name.to_sym
@@ -418,13 +418,10 @@ module GraphQL
       end
 
       def authorized?(object, context)
-        self_auth = if @resolver_class
+        if @resolver_class
+          # The resolver will check itself during `resolve()`
           @resolver_class.authorized?(object, context)
         else
-          true
-        end
-
-        if self_auth
           # Faster than `.any?`
           arguments.each_value do |arg|
             if !arg.authorized?(object, context)
@@ -432,8 +429,6 @@ module GraphQL
             end
           end
           true
-        else
-          false
         end
       end
 

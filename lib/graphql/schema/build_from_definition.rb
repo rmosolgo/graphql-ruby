@@ -232,6 +232,7 @@ module GraphQL
               name: input_argument.name,
               type: type_resolver.call(input_argument.type),
               description: input_argument.description,
+              method_access: false,
               **kwargs,
             )
 
@@ -269,6 +270,7 @@ module GraphQL
               name: directive_argument.name,
               type: type_resolver.call(directive_argument.type),
               description: directive_argument.description,
+              method_access: false,
               **kwargs,
             )
 
@@ -306,6 +308,7 @@ module GraphQL
                 name: argument.name,
                 description: argument.description,
                 type: type_resolver.call(argument.type),
+                method_access: false,
                 **kwargs,
               )
 

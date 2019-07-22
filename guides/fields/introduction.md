@@ -188,10 +188,12 @@ Inside a field method, you can access some low-level objects from the GraphQL-Ru
 
 A few `extras` are available:
 
-- `irep_node`
 - `ast_node`
-- `parent`, the parent field context
+- `graphql_name` (the field's name)
+- `owner` (the type that this field belongs to)
+- `lookahead` (see {% internal_link "Lookahead", "/queries/lookahead" %})
 - `execution_errors`, whose `#add(err_or_msg)` method should be used for adding errors
+- Custom extras, see below
 
 To inject them into your field method, first, add the `extras:` option to the field definition:
 

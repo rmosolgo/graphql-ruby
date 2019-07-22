@@ -2,16 +2,13 @@
 require "spec_helper"
 
 describe GraphQL::Schema::CatchallMiddleware do
-  let(:result) { Dummy::Schema.execute(query_string) }
+  let(:schema) do
+    Class.new(Dummy::Schema) do
+      middleware GraphQL::Schema::CatchallMiddleware
+    end
+  end
+  let(:result) { schema.execute(query_string) }
   let(:query_string) {%| query noMilk { error }|}
-
-  before do
-    Dummy::Schema.middleware << GraphQL::Schema::CatchallMiddleware
-  end
-
-  after do
-    Dummy::Schema.middleware.delete(GraphQL::Schema::CatchallMiddleware)
-  end
 
   if TESTING_RESCUE_FROM
     describe "rescuing errors" do
