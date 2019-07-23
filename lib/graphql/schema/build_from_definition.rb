@@ -284,10 +284,13 @@ module GraphQL
         end
 
         def build_interface_type(interface_type_definition, type_resolver)
+          missing_field_resolver = ->(field, obj, args, ctx) {
+            raise InvalidDocumentError.new("Type \"#{ctx.parent_type.name}\" is missing field \"#{field.name}\".")
+          }
           interface = GraphQL::InterfaceType.define(
             name: interface_type_definition.name,
             description: interface_type_definition.description,
-            fields: Hash[build_fields(interface_type_definition.fields, type_resolver, default_resolve: nil)],
+            fields: Hash[build_fields(interface_type_definition.fields, type_resolver, default_resolve: missing_field_resolver)],
           )
 
           interface.ast_node = interface_type_definition
