@@ -77,8 +77,11 @@ rule
       }
 
   type:
+      nullable_type           { return val[0] }
+    | nullable_type BANG      { return make_node(:NonNullType, of_type: val[0]) }
+
+  nullable_type:
       name                   { return make_node(:TypeName, name: val[0])}
-    | type BANG              { return make_node(:NonNullType, of_type: val[0]) }
     | LBRACKET type RBRACKET { return make_node(:ListType, of_type: val[1]) }
 
   default_value_opt:
