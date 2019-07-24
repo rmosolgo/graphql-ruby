@@ -3,6 +3,7 @@ require "graphql/schema/base_64_encoder"
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/default_parse_error"
 require "graphql/schema/default_type_error"
+require "graphql/schema/find_inherited_value"
 require "graphql/schema/finder"
 require "graphql/schema/invalid_type_error"
 require "graphql/schema/introspection_system"
@@ -82,6 +83,8 @@ module GraphQL
     extend GraphQL::Schema::Member::AcceptsDefinition
     extend GraphQL::Schema::Member::HasAstNode
     include GraphQL::Define::InstanceDefinable
+    extend GraphQL::Schema::FindInheritedValue
+
     accepts_definitions \
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
@@ -160,7 +163,9 @@ module GraphQL
     # @see {Query#tracers} for query-specific tracers
     attr_reader :tracers
 
-    DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
+    DYNAMIC_FIELDS = ["__type", "__typename", "__schema"].freeze
+    EMPTY_ARRAY = [].freeze
+    EMPTY_HASH = {}.freeze
 
     attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
 
@@ -735,11 +740,11 @@ module GraphQL
       end
 
       def use(plugin, options = {})
-        plugins << [plugin, options]
+        own_plugins << [plugin, options]
       end
 
       def plugins
-        @plugins ||= []
+        find_inherited_value(:plugins, EMPTY_ARRAY) + own_plugins
       end
 
       def to_graphql
@@ -753,7 +758,7 @@ module GraphQL
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
-        schema_defn.disable_introspection_entry_points = @disable_introspection_entry_points
+        schema_defn.disable_introspection_entry_points = disable_introspection_entry_points?
 
         prepped_dirs = {}
         directives.each { |k, v| prepped_dirs[k] = v.graphql_definition}
@@ -765,15 +770,15 @@ module GraphQL
         schema_defn.type_error = method(:type_error)
         schema_defn.context_class = context_class
         schema_defn.cursor_encoder = cursor_encoder
-        schema_defn.tracers.concat(defined_tracers)
-        schema_defn.query_analyzers.concat(defined_query_analyzers)
+        schema_defn.tracers.concat(tracers)
+        schema_defn.query_analyzers.concat(query_analyzers)
 
-        schema_defn.middleware.concat(defined_middleware)
-        schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
+        schema_defn.middleware.concat(all_middleware)
+        schema_defn.multiplex_analyzers.concat(multiplex_analyzers)
         schema_defn.query_execution_strategy = query_execution_strategy
         schema_defn.mutation_execution_strategy = mutation_execution_strategy
         schema_defn.subscription_execution_strategy = subscription_execution_strategy
-        defined_instrumenters.each do |step, insts|
+        all_instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
           end
@@ -781,10 +786,8 @@ module GraphQL
         lazy_classes.each do |lazy_class, value_method|
           schema_defn.lazy_methods.set(lazy_class, value_method)
         end
-        if @rescues
-          @rescues.each do |err_class, handler|
-            schema_defn.rescue_from(err_class, &handler)
-          end
+        rescues.each do |err_class, handler|
+          schema_defn.rescue_from(err_class, &handler)
         end
 
         if plugins.any?
@@ -816,7 +819,8 @@ module GraphQL
         if new_query_object
           @query_object = new_query_object
         else
-          @query_object.respond_to?(:graphql_definition) ? @query_object.graphql_definition : @query_object
+          query_object = @query_object || find_inherited_value(:query)
+          query_object.respond_to?(:graphql_definition) ? query_object.graphql_definition : query_object
         end
       end
 
@@ -824,7 +828,8 @@ module GraphQL
         if new_mutation_object
           @mutation_object = new_mutation_object
         else
-          @mutation_object.respond_to?(:graphql_definition) ? @mutation_object.graphql_definition : @mutation_object
+          mutation_object = @mutation_object || find_inherited_value(:mutation)
+          mutation_object.respond_to?(:graphql_definition) ? mutation_object.graphql_definition : mutation_object
         end
       end
 
@@ -832,7 +837,8 @@ module GraphQL
         if new_subscription_object
           @subscription_object = new_subscription_object
         else
-          @subscription_object.respond_to?(:graphql_definition) ? @subscription_object.graphql_definition : @subscription_object
+          subscription_object = @subscription_object || find_inherited_value(:subscription)
+          subscription_object.respond_to?(:graphql_definition) ? subscription_object.graphql_definition : subscription_object
         end
       end
 
@@ -840,7 +846,7 @@ module GraphQL
         if new_introspection_namespace
           @introspection = new_introspection_namespace
         else
-          @introspection
+          @introspection || find_inherited_value(:introspection)
         end
       end
 
@@ -848,14 +854,14 @@ module GraphQL
         if new_encoder
           @cursor_encoder = new_encoder
         end
-        @cursor_encoder || Base64Encoder
+        @cursor_encoder || find_inherited_value(:cursor_encoder, Base64Encoder)
       end
 
       def default_max_page_size(new_default_max_page_size = nil)
         if new_default_max_page_size
           @default_max_page_size = new_default_max_page_size
         else
-          @default_max_page_size
+          @default_max_page_size || find_inherited_value(:default_max_page_size)
         end
       end
 
@@ -863,7 +869,7 @@ module GraphQL
         if new_query_execution_strategy
           @query_execution_strategy = new_query_execution_strategy
         else
-          @query_execution_strategy || self.default_execution_strategy
+          @query_execution_strategy || find_inherited_value(:query_execution_strategy, self.default_execution_strategy)
         end
       end
 
@@ -871,7 +877,7 @@ module GraphQL
         if new_mutation_execution_strategy
           @mutation_execution_strategy = new_mutation_execution_strategy
         else
-          @mutation_execution_strategy || self.default_execution_strategy
+          @mutation_execution_strategy || find_inherited_value(:mutation_execution_strategy, self.default_execution_strategy)
         end
       end
 
@@ -879,7 +885,7 @@ module GraphQL
         if new_subscription_execution_strategy
           @subscription_execution_strategy = new_subscription_execution_strategy
         else
-          @subscription_execution_strategy || self.default_execution_strategy
+          @subscription_execution_strategy || find_inherited_value(:subscription_execution_strategy, self.default_execution_strategy)
         end
       end
 
@@ -887,7 +893,7 @@ module GraphQL
         if max_complexity
           @max_complexity = max_complexity
         else
-          @max_complexity
+          @max_complexity || find_inherited_value(:max_complexity)
         end
       end
 
@@ -895,7 +901,7 @@ module GraphQL
         if !new_error_bubbling.nil?
           @error_bubbling = new_error_bubbling
         else
-          @error_bubbling
+          @error_bubbling.nil? ? find_inherited_value(:error_bubbling) : @error_bubbling
         end
       end
 
@@ -903,7 +909,7 @@ module GraphQL
         if new_max_depth
           @max_depth = new_max_depth
         else
-          @max_depth
+          @max_depth || find_inherited_value(:max_depth)
         end
       end
 
@@ -911,12 +917,20 @@ module GraphQL
         @disable_introspection_entry_points = true
       end
 
+      def disable_introspection_entry_points?
+        if instance_variable_defined?(:@disable_introspection_entry_points)
+          @disable_introspection_entry_points
+        else
+          find_inherited_value(:disable_introspection_entry_points?, false)
+        end
+      end
+
       def orphan_types(*new_orphan_types)
         if new_orphan_types.any?
-          @orphan_types = new_orphan_types.flatten
-        else
-          @orphan_types || []
+          own_orphan_types.concat(new_orphan_types.flatten)
         end
+
+        find_inherited_value(:orphan_types, EMPTY_ARRAY) + own_orphan_types
       end
 
       def default_execution_strategy
@@ -931,15 +945,18 @@ module GraphQL
         if new_context_class
           @context_class = new_context_class
         else
-          @context_class || GraphQL::Query::Context
+          @context_class || find_inherited_value(:context_class, GraphQL::Query::Context)
         end
       end
 
       def rescue_from(*err_classes, &handler_block)
-        @rescues ||= {}
         err_classes.each do |err_class|
-          @rescues[err_class] = handler_block
+          own_rescues[err_class] = handler_block
         end
+      end
+
+      def rescues
+        find_inherited_value(:rescues, EMPTY_HASH).merge(own_rescues)
       end
 
       def resolve_type(type, obj, ctx)
@@ -1027,19 +1044,20 @@ module GraphQL
         else
           instrument_step
         end
-        defined_instrumenters[step] << instrumenter
+
+        own_instrumenters[step] << instrumenter
       end
 
       def directives(new_directives = nil)
         if new_directives
-          @directives = new_directives.reduce({}) { |m, d| m[d.graphql_name] = d; m }
+          new_directives.each {|d| directive(d) }
         end
 
-        @directives ||= default_directives
+        find_inherited_value(:directives, default_directives).merge(own_directives)
       end
 
       def directive(new_directive)
-        directives[new_directive.graphql_name] = new_directive
+        own_directives[new_directive.graphql_name] = new_directive
       end
 
       def default_directives
@@ -1051,26 +1069,38 @@ module GraphQL
       end
 
       def tracer(new_tracer)
-        defined_tracers << new_tracer
+        own_tracers << new_tracer
+      end
+
+      def tracers
+        find_inherited_value(:tracers, EMPTY_ARRAY) + own_tracers
       end
 
       def query_analyzer(new_analyzer)
         if new_analyzer == GraphQL::Authorization::Analyzer
           warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
         end
-        defined_query_analyzers << new_analyzer
+        own_query_analyzers << new_analyzer
+      end
+
+      def query_analyzers
+        find_inherited_value(:query_analyzers, EMPTY_ARRAY) + own_query_analyzers
       end
 
       def middleware(new_middleware = nil)
         if new_middleware
-          defined_middleware << new_middleware
+          own_middleware << new_middleware
         else
           graphql_definition.middleware
         end
       end
 
       def multiplex_analyzer(new_analyzer)
-        defined_multiplex_analyzers << new_analyzer
+        own_multiplex_analyzers << new_analyzer
+      end
+
+      def multiplex_analyzers
+        find_inherited_value(:multiplex_analyzers, EMPTY_ARRAY) + own_multiplex_analyzers
       end
 
       private
@@ -1079,24 +1109,51 @@ module GraphQL
         @lazy_classes ||= {}
       end
 
-      def defined_instrumenters
-        @defined_instrumenters ||= Hash.new { |h,k| h[k] = [] }
+      def own_plugins
+        @own_plugins ||= []
       end
 
-      def defined_tracers
-        @defined_tracers ||= []
+      def own_rescues
+        @own_rescues ||= {}
       end
 
-      def defined_query_analyzers
+      def own_orphan_types
+        @own_orphan_types ||= []
+      end
+
+      def own_directives
+        @own_directives ||= {}
+      end
+
+      def all_instrumenters
+        inherited_instrumenters = find_inherited_value(:all_instrumenters) || Hash.new { |h,k| h[k] = [] }
+        inherited_instrumenters.merge(own_instrumenters) do |_step, inherited, own|
+          inherited + own
+        end
+      end
+
+      def own_instrumenters
+        @own_instrumenters ||= Hash.new { |h,k| h[k] = [] }
+      end
+
+      def own_tracers
+        @own_tracers ||= []
+      end
+
+      def own_query_analyzers
         @defined_query_analyzers ||= []
       end
 
-      def defined_middleware
-        @defined_middleware ||= []
+      def all_middleware
+        find_inherited_value(:all_middleware, EMPTY_ARRAY) + own_middleware
       end
 
-      def defined_multiplex_analyzers
-        @defined_multiplex_analyzers ||= []
+      def own_middleware
+        @own_middleware ||= []
+      end
+
+      def own_multiplex_analyzers
+        @own_multiplex_analyzers ||= []
       end
 
       # Given this schema member, find the class-based definition object

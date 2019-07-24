@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.10.7 (22 Jul 2019)
+
+### Bug Fix
+
+- Support multiple subscriptions in one document
+
 ## 1.10.6 (27 Jun 2019)
 
 ### New Features

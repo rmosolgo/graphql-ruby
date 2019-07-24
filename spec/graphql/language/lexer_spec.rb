@@ -79,6 +79,12 @@ describe GraphQL::Language::Lexer do
       assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize(File.read(error_filename)).first.name
     end
 
+    it "rejects unicode that's well-formed but results in invalidly-encoded strings" do
+      # when the string here gets tokenized into an actual `:STRING`, it results in `valid_encoding?` being false for
+      # the ruby string so application code usually blows up trying to manipulate it
+      assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\ud83c\\udf2c"').first.name
+    end
+
     it "clears the previous_token between runs" do
       tok_2 = subject.tokenize(query_string)
       assert_nil tok_2[0].prev_token
