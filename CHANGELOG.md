@@ -8,6 +8,23 @@
 
 ### Bug fixes
 
+## 1.9.8 (24 July 2019)
+
+### New features
+
+- Schema classes pass their configuration to subclasses #2384
+- Improve memory consumption of lexer and complexity validator #2389
+- The `install` generator creates a BaseArgument #2379
+- When a field name conflicts with a built-in method name, give a warning #2376
+
+### Bug fixes
+
+- When a resolver argument uses `loads:`, the argument definition will preserve the type in `.loads` #2365
+- When an required argument is hidden, it won't add a validation error #2393
+- Fix handling of invalid UTF-8 #2372, #2377
+- Empty block strings are parsed correctly #2381
+- For resolvers, only authorize arguments once #2378
+
 ## 1.9.7 (25 June 2019)
 
 ### Breaking changes
