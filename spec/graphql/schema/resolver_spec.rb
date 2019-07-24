@@ -563,6 +563,11 @@ describe GraphQL::Schema::Resolver do
       refute res.key?("errors"), "#{description}: silent auth failure (no top-level error)"
     end
 
+    it "keeps track of the `loads:` option" do
+      arg = ResolverTest::MutationWithNullableLoadsArgument.arguments["labelId"]
+      assert_equal ResolverTest::HasValue, arg.loads
+    end
+
     describe "ready?" do
       it "can raise errors" do
         res = exec_query("{ int: prepResolver5(int: 5) }")

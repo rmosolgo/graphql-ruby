@@ -13,7 +13,10 @@ module GraphQL
           cls.include(ArgumentObjectLoader)
         end
 
-        def argument_with_loads(*args, **kwargs)
+        # @see {GraphQL::Schema::Argument#initialize} for parameters
+        # @return [GraphQL::Schema::Argument] An instance of {arguments_class}, created from `*args`
+        def argument(*args, **kwargs, &block)
+          kwargs[:owner] = self
           loads = kwargs[:loads]
           if loads
             name = args[0]
@@ -32,14 +35,6 @@ module GraphQL
 
             kwargs[:as] ||= inferred_arg_name
           end
-
-          return [*args, **kwargs]
-        end
-
-        # @see {GraphQL::Schema::Argument#initialize} for parameters
-        # @return [GraphQL::Schema::Argument] An instance of {arguments_class}, created from `*args`
-        def argument(*args, **kwargs, &block)
-          kwargs[:owner] = self
           arg_defn = self.argument_class.new(*args, **kwargs, &block)
           add_argument(arg_defn)
         end
