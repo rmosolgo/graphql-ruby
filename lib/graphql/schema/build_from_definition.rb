@@ -277,6 +277,7 @@ module GraphQL
               resolve: ->(obj, args, ctx) { default_resolve.call(field.graphql_definition, obj, args, ctx) },
               deprecation_reason: build_deprecation_reason(field_definition.directives),
               ast_node: field_definition,
+              method_conflict_warning: false,
               camelize: false,
             ) do
               builder.build_arguments(self, field_definition.arguments, type_resolver)
