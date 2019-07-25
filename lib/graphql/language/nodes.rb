@@ -73,7 +73,11 @@ module GraphQL
         end
 
         def to_query_string(printer: GraphQL::Language::Printer.new)
-          @query_string ||= printer.print(self)
+          if printer.is_a?(GraphQL::Language::Printer)
+            @query_string ||= printer.print(self)
+          else
+            printer.print(self)
+          end
         end
 
         # This creates a copy of `self`, with `new_options` applied.
@@ -83,7 +87,9 @@ module GraphQL
           copied_self = dup
           new_options.each do |key, value|
             copied_self.instance_variable_set(:"@#{key}", value)
-            copied_self.instance_variable_set(:@query_string, nil)
+            if copied_self.instance_variable_defined?(:@query_string)
+              copied_self.instance_variable_set(:@query_string, nil)
+            end
           end
           copied_self
         end
