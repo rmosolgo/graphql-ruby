@@ -54,8 +54,8 @@ module GraphQL
             nodes: node,
             path: path,
             fragment_name: name.empty? ? "unknown" : name,
-            type: child_type.name,
-            parent: parent_type.name
+            type: child_type.graphql_name,
+            parent: parent_type.graphql_name
           ))
         end
       end

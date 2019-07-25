@@ -42,6 +42,9 @@ module GraphQL
             arg_graphql = arg_defn.to_graphql
             defn.arguments[arg_graphql.name] = arg_graphql
           end
+          # Make a reference to a classic-style Arguments class
+          defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(defn)
+
           defn
         end
 

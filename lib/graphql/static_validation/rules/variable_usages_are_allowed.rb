@@ -87,7 +87,7 @@ module GraphQL
           "#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_type_signature} / #{arg_defn.type.to_type_signature})",
           nodes: arg_node,
           name: ast_var.name,
-          type: var_type.to_s,
+          type: var_type.to_type_signature,
           argument: arg_node.name,
           error: error_message
         ))

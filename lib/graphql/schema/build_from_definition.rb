@@ -144,7 +144,7 @@ module GraphQL
           return unless deprecated_directive
 
           reason = deprecated_directive.arguments.find{ |a| a.name == 'reason' }
-          return GraphQL::Directive::DEFAULT_DEPRECATION_REASON unless reason
+          return GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON unless reason
 
           reason.value
         end

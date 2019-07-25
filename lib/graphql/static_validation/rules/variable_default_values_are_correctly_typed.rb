@@ -32,7 +32,7 @@ module GraphQL
                   error_message,
                   nodes: node,
                   name: node.name,
-                  type: type.to_s,
+                  type: type.to_type_signature,
                   error_type: VariableDefaultValuesAreCorrectlyTypedError::VIOLATIONS[:INVALID_TYPE]
                 ))
               end

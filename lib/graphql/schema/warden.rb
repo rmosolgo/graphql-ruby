@@ -159,7 +159,10 @@ module GraphQL
       end
 
       def root_type?(type_defn)
-        @schema.root_types.include?(type_defn)
+        @schema.root_types.include?(type_defn) ||
+          @schema.query == type_defn ||
+          @schema.mutation == type_defn ||
+          @schema.subscription == type_defn
       end
 
       def referenced?(type_defn)

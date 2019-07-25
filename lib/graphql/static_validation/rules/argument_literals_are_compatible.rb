@@ -11,7 +11,7 @@ module GraphQL
             nil
           else
             arg_ret_type = arg_defn.type.unwrap
-            if !arg_ret_type.is_a?(GraphQL::InputObjectType)
+            if !arg_ret_type.kind.input_object?
               nil
             else
               arg_ret_type
@@ -88,7 +88,7 @@ module GraphQL
         elsif parent.is_a?(GraphQL::Language::Nodes::InputObject)
           type_defn.name
         else
-          parent.name
+          parent.graphql_name
         end
       end
 

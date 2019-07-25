@@ -81,7 +81,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
 
     it "adds an error" do
       assert_equal 3, errors.length
-      assert_equal "Argument 'id' on Field 'cheese' has an invalid value. Expected type 'Int!'.", errors[0]["message"]
+      assert_equal "Argument 'id' on Field 'cheese' has an invalid value ({blah: $id}). Expected type 'Int!'.", errors[0]["message"]
     end
   end
 

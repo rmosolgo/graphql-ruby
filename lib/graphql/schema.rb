@@ -35,6 +35,7 @@ require "graphql/schema/scalar"
 require "graphql/schema/object"
 require "graphql/schema/union"
 require "graphql/schema/directive"
+require "graphql/schema/directive/deprecated"
 require "graphql/schema/directive/include"
 require "graphql/schema/directive/skip"
 require "graphql/schema/directive/feature"
@@ -87,7 +88,7 @@ module GraphQL
       :default_mask,
       :cursor_encoder,
       disable_introspection_entry_points: ->(schema) { schema.disable_introspection_entry_points = true },
-      directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
+      directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.graphql_name] = d; m } },
       directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
         if type == :field && after_built_ins
@@ -1116,7 +1117,7 @@ module GraphQL
 
       def directives(new_directives = nil)
         if new_directives
-          @directives = new_directives.reduce({}) { |m, d| m[d.name] = d; m }
+          @directives = new_directives.reduce({}) { |m, d| m[d.graphql_name] = d; m }
         end
 
         @directives ||= default_directives
@@ -1128,9 +1129,9 @@ module GraphQL
 
       def default_directives
         {
-          "include" => GraphQL::Directive::IncludeDirective,
-          "skip" => GraphQL::Directive::SkipDirective,
-          "deprecated" => GraphQL::Directive::DeprecatedDirective,
+          "include" => GraphQL::Schema::Directive::Include,
+          "skip" => GraphQL::Schema::Directive::Skip,
+          "deprecated" => GraphQL::Schema::Directive::Deprecated,
         }
       end
 

@@ -20,6 +20,8 @@ module GraphQL
           ast_inner_type = ast_node.of_type
           inner_type = build_type(types, ast_inner_type)
           wrap_type(inner_type, :to_list_type)
+        else
+          raise "Invariant: unexpected type from ast: #{ast_node.inspect}"
         end
       end
 

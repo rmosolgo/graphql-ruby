@@ -50,7 +50,7 @@ module GraphQL
           parent.alias || parent.name
         when GraphQL::Language::Nodes::InputObject
           type_defn.graphql_name
-        when GraphQL::Language::Nodes::Argument
+        when GraphQL::Language::Nodes::Argument, GraphQL::Language::Nodes::Directive
           parent.name
         else
           raise "Invariant: Unexpected parent #{parent.inspect} (#{parent.class})"

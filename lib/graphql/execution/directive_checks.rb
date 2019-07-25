@@ -17,12 +17,13 @@ module GraphQL
           directive_defn = query.schema.directives[name]
           case name
           when SKIP
-            args = query.arguments_for(directive_ast_node, directive_defn)
+            # TODO This is hard -- we need normalized arguments _now_, but we don't know if it's interpreter or not.
+            args = query.arguments_for(directive_ast_node, directive_defn.graphql_definition)
             if args['if'] == true
               return false
             end
           when INCLUDE
-            args = query.arguments_for(directive_ast_node, directive_defn)
+            args = query.arguments_for(directive_ast_node, directive_defn.graphql_definition)
             if args['if'] == false
               return false
             end
