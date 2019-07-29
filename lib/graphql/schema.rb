@@ -94,9 +94,9 @@ module GraphQL
       :default_mask,
       :cursor_encoder,
       # If these are given as classes, normalize them. Accept `nil` when building from string.
-      query: -> (schema, t) { schema.query = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
-      mutation: -> (schema, t) { schema.mutation = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
-      subscription: -> (schema, t) { schema.subscription = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
+      query: ->(schema, t) { schema.query = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
+      mutation: ->(schema, t) { schema.mutation = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
+      subscription: ->(schema, t) { schema.subscription = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
       disable_introspection_entry_points: ->(schema) { schema.disable_introspection_entry_points = true },
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
       directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
