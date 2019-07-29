@@ -46,7 +46,7 @@ module GraphQL
         def validate_input(value, ctx)
           result = Query::InputValidationResult.new
           if !value.nil? && coerce_input(value, ctx).nil?
-            result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{name}")
+            result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{graphql_name}")
           end
           result
         end

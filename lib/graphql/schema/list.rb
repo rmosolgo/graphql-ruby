@@ -31,12 +31,20 @@ module GraphQL
         nil
       end
 
+      def coerce_input(value, ctx)
+        if value.nil?
+          nil
+        else
+          Array(value).map { |item| of_type.coerce_input(item, ctx) }
+        end
+      end
+
       def validate_input(value, ctx)
 
         result = GraphQL::Query::InputValidationResult.new
 
         if !value.nil?
-          ensure_array(value).each_with_index do |item, index|
+          Array(value).each_with_index do |item, index|
             if !item.nil?
               item_result = of_type.validate_input(item, ctx)
               if !item_result.valid?
@@ -47,12 +55,6 @@ module GraphQL
         end
 
         result
-      end
-
-      private
-
-      def ensure_array(value)
-        value.is_a?(Array) ? value : [value]
       end
     end
   end

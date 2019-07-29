@@ -79,7 +79,6 @@ module GraphQL
           if !include_deprecated
             fields = fields.select {|f| !f.deprecation_reason }
           end
-          p [@object, fields]
           fields.sort_by(&:name)
         end
       end

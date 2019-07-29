@@ -136,8 +136,12 @@ module GraphQL
 
 
         def validate_input(input, ctx)
-          warden = ctx.warden
           result = GraphQL::Query::InputValidationResult.new
+          # This is fine -- non-null type would catch it.
+          if input.nil?
+            return result
+          end
+          warden = ctx.warden
 
           if input.is_a?(Array)
             result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
@@ -178,6 +182,26 @@ module GraphQL
           end
 
           result
+        end
+
+        def coerce_input(value, ctx)
+          input_values = {}
+
+          arguments.each do |name, argument_defn|
+            arg_key = argument_defn.keyword
+            field_value = value[name]
+
+            if value.key?(name)
+              coerced_value = argument_defn.type.coerce_input(field_value, ctx)
+              # TODO should this `.prepare` somehow?
+              input_values[arg_key] = coerced_value
+            elsif argument_defn.default_value?
+              coerced_value = argument_defn.type.coerce_input(argument_defn.default_value, ctx)
+              input_values[arg_key] = coerced_value
+            end
+          end
+
+          input_values
         end
       end
     end

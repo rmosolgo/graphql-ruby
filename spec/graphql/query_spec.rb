@@ -382,7 +382,12 @@ describe GraphQL::Query do
     |}
 
     it "has a default value" do
-      default_source = schema.query.fields["searchDairy"].arguments["product"].default_value[0]["source"]
+      default_value = schema.query.fields["searchDairy"].arguments["product"].default_value
+      default_source = if TESTING_INTERPRETER
+        default_value[0][:source]
+      else
+        default_value[0]["source"]
+      end
       assert_equal("SHEEP", default_source)
     end
 
@@ -433,7 +438,7 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable $cheeseId of type Int! was provided invalid value",
               "locations"=>[{ "line" => 2, "column" => 23 }],
               "extensions" => {
                 "value" => "2",
@@ -453,7 +458,7 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable $cheeseId of type Int! was provided invalid value",
               "locations" => [{"line" => 2, "column" => 23}],
               "extensions" => {
                 "value" => nil,
@@ -473,7 +478,7 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable $cheeseId of type Int! was provided invalid value",
               "locations" => [{"line" => 2, "column" => 23}],
               "extensions" => {
                 "value" => nil,
@@ -727,25 +732,27 @@ describe GraphQL::Query do
     end
   end
 
-  describe '#internal_representation' do
-    it "includes all definition roots" do
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.operation_definitions["getFlavor"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["cheeseFields"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["edibleFields"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["milkFields"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["dairyFields"]
-    end
-  end
-
-  describe '#irep_selection' do
-    it "returns the irep for the selected operation" do
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.irep_selection
-      assert_equal 'getFlavor', query.irep_selection.name
+  if !TESTING_INTERPRETER
+    describe '#internal_representation' do
+      it "includes all definition roots" do
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.operation_definitions["getFlavor"]
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["cheeseFields"]
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["edibleFields"]
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["milkFields"]
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["dairyFields"]
+      end
     end
 
-    it "returns nil when there is no selected operation" do
-      query = GraphQL::Query.new(schema, '# Only a comment')
-      assert_nil query.irep_selection
+    describe '#irep_selection' do
+      it "returns the irep for the selected operation" do
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.irep_selection
+        assert_equal 'getFlavor', query.irep_selection.name
+      end
+
+      it "returns nil when there is no selected operation" do
+        query = GraphQL::Query.new(schema, '# Only a comment')
+        assert_nil query.irep_selection
+      end
     end
   end
 

@@ -96,6 +96,20 @@ module GraphQL
           end
         end
 
+        def coerce_input(value_name, ctx)
+          all_values = ctx.warden ? ctx.warden.enum_values(self) : values.each_value
+
+          if v = all_values.find { |val| val.graphql_name == value_name }
+            v.value
+          elsif v = all_values.find { |val| val.value == value_name }
+            # this is for matching default values, which are "inputs", but they're
+            # the Ruby value, not the GraphQL string.
+            v.value
+          else
+            nil
+          end
+        end
+
         private
 
         def own_values

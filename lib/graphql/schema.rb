@@ -1102,6 +1102,16 @@ module GraphQL
         DefaultTypeError.call(type_err, ctx)
       end
 
+      # A function to call when {#execute} receives an invalid query string
+      #
+      # The default is to add the error to `context.errors`
+      # @param err [GraphQL::ParseError] The error encountered during parsing
+      # @param ctx [GraphQL::Query::Context] The context for the query where the error occurred
+      # @return void
+      def parse_error(parse_err, ctx)
+        ctx.errors.push(parse_err)
+      end
+
       def lazy_resolve(lazy_class, value_method)
         lazy_classes[lazy_class] = value_method
       end
