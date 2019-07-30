@@ -254,18 +254,6 @@ GraphQL::Relay::BaseConnection.register_connection_implementation(Set, SetConnec
 
 At runtime, `GraphQL::Relay` will use `SetConnection` to expose `Set`s.
 
-### Creating connection fields by hand
-
-If you need lower-level access to Connection fields, you can create them programmatically. Given a `GraphQL::Field` which returns a collection of items, you can turn it into a connection field with `ConnectionField.create`.
-
-For example, to wrap a field with a connection field:
-
-```ruby
-field = GraphQL::Field.new
-# ... define the field
-connection_field = GraphQL::Relay::ConnectionField.create(field)
-```
-
 ## Cursors
 
 By default, cursors are encoded in base64 to make them opaque to a human client. You can specify a custom encoder with `Schema#cursor_encoder`. The value should be an object which responds to `.encode(plain_text, nonce:)` and `.decode(encoded_text, nonce: false)`.
