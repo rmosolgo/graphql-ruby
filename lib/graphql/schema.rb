@@ -705,7 +705,7 @@ module GraphQL
       # Eventually, the methods will be moved into this class, removing the need for the singleton.
       def_delegators :graphql_definition,
         # Schema structure
-        :as_json, :to_json, :to_document, :to_definition,
+        :as_json, :to_json, :to_document, :to_definition, :ast_node,
         # Execution
         :execute, :multiplex,
         :static_validator, :introspection_system,
