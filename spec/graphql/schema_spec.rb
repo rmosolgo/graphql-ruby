@@ -4,13 +4,13 @@ require "spec_helper"
 describe GraphQL::Schema do
   describe "inheritance" do
     class DummyFeature1 < GraphQL::Schema::Directive::Feature
-      
+
     end
 
     class DummyFeature2 < GraphQL::Schema::Directive::Feature
 
     end
-    
+
     let(:base_schema) do
       Class.new(GraphQL::Schema) do
         query GraphQL::Schema::Object
@@ -130,6 +130,40 @@ describe GraphQL::Schema do
       assert_equal [GraphQL::ExecutionError, StandardError], schema.rescues.keys.sort_by(&:name)
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Tracing::NewRelicTracing], schema.tracers
       assert_equal 3, schema.middleware.steps.size
+    end
+  end
+
+  describe "when mixing define and class-based" do
+    module MixedSchema
+      class Query < GraphQL::Schema::Object
+        field :int, Int, null: false
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :int, Int, null: false
+      end
+
+      class Subscription < GraphQL::Schema::Object
+        field :int, Int, null: false
+      end
+
+      Schema = GraphQL::Schema.define do
+        query(Query)
+        mutation(Mutation)
+        subscription(Subscription)
+      end
+    end
+
+    it "includes root types properly" do
+      res = MixedSchema::Schema.as_json
+      assert_equal "Query", res["data"]["__schema"]["queryType"]["name"]
+      assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Query"
+
+      assert_equal "Mutation", res["data"]["__schema"]["mutationType"]["name"]
+      assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Mutation"
+
+      assert_equal "Subscription", res["data"]["__schema"]["subscriptionType"]["name"]
+      assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Subscription"
     end
   end
 end
