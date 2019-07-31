@@ -30,7 +30,6 @@ describe GraphQL::Query do
     }
   |}
   let(:operation_name) { nil }
-  let(:max_depth) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
   let(:schema) { Dummy::Schema }
   let(:document) { GraphQL.parse(query_string) }
@@ -39,8 +38,7 @@ describe GraphQL::Query do
     schema,
     query_string,
     variables: query_variables,
-    operation_name: operation_name,
-    max_depth: max_depth,
+    operation_name: operation_name
   )}
   let(:result) { query.result }
 
@@ -71,8 +69,7 @@ describe GraphQL::Query do
       res = GraphQL::Query.new(
         schema,
         variables: query_variables,
-        operation_name: operation_name,
-        max_depth: max_depth,
+        operation_name: operation_name
       ).result
       assert_equal 1, res["errors"].length
       assert_equal "No query string was present", res["errors"][0]["message"]
@@ -82,8 +79,7 @@ describe GraphQL::Query do
       query = GraphQL::Query.new(
         schema,
         variables: query_variables,
-        operation_name: operation_name,
-        max_depth: max_depth,
+        operation_name: operation_name
       )
       query.query_string = '{ __type(name: """Cheese""") { name } }'
       assert_equal "Cheese", query.result["data"] ["__type"]["name"]
@@ -174,8 +170,7 @@ describe GraphQL::Query do
       schema,
       document: document,
       variables: query_variables,
-      operation_name: operation_name,
-      max_depth: max_depth,
+      operation_name: operation_name
     )}
 
     it "runs the query using the already parsed document" do
@@ -560,7 +555,15 @@ describe GraphQL::Query do
     end
 
     describe "overriding max_depth" do
-      let(:max_depth) { 12 }
+      let(:query) {
+        GraphQL::Query.new(
+          schema,
+          query_string,
+          variables: query_variables,
+          operation_name: operation_name,
+          max_depth: 12
+        )
+      }
 
       it "overrides the schema's max_depth" do
         assert result["data"].key?("cheese")
