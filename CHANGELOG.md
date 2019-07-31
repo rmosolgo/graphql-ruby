@@ -8,6 +8,17 @@
 
 ### Bug fixes
 
+## 1.9.9 (30 July 2019)
+
+### New features
+
+- Memoize generated strings in `.to_query_string` #2400
+- Memoize generated strings in platform tracing #2401
+
+### Bug fixes
+
+- Support class-based subscription type in `.define`-based schema #2403
+
 ## 1.9.8 (24 July 2019)
 
 ### New features

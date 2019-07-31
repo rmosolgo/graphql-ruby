@@ -86,7 +86,6 @@ module GraphQL
     extend GraphQL::Schema::FindInheritedValue
 
     accepts_definitions \
-      :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
@@ -95,6 +94,10 @@ module GraphQL
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
+      # If these are given as classes, normalize them. Accept `nil` when building from string.
+      query: ->(schema, t) { schema.query = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
+      mutation: ->(schema, t) { schema.mutation = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
+      subscription: ->(schema, t) { schema.subscription = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
       disable_introspection_entry_points: ->(schema) { schema.disable_introspection_entry_points = true },
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
       directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
@@ -709,7 +712,7 @@ module GraphQL
       # Eventually, the methods will be moved into this class, removing the need for the singleton.
       def_delegators :graphql_definition,
         # Schema structure
-        :as_json, :to_json, :to_document, :to_definition,
+        :as_json, :to_json, :to_document, :to_definition, :ast_node,
         # Execution
         :execute, :multiplex,
         :static_validator, :introspection_system,
