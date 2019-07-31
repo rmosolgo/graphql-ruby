@@ -36,9 +36,17 @@ describe GraphQL::Analysis::MaxQueryDepth do
     end
   end
 
+  describe "when the query specifies a nil max_depth" do
+    let(:result) { schema.execute(query_string, max_depth: nil) }
+
+    it "obeys that max_depth" do
+      assert_nil result["errors"]
+    end
+  end
+
   describe "When the query is not deeper than max_depth" do
     before do
-      schema.max_depth = 100
+      schema.max_depth(100)
     end
 
     it "doesn't add an error" do
@@ -48,7 +56,8 @@ describe GraphQL::Analysis::MaxQueryDepth do
 
   describe "when the max depth isn't set" do
     before do
-      schema.max_depth = nil
+      # Yuck - Can't override GraphQL::Schema.max_depth to return nil if it has already been set
+      schema.define_singleton_method(:max_depth) { |*| nil }
     end
 
     it "doesn't add an error message" do
@@ -58,7 +67,7 @@ describe GraphQL::Analysis::MaxQueryDepth do
 
   describe "when a fragment exceeds max depth" do
     before do
-      schema.max_depth = 4
+      schema.max_depth(4)
     end
 
     let(:query_string) { "
