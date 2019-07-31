@@ -90,7 +90,7 @@ module GraphQL
           all_values = warden ? warden.enum_values(self) : values.each_value
           enum_value = all_values.find { |val| val.value == value }
           if enum_value
-            enum_value.name
+            enum_value.graphql_name
           else
             raise(GraphQL::EnumType::UnresolvedValueError, "Can't resolve enum #{graphql_name} for #{value.inspect}")
           end
