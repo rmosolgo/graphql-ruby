@@ -480,8 +480,7 @@ module Dummy
     mutation DairyAppMutation
     subscription Subscription
     max_depth 5
-    # TODO why is `.graphql_definition` required here?
-    orphan_types Honey, Beverage.graphql_definition
+    orphan_types Honey, Beverage
 
     rescue_from(NoSuchDairyError) { |err| err.message  }
 
