@@ -61,6 +61,7 @@ module GraphQL
         def initialize_copy(other)
           @children = nil
           @scalars = nil
+          @query_string = nil
         end
 
         # @return [Symbol] the method to call on {Language::Visitor} for this node
@@ -87,9 +88,6 @@ module GraphQL
           copied_self = dup
           new_options.each do |key, value|
             copied_self.instance_variable_set(:"@#{key}", value)
-            if copied_self.instance_variable_defined?(:@query_string)
-              copied_self.instance_variable_set(:@query_string, nil)
-            end
           end
           copied_self
         end
