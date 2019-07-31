@@ -27,8 +27,12 @@ module GraphQL
           elsif @default_directive.nil?
             @default_directive = (superclass.respond_to?(:default_directive) ? superclass.default_directive : false)
           else
-            @default_directive
+            !!@default_directive
           end
+        end
+
+        def default_directive?
+          default_directive
         end
 
         def to_graphql

@@ -187,12 +187,12 @@ module GraphQL
           return GraphQL::Language::Nodes::NullValue.new(name: "null")
         end
 
-        case type
-        when GraphQL::ScalarType
+        case type.kind.name
+        when "SCALAR"
           type.coerce_isolated_result(default_value)
-        when EnumType
+        when "ENUM"
           GraphQL::Language::Nodes::Enum.new(name: type.coerce_isolated_result(default_value))
-        when InputObjectType
+        when "INPUT_OBJECT"
           GraphQL::Language::Nodes::InputObject.new(
             arguments: default_value.to_h.map do |arg_name, arg_value|
               arg_type = type.input_fields.fetch(arg_name.to_s).type
@@ -202,9 +202,9 @@ module GraphQL
               )
             end
           )
-        when NonNullType
+        when "NON_NULL"
           build_default_value(default_value, type.of_type)
-        when ListType
+        when "LIST"
           default_value.to_a.map { |v| build_default_value(v, type.of_type) }
         else
           raise NotImplementedError, "Unexpected default value type #{type.inspect}"
