@@ -223,14 +223,14 @@ module GraphQL
             subselections_on_type = selections_on_type
             if (t = ast_selection.type)
               # Assuming this is valid, that `t` will be found.
-              on_type = @query.schema.types[t.name].metadata[:type_class]
+              on_type = @query.schema.types[t.name].type_class
               subselections_on_type = subselections_by_type[on_type] ||= {}
             end
             find_selections(subselections_by_type, subselections_on_type, on_type, ast_selection.selections, arguments)
           when GraphQL::Language::Nodes::FragmentSpread
             frag_defn = @query.fragments[ast_selection.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{ast_selection.name} (found: #{@query.fragments.keys})")
             # Again, assuming a valid AST
-            on_type = @query.schema.types[frag_defn.type.name].metadata[:type_class]
+            on_type = @query.schema.types[frag_defn.type.name].type_class
             subselections_on_type = subselections_by_type[on_type] ||= {}
             find_selections(subselections_by_type, subselections_on_type, on_type, frag_defn.selections, arguments)
           else
@@ -366,10 +366,10 @@ module GraphQL
 
         def get_field(schema, owner_type, field_name)
           field_defn = owner_type.get_field(field_name)
-          field_defn ||= if owner_type == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
-            entry_point_field.metadata[:type_class]
+          field_defn ||= if owner_type == schema.query.type_class && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
+            entry_point_field.type_class
           elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
-            dynamic_field.metadata[:type_class]
+            dynamic_field.type_class
           else
             nil
           end
