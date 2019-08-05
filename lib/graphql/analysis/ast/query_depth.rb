@@ -5,7 +5,7 @@ module GraphQL
     #
     # @example Logging the depth of a query
     #   class LogQueryDepth < GraphQL::Analysis::QueryDepth
-    #     def on_analysis_end
+    #     def result
     #       log("GraphQL query depth: #{@max_depth}")
     #     end
     #   end
