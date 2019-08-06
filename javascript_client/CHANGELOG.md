@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.6.6 (6 Aug 2019)
+
+- Add `--relay-persisted-output` for working with Relay Compiler's new `--persist-output` option #2415
+
 ## 1.6.5 (17 July 2019)
 
 - Update dependencies #2335
