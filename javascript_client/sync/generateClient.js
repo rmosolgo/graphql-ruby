@@ -39,7 +39,7 @@ function generateClient(options) {
  * @param {String} options.client - the Client ID that these operations belong to
  * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
  * @param {Boolean} options.verbose - If true, print debug output
- * @return {Array} Array of operations with name and alias
+ * @return {Object} An object whose `operations:` key is an array of operations with name and alias
 */
 function gatherOperations(options) {
   var graphqlGlob = options.path || "./"

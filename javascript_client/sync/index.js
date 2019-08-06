@@ -12,6 +12,7 @@ var fs = require("fs")
  *
  * @param {Object} options
  * @param {String} options.path - A glob to recursively search for `.graphql` files (Default is `./`)
+ * @param {String} options.relayPersistedOutput - A path to a `.json` file from `relay-compiler`'s  `--persist-output` option
  * @param {String} options.secret - HMAC-SHA256 key which must match the server secret (default is no encryption)
  * @param {String} options.url - Target URL for sending prepared queries
  * @param {String} options.mode - If `"file"`, treat each file separately. If `"project"`, concatenate all files and extract each operation. If `"relay"`, treat it as relay-compiler output
@@ -45,19 +46,39 @@ function sync(options) {
 
   var sendFunc = options.send || sendPayload
 
-  var payload = gatherOperations({
-    path: options.path,
-    hash: options.hash,
-    mode: options.mode,
-    addTypename: options.addTypename,
-    clientType: options.outfileType,
-    client: clientName,
-    verbose: verbose,
-  })
+  if (options.relayPersistedOutput) {
+    // relay-compiler has already generated an artifact for us
+    var payload = { operations: [] }
+    var relayOutputText = fs.readFileSync(options.relayPersistedOutput, "utf8")
+    var relayOutput = JSON.parse(relayOutputText)
+    var alias
+    var operationBody
+    for (var hash in relayOutput) {
+      operationBody = relayOutput[hash]
+      payload.operations.push({
+        body: operationBody,
+        alias: hash,
+      })
+    }
+  } else {
+    var payload = gatherOperations({
+      path: options.path,
+      hash: options.hash,
+      mode: options.mode,
+      addTypename: options.addTypename,
+      clientType: options.outfileType,
+      client: clientName,
+      verbose: verbose,
+    })
+  }
 
   var outfile
   if (options.outfile) {
     outfile = options.outfile
+  } else if (options.relayPersistedOutput) {
+    // relay-compiler has embedded IDs in its generated files,
+    // no need to generate an outfile.
+    outfile = false
   } else if (fs.existsSync("src")) {
     outfile = "src/OperationStoreClient.js"
   } else {
@@ -129,10 +150,13 @@ function sync(options) {
           }
         }
 
-        var generatedCode = generateClientCode(clientName, payload.operations, options.outfileType)
-        payload.generatedCode = generatedCode
-        logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
-        fs.writeFileSync(outfile, generatedCode, "utf8")
+        // Don't generate a new file when we're using relay-comipler's --persist-output
+        if (outfile) {
+          var generatedCode = generateClientCode(clientName, payload.operations, options.outfileType)
+          payload.generatedCode = generatedCode
+          logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
+          fs.writeFileSync(outfile, generatedCode, "utf8")
+        }
         logger.log(logger.green("✓ Done!"))
         resolve(payload)
         return
