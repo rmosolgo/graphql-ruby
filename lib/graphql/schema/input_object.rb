@@ -193,11 +193,12 @@ module GraphQL
 
             if value.key?(name)
               coerced_value = argument_defn.type.coerce_input(field_value, ctx)
-              # TODO should this `.prepare` somehow?
-              input_values[arg_key] = coerced_value
+              prepared_value = argument_defn.prepare_value(nil, coerced_value, context: ctx)
+              input_values[arg_key] = prepared_value
             elsif argument_defn.default_value?
               coerced_value = argument_defn.type.coerce_input(argument_defn.default_value, ctx)
-              input_values[arg_key] = coerced_value
+              prepared_value = argument_defn.prepare_value(nil, coerced_value, context: ctx)
+              input_values[arg_key] = prepared_value
             end
           end
 

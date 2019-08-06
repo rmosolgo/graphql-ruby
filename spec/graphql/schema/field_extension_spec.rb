@@ -89,6 +89,7 @@ describe GraphQL::Schema::FieldExtension do
       query(Query)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
     end
   end
@@ -122,7 +123,7 @@ describe GraphQL::Schema::FieldExtension do
       assert_equal 12, res["data"]["tripledByOption"]
     end
 
-    it "provides an empty hash as default options" do 
+    it "provides an empty hash as default options" do
       res = exec_query("{ square(input: 4) }")
       assert_equal 16, res["data"]["square"]
       res = exec_query("{ cube(input: 4) }")

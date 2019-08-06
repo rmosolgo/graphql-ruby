@@ -115,6 +115,7 @@ describe GraphQL::Schema::InputObject do
         mutation(Mutation)
         if TESTING_INTERPRETER
           use GraphQL::Execution::Interpreter
+          use GraphQL::Analysis::AST
         end
 
         def self.object_from_id(id, ctx)
@@ -199,6 +200,7 @@ describe GraphQL::Schema::InputObject do
         query(Query)
         if TESTING_INTERPRETER
           use GraphQL::Execution::Interpreter
+          use GraphQL::Analysis::AST
         end
 
         def self.object_from_id(id, ctx)

@@ -32,6 +32,7 @@ describe GraphQL::Tracing::NewRelicTracing do
 
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
     end
 
@@ -40,6 +41,7 @@ describe GraphQL::Tracing::NewRelicTracing do
       use(GraphQL::Tracing::NewRelicTracing, set_transaction_name: true)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
     end
 

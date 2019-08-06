@@ -110,7 +110,7 @@ module GraphQL
                   # This object was loaded successfully
                   # and resolved to the right type,
                   # now apply the `.authorized?` class method if there is one
-                  if (class_based_type = application_object_type.metadata[:type_class])
+                  if (class_based_type = application_object_type.type_class)
                     context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
                       if authed
                         application_object

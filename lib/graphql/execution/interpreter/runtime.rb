@@ -440,7 +440,7 @@ module GraphQL
             arg_defn = arg_defns[arg_name]
             # Need to distinguish between client-provided `nil`
             # and nothing-at-all
-            is_present, value = arg_to_value(graphql_object, arg_defn.type, arg_value)
+            is_present, value = arg_to_value(graphql_object, arg_defn.type, arg_value, already_arguments: false)
             if is_present
               # This doesn't apply to directives, which are legacy
               # Can remove this when Skip and Include use classes or something.
@@ -452,7 +452,7 @@ module GraphQL
           end
           arg_defns.each do |name, arg_defn|
             if arg_defn.default_value? && !kwarg_arguments.key?(arg_defn.keyword)
-              _is_present, value = arg_to_value(graphql_object, arg_defn.type, arg_defn.default_value)
+              _is_present, value = arg_to_value(graphql_object, arg_defn.type, arg_defn.default_value, already_arguments: false)
               kwarg_arguments[arg_defn.keyword] = value
             end
           end
@@ -463,33 +463,40 @@ module GraphQL
         # @param graphql_object [Object] The owner of the field whose argument this is
         # @param arg_type [Class, GraphQL::Schema::NonNull, GraphQL::Schema::List]
         # @param ast_value [GraphQL::Language::Nodes::VariableIdentifier, String, Integer, Float, Boolean]
+        # @param already_arguments [Boolean] if true, don't re-coerce these with `arguments(...)`
         # @return [Array(is_present, value)]
-        def arg_to_value(graphql_object, arg_type, ast_value)
+        def arg_to_value(graphql_object, arg_type, ast_value, already_arguments:)
           if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
             # If it's not here, it will get added later
             if query.variables.key?(ast_value.name)
-              return true, query.variables[ast_value.name]
+              variable_value = query.variables[ast_value.name]
+              arg_to_value(graphql_object, arg_type, variable_value, already_arguments: true)
             else
               return false, nil
             end
           elsif ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
             return true, nil
           elsif arg_type.is_a?(GraphQL::Schema::NonNull)
-            arg_to_value(graphql_object, arg_type.of_type, ast_value)
+            arg_to_value(graphql_object, arg_type.of_type, ast_value, already_arguments: already_arguments)
           elsif arg_type.is_a?(GraphQL::Schema::List)
             # Treat a single value like a list
             arg_value = Array(ast_value)
             list = []
             arg_value.map do |inner_v|
-              _present, value = arg_to_value(graphql_object, arg_type.of_type, inner_v)
+              _present, value = arg_to_value(graphql_object, arg_type.of_type, inner_v, already_arguments: already_arguments)
               list << value
             end
             return true, list
           elsif arg_type.is_a?(Class) && arg_type < GraphQL::Schema::InputObject
-            # For these, `prepare` is applied during `#initialize`.
-            # Pass `nil` so it will be skipped in `#arguments`.
-            # What a mess.
-            args = arguments(nil, arg_type, ast_value)
+            args = if already_arguments
+              # This came from a variable, already prepared
+              ast_value
+            else
+              # For these, `prepare` is applied during `#initialize`.
+              # Pass `nil` so it will be skipped in `#arguments`.
+              # What a mess.
+              arguments(nil, arg_type, ast_value)
+            end
             # We're not tracking defaults_used, but for our purposes
             # we compare the value to the default value.
             return true, arg_type.new(ruby_kwargs: args, context: context, defaults_used: nil)

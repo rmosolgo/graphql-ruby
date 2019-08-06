@@ -390,6 +390,7 @@ module StarTrek
 
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
     end
 
     def self.resolve_type(type, object, ctx)

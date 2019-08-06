@@ -42,6 +42,7 @@ describe GraphQL::Schema::Argument do
       query(Query)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
     end
   end

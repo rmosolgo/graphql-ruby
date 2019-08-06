@@ -8,6 +8,7 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
 
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
     end
 
     class BaseField < GraphQL::Schema::Field

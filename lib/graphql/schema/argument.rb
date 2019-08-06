@@ -109,13 +109,21 @@ module GraphQL
       # Apply the {prepare} configuration to `value`, using methods from `obj`.
       # Used by the runtime.
       # @api private
-      def prepare_value(obj, value)
+      def prepare_value(obj, value, context: nil)
         if @prepare.nil?
           value
         elsif @prepare.is_a?(String) || @prepare.is_a?(Symbol)
-          obj.public_send(@prepare, value)
+          if obj.nil?
+            # The problem here is, we _used to_ prepare while building variables.
+            # But now we don't have the runtime object there.
+            #
+            # This will have to be called later, when the runtime object _is_ available.
+            value
+          else
+            obj.public_send(@prepare, value)
+          end
         elsif @prepare.respond_to?(:call)
-          @prepare.call(value, obj.context)
+          @prepare.call(value, context || obj.context)
         else
           raise "Invalid prepare for #{@owner.name}.name: #{@prepare.inspect}"
         end
