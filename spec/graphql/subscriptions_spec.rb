@@ -148,6 +148,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     use InMemoryBackend::Subscriptions, extra: 123
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
     end
   end
 end

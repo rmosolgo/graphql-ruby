@@ -779,14 +779,12 @@ module GraphQL
 
         if plugins.any?
           schema_plugins = plugins
-          # TODO don't depend on .define
-          schema_defn = schema_defn.redefine do
-            schema_plugins.each do |plugin, options|
-              if options.any?
-                use(plugin, **options)
-              else
-                use(plugin)
-              end
+          definition_proxy = GraphQL::Define::DefinedObjectProxy.new(schema_defn)
+          schema_plugins.each do |plugin, options|
+            if options.any?
+              definition_proxy.use(plugin, **options)
+            else
+              definition_proxy.use(plugin)
             end
           end
         end
