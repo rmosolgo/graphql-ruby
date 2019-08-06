@@ -490,6 +490,8 @@ module GraphQL
       end
     end
 
+    alias :resolve_type_with_type :resolve_type
+
     # This is a compatibility hack so that instance-level and class-level
     # methods can get correctness checks without calling one another
     # @api private
@@ -1023,14 +1025,18 @@ module GraphQL
         end
       end
 
-      def resolve_type(type, obj, ctx)
+      def resolve_type_with_type(type, obj, ctx)
         if type.kind.object?
           type
         elsif type.respond_to?(:resolve_type)
           type.resolve_type(obj, ctx)
         else
-          raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
+          resolve_type(type, obj, ctx)
         end
+      end
+
+      def resolve_type(type, obj, ctx)
+        raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
       end
 
       def object_from_id(node_id, ctx)

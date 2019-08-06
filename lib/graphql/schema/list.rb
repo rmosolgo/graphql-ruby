@@ -31,6 +31,14 @@ module GraphQL
         nil
       end
 
+      def coerce_result(value, ctx)
+        if value.nil?
+          nil
+        else
+          value.map { |i| of_type.coerce_result(i, ctx) }
+        end
+      end
+
       def coerce_input(value, ctx)
         if value.nil?
           nil

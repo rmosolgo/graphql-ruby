@@ -51,6 +51,10 @@ module GraphQL
       def coerce_input(value, ctx)
         of_type.coerce_input(value, ctx)
       end
+
+      def coerce_result(value, ctx)
+        of_type.coerce_result(value, ctx)
+      end
     end
   end
 end

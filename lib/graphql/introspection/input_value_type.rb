@@ -18,8 +18,8 @@ module GraphQL
             'null'
           else
             coerced_default_value = @object.type.coerce_result(value, @context)
-            if @object.type.unwrap.is_a?(GraphQL::EnumType)
-              if @object.type.list? 
+            if @object.type.unwrap.kind.enum?
+              if coerced_default_value.is_a?(Array)
                 "[#{coerced_default_value.join(", ")}]"
               else
                 coerced_default_value
