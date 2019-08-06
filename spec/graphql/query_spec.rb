@@ -413,14 +413,6 @@ describe GraphQL::Query do
       }
     |}
 
-    describe "when they can be coerced" do
-      let(:query_variables) { {"cheeseId" => 2.0} }
-
-      it "coerces them on the way in" do
-        assert("Gouda", result["data"]["cheese"]["flavor"])
-      end
-    end
-
     describe "when they can't be coerced" do
       let(:query_variables) { {"cheeseId" => "2"} }
 

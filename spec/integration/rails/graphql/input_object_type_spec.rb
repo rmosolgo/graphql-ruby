@@ -336,21 +336,6 @@ describe GraphQL::InputObjectType do
         assert_equal("Brie", cow_value)
       end
     end
-
-    describe "scalar inputs" do
-      let(:query_string) {%|
-        {
-          cheese(id: 1.4) {
-            flavor
-          }
-        }
-      |}
-
-      it "converts them to the correct type" do
-        cheese_name = result["data"]["cheese"]["flavor"]
-        assert_equal("Brie", cheese_name)
-      end
-    end
   end
 
   describe "#dup" do
