@@ -1,0 +1,56 @@
+---
+layout: default
+---
+<p class="breadcrumb">
+  <a href="{{ site.baseurl }}/">GraphQL</a>
+  &raquo; <a href="{{ site.baseurl }}/guides">Guides</a>
+  {% if page.section %} &raquo; <a href="{{ site.baseurl }}/guides#{{ page.section | slugify }}-guides">{{ page.section }}</a>{% endif %}
+  &raquo; {{ page.title }}
+</p>
+{% if page.experimental %}
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+{% endif %}
+{% if page.pro %}
+  <div class="pro-header">
+    <p>
+      <strong>⚡️ Pro Feature ⚡️</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro">GraphQL-Pro</a>.
+      </span>
+    </p>
+  </div>
+{% endif %}
+<h1 class="guide-header">{{ page.title }}</h1>
+<div class="guide-container">
+  {{ content }}
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/{{ page.path }}">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: {{ page.title }}">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href={{id}}></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>

@@ -1,5 +1,24 @@
 .ruby-version
 doc/
 .yardoc/
+guides/yardoc/
 pkg/
 Gemfile.lock
+gemfiles/*.lock
+# Test database
+*.db
+.bundle/
+vendor/
+.idea/
+
+_site
+.sass-cache
+.jekyll-metadata
+gh-pages/
+tmp/*
+__*.db
+node_modules/
+yarn.lock
+OperationStoreClient.js
+spec/integration/tmp
+.vscode/

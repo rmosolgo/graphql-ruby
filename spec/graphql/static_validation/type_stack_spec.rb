@@ -1,17 +1,5 @@
-require 'spec_helper'
-
-class TypeCheckValidator
-  def self.checks
-    @checks ||= []
-  end
-
-  def validate(context)
-    self.class.checks.clear
-    context.visitor[GraphQL::Language::Nodes::Field] << -> (node, parent) {
-      self.class.checks << context.object_types.map(&:name)
-    }
-  end
-end
+# frozen_string_literal: true
+require "spec_helper"
 
 describe GraphQL::StaticValidation::TypeStack do
   let(:query_string) {%|
@@ -20,16 +8,22 @@ describe GraphQL::StaticValidation::TypeStack do
     }
     fragment edibleFields on Edible { fatContent @skip(if: false)}
   |}
-  let(:document) { GraphQL.parse(query_string) }
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [TypeCheckValidator]) }
 
-  it 'stores up types' do
-    validator.validate(document)
+  it "stores up types" do
+    document = GraphQL.parse(query_string)
+    visitor = GraphQL::Language::Visitor.new(document)
+    type_stack = GraphQL::StaticValidation::TypeStack.new(Dummy::Schema, visitor)
+    checks = []
+    visitor[GraphQL::Language::Nodes::Field].enter << ->(node, parent) {
+      checks << type_stack.object_types.map {|t| t.name || t.kind.name }
+    }
+    visitor.visit
+
     expected = [
       ["Query", "Cheese"],
-      ["Query", "Cheese", "Non-Null"],
-      ["Edible", "Non-Null"]
+      ["Query", "Cheese", "NON_NULL"],
+      ["Edible", "NON_NULL"]
     ]
-    assert_equal(expected, TypeCheckValidator.checks)
+    assert_equal(expected, checks)
   end
 end

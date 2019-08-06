@@ -1,7 +1,9 @@
-require 'spec_helper'
+# frozen_string_literal: true
+require "spec_helper"
 
 describe GraphQL::StaticValidation::DirectivesAreDefined do
-  let(:document) { GraphQL.parse("
+  include StaticValidationHelpers
+  let(:query_string) {"
     query getCheese {
       okCheese: cheese(id: 1) {
         id @skip(if: true),
@@ -11,20 +13,20 @@ describe GraphQL::StaticValidation::DirectivesAreDefined do
         }
       }
     }
-  ")}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::DirectivesAreDefined]) }
-  let(:errors) { validator.validate(document) }
-
-  describe 'non-existent directives' do
-    it 'makes errors for them' do
+  "}
+  describe "non-existent directives" do
+    it "makes errors for them" do
       expected = [
         {
           "message"=>"Directive @nonsense is not defined",
-          "locations"=>[{"line"=>5, "column"=>17}]
+          "locations"=>[{"line"=>5, "column"=>16}],
+          "path"=>["query getCheese", "okCheese", "source"],
+          "extensions"=>{"code"=>"undefinedDirective", "directiveName"=>"nonsense"}
         }, {
           "message"=>"Directive @moreNonsense is not defined",
-          "locations"=>[{"line"=>7, "column"=>19}]
+          "locations"=>[{"line"=>7, "column"=>18}],
+          "path"=>["query getCheese", "okCheese", "... on Cheese", "flavor"],
+          "extensions"=>{"code"=>"undefinedDirective", "directiveName"=>"moreNonsense"}
         }
       ]
       assert_equal(expected, errors)

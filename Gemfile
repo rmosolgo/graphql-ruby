@@ -1,11 +1,20 @@
-source 'https://rubygems.org'
+# frozen_string_literal: true
+source "https://rubygems.org"
 
-# Declare your gem's dependencies in graphql_rails.gemspec.
-# Bundler will treat runtime dependencies like base dependencies, and
-# development dependencies will be added by default to the :development group.
 gemspec
 
-# Declare any dependencies that are still in development here instead of in
-# your gemspec. These might include edge Rails or gems from your path or
-# Git. Remember to move these dependencies to your gemspec before releasing
-# your gem to rubygems.org.
+gem 'bootsnap' # required by the Rails apps generated in tests
+gem 'ruby-prof', platform: :ruby
+gem 'pry'
+gem 'pry-stack_explorer', platform: :ruby
+if RUBY_VERSION >= "2.3"
+  gem 'pry-byebug'
+end
+
+# Required for running `jekyll algolia ...` (via `rake site:update_search_index`)
+group :jekyll_plugins do
+  if RUBY_VERSION >= "2.3"
+    gem 'jekyll-algolia', '~> 1.0'
+  end
+  gem 'jekyll-redirect-from'
+end

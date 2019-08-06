@@ -1,0 +1,76 @@
+---
+title: Welcome
+---
+<div class="hero">
+  <div class="hero-title">
+    <img src="{{ site.baseurl }}/graphql-ruby.png" alt="GraphQL Ruby Logo"/>
+    <h1>GraphQL Ruby</h1>
+  </div>
+  <div class="hero-part shaded">
+    <h2>Install the Gem</h2>
+    <div class="hero-feature">
+      <div class="teaser">
+{% highlight bash %}
+# Download the gem:
+gem install graphql
+# Setup with Rails:
+rails generate graphql:install
+{% endhighlight %}
+      </div>
+      <div class="teaser">
+        <p>
+          <a href="{{ site.baseurl}}/getting_started">Get going fast</a> with the <code><a href="https://rubygems.org/gems/graphql">graphql</a></code> gem,
+          battle-tested and trusted by <a href="https://githubengineering.com/the-github-graphql-api/#open-source">GitHub</a>, <a href="https://www.graphql.com/articles/graphql-at-shopify">Shopify</a> and <a href="https://www.kickstarter.com/">Kickstarter</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="hero-part">
+    <h2>Define Your Schema</h2>
+    <div class="hero-feature">
+      <div class="teaser">
+        <p>
+          Describe your application with the
+          <a href="{{ site.baseurl }}/schema/definition">GraphQL schema</a>
+          to create a self-documenting, strongly-typed API.
+        </p>
+      </div>
+      <div class="teaser">
+{% highlight ruby %}
+# app/graphql/types/profile_type.rb
+class Types::ProfileType < Types::BaseObject
+  field :id, ID, null: false
+  field :name, String, null: false
+  field :avatar, Types::PhotoType, null: true
+end
+{% endhighlight %}
+      </div>
+    </div>
+  </div>
+  <div class="hero-part shaded">
+    <h2>Run Queries</h2>
+    <div class="hero-feature">
+      <div class="teaser">
+{% highlight ruby %}
+# app/controllers/graphql_controller.rb
+result = MySchema.execute(
+  params[:query],
+  variables: params[:variables],
+  context: { current_user: current_user },
+)
+render json: result
+{% endhighlight %}
+      </div>
+      <div class="teaser">
+        <p>
+          <a href="{{ site.baseurl }}/queries/executing_queries">Serve queries</a> to build a great UI or webservice.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<h3 style="text-align: center;">
+  Add <a href="https://graphql.org">GraphQL</a> to your Ruby app. <a href="{{ site.baseurl}}/getting_started">Get Started!</a>
+</h3>

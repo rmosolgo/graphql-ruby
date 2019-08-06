@@ -1,27 +1,37 @@
-class GraphQL::StaticValidation::FragmentsAreOnCompositeTypes
-  include GraphQL::StaticValidation::Message::MessageHelper
+# frozen_string_literal: true
+module GraphQL
+  module StaticValidation
+    module FragmentsAreOnCompositeTypes
+      def on_fragment_definition(node, parent)
+        validate_type_is_composite(node) && super
+      end
 
-  HAS_TYPE_CONDITION = [
-    GraphQL::Language::Nodes::FragmentDefinition,
-    GraphQL::Language::Nodes::InlineFragment,
-  ]
+      def on_inline_fragment(node, parent)
+        validate_type_is_composite(node) && super
+      end
 
-  def validate(context)
-    HAS_TYPE_CONDITION.each do |node_class|
-      context.visitor[node_class] << -> (node, parent) {
-        validate_type_is_composite(node, context)
-      }
-    end
-  end
+      private
 
-  private
-
-  def validate_type_is_composite(node, context)
-    type_name = node.type
-    type_def = context.schema.types[type_name]
-    if type_def.nil? || !type_def.kind.composite?
-      context.errors <<  message("Invalid fragment on type #{type_name} (must be Union, Interface or Object)", node)
-      GraphQL::Language::Visitor::SKIP
+      def validate_type_is_composite(node)
+        node_type = node.type
+        if node_type.nil?
+          # Inline fragment on the same type
+          true
+        else
+          type_name = node_type.to_query_string
+          type_def = context.warden.get_type(type_name)
+          if type_def.nil? || !type_def.kind.composite?
+            add_error(GraphQL::StaticValidation::FragmentsAreOnCompositeTypesError.new(
+              "Invalid fragment on type #{type_name} (must be Union, Interface or Object)",
+              nodes: node,
+              type: type_name
+            ))
+            false
+          else
+            true
+          end
+        end
+      end
     end
   end
 end

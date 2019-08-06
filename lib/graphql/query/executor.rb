@@ -1,54 +1,52 @@
+# frozen_string_literal: true
+# test_via: ../query.rb
 module GraphQL
   class Query
     class Executor
-      class OperationNameMissingError < StandardError
-        def initialize(names)
-          msg = "You must provide an operation name from: #{names.join(", ")}"
-          super(msg)
-        end
-      end
+      class PropagateNull < StandardError; end
 
-      attr_reader :query, :operation_name
-      def initialize(query, operation_name)
+      # @return [GraphQL::Query] the query being executed
+      attr_reader :query
+
+      def initialize(query)
         @query = query
-        @operation_name = operation_name
       end
 
+      # Evaluate {operation_name} on {query}.
+      # Handle {GraphQL::ExecutionError}s by putting them in the "errors" key.
+      # @return [Hash] A GraphQL response, with either a "data" key or an "errors" key
       def result
-        {"data" => execute }
-      rescue OperationNameMissingError => err
-        {"errors" => [{"message" => err.message}]}
-      rescue StandardError => err
-        query.debug && raise(err)
-        message = "Something went wrong during query execution: #{err}" # \n  #{err.backtrace.join("\n  ")}"
-        {"errors" => [{"message" => message}]}
+        execute
+      rescue GraphQL::ExecutionError => err
+        query.context.errors << err
+        {"errors" => [err.to_h]}
       end
 
       private
 
       def execute
-        return {} if query.operations.none?
-        operation = find_operation(operation_name, query.operations)
-        if operation.operation_type == "query"
-          root_type = query.schema.query
-          execution_strategy_class = query.schema.query_execution_strategy || GraphQL::Query::ParallelExecution
-        elsif operation.operation_type == "mutation"
-          root_type = query.schema.mutation
-          execution_strategy_class =  query.schema.mutation_execution_strategy || GraphQL::Query::SerialExecution
-        end
-        execution_strategy = execution_strategy_class.new
-        query.context.execution_strategy = execution_strategy
-        result = execution_strategy.execute(operation, root_type, query)
-      end
+        operation = query.selected_operation
+        return {} if operation.nil?
 
-      def find_operation(operation_name, operations)
-        if operations.length == 1
-          operations.values.first
-        elsif !operations.key?(operation_name)
-          raise OperationNameMissingError, operations.keys
-        else
-          operations[operation_name]
+        op_type = operation.operation_type
+        root_type = query.root_type_for_operation(op_type)
+        execution_strategy_class = query.schema.execution_strategy_for_operation(op_type)
+        execution_strategy = execution_strategy_class.new
+
+        query.context.execution_strategy = execution_strategy
+        data_result = begin
+          execution_strategy.execute(operation, root_type, query)
+        rescue PropagateNull
+          nil
         end
+        result = { "data" => data_result }
+        error_result = query.context.errors.map(&:to_h)
+
+        if error_result.any?
+          result["errors"] = error_result
+        end
+
+        result
       end
     end
   end

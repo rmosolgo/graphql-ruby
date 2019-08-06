@@ -1,24 +1,39 @@
-class GraphQL::StaticValidation::FragmentTypesExist
-  include GraphQL::StaticValidation::Message::MessageHelper
+# frozen_string_literal: true
+module GraphQL
+  module StaticValidation
+    module FragmentTypesExist
+      def on_fragment_definition(node, _parent)
+        if validate_type_exists(node)
+          super
+        end
+      end
 
-  FRAGMENTS_ON_TYPES = [
-    GraphQL::Language::Nodes::FragmentDefinition,
-    GraphQL::Language::Nodes::InlineFragment,
-  ]
+      def on_inline_fragment(node, _parent)
+        if validate_type_exists(node)
+          super
+        end
+      end
 
-  def validate(context)
-    FRAGMENTS_ON_TYPES.each do |node_class|
-      context.visitor[node_class] << -> (node, parent) { validate_type_exists(node, context) }
-    end
-  end
+      private
 
-  private
-
-  def validate_type_exists(node, context)
-    type = context.schema.types.fetch(node.type, nil)
-    if type.nil?
-      context.errors << message("No such type #{node.type}, so it can't be a fragment condition", node)
-      GraphQL::Language::Visitor::SKIP
+      def validate_type_exists(fragment_node)
+        if !fragment_node.type
+          true
+        else
+          type_name = fragment_node.type.name
+          type = context.warden.get_type(type_name)
+          if type.nil?
+            add_error(GraphQL::StaticValidation::FragmentTypesExistError.new(
+              "No such type #{type_name}, so it can't be a fragment condition",
+              nodes: fragment_node,
+              type: type_name
+            ))
+            false
+          else
+            true
+          end
+        end
+      end
     end
   end
 end

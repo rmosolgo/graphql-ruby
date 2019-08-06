@@ -1,6 +1,2 @@
-GraphQL::FLOAT_TYPE = GraphQL::ScalarType.define do
-  name "Float"
-  coerce -> (value) do
-    value.respond_to?(:to_f) ? value.to_f : nil
-  end
-end
+# frozen_string_literal: true
+GraphQL::FLOAT_TYPE = GraphQL::Types::Float.graphql_definition

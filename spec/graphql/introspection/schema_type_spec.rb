@@ -1,4 +1,5 @@
-require 'spec_helper'
+# frozen_string_literal: true
+require "spec_helper"
 
 describe GraphQL::Introspection::SchemaType do
   let(:query_string) {%|
@@ -10,21 +11,36 @@ describe GraphQL::Introspection::SchemaType do
       }
     }
   |}
-  let(:result) { GraphQL::Query.new(DummySchema, query_string).result }
-  it 'exposes the schema' do
+  let(:result) { Dummy::Schema.execute(query_string) }
+
+  it "exposes the schema" do
     expected = { "data" => {
       "__schema" => {
-        "types" => DummySchema.types.values.map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} },
+        "types" => Dummy::Schema.types.values.map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} },
         "queryType"=>{
           "fields"=>[
+            {"name"=>"allAnimal"},
+            {"name"=>"allAnimalAsCow"},
+            {"name"=>"allDairy"},
+            {"name"=>"allEdible"},
+            {"name"=>"allEdibleAsMilk"},
             {"name"=>"cheese"},
-            {"name"=>"milk"},
+            {"name"=>"cow"},
             {"name"=>"dairy"},
-            {"name"=>"fromSource"},
-            {"name"=>"favoriteEdible"},
-            {"name"=>"searchDairy"},
+            {"name"=>"deepNonNull"},
             {"name"=>"error"},
+            {"name"=>"executionError"},
+            {"name"=>"executionErrorWithExtensions"},
+            {"name"=>"executionErrorWithOptions"},
+            {"name"=>"favoriteEdible"},
+            {"name"=>"fromSource"},
             {"name"=>"maybeNull"},
+            {"name"=>"milk"},
+            {"name"=>"multipleErrorsOnNonNullableField"},
+            {"name"=>"root"},
+            {"name"=>"searchDairy"},
+            {"name"=>"tracingScalar"},
+            {"name"=>"valueWithExecutionError"},
           ]
         },
         "mutationType"=> {

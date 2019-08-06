@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # The introspection query to end all introspection queries, copied from
 # https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js
 GraphQL::Introspection::INTROSPECTION_QUERY = "
@@ -5,18 +6,17 @@ query IntrospectionQuery {
   __schema {
     queryType { name }
     mutationType { name }
+    subscriptionType { name }
     types {
       ...FullType
     }
     directives {
       name
       description
+      locations
       args {
         ...InputValue
       }
-      onOperation
-      onFragment
-      onField
     }
   }
 }
@@ -24,7 +24,7 @@ fragment FullType on __Type {
   kind
   name
   description
-  fields {
+  fields(includeDeprecated: true) {
     name
     description
     args {
@@ -42,7 +42,7 @@ fragment FullType on __Type {
   interfaces {
     ...TypeRef
   }
-  enumValues {
+  enumValues(includeDeprecated: true) {
     name
     description
     isDeprecated
@@ -70,6 +70,22 @@ fragment TypeRef on __Type {
       ofType {
         kind
         name
+        ofType {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+              }
+            }
+          }
+        }
       }
     }
   }

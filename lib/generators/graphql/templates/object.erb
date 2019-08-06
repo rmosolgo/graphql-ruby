@@ -1,0 +1,6 @@
+module Types
+  class <%= type_ruby_name.split('::')[-1] %> < Types::BaseObject
+<% if options.node %>    implements GraphQL::Relay::Node.interface
+<% end %><% normalized_fields.each do |f| %>    <%= f.to_ruby %>
+<% end %>  end
+end

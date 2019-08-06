@@ -1,8 +1,10 @@
-require 'spec_helper'
+# frozen_string_literal: true
+require "spec_helper"
 
 describe GraphQL::Directive do
-  let(:result) { GraphQL::Query.new(DummySchema, query_string, variables: {"t" => true, "f" => false}).result }
-  describe 'on fields' do
+  let(:variables) { {"t" => true, "f" => false} }
+  let(:result) { Dummy::Schema.execute(query_string, variables: variables) }
+  describe "on fields" do
     let(:query_string) { %|query directives($t: Boolean!, $f: Boolean!) {
       cheese(id: 1) {
         # plain fields:
@@ -23,11 +25,74 @@ describe GraphQL::Directive do
       fragment dontIncludeIdField on Cheese { dontIncludeId: id @include(if: false) }
       fragment skipIdField on Cheese { skipId: id @skip(if: true) }
       fragment dontSkipIdField on Cheese { dontSkipId: id @skip(if: false) }
-    |}
-    it 'intercepts fields' do
+    |
+    }
+
+    describe "child fields" do
+      let(:query_string) { <<-GRAPHQL
+      {
+        __type(name: """
+        Cheese
+        """) {
+          fields { name }
+          fields @skip(if: true) { isDeprecated }
+        }
+      }
+      GRAPHQL
+      }
+
+      it "skips child fields too" do
+        first_field = result["data"]["__type"]["fields"].first
+        assert first_field.key?("name")
+        assert !first_field.key?("isDeprecated")
+      end
+    end
+
+    describe "when directive uses argument with default value" do
+      describe "with false" do
+        let(:query_string) { <<-GRAPHQL
+          query($f: Boolean = false) {
+            cheese(id: 1) {
+              dontIncludeFlavor: flavor @include(if: $f)
+              dontSkipFlavor: flavor @skip(if: $f)
+            }
+          }
+        GRAPHQL
+        }
+
+        it "is not included" do
+          assert !result["data"]["cheese"].key?("dontIncludeFlavor")
+        end
+
+        it "is not skipped" do
+          assert result["data"]["cheese"].key?("dontSkipFlavor")
+        end
+      end
+
+      describe "with true" do
+        let(:query_string) { <<-GRAPHQL
+          query($t: Boolean = true) {
+            cheese(id: 1) {
+              includeFlavor: flavor @include(if: $t)
+              skipFlavor: flavor @skip(if: $t)
+            }
+          }
+        GRAPHQL
+        }
+
+        it "is included" do
+          assert result["data"]["cheese"].key?("includeFlavor")
+        end
+
+        it "is skipped" do
+          assert !result["data"]["cheese"].key?("skipFlavor")
+        end
+      end
+    end
+
+    it "intercepts fields" do
       expected = { "data" =>{
         "cheese" => {
-          "dontSkipDontIncludeFlavor" => "Brie", #skip has precedence over include
           "dontSkipFlavor" => "Brie",
           "includeFlavor" => "Brie",
           "includeId" => 1,
@@ -37,7 +102,7 @@ describe GraphQL::Directive do
       assert_equal(expected, result)
     end
   end
-  describe 'on fragments' do
+  describe "on fragments spreads and inline fragments" do
     let(:query_string) { %|query directives {
       cheese(id: 1) {
         ... skipFlavorField @skip(if: true)
@@ -45,40 +110,186 @@ describe GraphQL::Directive do
         ... includeFlavorField @include(if: true)
         ... dontIncludeFlavorField @include(if: false)
 
-        ... includeIdField
-        ... dontIncludeIdField
-        ... skipIdField
-        ... dontSkipIdField
 
         ... on Cheese @skip(if: true) { skipInlineId: id }
         ... on Cheese @skip(if: false) { dontSkipInlineId: id }
         ... on Cheese @include(if: true) { includeInlineId: id }
         ... on Cheese @include(if: false) { dontIncludeInlineId: id }
+        ... @skip(if: true) { skipNoType: id }
+        ... @skip(if: false) { dontSkipNoType: id }
         }
       }
       fragment includeFlavorField on Cheese { includeFlavor: flavor  }
       fragment dontIncludeFlavorField on Cheese { dontIncludeFlavor: flavor  }
       fragment skipFlavorField on Cheese { skipFlavor: flavor  }
       fragment dontSkipFlavorField on Cheese { dontSkipFlavor: flavor }
-
-      fragment includeIdField on Cheese @include(if: true) { includeId: id  }
-      fragment dontIncludeIdField on Cheese @include(if: false) { dontIncludeId: id  }
-      fragment skipIdField on Cheese @skip(if: true) { skipId: id  }
-      fragment dontSkipIdField on Cheese @skip(if: false) { dontSkipId: id }
     |}
 
-    it 'intercepts fragment spreads' do
+    it "intercepts fragment spreads" do
       expected = { "data" => {
         "cheese" => {
           "dontSkipFlavor" => "Brie",
           "includeFlavor" => "Brie",
-          "includeId" => 1,
-          "dontSkipId" => 1,
           "dontSkipInlineId" => 1,
           "includeInlineId" => 1,
+          "dontSkipNoType" => 1,
         },
       }}
       assert_equal(expected, result)
+    end
+  end
+  describe "merging @skip and @include" do
+    let(:field_included?) { r = result["data"]["cheese"]; r.has_key?('flavor') && r.has_key?('withVariables') }
+    let(:skip?) { false }
+    let(:include?) { true }
+    let(:variables) { {"skip" => skip?, "include" => include?} }
+    let(:query_string) {"
+      query getCheese ($include: Boolean!, $skip: Boolean!) {
+        cheese(id: 1) {
+          flavor @include(if: #{include?}) @skip(if: #{skip?}),
+          withVariables: flavor @include(if: $include) @skip(if: $skip)
+        }
+      }
+    "}
+    # behavior as defined in
+    # https://github.com/facebook/graphql/blob/master/spec/Section%203%20--%20Type%20System.md#include
+    describe "when @skip=false and @include=true" do
+      let(:skip?) { false }
+      let(:include?) { true }
+      it "is included" do assert field_included? end
+    end
+    describe "when @skip=false and @include=false" do
+      let(:skip?) { false }
+      let(:include?) { false }
+      it "is not included" do assert !field_included? end
+    end
+    describe "when @skip=true and @include=true" do
+      let(:skip?) { true }
+      let(:include?) { true }
+      it "is not included" do assert !field_included? end
+    end
+    describe "when @skip=true and @include=false" do
+      let(:skip?) { true }
+      let(:include?) { false }
+      it "is not included" do assert !field_included? end
+    end
+    describe "when evaluating skip on query selection and fragment" do
+      describe "with @skip" do
+        let(:query_string) {"
+          query getCheese ($skip: Boolean!) {
+            cheese(id: 1) {
+              flavor,
+              withVariables: flavor,
+              ...F0
+            }
+          }
+          fragment F0 on Cheese {
+            flavor @skip(if: #{skip?})
+            withVariables: flavor @skip(if: $skip)
+          }
+        "}
+        describe "and @skip=false" do
+          let(:skip?) { false }
+          it "is included" do assert field_included? end
+        end
+        describe "and @skip=true" do
+          let(:skip?) { true }
+          it "is included" do assert field_included? end
+        end
+      end
+    end
+    describe "when evaluating conflicting @skip and @include on query selection and fragment" do
+      let(:query_string) {"
+        query getCheese ($include: Boolean!, $skip: Boolean!) {
+          cheese(id: 1) {
+            ... on Cheese @include(if: #{include?}) {
+              flavor
+            }
+            withVariables: flavor @include(if: $include),
+            ...F0
+          }
+        }
+        fragment F0 on Cheese {
+          flavor @skip(if: #{skip?}),
+          withVariables: flavor @skip(if: $skip)
+        }
+      "}
+      describe "when @skip=false and @include=true" do
+        let(:skip?) { false }
+        let(:include?) { true }
+        it "is included" do assert field_included? end
+      end
+      describe "when @skip=false and @include=false" do
+        let(:skip?) { false }
+        let(:include?) { false }
+        it "is included" do assert field_included? end
+      end
+      describe "when @skip=true and @include=true" do
+        let(:skip?) { true }
+        let(:include?) { true }
+        it "is included" do assert field_included? end
+      end
+      describe "when @skip=true and @include=false" do
+        let(:skip?) { true }
+        let(:include?) { false }
+        it "is not included" do
+          assert !field_included?
+        end
+      end
+    end
+
+    describe "when handling multiple fields at the same level" do
+      describe "when at least one occurrence would be included" do
+        let(:query_string) {"
+          query getCheese ($include: Boolean!, $skip: Boolean!) {
+            cheese(id: 1) {
+              ... on Cheese {
+                flavor
+              }
+              flavor @include(if: #{include?}),
+              flavor @skip(if: #{skip?}),
+              withVariables: flavor,
+              withVariables: flavor @include(if: $include),
+              withVariables: flavor @skip(if: $skip)
+            }
+          }
+        "}
+        let(:skip?) { true }
+        let(:include?) { false }
+        it "is included" do assert field_included? end
+      end
+      describe "when no occurrence would be included" do
+        let(:query_string) {"
+          query getCheese ($include: Boolean!, $skip: Boolean!) {
+            cheese(id: 1) {
+              flavor @include(if: #{include?}),
+              flavor @skip(if: #{skip?}),
+              withVariables: flavor @include(if: $include),
+              withVariables: flavor @skip(if: $skip)
+            }
+          }
+        "}
+        let(:skip?) { true }
+        let(:include?) { false }
+        it "is not included" do assert !field_included? end
+      end
+    end
+  end
+
+  describe "defining a directive" do
+    let(:directive) {
+      GraphQL::Directive.define do
+        arguments [GraphQL::Argument.define(name: 'skip')]
+      end
+    }
+
+    it "can accept an array of arguments" do
+      assert_equal 1, directive.arguments.length
+      assert_equal 'skip', directive.arguments.first.name
+    end
+
+    it "is not default" do
+      assert_equal false, directive.default_directive?
     end
   end
 end

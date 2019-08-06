@@ -1,20 +1,17 @@
+# frozen_string_literal: true
 module GraphQL
   class Query
     class SerialExecution
-      class OperationResolution
-        attr_reader :query, :target, :ast_operation_definition, :execution_strategy
+      module OperationResolution
+        def self.resolve(selection, target, query)
+          result = query.context.execution_strategy.selection_resolution.resolve(
+            query.root_value,
+            target,
+            selection,
+            query.context,
+          )
 
-        def initialize(ast_operation_definition, target, query, execution_strategy)
-          @ast_operation_definition = ast_operation_definition
-          @query = query
-          @target = target
-          @execution_strategy = execution_strategy
-        end
-
-        def result
-          selections = ast_operation_definition.selections
-          resolver = execution_strategy.selection_resolution.new(nil, target, selections, query, execution_strategy)
-          resolver.result
+          result
         end
       end
     end

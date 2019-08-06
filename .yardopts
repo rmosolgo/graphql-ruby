@@ -1,5 +1,5 @@
 --no-private
---markup markdown
---readme readme.md
---title 'GraphQL Ruby API Documentation'
-'lib/**/*.rb' - '**/*.md'
+--markup=markdown
+--readme=readme.md
+--title='GraphQL Ruby API Documentation'
+'lib/**/*.rb' - '*.md'

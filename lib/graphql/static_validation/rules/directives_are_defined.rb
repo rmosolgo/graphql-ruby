@@ -1,18 +1,23 @@
-class GraphQL::StaticValidation::DirectivesAreDefined
-  include GraphQL::StaticValidation::Message::MessageHelper
+# frozen_string_literal: true
+module GraphQL
+  module StaticValidation
+    module DirectivesAreDefined
+      def initialize(*)
+        super
+        @directive_names = context.schema.directives.keys
+      end
 
-  def validate(context)
-    directive_names = context.schema.directives.keys
-    context.visitor[GraphQL::Language::Nodes::Directive] << -> (node, parent) {
-      validate_directive(node, directive_names, context.errors)
-    }
-  end
-
-  private
-
-  def validate_directive(ast_directive, directive_names, errors)
-     if !directive_names.include?(ast_directive.name)
-       errors << message("Directive @#{ast_directive.name} is not defined", ast_directive)
+      def on_directive(node, parent)
+        if !@directive_names.include?(node.name)
+          add_error(GraphQL::StaticValidation::DirectivesAreDefinedError.new(
+            "Directive @#{node.name} is not defined",
+            nodes: node,
+            directive: node.name
+          ))
+        else
+          super
+        end
+      end
     end
   end
 end
