@@ -95,7 +95,7 @@ describe("sync operations", () => {
   })
 
   describe("Relay support", () => {
-    it("Uses Relay output", () => {
+    it("Uses Relay generated .js files", () => {
       var payload = null
       var options = {
         client: "test-1",
@@ -106,6 +106,23 @@ describe("sync operations", () => {
       }
       return sync(options).then(function () {
         expect(payload.operations).toMatchSnapshot()
+      })
+    })
+
+    it("Uses relay --persist-output JSON files", () => {
+      var payload = null
+      var options = {
+        client: "test-1",
+        quiet: true,
+        relayPersistedOutput: "./__tests__/example-relay-persisted-queries.json",
+        url: "bogus",
+        send: (sendPayload, opts) => {
+          console.log(payload)
+          payload = sendPayload
+        },
+      }
+      return sync(options).then(function () {
+        return expect(payload.operations).toMatchSnapshot()
       })
     })
   })
@@ -193,6 +210,21 @@ describe("sync operations", () => {
         expect(generatedCode).toMatch('module.exports = OperationStoreClient')
         expect(generatedCode).toMatch('var _client = "test-2"')
         fs.unlinkSync("./__crazy_outfile.js")
+      })
+    })
+
+    it("Skips outfile generation when using --persist-output artifact", () => {
+      var options = {
+        client: "test-2",
+        relayPersistedOutput: "./__tests__/example-relay-persisted-queries.json",
+        url: "bogus",
+        quiet: true,
+        send: (sendPayload, opts) => { },
+      }
+      return sync(options).then(function() {
+        // This is the default outfile:
+        var wasWritten = fs.existsSync("./OperationStoreClient.js")
+        expect(wasWritten).toBe(false)
       })
     })
   })
