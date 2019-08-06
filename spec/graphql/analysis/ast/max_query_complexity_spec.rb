@@ -45,7 +45,7 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
 
   describe "when max_complexity is decreased at query-level" do
     before do
-      schema.max_complexity = 100
+      schema.max_complexity(100)
     end
 
     let(:max_complexity) { 7 }
@@ -58,12 +58,24 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
 
   describe "when max_complexity is increased at query-level" do
     before do
-      schema.max_complexity = 1
+      schema.max_complexity(1)
     end
 
     let(:max_complexity) { 10 }
 
     it "doesn't error" do
+      assert_nil result
+    end
+  end
+
+  describe "when max_complexity is nil at query-level" do
+    let(:max_complexity) { nil }
+
+    before do
+      schema.max_complexity(1)
+    end
+
+    it "is applied" do
       assert_nil result
     end
   end

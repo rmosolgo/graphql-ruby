@@ -16,7 +16,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
   describe "when a query goes over max complexity" do
     before do
-      schema.max_complexity = 9
+      schema.max_complexity(9)
     end
 
     it "returns an error" do
@@ -25,9 +25,6 @@ describe GraphQL::Analysis::MaxQueryComplexity do
   end
 
   describe "when there is no max complexity" do
-    before do
-      schema.max_complexity = nil
-    end
     it "doesn't error" do
       assert_nil result["errors"]
     end
@@ -35,7 +32,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
   describe "when the query is less than the max complexity" do
     before do
-      schema.max_complexity = 99
+      schema.max_complexity(99)
     end
     it "doesn't error" do
       assert_nil result["errors"]
@@ -44,7 +41,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
   describe "when max_complexity is decreased at query-level" do
     before do
-      schema.max_complexity = 100
+      schema.max_complexity(100)
     end
     let(:result) {schema.execute(query_string, max_complexity: 7) }
 
@@ -55,7 +52,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
   describe "when max_complexity is increased at query-level" do
     before do
-      schema.max_complexity = 1
+      schema.max_complexity(1)
     end
     let(:result) {schema.execute(query_string, max_complexity: 10) }
 
@@ -64,9 +61,20 @@ describe GraphQL::Analysis::MaxQueryComplexity do
     end
   end
 
+  describe "when max_complexity is nil query-level" do
+    before do
+      schema.max_complexity(1)
+    end
+    let(:result) {schema.execute(query_string, max_complexity: nil) }
+
+    it "is applied" do
+      assert_nil result["errors"]
+    end
+  end
+
   describe "across a multiplex" do
     before do
-      schema.max_complexity = 9
+      schema.max_complexity(9)
     end
 
     let(:queries) { 5.times.map { |n|  { query: "{ cheese(id: #{n}) { id } }" } } }

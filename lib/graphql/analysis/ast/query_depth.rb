@@ -3,12 +3,23 @@ module GraphQL
   module Analysis
     # A query reducer for measuring the depth of a given query.
     #
+    # See https://graphql-ruby.org/queries/ast_analysis.html for more examples.
+    #
     # @example Logging the depth of a query
     #   class LogQueryDepth < GraphQL::Analysis::QueryDepth
-    #     def on_analysis_end
+    #     def result
     #       log("GraphQL query depth: #{@max_depth}")
     #     end
     #   end
+    #
+    #   # In your Schema file:
+    #
+    #   class MySchema < GraphQL::Schema
+    #     use GraphQL::Analysis::AST
+    #     query_analyzer LogQueryDepth
+    #   end
+    #
+    #   # When you run the query, the depth will get logged:
     #
     #   Schema.execute(query_str)
     #   # GraphQL query depth: 8

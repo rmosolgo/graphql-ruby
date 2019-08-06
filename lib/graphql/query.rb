@@ -78,7 +78,7 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
@@ -127,8 +127,8 @@ module GraphQL
       @operation_name = operation_name
       @prepared_ast = false
       @validation_pipeline = nil
-      @max_depth = max_depth || schema.max_depth
-      @max_complexity = max_complexity || schema.max_complexity
+      @max_depth = max_depth
+      @max_complexity = max_complexity
 
       @result_values = nil
       @executed = false
@@ -368,7 +368,7 @@ module GraphQL
         parse_error: parse_error,
         operation_name_error: operation_name_error,
         max_depth: @max_depth,
-        max_complexity: @max_complexity || schema.max_complexity,
+        max_complexity: @max_complexity
       )
     end
 
