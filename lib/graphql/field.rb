@@ -196,6 +196,10 @@ module GraphQL
 
     attr_accessor :ast_node
 
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_definition :itself
+
     # @return [Boolean]
     def connection?
       @connection

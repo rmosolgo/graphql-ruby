@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+if !TESTING_INTERPRETER
 describe GraphQL::InternalRepresentation::Print do
   describe "printing queries" do
     let(:query_str) { <<-GRAPHQL
@@ -38,4 +39,5 @@ query {
       assert_equal expected_plan, query_plan
     end
   end
+end
 end

@@ -105,6 +105,7 @@ describe GraphQL::Schema::Object do
     end
   end
 
+  if !TESTING_INTERPRETER
   describe "using GraphQL::Function" do
     new_test_func_payload = Class.new(GraphQL::Schema::Object) do
       graphql_name "TestFuncPayload"
@@ -174,6 +175,7 @@ describe GraphQL::Schema::Object do
       res = schema.execute(query_str)
       assert_equal "graphql", res["data"]["testConn"]["edges"][0]["node"]["name"]
     end
+  end
   end
 
   describe "wrapping a Hash" do

@@ -77,7 +77,8 @@ module GraphQL
         # Return if we've visited this response path before (not counting duplicates)
           defined_complexity = field_defn.complexity
 
-          arguments = visitor.arguments_for(ast_node, field_defn)
+          # TODO no graphql_definition, see also directive_checks.rb
+          arguments = visitor.arguments_for(ast_node, field_defn.graphql_definition)
 
           case defined_complexity
           when Proc

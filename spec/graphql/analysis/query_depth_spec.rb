@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+if !TESTING_INTERPRETER
 describe GraphQL::Analysis::QueryDepth do
   let(:depths) { [] }
   let(:query_depth) { GraphQL::Analysis::QueryDepth.new { |query, max_depth|  depths << query << max_depth } }
@@ -78,4 +79,5 @@ describe GraphQL::Analysis::QueryDepth do
       assert_equal depths, [query, 4]
     end
   end
+end
 end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+if !TESTING_INTERPRETER
 describe GraphQL::Analysis::FieldUsage do
   let(:result) { [] }
   let(:field_usage_analyzer) { GraphQL::Analysis::FieldUsage.new { |query, used_fields, used_deprecated_fields| result << query << used_fields << used_deprecated_fields } }
@@ -59,4 +60,5 @@ describe GraphQL::Analysis::FieldUsage do
       assert_equal ['Cheese.fatContent'], result[2]
     end
   end
+end
 end

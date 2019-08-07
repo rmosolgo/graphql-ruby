@@ -114,7 +114,7 @@ module GraphQL
       # { abstract_type => { value => resolved_type } }
       @resolved_types_cache = Hash.new do |h1, k1|
         h1[k1] = Hash.new do |h2, k2|
-          h2[k2] = @schema.resolve_type_with_type(k1, k2, @context)
+          h2[k2] = @schema.resolve_type(k1, k2, @context)
         end
       end
 

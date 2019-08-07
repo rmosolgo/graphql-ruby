@@ -48,6 +48,10 @@ describe GraphQL::Tracing::NewRelicTracing do
     class SchemaWithScalarTrace < GraphQL::Schema
       query(Query)
       use(GraphQL::Tracing::NewRelicTracing, trace_scalars: true)
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
+      end
     end
   end
 

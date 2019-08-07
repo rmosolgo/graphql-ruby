@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+if !TESTING_INTERPRETER
 describe GraphQL::Analysis do
   class TypeCollector
     def initial_value(query)
@@ -269,4 +270,5 @@ describe GraphQL::Analysis do
       assert_equal flavor_error_response["locations"], flavor_error_hash["locations"]
     end
   end
+end
 end

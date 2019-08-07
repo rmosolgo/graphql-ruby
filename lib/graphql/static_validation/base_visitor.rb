@@ -71,7 +71,7 @@ module GraphQL
       module ContextMethods
         def on_operation_definition(node, parent)
           object_type = @schema.root_type_for_operation(node.operation_type)
-          @object_types.push(object_type)
+          push_type(object_type)
           @path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
           super
           @object_types.pop
@@ -98,9 +98,9 @@ module GraphQL
           @field_definitions.push(field_definition)
           if !field_definition.nil?
             next_object_type = field_definition.type.unwrap
-            @object_types.push(next_object_type)
+            push_type(next_object_type)
           else
-            @object_types.push(nil)
+            push_type(nil)
           end
           @path.push(node.alias || node.name)
           super
@@ -187,14 +187,28 @@ module GraphQL
 
         def on_fragment_with_type(node)
           object_type = if node.type
-            @schema.types.fetch(node.type.name, nil)
+            if @schema.is_a?(Class)
+              # This falls back to `nil` for classes. TODO make a uniform interface for this.
+              @schema.types[node.type.name]
+            else
+              @schema.types.fetch(node.type.name, nil)
+            end
           else
             @object_types.last
           end
-          @object_types.push(object_type)
+          push_type(object_type)
           yield(node)
           @object_types.pop
           @path.pop
+        end
+
+        def push_type(type_or_late_bound_type)
+          t = if type_or_late_bound_type.is_a?(GraphQL::Schema::LateBoundType)
+            @schema.types[type_or_late_bound_type.graphql_name]
+          else
+            type_or_late_bound_type
+          end
+          @object_types.push(t)
         end
       end
 

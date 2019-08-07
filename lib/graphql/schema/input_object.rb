@@ -204,6 +204,28 @@ module GraphQL
 
           input_values
         end
+
+        # It's funny to think of a _result_ of an input object.
+        # This is used for rendering the default value in introspection responses.
+        def coerce_result(value, ctx)
+          # Allow the application to provide values as :symbols, and convert them to the strings
+          value = value.reduce({}) { |memo, (k, v)| memo[k.to_s] = v; memo }
+
+          result = {}
+
+          arguments.each do |input_key, input_field_defn|
+            input_value = value[input_key]
+            if value.key?(input_key)
+              result[input_key] = if input_value.nil?
+                nil
+              else
+                input_field_defn.type.coerce_result(input_value, ctx)
+              end
+            end
+          end
+
+          result
+        end
       end
     end
   end

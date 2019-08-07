@@ -308,7 +308,7 @@ module GraphQL
         extensions([{extension => options}])
       end
 
-      def complexity(new_complexity)
+      def complexity(new_complexity = nil)
         case new_complexity
         when Proc
           if new_complexity.parameters.size != 3
@@ -321,6 +321,8 @@ module GraphQL
           end
         when Numeric
           @complexity = new_complexity
+        when nil
+          @complexity
         else
           raise("Invalid complexity: #{new_complexity.inspect} on #{@name}")
         end
@@ -394,7 +396,7 @@ module GraphQL
 
         # Ok, `self` isn't a class, but this is for consistency with the classes
         field_defn.metadata[:type_class] = self
-
+        field_defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(field_defn)
         field_defn
       end
 

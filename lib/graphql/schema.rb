@@ -490,8 +490,6 @@ module GraphQL
       end
     end
 
-    alias :resolve_type_with_type :resolve_type
-
     # This is a compatibility hack so that instance-level and class-level
     # methods can get correctness checks without calling one another
     # @api private
@@ -719,8 +717,7 @@ module GraphQL
         :subscriptions,
         # TODO: these must be ported for warden to work.
         :union_memberships,
-        :references_to,
-        :disable_introspection_entry_points=
+        :references_to
 
       def graphql_definition
         @graphql_definition ||= to_graphql
@@ -887,7 +884,7 @@ module GraphQL
         when Module
           type_or_name
         else
-          raise ArgumentError, "unexpected field owner: #{type_or_name} (#{type_or_name.class})"
+          raise ArgumentError, "unexpected field owner for #{field_name.inspect}: #{type_or_name.inspect} (#{type_or_name.class})"
         end
 
         if parent_type.kind.fields? && (field = parent_type.fields[field_name])
@@ -986,6 +983,8 @@ module GraphQL
 
       def disable_introspection_entry_points
         @disable_introspection_entry_points = true
+        # TODO: this clears the cache made in `def types`. But this is not a great solution.
+        @introspection_system = nil
       end
 
       def disable_introspection_entry_points?
@@ -1025,14 +1024,20 @@ module GraphQL
         end
       end
 
-      def resolve_type_with_type(type, obj, ctx)
-        if type.kind.object?
-          type
-        elsif type.respond_to?(:resolve_type)
-          type.resolve_type(obj, ctx)
-        else
-          resolve_type(type, obj, ctx)
+      module ResolveTypeWithType
+        def resolve_type(type, obj, ctx)
+          if type.kind.object?
+            type
+          elsif type.respond_to?(:resolve_type)
+            type.resolve_type(obj, ctx)
+          else
+            super
+          end
         end
+      end
+
+      def inherited(child_class)
+        child_class.singleton_class.prepend(ResolveTypeWithType)
       end
 
       def resolve_type(type, obj, ctx)
@@ -1129,16 +1134,26 @@ module GraphQL
         defined_instrumenters[step] << instrumenter
       end
 
+      # Add several directives at once
+      # @param new_directives [Class]
       def directives(new_directives = nil)
         if new_directives
-          @directives = new_directives.reduce({}) { |m, d| m[d.graphql_name] = d; m }
+          new_directives.each { |d| directive(d) }
+        elsif @directives.nil?
+          directives(default_directives.values)
         end
 
-        @directives ||= default_directives
+        @directives
       end
 
+      # Attach a single directive to this schema
+      # @param new_directive [Class]
       def directive(new_directive)
-        directives[new_directive.graphql_name] = new_directive
+        new_directive.arguments.each do |n, arg|
+          add_type(arg.type.unwrap, owner: arg, late_types: [])
+        end
+        @directives ||= {}
+        @directives[new_directive.graphql_name] = new_directive
       end
 
       def default_directives
@@ -1300,6 +1315,8 @@ module GraphQL
           new_possible_types = owner.possible_types.map { |t| t.is_a?(String) && t == type.name ? type : t }
           owner.possible_types(*new_possible_types)
           @possible_types[owner.graphql_name] = owner.possible_types
+        when GraphQL::Schema::Field
+          owner.type(type)
         else
           raise "Unexpected update: #{owner} #{type}"
         end

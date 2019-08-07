@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+if !TESTING_INTERPRETER
 describe GraphQL::Analysis::MaxQueryComplexity do
   before do
     @prev_max_complexity = Dummy::Schema.max_complexity
@@ -99,4 +100,5 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       end
     end
   end
+end
 end

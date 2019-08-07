@@ -325,7 +325,7 @@ describe GraphQL::Schema::Validation do
     end
 
     it "does not allow default values for non-null argument" do
-      assert_error_includes invalid_default_argument_for_non_null_argument, 'Variable $InvalidDefault of type "Int!" is required and will not use the default value. Perhaps you meant to use type "Int".'
+      assert_error_includes invalid_default_argument_for_non_null_argument, 'Variable InvalidDefault of type "Int!" is required and will not use the default value. Perhaps you meant to use type "Int".'
     end
 
     it "cannot use reserved name" do

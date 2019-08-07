@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+if !TESTING_INTERPRETER
 describe GraphQL::Analysis::QueryComplexity do
   let(:complexities) { [] }
   let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |this_query, complexity|  complexities << this_query << complexity } }
@@ -298,4 +299,5 @@ describe GraphQL::Analysis::QueryComplexity do
       end
     end
   end
+end
 end

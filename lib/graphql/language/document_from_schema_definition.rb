@@ -191,7 +191,7 @@ module GraphQL
         when "SCALAR"
           type.coerce_isolated_result(default_value)
         when "ENUM"
-          GraphQL::Language::Nodes::Enum.new(name: type.coerce_isolated_result(default_value))
+          GraphQL::Language::Nodes::Enum.new(name: type.coerce_result(default_value, GraphQL::Query::NullContext))
         when "INPUT_OBJECT"
           GraphQL::Language::Nodes::InputObject.new(
             arguments: default_value.to_h.map do |arg_name, arg_value|
