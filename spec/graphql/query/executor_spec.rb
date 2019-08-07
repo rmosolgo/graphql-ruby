@@ -322,19 +322,19 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable $input of type [DairyProductInput] was provided invalid value for 0.foo (Field is not defined on DairyProductInput), 0.source (Expected value to not be null)",
+              "message" => "Variable $input of type [DairyProductInput] was provided invalid value for 0.foo (Argument is not defined on DairyProductInput), 0.source (Expected value to not be null)",
               "locations" => [{ "line" => 1, "column" => 10 }],
               "extensions" => {
                 "value" => [{ "foo" => "bar" }],
                 "problems" => [
-                  { "path" => [0, "foo"], "explanation" => "Field is not defined on DairyProductInput" },
+                  { "path" => [0, "foo"], "explanation" => "Argument is not defined on DairyProductInput" },
                   { "path" => [0, "source"], "explanation" => "Expected value to not be null" }
                 ]
               }
             }
           ]
         }
-        assert_equal(expected, result)
+        assert_equal(expected, result.to_h)
       end
     end
   end

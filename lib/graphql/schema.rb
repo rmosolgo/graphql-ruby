@@ -716,8 +716,7 @@ module GraphQL
         :find,
         :subscriptions,
         # TODO: these must be ported for warden to work.
-        :union_memberships,
-        :references_to
+        :union_memberships
 
       def graphql_definition
         @graphql_definition ||= to_graphql
@@ -869,6 +868,23 @@ module GraphQL
       def possible_types(type)
         @possible_types ||= {}
         @possible_types[type.graphql_name] || [type]
+      end
+
+      def references_to(to_type = nil, from: nil)
+        @references_to ||= Hash.new { |h, k| h[k] = [] }
+        if to_type
+          if !to_type.is_a?(String)
+            to_type = to_type.graphql_name
+          end
+
+          if from
+            @references_to[to_type] << from
+          else
+            @references_to[to_type]
+          end
+        else
+          @references_to
+        end
       end
 
       def type_from_ast(ast_node)
@@ -1149,9 +1165,7 @@ module GraphQL
       # Attach a single directive to this schema
       # @param new_directive [Class]
       def directive(new_directive)
-        new_directive.arguments.each do |n, arg|
-          add_type(arg.type.unwrap, owner: arg, late_types: [])
-        end
+        add_root_type(new_directive)
         @directives ||= {}
         @directives[new_directive.graphql_name] = new_directive
       end
@@ -1341,24 +1355,37 @@ module GraphQL
           else
             # This type was already added
           end
+        elsif type.is_a?(Class) && type < GraphQL::Schema::Directive
+          type.arguments.each do |_name, arg|
+            arg_type = arg.type.unwrap
+            references_to(arg_type, from: arg)
+            add_type(arg_type, owner: arg, late_types: late_types)
+          end
         else
           types[type.graphql_name] = type
           if type.kind.fields?
             type.fields.each do |_name, field|
-              add_type(field.type.unwrap, owner: field, late_types: late_types)
+              field_type = field.type.unwrap
+              references_to(field_type, from: field)
+              add_type(field_type, owner: field, late_types: late_types)
               field.arguments.each do |_name, arg|
-                add_type(arg.type.unwrap, owner: arg, late_types: late_types)
+                arg_type = arg.type.unwrap
+                references_to(arg_type, from: arg)
+                add_type(arg_type, owner: arg, late_types: late_types)
               end
             end
           end
           if type.kind.input_object?
             type.arguments.each do |_name, arg|
-              add_type(arg.type.unwrap, owner: arg, late_types: late_types)
+              arg_type = arg.type.unwrap
+              references_to(arg_type, from: arg)
+              add_type(arg_type, owner: arg, late_types: late_types)
             end
           end
           if type.kind.union?
             @possible_types[type.graphql_name] = type.possible_types
             type.possible_types.each do |t|
+              references_to(t, from: type)
               add_type(t, owner: type, late_types: late_types)
             end
           end
@@ -1366,6 +1393,7 @@ module GraphQL
             type.interfaces.each do |i|
               implementers = @possible_types[i.graphql_name] ||= []
               implementers << type
+              references_to(i, from: type)
               add_type(i, owner: nil, late_types: late_types)
             end
           end

@@ -31,7 +31,7 @@ describe GraphQL::UnionType do
     union.resolve_type = ->(value, ctx) {
       "This is not the types you are looking for"
     }
-    fake_ctx = OpenStruct.new(query: GraphQL::Query.new(Dummy::Schema, ""))
+    fake_ctx = OpenStruct.new(query: GraphQL::Query.new(GraphQL::Schema.new, ""))
 
     assert_raises(RuntimeError) {
       union.resolve_type(test_str, fake_ctx)

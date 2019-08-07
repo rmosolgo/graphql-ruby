@@ -845,6 +845,7 @@ describe GraphQL::Schema::Warden do
       ->(member, ctx) { member.metadata[:hidden_enum_value] }
     }
     let(:schema) {
+      # TODO requires schema inheritance
       MaskHelpers::Schema.redefine(default_mask: default_mask)
     }
     let(:query_str) { <<-GRAPHQL

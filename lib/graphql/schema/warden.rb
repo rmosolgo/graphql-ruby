@@ -51,6 +51,7 @@ module GraphQL
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
       def get_type(type_name)
         @visible_types ||= read_through do |name|
+          # TODO make a normalized API for this -- see validation visitor, too
           type_defn = if @schema.is_a?(Class)
             @schema.types[name]
           else
@@ -159,8 +160,7 @@ module GraphQL
       end
 
       def root_type?(type_defn)
-        @schema.root_types.include?(type_defn) ||
-          @schema.query == type_defn ||
+        @schema.query == type_defn ||
           @schema.mutation == type_defn ||
           @schema.subscription == type_defn
       end

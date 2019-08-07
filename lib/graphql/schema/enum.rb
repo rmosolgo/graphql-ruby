@@ -75,6 +75,10 @@ module GraphQL
 
         def validate_input(value_name, ctx)
           result = GraphQL::Query::InputValidationResult.new
+          if value_name.nil?
+            return result
+          end
+
           allowed_values = ctx.warden.enum_values(self)
           matching_value = allowed_values.find { |v| v.graphql_name == value_name }
 
@@ -86,6 +90,10 @@ module GraphQL
         end
 
         def coerce_result(value, ctx)
+          if value.nil?
+            return nil
+          end
+
           warden = ctx.warden
           all_values = warden ? warden.enum_values(self) : values.each_value
           enum_value = all_values.find { |val| val.value == value }
