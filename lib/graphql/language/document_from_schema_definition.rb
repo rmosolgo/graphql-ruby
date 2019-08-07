@@ -50,7 +50,7 @@ module GraphQL
       def build_object_type_node(object_type)
         GraphQL::Language::Nodes::ObjectTypeDefinition.new(
           name: object_type.graphql_name,
-          interfaces: warden.interfaces(object_type).sort_by(&:name).map { |iface| build_type_name_node(iface) },
+          interfaces: warden.interfaces(object_type).sort_by(&:graphql_name).map { |iface| build_type_name_node(iface) },
           fields: build_field_nodes(warden.fields(object_type)),
           description: object_type.description,
         )
@@ -78,7 +78,7 @@ module GraphQL
         GraphQL::Language::Nodes::UnionTypeDefinition.new(
           name: union_type.graphql_name,
           description: union_type.description,
-          types: warden.possible_types(union_type).sort_by(&:name).map { |type| build_type_name_node(type) }
+          types: warden.possible_types(union_type).sort_by(&:graphql_name).map { |type| build_type_name_node(type) }
         )
       end
 
@@ -93,7 +93,7 @@ module GraphQL
       def build_enum_type_node(enum_type)
         GraphQL::Language::Nodes::EnumTypeDefinition.new(
           name: enum_type.graphql_name,
-          values: warden.enum_values(enum_type).sort_by(&:name).map do |enum_value|
+          values: warden.enum_values(enum_type).sort_by(&:graphql_name).map do |enum_value|
             build_enum_value_node(enum_value)
           end,
           description: enum_type.description,
@@ -168,12 +168,12 @@ module GraphQL
       end
 
       def build_type_name_node(type)
-        case type
-        when GraphQL::ListType
+        case type.kind.name
+        when "LIST"
           GraphQL::Language::Nodes::ListType.new(
             of_type: build_type_name_node(type.of_type)
           )
-        when GraphQL::NonNullType
+        when "NON_NULL"
           GraphQL::Language::Nodes::NonNullType.new(
             of_type: build_type_name_node(type.of_type)
           )
