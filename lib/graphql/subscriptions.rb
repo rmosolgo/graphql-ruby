@@ -18,12 +18,17 @@ module GraphQL
 
     # @see {Subscriptions#initialize} for options, concrete implementations may add options.
     def self.use(defn, options = {})
-      schema = defn.target
+      if defn.is_a?(Class)
+        schema = defn
+      else
+        schema = defn.target
+        instrumentation = Subscriptions::Instrumentation.new(schema: schema)
+        defn.instrument(:field, instrumentation)
+        defn.instrument(:query, instrumentation)
+      end
+
       options[:schema] = schema
       schema.subscriptions = self.new(options)
-      instrumentation = Subscriptions::Instrumentation.new(schema: schema)
-      defn.instrument(:field, instrumentation)
-      defn.instrument(:query, instrumentation)
       nil
     end
 

@@ -14,7 +14,11 @@ module GraphQL
       module_function
 
       def use(schema_defn)
-        schema = schema_defn.target
+        schema = if schema_defn.is_a?(Class)
+          schema_defn
+        else
+          schema_defn.target
+        end
         schema.analysis_engine = GraphQL::Analysis::AST
       end
 

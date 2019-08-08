@@ -192,11 +192,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
   }
-  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers).redefine do
-    use InMemoryBackend::Subscriptions,
-        extra: 123
-  end
-
+  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }})
   # TODO don't hack this (no way to add metadata from IDL parser right now)
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
@@ -297,7 +293,7 @@ describe GraphQL::Subscriptions do
           # Application stuff happens.
           # The application signals graphql via `subscriptions.trigger`:
           schema.subscriptions.trigger(:payload, {"id" => "100"}, root_object.payload)
-          # Symobls are OK too
+          # Symbols are OK too
           schema.subscriptions.trigger(:payload, {:id => "100"}, root_object.payload)
           schema.subscriptions.trigger("payload", {"id" => "300"}, nil)
 

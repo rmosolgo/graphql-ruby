@@ -667,7 +667,7 @@ module Jazz
 
   class MetadataPlugin
     def self.use(schema_defn, value:)
-      schema_defn.target.metadata[:plugin_key] = value
+      schema_defn.metadata[:plugin_key] = value
     end
   end
 

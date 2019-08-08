@@ -54,7 +54,7 @@ module GraphQL
       attr_reader :trace
 
       # @return [String, nil]
-      attr_reader :subscription_scope
+      attr_accessor :subscription_scope
 
       # Create a field instance from a list of arguments, keyword arguments, and a block.
       #

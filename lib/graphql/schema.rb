@@ -652,14 +652,14 @@ module GraphQL
     # @param default_resolve [<#call(type, field, obj, args, ctx)>] A callable for handling field resolution
     # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
     # @return [GraphQL::Schema] the schema described by `document`
-    def self.from_definition(definition_or_path, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser)
+    def self.from_definition(definition_or_path, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser, using: {})
       # If the file ends in `.graphql`, treat it like a filepath
       definition = if definition_or_path.end_with?(".graphql")
         File.read(definition_or_path)
       else
         definition_or_path
       end
-      GraphQL::Schema::BuildFromDefinition.from_definition(definition, default_resolve: default_resolve, parser: parser)
+      GraphQL::Schema::BuildFromDefinition.from_definition(definition, default_resolve: default_resolve, parser: parser, using: using)
     end
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
@@ -727,7 +727,6 @@ module GraphQL
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
-        :analysis_engine, :analysis_engine=, :using_ast_analysis?, :interpreter?,
         :max_complexity=, :max_depth=,
         :metadata,
         :default_mask,
@@ -737,15 +736,22 @@ module GraphQL
         :remove_handler,
         # Members
         :find,
-        :subscriptions,
         # TODO: these must be ported for warden to work.
         :union_memberships
+
+      # @return [GraphQL::Subscriptions]
+      attr_accessor :subscriptions
 
       def graphql_definition
         @graphql_definition ||= to_graphql
       end
 
       def use(plugin, options = {})
+        if options.any?
+          plugin.use(self, options)
+        else
+          plugin.use(self)
+        end
         own_plugins << [plugin, options]
       end
 
@@ -756,14 +762,14 @@ module GraphQL
       def to_graphql
         schema_defn = self.new
         schema_defn.raise_definition_error = true
-        schema_defn.query = query
-        schema_defn.mutation = mutation
-        schema_defn.subscription = subscription
+        schema_defn.query = query && query.graphql_definition
+        schema_defn.mutation = mutation && mutation.graphql_definition
+        schema_defn.subscription = subscription && subscription.graphql_definition
         schema_defn.max_complexity = max_complexity
         schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
-        schema_defn.orphan_types = orphan_types
+        schema_defn.orphan_types = orphan_types.map(&:graphql_definition)
         schema_defn.disable_introspection_entry_points = disable_introspection_entry_points?
 
         prepped_dirs = {}
@@ -827,6 +833,10 @@ module GraphQL
 
       # @return [GraphQL::Pagination::Connections] if installed
       attr_accessor :connections
+
+      def new_connections?
+        !!connections
+      end
 
       def query(new_query_object = nil)
         if new_query_object
@@ -1002,6 +1012,22 @@ module GraphQL
           @max_complexity || find_inherited_value(:max_complexity)
         end
       end
+
+      attr_writer :analysis_engine
+
+      def analysis_engine
+        @analysis_engine || find_inherited_value(:analysis_engine, GraphQL::Analysis)
+      end
+
+      def using_ast_analysis?
+        @analysis_engine == GraphQL::Analysis::AST
+      end
+
+      def interpreter?
+        @interpreter
+      end
+
+      attr_writer :interpreter
 
       def error_bubbling(new_error_bubbling = nil)
         if !new_error_bubbling.nil?

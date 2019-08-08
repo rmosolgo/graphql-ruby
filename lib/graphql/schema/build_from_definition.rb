@@ -5,9 +5,9 @@ module GraphQL
   class Schema
     module BuildFromDefinition
       class << self
-        def from_definition(definition_string, default_resolve:, parser: DefaultParser)
+        def from_definition(definition_string, default_resolve:, using: {}, parser: DefaultParser)
           document = parser.parse(definition_string)
-          Builder.build(document, default_resolve: default_resolve)
+          Builder.build(document, default_resolve: default_resolve, using: using)
         end
       end
 
@@ -29,7 +29,7 @@ module GraphQL
       module Builder
         extend self
 
-        def build(document, default_resolve: DefaultResolve)
+        def build(document, default_resolve: DefaultResolve, using: {})
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
 
           if default_resolve.is_a?(Hash)
@@ -87,6 +87,10 @@ module GraphQL
             subscription_root_type = types['Subscription']
           end
 
+          if subscription_root_type
+            subscription_root_type.extend(GraphQL::Subscriptions::SubscriptionRoot)
+          end
+
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
           Class.new(GraphQL::Schema) do
@@ -121,6 +125,9 @@ module GraphQL
 
             use GraphQL::Execution::Interpreter
             use GraphQL::Analysis::AST
+            using.each do |plugin, options|
+              use(plugin, options)
+            end
           end
         end
 
