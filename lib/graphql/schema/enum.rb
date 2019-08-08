@@ -54,6 +54,7 @@ module GraphQL
           enum_type.name = graphql_name
           enum_type.description = description
           enum_type.introspection = introspection
+          enum_type.ast_node = ast_node
           values.each do |name, val|
             enum_type.add_value(val.to_graphql)
           end

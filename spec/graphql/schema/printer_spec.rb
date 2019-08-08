@@ -866,4 +866,18 @@ SCHEMA
       assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema, context: context, only: only_filter).print_schema
     end
   end
+
+  it "prints schemas from class" do
+    class TestPrintSchema < GraphQL::Schema
+      class OddlyNamedQuery < GraphQL::Schema::Object
+        field :int, Int, null: false
+      end
+
+      query(OddlyNamedQuery)
+    end
+
+
+    str = GraphQL::Schema::Printer.print_schema TestPrintSchema
+    assert_equal "schema {\n  query: OddlyNamedQuery\n}\n\ntype OddlyNamedQuery {\n  int: Int!\n}", str
+  end
 end

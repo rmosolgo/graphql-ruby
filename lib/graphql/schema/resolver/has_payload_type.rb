@@ -27,7 +27,7 @@ module GraphQL
           if new_class
             @field_class = new_class
           else
-            @field_class || find_inherited_method(:field_class, GraphQL::Schema::Field)
+            @field_class || find_inherited_value(:field_class, GraphQL::Schema::Field)
           end
         end
 
@@ -37,8 +37,9 @@ module GraphQL
         def object_class(new_class = nil)
           if new_class
             @object_class = new_class
+          else
+            @object_class || find_inherited_value(:object_class, GraphQL::Schema::Object)
           end
-          @object_class || (superclass.respond_to?(:object_class) ? superclass.object_class : GraphQL::Schema::Object)
         end
 
         private

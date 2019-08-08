@@ -41,6 +41,7 @@ module GraphQL
           defn.description = self.description
           defn.locations = self.locations
           defn.default_directive = self.default_directive
+          defn.ast_node = ast_node
           defn.metadata[:type_class] = self
           arguments.each do |name, arg_defn|
             arg_graphql = arg_defn.to_graphql

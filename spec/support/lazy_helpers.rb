@@ -123,7 +123,7 @@ module LazyHelpers
     end
 
     field :list_sum, [LazySum, null: true], null: true do
-      argument :values, [Integer], required: true
+      argument :values, [Integer], required: true, method_access: false
     end
     def list_sum(values:)
       values.map { |v| v == MAGIC_NUMBER_THAT_RETURNS_NIL ? nil : v }

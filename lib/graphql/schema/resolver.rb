@@ -123,12 +123,36 @@ module GraphQL
       # Called after arguments are loaded, but before resolving.
       #
       # Override it to check everything before calling the mutation.
-      # @param args [Hash] The input arguments
+      # @param inputs [Hash] The input arguments
       # @raise [GraphQL::ExecutionError] To add an error to the response
       # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
       # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
-      def authorized?(**args)
-        true
+      def authorized?(**inputs)
+        self.class.arguments.each_value do |argument|
+          arg_keyword = argument.keyword
+          if inputs.key?(arg_keyword) && !(value = inputs[arg_keyword]).nil? && (value != argument.default_value)
+            loads_type = @arguments_loads_as_type[arg_keyword]
+            # If this argument resulted in an object being loaded,
+            # then authorize this loaded object with its own policy.
+            #
+            # But if this argument was "just" a plain argument, like
+            # a boolean, then authorize it based on the mutation.
+            authorization_value = if loads_type
+              value
+            else
+              self
+            end
+
+            arg_auth, err = argument.authorized?(authorization_value, context)
+            if !arg_auth
+              return arg_auth, err
+            else
+              true
+            end
+          else
+            true
+          end
+        end
       end
 
       private
@@ -254,12 +278,11 @@ module GraphQL
         # Add an argument to this field's signature, but
         # also add some preparation hook methods which will be used for this argument
         # @see {GraphQL::Schema::Argument#initialize} for the signature
-        def argument(name, type, *rest, loads: nil, **kwargs, &block)
-          *args, kwargs = argument_with_loads(name, type, *rest, loads: loads, **kwargs, &block)
-          # Short-circuit the InputObject's own `loads:` implementation
+        def argument(*args, **kwargs, &block)
+          loads = kwargs[:loads]
+          # Use `from_resolver: true` to short-circuit the InputObject's own `loads:` implementation
           # so that we can support `#load_{x}` methods below.
-          kwargs.delete(:loads)
-          arg_defn = super(*args, **kwargs)
+          arg_defn = super(*args, from_resolver: true, **kwargs)
           own_arguments_loads_as_type[arg_defn.keyword] = loads if loads
 
           if loads && arg_defn.type.list?

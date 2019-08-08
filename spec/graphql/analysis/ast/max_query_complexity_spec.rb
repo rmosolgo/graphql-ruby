@@ -2,14 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Analysis::AST::MaxQueryComplexity do
-  before do
-    @prev_max_complexity = Dummy::Schema.max_complexity
-  end
-
-  after do
-    Dummy::Schema.max_complexity = @prev_max_complexity
-  end
-
+  let(:schema) { Class.new(Dummy::Schema) }
   let(:query_string) {%|
     {
       a: cheese(id: 1) { id }
@@ -19,7 +12,7 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
       e: cheese(id: 1) { id }
     }
   |}
-  let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: {}, max_complexity: max_complexity) }
+  let(:query) { GraphQL::Query.new(schema, query_string, variables: {}, max_complexity: max_complexity) }
   let(:result) {
     GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::MaxQueryComplexity]).first
   }
@@ -52,7 +45,7 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
 
   describe "when max_complexity is decreased at query-level" do
     before do
-      Dummy::Schema.max_complexity = 100
+      schema.max_complexity(100)
     end
 
     let(:max_complexity) { 7 }
@@ -65,7 +58,7 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
 
   describe "when max_complexity is increased at query-level" do
     before do
-      Dummy::Schema.max_complexity = 1
+      schema.max_complexity(1)
     end
 
     let(:max_complexity) { 10 }
@@ -75,24 +68,31 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
     end
   end
 
-  describe "across a multiplex" do
+  describe "when max_complexity is nil at query-level" do
+    let(:max_complexity) { nil }
+
     before do
-      @old_analysis_engine = Dummy::Schema.analysis_engine
-      Dummy::Schema.analysis_engine = GraphQL::Analysis::AST
+      schema.max_complexity(1)
     end
 
-    after do
-      Dummy::Schema.analysis_engine = @old_analysis_engine
+    it "is applied" do
+      assert_nil result
+    end
+  end
+
+  describe "across a multiplex" do
+    before do
+      schema.analysis_engine = GraphQL::Analysis::AST
     end
 
     let(:queries) {
       5.times.map { |n|
-        GraphQL::Query.new(Dummy::Schema, "{ cheese(id: #{n}) { id } }", variables: {})
+        GraphQL::Query.new(schema, "{ cheese(id: #{n}) { id } }", variables: {})
       }
     }
 
     let(:max_complexity) { 9 }
-    let(:multiplex) { GraphQL::Execution::Multiplex.new(schema: Dummy::Schema, queries: queries, context: {}, max_complexity: max_complexity) }
+    let(:multiplex) { GraphQL::Execution::Multiplex.new(schema: schema, queries: queries, context: {}, max_complexity: max_complexity) }
     let(:analyze_multiplex) {
       GraphQL::Analysis::AST.analyze_multiplex(multiplex, [GraphQL::Analysis::AST::MaxQueryComplexity])
     }

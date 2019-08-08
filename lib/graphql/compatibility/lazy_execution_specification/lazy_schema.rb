@@ -88,7 +88,7 @@ module GraphQL
             end
 
             connection :pushes, lazy_push_type.connection_type do
-              argument :values, types[types.Int]
+              argument :values, types[types.Int], method_access: false
               resolve ->(o, a, c) {
                 LazyPushCollection.new(c, a[:values])
               }

@@ -8,7 +8,7 @@ module GraphQL
           if new_edge_type_class
             @edge_type_class = new_edge_type_class
           else
-            @edge_type_class || find_inherited_method(:edge_type_class, Types::Relay::BaseEdge)
+            @edge_type_class || find_inherited_value(:edge_type_class, Types::Relay::BaseEdge)
           end
         end
 
@@ -16,7 +16,7 @@ module GraphQL
           if new_connection_type_class
             @connection_type_class = new_connection_type_class
           else
-            @connection_type_class || find_inherited_method(:connection_type_class, Types::Relay::BaseConnection)
+            @connection_type_class || find_inherited_value(:connection_type_class, Types::Relay::BaseConnection)
           end
         end
 

@@ -168,17 +168,21 @@ module GraphQL
       end
 
       def build_type_name_node(type)
-        case type.kind.name
-        when "LIST"
-          GraphQL::Language::Nodes::ListType.new(
-            of_type: build_type_name_node(type.of_type)
-          )
-        when "NON_NULL"
-          GraphQL::Language::Nodes::NonNullType.new(
-            of_type: build_type_name_node(type.of_type)
-          )
+        if type.is_a?(Schema::LateBoundType)
+          GraphQL::Language::Nodes::TypeName.new(name: type.name)
         else
-          GraphQL::Language::Nodes::TypeName.new(name: type.graphql_name)
+          case type.kind.name
+          when "LIST"
+            GraphQL::Language::Nodes::ListType.new(
+              of_type: build_type_name_node(type.of_type)
+            )
+          when "NON_NULL"
+            GraphQL::Language::Nodes::NonNullType.new(
+              of_type: build_type_name_node(type.of_type)
+            )
+          else
+            GraphQL::Language::Nodes::TypeName.new(name: type.graphql_name)
+          end
         end
       end
 
@@ -195,7 +199,7 @@ module GraphQL
         when "INPUT_OBJECT"
           GraphQL::Language::Nodes::InputObject.new(
             arguments: default_value.to_h.map do |arg_name, arg_value|
-              arg_type = type.input_fields.fetch(arg_name.to_s).type
+              arg_type = type.arguments.fetch(arg_name.to_s).type
               GraphQL::Language::Nodes::Argument.new(
                 name: arg_name,
                 value: build_default_value(arg_value, arg_type)

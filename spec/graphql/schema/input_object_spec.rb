@@ -395,4 +395,29 @@ describe GraphQL::Schema::InputObject do
       assert_equal ["ensembleId", "stringValue", "nestedInput", "legacyInput"], input_type["inputFields"].map { |f| f["name"] }
     end
   end
+
+  describe "warning for method objects" do
+    it "warns for method conflicts" do
+      input_object = Class.new(GraphQL::Schema::InputObject) do
+        graphql_name "X"
+        argument :method, String, required: true
+      end
+
+      expected_warning = "Unable to define a helper for argument with name 'method' as this is a reserved name. Add `method_access: false` to stop this warning.\n"
+      assert_output "", expected_warning do
+        input_object.graphql_definition
+      end
+    end
+
+    it "doesn't warn with `method_access: false`" do
+      input_object = Class.new(GraphQL::Schema::InputObject) do
+        graphql_name "X"
+        argument :method, String, required: true, method_access: false
+      end
+
+      assert_output "", "" do
+        input_object.graphql_definition
+      end
+    end
+  end
 end

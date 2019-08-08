@@ -25,7 +25,7 @@ module GraphQL
           ruby_kwargs_key = arg_defn.keyword
           loads = arg_defn.loads
 
-          if @ruby_style_hash.key?(ruby_kwargs_key) && loads
+          if @ruby_style_hash.key?(ruby_kwargs_key) && loads && !arg_defn.from_resolver?
             value = @ruby_style_hash[ruby_kwargs_key]
             @ruby_style_hash[ruby_kwargs_key] = if arg_defn.type.list?
               GraphQL::Execution::Lazy.all(value.map { |val| load_application_object(arg_defn, loads, val) })
@@ -101,8 +101,6 @@ module GraphQL
         attr_accessor :arguments_class
 
         def argument(*args, **kwargs, &block)
-          # Translate `loads:` to `as:` if needed`
-          *args, kwargs = argument_with_loads(*args, **kwargs, &block)
           argument_defn = super(*args, **kwargs, &block)
           # Add a method access
           method_name = argument_defn.keyword
@@ -117,6 +115,7 @@ module GraphQL
           type_defn.description = description
           type_defn.metadata[:type_class] = self
           type_defn.mutation = mutation
+          type_defn.ast_node = ast_node
           arguments.each do |name, arg|
             type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition
           end

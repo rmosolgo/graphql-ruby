@@ -6,11 +6,11 @@ module GraphQL
       module HasFields
         # Add a field to this object or interface with the given definition
         # @see {GraphQL::Schema::Field#initialize} for method signature
-        # @return [void]
+        # @return [GraphQL::Schema::Field]
         def field(*args, **kwargs, &block)
           field_defn = field_class.from_options(*args, owner: self, **kwargs, &block)
           add_field(field_defn)
-          nil
+          field_defn
         end
 
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
@@ -38,10 +38,24 @@ module GraphQL
           end
         end
 
+        # A list of field names that we should advise users to pick a different
+        # resolve method name.
+        #
+        # @api private
+        CONFLICT_FIELD_NAMES = Set.new([
+          # GraphQL-Ruby conflicts
+          :context, :object,
+          # Ruby built-ins conflicts
+          :method, :class
+        ])
+
         # Register this field with the class, overriding a previous one if needed.
         # @param field_defn [GraphQL::Schema::Field]
         # @return [void]
         def add_field(field_defn)
+          if CONFLICT_FIELD_NAMES.include?(field_defn.resolver_method) && field_defn.method_conflict_warning?
+            warn "#{self.graphql_name}'s `field :#{field_defn.name}` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.resolver_method}` and `def resolve_#{field_defn.resolver_method}`). Or use `method_conflict_warning: false` to suppress this warning."
+          end
           own_fields[field_defn.name] = field_defn
           nil
         end

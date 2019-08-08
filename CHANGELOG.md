@@ -8,6 +8,34 @@
 
 ### Bug fixes
 
+## 1.9.9 (30 July 2019)
+
+### New features
+
+- Memoize generated strings in `.to_query_string` #2400
+- Memoize generated strings in platform tracing #2401
+
+### Bug fixes
+
+- Support class-based subscription type in `.define`-based schema #2403
+
+## 1.9.8 (24 July 2019)
+
+### New features
+
+- Schema classes pass their configuration to subclasses #2384
+- Improve memory consumption of lexer and complexity validator #2389
+- The `install` generator creates a BaseArgument #2379
+- When a field name conflicts with a built-in method name, give a warning #2376
+
+### Bug fixes
+
+- When a resolver argument uses `loads:`, the argument definition will preserve the type in `.loads` #2365
+- When an required argument is hidden, it won't add a validation error #2393
+- Fix handling of invalid UTF-8 #2372, #2377
+- Empty block strings are parsed correctly #2381
+- For resolvers, only authorize arguments once #2378
+
 ## 1.9.7 (25 June 2019)
 
 ### Breaking changes
@@ -158,13 +186,13 @@
 - Fix unwrapping inputobject types when turning arguments to hashes #2094
 - Support lazy objects from `.resolve_type` hooks #2108
 
-## 1.8.14 (9 Feb 2018)
+## 1.8.14 (9 Feb 2019)
 
 ### Bug Fixes
 
 - Fix single-item list inputs that aren't passed as lists #2095
 
-## 1.8.13 (4 Jan 2018)
+## 1.8.13 (4 Jan 2019)
 
 ### Bug fixes
 

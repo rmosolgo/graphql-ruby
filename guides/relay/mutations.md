@@ -23,7 +23,7 @@ To add mutations to your GraphQL schema, define a mutation type and pass it to y
 
 ```ruby
 # Define the mutation type
-class MutationType < GraphQL::Schema::Object
+class Types::MutationType < GraphQL::Schema::Object
   # ...
 end
 

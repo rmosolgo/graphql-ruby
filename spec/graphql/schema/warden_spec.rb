@@ -432,28 +432,25 @@ describe GraphQL::Schema::Warden do
     end
 
     it "hides unions if all possible types are hidden or its references are hidden" do
-      sdl = "
-        type Query {
-          bag: BagOfThings
-        }
+      class PossibleTypesSchema < GraphQL::Schema
+        class A < GraphQL::Schema::Object
+          field :id, ID, null: false
+        end
 
-        type A {
-          id: ID!
-        }
+        class B < A; end
+        class C < A; end
 
-        type B {
-          id: ID!
-        }
+        class BagOfThings < GraphQL::Schema::Union
+          possible_types A, B, C
+        end
+        class Query < GraphQL::Schema::Object
+          field :bag, BagOfThings, null: false
+        end
 
-        type C {
-          id: ID!
-        }
+        query(Query)
+      end
 
-        union BagOfThings = A | B | C
-      "
-
-      schema = GraphQL::Schema.from_definition(sdl)
-      schema.orphan_types = []
+      schema = PossibleTypesSchema
 
       query_string = %|
         {
@@ -476,7 +473,7 @@ describe GraphQL::Schema::Warden do
       assert_equal [], res["data"]["Query"]["fields"]
 
       # Unreferenced but still visible because orphan type
-      schema.orphan_types = [schema.find("BagOfThings")]
+      schema.graphql_definition.orphan_types = [schema.find("BagOfThings")]
       res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
       assert res["data"]["BagOfThings"]
     end

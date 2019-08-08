@@ -1,6 +1,6 @@
 {
   "name": "graphql-ruby-client",
-  "version": "1.6.4",
+  "version": "1.6.6",
   "description": "JavaScript client for graphql-ruby",
   "main": "index.js",
   "repository": "https://github.com/rmosolgo/graphql-ruby-client",

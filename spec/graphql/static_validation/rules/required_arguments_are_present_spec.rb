@@ -10,7 +10,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
     }
 
     fragment cheeseFields on Cheese {
-      similarCheese() { __typename }
+      similarCheese { __typename }
       flavor @include(if: true)
       id @skip
     }
@@ -68,6 +68,31 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
         }
       ]
       assert_equal(expected_errors, errors)
+    end
+  end
+
+  describe "when a required arg is hidden" do
+    class Query < GraphQL::Schema::Object
+      field :int, Integer, null: true do
+        argument :input, Integer, required: true do
+          def visible?(*)
+            false
+          end
+        end
+      end
+
+      def int(input: -1)
+        input
+      end
+    end
+
+    class HiddenArgSchema < GraphQL::Schema
+      query(Query)
+    end
+
+    it "Doesn't require a hidden input" do
+      res = HiddenArgSchema.execute("{ int }")
+      assert_equal -1, res["data"]["int"]
     end
   end
 end

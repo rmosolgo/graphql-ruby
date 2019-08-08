@@ -445,7 +445,7 @@ module Dummy
   GLOBAL_VALUES = []
 
   class ReplaceValuesInput < BaseInputObject
-    argument :values, [Integer], required: true
+    argument :values, [Integer], required: true, method_access: false
   end
 
   class DairyAppMutation < BaseObject

@@ -32,6 +32,8 @@ describe GraphQL::Analysis do
     end
   end
 
+  let(:schema) { Class.new(Dummy::Schema) }
+
   describe ".analyze_query" do
     let(:node_counter) {
       ->(memo, visit_type, irep_node) {
@@ -44,7 +46,7 @@ describe GraphQL::Analysis do
     let(:analyzers) { [type_collector, node_counter] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:variables) { {} }
-    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
+    let(:query) { GraphQL::Query.new(schema, query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -59,7 +61,7 @@ describe GraphQL::Analysis do
       let(:analyzers) { [type_collector, conditional_analyzer] }
 
       describe "when analyze? returns false" do
-        let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: { analyze: false }) }
+        let(:query) { GraphQL::Query.new(schema, query_string, variables: variables, context: { analyze: false }) }
 
         it "does not run the analyzer" do
           # Only type_collector ran
@@ -68,7 +70,7 @@ describe GraphQL::Analysis do
       end
 
       describe "when analyze? returns true" do
-        let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: { analyze: true }) }
+        let(:query) { GraphQL::Query.new(schema, query_string, variables: variables, context: { analyze: true }) }
 
         it "it runs the analyzer" do
           # Both analyzers ran
@@ -94,7 +96,7 @@ describe GraphQL::Analysis do
       it "emits traces" do
         traces = TestTracing.with_trace do
           ctx = { tracers: [TestTracing] }
-          Dummy::Schema.execute(query_string, context: ctx)
+          schema.execute(query_string, context: ctx)
         end
 
         # The query_trace is on the list _first_ because it finished first
@@ -120,14 +122,7 @@ describe GraphQL::Analysis do
       let(:variable_accessor) { ->(memo, visit_type, irep_node) { query.variables["cheeseId"] } }
 
       before do
-        @previous_query_analyzers = Dummy::Schema.query_analyzers.dup
-        Dummy::Schema.query_analyzers.clear
-        Dummy::Schema.query_analyzers << variable_accessor
-      end
-
-      after do
-        Dummy::Schema.query_analyzers.clear
-        Dummy::Schema.query_analyzers.push(*@previous_query_analyzers)
+        schema.query_analyzer(variable_accessor)
       end
 
       it "returns an error" do
@@ -214,7 +209,7 @@ describe GraphQL::Analysis do
     let(:flavor_catcher) { FlavorCatcher.new }
     let(:analyzers) { [id_catcher, flavor_catcher] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
-    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
+    let(:query) { GraphQL::Query.new(schema, query_string) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -223,7 +218,12 @@ describe GraphQL::Analysis do
         }
       }
     |}
-    let(:schema) { Dummy::Schema }
+    let(:schema) do
+      schema = Class.new(Dummy::Schema)
+      schema.query_analyzer(id_catcher)
+      schema.query_analyzer(flavor_catcher)
+      schema
+    end
     let(:result) { schema.execute(query_string) }
     let(:query_string) {%|
       {
@@ -233,17 +233,6 @@ describe GraphQL::Analysis do
         }
       }
     |}
-
-    before do
-      @previous_query_analyzers = Dummy::Schema.query_analyzers.dup
-      Dummy::Schema.query_analyzers.clear
-      Dummy::Schema.query_analyzers << id_catcher << flavor_catcher
-    end
-
-    after do
-      Dummy::Schema.query_analyzers.clear
-      Dummy::Schema.query_analyzers.push(*@previous_query_analyzers)
-    end
 
     it "groups all errors together" do
       data = result["data"]

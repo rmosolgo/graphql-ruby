@@ -8,6 +8,23 @@
 
 ### Bug Fix
 
+## 1.10.7 (22 Jul 2019)
+
+### Bug Fix
+
+- Support multiple subscriptions in one document
+
+## 1.10.6 (27 Jun 2019)
+
+### New Features
+
+- Support custom `#can_can_ability` methods on query context for CanCanIntegration
+- Support custom `#pundit_user` method on query context for PunditIntegration
+
+### Bug Fix
+
+- Fix off-by-one error when paginating backwards from the last item in a stable relation connection
+
 ## 1.10.5 (11 May 2019)
 
 ### New Features

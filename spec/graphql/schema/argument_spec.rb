@@ -18,7 +18,7 @@ describe GraphQL::Schema::Argument do
           raise GraphQL::ExecutionError.new('boom!')
         end
 
-        argument :keys, [String], required: false
+        argument :keys, [String], required: false, method_access: false
 
         class Multiply
           def call(val, context)

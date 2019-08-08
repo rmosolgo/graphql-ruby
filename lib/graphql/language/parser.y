@@ -77,8 +77,11 @@ rule
       }
 
   type:
+      nullable_type           { return val[0] }
+    | nullable_type BANG      { return make_node(:NonNullType, of_type: val[0]) }
+
+  nullable_type:
       name                   { return make_node(:TypeName, name: val[0])}
-    | type BANG              { return make_node(:NonNullType, of_type: val[0]) }
     | LBRACKET type RBRACKET { return make_node(:ListType, of_type: val[1]) }
 
   default_value_opt:
@@ -165,7 +168,6 @@ rule
 
   arguments_opt:
       /* none */                    { return EMPTY_ARRAY }
-    | LPAREN RPAREN                 { return EMPTY_ARRAY }
     | LPAREN arguments_list RPAREN  { return val[1] }
 
   arguments_list:
@@ -187,7 +189,7 @@ rule
     | object_literal_value
 
   input_value:
-    | literal_value
+    literal_value
     | variable
     | object_value
 
@@ -451,7 +453,7 @@ def parse_document
     # From the tokens, build an AST
     @tracer.trace("parse", {query_string: @query_string}) do
       if @tokens.empty?
-        make_node(:Document, definitions: [], filename: @filename)
+        raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string)
       else
         do_parse
       end

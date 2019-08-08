@@ -186,12 +186,20 @@ describe GraphQL::Schema::Resolver do
     class IntegerWrapper < GraphQL::Schema::Object
       implements HasValue
       field :value, Integer, null: false, method: :itself
+
+      def self.authorized?(value, ctx)
+        if ctx[:max_value] && value > ctx[:max_value]
+          false
+        else
+          true
+        end
+      end
     end
 
     class PrepResolver9 < BaseResolver
       argument :int_id, ID, required: true, loads: HasValue
       # Make sure the lazy object is resolved properly:
-      type HasValue, null: false
+      type HasValue, null: true
       def object_from_id(type, id, ctx)
         # Make sure a lazy object is handled appropriately
         LazyBlock.new {
@@ -556,6 +564,11 @@ describe GraphQL::Schema::Resolver do
       refute res.key?("errors"), "#{description}: silent auth failure (no top-level error)"
     end
 
+    it "keeps track of the `loads:` option" do
+      arg = ResolverTest::MutationWithNullableLoadsArgument.arguments["labelId"]
+      assert_equal ResolverTest::HasValue, arg.loads
+    end
+
     describe "ready?" do
       it "can raise errors" do
         res = exec_query("{ int: prepResolver5(int: 5) }")
@@ -657,6 +670,22 @@ describe GraphQL::Schema::Resolver do
         it "works with no arguments for RelayClassicMutation" do
           res = exec_query("{ prepResolver14(input: {}) { number } }")
           assert_equal 1, res["data"]["prepResolver14"]["number"]
+        end
+
+        it "uses loaded objects" do
+          query_str = "{ prepResolver9(intId: 9) { value } }"
+          # This will cause an unauthorized response
+          # by `HasValue.authorized?`
+          context = { max_value: 8 }
+          res = exec_query(query_str, context: context)
+          assert_nil res["data"]["prepResolver9"]
+          # This is OK
+          context = { max_value: 900 }
+          res = exec_query(query_str, context: context)
+          assert_equal 51, res["data"]["prepResolver9"]["value"]
+          # This is the transformation applied by the resolver,
+          # just make sure it matches the response
+          assert_equal 51, (9 + "HasValue".size) * 3
         end
       end
     end

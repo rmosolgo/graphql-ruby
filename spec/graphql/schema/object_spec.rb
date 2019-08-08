@@ -314,4 +314,45 @@ describe GraphQL::Schema::Object do
       assert_equal({"data" => skip_value }, res.to_h)
     end
   end
+
+  describe "when fields conflict with built-ins" do
+    it "warns when no override" do
+      expected_warning = "X's `field :method` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_method` and `def resolve_method`). Or use `method_conflict_warning: false` to suppress this warning.\n"
+      assert_output "", expected_warning do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :method, String, null: true
+        end
+      end
+    end
+
+    it "doesn't warn with an override" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :method, String, null: true, resolver_method: :resolve_method
+        end
+      end
+    end
+
+    it "doesn't warn with a suppression" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :method, String, null: true, method_conflict_warning: false
+        end
+      end
+    end
+
+    it "doesn't warn when parsing a schema" do
+      assert_output "", "" do
+        schema = GraphQL::Schema.from_definition <<-GRAPHQL
+        type Query {
+          method: String
+        }
+        GRAPHQL
+        assert_equal ["method"], schema.query.fields.keys
+      end
+    end
+  end
 end

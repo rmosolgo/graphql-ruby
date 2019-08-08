@@ -4,11 +4,11 @@ module GraphQL
     # Calculate the complexity of a query, using {Field#complexity} values.
     module AST
       class QueryComplexity < Analyzer
-        # State for the query complexity calcuation:
+        # State for the query complexity calculation:
         # - `complexities_on_type` holds complexity scores for each type in an IRep node
         def initialize(query)
           super
-          @complexities_on_type = [TypeComplexity.new]
+          @complexities_on_type = [ConcreteTypeComplexity.new]
         end
 
         # Overide this method to use the complexity result
@@ -22,7 +22,11 @@ module GraphQL
           return if visitor.visiting_fragment_definition?
           return if visitor.skipping?
 
-          @complexities_on_type.push(TypeComplexity.new)
+          if visitor.type_definition.kind.abstract?
+            @complexities_on_type.push(AbstractTypeComplexity.new)
+          else
+            @complexities_on_type.push(ConcreteTypeComplexity.new)
+          end
         end
 
         def on_leave_field(node, parent, visitor)
@@ -35,17 +39,14 @@ module GraphQL
           child_complexity = type_complexities.max_possible_complexity
           own_complexity = get_complexity(node, visitor.field_definition, child_complexity, visitor)
 
-          parent_type = visitor.parent_type_definition
-          possible_types = if parent_type.kind.abstract?
-            query.possible_types(parent_type)
+          if @complexities_on_type.last.is_a?(AbstractTypeComplexity)
+            key = selection_key(visitor.response_path, visitor.query)
+            parent_type = visitor.parent_type_definition
+            query.possible_types(parent_type).each do |type|
+              @complexities_on_type.last.merge(type, key, own_complexity)
+            end
           else
-            [parent_type]
-          end
-
-          key = selection_key(visitor.response_path, visitor.query)
-
-          possible_types.each do |type|
-            @complexities_on_type.last.merge(type, key, own_complexity)
+            @complexities_on_type.last.merge(own_complexity)
           end
         end
 
@@ -68,7 +69,7 @@ module GraphQL
           # We add the query object id to support multiplex queries
           # even if they have the same response path, they should
           # always be added.
-          response_path.join(".") + "-#{query.object_id}"
+          "#{response_path.join(".")}-#{query.object_id}"
         end
 
         # Get a complexity value for a field,
@@ -92,22 +93,37 @@ module GraphQL
 
         # Selections on an object may apply differently depending on what is _actually_ returned by the resolve function.
         # Find the maximum possible complexity among those combinations.
-        class TypeComplexity
+        class AbstractTypeComplexity
           def initialize
             @types = Hash.new { |h, k| h[k] = {} }
           end
 
           # Return the max possible complexity for types in this selection
           def max_possible_complexity
-            @types.map do |type, fields|
-              fields.values.inject(:+)
-            end.max
+            max = 0
+            @types.each_value do |fields|
+              complexity = fields.each_value.inject(:+)
+              max = complexity if complexity > max
+            end
+            max
           end
 
           # Store the complexity for the branch on `type_defn`.
           # Later we will see if this is the max complexity among branches.
           def merge(type_defn, key, complexity)
             @types[type_defn][key] = complexity
+          end
+        end
+
+        class ConcreteTypeComplexity
+          attr_reader :max_possible_complexity
+
+          def initialize
+            @max_possible_complexity = 0
+          end
+
+          def merge(complexity)
+            @max_possible_complexity += complexity
           end
         end
       end

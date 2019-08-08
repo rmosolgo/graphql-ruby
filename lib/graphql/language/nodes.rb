@@ -61,6 +61,7 @@ module GraphQL
         def initialize_copy(other)
           @children = nil
           @scalars = nil
+          @query_string = nil
         end
 
         # @return [Symbol] the method to call on {Language::Visitor} for this node
@@ -73,18 +74,18 @@ module GraphQL
         end
 
         def to_query_string(printer: GraphQL::Language::Printer.new)
-          printer.print(self)
+          if printer.is_a?(GraphQL::Language::Printer)
+            @query_string ||= printer.print(self)
+          else
+            printer.print(self)
+          end
         end
 
         # This creates a copy of `self`, with `new_options` applied.
         # @param new_options [Hash]
         # @return [AbstractNode] a shallow copy of `self`
         def merge(new_options)
-          copied_self = dup
-          new_options.each do |key, value|
-            copied_self.instance_variable_set(:"@#{key}", value)
-          end
-          copied_self
+          dup.merge!(new_options)
         end
 
         # Copy `self`, but modify the copy so that `previous_child` is replaced by `new_child`
@@ -120,6 +121,15 @@ module GraphQL
           copy_of_self = merge(method_name => new_children)
           # Return the copy:
           copy_of_self
+        end
+
+        protected
+
+        def merge!(new_options)
+          new_options.each do |key, value|
+            instance_variable_set(:"@#{key}", value)
+          end
+          self
         end
 
         class << self

@@ -5,7 +5,7 @@ describe GraphQL::Schema::BuildFromDefinition do
   # Build a schema from `definition` and assert that it
   # prints out the same string.
   # Then return the built schema.
-  def build_schema_and_compare_output(definition)
+  def assert_schema_and_compare_output(definition)
     built_schema = GraphQL::Schema.from_definition(definition)
     assert_equal definition, GraphQL::Schema::Printer.print_schema(built_schema)
     built_schema
@@ -27,7 +27,7 @@ type HelloScalars {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'can build a schema with default input object values' do
@@ -41,7 +41,7 @@ type Query {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'can build a schema with directives' do
@@ -57,7 +57,7 @@ type Hello {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports descriptions and definition_line' do
@@ -126,7 +126,7 @@ And a union
 union U = Hello
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
 
       built_schema = GraphQL::Schema.from_definition(schema)
       # The schema's are the same since there's no description
@@ -244,7 +244,7 @@ type HelloScalars {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports recursive type' do
@@ -259,7 +259,7 @@ type Recurse {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports two types circular' do
@@ -279,7 +279,7 @@ type TypeTwo {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports single argument fields' do
@@ -297,7 +297,7 @@ type Hello {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'properly understands connections' do
@@ -411,7 +411,7 @@ type Type {
 }
       SCHEMA
 
-      built_schema = build_schema_and_compare_output(schema.chop)
+      built_schema = assert_schema_and_compare_output(schema.chop)
       obj = built_schema.types["Type"]
       refute obj.fields["organization"].connection?
       assert obj.fields["organizations"].connection?
@@ -428,7 +428,7 @@ type Hello {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple type with interface' do
@@ -446,7 +446,7 @@ interface WorldInterface {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple output enum' do
@@ -464,7 +464,7 @@ type OutputEnumRoot {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple input enum' do
@@ -482,7 +482,7 @@ type InputEnumRoot {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports multiple value enum' do
@@ -501,7 +501,7 @@ type OutputEnumRoot {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple union' do
@@ -521,7 +521,7 @@ type World {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports multiple union' do
@@ -545,7 +545,7 @@ type WorldTwo {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports custom scalar' do
@@ -561,10 +561,10 @@ type Root {
 }
       SCHEMA
 
-      built_schema = build_schema_and_compare_output(schema.chop)
+      built_schema = assert_schema_and_compare_output(schema.chop)
       custom_scalar = built_schema.types["CustomScalar"]
-      assert_equal true, custom_scalar.valid_isolated_input?("anything")
-      assert_equal true, custom_scalar.valid_isolated_input?(12345)
+      assert_equal true, custom_scalar.valid_input?("anything", GraphQL::Query::NullContext)
+      assert_equal true, custom_scalar.valid_input?(12345, GraphQL::Query::NullContext)
     end
 
     it 'supports input object' do
@@ -583,7 +583,7 @@ type Root {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple argument field with default value' do
@@ -604,7 +604,7 @@ type Hello {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple type with mutation' do
@@ -625,7 +625,7 @@ type Mutation {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple type with mutation and default values' do
@@ -644,7 +644,7 @@ type Query {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple type with subscription' do
@@ -665,7 +665,7 @@ type Subscription {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports unreferenced type implementing referenced interface' do
@@ -683,7 +683,7 @@ type Query {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports unreferenced type implementing referenced union' do
@@ -699,7 +699,7 @@ type Query {
 union Union = Concrete
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports @deprecated' do
@@ -717,7 +717,7 @@ type Query {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it 'supports empty types' do
@@ -726,7 +726,7 @@ type Query {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      assert_schema_and_compare_output(schema.chop)
     end
 
     it "tracks original AST node" do
@@ -1063,6 +1063,16 @@ SCHEMA
 
       assert_equal({ "str" => "abc", "int" => 123 }, result["data"])
     end
+
+    it "doesn't warn about method conflicts" do
+      assert_output "", "" do
+        GraphQL::Schema.from_definition "
+        type Query {
+          int(method: Int): Int
+        }
+        "
+      end
+    end
   end
 
   describe "executable schemas from string" do
@@ -1154,8 +1164,8 @@ SCHEMA
 
         def call(type, field, obj, args, ctx)
           @resolves
-            .fetch(type.name)
-            .fetch(field.name)
+            .fetch(type.graphql_name)
+            .fetch(field.graphql_name)
             .call(obj, args, ctx)
         end
       end
@@ -1164,7 +1174,7 @@ SCHEMA
         schema = GraphQL::Schema.from_definition(schema_defn, default_resolve: AppResolver.new)
         schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"})
         result = schema.execute("query { allTodos: all_todos { text, from_context } }")
-        assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
+        assert_equal('{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}', result.to_json)
       end
     end
 

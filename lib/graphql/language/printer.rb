@@ -149,9 +149,9 @@ module GraphQL
         else
           out << " {\n"
         end
-        out << "  query: #{schema.query}\n" if schema.query
-        out << "  mutation: #{schema.mutation}\n" if schema.mutation
-        out << "  subscription: #{schema.subscription}\n" if schema.subscription
+        out << "  query: #{schema.query.graphql_name}\n" if schema.query
+        out << "  mutation: #{schema.mutation.graphql_name}\n" if schema.mutation
+        out << "  subscription: #{schema.subscription.graphql_name}\n" if schema.subscription
         out << "}"
       end
 
