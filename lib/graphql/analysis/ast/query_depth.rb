@@ -60,14 +60,6 @@ module GraphQL
           end
         end
 
-        def on_enter_fragment_spread(node, _, visitor)
-          visitor.enter_fragment_spread_inline(node)
-        end
-
-        def on_leave_fragment_spread(node, _, visitor)
-          visitor.leave_fragment_spread_inline(node)
-        end
-
         def result
           @max_depth
         end

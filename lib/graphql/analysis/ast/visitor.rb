@@ -26,6 +26,19 @@ module GraphQL
           super(query.selected_operation)
         end
 
+        def initialize_dup(other)
+          @path = @path.dup
+          @object_types = @object_types.dup
+          @directives = @directives.dup
+          @field_definitions = @field_definitions.dup
+          @argument_definitions = @argument_definitions.dup
+          @directive_definitions = @directive_definitions.dup
+          @response_path = @response_path.dup
+          @skip_stack = @skip_stack.dup
+
+          super
+        end
+
         # @return [GraphQL::Query] the query being visited
         attr_reader :query
 
@@ -169,9 +182,9 @@ module GraphQL
           call_analyzers(:on_leave_abstract_node, node, parent)
         end
 
-        # Visit a fragment spread inline instead of visiting the definition
+        # Visit a fragment spread inline for the given analyzer instead of visiting the definition
         # by itself.
-        def enter_fragment_spread_inline(fragment_spread)
+        def visit_fragment_spread_inline(fragment_spread, analyzer)
           fragment_def = query.fragments[fragment_spread.name]
 
           object_type = if fragment_def.type
@@ -180,17 +193,13 @@ module GraphQL
             object_types.last
           end
 
-          object_types << object_type
+          forked_visitor = dup
+          forked_visitor.analyzers = [analyzer]
+          forked_visitor.object_types << object_type
 
           fragment_def.selections.each do |selection|
-            visit_node(selection, fragment_def)
+            forked_visitor.visit_node(selection, fragment_def)
           end
-        end
-
-        # Visit a fragment spread inline instead of visiting the definition
-        # by itself.
-        def leave_fragment_spread_inline(_fragment_spread)
-          object_types.pop
         end
 
         # @return [GraphQL::BaseType] The current object type
@@ -227,6 +236,10 @@ module GraphQL
         def previous_argument_definition
           @argument_definitions[-2]
         end
+
+        protected
+
+        attr_writer :analyzers
 
         private
 

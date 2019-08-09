@@ -41,7 +41,6 @@ module GraphQL
         build_visitor_hooks :document
         build_visitor_hooks :enum
         build_visitor_hooks :field
-        build_visitor_hooks :fragment_spread
         build_visitor_hooks :inline_fragment
         build_visitor_hooks :input_object
         build_visitor_hooks :list_type
@@ -52,6 +51,13 @@ module GraphQL
         build_visitor_hooks :variable_definition
         build_visitor_hooks :variable_identifier
         build_visitor_hooks :abstract_node
+
+        def on_enter_fragment_spread(node, _parent, visitor)
+          visitor.visit_fragment_spread_inline(node, self)
+        end
+
+        def on_leave_fragment_spread(_node, _parent, _visitor)
+        end
 
         protected
 
