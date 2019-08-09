@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+if !TESTING_INTERPRETER
 describe GraphQL::Analysis::MaxQueryDepth do
   let(:schema) { Class.new(Dummy::Schema) }
   let(:result) { schema.execute(query_string) }
@@ -100,4 +101,5 @@ describe GraphQL::Analysis::MaxQueryDepth do
       assert_equal 1, result["errors"].length
     end
   end
+end
 end

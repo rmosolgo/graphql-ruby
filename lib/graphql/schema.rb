@@ -899,9 +899,17 @@ module GraphQL
         @root_types
       end
 
-      def possible_types(type)
-        @possible_types ||= {}
-        @possible_types[type.graphql_name] || [type]
+      def possible_types(type = nil)
+        pt = find_inherited_value(:possible_types, EMPTY_HASH).merge(own_possible_types)
+        if type
+          pt[type.graphql_name] || [type]
+        else
+          pt
+        end
+      end
+
+      def own_possible_types
+        @own_possible_types ||= {}
       end
 
       def references_to(to_type = nil, from: nil)
@@ -1020,11 +1028,11 @@ module GraphQL
       end
 
       def using_ast_analysis?
-        @analysis_engine == GraphQL::Analysis::AST
+        analysis_engine == GraphQL::Analysis::AST
       end
 
       def interpreter?
-        @interpreter
+        @interpreter || find_inherited_value(:interpreter?, false)
       end
 
       attr_writer :interpreter
@@ -1319,7 +1327,12 @@ module GraphQL
       # @param context [Hash] Multiplex-level context
       # @return [Array<Hash>] One result for each query in the input
       def multiplex(queries, **kwargs)
-        GraphQL::Execution::Multiplex.run_all(self, queries, **kwargs)
+        schema = if interpreter?
+          self
+        else
+          graphql_definition
+        end
+        GraphQL::Execution::Multiplex.run_all(schema, queries, **kwargs)
       end
 
       private
@@ -1401,7 +1414,6 @@ module GraphQL
       # @param t [Module, Array<Module>]
       # @return [void]
       def add_root_type(t)
-        @possible_types ||= {}
         @root_types ||= []
         @root_types << t
         late_types = []
@@ -1445,7 +1457,7 @@ module GraphQL
           # Replace the item by class name
           new_possible_types = owner.possible_types.map { |t| t.is_a?(String) && t == type.name ? type : t }
           owner.possible_types(*new_possible_types)
-          @possible_types[owner.graphql_name] = owner.possible_types
+          own_possible_types[owner.graphql_name] = owner.possible_types
         when nil
           # It's a root type
           self.types[type.graphql_name] = type
@@ -1519,7 +1531,7 @@ module GraphQL
             end
           end
           if type.kind.union?
-            @possible_types[type.graphql_name] = type.possible_types
+            own_possible_types[type.graphql_name] = type.possible_types
             type.possible_types.each do |t|
               references_to(t, from: type)
               add_type(t, owner: type, late_types: late_types)
@@ -1527,7 +1539,7 @@ module GraphQL
           end
           if type.kind.object?
             type.interfaces.each do |i|
-              implementers = @possible_types[i.graphql_name] ||= []
+              implementers = own_possible_types[i.graphql_name] ||= []
               implementers << type
               references_to(i, from: type)
               add_type(i, owner: nil, late_types: late_types)

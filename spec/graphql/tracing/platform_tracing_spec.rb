@@ -28,9 +28,7 @@ describe GraphQL::Tracing::PlatformTracing do
 
   describe "calling a platform tracer" do
     let(:schema) {
-      Dummy::Schema.redefine {
-        use(CustomPlatformTracer)
-      }
+      Class.new(Dummy::Schema) { use(CustomPlatformTracer) }
     }
 
     before do
@@ -104,9 +102,9 @@ describe GraphQL::Tracing::PlatformTracing do
 
   describe "when scalar fields are traced by default, they are unless specified" do
     let(:schema) {
-      Dummy::Schema.redefine {
+      Class.new(Dummy::Schema) do
         use(CustomPlatformTracer, trace_scalars: true)
-      }
+      end
     }
 
     before do

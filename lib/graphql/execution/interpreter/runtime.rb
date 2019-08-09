@@ -501,8 +501,14 @@ module GraphQL
             # we compare the value to the default value.
             return true, arg_type.new(ruby_kwargs: args, context: context, defaults_used: nil)
           else
-            flat_value = flatten_ast_value(ast_value)
-            return true, arg_type.coerce_input(flat_value, context)
+            flat_value = if already_arguments
+              # It was coerced by variable handling
+              ast_value
+            else
+              v = flatten_ast_value(ast_value)
+              arg_type.coerce_input(v, context)
+            end
+            return true, flat_value
           end
         end
 
