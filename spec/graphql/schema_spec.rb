@@ -90,6 +90,11 @@ describe GraphQL::Schema do
       schema.mutation_execution_strategy(mutation_execution_strategy)
       subscription_execution_strategy = Object.new
       schema.subscription_execution_strategy(subscription_execution_strategy)
+      # Assert these _before_ `use(Interpreter)` below
+      assert_equal query_execution_strategy, schema.query_execution_strategy
+      assert_equal mutation_execution_strategy, schema.mutation_execution_strategy
+      assert_equal subscription_execution_strategy, schema.subscription_execution_strategy
+
       context_class = Class.new
       schema.context_class(context_class)
       schema.max_complexity(10)
@@ -108,14 +113,12 @@ describe GraphQL::Schema do
       schema.tracer(GraphQL::Tracing::NewRelicTracing)
       schema.middleware(Proc.new {})
 
-      assert_equal query.graphql_definition, schema.query
-      assert_equal mutation.graphql_definition, schema.mutation
-      assert_equal subscription.graphql_definition, schema.subscription
+      assert_equal query, schema.query
+      assert_equal mutation, schema.mutation
+      assert_equal subscription, schema.subscription
       assert_equal introspection, schema.introspection
       assert_equal cursor_encoder, schema.cursor_encoder
-      assert_equal query_execution_strategy, schema.query_execution_strategy
-      assert_equal mutation_execution_strategy, schema.mutation_execution_strategy
-      assert_equal subscription_execution_strategy, schema.subscription_execution_strategy
+
       assert_equal context_class, schema.context_class
       assert_equal 10, schema.max_complexity
       assert_equal 20, schema.max_depth

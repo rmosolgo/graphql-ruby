@@ -79,7 +79,7 @@ module GraphQL
       def get_fields_from_class(class_sym:)
         object_type_defn = load_constant(class_sym)
 
-        if @class_based
+        if object_type_defn.is_a?(Module)
           object_type_defn.fields
         else
           extracted_field_defns = {}

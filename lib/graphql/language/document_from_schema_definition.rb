@@ -38,9 +38,9 @@ module GraphQL
 
       def build_schema_node
         GraphQL::Language::Nodes::SchemaDefinition.new(
-          query: warden.root_type_for_operation("query"),
-          mutation: warden.root_type_for_operation("mutation"),
-          subscription: warden.root_type_for_operation("subscription"),
+          query: (q = warden.root_type_for_operation("query")) && q.graphql_name,
+          mutation: (m = warden.root_type_for_operation("mutation")) && m.graphql_name,
+          subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,
           # This only supports directives from parsing,
           # use a custom printer to add to this list.
           directives: @schema.ast_node ? @schema.ast_node.directives : [],
