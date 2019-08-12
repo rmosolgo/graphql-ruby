@@ -320,10 +320,10 @@ module Jazz
       end
     end
 
-    def self.filter_possible_types(types, ctx)
-      types = types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
+    def self.filtered_possible_types(ctx)
+      types = []
       if ctx[:no_ensemble]
-        types -= [GraphQL::BaseType.resolve_related_type(Ensemble)]
+        types << Ensemble
       end
       types
     end

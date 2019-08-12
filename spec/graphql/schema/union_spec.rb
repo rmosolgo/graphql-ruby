@@ -18,8 +18,7 @@ describe GraphQL::Schema::Union do
 
   describe "filter_possible_types" do
     it "filters types" do
-      expected_type = GraphQL::BaseType.resolve_related_type(Jazz::Musician)
-      assert_equal [expected_type], union.possible_types(ctx: { no_ensemble: true })
+      assert_equal [Jazz::Musician], union.possible_types(ctx: { no_ensemble: true })
     end
   end
 
@@ -54,8 +53,8 @@ describe GraphQL::Schema::Union do
 
     it "passes on the possible type filter" do
       union_type = union.to_graphql
-
       expected_type = GraphQL::BaseType.resolve_related_type(Jazz::Musician)
+
       assert_equal [expected_type], union_type.possible_types(no_ensemble: true)
     end
   end

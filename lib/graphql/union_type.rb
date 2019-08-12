@@ -47,7 +47,7 @@ module GraphQL
     end
 
     # @return [Boolean] True if `child_type_defn` is a member of this {UnionType}
-    def include?(child_type_defn, ctx=nil)
+    def include?(child_type_defn, ctx = GraphQL::Query::NullContext)
       possible_types(ctx).include?(child_type_defn)
     end
 
@@ -57,7 +57,7 @@ module GraphQL
     end
 
     # @return [Array<GraphQL::ObjectType>] Types which may be found in this union
-    def possible_types(ctx=nil)
+    def possible_types(ctx = GraphQL::Query::NullContext)
       @clean_possible_types ||= begin
         if @dirty_possible_types.respond_to?(:map)
           @dirty_possible_types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
@@ -66,7 +66,7 @@ module GraphQL
         end
       end
 
-      ctx ? filter_possible_types(@clean_possible_types, ctx) : @clean_possible_types
+      filter_possible_types(@clean_possible_types, ctx)
     end
 
     # Get a possible type of this {UnionType} by type name
@@ -88,15 +88,21 @@ module GraphQL
     end
 
     # Filter possible types based on the current context
-    # @param types [Array<GraphQL::ObjectType>] Types to be filtered
     # @param ctx [GraphQL::Query::Context] The context for the current query
     # @return [Array<GraphQL::ObjectType>] The types remaining after the filter is applied
-    def filter_possible_types(types, ctx)
-      if @filter_possible_types_proc && ctx
-        @filter_possible_types_proc.call(types, ctx)
+    def filtered_possible_types(ctx)
+      if @filtered_possible_types_proc
+        @filtered_possible_types_proc.call(ctx)
       else
-        types
+        []
       end
+    end
+
+    def filter_possible_types(types, ctx)
+      original_types = types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
+      types_to_filter = filtered_possible_types(ctx).map { |type| GraphQL::BaseType.resolve_related_type(type) }
+
+      original_types - types_to_filter
     end
 
     def resolve_type(value, ctx)
@@ -107,8 +113,8 @@ module GraphQL
       @resolve_type_proc = new_resolve_type_proc
     end
 
-    def filter_possible_types=(new_filter_possible_types_proc)
-      @filter_possible_types_proc = new_filter_possible_types_proc
+    def filtered_possible_types=(new_filter_possible_types_proc)
+      @filtered_possible_types_proc = new_filter_possible_types_proc
     end
 
     protected
