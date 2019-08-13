@@ -913,19 +913,21 @@ module GraphQL
       end
 
       def references_to(to_type = nil, from: nil)
-        @references_to ||= Hash.new { |h, k| h[k] = [] }
+        @own_references_to ||= Hash.new { |h, k| h[k] = [] }
         if to_type
           if !to_type.is_a?(String)
             to_type = to_type.graphql_name
           end
 
           if from
-            @references_to[to_type] << from
+            @own_references_to[to_type] << from
           else
-            @references_to[to_type]
+            own_refs = @own_references_to[to_type]
+            inherited_refs = find_inherited_value(:references_to, EMPTY_HASH)[to_type] || EMPTY_ARRAY
+            own_refs + inherited_refs
           end
         else
-          @references_to
+          find_inherited_value(:references_to, EMPTY_HASH).merge(@own_references_to)
         end
       end
 
