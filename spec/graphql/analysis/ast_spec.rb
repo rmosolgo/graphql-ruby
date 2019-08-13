@@ -138,7 +138,7 @@ describe GraphQL::Analysis::AST do
     let(:analyzers) { [AstTypeCollector, AstNodeCounter] }
     let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, analyzers) }
     let(:variables) { {} }
-    let(:query) { GraphQL::Query.new(Dummy::Schema.graphql_definition, query_string, variables: variables) }
+    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
