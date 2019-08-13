@@ -239,7 +239,7 @@ describe GraphQL::Query do
       end
 
       let(:schema) {
-        Dummy::Schema.redefine {
+        Class.new(Dummy::Schema) {
           instrument(:query, Instrumenter)
         }
       }
@@ -261,7 +261,7 @@ describe GraphQL::Query do
       end
 
       let(:schema) {
-        Dummy::Schema.redefine {
+        Class.new(Dummy::Schema) {
           instrument(:query, ExtensionsInstrumenter)
         }
       }
@@ -683,8 +683,8 @@ describe GraphQL::Query do
 
       schema.execute(query)
 
-      assert(expected_args.first.key?('id'))
-      assert_nil(expected_args.first['id'])
+      assert(expected_args.first.key?(:id))
+      assert_nil(expected_args.first[:id])
     end
 
     it 'sets argument to nil when nil is passed via variable' do
@@ -695,9 +695,8 @@ describe GraphQL::Query do
       GRAPHQL
 
       schema.execute(query, variables: { 'id' => nil })
-
-      assert(expected_args.first.key?('id'))
-      assert([nil], expected_args.first['id'])
+      assert(expected_args.first.key?(:id))
+      assert_equal([], expected_args.first[:id])
     end
 
     it 'sets argument to [nil] when [null] is passed' do
@@ -709,8 +708,8 @@ describe GraphQL::Query do
 
       schema.execute(query)
 
-      assert(expected_args.first.key?('id'))
-      assert_equal([nil], expected_args.first['id'])
+      assert(expected_args.first.key?(:id))
+      assert_equal([nil], expected_args.first[:id])
     end
 
     it 'sets argument to [nil] when [nil] is passed via variable' do
@@ -722,8 +721,8 @@ describe GraphQL::Query do
 
       schema.execute(query, variables: { 'id' => [nil] })
 
-      assert(expected_args.first.key?('id'))
-      assert_equal([nil], expected_args.first['id'])
+      assert(expected_args.first.key?(:id))
+      assert_equal([nil], expected_args.first[:id])
     end
   end
 
@@ -753,8 +752,10 @@ describe GraphQL::Query do
 
   describe "query_execution_strategy" do
     let(:custom_execution_schema) {
-      schema.redefine do
+      Class.new(schema) do
+        self.interpreter = false
         query_execution_strategy DummyStrategy
+        mutation_execution_strategy GraphQL::Execution::Execute
         instrument(:multiplex, DummyMultiplexInstrumenter)
       end
     }

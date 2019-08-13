@@ -175,7 +175,7 @@ module GraphQL
           fragment_def = query.fragments[fragment_spread.name]
 
           object_type = if fragment_def.type
-            query.schema.types.fetch(fragment_def.type.name, nil)
+            @query.warden.get_type(fragment_def.type.name)
           else
             object_types.last
           end
@@ -243,7 +243,7 @@ module GraphQL
 
         def on_fragment_with_type(node)
           object_type = if node.type
-            @schema.types.fetch(node.type.name, nil)
+            @query.warden.get_type(node.type.name)
           else
             @object_types.last
           end

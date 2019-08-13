@@ -802,10 +802,10 @@ module GraphQL
           schema_defn.rescue_from(err_class, &handler)
         end
 
-        if plugins.any?
-          schema_plugins = plugins
+        # Only install this schema's plugins; let the others be inherited.
+        if own_plugins.any?
           definition_proxy = GraphQL::Define::DefinedObjectProxy.new(schema_defn)
-          schema_plugins.each do |plugin, options|
+          own_plugins.each do |plugin, options|
             if options.any?
               definition_proxy.use(plugin, **options)
             else
@@ -827,7 +827,8 @@ module GraphQL
         @types ||= Hash.new do |h, k|
           # TODO this won't support `{ __types { ... } }` since these items aren't in the hash.
           # We can't cache them here because they'll become stale.
-          introspection_system.object_types.find { |t| t.graphql_name == k }
+          introspection_system.object_types.find { |t| t.graphql_name == k } ||
+            find_inherited_value(:types, EMPTY_HASH)[k]
         end
       end
 
@@ -1034,7 +1035,11 @@ module GraphQL
       end
 
       def interpreter?
-        @interpreter || find_inherited_value(:interpreter?, false)
+        if defined?(@interpreter)
+          @interpreter
+        else
+          find_inherited_value(:interpreter?, false)
+        end
       end
 
       attr_writer :interpreter

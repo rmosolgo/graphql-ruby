@@ -11,7 +11,7 @@ module GraphQL
       def self.build_type(types, ast_node)
         case ast_node
         when GraphQL::Language::Nodes::TypeName
-          types.fetch(ast_node.name, nil)
+          types[ast_node.name]
         when GraphQL::Language::Nodes::NonNullType
           ast_inner_type = ast_node.of_type
           inner_type = build_type(types, ast_inner_type)

@@ -95,6 +95,7 @@ module GraphQL
             query.result
           end
         rescue Exception
+          # TODO rescue at a higher level so it will catch errors in analysis, too
           # Assign values here so that the query's `@executed` becomes true
           queries.map { |q| q.result_values ||= {} }
           raise
