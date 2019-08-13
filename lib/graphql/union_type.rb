@@ -99,6 +99,8 @@ module GraphQL
     end
 
     def filter_possible_types(types, ctx)
+      return types unless types.respond_to?(:map)
+
       original_types = types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
       types_to_filter = filtered_possible_types(ctx).map { |type| GraphQL::BaseType.resolve_related_type(type) }
 
