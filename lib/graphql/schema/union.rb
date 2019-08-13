@@ -35,7 +35,7 @@ module GraphQL
         # Filter possible type based on the current context, no-op by default
         # @param ctx [GraphQL::Query::Context] The context for the current query
         # @return [Array<GraphQL::ObjectType>] the types to filter from possible_types
-        def filtered_possible_types(ctx)
+        def filtered_possible_types(_ctx)
           []
         end
 

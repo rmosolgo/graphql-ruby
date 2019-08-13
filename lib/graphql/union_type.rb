@@ -27,7 +27,7 @@ module GraphQL
     accepts_definitions :possible_types, :resolve_type
     ensure_defined :possible_types, :resolve_type, :resolve_type_proc
 
-    attr_accessor :resolve_type_proc, :filter_possible_types_proc
+    attr_accessor :resolve_type_proc, :filtered_possible_types_proc
 
     def initialize
       super
@@ -87,9 +87,9 @@ module GraphQL
       !get_possible_type(type_name, ctx).nil?
     end
 
-    # Filter possible types based on the current context
+    # Types to filter out of the possible_types array
     # @param ctx [GraphQL::Query::Context] The context for the current query
-    # @return [Array<GraphQL::ObjectType>] The types remaining after the filter is applied
+    # @return [Array<GraphQL::ObjectType>] The types that are meant to be filtered
     def filtered_possible_types(ctx)
       if @filtered_possible_types_proc
         @filtered_possible_types_proc.call(ctx)
