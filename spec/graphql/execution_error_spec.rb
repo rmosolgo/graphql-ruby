@@ -296,18 +296,6 @@ describe GraphQL::ExecutionError do
   describe "more than one ExecutionError" do
     let(:query_string) { %|{ multipleErrorsOnNonNullableField} |}
     it "the errors are inserted into the errors key and the data is nil even for a NonNullable field " do
-
-      # I Think the path here is _wrong_, since this is not an array field:
-      # expected_result = {
-      #     "data"=>nil,
-      #     "errors"=>
-      #         [{"message"=>"This is an error message for some error.",
-      #           "locations"=>[{"line"=>1, "column"=>3}],
-      #           "path"=>["multipleErrorsOnNonNullableField", 0]},
-      #          {"message"=>"This is another error message for a different error.",
-      #           "locations"=>[{"line"=>1, "column"=>3}],
-      #           "path"=>["multipleErrorsOnNonNullableField", 1]}]
-      # }
       expected_result = {
         "data"=>nil,
         "errors"=>
@@ -320,6 +308,22 @@ describe GraphQL::ExecutionError do
       }
       assert_equal(expected_result, result)
     end
-  end
 
+    describe "more than one ExecutionError on a field defined to return a list" do
+      let(:query_string) { %|{ multipleErrorsOnNonNullableListField} |}
+      it "the errors are inserted into the errors key and the data is nil even for a NonNullable field " do
+        expected_result = {
+          "data"=>nil,
+          "errors"=>
+            [{"message"=>"This is the first error message for a field defined to return a list of types.",
+              "locations"=>[{"line"=>1, "column"=>3}],
+              "path"=>["multipleErrorsOnNonNullableListField", 0]},
+             {"message"=>"This is the second error message for a field defined to return a list of types.",
+              "locations"=>[{"line"=>1, "column"=>3}],
+              "path"=>["multipleErrorsOnNonNullableListField", 1]}],
+        }
+        assert_equal(expected_result, result)
+      end
+    end
+  end
 end
