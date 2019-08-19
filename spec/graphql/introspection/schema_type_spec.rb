@@ -37,6 +37,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"maybeNull"},
             {"name"=>"milk"},
             {"name"=>"multipleErrorsOnNonNullableField"},
+            {"name"=>"multipleErrorsOnNonNullableListField"},
             {"name"=>"root"},
             {"name"=>"searchDairy"},
             {"name"=>"tracingScalar"},
