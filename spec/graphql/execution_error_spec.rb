@@ -295,7 +295,7 @@ describe GraphQL::ExecutionError do
 
   describe "more than one ExecutionError" do
     let(:query_string) { %|{ multipleErrorsOnNonNullableField} |}
-    it "the errors are inserted into the errors key and the data is nil even for a NonNullable field " do
+    it "the errors are inserted into the errors key and the data is nil even for a NonNullable field" do
       expected_result = {
         "data"=>nil,
         "errors"=>
@@ -311,7 +311,7 @@ describe GraphQL::ExecutionError do
 
     describe "more than one ExecutionError on a field defined to return a list" do
       let(:query_string) { %|{ multipleErrorsOnNonNullableListField} |}
-      it "the errors are inserted into the errors key and the data is nil even for a NonNullable field " do
+      it "the errors are inserted into the errors key and the data is nil even for a NonNullable field" do
         expected_result = {
           "data"=>nil,
           "errors"=>

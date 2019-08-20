@@ -406,10 +406,11 @@ module Dummy
 
     field :multiple_errors_on_non_nullable_list_field, [String], null: false
     def multiple_errors_on_non_nullable_list_field
-      [
-          GraphQL::ExecutionError.new("This is the first error message for a field defined to return a list of types."),
-          GraphQL::ExecutionError.new("This is the second error message for a field defined to return a list of types.")
-      ]
+      err1 = GraphQL::ExecutionError.new("This is the first error message for a field defined to return a list of types.")
+      err1.path = ["multipleErrorsOnNonNullableListField", 0]
+      err2 = GraphQL::ExecutionError.new("This is the second error message for a field defined to return a list of types.")
+      err2.path = ["multipleErrorsOnNonNullableListField", 1]
+      [err1, err2]
     end
 
     field :execution_error_with_options, Integer, null: true
