@@ -51,13 +51,13 @@ def self.items_field(name, override_options)
     argument :order_by, Types::ItemOrder, required: false
     argument :category, Types::ItemCategory, required: false
     # Allow an override block to add more arguments
-    yield if block_given?
+    yield self if block_given?
   end
 end
 
 # Then use the generator to create a field:
-items_field(:recommended_items) do
-  argument :similar_to_product_id, ID, required: false
+items_field(:recommended_items) do |field|
+  field.argument :similar_to_product_id, ID, required: false
 end
 # Implement the field
 def recommended_items
