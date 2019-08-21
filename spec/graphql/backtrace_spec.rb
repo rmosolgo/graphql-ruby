@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+if !TESTING_INTERPRETER
 describe GraphQL::Backtrace do
   class LazyError
     def raise_err
@@ -203,4 +204,5 @@ describe GraphQL::Backtrace do
     includes_tag = backtrace.any? { |s| s.include?(file) && s.include?("`" + method) }
     assert includes_tag, "Backtrace should include #{file} inside method #{method}"
   end
+end
 end
