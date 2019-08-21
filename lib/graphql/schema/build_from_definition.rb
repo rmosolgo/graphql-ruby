@@ -36,7 +36,11 @@ module GraphQL
             default_resolve = ResolveMap.new(default_resolve)
           end
 
-          schema_definition = nil
+          schema_defns = document.definitions.select { |d| d.is_a?(GraphQL::Language::Nodes::SchemaDefinition) }
+          if schema_defns.size > 1
+            raise InvalidDocumentError.new('Must provide only one schema definition.')
+          end
+          schema_definition = schema_defns.first
           types = {}
           types.merge!(GraphQL::Schema::BUILT_IN_TYPES)
           directives = {}
@@ -45,12 +49,12 @@ module GraphQL
           document.definitions.each do |definition|
             case definition
             when GraphQL::Language::Nodes::SchemaDefinition
-              raise InvalidDocumentError.new('Must provide only one schema definition.') if schema_definition
-              schema_definition = definition
+              nil # already handled
             when GraphQL::Language::Nodes::EnumTypeDefinition
               types[definition.name] = build_enum_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ObjectTypeDefinition
-              types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve)
+              is_subscription_root = (definition.name == "Subscription" && (schema_definition.nil? || schema_definition.subscription.nil?)) || (schema_definition && (definition.name == schema_definition.subscription))
+              types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve, is_subscription_root: is_subscription_root)
             when GraphQL::Language::Nodes::InterfaceTypeDefinition
               types[definition.name] = build_interface_type(definition, type_resolver)
             when GraphQL::Language::Nodes::UnionTypeDefinition
@@ -189,7 +193,7 @@ module GraphQL
           end
         end
 
-        def build_object_type(object_type_definition, type_resolver, default_resolve:)
+        def build_object_type(object_type_definition, type_resolver, default_resolve:, is_subscription_root:)
           builder = self
           type_def = nil
           typed_resolve_fn = ->(field, obj, args, ctx) { default_resolve.call(type_def, field, obj, args, ctx) }
@@ -198,6 +202,9 @@ module GraphQL
             graphql_name(object_type_definition.name)
             description(object_type_definition.description)
             ast_node(object_type_definition)
+            if is_subscription_root
+              extend Subscriptions::SubscriptionRoot
+            end
 
             object_type_definition.interfaces.each do |interface_name|
               interface_defn = type_resolver.call(interface_name)

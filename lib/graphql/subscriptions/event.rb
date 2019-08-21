@@ -63,9 +63,12 @@ module GraphQL
               str_k = GraphQL::Schema::Member::BuildType.camelize(k.to_s)
               next_args[str_k] = stringify_args(v)
             end
-            next_args
+            # Make sure they're deeply sorted
+            next_args.sort.to_h
           when Array
             args.map { |a| stringify_args(a) }
+          when GraphQL::Schema::InputObject
+            stringify_args(args.to_h)
           else
             args
           end
