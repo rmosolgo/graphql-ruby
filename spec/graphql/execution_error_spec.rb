@@ -315,10 +315,10 @@ describe GraphQL::ExecutionError do
         expected_result = {
           "data"=>nil,
           "errors"=>
-            [{"message"=>"This is the first error message for a field defined to return a list of types.",
+            [{"message"=>"The first error message for a field defined to return a list of strings.",
               "locations"=>[{"line"=>1, "column"=>3}],
               "path"=>["multipleErrorsOnNonNullableListField", 0]},
-             {"message"=>"This is the second error message for a field defined to return a list of types.",
+             {"message"=>"The second error message for a field defined to return a list of strings.",
               "locations"=>[{"line"=>1, "column"=>3}],
               "path"=>["multipleErrorsOnNonNullableListField", 1]}],
         }
