@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+## 1.9.10 (20 Aug 2019)
+
+### New features
+
+- Support required arguments with default values #2416
+
+### Bug fixes
+
+- Properly disable `max_complexity` and `max_depth` when `nil` is passed #2409
+- Fix printing class-based schemas #2406
+- Improve field method naming conflict check #2420
+
 ## 1.9.9 (30 July 2019)
 
 ### New features
