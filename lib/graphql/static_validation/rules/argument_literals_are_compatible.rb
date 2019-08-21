@@ -37,7 +37,7 @@ module GraphQL
                 # short-circuit here so we avoid bubbling this up to whatever input_object / array contains us
                 return super
               end
-              error = GraphQL::StaticValidation::ArgumentLiteralsAreCompatibleError.new(err.message, nodes: parent, type: "CoercionError")
+              error = GraphQL::StaticValidation::ArgumentLiteralsAreCompatibleError.new(err.message, nodes: parent, type: "CoercionError", extensions: err.extensions)
             rescue GraphQL::LiteralValidationError => err
               # check to see if the ast node that caused the error to be raised is
               # the same as the node we were checking here.

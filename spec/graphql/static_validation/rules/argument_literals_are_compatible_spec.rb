@@ -410,4 +410,57 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       end
     end
   end
+
+  describe "custom error extensions" do
+    let(:schema) {
+      CoerceTestEmailType ||= GraphQL::ScalarType.define do
+        name "Email"
+        description "Email address"
+
+        coerce_input ->(value, ctx) do
+          if URI::MailTo::EMAIL_REGEXP.match(value)
+            value
+          else
+            raise GraphQL::CoercionError.new("Invalid email address", extensions: { "code" => "invalid_email_address" })
+          end
+        end
+
+        coerce_result ->(value, ctx) { value.to_f }
+      end
+
+      CoerceTestEmailQueryType ||= GraphQL::ObjectType.define do
+        name "Query"
+        description "The query root of this schema"
+
+        field :email do
+          type CoerceTestEmailType
+          argument :value, CoerceTestEmailType
+          resolve ->(obj, args, ctx) { args[:value] }
+        end
+      end
+
+      GraphQL::Schema.define do
+        query CoerceTestEmailQueryType
+      end
+    }
+
+    let(:query_string) {%|
+      query {
+        email(value: "a")
+      }
+    |}
+
+    describe "with a shallow coercion" do
+      it "sets error extensions code from a CoercionError if raised" do
+        assert_equal 1, errors.length
+
+        assert_includes errors, {
+          "message"=> "Invalid email address",
+          "locations"=>[{"line"=>3, "column"=>9}],
+          "path"=>["query", "email", "value"],
+          "extensions"=>{"code"=>"invalid_email_address", "typeName"=>"CoercionError"}
+        }
+      end
+    end
+  end
 end
