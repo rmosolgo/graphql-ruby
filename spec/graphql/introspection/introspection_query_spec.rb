@@ -2,14 +2,19 @@
 require "spec_helper"
 
 describe "GraphQL::Introspection::INTROSPECTION_QUERY" do
+  let(:schema)  { Class.new(Dummy::Schema) }
   let(:query_string) { GraphQL::Introspection::INTROSPECTION_QUERY }
-  let(:result) { Dummy::Schema.execute(query_string) }
+  let(:result) { schema.execute(query_string) }
+
+  before do
+    schema.max_depth = 15
+  end
 
   it "runs" do
     assert(result["data"])
   end
 
-  it "handles deeply nested (<= 7) schemas" do
+  it "is limited to the max query depth" do
     query_type =  GraphQL::ObjectType.define do
       name "DeepQuery"
        field :foo do
