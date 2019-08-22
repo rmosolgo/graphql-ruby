@@ -220,6 +220,14 @@ module GraphQL
           end
         end
 
+        # Backfill default values so that trigger arguments
+        # match query arguments.
+        arg_owner.arguments.each do |name, arg_defn|
+          if arg_defn.default_value? && !normalized_args.key?(arg_defn.name)
+            normalized_args[arg_defn.name] = arg_defn.default_value
+          end
+        end
+
         if missing_arg_names.any?
           arg_owner_name = if arg_owner.is_a?(GraphQL::Field)
             "Subscription.#{arg_owner.name}"
