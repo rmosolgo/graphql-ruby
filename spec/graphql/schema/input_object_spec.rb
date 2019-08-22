@@ -275,6 +275,45 @@ describe GraphQL::Schema::InputObject do
       res = Jazz::Schema.execute("{ defaultValueTest }")
       assert_equal "Jazz::InspectableInput -> {:string_value=>\"S\"}", res["data"]["defaultValueTest"]
     end
+
+    it "introspects in GraphQL language with enums" do
+      class InputDefaultSchema < GraphQL::Schema
+        class Letter < GraphQL::Schema::Enum
+          value "A"
+          value "B"
+        end
+
+        class InputObj < GraphQL::Schema::InputObject
+          argument :a, Letter, required: false
+          argument :b, Letter, required: false
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :i, Int, null: true do
+            argument :arg, InputObj, required: false, default_value: { a: "A", b: "B" }
+          end
+        end
+
+        query(Query)
+        use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
+      end
+
+      res = InputDefaultSchema.execute "
+      {
+        __type(name: \"Query\") {
+          fields {
+            name
+            args {
+              name
+              defaultValue
+            }
+          }
+        }
+      }
+      "
+      assert_equal "{a: A, b: B}", res["data"]["__type"]["fields"].first["args"].first["defaultValue"]
+    end
   end
 
   describe 'hash conversion behavior' do
