@@ -722,15 +722,11 @@ module GraphQL
         # Schema structure
         :as_json, :to_json, :to_document, :to_definition,
         # Execution
-        :static_validator,
-        :query_analyzers, :tracers, :instrumenters,
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
-        :metadata,
-        :default_mask,
-        :default_filter, :redefine,
+        :metadata, :redefine,
         :id_from_object_proc, :object_from_id_proc,
         :id_from_object=, :object_from_id=,
         :remove_handler,
@@ -744,6 +740,22 @@ module GraphQL
 
       def graphql_definition
         @graphql_definition ||= to_graphql
+      end
+
+      def default_filter
+        GraphQL::Filter.new(except: default_mask)
+      end
+
+      def default_mask(new_mask = nil)
+        if new_mask
+          @own_default_mask = new_mask
+        else
+          @own_default_mask || find_inherited_value(:default_mask, Schema::NullMask)
+        end
+      end
+
+      def static_validator
+        GraphQL::StaticValidation::Validator.new(schema: self)
       end
 
       def use(plugin, options = {})
@@ -790,7 +802,7 @@ module GraphQL
         schema_defn.query_execution_strategy = query_execution_strategy
         schema_defn.mutation_execution_strategy = mutation_execution_strategy
         schema_defn.subscription_execution_strategy = subscription_execution_strategy
-        all_instrumenters.each do |step, insts|
+        instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
           end
@@ -1342,6 +1354,13 @@ module GraphQL
         GraphQL::Execution::Multiplex.run_all(schema, queries, **kwargs)
       end
 
+      def instrumenters
+        inherited_instrumenters = find_inherited_value(:instrumenters) || Hash.new { |h,k| h[k] = [] }
+        inherited_instrumenters.merge(own_instrumenters) do |_step, inherited, own|
+          inherited + own
+        end
+      end
+
       private
 
       def lazy_classes
@@ -1362,13 +1381,6 @@ module GraphQL
 
       def own_directives
         @own_directives ||= {}
-      end
-
-      def all_instrumenters
-        inherited_instrumenters = find_inherited_value(:all_instrumenters) || Hash.new { |h,k| h[k] = [] }
-        inherited_instrumenters.merge(own_instrumenters) do |_step, inherited, own|
-          inherited + own
-        end
       end
 
       def own_instrumenters
