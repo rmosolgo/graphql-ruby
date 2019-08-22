@@ -213,6 +213,11 @@ module GraphQL
           end
 
           if arg_defn
+            # TODO will this break compatibility with existing subscriptions?
+            # It changes the topic
+            if arg_defn.keyword
+              normalized_arg_name = arg_defn.keyword.to_s
+            end
             normalized_args[normalized_arg_name] = normalize_arguments(event_name, arg_defn.type, v)
           else
             # Couldn't find a matching argument definition
