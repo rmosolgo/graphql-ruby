@@ -18,18 +18,36 @@ module GraphQL
             'null'
           else
             coerced_default_value = @object.type.coerce_result(value, @context)
-            if @object.type.unwrap.is_a?(GraphQL::EnumType)
-              if @object.type.list? 
-                "[#{coerced_default_value.join(", ")}]"
-              else
-                coerced_default_value
-              end
-            else
-              GraphQL::Language.serialize(coerced_default_value)
-            end
+            serialize_default_value(coerced_default_value, @object.type)
           end
         else
           nil
+        end
+      end
+
+
+      private
+
+      # Recursively serialize, taking care not to add quotes to enum values
+      def serialize_default_value(value, type)
+        if value.nil?
+          'null'
+        elsif type.kind.list?
+          inner_type = type.of_type
+          "[" + value.map { |v| serialize_default_value(v, inner_type) }.join(", ") + "]"
+        elsif type.kind.non_null?
+          serialize_default_value(value, type.of_type)
+        elsif type.kind.enum?
+          value
+        elsif type.kind.input_object?
+          "{" +
+            value.map do |k, v|
+              arg_defn = type.arguments[k]
+              "#{k}: #{serialize_default_value(v, arg_defn.type)}"
+            end.join(", ") +
+            "}"
+        else
+          GraphQL::Language.serialize(value)
         end
       end
     end
