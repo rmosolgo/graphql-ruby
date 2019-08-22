@@ -168,7 +168,7 @@ module GraphQL
           # Items in the input that are unexpected
           input.each do |name, value|
             if visible_arguments_map[name].nil?
-              result.add_problem("Argument is not defined on #{self.name}", [name])
+              result.add_problem("Argument is not defined on #{self.graphql_name}", [name])
             end
           end
 
