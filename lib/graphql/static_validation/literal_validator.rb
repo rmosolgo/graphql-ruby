@@ -11,7 +11,7 @@ module GraphQL
       def validate(ast_value, type)
         if type.nil?
           # this means we're an undefined argument, see #present_input_field_values_are_valid
-          return maybe_raise_if_invalid(ast_value) do
+          maybe_raise_if_invalid(ast_value) do
             false
           end
         elsif ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
