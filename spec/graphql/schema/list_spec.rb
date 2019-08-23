@@ -33,7 +33,7 @@ describe GraphQL::Schema::List do
     it "will return true if list types 'of_type' are the same" do
       new_of_type = Jazz::Musician
       new_list_type = GraphQL::Schema::List.new(new_of_type)
-      
+
       assert_equal list_type, new_list_type
     end
   end
@@ -41,6 +41,33 @@ describe GraphQL::Schema::List do
   describe "to_graphql" do
     it "will return a list type" do
       assert_kind_of GraphQL::ListType, list_type.to_graphql
+    end
+  end
+
+  describe "validation" do
+    class ListEnumValidationSchema < GraphQL::Schema
+      class Item < GraphQL::Schema::Enum
+        value "A"
+        value "B"
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :echo, [Item], null: false do
+          argument :items, [Item], required: true
+        end
+
+        def echo(items:)
+          items
+        end
+      end
+
+      query(Query)
+    end
+
+    it "checks non-null lists of enums" do
+      res = ListEnumValidationSchema.execute "{ echo(items: [A, B, \"C\"]) }"
+      expected_error = "Argument 'items' on Field 'echo' has an invalid value. Expected type '[Item!]!'."
+      assert_equal [expected_error], res["errors"].map { |e| e["message"] }
     end
   end
 end
