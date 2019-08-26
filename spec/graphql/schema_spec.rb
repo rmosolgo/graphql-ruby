@@ -133,7 +133,7 @@ describe GraphQL::Schema do
       assert_equal [GraphQL::ExecutionError, StandardError], schema.rescues.keys.sort_by(&:name)
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer, GraphQL::Tracing::NewRelicTracing], schema.tracers
-      # TODO why was this 3?
+      # This doesn't include `RescueMiddleware`, since interpreter handles that separately.
       assert_equal 2, schema.middleware.steps.size
     end
   end
