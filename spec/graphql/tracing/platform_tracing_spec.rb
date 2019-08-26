@@ -66,7 +66,7 @@ describe GraphQL::Tracing::PlatformTracing do
 
   describe "by default, scalar fields are not traced" do
     let(:schema) {
-      Dummy::Schema.redefine {
+      Class.new(Dummy::Schema) {
         use(CustomPlatformTracer)
       }
     }

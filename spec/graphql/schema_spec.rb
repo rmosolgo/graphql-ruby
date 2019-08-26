@@ -131,8 +131,10 @@ describe GraphQL::Schema do
       assert_equal [GraphQL::Backtrace, GraphQL::Execution::Interpreter], schema.plugins.map(&:first)
       assert_equal [GraphQL::Relay::EdgesInstrumentation, GraphQL::Relay::ConnectionInstrumentation], schema.instrumenters[:field]
       assert_equal [GraphQL::ExecutionError, StandardError], schema.rescues.keys.sort_by(&:name)
-      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Tracing::NewRelicTracing], schema.tracers
-      assert_equal 3, schema.middleware.steps.size
+      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
+      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer, GraphQL::Tracing::NewRelicTracing], schema.tracers
+      # TODO why was this 3?
+      assert_equal 2, schema.middleware.steps.size
     end
   end
 

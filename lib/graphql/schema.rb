@@ -720,7 +720,7 @@ module GraphQL
       # Eventually, the methods will be moved into this class, removing the need for the singleton.
       def_delegators :graphql_definition,
         # Schema structure
-        :as_json, :to_json, :to_document, :to_definition,
+        :to_document, :to_definition,
         # Execution
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
@@ -737,6 +737,22 @@ module GraphQL
 
       # @return [GraphQL::Subscriptions]
       attr_accessor :subscriptions
+
+      # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
+      # @see {#as_json}
+      # @return [String]
+      def to_json(*args)
+        JSON.pretty_generate(as_json(*args))
+      end
+
+      # Return the Hash response of {Introspection::INTROSPECTION_QUERY}.
+      # @param context [Hash]
+      # @param only [<#call(member, ctx)>]
+      # @param except [<#call(member, ctx)>]
+      # @return [Hash] GraphQL result
+      def as_json(only: nil, except: nil, context: {})
+        execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context).to_h
+      end
 
       def graphql_definition
         @graphql_definition ||= to_graphql
@@ -1292,7 +1308,8 @@ module GraphQL
         if new_middleware
           own_middleware << new_middleware
         else
-          graphql_definition.middleware
+          # TODO make sure this is cached when running a query
+          MiddlewareChain.new(steps: all_middleware, final_step: GraphQL::Execution::Execute::FieldResolveStep)
         end
       end
 
