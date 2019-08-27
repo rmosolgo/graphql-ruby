@@ -405,7 +405,7 @@ describe GraphQL::Schema::Resolver do
         use GraphQL::Analysis::AST
       end
 
-      def object_from_id(id, ctx)
+      def self.object_from_id(id, ctx)
         if id == "invalid"
           nil
         else
