@@ -22,6 +22,7 @@ module Graphql
     #       - base_scalar.rb
     #       - base_union.rb
     #       - query_type.rb
+    #       - mutation_type.rb
     #     - loaders/
     #     - mutations/
     #     - {app_name}_schema.rb
@@ -34,6 +35,8 @@ module Graphql
     #   - graphql/
     #     - resolvers/
     #     - types/
+    #       - arguments/
+    #         - base_argument.rb
     #       - fields/
     #         - base_field.rb
     #       - enums/
@@ -49,6 +52,7 @@ module Graphql
     #       - unions/
     #         - base_union.rb
     #       - query_type.rb
+    #       - mutation_type.rb
     #     - loaders/
     #     - mutations/
     #     - {app_name}_schema.rb

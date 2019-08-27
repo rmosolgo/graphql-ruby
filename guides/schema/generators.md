@@ -42,6 +42,7 @@ After installing you can see your new schema by:
 
 - `--relay` will add [Relay](https://facebook.github.io/relay/)-specific code to your schema
 - `--batch` will add [GraphQL::Batch](https://github.com/Shopify/graphql-batch) to your gemfile and include the setup in your schema
+- `--modules` will set up a modular folder structure for the new files
 - `--no-graphiql` will exclude `graphiql-rails` from the setup
 - `--schema=MySchemaName` will be used for naming the schema (default is `#{app_name}Schema`)
 
@@ -54,7 +55,6 @@ Several generators will add GraphQL types to your project. Run them with `-h` to
 - `rails g graphql:union`
 - `rails g graphql:enum`
 - `rails g graphql:scalar`
-
 
 ## Scaffolding Mutations
 
