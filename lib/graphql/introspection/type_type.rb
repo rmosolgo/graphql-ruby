@@ -65,7 +65,7 @@ module GraphQL
 
       def possible_types
         if @object.kind.abstract?
-          @context.warden.possible_types(@object)
+          @context.warden.possible_types(@object).sort_by(&:graphql_name)
         else
           nil
         end

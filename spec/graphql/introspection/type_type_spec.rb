@@ -64,7 +64,7 @@ describe GraphQL::Introspection::TypeType do
       "dairyProduct"=>{
         "name"=>"DairyProduct",
         "kind"=>"UNION",
-        "possibleTypes"=>[{"name"=>"Milk"}, {"name"=>"Cheese"}],
+        "possibleTypes"=>[{"name"=>"Cheese"}, {"name"=>"Milk"}],
       },
       "animalProduct" => {
         "name"=>"AnimalProduct",
@@ -76,7 +76,7 @@ describe GraphQL::Introspection::TypeType do
       },
       "missingType" => nil,
     }}
-    assert_equal(expected, result)
+    assert_equal(expected, result.to_h)
   end
 
   describe "deprecated fields" do

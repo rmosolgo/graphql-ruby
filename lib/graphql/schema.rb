@@ -823,9 +823,11 @@ module GraphQL
             schema_defn.instrumenters[step] << inst
           end
         end
-        lazy_classes.each do |lazy_class, value_method|
+
+        lazy_methods.each do |lazy_class, value_method|
           schema_defn.lazy_methods.set(lazy_class, value_method)
         end
+
         rescues.each do |err_class, handler|
           schema_defn.rescue_from(err_class, &handler)
         end
@@ -1143,9 +1145,7 @@ module GraphQL
 
       module ResolveTypeWithType
         def resolve_type(type, obj, ctx)
-          if type.kind.object?
-            type
-          elsif type.respond_to?(:resolve_type)
+          if type.respond_to?(:resolve_type)
             type.resolve_type(obj, ctx)
           else
             super
@@ -1159,7 +1159,11 @@ module GraphQL
       end
 
       def resolve_type(type, obj, ctx)
-        raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
+        if type.kind.object?
+          type
+        else
+          raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
+        end
       end
 
       def rescues
@@ -1244,7 +1248,7 @@ module GraphQL
       end
 
       def lazy_resolve(lazy_class, value_method)
-        lazy_classes[lazy_class] = value_method
+        lazy_methods.set(lazy_class, value_method)
       end
 
       def instrument(instrument_step, instrumenter, options = {})
@@ -1378,10 +1382,61 @@ module GraphQL
         end
       end
 
+      # Call the given block at the right time, either:
+      # - Right away, if `value` is not registered with `lazy_resolve`
+      # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
+      # @api private
+      def after_lazy(value)
+        if lazy?(value)
+          GraphQL::Execution::Lazy.new do
+            result = sync_lazy(value)
+            # The returned result might also be lazy, so check it, too
+            after_lazy(result) do |final_result|
+              yield(final_result) if block_given?
+            end
+          end
+        else
+          yield(value) if block_given?
+        end
+      end
+
+      # Override this method to handle lazy objects in a custom way.
+      # @param value [Object] an instance of a class registered with {.lazy_resolve}
+      # @param ctx [GraphQL::Query::Context] the context for this query
+      # @return [Object] A GraphQL-ready (non-lazy) object
+      def sync_lazy(value)
+        lazy_method = lazy_method_name(value)
+        if lazy_method
+          synced_value = value.public_send(lazy_method)
+          sync_lazy(synced_value)
+        else
+          value
+        end
+      end
+
+      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered wtih {#lazy_resolve}.
+      def lazy_method_name(obj)
+        lazy_methods.get(obj)
+      end
+
+      # @return [Boolean] True if this object should be lazily resolved
+      def lazy?(obj)
+        !!lazy_method_name(obj)
+      end
+
       private
 
-      def lazy_classes
-        @lazy_classes ||= {}
+      def lazy_methods
+        if !defined?(@lazy_methods)
+          if inherited_map = find_inherited_value(:lazy_methods)
+            # this isn't _completely_ inherited :S (Things added after `dup` won't work)
+            @lazy_methods = inherited_map.dup
+          else
+            @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
+            @lazy_methods.set(GraphQL::Execution::Lazy, :value)
+          end
+        end
+        @lazy_methods
       end
 
       def own_plugins
@@ -1603,33 +1658,16 @@ module GraphQL
       end
     end
 
-    # Override this method to handle lazy objects in a custom way.
-    # @param value [Object] an instance of a class registered with {.lazy_resolve}
-    # @param ctx [GraphQL::Query::Context] the context for this query
-    # @return [Object] A GraphQL-ready (non-lazy) object
-    def self.sync_lazy(value)
-      if block_given?
-        # This was already hit by the instance, just give it back
-        yield(value)
-      else
-        # This was called directly on the class, hit the instance
-        # which has the lazy method map
-        self.graphql_definition.sync_lazy(value)
-      end
-    end
-
     # @see Schema.sync_lazy for a hook to override
     # @api private
     def sync_lazy(value)
-      self.class.sync_lazy(value) { |v|
-        lazy_method = lazy_method_name(v)
-        if lazy_method
-          synced_value = value.public_send(lazy_method)
-          sync_lazy(synced_value)
-        else
-          v
-        end
-      }
+      lazy_method = lazy_method_name(value)
+      if lazy_method
+        synced_value = value.public_send(lazy_method)
+        sync_lazy(synced_value)
+      else
+        value
+      end
     end
 
     protected

@@ -36,6 +36,10 @@ module GraphQL
           @storage.compute_if_absent(value.class) { find_superclass_method(value.class) }
         end
 
+        def each
+          @storage.each { |k, v| yield(k, v) }
+        end
+
         protected
 
         attr_reader :storage
