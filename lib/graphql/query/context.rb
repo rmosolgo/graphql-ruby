@@ -309,6 +309,3 @@ module GraphQL
     end
   end
 end
-
-
-GraphQL::Schema::Context = GraphQL::Query::Context

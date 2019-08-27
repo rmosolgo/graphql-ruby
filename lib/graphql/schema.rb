@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql/schema/base_64_encoder"
 require "graphql/schema/catchall_middleware"
+require "graphql/schema/context"
 require "graphql/schema/default_parse_error"
 require "graphql/schema/default_type_error"
 require "graphql/schema/find_inherited_value"
@@ -677,9 +678,12 @@ module GraphQL
     end
 
     # Return the GraphQL::Language::Document IDL AST for the schema
+    # @param context [Hash]
+    # @param only [<#call(member, ctx)>]
+    # @param except [<#call(member, ctx)>]
     # @return [GraphQL::Language::Document]
-    def to_document
-      GraphQL::Language::DocumentFromSchemaDefinition.new(self).document
+    def to_document(only: nil, except: nil, context: {})
+      GraphQL::Language::DocumentFromSchemaDefinition.new(self, only: only, except: except, context: context).document
     end
 
     # Return the Hash response of {Introspection::INTROSPECTION_QUERY}.
