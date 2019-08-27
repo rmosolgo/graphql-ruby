@@ -32,7 +32,7 @@ module GraphQL
       # @param value [DateTime]
       # @return [String]
       def self.coerce_result(value, _ctx)
-        value.iso8601(time_precision)
+        value.iso8601
       end
 
       # @param str_value [String]
