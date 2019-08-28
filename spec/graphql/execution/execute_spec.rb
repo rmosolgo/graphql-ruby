@@ -39,7 +39,7 @@ describe GraphQL::Execution::Execute do
     end
 
     describe "when root fields are non-nullable" do
-      let(:schema) { GraphQL::Schema.from_definition <<-GRAPHQL
+      let(:schema) { GraphQL::Schema.from_definition <<-GRAPHQL, interpreter: false
         type Mutation {
           push(int: Int!): Int!
         }

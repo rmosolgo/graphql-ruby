@@ -5,9 +5,9 @@ module GraphQL
   class Schema
     module BuildFromDefinition
       class << self
-        def from_definition(definition_string, default_resolve:, using: {}, parser: DefaultParser)
+        def from_definition(definition_string, default_resolve:, using: {}, interpreter: true, parser: DefaultParser)
           document = parser.parse(definition_string)
-          Builder.build(document, default_resolve: default_resolve, using: using)
+          Builder.build(document, default_resolve: default_resolve, using: using, interpreter: interpreter)
         end
       end
 
@@ -29,7 +29,7 @@ module GraphQL
       module Builder
         extend self
 
-        def build(document, default_resolve: DefaultResolve, using: {})
+        def build(document, default_resolve: DefaultResolve, using: {}, interpreter: true)
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
 
           if default_resolve.is_a?(Hash)
@@ -127,8 +127,11 @@ module GraphQL
               ast_node(schema_definition)
             end
 
-            use GraphQL::Execution::Interpreter
-            use GraphQL::Analysis::AST
+            if interpreter
+              use GraphQL::Execution::Interpreter
+              use GraphQL::Analysis::AST
+            end
+
             using.each do |plugin, options|
               use(plugin, options)
             end
