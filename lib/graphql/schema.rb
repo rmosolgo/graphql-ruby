@@ -725,7 +725,7 @@ module GraphQL
         :to_document, :to_definition,
         # Execution
         :execution_strategy_for_operation,
-        :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy, :sync_lazy,
+        :validate, :multiplex_analyzers,
         # Configuration
         :max_complexity=, :max_depth=,
         :metadata, :redefine,

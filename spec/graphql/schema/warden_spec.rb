@@ -427,7 +427,7 @@ describe GraphQL::Schema::Warden do
       res = schema.execute(query_string)
       assert res["data"]["Node"]
 
-      res = schema.execute(query_string, except: ->(m, _) { m.name == "Repository" })
+      res = schema.execute(query_string, except: ->(m, _) { m.graphql_name == "Repository" })
       assert_nil res["data"]["Node"]
     end
 
@@ -515,13 +515,13 @@ describe GraphQL::Schema::Warden do
       assert_equal ["node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
       # When the possible types are all hidden, hide the interface and fields pointing to it
-      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.name) })
+      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) })
       assert_nil res["data"]["Node"]
       assert_equal [], res["data"]["Query"]["fields"]
 
       # Even when it's not the return value of a field,
       # still show the interface since it allows code reuse
-      res = schema.execute(query_string, except: ->(m, _) { m.name == "node" })
+      res = schema.execute(query_string, except: ->(m, _) { m.graphql_name == "node" })
       assert_equal "Node", res["data"]["Node"]["name"]
       assert_equal [], res["data"]["Query"]["fields"]
     end
@@ -839,11 +839,13 @@ describe GraphQL::Schema::Warden do
 
   describe "default_mask" do
     let(:default_mask) {
-      ->(member, ctx) { member.metadata[:hidden_enum_value] }
+      ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_enum_value) }
     }
     let(:schema) {
-      # TODO requires schema inheritance
-      MaskHelpers::Schema.redefine(default_mask: default_mask)
+      m = default_mask
+      Class.new(MaskHelpers::Schema) do
+        default_mask(m)
+      end
     }
     let(:query_str) { <<-GRAPHQL
       {

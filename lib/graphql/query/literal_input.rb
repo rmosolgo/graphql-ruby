@@ -115,7 +115,16 @@ module GraphQL
           end
         end
 
-        argument_owner.arguments_class.new(values_hash, context: context, defaults_used: defaults_used)
+        args_class = if argument_owner.arguments_class.nil? && argument_owner.is_a?(Class)
+          # A Schema::InputObject, logic from Query::Arguments#to_kwargs
+          ruby_kwargs = {}
+          values_hash.each do |key, value|
+            ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = value
+          end
+          argument_owner.new(ruby_kwargs: ruby_kwargs, context: context, defaults_used: defaults_used)
+        else
+          argument_owner.arguments_class.new(values_hash, context: context, defaults_used: defaults_used)
+        end
       end
     end
   end
