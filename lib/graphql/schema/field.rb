@@ -46,9 +46,6 @@ module GraphQL
 
       alias :mutation :resolver
 
-      # @return [Array<Symbol>]
-      attr_reader :extras
-
       # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
       attr_reader :trace
 
@@ -301,8 +298,25 @@ module GraphQL
       # Add `extension` to this field, initialized with `options` if provided.
       # @param extension [Class] subclass of {Schema::Fieldextension}
       # @param options [Object] if provided, given as `options:` when initializing `extension`.
-      def extension(extension, options = nil)
+      def extension(extension, options = nil) # TODO: Do we want a single extra setter, like this too?
         extensions([{extension => options}])
+      end
+
+      # Read extras (as symbols) from this field,
+      # or add new extras to be opted into by this field's resolver.
+      #
+      # @param new_extras [Array<Symbol>] Add extras to this field
+      # @return [Array<Symbol>]
+      def extras(new_extras = nil)
+        if new_extras.nil?
+          # Read the value
+          @extras
+        else
+          # Append to the set of extras on this field
+          new_extras.each do |new_extra|
+            @extras << new_extra
+          end
+        end
       end
 
       def complexity(new_complexity)
