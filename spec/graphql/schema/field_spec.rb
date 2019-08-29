@@ -129,6 +129,24 @@ describe GraphQL::Schema::Field do
         assert_equal "TRUE", res["data"]["upcaseCheck3"]
         assert_equal "\"WHY NOT?\"", res["data"]["upcaseCheck4"]
       end
+
+      it "can be read via #extras" do
+        field = Jazz::Musician.fields["addError"]
+        assert_equal [:execution_errors], field.extras
+      end
+
+      it "can be added by passing an array of symbols to #extras" do
+        object = Class.new(Jazz::BaseObject) do
+          graphql_name "JustAName"
+
+          field :test, String, null: true, extras: [:lookahead]
+        end
+
+        field = object.fields['test']
+
+        field.extras([:ast_node])
+        assert_equal [:lookahead, :ast_node], field.extras
+      end
     end
 
     it "is the #owner of its arguments" do
