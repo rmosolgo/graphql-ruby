@@ -139,13 +139,13 @@ describe GraphQL::Schema::Field do
         object = Class.new(Jazz::BaseObject) do
           graphql_name "JustAName"
 
-          field :test, String, null: true
+          field :test, String, null: true, extras: [:lookahead]
         end
 
         field = object.fields['test']
 
         field.extras([:ast_node])
-        assert_equal [:ast_node], field.extras
+        assert_equal [:lookahead, :ast_node], field.extras
       end
     end
 

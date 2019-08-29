@@ -298,7 +298,7 @@ module GraphQL
       # Add `extension` to this field, initialized with `options` if provided.
       # @param extension [Class] subclass of {Schema::Fieldextension}
       # @param options [Object] if provided, given as `options:` when initializing `extension`.
-      def extension(extension, options = nil) # TODO: Do we want a single extra setter, like this too?
+      def extension(extension, options = nil)
         extensions([{extension => options}])
       end
 
@@ -313,9 +313,7 @@ module GraphQL
           @extras
         else
           # Append to the set of extras on this field
-          new_extras.each do |new_extra|
-            @extras << new_extra
-          end
+          @extras.concat(new_extras)
         end
       end
 
