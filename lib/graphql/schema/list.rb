@@ -48,16 +48,13 @@ module GraphQL
       end
 
       def validate_input(value, ctx)
-
         result = GraphQL::Query::InputValidationResult.new
 
         if !value.nil?
           Array(value).each_with_index do |item, index|
-            if !item.nil?
-              item_result = of_type.validate_input(item, ctx)
-              if !item_result.valid?
-                result.merge_result!(index, item_result)
-              end
+            item_result = of_type.validate_input(item, ctx)
+            if !item_result.valid?
+              result.merge_result!(index, item_result)
             end
           end
         end

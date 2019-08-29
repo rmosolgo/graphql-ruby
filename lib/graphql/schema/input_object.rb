@@ -188,9 +188,9 @@ module GraphQL
 
           arguments.each do |name, argument_defn|
             arg_key = argument_defn.keyword
-            field_value = value[name]
-
-            if value.key?(name)
+            # Accept either string or symbol
+            if value.key?(name) || value.key?(arg_key)
+              field_value = value[name] || value[arg_key]
               coerced_value = argument_defn.type.coerce_input(field_value, ctx)
               prepared_value = argument_defn.prepare_value(nil, coerced_value, context: ctx)
               input_values[arg_key] = prepared_value

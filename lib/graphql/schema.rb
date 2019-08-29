@@ -184,7 +184,10 @@ module GraphQL
       @tracers = []
       @definition_error = nil
       @orphan_types = []
-      @directives = self.class.default_directives
+      @directives = {}
+      self.class.default_directives.each do |name, dir|
+        @directives[name] = dir.graphql_definition
+      end
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @middleware = MiddlewareChain.new(final_step: GraphQL::Execution::Execute::FieldResolveStep)
       @query_analyzers = []
@@ -721,8 +724,6 @@ module GraphQL
       # - Delegate to that instance
       # Eventually, the methods will be moved into this class, removing the need for the singleton.
       def_delegators :graphql_definition,
-        # Schema structure
-        :to_document, :to_definition,
         # Execution
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers,
@@ -733,9 +734,7 @@ module GraphQL
         :id_from_object=, :object_from_id=,
         :remove_handler,
         # Members
-        :find,
-        # TODO: these must be ported for warden to work.
-        :union_memberships
+        :find
 
       # @return [GraphQL::Subscriptions]
       attr_accessor :subscriptions
@@ -754,6 +753,21 @@ module GraphQL
       # @return [Hash] GraphQL result
       def as_json(only: nil, except: nil, context: {})
         execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context).to_h
+      end
+
+      # Return the GraphQL IDL for the schema
+      # @param context [Hash]
+      # @param only [<#call(member, ctx)>]
+      # @param except [<#call(member, ctx)>]
+      # @return [String]
+      def to_definition(only: nil, except: nil, context: {})
+        GraphQL::Schema::Printer.print_schema(self, only: only, except: except, context: context)
+      end
+
+      # Return the GraphQL::Language::Document IDL AST for the schema
+      # @return [GraphQL::Language::Document]
+      def to_document
+        GraphQL::Language::DocumentFromSchemaDefinition.new(self).document
       end
 
       def graphql_definition
@@ -877,7 +891,7 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `query(...)` (#{new_query_object.inspect}) is invalid, already configured with #{@query_object.inspect}"
           else
             @query_object = new_query_object
-            add_root_type(new_query_object)
+            add_type_and_traverse(new_query_object, root: true)
             nil
           end
         else
@@ -888,10 +902,10 @@ module GraphQL
       def mutation(new_mutation_object = nil)
         if new_mutation_object
           if @mutation_object
-            raise GraphQL::Error, "Second definition of `query(...)` (#{new_mutation_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
+            raise GraphQL::Error, "Second definition of `mutation(...)` (#{new_mutation_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
           else
             @mutation_object = new_mutation_object
-            add_root_type(new_mutation_object)
+            add_type_and_traverse(new_mutation_object, root: true)
             nil
           end
         else
@@ -902,10 +916,10 @@ module GraphQL
       def subscription(new_subscription_object = nil)
         if new_subscription_object
           if @subscription_object
-            raise GraphQL::Error, "Second definition of `query(...)` (#{new_subscription_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
+            raise GraphQL::Error, "Second definition of `subscription(...)` (#{new_subscription_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
           else
             @subscription_object = new_subscription_object
-            add_root_type(new_subscription_object)
+            add_type_and_traverse(new_subscription_object, root: true)
             nil
           end
         else
@@ -932,6 +946,7 @@ module GraphQL
         @root_types
       end
 
+      # TODO at runtime, this will merge the same thing over and over and over. We need some way to cache the result per-query.
       def possible_types(type = nil)
         pt = find_inherited_value(:possible_types, EMPTY_HASH).merge(own_possible_types)
         if type
@@ -941,8 +956,20 @@ module GraphQL
         end
       end
 
-      def own_possible_types
-        @own_possible_types ||= {}
+      # TODO at runtime, this will merge the same thing over and over and over. We need some way to cache the result per-query.
+      def union_memberships(type = nil)
+        if type
+          own_um = own_union_memberships.fetch(type.graphql_name, EMPTY_ARRAY)
+          inherited_um = find_inherited_value(:union_memberships, EMPTY_HASH).fetch(type.graphql_name, EMPTY_ARRAY)
+          own_um + inherited_um
+        else
+          joined_um = own_union_memberships.dup
+          find_inherited_value(:union_memberhips, EMPTY_HASH).each do |k, v|
+            um = joined_um[k] ||= []
+            um.concat(v)
+          end
+          joined_um
+        end
       end
 
       def references_to(to_type = nil, from: nil)
@@ -1115,7 +1142,7 @@ module GraphQL
       def orphan_types(*new_orphan_types)
         if new_orphan_types.any?
           new_orphan_types = new_orphan_types.flatten
-          add_root_type(new_orphan_types)
+          add_type_and_traverse(new_orphan_types, root: false)
           @orphan_types = new_orphan_types
           own_orphan_types.concat(new_orphan_types.flatten)
         end
@@ -1147,10 +1174,18 @@ module GraphQL
 
       module ResolveTypeWithType
         def resolve_type(type, obj, ctx)
-          if type.respond_to?(:resolve_type)
+          first_resolved_type = if type.respond_to?(:resolve_type)
             type.resolve_type(obj, ctx)
           else
             super
+          end
+
+          after_lazy(first_resolved_type) do |resolved_type|
+            if !resolved_type.nil? && !(resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind))
+              raise ".resolve_type should return a type definition, but got #{resolved_type.inspect} (#{resolved_type.class}) from `resolve_type(#{type}, #{obj}, #{ctx})`"
+            end
+
+            resolved_type
           end
         end
       end
@@ -1279,7 +1314,7 @@ module GraphQL
       # Attach a single directive to this schema
       # @param new_directive [Class]
       def directive(new_directive)
-        add_root_type(new_directive)
+        add_type_and_traverse(new_directive, root: false)
         own_directives[new_directive.graphql_name] = new_directive
       end
 
@@ -1453,6 +1488,14 @@ module GraphQL
         @own_orphan_types ||= []
       end
 
+      def own_possible_types
+        @own_possible_types ||= {}
+      end
+
+      def own_union_memberships
+        @own_union_memberships ||= {}
+      end
+
       def own_directives
         @own_directives ||= {}
       end
@@ -1506,9 +1549,11 @@ module GraphQL
 
       # @param t [Module, Array<Module>]
       # @return [void]
-      def add_root_type(t)
-        @root_types ||= []
-        @root_types << t
+      def add_type_and_traverse(t, root:)
+        if root
+          @root_types ||= []
+          @root_types << t
+        end
         late_types = []
         new_types = Array(t)
         new_types.each { |t| add_type(t, owner: nil, late_types: late_types) }
@@ -1590,6 +1635,11 @@ module GraphQL
           return
         end
 
+        if owner.is_a?(Class) && owner < GraphQL::Schema::Union
+          um = own_union_memberships[type.graphql_name] ||= []
+          um << owner
+        end
+
         if (prev_type = types[type.graphql_name])
           if prev_type != type
             raise ArgumentError, "Conflicting type definitions for `#{type.graphql_name}`: #{prev_type} (#{prev_type.class}), #{type} #{type.class}"
@@ -1626,7 +1676,6 @@ module GraphQL
           if type.kind.union?
             own_possible_types[type.graphql_name] = type.possible_types
             type.possible_types.each do |t|
-              references_to(t, from: type)
               add_type(t, owner: type, late_types: late_types)
             end
           end
@@ -1634,7 +1683,6 @@ module GraphQL
             type.interfaces.each do |i|
               implementers = own_possible_types[i.graphql_name] ||= []
               implementers << type
-              references_to(i, from: type)
               add_type(i, owner: nil, late_types: late_types)
             end
           end
