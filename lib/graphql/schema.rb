@@ -1570,6 +1570,7 @@ module GraphQL
               # Reset the counter, since we might succeed next go-round
               missed_late_types = 0
               update_type_owner(type_owner, type)
+              add_type(type, owner: type_owner, late_types: late_types)
             else
               missed_late_types += 1
               # Add it back to the list, maybe we'll be able to resolve it later.
