@@ -416,6 +416,8 @@ module GraphQL
       def type
         @type ||= if @function
           Member::BuildType.parse_type(@function.type, null: false)
+        elsif @field
+          Member::BuildType.parse_type(@field.type, null: false)
         else
           Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
         end

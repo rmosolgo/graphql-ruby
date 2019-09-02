@@ -39,7 +39,7 @@ module GraphQL
       # @param schema [GraphQL::Schema]
       # @param deep_check [Boolean]
       def initialize(filter, context:, schema:)
-        @schema = schema
+        @schema = schema.interpreter? ? schema : schema.graphql_definition
         @visibility_cache = read_through { |m| filter.call(m, context) }
       end
 

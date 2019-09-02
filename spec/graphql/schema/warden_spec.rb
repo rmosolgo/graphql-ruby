@@ -5,9 +5,13 @@ include ErrorBubblingHelpers
 module MaskHelpers
   # Returns true if `member.metadata` includes any of `flags`
   def self.has_flag?(member, *flags)
-    member.respond_to?(:metadata) &&
-    member.metadata &&
-    member.metadata.any? { |m| flags.any? { |f| f == m } }
+    if member.respond_to?(:metadata) && (m = member.metadata)
+      if m.is_a?(Hash)
+        flags.any? { |f| m[f] }
+      else
+        m.any? { |item| flags.include?(item) }
+      end
+    end
   end
 
   class BaseArgument < GraphQL::Schema::Argument
@@ -248,7 +252,7 @@ describe GraphQL::Schema::Warden do
   end
 
   describe "hiding root types" do
-    let(:mask) { ->(m, ctx) { m == MaskHelpers::MutationType } }
+    let(:mask) { ->(m, ctx) { TESTING_INTERPRETER ? m == MaskHelpers::MutationType : m == MaskHelpers::MutationType.graphql_definition  } }
 
     it "acts as if the root doesn't exist" do
       query_string = %|mutation { addPhoneme(symbol: "ϕ") { name } }|
@@ -598,7 +602,9 @@ describe GraphQL::Schema::Warden do
 
   describe "hiding arguments" do
     let(:mask) {
-      ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_argument, :hidden_input_type) }
+      ->(member, ctx) {
+        MaskHelpers.has_flag?(member, :hidden_argument, :hidden_input_type)
+      }
     }
 
     it "hides types if no other fields or arguments are using it" do

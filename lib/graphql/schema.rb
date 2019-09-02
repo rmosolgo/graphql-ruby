@@ -834,6 +834,7 @@ module GraphQL
         schema_defn.query_execution_strategy = query_execution_strategy
         schema_defn.mutation_execution_strategy = mutation_execution_strategy
         schema_defn.subscription_execution_strategy = subscription_execution_strategy
+        schema_defn.default_mask = default_mask
         instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
@@ -1168,11 +1169,10 @@ module GraphQL
         end
       end
 
-      # Rubocop is confused about the method in this module.
       # rubocop:disable Lint/DuplicateMethods
       module ResolveTypeWithType
         def resolve_type(type, obj, ctx)
-          first_resolved_type = if type.respond_to?(:resolve_type)
+          first_resolved_type = if type.is_a?(Module) && type.respond_to?(:resolve_type)
             type.resolve_type(obj, ctx)
           else
             super

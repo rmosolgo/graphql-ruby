@@ -61,9 +61,6 @@ module GraphQL
         def call(type, field, obj, args, ctx)
           resolver = @resolve_hash[type.graphql_name][field.graphql_name]
           resolver.call(obj, args, ctx)
-        rescue KeyError
-          binding.pry
-          raise
         end
 
         def coerce_input(type, value, ctx)
