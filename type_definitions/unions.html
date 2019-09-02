@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.8/">API</a>
+          <a href="/api-doc/1.9.11/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -73,8 +73,7 @@
 
 <p>Here, the <code class="highlighter-rouge">searchMedia</code> field returns <code class="highlighter-rouge">[MediaItem!]</code>, a list where each member is part of the <code class="highlighter-rouge">MediaItem</code> union. So, for each member, we want to select different fields depending on which kind of object that member is.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  &lt;a href="/type_definitions/interfaces"&gt;Interfaces&lt;/a&gt; are a similar concept, but in an interface, all types must share some common fields. Unions are a good choice when the object types don't have any significant fields in common.
-</code></pre></div></div>
+<p><a href="/type_definitions/interfaces">Interfaces</a> are a similar concept, but in an interface, all types must share some common fields. Unions are a good choice when the object types don’t have any significant fields in common.</p>
 
 <p>Since union members share <em>no</em> fields, selections are <em>always</em> made with typed fragments (<code class="highlighter-rouge">... on SomeType</code>, as seen above).</p>
 
@@ -107,7 +106,7 @@
 
 <p>Union classes are never instantiated; At runtime, only their <code class="highlighter-rouge">.resolve_type</code> methods may be called (if defined).</p>
 
-<p>For information about <code class="highlighter-rouge">.resolve_type</code>, see the       <a href="/type_definitions/interfaces#resolve-type">Interfaces guide</a>.</p>
+<p>For information about <code class="highlighter-rouge">.resolve_type</code>, see the <a href="/type_definitions/interfaces#resolve-type">Interfaces guide</a>.</p>
 
 </div>
 <p class="guide-footer">

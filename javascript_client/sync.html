@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.8/">API</a>
+          <a href="/api-doc/1.9.11/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -51,14 +51,15 @@
 
 <ul>
   <li><a href="#sync-utility"><code class="highlighter-rouge">sync</code> CLI</a></li>
-  <li><a href="#use-with-relay">Relay support</a></li>
+  <li><a href="#use-with-relay-2">Relay &lt;2 support</a></li>
+  <li><a href="#use-with-relay-persisted-output">Relay 2+ support</a></li>
   <li><a href="#use-with-apollo-client">Apollo Client support</a></li>
   <li><a href="#use-with-apollo-link">Apollo Link support</a></li>
   <li><a href="#use-with-plain-javascript">Plain JS support</a></li>
   <li><a href="#authorization">Authorization</a></li>
 </ul>
 
-<p>See the       <a href="/operation_store/overview">OperationStore guide</a> for server-side setup.</p>
+<p>See the <a href="/operation_store/overview">OperationStore guide</a> for server-side setup.</p>
 
 <h2 id="sync-utility"><code class="highlighter-rouge">sync</code> utility</h2>
 
@@ -93,12 +94,16 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
       <td>Local directory to search for <code class="highlighter-rouge">.graphql</code> / <code class="highlighter-rouge">.graphql.js</code> files</td>
     </tr>
     <tr>
+      <td><code class="highlighter-rouge">--relay-persisted-output</code></td>
+      <td>Path to a <code class="highlighter-rouge">.json</code> file from <code class="highlighter-rouge">relay-compiler ... --persist-output</code></td>
+    </tr>
+    <tr>
       <td><code class="highlighter-rouge">--client</code></td>
-      <td>Client ID (      <a href="/operation_store/client_workflow">created on server</a>)</td>
+      <td>Client ID (<a href="/operation_store/client_workflow">created on server</a>)</td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">--secret</code></td>
-      <td>Client Secret (      <a href="/operation_store/client_workflow">created on server</a>)</td>
+      <td>Client Secret (<a href="/operation_store/client_workflow">created on server</a>)</td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">--outfile</code></td>
@@ -117,9 +122,9 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <p>You can see these and a few others with <code class="highlighter-rouge">graphql-ruby-client sync --help</code>.</p>
 
-<h2 id="use-with-relay">Use with Relay</h2>
+<h2 id="use-with-relay-2">Use with Relay &lt;2</h2>
 
-<p><code class="highlighter-rouge">graphql-ruby-client</code> can persist queries from <code class="highlighter-rouge">relay-compiler</code> using the embedded <code class="highlighter-rouge">@relayHash</code> value.</p>
+<p><code class="highlighter-rouge">graphql-ruby-client</code> can persist queries from <code class="highlighter-rouge">relay-compiler</code> using the embedded <code class="highlighter-rouge">@relayHash</code> value. (This was created in Relay before 2.0.0. See below for Relay 2.0+.)</p>
 
 <p>To sync your queries with the server, use the <code class="highlighter-rouge">--path</code> option to point to your <code class="highlighter-rouge">__generated__</code> directory, for example:</p>
 
@@ -159,6 +164,46 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 </code></pre></div></div>
 
 <p>(Only Relay Modern is supported. Legacy Relay can’t generate static queries.)</p>
+
+<h2 id="use-with-relay-persisted-output">Use With Relay Persisted Output</h2>
+
+<p>Relay 2.0+ includes a <code class="highlighter-rouge">--persist-output</code> option for <code class="highlighter-rouge">relay-compiler</code> which works perfectly with GraphQL-Ruby. (Relay’s own docs, for reference: https://relay.dev/docs/en/persisted-queries.)</p>
+
+<p>When generating queries for Relay, include <code class="highlighter-rouge">--persist-output</code>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ relay-compiler ... --persist-output path/to/persisted-queries.json
+</code></pre></div></div>
+
+<p>Then, push Relay’s generated queries to your OperationStore server with <code class="highlighter-rouge">--relay-persisted-output</code>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync --relay-persisted-output=path/to/persisted-queries.json --url=...
+</code></pre></div></div>
+
+<p>In this case, <code class="highlighter-rouge">sync</code> <em>won’t</em> generate a JavaScript module because <code class="highlighter-rouge">relay-compiler</code> has already prepared its queries for persisted use. Instead, update your network layer to include the <em>client name</em> and <em>operation id</em> in the HTTP params:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">operationStoreClientName</span> <span class="o">=</span> <span class="s2">"MyRelayApp"</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">fetchQuery</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="s1">'/graphql'</span><span class="p">,</span> <span class="p">{</span>
+    <span class="na">method</span><span class="p">:</span> <span class="s1">'POST'</span><span class="p">,</span>
+    <span class="na">headers</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">'content-type'</span><span class="p">:</span> <span class="s1">'application/json'</span>
+    <span class="p">},</span>
+    <span class="na">body</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span>
+      <span class="c1">// Pass the client name and the operation ID, joined by `/`</span>
+      <span class="na">documentId</span><span class="p">:</span> <span class="nx">operationStoreClientName</span> <span class="o">+</span> <span class="s2">"/"</span> <span class="o">+</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+      <span class="c1">// query: operation.text, // this is now obsolete because text is null</span>
+      <span class="nx">variables</span><span class="p">,</span>
+    <span class="p">}),</span>
+  <span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">();</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>(Inspired by https://relay.dev/docs/en/persisted-queries#network-layer-changes.)</p>
+
+<p>Now, your Relay app will only send operation IDs over the wire to the server.</p>
 
 <h2 id="use-with-apollo-client">Use with Apollo Client</h2>
 
@@ -245,7 +290,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <h2 id="authorization">Authorization</h2>
 
-<p><code class="highlighter-rouge">OperationStore</code> uses HMAC-SHA256 to       <a href="/operation_store/access_control">authenticate requests</a>.</p>
+<p><code class="highlighter-rouge">OperationStore</code> uses HMAC-SHA256 to <a href="/operation_store/access_control">authenticate requests</a>.</p>
 
 <p>Pass the key to <code class="highlighter-rouge">graphql-ruby-client sync</code> as <code class="highlighter-rouge">--secret</code> to authenticate it:</p>
 

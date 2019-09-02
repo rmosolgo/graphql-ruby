@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.8/">API</a>
+          <a href="/api-doc/1.9.11/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -136,32 +136,29 @@
 
 <p>For example, <em>before</em> using persisted queries, the entire query is sent to the server:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;a href="/operation_store/request_before.png" target="_blank" class="img-link"&gt;
-      &lt;img src="/operation_store/request_before.png" title="GraphQL request without persisted queries" alt="GraphQL request without persisted queries" /&gt;
-    &lt;/a&gt;
-</code></pre></div></div>
+<p><a href="/operation_store/request_before.png" target="_blank" class="img-link">
+  <img src="/operation_store/request_before.png" title="GraphQL request without persisted queries" alt="GraphQL request without persisted queries" />
+</a></p>
 
 <p>But <em>after</em> using persisted queries, only the query identification info is sent to the server:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;a href="/operation_store/request_after.png" target="_blank" class="img-link"&gt;
-      &lt;img src="/operation_store/request_after.png" title="GraphQL request with persisted queries" alt="GraphQL request with persisted queries" /&gt;
-    &lt;/a&gt;
-</code></pre></div></div>
+<p><a href="/operation_store/request_after.png" target="_blank" class="img-link">
+  <img src="/operation_store/request_after.png" title="GraphQL request with persisted queries" alt="GraphQL request with persisted queries" />
+</a></p>
 
 <h4 id="visibility">Visibility</h4>
 
 <p>Persisted queries improve <em>visibility</em> because you can track GraphQL usage from a single location. <code class="highlighter-rouge">OperationStore</code> maintains an index of type, field and argument usage so that you can analyze your traffic.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;a href="/operation_store/operation_index.png" target="_blank" class="img-link"&gt;
-      &lt;img src="/operation_store/operation_index.png" title="Index of GraphQL usage with persisted queries" alt="Index of GraphQL usage with persisted queries" /&gt;
-    &lt;/a&gt;
-</code></pre></div></div>
+<p><a href="/operation_store/operation_index.png" target="_blank" class="img-link">
+  <img src="/operation_store/operation_index.png" title="Index of GraphQL usage with persisted queries" alt="Index of GraphQL usage with persisted queries" />
+</a></p>
 
 <h3 id="how-it-works">How it Works</h3>
 
 <p><code class="highlighter-rouge">OperationStore</code> uses tables in your database to store normalized, deduplicated GraphQL strings. The database is immutable: new operations may be added, but operations are never modified or removed.</p>
 
-<p>When clients       <a href="/operation_store/client_workflow">sync their operations</a>, requests are       <a href="/operation_store/access_control">authenticated</a>, then the incoming GraphQL is validated, normalized, and added to the database if needed. Also, the incoming client name is associated with all operations in the payload.</p>
+<p>When clients <a href="/operation_store/client_workflow">sync their operations</a>, requests are <a href="/operation_store/access_control">authenticated</a>, then the incoming GraphQL is validated, normalized, and added to the database if needed. Also, the incoming client name is associated with all operations in the payload.</p>
 
 <p>Then, at runtime, clients send an <em>operation ID</em> to run a persisted query. It looks like this in <code class="highlighter-rouge">params</code>:</p>
 
@@ -172,7 +169,7 @@
 
 <h3 id="getting-started">Getting Started</h3>
 
-<p>See the       <a href="/operation_store/getting_started">getting started guide</a> to add <code class="highlighter-rouge">OperationStore</code> to your app.</p>
+<p>See the <a href="/operation_store/getting_started">getting started guide</a> to add <code class="highlighter-rouge">OperationStore</code> to your app.</p>
 
 </div>
 <p class="guide-footer">

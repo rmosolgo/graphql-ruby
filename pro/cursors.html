@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.8/">API</a>
+          <a href="/api-doc/1.9.11/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -60,7 +60,7 @@
 
 <p>A new <code class="highlighter-rouge">RelationConnection</code> is applied by default. It is backwards-compatible with existing offset-based cursors. See <a href="#opting-out">“Opting Out”</a> below if you wish to continue using offset-based pagination.</p>
 
-<p>To enforce the opacity of your cursors, consider an       <a href="/pro/encoders">encrypted encoder</a>.</p>
+<p>To enforce the opacity of your cursors, consider an <a href="/pro/encoders">encrypted encoder</a>.</p>
 
 <h2 id="whats-the-difference">What’s the difference?</h2>
 
@@ -107,7 +107,7 @@
 
 <p><code class="highlighter-rouge">GraphQL::Pro</code>’s <code class="highlighter-rouge">RelationConnection</code> is backwards-compatible. If it receives an offset-based cursor, it uses that cursor for the next resolution, then returns value-based cursors in the next result.</p>
 
-<p>If you’re also switching to       <a href="/pro/encoders">encrypted cursors</a>, you’ll need a       <a href="/pro/encoders#versioning">versioned encoder</a>, too. This way, <em>both</em> unencrypted <em>and</em> encrypted cursors will be accepted! For example:</p>
+<p>If you’re also switching to <a href="/pro/encoders">encrypted cursors</a>, you’ll need a <a href="/pro/encoders#versioning">versioned encoder</a>, too. This way, <em>both</em> unencrypted <em>and</em> encrypted cursors will be accepted! For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Define an encrypted encoder for use with cursors:</span>
 <span class="no">EncryptedCursorEncoder</span> <span class="o">=</span> <span class="no">MyEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>

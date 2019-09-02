@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.8/">API</a>
+          <a href="/api-doc/1.9.11/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -156,14 +156,13 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">MySchema.operation_store_sync</code> receives pushes from clients. See       <a href="/operation_store/client_workflow">Client Workflow</a> for more info on how this endpoint is used.</p>
+<p><code class="highlighter-rouge">MySchema.operation_store_sync</code> receives pushes from clients. See <a href="/operation_store/client_workflow">Client Workflow</a> for more info on how this endpoint is used.</p>
 
-<p><code class="highlighter-rouge">MySchema.dashboard</code> includes a web view to the <code class="highlighter-rouge">OperationStore</code>, visible at <code class="highlighter-rouge">/graphql/dashboard</code>. See the       <a href="/pro/dashboard">Dashboard guide</a> for more details, including authorization.</p>
+<p><code class="highlighter-rouge">MySchema.dashboard</code> includes a web view to the <code class="highlighter-rouge">OperationStore</code>, visible at <code class="highlighter-rouge">/graphql/dashboard</code>. See the <a href="/pro/dashboard">Dashboard guide</a> for more details, including authorization.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;a href="/operation_store/graphql_ui.png" target="_blank" class="img-link"&gt;
-      &lt;img src="/operation_store/graphql_ui.png" title="GraphQL Persisted Operations Dashboard" alt="GraphQL Persisted Operations Dashboard" /&gt;
-    &lt;/a&gt;
-</code></pre></div></div>
+<p><a href="/operation_store/graphql_ui.png" target="_blank" class="img-link">
+  <img src="/operation_store/graphql_ui.png" title="GraphQL Persisted Operations Dashboard" alt="GraphQL Persisted Operations Dashboard" />
+</a></p>
 
 <p>The are both Rack apps, so you can mount them in Sinatra or any other Rack app.</p>
 
@@ -187,11 +186,11 @@
 
 <p><code class="highlighter-rouge">OperationStore</code> will use <code class="highlighter-rouge">operation_id</code> to fetch the operation from the database.</p>
 
-<p>See       <a href="/operation_store/server_management">Server Management</a> for details about rejecting GraphQL from <code class="highlighter-rouge">params[:query]</code>.</p>
+<p>See <a href="/operation_store/server_management">Server Management</a> for details about rejecting GraphQL from <code class="highlighter-rouge">params[:query]</code>.</p>
 
 <h4 id="next-steps">Next Steps</h4>
 
-<p>Sync your operations with the       <a href="/operation_store/client_workflow">Client Workflow</a>.</p>
+<p>Sync your operations with the <a href="/operation_store/client_workflow">Client Workflow</a>.</p>
 
 </div>
 <p class="guide-footer">

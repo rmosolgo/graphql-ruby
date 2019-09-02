@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.8/">API</a>
+          <a href="/api-doc/1.9.11/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -122,7 +122,7 @@
       <li><code class="highlighter-rouge">GraphQL::Function</code></li>
     </ul>
 
-    <p>All these depend on the memory- and time-hungry per-field <code class="highlighter-rouge">ctx</code> object. To improve performance, only method-based resolves are supported. If need something from <code class="highlighter-rouge">ctx</code>, you can get it with the <code class="highlighter-rouge">extras: [...]</code> configuration option. To wrap resolve behaviors, try       <a href="/type_definitions/field_extensions">Field Extensions</a>,       <a href="/queries/tracing">Tracing</a>, or       <a href="/fields/resolvers">GraphQL::Schema::Resolver</a>.</p>
+    <p>All these depend on the memory- and time-hungry per-field <code class="highlighter-rouge">ctx</code> object. To improve performance, only method-based resolves are supported. If need something from <code class="highlighter-rouge">ctx</code>, you can get it with the <code class="highlighter-rouge">extras: [...]</code> configuration option. To wrap resolve behaviors, try <a href="/type_definitions/field_extensions">Field Extensions</a>, <a href="/queries/tracing">Tracing</a>, or <a href="/fields/resolvers">GraphQL::Schema::Resolver</a>.</p>
   </li>
   <li>
     <p>Query analyzers and <code class="highlighter-rouge">irep_node</code>s</p>
@@ -132,8 +132,8 @@
     <p>For a replacement, check out:</p>
 
     <ul>
-      <li><a href="/api-doc/1.9.8/GraphQL/Execution/Lookahead" target="_blank" title="API docs for GraphQL::Execution::Lookahead"><code>GraphQL::Execution::Lookahead</code></a> for field-level info about child selections</li>
-      <li><a href="/api-doc/1.9.8/GraphQL/Analysis/AST" target="_blank" title="API docs for GraphQL::Analysis::AST"><code>GraphQL::Analysis::AST</code></a> for query analysis which is compatible with the new interpreter</li>
+      <li><a href="/api-doc/1.9.11/GraphQL/Execution/Lookahead" target="_blank" title="API docs for GraphQL::Execution::Lookahead"><code>GraphQL::Execution::Lookahead</code></a> for field-level info about child selections</li>
+      <li><a href="/api-doc/1.9.11/GraphQL/Analysis/AST" target="_blank" title="API docs for GraphQL::Analysis::AST"><code>GraphQL::Analysis::AST</code></a> for query analysis which is compatible with the new interpreter</li>
     </ul>
   </li>
   <li>
@@ -164,13 +164,13 @@
 
 <h2 id="extending-the-runtime">Extending the Runtime</h2>
 
-<p>See       <a href="/type_definitions/directives">Directives</a>.</p>
+<p>See <a href="/type_definitions/directives">Directives</a>.</p>
 
 <h2 id="analyzers">Analyzers</h2>
 
-<p>GraphQL-Ruby has “analyzers” that run <em>before</em> execution and may reject a query. With the interpreter, you can use       <a href="/queries/ast_analysis">AST Analyzers</a> to get better performance.</p>
+<p>GraphQL-Ruby has “analyzers” that run <em>before</em> execution and may reject a query. With the interpreter, you can use <a href="/queries/ast_analysis">AST Analyzers</a> to get better performance.</p>
 
-<p>To make the migration, convert your previous analyzers to extend <a href="/api-doc/1.9.8/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a> as described in the guide, then add to your schema:</p>
+<p>To make the migration, convert your previous analyzers to extend <a href="/api-doc/1.9.11/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a> as described in the guide, then add to your schema:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
 </code></pre></div></div>

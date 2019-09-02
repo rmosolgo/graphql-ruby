@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.8/">API</a>
+          <a href="/api-doc/1.9.11/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -150,7 +150,7 @@
 
 <h3 id="customizing-base-classes">Customizing Base Classes</h3>
 
-<p>The provided classes in <a href="/api-doc/1.9.8/GraphQL/Types/Relay" target="_blank" title="API docs for GraphQL::Types::Relay"><code>GraphQL::Types::Relay</code></a> extend <a href="/api-doc/1.9.8/GraphQL/Schema/Object" target="_blank" title="API docs for GraphQL::Schema::Object"><code>Schema::Object</code></a>, but if you want to add your own extensions, you can build your own type system using the built-in ones for inspiration.</p>
+<p>The provided classes in <a href="/api-doc/1.9.11/GraphQL/Types/Relay" target="_blank" title="API docs for GraphQL::Types::Relay"><code>GraphQL::Types::Relay</code></a> extend <a href="/api-doc/1.9.11/GraphQL/Schema/Object" target="_blank" title="API docs for GraphQL::Schema::Object"><code>Schema::Object</code></a>, but if you want to add your own extensions, you can build your own type system using the built-in ones for inspiration.</p>
 
 <p>For example, to make your connection classes extend your <em>own</em> base object, you could add a base connection class to your app:</p>
 
@@ -159,9 +159,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then take code from <a href="/api-doc/1.9.8/GraphQL/Types/Relay/BaseConnection" target="_blank" title="API docs for GraphQL::Types::Relay::BaseConnection"><code>GraphQL::Types::Relay::BaseConnection</code></a> and adapt it to your app.</p>
+<p>Then take code from <a href="/api-doc/1.9.11/GraphQL/Types/Relay/BaseConnection" target="_blank" title="API docs for GraphQL::Types::Relay::BaseConnection"><code>GraphQL::Types::Relay::BaseConnection</code></a> and adapt it to your app.</p>
 
-<p>You can mix-and-match customized and built-in types. For example, if you customize the base <code class="highlighter-rouge">Edge</code> class, you can still use the built-in <a href="/api-doc/1.9.8/GraphQL/Types/Relay/PageInfo" target="_blank" title="API docs for GraphQL::Types::Relay::PageInfo"><code>Types::Relay::PageInfo</code></a> class.</p>
+<p>You can mix-and-match customized and built-in types. For example, if you customize the base <code class="highlighter-rouge">Edge</code> class, you can still use the built-in <a href="/api-doc/1.9.11/GraphQL/Types/Relay/PageInfo" target="_blank" title="API docs for GraphQL::Types::Relay::PageInfo"><code>Types::Relay::PageInfo</code></a> class.</p>
 
 <h3 id="custom-edge-classes">Custom Edge classes</h3>
 
@@ -278,17 +278,6 @@
 
 <p>At runtime, <code class="highlighter-rouge">GraphQL::Relay</code> will use <code class="highlighter-rouge">SetConnection</code> to expose <code class="highlighter-rouge">Set</code>s.</p>
 
-<h3 id="creating-connection-fields-by-hand">Creating connection fields by hand</h3>
-
-<p>If you need lower-level access to Connection fields, you can create them programmatically. Given a <code class="highlighter-rouge">GraphQL::Field</code> which returns a collection of items, you can turn it into a connection field with <code class="highlighter-rouge">ConnectionField.create</code>.</p>
-
-<p>For example, to wrap a field with a connection field:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span><span class="p">.</span><span class="nf">new</span>
-<span class="c1"># ... define the field</span>
-<span class="n">connection_field</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">ConnectionField</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
-</code></pre></div></div>
-
 <h2 id="cursors">Cursors</h2>
 
 <p>By default, cursors are encoded in base64 to make them opaque to a human client. You can specify a custom encoder with <code class="highlighter-rouge">Schema#cursor_encoder</code>. The value should be an object which responds to <code class="highlighter-rouge">.encode(plain_text, nonce:)</code> and <code class="highlighter-rouge">.decode(encoded_text, nonce: false)</code>.</p>
@@ -313,7 +302,7 @@
 
 <p>Now, all connections will use URL-safe base-64 encoding.</p>
 
-<p>From a connection instance, the <code class="highlighter-rouge">cursor_encoders</code> methods available via <a href="/api-doc/1.9.8/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#encode"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="/api-doc/1.9.8/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#decode"><code>GraphQL::Relay::BaseConnection#decode</code></a></p>
+<p>From a connection instance, the <code class="highlighter-rouge">cursor_encoders</code> methods available via <a href="/api-doc/1.9.11/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#encode"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="/api-doc/1.9.11/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#decode"><code>GraphQL::Relay::BaseConnection#decode</code></a></p>
 
 </div>
 <p class="guide-footer">

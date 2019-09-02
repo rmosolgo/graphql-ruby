@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.8/">API</a>
+          <a href="/api-doc/1.9.11/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Subscription Classes</h1>
 <div class="guide-container">
-  <p>You can extend <a href="/api-doc/1.9.8/GraphQL/Schema/Subscription" target="_blank" title="API docs for GraphQL::Schema::Subscription"><code>GraphQL::Schema::Subscription</code></a> to create fields that can be subscribed to.</p>
+  <p>You can extend <a href="/api-doc/1.9.11/GraphQL/Schema/Subscription" target="_blank" title="API docs for GraphQL::Schema::Subscription"><code>GraphQL::Schema::Subscription</code></a> to create fields that can be subscribed to.</p>
 
 <p>These classes support several behaviors:</p>
 
@@ -71,7 +71,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>(This base class is a lot like the       <a href="/mutations/mutation_classes">mutation base class</a>. They’re both subclasses of <a href="/api-doc/1.9.8/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>.)</p>
+<p>(This base class is a lot like the <a href="/mutations/mutation_classes">mutation base class</a>. They’re both subclasses of <a href="/api-doc/1.9.11/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>.)</p>
 
 <h2 id="extend-the-base-class-and-hook-it-up">Extend the base class and hook it up</h2>
 
@@ -82,7 +82,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, hook up the new class to the       <a href="/subscriptions/subscription_type">Subscription root type</a> with the <code class="highlighter-rouge">subscription:</code> option:</p>
+<p>Then, hook up the new class to the <a href="/subscriptions/subscription_type">Subscription root type</a> with the <code class="highlighter-rouge">subscription:</code> option:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">SubscriptionType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:message_was_posted</span><span class="p">,</span> <span class="ss">subscription: </span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span>
@@ -100,7 +100,7 @@
 
 <h2 id="arguments">Arguments</h2>
 
-<p>Subscription fields take       <a href="/fields/arguments">arguments</a> just like normal fields. They also accept a       <a href="/mutations/mutation_classes#auto-loading-arguments"><code class="highlighter-rouge">loads:</code> option</a> just like mutations. For example:</p>
+<p>Subscription fields take <a href="/fields/arguments">arguments</a> just like normal fields. They also accept a <a href="/mutations/mutation_classes#auto-loading-arguments"><code class="highlighter-rouge">loads:</code> option</a> just like mutations. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="c1"># `room_id` loads a `room`</span>
@@ -217,7 +217,7 @@
 
 <h3 id="adding-an-initial-response">Adding an Initial Response</h3>
 
-<p>(<strong>Note</strong>: only supported when using the new       <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
+<p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
 <p>By default, GraphQL-Ruby returns <em>nothing</em> (<code class="highlighter-rouge">:no_response</code>) on an initial subscription. But, you may choose to override this and return a value in <code class="highlighter-rouge">def subscribe</code>. For example:</p>
 
@@ -251,9 +251,9 @@
 
 <h2 id="subsequent-updates-with-update">Subsequent Updates with #update</h2>
 
-<p>(<strong>Note</strong>: only supported when using the new       <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
+<p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
-<p>After a client has registered a subscription, the application may trigger subscription updates with <code class="highlighter-rouge">MySchema.subscriptions.trigger(...)</code> (see the       <a href="/subscriptions/triggers">Triggers guide</a> for more). Then, <code class="highlighter-rouge">def update</code> will be called for each client’s subscription. In this method you can:</p>
+<p>After a client has registered a subscription, the application may trigger subscription updates with <code class="highlighter-rouge">MySchema.subscriptions.trigger(...)</code> (see the <a href="/subscriptions/triggers">Triggers guide</a> for more). Then, <code class="highlighter-rouge">def update</code> will be called for each client’s subscription. In this method you can:</p>
 
 <ul>
   <li>Unsubscribe the client with <code class="highlighter-rouge">unsubscribe</code></li>
@@ -263,7 +263,7 @@
 
 <h3 id="skipping-subscription-updates">Skipping subscription updates</h3>
 
-<p>(<strong>Note</strong>: only supported when using the new       <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
+<p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
 <p>Perhaps you don’t want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push to push the new comment to <em>other</em> subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning <code class="highlighter-rouge">:no_update</code>.</p>
 
@@ -282,7 +282,7 @@
 
 <h3 id="returning-a-different-object-for-subscription-updates">Returning a different object for subscription updates</h3>
 
-<p>(<strong>Note</strong>: only supported when using the new       <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
+<p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
 <p>By default, whatever object you pass to <code class="highlighter-rouge">.trigger(event_name, args, object)</code> will be used for responding to subscription fields. But, you can return a different object from <code class="highlighter-rouge">#update</code> to override this:</p>
 
