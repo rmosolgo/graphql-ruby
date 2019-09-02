@@ -46,6 +46,10 @@ The GraphQL specification provides for a top-level `"errors"` key which may incl
 
 In your own schema, you can add to the `"errors"` key by raising `GraphQL::ExecutionError` (or subclasses of it) in your code. Read more in the {% internal_link "Execution Errors guide", "/errors/execution_errors" %}.
 
+## Handled Errors
+
+A schema can be configured to handle certain errors during field execution with handlers that you give it, using `rescue_from`. Read more in the {% internal_link "Error Handling guide", "/errors/error_handling" %}.
+
 ## Unhandled Errors (Crashes)
 
 When a `raise`d error is not `rescue`d, the GraphQL query crashes entirely and the surrounding code (like a Rails controller) must handle the exception.
