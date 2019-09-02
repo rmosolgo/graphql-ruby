@@ -13,12 +13,14 @@ describe "GraphQL::Execution::Errors" do
       end
     end
 
+    class ErrorASubclass < ErrorA; end
+
     use GraphQL::Execution::Interpreter
     use GraphQL::Analysis::AST
     use GraphQL::Execution::Errors
 
     rescue_from(ErrorA) do |err, obj, args, ctx, field|
-      ctx[:errors] << "#{err.message} (#{obj.class.name}.#{field.graphql_name}, #{args.inspect})"
+      ctx[:errors] << "#{err.message} (#{field.owner.name}.#{field.graphql_name}, #{obj.inspect}, #{args.inspect})"
       nil
     end
 
@@ -55,6 +57,10 @@ describe "GraphQL::Execution::Errors" do
         raise ErrorC.new(value: 20)
       end
 
+      field :f5, Int, null: true
+      def f5
+        raise ErrorASubclass, "raised subclass"
+      end
     end
 
     query(Query)
@@ -65,14 +71,14 @@ describe "GraphQL::Execution::Errors" do
       ctx = { errors: [] }
       res = ErrorsTestSchema.execute "{ f1(a1: 1) }", context: ctx, root_value: :abc
       assert_equal({ "data" => { "f1" => nil } }, res)
-      assert_equal ["f1 broke (ErrorsTestSchema::Query.f1, {:a1=>1})"], ctx[:errors]
+      assert_equal ["f1 broke (ErrorsTestSchema::Query.f1, :abc, {:a1=>1})"], ctx[:errors]
     end
 
     it "rescues errors from lazy code" do
       ctx = { errors: [] }
       res = ErrorsTestSchema.execute("{ f2 }", context: ctx)
       assert_equal({ "data" => { "f2" => nil } }, res)
-      assert_equal ["f2 broke (ErrorsTestSchema::Query.f2, {})"], ctx[:errors]
+      assert_equal ["f2 broke (ErrorsTestSchema::Query.f2, nil, {})"], ctx[:errors]
     end
 
     it "can raise new errors" do
@@ -88,6 +94,13 @@ describe "GraphQL::Execution::Errors" do
     it "can replace values with non-nil" do
       res = ErrorsTestSchema.execute("{ f4 }")
       assert_equal({ "data" => { "f4" => 20 } }, res)
+    end
+
+    it "rescues subclasses" do
+      context = { errors: [] }
+      res = ErrorsTestSchema.execute("{ f5 }", context: context)
+      assert_equal({ "data" => { "f5" => nil } }, res)
+      assert_equal ["raised subclass (ErrorsTestSchema::Query.f5, nil, {})"], context[:errors]
     end
   end
 end

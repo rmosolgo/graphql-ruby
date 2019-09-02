@@ -47,6 +47,9 @@ module GraphQL
           args = trace_data[:arguments]
           ctx = trace_data[:query].context
           field = trace_data[:field]
+          if obj.is_a?(GraphQL::Schema::Object)
+            obj = obj.object
+          end
           handler.call(err, obj, args, ctx, field)
         else
           raise err
