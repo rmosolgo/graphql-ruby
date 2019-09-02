@@ -1128,10 +1128,6 @@ module GraphQL
       end
 
       def disable_introspection_entry_points?
-        !!@disable_introspection_entry_points
-      end
-
-      def disable_introspection_entry_points?
         if instance_variable_defined?(:@disable_introspection_entry_points)
           @disable_introspection_entry_points
         else
@@ -1172,6 +1168,8 @@ module GraphQL
         end
       end
 
+      # Rubocop is confused about the method in this module.
+      # rubocop:disable Lint/DuplicateMethods
       module ResolveTypeWithType
         def resolve_type(type, obj, ctx)
           first_resolved_type = if type.respond_to?(:resolve_type)
@@ -1190,17 +1188,18 @@ module GraphQL
         end
       end
 
-      def inherited(child_class)
-        child_class.singleton_class.prepend(ResolveTypeWithType)
-        super
-      end
-
       def resolve_type(type, obj, ctx)
         if type.kind.object?
           type
         else
           raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
         end
+      end
+      # rubocop:enable Lint/DuplicateMethods
+
+      def inherited(child_class)
+        child_class.singleton_class.prepend(ResolveTypeWithType)
+        super
       end
 
       def rescues
@@ -1303,7 +1302,7 @@ module GraphQL
       def directives(new_directives = nil)
         if new_directives
           new_directives.each { |d| directive(d) }
-        elsif own_directives.none?
+        elsif own_directives.empty?
           # we need these to be added so we can add types from their args
           directives(default_directives.values)
         end
@@ -1361,7 +1360,6 @@ module GraphQL
       def multiplex_analyzers
         find_inherited_value(:multiplex_analyzers, EMPTY_ARRAY) + own_multiplex_analyzers
       end
-
 
       # Execute a query on itself.
       # @see {Query#initialize} for arguments.
@@ -1558,7 +1556,8 @@ module GraphQL
         new_types = Array(t)
         new_types.each { |t| add_type(t, owner: nil, late_types: late_types) }
         missed_late_types = 0
-        while (type_owner, lt = late_types.shift)
+        while (late_type_vals = late_types.shift)
+          type_owner, lt = late_type_vals
           if lt.is_a?(String)
             type = Member::BuildType.constantize(lt)
             # Reset the counter, since we might succeed next go-round

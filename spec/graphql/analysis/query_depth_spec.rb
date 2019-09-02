@@ -2,7 +2,7 @@
 require "spec_helper"
 
 if !TESTING_INTERPRETER
-describe GraphQL::Analysis::QueryDepth do
+describe GraphQL::Analysis::QueryDepth do # rubocop:disable Layout/IndentationWidth
   let(:depths) { [] }
   let(:query_depth) { GraphQL::Analysis::QueryDepth.new { |query, max_depth|  depths << query << max_depth } }
   let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [query_depth]) }

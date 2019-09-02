@@ -2,7 +2,7 @@
 require "spec_helper"
 
 if !TESTING_INTERPRETER
-describe GraphQL::Analysis do
+describe GraphQL::Analysis do # rubocop:disable Layout/IndentationWidth
   class TypeCollector
     def initial_value(query)
       []

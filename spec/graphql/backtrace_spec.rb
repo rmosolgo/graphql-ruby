@@ -2,7 +2,7 @@
 require "spec_helper"
 
 if !TESTING_INTERPRETER
-describe GraphQL::Backtrace do
+describe GraphQL::Backtrace do # rubocop:disable Layout/IndentationWidth
   class LazyError
     def raise_err
       raise "Lazy Boom"

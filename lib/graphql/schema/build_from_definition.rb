@@ -294,7 +294,7 @@ module GraphQL
           field_definitions.map do |field_definition|
             type_name = resolve_type_name(field_definition.type)
 
-            field = owner.field(
+            owner.field(
               field_definition.name,
               description: field_definition.description,
               type: type_resolver.call(field_definition.type),

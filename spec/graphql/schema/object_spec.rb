@@ -106,7 +106,7 @@ describe GraphQL::Schema::Object do
   end
 
   if !TESTING_INTERPRETER
-  describe "using GraphQL::Function" do
+  describe "using GraphQL::Function" do # rubocop:disable Layout/IndentationWidth
     new_test_func_payload = Class.new(GraphQL::Schema::Object) do
       graphql_name "TestFuncPayload"
       field :name, String, null: false

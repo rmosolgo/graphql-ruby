@@ -2,7 +2,7 @@
 require "spec_helper"
 
 if !TESTING_INTERPRETER
-describe GraphQL::Analysis::QueryComplexity do
+describe GraphQL::Analysis::QueryComplexity do # rubocop:disable Layout/IndentationWidth
   let(:complexities) { [] }
   let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |this_query, complexity|  complexities << this_query << complexity } }
   let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [query_complexity]) }

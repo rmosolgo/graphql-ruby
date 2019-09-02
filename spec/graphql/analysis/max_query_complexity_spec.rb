@@ -2,7 +2,7 @@
 require "spec_helper"
 
 if !TESTING_INTERPRETER
-describe GraphQL::Analysis::MaxQueryComplexity do
+describe GraphQL::Analysis::MaxQueryComplexity do # rubocop:disable Layout/IndentationWidth
   let(:schema) { Class.new(Dummy::Schema) }
   let(:result) { schema.execute(query_string) }
   let(:query_string) {%|

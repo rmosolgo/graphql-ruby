@@ -415,10 +415,10 @@ module GraphQL
 
       def type
         @type ||= if @function
-            Member::BuildType.parse_type(@function.type, null: false)
-          else
-            Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
-          end
+          Member::BuildType.parse_type(@function.type, null: false)
+        else
+          Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+        end
       rescue GraphQL::Schema::InvalidDocumentError => err
         # Let this propagate up
         raise err

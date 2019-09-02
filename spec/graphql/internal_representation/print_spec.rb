@@ -2,7 +2,7 @@
 require "spec_helper"
 
 if !TESTING_INTERPRETER
-describe GraphQL::InternalRepresentation::Print do
+describe GraphQL::InternalRepresentation::Print do # rubocop:disable Layout/IndentationWidth
   describe "printing queries" do
     let(:query_str) { <<-GRAPHQL
     {

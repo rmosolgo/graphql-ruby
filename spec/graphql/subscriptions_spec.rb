@@ -458,7 +458,8 @@ describe GraphQL::Subscriptions do
           }
             GRAPHQL
 
-            schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+            res = schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+            pp res
             err = assert_raises(RuntimeError) {
               schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, error_payload_class.new, scope: "1")
             }

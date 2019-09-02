@@ -115,7 +115,7 @@ module GraphQL
           end
         end
 
-        args_class = if argument_owner.arguments_class.nil? && argument_owner.is_a?(Class)
+        if argument_owner.arguments_class.nil? && argument_owner.is_a?(Class)
           # A Schema::InputObject, logic from Query::Arguments#to_kwargs
           ruby_kwargs = {}
           values_hash.each do |key, value|
