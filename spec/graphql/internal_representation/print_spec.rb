@@ -21,7 +21,7 @@ describe GraphQL::InternalRepresentation::Print do # rubocop:disable Layout/Inde
     GRAPHQL
   }
     it "prints the rewritten query" do
-      query_plan = GraphQL::InternalRepresentation::Print.print(Dummy::Schema, query_str)
+      query_plan = GraphQL::InternalRepresentation::Print.print(Dummy::Schema.graphql_definition, query_str)
       expected_plan = <<-GRAPHQL
 query {
   ... on Query {

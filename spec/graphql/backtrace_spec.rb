@@ -64,7 +64,7 @@ describe GraphQL::Backtrace do # rubocop:disable Layout/IndentationWidth
       strField: String
     }
     GRAPHQL
-    GraphQL::Schema.from_definition(defn, default_resolve: resolvers).redefine {
+    GraphQL::Schema.from_definition(defn, default_resolve: resolvers, interpreter: false).redefine {
       lazy_resolve(LazyError, :raise_err)
       query_analyzer(ErrorAnalyzer.new)
     }
@@ -123,7 +123,7 @@ describe GraphQL::Backtrace do # rubocop:disable Layout/IndentationWidth
       assert_includes err.message, rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:42", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:43", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 

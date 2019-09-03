@@ -849,20 +849,9 @@ module GraphQL
           schema_defn.rescue_from(err_class, &handler)
         end
 
-        # Only install this schema's plugins; let the others be inherited.
-        if own_plugins.any?
-          definition_proxy = GraphQL::Define::DefinedObjectProxy.new(schema_defn)
-          own_plugins.each do |plugin, options|
-            if options.any?
-              definition_proxy.use(plugin, **options)
-            else
-              definition_proxy.use(plugin)
-            end
-          end
-        end
         schema_defn.subscriptions ||= self.subscriptions
-        # Do this after `plugins` since Interpreter is a plugin
-        if schema_defn.query_execution_strategy != GraphQL::Execution::Interpreter
+
+        if !schema_defn.interpreter?
           schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         end
         schema_defn.send(:rebuild_artifacts)

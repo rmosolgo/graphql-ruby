@@ -319,6 +319,10 @@ module GraphQL
       }
     end
 
+    def type_class
+      metadata[:type_class]
+    end
+
     private
 
     def build_default_resolver

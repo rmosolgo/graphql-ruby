@@ -18,23 +18,15 @@ module GraphQL
 
     # @see {Subscriptions#initialize} for options, concrete implementations may add options.
     def self.use(defn, options = {})
-      if defn.is_a?(Class)
-        schema = defn
-        instrumentation = Subscriptions::Instrumentation.new(schema: schema)
-        schema.instrument(:query, instrumentation)
-        # This will be applied if the legacy runtime is used
-        schema.instrument(:field, instrumentation)
-      else
-        schema = defn.target
-        if schema.subscriptions
-          # already attached to the class
-          return
-        end
-        instrumentation = Subscriptions::Instrumentation.new(schema: schema)
-        defn.instrument(:field, instrumentation)
-        defn.instrument(:query, instrumentation)
+      schema = defn.is_a?(Class) ? defn : defn.target
+
+      if schema.subscriptions
+        raise ArgumentError, "Can't reinstall subscriptions. #{schema} is using #{schema.subscriptions}, can't also add #{self}"
       end
 
+      instrumentation = Subscriptions::Instrumentation.new(schema: schema)
+      defn.instrument(:query, instrumentation)
+      defn.instrument(:field, instrumentation)
       options[:schema] = schema
       schema.subscriptions = self.new(options)
       nil
