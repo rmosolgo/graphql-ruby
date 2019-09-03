@@ -87,7 +87,9 @@ module GraphQL
             subscription_root_type = types['Subscription']
           end
 
-          raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
+          unless query_root_type && query_root_type.fields.any?
+            raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.')
+          end
 
           schema = Schema.define do
             raise_definition_error true

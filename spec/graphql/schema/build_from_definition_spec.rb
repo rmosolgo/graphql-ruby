@@ -841,6 +841,21 @@ SCHEMA
       assert_equal 'Must provide schema definition with query type or a type named Query.', err.message
     end
 
+    it 'Requires a query type that defines at least one field' do
+      schema = <<-SCHEMA
+schema {
+  query: Hello
+}
+
+type Hello { }
+SCHEMA
+
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
+      end
+      assert_equal 'Must provide schema definition with query type or a type named Query.', err.message
+    end
+
     it 'Unknown type referenced' do
       schema = <<-SCHEMA
 schema {
