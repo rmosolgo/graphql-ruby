@@ -193,26 +193,6 @@ module StarTrek
     field :aliased_faction, Faction, hash_key: :aliased_faction, null: true
 
     def resolve(ship_name: nil, faction_id:)
-      IntroduceShipFunction.new.call(object, {ship_name: ship_name, faction_id: faction_id}, context)
-    end
-  end
-
-  class IntroduceShipFunction < GraphQL::Function
-    description "Add a ship to this faction"
-
-    argument :shipName, GraphQL::STRING_TYPE
-    argument :factionId, !GraphQL::ID_TYPE
-
-    type(GraphQL::ObjectType.define do
-      name "IntroduceShipFunctionPayload"
-      field :shipEdge, Ship.edge_type, hash_key: :shipEdge
-      field :faction, Faction, hash_key: :shipEdge
-    end)
-
-    def call(obj, args, ctx)
-      # support old and new args
-      ship_name = args["shipName"] || args[:ship_name]
-      faction_id = args["factionId"] || args[:faction_id]
       if ship_name == 'USS Voyager'
         GraphQL::ExecutionError.new("Sorry, USS Voyager ship is reserved")
       elsif ship_name == 'IKS Korinar'
@@ -231,19 +211,13 @@ module StarTrek
           faction: faction,
           aliased_faction: faction,
         }
-        if args["shipName"] == "Slave II"
+        if ship_name == "Slave II"
           LazyWrapper.new(result)
         else
           result
         end
       end
     end
-  end
-
-  IntroduceShipFunctionMutation = GraphQL::Relay::Mutation.define do
-    # Used as the root for derived types:
-    name "IntroduceShipFunction"
-    function IntroduceShipFunction.new
   end
 
   # GraphQL-Batch knockoff
@@ -359,8 +333,6 @@ module StarTrek
   class MutationType < GraphQL::Schema::Object
     graphql_name "Mutation"
     field :introduceShip, mutation: IntroduceShipMutation
-    # To hook up a Relay::Mutation
-    field :introduceShipFunction, field: IntroduceShipFunctionMutation.field
   end
 
   class ClassNameRecorder
