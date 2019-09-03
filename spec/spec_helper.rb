@@ -9,7 +9,6 @@ ENV["BACKTRACE"] = "1"
 # Set this env var to use Interpreter for fixture schemas.
 # Eventually, interpreter will be the default.
 TESTING_INTERPRETER = ENV["TESTING_INTERPRETER"]
-TESTING_RESCUE_FROM = !TESTING_INTERPRETER
 
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start

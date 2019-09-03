@@ -41,11 +41,7 @@ describe GraphQL::Tracing::PlatformTracing do
 
     it "calls the platform's own method with its own keys" do
       schema.execute(" { cheese(id: 1) { flavor } }")
-      # This is different because schema/member/instrumentation
-      # calls `irep_selection` which causes the query to be parsed.
-      # But interpreter doesn't require parsing until later.
-      expected_trace = if TESTING_INTERPRETER
-        [
+      expected_trace = [
           "em",
           "am",
           "l",
@@ -56,9 +52,6 @@ describe GraphQL::Tracing::PlatformTracing do
           "Q.c", # notice that the flavor is skipped
           "eql",
         ]
-      else
-        ["em", "l", "p", "v", "am", "aq", "eq", "Q.c", "eql"]
-      end
 
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
@@ -77,11 +70,7 @@ describe GraphQL::Tracing::PlatformTracing do
 
     it "only traces traceTrue, not traceFalse or traceNil" do
       schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
-      # This is different because schema/member/instrumentation
-      # calls `irep_selection` which causes the query to be parsed.
-      # But interpreter doesn't require parsing until later.
-      expected_trace = if TESTING_INTERPRETER
-        [
+      expected_trace = [
           "em",
           "am",
           "l",
@@ -93,9 +82,6 @@ describe GraphQL::Tracing::PlatformTracing do
           "T.t",
           "eql",
         ]
-      else
-        ["em", "l", "p", "v", "am", "aq", "eq", "Q.t", "T.t", "eql"]
-      end
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
   end
@@ -113,11 +99,7 @@ describe GraphQL::Tracing::PlatformTracing do
 
     it "traces traceTrue and traceNil but not traceFalse" do
       schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
-      # This is different because schema/member/instrumentation
-      # calls `irep_selection` which causes the query to be parsed.
-      # But interpreter doesn't require parsing until later.
-      expected_trace = if TESTING_INTERPRETER
-        [
+      expected_trace = [
           "em",
           "am",
           "l",
@@ -130,9 +112,6 @@ describe GraphQL::Tracing::PlatformTracing do
           "T.t",
           "eql",
         ]
-      else
-        ["em", "l", "p", "v", "am", "aq", "eq", "Q.t", "T.t", "T.t", "eql"]
-      end
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
   end

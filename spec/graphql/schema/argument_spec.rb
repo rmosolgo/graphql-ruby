@@ -180,7 +180,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
-      assert_equal "Argument 'requiredWithDefaultArg' on Field 'field' has an invalid value. Expected type 'Int!'.", res['errors'][0]['message']
+      assert_equal "Argument 'requiredWithDefaultArg' on Field 'field' has an invalid value (null). Expected type 'Int!'.", res['errors'][0]['message']
     end
 
   end

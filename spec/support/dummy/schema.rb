@@ -490,7 +490,7 @@ module Dummy
     max_depth 5
     orphan_types Honey, Beverage
 
-    rescue_from(NoSuchDairyError) { |err| err.message  }
+    rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 
     def self.resolve_type(type, obj, ctx)
       Schema.types[obj.class.name.split("::").last]
@@ -509,6 +509,7 @@ module Dummy
 
     use GraphQL::Execution::Interpreter
     use GraphQL::Analysis::AST
+    use GraphQL::Execution::Errors
   end
 
   class AdminSchema < GraphQL::Schema

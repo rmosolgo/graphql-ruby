@@ -186,58 +186,48 @@ describe GraphQL::Query::Executor do
       end
     end
 
-    if TESTING_RESCUE_FROM
-      describe "if the schema has a rescue handler" do
-        before do
-          # HACK: reach to the underlying instance to perform a side-effect
-          schema.graphql_definition.rescue_from(RuntimeError) { "Error was handled!" }
+    describe "if the schema has a rescue handler" do
+      let(:schema) {
+        Class.new(Dummy::Schema) do
+          rescue_from(RuntimeError) { raise GraphQL::ExecutionError, "Error was handled!" }
         end
+      }
 
-        after do
-          # remove the handler from the middleware:
-          schema.remove_handler(RuntimeError)
-        end
-
-        it "adds to the errors key" do
-          expected = {
-              "data" => {"error" => nil},
-              "errors"=>[
-                  {
-                      "message"=>"Error was handled!",
-                      "locations" => [{"line"=>1, "column"=>17}],
-                      "path"=>["error"]
-                  }
-              ]
-          }
-          assert_equal(expected, result)
-        end
-      end
-
-      describe "if the schema has a rescue handler with an instance of GraphQL::ExecutionError as an argument" do
-        before do
-          # HACK: reach to the underlying instance to perform a side-effect
-          schema.graphql_definition.rescue_from(RuntimeError) { GraphQL::ExecutionError.new("Error was handled!", extensions: { code: "DUMMY_ERROR" }) }
-        end
-
-        after do
-          # remove the handler from the middleware:
-          schema.remove_handler(RuntimeError)
-        end
-
-        it "adds to the errors key" do
-          expected = {
+      it "adds to the errors key" do
+        expected = {
             "data" => {"error" => nil},
             "errors"=>[
-              {
-                "message"=>"Error was handled!",
-                "locations" => [{"line"=>1, "column"=>17}],
-                "path"=>["error"],
-                "extensions"=>{code: "DUMMY_ERROR"}
-              }
+                {
+                    "message"=>"Error was handled!",
+                    "locations" => [{"line"=>1, "column"=>17}],
+                    "path"=>["error"]
+                }
             ]
-          }
-          assert_equal(expected, result)
+        }
+        assert_equal(expected, result)
+      end
+    end
+
+    describe "if the schema has a rescue handler with an instance of GraphQL::ExecutionError as an argument" do
+      let(:schema) {
+        Class.new(Dummy::Schema) do
+          rescue_from(RuntimeError) { GraphQL::ExecutionError.new("Error was handled!", extensions: { code: "DUMMY_ERROR" }) }
         end
+      }
+
+      it "adds to the errors key" do
+        expected = {
+          "data" => {"error" => nil},
+          "errors"=>[
+            {
+              "message"=>"Error was handled!",
+              "locations" => [{"line"=>1, "column"=>17}],
+              "path"=>["error"],
+              "extensions"=>{code: "DUMMY_ERROR"}
+            }
+          ]
+        }
+        assert_equal(expected, result)
       end
     end
   end

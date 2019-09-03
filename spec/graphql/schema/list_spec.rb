@@ -66,7 +66,7 @@ describe GraphQL::Schema::List do
 
     it "checks non-null lists of enums" do
       res = ListEnumValidationSchema.execute "{ echo(items: [A, B, \"C\"]) }"
-      expected_error = "Argument 'items' on Field 'echo' has an invalid value. Expected type '[Item!]!'."
+      expected_error = "Argument 'items' on Field 'echo' has an invalid value ([A, B, \"C\"]). Expected type '[Item!]!'."
       assert_equal [expected_error], res["errors"].map { |e| e["message"] }
     end
   end
