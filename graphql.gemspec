@@ -1,7 +1,6 @@
 # frozen_string_literal: true
-$LOAD_PATH.push File.expand_path("../lib", __FILE__)
 
-require "graphql/version"
+require_relative "lib/graphql/version"
 require "date"
 
 Gem::Specification.new do |s|
@@ -24,7 +23,6 @@ Gem::Specification.new do |s|
   }
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
-  s.test_files = Dir["spec/**/*"]
 
   s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "codeclimate-test-reporter", "~>0.4"
