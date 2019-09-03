@@ -17,26 +17,11 @@ module GraphQL
         runtime.final_value
       end
 
-      def self.use(schema_defn)
-        if schema_defn.is_a?(Class)
-          schema_class = schema_defn
-          schema_defn = nil
-        else
-          schema_defn.target.interpreter = true
-          # Reach through the legacy objects for the actual class defn
-          schema_class = schema_defn.target.class
-        end
+      def self.use(schema_class)
         schema_class.interpreter = true
-
-        # This is not good, since both of these are holding state now,
-        # we have to update both :(
-        [schema_class, schema_defn].each do |schema_config|
-          if schema_config
-            schema_config.query_execution_strategy(GraphQL::Execution::Interpreter)
-            schema_config.mutation_execution_strategy(GraphQL::Execution::Interpreter)
-            schema_config.subscription_execution_strategy(GraphQL::Execution::Interpreter)
-          end
-        end
+        schema_class.query_execution_strategy(GraphQL::Execution::Interpreter)
+        schema_class.mutation_execution_strategy(GraphQL::Execution::Interpreter)
+        schema_class.subscription_execution_strategy(GraphQL::Execution::Interpreter)
       end
 
       def self.begin_multiplex(multiplex)

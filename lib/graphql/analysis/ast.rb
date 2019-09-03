@@ -13,13 +13,8 @@ module GraphQL
     module AST
       module_function
 
-      def use(schema_defn)
-        schema = if schema_defn.is_a?(Class)
-          schema_defn
-        else
-          schema_defn.target
-        end
-        schema.analysis_engine = GraphQL::Analysis::AST
+      def use(schema_class)
+        schema_class.analysis_engine = GraphQL::Analysis::AST
       end
 
       # Analyze a multiplex, and all queries within.
