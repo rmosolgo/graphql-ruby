@@ -47,6 +47,34 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
     end
   end
 
+  describe "When the query includes introspective fields" do
+    let(:query_string) { "
+    query allSchemaTypes {
+      __schema {
+         types {
+            fields {
+              type {
+                fields {
+                  type {
+                    fields {
+                      type {
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }
+         }
+      }
+    }
+  "}
+
+    it "adds an error message for a too-deep query" do
+      assert_equal "Query has depth of 9, which exceeds max depth of 5", result.message
+    end
+  end
+
   describe "When the query is not deeper than max_depth" do
     before do
       schema.max_depth(100)

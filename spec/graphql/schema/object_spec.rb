@@ -326,6 +326,16 @@ describe GraphQL::Schema::Object do
       end
     end
 
+    it "warns when override matches field name" do
+      expected_warning = "X's `field :object` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_object` and `def resolve_object`). Or use `method_conflict_warning: false` to suppress this warning.\n"
+      assert_output "", expected_warning do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :object, String, null: true, resolver_method: :object
+        end
+      end
+    end
+
     it "doesn't warn with an override" do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
@@ -352,6 +362,15 @@ describe GraphQL::Schema::Object do
         }
         GRAPHQL
         assert_equal ["method"], schema.query.fields.keys
+      end
+    end
+
+    it "doesn't warn when passing object through using resolver_method" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :thing, String, null: true, resolver_method: :object
+        end
       end
     end
   end

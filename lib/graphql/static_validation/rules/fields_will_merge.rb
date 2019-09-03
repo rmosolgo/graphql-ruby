@@ -330,20 +330,27 @@ module GraphQL
         # Check for incompatible / non-identical arguments on this node:
         [field1, field2].map do |n|
           if n.arguments.any?
-            n.arguments.reduce({}) do |memo, a|
+            serialized_args = {}
+            n.arguments.each do |a|
               arg_value = a.value
-              memo[a.name] = case arg_value
-              when GraphQL::Language::Nodes::AbstractNode
-                arg_value.to_query_string
-              else
-                GraphQL::Language.serialize(arg_value)
-              end
-              memo
+              serialized_args[a.name] = serialize_arg(arg_value)
             end
+            serialized_args
           else
             NO_ARGS
           end
         end.uniq
+      end
+
+      def serialize_arg(arg_value)
+        case arg_value
+        when GraphQL::Language::Nodes::AbstractNode
+          arg_value.to_query_string
+        when Array
+          "[#{arg_value.map { |a| serialize_arg(a) }.join(", ")}]"
+        else
+          GraphQL::Language.serialize(arg_value)
+        end
       end
 
       def compared_fragments_key(frag1, frag2, exclusive)

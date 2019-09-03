@@ -104,10 +104,6 @@ module GraphQL
         ARGUMENTS_ARE_VALID =  Rules.assert_named_items_are_valid("argument", ->(type) { type.arguments.values })
 
         DEFAULT_VALUE_IS_VALID_FOR_TYPE = ->(type) {
-          if !type.default_value.nil? && type.type.is_a?(NonNullType)
-            return %Q(Variable #{type.name} of type "#{type.type}" is required and will not use the default value. Perhaps you meant to use type "#{type.type.of_type}".)
-          end
-
           if !type.default_value.nil?
             coerced_value = begin
               type.type.coerce_isolated_result(type.default_value)

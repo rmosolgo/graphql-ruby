@@ -601,6 +601,69 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "arguments that are a list of enums, in fragments" do
+    let(:schema) {
+      GraphQL::Schema.from_definition <<-GRAPHQL
+      type Query {
+        field(categories: [Category!]): Int
+      }
+
+      enum Category {
+        A
+        B
+        C
+      }
+      GRAPHQL
+    }
+
+    describe "When there's not a conflict" do
+      let(:query_string) {
+        "
+        {
+          field(categories: [A, B, C])
+          ...Q
+        }
+        fragment Q on Query {
+          field(categories: [A, B, C])
+        }
+        "
+      }
+
+      it "doesn't find errors" do
+        assert_equal [], errors
+      end
+    end
+
+    describe "When there is a conflict" do
+      let(:query_string) {
+        "
+        {
+          field(categories: [A, B])
+          ...Q
+        }
+        fragment Q on Query {
+          field(categories: [A, B, C])
+        }
+        "
+      }
+
+      it "adds an error" do
+        expected_error = {
+          "message"=>"Field 'field' has an argument conflict: {categories:\"[A, B]\"} or {categories:\"[A, B, C]\"}?",
+          "locations"=>[{"line"=>3, "column"=>11}, {"line"=>7, "column"=>11}],
+          "path"=>[],
+          "extensions"=> {
+            "code"=>"fieldConflict",
+            "fieldName"=>"field",
+            "conflicts"=>"{categories:\"[A, B]\"} or {categories:\"[A, B, C]\"}"
+          }
+        }
+
+        assert_equal [expected_error], errors
+      end
+    end
+  end
+
   describe "return types must be unambiguous" do
     let(:schema) {
       GraphQL::Schema.from_definition(%|

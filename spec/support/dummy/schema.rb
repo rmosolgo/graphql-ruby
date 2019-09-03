@@ -404,6 +404,14 @@ module Dummy
       ]
     end
 
+    field :multiple_errors_on_non_nullable_list_field, [String], null: false
+    def multiple_errors_on_non_nullable_list_field
+      [
+        GraphQL::ExecutionError.new("The first error message for a field defined to return a list of strings."),
+        GraphQL::ExecutionError.new("The second error message for a field defined to return a list of strings.")
+      ]
+    end
+
     field :execution_error_with_options, Integer, null: true
     def execution_error_with_options
       GraphQL::ExecutionError.new("Permission Denied!", options: { "code" => "permission_denied" })

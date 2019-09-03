@@ -8,6 +8,33 @@
 
 ### Bug fixes
 
+## 1.9.11 (29 Aug 2019)
+
+### New features
+
+- Add `extras` setter to `GraphQL::Schema::Field` #2450
+- Add extensions in `CoercionError` #2431
+
+### Bug fixes
+
+- Make `extensions` kwarg on field on more flexible for extensions with options #2443
+- Fix list validation error handling #2441
+- Include introspective fields in query depth calculations #2437
+- Correct the example for using 'a class method to generate fields' #2435
+- Enable multiple execution errors for Fields defined to return a list #2433
+
+## 1.9.10 (20 Aug 2019)
+
+### New features
+
+- Support required arguments with default values #2416
+
+### Bug fixes
+
+- Properly disable `max_complexity` and `max_depth` when `nil` is passed #2409
+- Fix printing class-based schemas #2406
+- Improve field method naming conflict check #2420
+
 ## 1.9.9 (30 July 2019)
 
 ### New features

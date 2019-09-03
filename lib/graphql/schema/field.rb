@@ -47,9 +47,6 @@ module GraphQL
 
       alias :mutation :resolver
 
-      # @return [Array<Symbol>]
-      attr_reader :extras
-
       # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
       attr_reader :trace
 
@@ -168,7 +165,7 @@ module GraphQL
       # @param complexity [Numeric] When provided, set the complexity for this field
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
-      # @param extensions [Array<Class>] Named extensions to apply to this field (see also {#extension})
+      # @param extensions [Array<Class, Hash<Class => Object>>] Named extensions to apply to this field (see also {#extension})
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
@@ -286,36 +283,64 @@ module GraphQL
 
       # Read extension instances from this field,
       # or add new classes/options to be initialized on this field.
+      # Extensions are executed in the order they are added.
       #
-      # @param extensions [Array<Class>, Hash<Class => Object>] Add extensions to this field
+      # @example adding an extension
+      #   extensions([MyExtensionClass])
+      #
+      # @example adding multiple extensions
+      #   extensions([MyExtensionClass, AnotherExtensionClass])
+      #
+      # @example adding an extension with options
+      #   extensions([MyExtensionClass, { AnotherExtensionClass => { filter: true } }])
+      #
+      # @param extensions [Array<Class, Hash<Class => Object>>] Add extensions to this field. For hash elements, only the first key/value is used.
       # @return [Array<GraphQL::Schema::FieldExtension>] extensions to apply to this field
       def extensions(new_extensions = nil)
         if new_extensions.nil?
           # Read the value
           @extensions
         else
-          # Normalize to a Hash of {name => options}
-          extensions_with_options = if new_extensions.last.is_a?(Hash)
-            new_extensions.pop
-          else
-            {}
-          end
-          new_extensions.each do |f|
-            extensions_with_options[f] = nil
-          end
-
-          # Initialize each class and stash the instance
-          extensions_with_options.each do |extension_class, options|
-            @extensions << extension_class.new(field: self, options: options)
+          new_extensions.each do |extension|
+            if extension.is_a?(Hash)
+              extension = extension.to_a[0]
+              extension_class, options = *extension
+              @extensions << extension_class.new(field: self, options: options)
+            else
+              extension_class = extension
+              @extensions << extension_class.new(field: self, options: nil)
+            end
           end
         end
       end
 
       # Add `extension` to this field, initialized with `options` if provided.
+      #
+      # @example adding an extension
+      #   extension(MyExtensionClass)
+      #
+      # @example adding an extension with options
+      #   extension(MyExtensionClass, filter: true)
+      #
       # @param extension [Class] subclass of {Schema::Fieldextension}
       # @param options [Object] if provided, given as `options:` when initializing `extension`.
       def extension(extension, options = nil)
         extensions([{extension => options}])
+      end
+
+      # Read extras (as symbols) from this field,
+      # or add new extras to be opted into by this field's resolver.
+      #
+      # @param new_extras [Array<Symbol>] Add extras to this field
+      # @return [Array<Symbol>]
+      def extras(new_extras = nil)
+        if new_extras.nil?
+          # Read the value
+          @extras
+        else
+          # Append to the set of extras on this field
+          @extras.concat(new_extras)
+        end
       end
 
       def complexity(new_complexity = nil)

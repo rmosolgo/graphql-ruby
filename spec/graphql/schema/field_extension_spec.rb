@@ -72,6 +72,11 @@ describe GraphQL::Schema::FieldExtension do
         argument :input, Integer, required: true
       end
 
+      field :tripled_by_option2, Integer, null: false, resolver_method: :pass_thru,
+        extensions: [{ MultiplyByOption => { factor: 3 } }] do
+          argument :input, Integer, required: true
+        end
+
       field :multiply_input, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgument] do
         argument :input, Integer, required: true
       end
@@ -83,6 +88,11 @@ describe GraphQL::Schema::FieldExtension do
       def pass_thru(input:, **args)
         input # return it as-is, it will be modified by extensions
       end
+
+      field :multiple_extensions, Integer, null: false, resolver_method: :pass_thru,
+        extensions: [DoubleFilter, { MultiplyByOption => { factor: 3 } }] do
+          argument :input, Integer, required: true
+        end
     end
 
     class Schema < GraphQL::Schema
@@ -123,6 +133,12 @@ describe GraphQL::Schema::FieldExtension do
       assert_equal 12, res["data"]["tripledByOption"]
     end
 
+    it "supports extension with options via extensions kwarg" do
+      # The factor of three came from an option
+      res = exec_query("{ tripledByOption2(input: 4) }")
+      assert_equal 12, res["data"]["tripledByOption2"]
+    end
+
     it "provides an empty hash as default options" do
       res = exec_query("{ square(input: 4) }")
       assert_equal 16, res["data"]["square"]
@@ -133,6 +149,12 @@ describe GraphQL::Schema::FieldExtension do
     it "can hide arguments from resolve methods" do
       res = exec_query("{ multiplyInput(input: 3, factor: 5) }")
       assert_equal 15, res["data"]["multiplyInput"]
+    end
+
+    it "supports multiple extensions via extensions kwarg" do
+      # doubled then multiplied by 3 specified via option
+      res = exec_query("{ multipleExtensions(input: 3) }")
+      assert_equal 18, res["data"]["multipleExtensions"]
     end
   end
 end
