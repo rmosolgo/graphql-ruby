@@ -186,13 +186,13 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
 
   Resolvers = {
     "Subscription" => {
-      "payload" => ->(o,a,c) { o.payload },
+      "payload" => ->(o,a,c) { o },
       "myEvent" => ->(o,a,c) { o },
       "event" => ->(o,a,c) { o },
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
   }
-  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }})
+  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }}, interpreter: TESTING_INTERPRETER)
   # TODO don't hack this (no way to add metadata from IDL parser right now)
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
@@ -236,7 +236,7 @@ describe GraphQL::Subscriptions do
           res_1 = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
           res_2 = schema.execute(query_str, context: { socket: "2" }, variables: { "id" => "200" }, root_value: root_object)
 
-          empty_response = {}
+          empty_response = TESTING_INTERPRETER ? {} : nil
 
           # Initial response is nil, no broadcasts yet
           assert_equal(empty_response, res_1["data"])
@@ -248,7 +248,7 @@ describe GraphQL::Subscriptions do
           # The application signals graphql via `subscriptions.trigger`:
           schema.subscriptions.trigger(:payload, {"id" => "100"}, root_object.payload)
           schema.subscriptions.trigger("payload", {"id" => "200"}, root_object.payload)
-          # Symobls are OK too
+          # Symbols are OK too
           schema.subscriptions.trigger(:payload, {:id => "100"}, root_object.payload)
           schema.subscriptions.trigger("payload", {"id" => "300"}, nil)
 
@@ -272,7 +272,8 @@ describe GraphQL::Subscriptions do
           # Initial subscriptions
           response = schema.execute(nil, document: document, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
 
-          empty_response = {}
+          empty_response = TESTING_INTERPRETER ? {} : nil
+
           # Initial response is empty, no broadcasts yet
           assert_equal(empty_response, response["data"])
           assert_equal [], deliveries["1"]
@@ -459,7 +460,6 @@ describe GraphQL::Subscriptions do
             GRAPHQL
 
             res = schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
-            pp res
             err = assert_raises(RuntimeError) {
               schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, error_payload_class.new, scope: "1")
             }

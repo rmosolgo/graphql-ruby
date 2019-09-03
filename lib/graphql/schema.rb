@@ -860,6 +860,7 @@ module GraphQL
             end
           end
         end
+        schema_defn.subscriptions ||= self.subscriptions
         # Do this after `plugins` since Interpreter is a plugin
         if schema_defn.query_execution_strategy != GraphQL::Execution::Interpreter
           schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation

@@ -54,7 +54,8 @@ module GraphQL
               types[definition.name] = build_enum_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ObjectTypeDefinition
               is_subscription_root = (definition.name == "Subscription" && (schema_definition.nil? || schema_definition.subscription.nil?)) || (schema_definition && (definition.name == schema_definition.subscription))
-              types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve, is_subscription_root: is_subscription_root)
+              should_extend_subscription_root = is_subscription_root && interpreter
+              types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve, extend_subscription_root: should_extend_subscription_root)
             when GraphQL::Language::Nodes::InterfaceTypeDefinition
               types[definition.name] = build_interface_type(definition, type_resolver)
             when GraphQL::Language::Nodes::UnionTypeDefinition
@@ -91,14 +92,9 @@ module GraphQL
             subscription_root_type = types['Subscription']
           end
 
-          if subscription_root_type
-            subscription_root_type.extend(GraphQL::Subscriptions::SubscriptionRoot)
-          end
-
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
           Class.new(GraphQL::Schema) do
-
             begin
               # Add these first so that there's some chance of resolving late-bound types
               orphan_types types.values
@@ -196,7 +192,7 @@ module GraphQL
           end
         end
 
-        def build_object_type(object_type_definition, type_resolver, default_resolve:, is_subscription_root:)
+        def build_object_type(object_type_definition, type_resolver, default_resolve:, extend_subscription_root:)
           builder = self
           type_def = nil
           typed_resolve_fn = ->(field, obj, args, ctx) { default_resolve.call(type_def, field, obj, args, ctx) }
@@ -205,7 +201,8 @@ module GraphQL
             graphql_name(object_type_definition.name)
             description(object_type_definition.description)
             ast_node(object_type_definition)
-            if is_subscription_root
+            if extend_subscription_root
+              # This has to come before `field ...` configurations since it modifies them
               extend Subscriptions::SubscriptionRoot
             end
 

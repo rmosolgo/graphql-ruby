@@ -37,7 +37,7 @@ module GraphQL
           arguments
         when Hash
           if field.is_a?(GraphQL::Schema::Field)
-            stringify_args(arguments)
+            arguments
           else
             GraphQL::Query::LiteralInput.from_arguments(
               arguments,
@@ -49,7 +49,7 @@ module GraphQL
           raise ArgumentError, "Unexpected arguments: #{arguments}, must be Hash or GraphQL::Arguments"
         end
 
-        sorted_h = normalized_args.to_h.sort.to_h
+        sorted_h = stringify_args(normalized_args.to_h)
         Serialize.dump_recursive([scope, name, sorted_h])
       end
 

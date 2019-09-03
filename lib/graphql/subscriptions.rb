@@ -22,8 +22,14 @@ module GraphQL
         schema = defn
         instrumentation = Subscriptions::Instrumentation.new(schema: schema)
         schema.instrument(:query, instrumentation)
+        # This will be applied if the legacy runtime is used
+        schema.instrument(:field, instrumentation)
       else
         schema = defn.target
+        if schema.subscriptions
+          # already attached to the class
+          return
+        end
         instrumentation = Subscriptions::Instrumentation.new(schema: schema)
         defn.instrument(:field, instrumentation)
         defn.instrument(:query, instrumentation)
