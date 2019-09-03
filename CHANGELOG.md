@@ -10,6 +10,10 @@
 
 ## 1.9.11 (29 Aug 2019)
 
+### Breaking Changes
+
+- Introspection fields are now considered for query depth validations, so you'll need at least `max_depth: 13` to run the introspection query #2437
+
 ### New features
 
 - Add `extras` setter to `GraphQL::Schema::Field` #2450
