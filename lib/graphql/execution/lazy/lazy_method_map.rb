@@ -37,7 +37,7 @@ module GraphQL
         end
 
         def each
-          @storage.each { |k, v| yield(k, v) }
+          @storage.each_pair { |k, v| yield(k, v) }
         end
 
         protected
