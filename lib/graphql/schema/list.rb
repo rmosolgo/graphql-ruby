@@ -6,7 +6,7 @@ module GraphQL
     # Wraps a {Schema::Member} as a list type.
     # @see {Schema::Member::TypeSystemHelpers#to_list_type}
     class List < GraphQL::Schema::Wrapper
-      extend Schema::Member::ValidatesInput
+      include Schema::Member::ValidatesInput
 
       def to_graphql
         @of_type.graphql_definition.to_list_type

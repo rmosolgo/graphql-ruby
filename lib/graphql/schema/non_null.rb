@@ -6,6 +6,8 @@ module GraphQL
     # Wraps a {Schema::Member} when it is required.
     # @see {Schema::Member::TypeSystemHelpers#to_non_null_type}
     class NonNull < GraphQL::Schema::Wrapper
+      include Schema::Member::ValidatesInput
+
       def to_graphql
         @of_type.graphql_definition.to_non_null_type
       end

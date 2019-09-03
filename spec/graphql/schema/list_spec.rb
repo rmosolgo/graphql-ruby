@@ -69,5 +69,10 @@ describe GraphQL::Schema::List do
       expected_error = "Argument 'items' on Field 'echo' has an invalid value ([A, B, \"C\"]). Expected type '[Item!]!'."
       assert_equal [expected_error], res["errors"].map { |e| e["message"] }
     end
+
+    it "works with #valid_input?" do
+      assert ListEnumValidationSchema::Item.to_list_type.valid_input?(["A", "B"], GraphQL::Query::NullContext)
+      refute ListEnumValidationSchema::Item.to_list_type.valid_input?(["A", "B", "C"], GraphQL::Query::NullContext)
+    end
   end
 end
