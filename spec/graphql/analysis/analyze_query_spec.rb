@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-if !TESTING_INTERPRETER
-describe GraphQL::Analysis do # rubocop:disable Layout/IndentationWidth
+describe GraphQL::Analysis do
   class TypeCollector
     def initial_value(query)
       []
@@ -46,7 +45,7 @@ describe GraphQL::Analysis do # rubocop:disable Layout/IndentationWidth
     let(:analyzers) { [type_collector, node_counter] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:variables) { {} }
-    let(:query) { GraphQL::Query.new(schema, query_string, variables: variables) }
+    let(:query) { GraphQL::Query.new(schema.graphql_definition, query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -61,7 +60,7 @@ describe GraphQL::Analysis do # rubocop:disable Layout/IndentationWidth
       let(:analyzers) { [type_collector, conditional_analyzer] }
 
       describe "when analyze? returns false" do
-        let(:query) { GraphQL::Query.new(schema, query_string, variables: variables, context: { analyze: false }) }
+        let(:query) { GraphQL::Query.new(schema.graphql_definition, query_string, variables: variables, context: { analyze: false }) }
 
         it "does not run the analyzer" do
           # Only type_collector ran
@@ -70,7 +69,7 @@ describe GraphQL::Analysis do # rubocop:disable Layout/IndentationWidth
       end
 
       describe "when analyze? returns true" do
-        let(:query) { GraphQL::Query.new(schema, query_string, variables: variables, context: { analyze: true }) }
+        let(:query) { GraphQL::Query.new(schema.graphql_definition, query_string, variables: variables, context: { analyze: true }) }
 
         it "it runs the analyzer" do
           # Both analyzers ran
@@ -151,7 +150,7 @@ describe GraphQL::Analysis do # rubocop:disable Layout/IndentationWidth
       }
       let(:analyzers) { [connection_counter] }
       let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
-      let(:query) { GraphQL::Query.new(StarWars::Schema, query_string, variables: variables) }
+      let(:query) { GraphQL::Query.new(StarWars::Schema.graphql_definition, query_string, variables: variables) }
       let(:query_string) {%|
         query getBases {
           empire {
@@ -222,7 +221,7 @@ describe GraphQL::Analysis do # rubocop:disable Layout/IndentationWidth
       schema = Class.new(Dummy::Schema)
       schema.query_analyzer(id_catcher)
       schema.query_analyzer(flavor_catcher)
-      schema
+      schema.graphql_definition
     end
     let(:result) { schema.execute(query_string) }
     let(:query_string) {%|
@@ -259,5 +258,4 @@ describe GraphQL::Analysis do # rubocop:disable Layout/IndentationWidth
       assert_equal flavor_error_response["locations"], flavor_error_hash["locations"]
     end
   end
-end
 end

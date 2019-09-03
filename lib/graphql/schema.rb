@@ -1179,11 +1179,11 @@ module GraphQL
           end
 
           after_lazy(first_resolved_type) do |resolved_type|
-            if !resolved_type.nil? && !(resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind))
+            if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind)) || resolved_type.is_a?(GraphQL::BaseType)
+              resolved_type
+            else
               raise ".resolve_type should return a type definition, but got #{resolved_type.inspect} (#{resolved_type.class}) from `resolve_type(#{type}, #{obj}, #{ctx})`"
             end
-
-            resolved_type
           end
         end
       end

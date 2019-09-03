@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-if !TESTING_INTERPRETER
-describe GraphQL::Analysis::FieldUsage do # rubocop:disable Layout/IndentationWidth
+describe GraphQL::Analysis::FieldUsage do
   let(:result) { [] }
   let(:field_usage_analyzer) { GraphQL::Analysis::FieldUsage.new { |query, used_fields, used_deprecated_fields| result << query << used_fields << used_deprecated_fields } }
   let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [field_usage_analyzer]) }
-  let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
+  let(:query) { GraphQL::Query.new(Dummy::Schema.graphql_definition, query_string, variables: variables) }
   let(:variables) { {} }
 
   describe "query with deprecated fields" do
@@ -60,5 +59,4 @@ describe GraphQL::Analysis::FieldUsage do # rubocop:disable Layout/IndentationWi
       assert_equal ['Cheese.fatContent'], result[2]
     end
   end
-end
 end

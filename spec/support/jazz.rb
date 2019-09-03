@@ -755,7 +755,6 @@ module Jazz
     mutation(Mutation)
     context_class CustomContext
     introspection(Introspection)
-    use MetadataPlugin, value: "xyz"
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
       ctx.schema.types[class_name] || raise("No type for #{obj.inspect}")
@@ -764,10 +763,13 @@ module Jazz
     def self.object_from_id(id, ctx)
       GloballyIdentifiableType.find(id)
     end
+
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
     end
+
+    use MetadataPlugin, value: "xyz"
   end
 
   class SchemaWithoutIntrospection < GraphQL::Schema

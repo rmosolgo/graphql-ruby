@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-if !TESTING_INTERPRETER
-describe GraphQL::Analysis::MaxQueryComplexity do # rubocop:disable Layout/IndentationWidth
+describe GraphQL::Analysis::MaxQueryComplexity do
   let(:schema) { Class.new(Dummy::Schema) }
   let(:result) { schema.execute(query_string) }
   let(:query_string) {%|
@@ -100,5 +99,4 @@ describe GraphQL::Analysis::MaxQueryComplexity do # rubocop:disable Layout/Inden
       end
     end
   end
-end
 end

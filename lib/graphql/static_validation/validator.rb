@@ -23,7 +23,7 @@ module GraphQL
       # @return [Array<Hash>]
       def validate(query, validate: true)
         query.trace("validate", { validate: validate, query: query }) do
-          can_skip_rewrite = query.context.interpreter? && query.schema.using_ast_analysis?
+          can_skip_rewrite = query.context.interpreter? && query.schema.using_ast_analysis? && query.schema.is_a?(Class)
           errors = if validate == false && can_skip_rewrite
             []
           else

@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-if !TESTING_INTERPRETER
-describe GraphQL::Analysis::QueryDepth do # rubocop:disable Layout/IndentationWidth
+describe GraphQL::Analysis::QueryDepth do
   let(:depths) { [] }
   let(:query_depth) { GraphQL::Analysis::QueryDepth.new { |query, max_depth|  depths << query << max_depth } }
   let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [query_depth]) }
-  let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
+  let(:query) { GraphQL::Query.new(Dummy::Schema.graphql_definition, query_string, variables: variables) }
   let(:variables) { {} }
 
   describe "simple queries" do
@@ -79,5 +78,4 @@ describe GraphQL::Analysis::QueryDepth do # rubocop:disable Layout/IndentationWi
       assert_equal depths, [query, 4]
     end
   end
-end
 end
