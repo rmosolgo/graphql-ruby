@@ -29,13 +29,7 @@ module GraphQL
       end
 
       def self.use(schema_defn)
-        if schema_defn.is_a?(Class)
-          schema_defn.connections = self.new
-        else
-          [schema_defn.target, schema_defn.target.class].each do |schema|
-            schema.connections = self.new
-          end
-        end
+        schema_defn.connections = self.new
       end
 
       def initialize

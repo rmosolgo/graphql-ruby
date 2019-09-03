@@ -12,7 +12,7 @@ module GraphQL
         schema = @context.query.schema
         schema_type = schema.introspection_system.schema_type
         type_class = if !schema_type.is_a?(Module)
-          schema_type.metadata[:type_class]
+          schema_type.type_class
         else
           schema_type
         end
@@ -23,14 +23,14 @@ module GraphQL
         type = context.warden.get_type(name)
 
         if type && context.interpreter? && !type.is_a?(Module)
-          type = type.metadata[:type_class] || raise("Invariant: interpreter requires class-based type for #{name}")
+          type = type.type_class || raise("Invariant: interpreter requires class-based type for #{name}")
         end
 
         # The interpreter provides this wrapping, other execution doesnt, so support both.
         if type && !context.interpreter?
           # Apply wrapping manually since this field isn't wrapped by instrumentation
           type_type = context.schema.introspection_system.type_type
-          type = type_type.metadata[:type_class].authorized_new(type, context)
+          type = type_type.type_class.authorized_new(type, context)
         end
         type
       end
