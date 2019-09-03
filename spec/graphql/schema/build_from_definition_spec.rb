@@ -853,7 +853,7 @@ SCHEMA
       err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
         GraphQL::Schema.from_definition(schema)
       end
-      assert_equal 'Must provide schema definition with query type or a type named Query.', err.message
+      assert_equal 'Schema definition Query type must define at least one field.', err.message
     end
 
     it 'Unknown type referenced' do
