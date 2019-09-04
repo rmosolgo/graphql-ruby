@@ -850,10 +850,10 @@ schema {
 type Hello { }
 SCHEMA
 
-      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+      err = assert_raises(GraphQL::Schema::InvalidTypeError) do
         GraphQL::Schema.from_definition(schema)
       end
-      assert_equal 'Schema definition Query type must define at least one field.', err.message
+      assert_equal 'Hello is invalid: Hello must define at least 1 field. 0 defined.', err.message
     end
 
     it 'Unknown type referenced' do
