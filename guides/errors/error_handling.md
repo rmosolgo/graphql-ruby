@@ -36,7 +36,7 @@ Handlers are added with `rescue_from` configurations in the schema:
 class MySchema < GraphQL::Schema
   # ...
 
-  rescue_from(ActiveRecord::NotFound) do |err, obj, args, ctx, field|
+  rescue_from(ActiveRecord::RecordNotFound) do |err, obj, args, ctx, field|
     # Raise a graphql-friendly error with a custom message
     raise GraphQL::ExecutionError, "#{field.type.unwrap.graphql_name} not found"
   end
