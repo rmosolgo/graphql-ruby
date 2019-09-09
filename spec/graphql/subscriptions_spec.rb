@@ -187,9 +187,17 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   Resolvers = {
     "Subscription" => {
       "payload" => ->(o,a,c) { o },
-      "myEvent" => ->(o,a,c) { o },
+      "myEvent" => ->(o,a,c) {
+        if c.query.subscription_update?
+          o
+        else
+          c.skip
+        end
+      },
       "event" => ->(o,a,c) { o },
-      "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
+      "failedEvent" => ->(o,a,c) {
+        raise GraphQL::ExecutionError.new("unauthorized")
+      },
     },
   }
   Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }}, interpreter: TESTING_INTERPRETER)

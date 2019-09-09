@@ -304,9 +304,12 @@ module GraphQL
             ) do
               builder.build_arguments(self, field_definition.arguments, type_resolver)
 
-              # TODO fragile hack. formalize this API?
-              define_singleton_method :resolve_field_method do |obj, args, ctx|
-                default_resolve.call(self, obj.object, args, ctx)
+              # Don't do this for interfaces
+              if default_resolve
+                # TODO fragile hack. formalize this API?
+                define_singleton_method :resolve_field_method do |obj, args, ctx|
+                  default_resolve.call(self, obj.object, args, ctx)
+                end
               end
             end
           end
