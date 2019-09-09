@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.11/">API</a>
+          <a href="/api-doc/1.9.12/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -128,7 +128,7 @@
 
 <h3 id="handling-unauthorized-objects">Handling Unauthorized Objects</h3>
 
-<p>When any CanCan check returns <code class="highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.9.11/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
+<p>When any CanCan check returns <code class="highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.9.12/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
 
 <h2 id="scopes">Scopes</h2>
 
@@ -261,7 +261,7 @@
 
 <p>Add <code class="highlighter-rouge">MutationIntegration</code> to your base mutation, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Mutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">CanCanIntegration</span><span class="o">::</span><span class="no">MutationIntegration</span>
 
   <span class="c1"># Also, to use argument-level authorization:</span>

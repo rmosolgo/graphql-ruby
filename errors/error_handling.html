@@ -1,0 +1,137 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Error Handling</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.9.12/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#errors-guides">Errors</a>
+  &raquo; Error Handling
+</p>
+
+
+<h1 class="guide-header">Error Handling</h1>
+<div class="guide-container">
+  <p>You can configure your schema to rescue application errors during field resolution. Errors during batch loading will also be rescued.</p>
+
+<p><strong>Note:</strong> This feature is for class-based schemas using the <a href="/queries/interpreter">interpreter runtime</a> only. For <code class="highlighter-rouge">.define</code>-based schemas, use <a href="https://github.com/exaspark/graphql-errors">exAspArk/graphql-errors</a> instead.</p>
+
+<p>Thanks to [<code class="highlighter-rouge">@exAspArk</code>] for the <a href="https://github.com/exAspArk/graphql-errors"><code class="highlighter-rouge">graphql-errors</code></a> gem which inspired this behavior and <a href="https://github.com/thiago-sydow"><code class="highlighter-rouge">@thiago-sydow</code></a> who <a href="https://github.com/rmosolgo/graphql-ruby/issues/2139#issuecomment-524913594">suggested</a> and implementation like this.</p>
+
+<h2 id="setup">Setup</h2>
+
+<p>Add error handling to your schema with <code class="highlighter-rouge">use GraphQL::Execution::Errors</code>. (This will be the default in a future graphql-ruby version.)</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Use the new runtime &amp; analyzers:</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Execution</span><span class="o">::</span><span class="no">Interpreter</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
+  <span class="c1"># Also use the new error handling:</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Execution</span><span class="o">::</span><span class="no">Errors</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="add-error-handlers">Add error handlers</h2>
+
+<p>Handlers are added with <code class="highlighter-rouge">rescue_from</code> configurations in the schema:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+
+  <span class="n">rescue_from</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">NotFound</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">err</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">field</span><span class="o">|</span>
+    <span class="c1"># Raise a graphql-friendly error with a custom message</span>
+    <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"</span><span class="si">#{</span><span class="n">field</span><span class="p">.</span><span class="nf">type</span><span class="p">.</span><span class="nf">unwrap</span><span class="p">.</span><span class="nf">graphql_name</span><span class="si">}</span><span class="s2"> not found"</span>
+  <span class="k">end</span>
+
+  <span class="n">rescue_from</span><span class="p">(</span><span class="no">SearchIndex</span><span class="o">::</span><span class="no">UnavailableError</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">err</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">field</span><span class="o">|</span>
+    <span class="c1"># Log the error</span>
+    <span class="no">Bugsnag</span><span class="p">.</span><span class="nf">notify</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+    <span class="c1"># replace it with nil</span>
+    <span class="kp">nil</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The handler is called with several arguments:</p>
+
+<ul>
+  <li><strong><code class="highlighter-rouge">err</code></strong> is the error that was raised during field execution, then rescued</li>
+  <li><strong><code class="highlighter-rouge">obj</code></strong> is the object which was having a field resolved against it</li>
+  <li><strong><code class="highlighter-rouge">args</code></strong> is the the Hash of arguments passed to the resolver</li>
+  <li><strong><code class="highlighter-rouge">ctx</code></strong> is the query context</li>
+  <li><strong><code class="highlighter-rouge">field</code></strong> is the <a href="/api-doc/1.9.12/GraphQL/Schema/Field" target="_blank" title="API docs for GraphQL::Schema::Field"><code>GraphQL::Schema::Field</code></a> instance for the field where the error was rescued</li>
+</ul>
+
+<p>Inside the handler, you can:</p>
+
+<ul>
+  <li>Raise a GraphQL-friendly <a href="/api-doc/1.9.12/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> to return to the user</li>
+  <li>Re-raise the given <code class="highlighter-rouge">err</code> to crash the query and halt execution. (The error will propagate to your application, eg, the controller.)</li>
+  <li>Report some metrics from the error, if applicable</li>
+  <li>Return a new value to be used for the error case (if not raising another error)</li>
+</ul>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/errors/error_handling.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Error Handling">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

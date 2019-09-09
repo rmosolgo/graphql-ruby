@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.11/">API</a>
+          <a href="/api-doc/1.9.12/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -82,6 +82,10 @@
 <p>The GraphQL specification provides for a top-level <code class="highlighter-rouge">"errors"</code> key which may include information about errors during query execution. <code class="highlighter-rouge">"errors"</code> and <code class="highlighter-rouge">"data"</code> may <em>both</em> be present in the case of a partial success.</p>
 
 <p>In your own schema, you can add to the <code class="highlighter-rouge">"errors"</code> key by raising <code class="highlighter-rouge">GraphQL::ExecutionError</code> (or subclasses of it) in your code. Read more in the <a href="/errors/execution_errors">Execution Errors guide</a>.</p>
+
+<h2 id="handled-errors">Handled Errors</h2>
+
+<p>A schema can be configured to handle certain errors during field execution with handlers that you give it, using <code class="highlighter-rouge">rescue_from</code>. Read more in the <a href="/errors/error_handling">Error Handling guide</a>.</p>
 
 <h2 id="unhandled-errors-crashes">Unhandled Errors (Crashes)</h2>
 
