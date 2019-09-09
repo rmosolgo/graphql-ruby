@@ -23,10 +23,6 @@ module GraphQL
 
 
       def validate_field_selections(ast_node, resolved_type)
-        if resolved_type.is_a?(Schema::LateBoundType)
-          resolved_type = context.query.get_type(resolved_type.name)
-        end
-
         msg = if resolved_type.nil?
           nil
         elsif resolved_type.kind.scalar? && ast_node.selections.any?

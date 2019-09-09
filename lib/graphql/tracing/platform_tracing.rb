@@ -39,8 +39,7 @@ module GraphQL
             end
 
             return_type = field.type.unwrap
-            # Handle LateBoundTypes, which don't have `#kind`
-            trace_field = if return_type.respond_to?(:kind) && (return_type.kind.scalar? || return_type.kind.enum?)
+            trace_field = if return_type.kind.scalar? || return_type.kind.enum?
               (field.trace.nil? && @trace_scalars) || field.trace
             else
               true

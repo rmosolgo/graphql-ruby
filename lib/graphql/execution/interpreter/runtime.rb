@@ -85,7 +85,7 @@ module GraphQL
               end
             when GraphQL::Language::Nodes::InlineFragment
               if node.type
-                type_defn = schema.types[node.type.name]
+                type_defn = schema.find_type(node.type.name)
                 # Faster than .map{}.include?()
                 query.warden.possible_types(type_defn).each do |t|
                   if t == owner_type
@@ -99,7 +99,7 @@ module GraphQL
               end
             when GraphQL::Language::Nodes::FragmentSpread
               fragment_def = query.fragments[node.name]
-              type_defn = schema.types[fragment_def.type.name]
+              type_defn = schema.find_type(fragment_def.type.name)
               schema.possible_types(type_defn).each do |t|
                 if t == owner_type
                   gather_selections(owner_object, owner_type, fragment_def.selections, selections_by_name)
@@ -141,7 +141,7 @@ module GraphQL
               end
             end
 
-            return_type = resolve_if_late_bound_type(field_defn.type)
+            return_type = field_defn.type
 
             next_path = path.dup
             next_path << result_name
@@ -334,8 +334,6 @@ module GraphQL
             response_list
           when "NON_NULL"
             inner_type = type.of_type
-            # For fields like `__schema: __Schema!`
-            inner_type = resolve_if_late_bound_type(inner_type)
             # Don't `set_type_at_path` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
             continue_field(path, value, field, inner_type, ast_node, next_selections, true, owner_object, arguments)
@@ -374,14 +372,6 @@ module GraphQL
             end
           end
           true
-        end
-
-        def resolve_if_late_bound_type(type)
-          if type.is_a?(GraphQL::Schema::LateBoundType)
-            query.warden.get_type(type.name)
-          else
-            type
-          end
         end
 
         # @param obj [Object] Some user-returned value that may want to be batched

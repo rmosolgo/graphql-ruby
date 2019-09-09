@@ -10,13 +10,8 @@ module GraphQL
       def __schema
         # Apply wrapping manually since this field isn't wrapped by instrumentation
         schema = @context.query.schema
-        schema_type = schema.introspection_system.schema_type
-        type_class = if !schema_type.is_a?(Module)
-          schema_type.type_class
-        else
-          schema_type
-        end
-        type_class.authorized_new(schema, @context)
+        schema_type = schema.introspection_system.types["__Schema"]
+        schema_type.type_class.authorized_new(schema, @context)
       end
 
       def __type(name:)
@@ -29,7 +24,7 @@ module GraphQL
         # The interpreter provides this wrapping, other execution doesnt, so support both.
         if type && !context.interpreter?
           # Apply wrapping manually since this field isn't wrapped by instrumentation
-          type_type = context.schema.introspection_system.type_type
+          type_type = context.schema.introspection_system.types["__Type"]
           type = type_type.type_class.authorized_new(type, context)
         end
         type

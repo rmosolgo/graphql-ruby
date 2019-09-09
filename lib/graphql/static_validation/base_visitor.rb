@@ -187,12 +187,7 @@ module GraphQL
 
         def on_fragment_with_type(node)
           object_type = if node.type
-            if @schema.is_a?(Class)
-              # This falls back to `nil` for classes. TODO make a uniform interface for this.
-              @schema.types[node.type.name]
-            else
-              @schema.types.fetch(node.type.name, nil)
-            end
+            @schema.find_type(node.type.name)
           else
             @object_types.last
           end
@@ -202,12 +197,7 @@ module GraphQL
           @path.pop
         end
 
-        def push_type(type_or_late_bound_type)
-          t = if type_or_late_bound_type.is_a?(GraphQL::Schema::LateBoundType)
-            @schema.types[type_or_late_bound_type.graphql_name]
-          else
-            type_or_late_bound_type
-          end
+        def push_type(t)
           @object_types.push(t)
         end
       end

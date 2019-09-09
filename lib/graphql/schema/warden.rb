@@ -51,13 +51,7 @@ module GraphQL
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
       def get_type(type_name)
         @visible_types ||= read_through do |name|
-          # TODO make a normalized API for this -- see validation visitor, too
-          type_defn = if @schema.is_a?(Class)
-            @schema.types[name]
-          else
-            @schema.types.fetch(name, nil)
-          end
-
+          type_defn = @schema.find_type(name)
           if type_defn && visible_type?(type_defn)
             type_defn
           else
@@ -142,10 +136,6 @@ module GraphQL
       end
 
       def visible_type?(type_defn)
-        if type_defn.is_a?(GraphQL::Schema::LateBoundType)
-          type_defn = get_type(type_defn.name)
-        end
-
         return false unless visible?(type_defn)
         return true if root_type?(type_defn)
         return true if type_defn.introspection?

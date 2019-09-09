@@ -38,7 +38,7 @@ module GraphQL
 
           find_in_directive(directive, path: path)
         else
-          type = schema.types[type_or_directive]
+          type = schema.find_type(type_or_directive)
 
           if type.nil?
             raise MemberNotFoundError, "Could not find type `#{type_or_directive}` in schema."

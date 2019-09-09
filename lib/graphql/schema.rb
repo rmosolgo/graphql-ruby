@@ -336,6 +336,10 @@ module GraphQL
       end
     end
 
+    def find_type(type_name)
+      @types[type_name]
+    end
+
     # @api private
     def introspection_system
       @introspection_system ||= begin
@@ -859,14 +863,19 @@ module GraphQL
         schema_defn
       end
 
+      # TODO make sure this is cached at runtime
+      # Build a map of `{ name => type }` and return it
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       def types
-        @types ||= Hash.new do |h, k|
-          # TODO this won't support `{ __types { ... } }` since these items aren't in the hash.
-          # We can't cache them here because they'll become stale.
-          introspection_system.object_types.find { |t| t.graphql_name == k } ||
-            find_inherited_value(:types, EMPTY_HASH)[k]
-        end
+        non_introspection_types.merge(introspection_system.types)
+      end
+
+      # @param type_name [String]
+      # @return [Module, nil] A type, or nil if there's no type called `type_name`
+      def find_type(type_name)
+        own_types[type_name] ||
+          introspection_system.types[type_name] ||
+          find_inherited_value(:types, EMPTY_HASH)[type_name]
       end
 
       # @return [GraphQL::Pagination::Connections] if installed
@@ -1016,7 +1025,7 @@ module GraphQL
       def introspection(new_introspection_namespace = nil)
         if new_introspection_namespace
           @introspection = new_introspection_namespace
-          # clear this cached value:
+          # reset this cached value:
           @introspection_system = nil
         else
           @introspection || find_inherited_value(:introspection)
@@ -1024,7 +1033,11 @@ module GraphQL
       end
 
       def introspection_system
-        @introspection_system ||= Schema::IntrospectionSystem.new(self)
+        if !@introspection_system
+          @introspection_system = Schema::IntrospectionSystem.new(self)
+          @introspection_system.resolve_late_bindings
+        end
+        @introspection_system
       end
 
       def cursor_encoder(new_encoder = nil)
@@ -1464,6 +1477,14 @@ module GraphQL
         @lazy_methods
       end
 
+      def own_types
+        @own_types ||= {}
+      end
+
+      def non_introspection_types
+        find_inherited_value(:non_introspection_types, EMPTY_HASH).merge(own_types)
+      end
+
       def own_plugins
         @own_plugins ||= []
       end
@@ -1581,14 +1602,38 @@ module GraphQL
       def update_type_owner(owner, type)
         case owner
         when Class
-          # It's a union with possible_types
-          # Replace the item by class name
-          new_possible_types = owner.possible_types.map { |t| t.is_a?(String) && t == type.name ? type : t }
-          owner.possible_types(*new_possible_types)
-          own_possible_types[owner.graphql_name] = owner.possible_types
+          if owner.kind.union?
+            # It's a union with possible_types
+            # Replace the item by class name
+            new_possible_types = owner.possible_types.map { |t|
+              if t.is_a?(String) && (t == type.name)
+                # This is a match of Ruby class names, not graphql names,
+                # since strings are used to refer to constants.
+                type
+              elsif t.is_a?(LateBoundType) && t.graphql_name == type.graphql_name
+                type
+              else
+                t
+              end
+            }
+            owner.possible_types(*new_possible_types)
+            own_possible_types[owner.graphql_name] = owner.possible_types
+          elsif type.kind.interface? && owner.kind.object?
+            new_interfaces = owner.interfaces.map do |t|
+              if t.is_a?(String) && t == type.graphql_name
+                type
+              elsif t.is_a?(LateBoundType) && t.graphql_name == type.graphql_name
+                type
+              else
+                t
+              end
+            end
+            owner.implements(*new_interfaces)
+          end
+
         when nil
           # It's a root type
-          self.types[type.graphql_name] = type
+          own_types[type.graphql_name] = type
         when GraphQL::Schema::Field, GraphQL::Schema::Argument
           orig_type = owner.type
           # Apply list/non-null wrapper as needed
@@ -1643,7 +1688,7 @@ module GraphQL
             add_type(arg_type, owner: arg, late_types: late_types)
           end
         else
-          types[type.graphql_name] = type
+          own_types[type.graphql_name] = type
           if type.kind.fields?
             type.fields.each do |_name, field|
               field_type = field.type.unwrap
@@ -1673,7 +1718,7 @@ module GraphQL
             type.interfaces.each do |i|
               implementers = own_possible_types[i.graphql_name] ||= []
               implementers << type
-              add_type(i, owner: nil, late_types: late_types)
+              add_type(i, owner: type, late_types: late_types)
             end
           end
         end

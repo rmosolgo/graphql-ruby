@@ -35,7 +35,7 @@ module GraphQL
       attr_reader :resolver_method
 
       # @return [Class] The type that this field belongs to
-      attr_reader :owner
+      attr_accessor :owner
 
       # @return [Symbol] the original name of the field, passed in by the user
       attr_reader :original_name

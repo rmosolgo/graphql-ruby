@@ -84,6 +84,14 @@ module GraphQL
               include(int)
             end
           end
+          # Remove any interfaces which are being replaced (late-bound types are updated in place this way)
+          own_interfaces.reject! { |i|
+            new_interfaces.any? { |new_i|
+              new_name = new_i.is_a?(String) ? new_i : new_i.graphql_name
+              old_name = i.is_a?(String) ? i : i.graphql_name
+              new_name == old_name
+            }
+          }
           own_interfaces.concat(new_interfaces)
         end
 

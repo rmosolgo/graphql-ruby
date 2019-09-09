@@ -54,6 +54,26 @@ describe GraphQL::Schema::IntrospectionSystem do
     end
   end
 
+  describe "copying the built-ins" do
+    module IntrospectionCopyTest
+      class Query < GraphQL::Schema::Object
+        field :int, Integer, null: false
+      end
+
+      class Schema1 < GraphQL::Schema
+        query(Query)
+      end
+
+      class Schema2 < GraphQL::Schema
+        query(Query)
+      end
+    end
+
+    it "makes copies of built-in types for each schema, so that local modifications don't affect the base classes" do
+      refute_equal IntrospectionCopyTest::Schema1.types["__Type"], IntrospectionCopyTest::Schema2.types["__Type"]
+    end
+  end
+
   describe "#disable_introspection_entry_points" do
     let(:schema) { Jazz::Schema }
 

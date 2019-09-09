@@ -168,21 +168,17 @@ module GraphQL
       end
 
       def build_type_name_node(type)
-        if type.is_a?(Schema::LateBoundType)
-          GraphQL::Language::Nodes::TypeName.new(name: type.name)
+        case type.kind.name
+        when "LIST"
+          GraphQL::Language::Nodes::ListType.new(
+            of_type: build_type_name_node(type.of_type)
+          )
+        when "NON_NULL"
+          GraphQL::Language::Nodes::NonNullType.new(
+            of_type: build_type_name_node(type.of_type)
+          )
         else
-          case type.kind.name
-          when "LIST"
-            GraphQL::Language::Nodes::ListType.new(
-              of_type: build_type_name_node(type.of_type)
-            )
-          when "NON_NULL"
-            GraphQL::Language::Nodes::NonNullType.new(
-              of_type: build_type_name_node(type.of_type)
-            )
-          else
-            GraphQL::Language::Nodes::TypeName.new(name: type.graphql_name)
-          end
+          GraphQL::Language::Nodes::TypeName.new(name: type.graphql_name)
         end
       end
 
