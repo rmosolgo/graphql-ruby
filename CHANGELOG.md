@@ -8,6 +8,20 @@
 
 ### Bug fixes
 
+## 1.9.12 (9 Sept 2019)
+
+### Breaking Changes
+
+- AST Analyzers follow fragments spreads as if they were inline fragments. #2463
+
+### New Features
+
+- `use GraphQL::Execution::Errors` provides error handling for the new interpreter. #2458
+
+### Bug Fixes
+
+- Fix false positive on enum value validation #2454
+
 ## 1.9.11 (29 Aug 2019)
 
 ### Breaking Changes

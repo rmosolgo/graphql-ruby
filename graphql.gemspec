@@ -1,7 +1,6 @@
 # frozen_string_literal: true
-
-require_relative "lib/graphql/version"
-require "date"
+$LOAD_PATH.push File.expand_path("../lib", __FILE__)
+require "graphql/version"
 
 Gem::Specification.new do |s|
   s.name        = "graphql"
