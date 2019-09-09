@@ -66,17 +66,6 @@ class BasicFieldAnalyzer < GraphQL::Analysis::AST::Analyzer
     end
   end
 
-  # We want to visit fragment spreads as soon as we hit them
-  # instead of visiting the definitions. The visitor provides helper
-  # methods to achieve that.
-  def on_enter_fragment_spread(node, parent, visitor)
-    visitor.enter_fragment_spread_inline(node)
-  end
-
-  def on_leave_fragment_definition(node, parent, visitor)
-    visitor.leave_fragment_spread_inline(node)
-  end
-
   def result
     @fields
   end
