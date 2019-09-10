@@ -25,15 +25,18 @@ module GraphQL
           raise NotImplementedError
         end
 
-        # Don't use make_visit_method because it breaks `super`
-        def self.build_visitor_hooks(member_name)
-          class_eval(<<-EOS, __FILE__, __LINE__ + 1)
-            def on_enter_#{member_name}(node, parent, visitor)
-            end
+        class << self
+          private
 
-            def on_leave_#{member_name}(node, parent, visitor)
-            end
-          EOS
+          def build_visitor_hooks(member_name)
+            class_eval(<<-EOS, __FILE__, __LINE__ + 1)
+              def on_enter_#{member_name}(node, parent, visitor)
+              end
+
+              def on_leave_#{member_name}(node, parent, visitor)
+              end
+            EOS
+          end
         end
 
         build_visitor_hooks :argument
