@@ -948,11 +948,16 @@ module GraphQL
 
       # TODO at runtime, this will merge the same thing over and over and over. We need some way to cache the result per-query.
       def possible_types(type = nil)
-        pt = find_inherited_value(:possible_types, EMPTY_HASH).merge(own_possible_types)
         if type
-          pt[type.graphql_name] || [type]
+          if type.kind.object?
+            [type]
+          else
+            # Call this method without a type to get a full hash
+            pt = possible_types
+            pt[type.graphql_name] || []
+          end
         else
-          pt
+          find_inherited_value(:possible_types, EMPTY_HASH).merge(own_possible_types)
         end
       end
 

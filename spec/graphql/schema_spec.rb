@@ -171,4 +171,15 @@ describe GraphQL::Schema do
       assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Subscription"
     end
   end
+
+  describe ".possible_types" do
+    it "returns a single item for objects" do
+      assert_equal [Dummy::Cheese], Dummy::Schema.possible_types(Dummy::Cheese)
+    end
+
+    it "returns empty for abstract types without any possible types" do
+      unknown_union = Class.new(GraphQL::Schema::Union) { graphql_name("Unknown") }
+      assert_equal [], Dummy::Schema.possible_types(unknown_union)
+    end
+  end
 end
