@@ -8,9 +8,9 @@ module GraphQL
 
         editor = mount_params.fetch(:editor, 'playground')
         options = mount_params.fetch(:options, {})
-        headers = {
+        headers = options.fetch(:headers).merge({
           'Content-Type' => 'application/json'
-        }
+        })
         add_csrf = mount_params.fetch(:csrf, false)
 
         if add_csrf
@@ -22,11 +22,10 @@ module GraphQL
       end
 
       attr_reader :editor, :title, :options, :headers
-      def initialize(editor:, title: nil, headers:, options:)
+      def initialize(editor:, options:, headers:)
         @editor = editor
-        @title = title
-        @headers = headers
         @options = options
+        @headers = headers
       end
     end
   end
