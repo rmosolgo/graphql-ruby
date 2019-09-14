@@ -125,6 +125,8 @@ describe GraphQL::Schema::InputObject do
         def self.resolve_type(type, obj, ctx)
           type
         end
+
+        orphan_types [Jazz::InstrumentType]
       end
     end
 
@@ -343,7 +345,7 @@ describe GraphQL::Schema::InputObject do
 
       @input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
-        context: OpenStruct.new(schema: Jazz::Schema),
+        context: OpenStruct.new(warden: Jazz::Schema, schema: Jazz::Schema),
         defaults_used: Set.new
       )
     end

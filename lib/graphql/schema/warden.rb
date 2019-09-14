@@ -45,7 +45,15 @@ module GraphQL
 
       # @return [Array<GraphQL::BaseType>] Visible types in the schema
       def types
-        @types ||= @schema.types.each_value.select { |t| visible_type?(t) }
+        @types ||= begin
+          vis_types = {}
+          @schema.types.each do |n, t|
+            if visible_type?(t)
+              vis_types[n] = t
+            end
+          end
+          vis_types
+        end
       end
 
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
@@ -81,7 +89,15 @@ module GraphQL
 
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
-        @visible_possible_types ||= read_through { |type_defn| @schema.possible_types(type_defn).select { |t| visible_type?(t) } }
+        @visible_possible_types ||= if @schema.is_a?(Class)
+          all_possible_types = @schema.possible_types
+          read_through { |type_defn|
+            pt = all_possible_types[type_defn.graphql_name] || []
+            pt.select { |t| visible_type?(t) }
+          }
+        else
+          read_through { |type_defn| @schema.possible_types(type_defn).select { |t| visible_type?(t) } }
+        end
         @visible_possible_types[type_defn]
       end
 
@@ -156,9 +172,13 @@ module GraphQL
       end
 
       def referenced?(type_defn)
-        members = @schema.references_to(type_defn.unwrap.graphql_name)
+        @references_to ||= @schema.references_to
+        graphql_name = type_defn.unwrap.graphql_name
+        members = @references_to[graphql_name] || NO_REFERENCES
         members.any? { |m| visible?(m) }
       end
+
+      NO_REFERENCES = [].freeze
 
       def orphan_type?(type_defn)
         @schema.orphan_types.include?(type_defn)
@@ -172,7 +192,7 @@ module GraphQL
       end
 
       def visible_possible_types?(type_defn)
-        @schema.possible_types(type_defn).any? { |t| visible_type?(t) }
+        possible_types(type_defn).any? { |t| visible_type?(t) }
       end
 
       def visible?(member)

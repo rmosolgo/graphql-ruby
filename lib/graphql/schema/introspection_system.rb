@@ -2,7 +2,7 @@
 module GraphQL
   class Schema
     class IntrospectionSystem
-      attr_reader :types
+      attr_reader :types, :possible_types
 
       def initialize(schema)
         @schema = schema
@@ -25,10 +25,11 @@ module GraphQL
           load_constant(:DirectiveLocationEnum)
         ]
         @types = {}
+        @possible_types = {}
         type_defns.each do |t|
           @types[t.graphql_name] = t
+          @possible_types[t.graphql_name] = [t]
         end
-
         @entry_point_fields =
           if schema.disable_introspection_entry_points?
             {}

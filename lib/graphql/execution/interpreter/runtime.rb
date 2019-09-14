@@ -100,7 +100,7 @@ module GraphQL
             when GraphQL::Language::Nodes::FragmentSpread
               fragment_def = query.fragments[node.name]
               type_defn = schema.find_type(fragment_def.type.name)
-              schema.possible_types(type_defn).each do |t|
+              query.warden.possible_types(type_defn).each do |t|
                 if t == owner_type
                   gather_selections(owner_object, owner_type, fragment_def.selections, selections_by_name)
                   break

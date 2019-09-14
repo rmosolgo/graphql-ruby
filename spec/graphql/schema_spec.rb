@@ -138,6 +138,67 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "merged, inherited caches" do
+    METHODS_TO_CACHE = [:types, :possible_types, :union_memberships, :references_to]
+
+    let(:schema) do
+      Class.new(Dummy::Schema) do
+        def self.reset_calls
+          @calls = Hash.new(0)
+          @callers = Hash.new { |h, k| h[k] = [] }
+        end
+
+        METHODS_TO_CACHE.each do |method_name|
+          define_singleton_method(method_name) do |*args, &block|
+            if @calls
+              call_count = @calls[method_name] += 1
+              @callers[method_name] << caller
+            else
+              call_count = 0
+            end
+            if call_count > 1
+              raise "Called #{method_name} more than once, previous caller: #{@callers[method_name].first}"
+            end
+            super(*args, &block)
+          end
+        end
+      end
+    end
+
+    it "caches #{METHODS_TO_CACHE} at runtime" do
+      query_str = "
+        query getFlavor($cheeseId: Int!) {
+          brie: cheese(id: 1)   { ...cheeseFields, taste: flavor },
+          cheese(id: $cheeseId)  {
+            __typename,
+            id,
+            ...cheeseFields,
+            ... edibleFields,
+            ... on Cheese { cheeseKind: flavor },
+          }
+          fromSource(source: COW) { id }
+          fromSheep: fromSource(source: SHEEP) { id }
+          firstSheep: searchDairy(product: [{source: SHEEP}]) {
+            __typename,
+            ... dairyFields,
+            ... milkFields
+          }
+          favoriteEdible { __typename, fatContent }
+        }
+        fragment cheeseFields on Cheese { flavor }
+        fragment edibleFields on Edible { fatContent }
+        fragment milkFields on Milk { source }
+        fragment dairyFields on AnimalProduct {
+           ... on Cheese { flavor }
+           ... on Milk   { source }
+        }
+      "
+      schema.reset_calls
+      res = schema.execute(query_str,  variables: { cheeseId: 2 })
+      assert_equal "Brie", res["data"]["brie"]["flavor"]
+    end
+  end
+
   describe "when mixing define and class-based" do
     module MixedSchema
       class Query < GraphQL::Schema::Object

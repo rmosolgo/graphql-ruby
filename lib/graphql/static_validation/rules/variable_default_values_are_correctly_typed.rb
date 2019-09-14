@@ -13,7 +13,7 @@ module GraphQL
               error_type: VariableDefaultValuesAreCorrectlyTypedError::VIOLATIONS[:INVALID_ON_NON_NULL]
             ))
           else
-            type = context.schema.type_from_ast(node.type)
+            type = context.schema.type_from_ast(node.type, context: context)
             if type.nil?
               # This is handled by another validator
             else

@@ -351,9 +351,13 @@ module GraphQL
     # Returns a list of Arguments and Fields referencing a certain type
     # @param type_name [String]
     # @return [Hash]
-    def references_to(type_name)
+    def references_to(type_name = nil)
       rebuild_artifacts unless defined?(@type_reference_map)
-      @type_reference_map.fetch(type_name, [])
+      if type_name
+        @type_reference_map.fetch(type_name, [])
+      else
+        @type_reference_map
+      end
     end
 
     # Returns a list of Union types in which a type is a member
@@ -458,7 +462,7 @@ module GraphQL
       @instrumented_field_map[type.graphql_name]
     end
 
-    def type_from_ast(ast_node)
+    def type_from_ast(ast_node, context: nil)
       GraphQL::Schema::TypeExpression.build_type(self.types, ast_node)
     end
 
@@ -946,22 +950,21 @@ module GraphQL
         @root_types
       end
 
-      # TODO at runtime, this will merge the same thing over and over and over. We need some way to cache the result per-query.
+      # @param type [Module] The type definition whose possible types you want to see
+      # @return [Hash<String, Module>] All possible types, if no `type` is given.
+      # @return [Array<Module>] Possible types for `type`, if it's given.
       def possible_types(type = nil)
         if type
-          if type.kind.object?
-            [type]
-          else
-            # Call this method without a type to get a full hash
-            pt = possible_types
-            pt[type.graphql_name] || []
-          end
+          own_possible_types[type.graphql_name] ||
+            find_inherited_value(:possible_types, EMPTY_HASH)[type.graphql_name] ||
+            EMPTY_ARRAY
         else
-          find_inherited_value(:possible_types, EMPTY_HASH).merge(own_possible_types)
+          find_inherited_value(:possible_types, EMPTY_HASH)
+            .merge(own_possible_types)
+            .merge(introspection_system.possible_types)
         end
       end
 
-      # TODO at runtime, this will merge the same thing over and over and over. We need some way to cache the result per-query.
       def union_memberships(type = nil)
         if type
           own_um = own_union_memberships.fetch(type.graphql_name, EMPTY_ARRAY)
@@ -996,8 +999,9 @@ module GraphQL
         end
       end
 
-      def type_from_ast(ast_node)
-        GraphQL::Schema::TypeExpression.build_type(self.types, ast_node)
+      def type_from_ast(ast_node, context: nil)
+        type_map = context ? context.warden.types : self.types
+        GraphQL::Schema::TypeExpression.build_type(type_map, ast_node)
       end
 
       def get_field(type_or_name, field_name)
@@ -1206,6 +1210,9 @@ module GraphQL
       # rubocop:enable Lint/DuplicateMethods
 
       def inherited(child_class)
+        if self == GraphQL::Schema
+          child_class.directives(default_directives.values)
+        end
         child_class.singleton_class.prepend(ResolveTypeWithType)
         super
       end
@@ -1310,9 +1317,6 @@ module GraphQL
       def directives(new_directives = nil)
         if new_directives
           new_directives.each { |d| directive(d) }
-        elsif own_directives.empty?
-          # we need these to be added so we can add types from their args
-          directives(default_directives.values)
         end
 
         find_inherited_value(:directives, default_directives).merge(own_directives)
@@ -1720,6 +1724,7 @@ module GraphQL
             end
           end
           if type.kind.object?
+            own_possible_types[type.graphql_name] = [type]
             type.interfaces.each do |i|
               implementers = own_possible_types[i.graphql_name] ||= []
               implementers << type

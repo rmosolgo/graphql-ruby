@@ -21,14 +21,9 @@ module GraphQL
           self::DefinitionMethods.module_eval(&block)
         end
 
-        # The interface is visible if any of its possible types are visible
+        # @see {Schema::Warden} hides interfaces without visible implementations
         def visible?(context)
-          context.schema.possible_types(self).each do |type|
-            if context.schema.visible?(type, context)
-              return true
-            end
-          end
-          false
+          true
         end
 
         # The interface is accessible if any of its possible types are accessible

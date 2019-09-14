@@ -97,7 +97,7 @@ module GraphQL
               # (Don't want to allow arbitrary access to objects this way)
               resolved_application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
               context.schema.after_lazy(resolved_application_object_type) do |application_object_type|
-                possible_object_types = context.schema.possible_types(lookup_as_type)
+                possible_object_types = context.warden.possible_types(lookup_as_type)
                 if !possible_object_types.include?(application_object_type)
                   err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
                   load_application_object_failed(err)

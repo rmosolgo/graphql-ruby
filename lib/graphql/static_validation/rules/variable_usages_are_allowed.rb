@@ -52,7 +52,7 @@ module GraphQL
       private
 
       def validate_usage(arguments, arg_node, ast_var)
-        var_type = context.schema.type_from_ast(ast_var.type)
+        var_type = context.schema.type_from_ast(ast_var.type, context: context)
         if var_type.nil?
           return
         end

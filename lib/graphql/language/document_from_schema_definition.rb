@@ -250,7 +250,7 @@ module GraphQL
         definitions = []
         definitions << build_schema_node if include_schema_node?
         definitions += build_directive_nodes(warden.directives)
-        definitions += build_type_definition_nodes(warden.types)
+        definitions += build_type_definition_nodes(warden.types.values)
         definitions
       end
 
