@@ -45,22 +45,26 @@ Types describe objects in your application and form the basis for [GraphQL's typ
 
 ```ruby
 # app/graphql/types/post_type.rb
-class Types::PostType < Types::BaseObject
-  description "A blog post"
-  field :id, ID, null: false
-  field :title, String, null: false
-  # fields should be queried in camel-case (this will be `truncatedPreview`)
-  field :truncated_preview, String, null: false
-  # Fields can return lists of other objects:
-  field :comments, [Types::CommentType], null: true,
-    # And fields can have their own descriptions:
-    description: "This post's comments, or null if this post has comments disabled."
+module Types
+  class PostType < Types::BaseObject
+    description "A blog post"
+    field :id, ID, null: false
+    field :title, String, null: false
+    # fields should be queried in camel-case (this will be `truncatedPreview`)
+    field :truncated_preview, String, null: false
+    # Fields can return lists of other objects:
+    field :comments, [Types::CommentType], null: true,
+      # And fields can have their own descriptions:
+      description: "This post's comments, or null if this post has comments disabled."
+  end
 end
 
 # app/graphql/types/comment_type.rb
-class Types::CommentType < Types::BaseObject
-  field :id, ID, null: false
-  field :post, PostType, null: false
+module Types
+  class CommentType < Types::BaseObject
+    field :id, ID, null: false
+    field :post, PostType, null: false
+  end
 end
 ```
 
