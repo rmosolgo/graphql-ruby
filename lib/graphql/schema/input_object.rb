@@ -184,6 +184,10 @@ module GraphQL
         end
 
         def coerce_input(value, ctx)
+          if value.nil?
+            return value
+          end
+
           input_values = {}
 
           arguments.each do |name, argument_defn|
