@@ -158,7 +158,9 @@ module GraphQL
         def on_fragment_spread(node, parent)
           @path.push("... #{node.name}")
           call_analyzers(:on_enter_fragment_spread, node, parent)
+          enter_fragment_spread_inline(node)
           super
+          leave_fragment_spread_inline(node)
           call_analyzers(:on_leave_fragment_spread, node, parent)
           @path.pop
         end
@@ -167,30 +169,6 @@ module GraphQL
           call_analyzers(:on_enter_abstract_node, node, parent)
           super
           call_analyzers(:on_leave_abstract_node, node, parent)
-        end
-
-        # Visit a fragment spread inline instead of visiting the definition
-        # by itself.
-        def enter_fragment_spread_inline(fragment_spread)
-          fragment_def = query.fragments[fragment_spread.name]
-
-          object_type = if fragment_def.type
-            @query.warden.get_type(fragment_def.type.name)
-          else
-            object_types.last
-          end
-
-          object_types << object_type
-
-          fragment_def.selections.each do |selection|
-            visit_node(selection, fragment_def)
-          end
-        end
-
-        # Visit a fragment spread inline instead of visiting the definition
-        # by itself.
-        def leave_fragment_spread_inline(_fragment_spread)
-          object_types.pop
         end
 
         # @return [GraphQL::BaseType] The current object type
@@ -229,6 +207,30 @@ module GraphQL
         end
 
         private
+
+        # Visit a fragment spread inline instead of visiting the definition
+        # by itself.
+        def enter_fragment_spread_inline(fragment_spread)
+          fragment_def = query.fragments[fragment_spread.name]
+
+          object_type = if fragment_def.type
+            @query.warden.get_type(fragment_def.type.name)
+          else
+            object_types.last
+          end
+
+          object_types << object_type
+
+          fragment_def.selections.each do |selection|
+            visit_node(selection, fragment_def)
+          end
+        end
+
+        # Visit a fragment spread inline instead of visiting the definition
+        # by itself.
+        def leave_fragment_spread_inline(_fragment_spread)
+          object_types.pop
+        end
 
         def skip?(ast_node)
           dir = ast_node.directives

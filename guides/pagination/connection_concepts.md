@@ -3,8 +3,8 @@ layout: guide
 doc_stub: false
 search: true
 section: Pagination
-title: Connections
-desc: Building & using cursor-based connections in GraphQL-Ruby
+title: Connection Concepts
+desc: Introduction to Connections
 index: 1
 ---
 

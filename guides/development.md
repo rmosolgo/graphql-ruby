@@ -288,7 +288,9 @@ To cut a release:
     - Include the PR number beside the change description for future reference
 - Update `lib/graphql/version.rb` with the new version number
 - Commit changes to master
-- Release to RubyGems with `bundle exec rake release`
+- Release to RubyGems
+  - Without 2FA 😢: `bundle exec rake release`
+  - With 2FA 😎: `bundle exec rake build` then `gem push pkg/graphql-<version>.gem`, `git tag v<version> && git push v<version>`
 - Update the website:
   - Generate new API docs with `bundle exec rake apidocs:gen_version[<your.version.number>]`
   - Push them to the website with `bundle exec rake site:publish`
