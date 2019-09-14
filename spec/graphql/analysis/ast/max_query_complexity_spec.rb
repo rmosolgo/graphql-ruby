@@ -80,6 +80,37 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
     end
   end
 
+  describe "when used with the max_depth plugin" do
+    let(:schema) do
+      Class.new(GraphQL::Schema) do
+        query Dummy::DairyAppQuery
+
+        max_depth 3
+        max_complexity 1
+
+        use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
+      end
+    end
+
+    let(:query_string) {%|
+      {
+        a: cheese(id: 1) { ...cheeseFields }
+        b: cheese(id: 1) { ...cheeseFields }
+        c: cheese(id: 1) { ...cheeseFields }
+        d: cheese(id: 1) { ...cheeseFields }
+        e: cheese(id: 1) { ...cheeseFields }
+      }
+
+      fragment cheeseFields on Cheese { id }
+    |}
+    let(:result) { schema.execute(query_string) }
+
+    it "returns a complexity error" do
+      assert_equal "Query has complexity of 10, which exceeds max complexity of 1", result["errors"].first["message"]
+    end
+  end
+
   describe "across a multiplex" do
     before do
       schema.analysis_engine = GraphQL::Analysis::AST
