@@ -32,9 +32,7 @@ module GraphQL
         end
 
         def default_scalar(is_default = nil)
-          if !is_default.nil?
-            @default_scalar = is_default
-          end
+          @default_scalar = is_default unless is_default.nil?
           @default_scalar
         end
       end
