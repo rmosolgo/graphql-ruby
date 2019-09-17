@@ -103,17 +103,6 @@ methods to help us achieve this:</p>
     <span class="k">end</span>
   <span class="k">end</span>
 
-  <span class="c1"># We want to visit fragment spreads as soon as we hit them</span>
-  <span class="c1"># instead of visiting the definitions. The visitor provides helper</span>
-  <span class="c1"># methods to achieve that.</span>
-  <span class="k">def</span> <span class="nf">on_enter_fragment_spread</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
-    <span class="n">visitor</span><span class="p">.</span><span class="nf">enter_fragment_spread_inline</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nf">on_leave_fragment_definition</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
-    <span class="n">visitor</span><span class="p">.</span><span class="nf">leave_fragment_spread_inline</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-  <span class="k">end</span>
-
   <span class="k">def</span> <span class="nf">result</span>
     <span class="vi">@fields</span>
   <span class="k">end</span>
