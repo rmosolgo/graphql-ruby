@@ -44,7 +44,8 @@ option | description
 `--relay-persisted-output` | Path to a `.json` file from `relay-compiler ... --persist-output`
 `--client` | Client ID ({% internal_link "created on server", "/operation_store/client_workflow" %})
 `--secret` | Client Secret ({% internal_link "created on server", "/operation_store/client_workflow" %})
-`--outfile` | Destination for generated JS code
+`--outfile` | Destination for generated code
+`--outfile-type` | What kind of code to generate (`js` or `json`)
 `--add-typename` | Add `__typename` to all selection sets (for use with Apollo Client)
 `--verbose` | Output some debug information
 
