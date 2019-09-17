@@ -272,6 +272,31 @@ describe GraphQL::Schema::InputObject do
       ]
       assert_equal expected_info, res["data"]["inspectInput"]
     end
+
+    it "uses empty object when no variable value is given" do
+      query_str = <<-GRAPHQL
+      query($input: InspectableInput){
+        inspectInput(input: {
+          nestedInput: $input,
+          stringValue: "xyz"
+        })
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str, variables: { input: nil }, context: { message: "hi" })
+      expected_info = [
+        "Jazz::InspectableInput",
+        "hi, xyz, -, (-)",
+        "xyz",
+        "xyz",
+        "true",
+        "xyz",
+        "No ensemble",
+        "false"
+      ]
+
+      assert_equal expected_info, res["data"]["inspectInput"]
+    end
   end
 
   describe "when used with default_value" do

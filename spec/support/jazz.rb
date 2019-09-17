@@ -398,7 +398,7 @@ module Jazz
         input.key?(:string_value).to_s,
         # ~~Access by legacy key~~ # not anymore
         input[:string_value],
-        input.ensemble,
+        input.ensemble || "No ensemble",
         input.key?(:ensemble).to_s,
       ]
     end

@@ -482,18 +482,21 @@ module GraphQL
             end
             return true, list
           elsif arg_type.is_a?(Class) && arg_type < GraphQL::Schema::InputObject
-            args = if already_arguments
-              # This came from a variable, already prepared
-              ast_value
+            if already_arguments
+              # This came from a variable, already prepared.
+              # But replace `nil` with `{}` like we would for `arg_type`
+              if ast_value.nil?
+                return false, nil
+              else
+                return true, arg_type.new(ruby_kwargs: ast_value, context: context, defaults_used: nil)
+              end
             else
               # For these, `prepare` is applied during `#initialize`.
               # Pass `nil` so it will be skipped in `#arguments`.
               # What a mess.
-              arguments(nil, arg_type, ast_value)
+              args = arguments(nil, arg_type, ast_value)
+              return true, arg_type.new(ruby_kwargs: args, context: context, defaults_used: nil)
             end
-            # We're not tracking defaults_used, but for our purposes
-            # we compare the value to the default value.
-            return true, arg_type.new(ruby_kwargs: args, context: context, defaults_used: nil)
           else
             flat_value = if already_arguments
               # It was coerced by variable handling
