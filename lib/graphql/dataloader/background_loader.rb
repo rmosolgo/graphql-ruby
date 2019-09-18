@@ -12,7 +12,7 @@ module GraphQL
     # It uses `Concurrent::Future` which uses a global thread pool.
     class BackgroundLoader < GraphQL::Dataloader::Loader
       def sync
-        future = Concurrent::Future.execute do
+        Concurrent::Future.execute do
           setup_thread
           super
           teardown_thread
