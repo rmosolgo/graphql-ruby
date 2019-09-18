@@ -51,6 +51,7 @@ function sendPayload(payload, options) {
     var header = "GraphQL::Pro " + clientName + " " + authDigest
     if (verbose) {
       console.log("[Sync] Header: ", header)
+      console.log("[Sync] Data:", postData)
     }
     options.headers["Authorization"] = header
   }
