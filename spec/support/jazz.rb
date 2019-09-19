@@ -534,6 +534,25 @@ module Jazz
     end
   end
 
+  class StripsExtras < GraphQL::Schema::RelayClassicMutation
+    extras [:lookahead]
+    def resolve_with_support(lookahead: , **rest)
+      context[:has_lookahead] = !!lookahead
+      super(**rest)
+    end
+  end
+
+  class HasExtrasStripped < StripsExtras
+    field :int, Integer, null: false
+
+    def resolve
+      {
+        int: 51,
+      }
+    end
+  end
+
+
   class RenameNamedEntity < GraphQL::Schema::RelayClassicMutation
     argument :named_entity_id, ID, required: true, loads: NamedEntity
     argument :new_name, String, required: true
@@ -644,6 +663,7 @@ module Jazz
     field :upvote_ensembles_ids, mutation: UpvoteEnsemblesIds
     field :rename_ensemble_as_band, mutation: RenameEnsembleAsBand
     field :has_extras, mutation: HasExtras
+    field :has_extras_stripped, mutation: HasExtrasStripped
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)

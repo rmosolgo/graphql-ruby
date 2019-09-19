@@ -36,7 +36,11 @@ module GraphQL
           # Transfer these from the top-level hash to the
           # shortcutted `input:` object
           self.class.extras.each do |ext|
-            input[ext] = inputs[ext]
+            # It's possible that the `extra` was not passed along by this point,
+            # don't re-add it if it wasn't given here.
+            if inputs.key?(ext)
+              input[ext] = inputs[ext]
+            end
           end
         else
           input = inputs
