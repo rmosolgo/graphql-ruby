@@ -545,6 +545,10 @@ module Jazz
   class HasExtrasStripped < StripsExtras
     field :int, Integer, null: false
 
+    def authorized?
+      true
+    end
+
     def resolve
       {
         int: 51,
