@@ -297,6 +297,11 @@ describe GraphQL::Schema::InputObject do
 
       assert_equal expected_info, res["data"]["inspectInput"]
     end
+
+    it "handles camelized booleans" do
+      res = Jazz::Schema.execute("query($input: CamelizedBooleanInput!){ inputObjectCamelization(input: $input) }", variables: { input: { camelizedBoolean: false } })
+      assert_equal "{:camelized_boolean=>false}", res["data"]["inputObjectCamelization"]
+    end
   end
 
   describe "when used with default_value" do

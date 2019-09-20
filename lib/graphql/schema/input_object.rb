@@ -192,14 +192,23 @@ module GraphQL
 
           arguments.each do |name, argument_defn|
             arg_key = argument_defn.keyword
+            has_value = false
             # Accept either string or symbol
-            if value.key?(name) || value.key?(arg_key)
-              field_value = value[name] || value[arg_key]
-              coerced_value = argument_defn.type.coerce_input(field_value, ctx)
-              prepared_value = argument_defn.prepare_value(nil, coerced_value, context: ctx)
-              input_values[arg_key] = prepared_value
+            field_value = if value.key?(name)
+              has_value = true
+              value[name]
+            elsif value.key?(arg_key)
+              has_value = true
+              value[arg_key]
             elsif argument_defn.default_value?
-              coerced_value = argument_defn.type.coerce_input(argument_defn.default_value, ctx)
+              has_value = true
+              argument_defn.default_value
+            else
+              nil
+            end
+            # Only continue if some value was found for this argument
+            if has_value
+              coerced_value = argument_defn.type.coerce_input(field_value, ctx)
               prepared_value = argument_defn.prepare_value(nil, coerced_value, context: ctx)
               input_values[arg_key] = prepared_value
             end

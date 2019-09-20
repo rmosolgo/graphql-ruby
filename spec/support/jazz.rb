@@ -325,6 +325,10 @@ module Jazz
     field :falsey, Boolean, null: false
   end
 
+  class CamelizedBooleanInput <  GraphQL::Schema::InputObject
+    argument :camelized_boolean, Boolean, required: true
+  end
+
   # Another new-style definition, with method overrides
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
@@ -363,6 +367,14 @@ module Jazz
     field :upcase_check_4, String, null: false, upcase: "why not?", resolver_method: :upcase_check, extras: [:upcase]
     def upcase_check(upcase:)
       upcase.inspect
+    end
+
+    field :input_object_camelization, String, null: false do
+      argument :input, CamelizedBooleanInput, required: true
+    end
+
+    def input_object_camelization(input:)
+      input.to_h.inspect
     end
 
     def ensembles
