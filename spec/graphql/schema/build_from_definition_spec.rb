@@ -563,8 +563,8 @@ type Root {
 
       built_schema = assert_schema_and_compare_output(schema.chop)
       custom_scalar = built_schema.types["CustomScalar"]
-      assert_equal true, custom_scalar.valid_input?("anything", GraphQL::Query::NullContext)
-      assert_equal true, custom_scalar.valid_input?(12345, GraphQL::Query::NullContext)
+      assert_equal true, custom_scalar.valid_isolated_input?("anything")
+      assert_equal true, custom_scalar.valid_isolated_input?(12345)
     end
 
     it 'supports input object' do

@@ -71,8 +71,8 @@ describe GraphQL::Schema::List do
     end
 
     it "works with #valid_input?" do
-      assert ListEnumValidationSchema::Item.to_list_type.valid_input?(["A", "B"], GraphQL::Query::NullContext)
-      refute ListEnumValidationSchema::Item.to_list_type.valid_input?(["A", "B", "C"], GraphQL::Query::NullContext)
+      assert ListEnumValidationSchema::Item.to_list_type.valid_isolated_input?(["A", "B"])
+      refute ListEnumValidationSchema::Item.to_list_type.valid_isolated_input?(["A", "B", "C"])
     end
   end
 end
