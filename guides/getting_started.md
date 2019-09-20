@@ -139,4 +139,4 @@ If you're building a backend for [Relay](https://facebook.github.io/relay/), you
 
 ## Use with GraphQL.js Client
 
-[GraphQL.js Client](https://github.com/f/graphql.js) is a tiny client that is platform- and framework-agnostic. It works well with `graphql-ruby` servers, since GraphQL requests are simple query strings transport over HTTP.
+[GraphQL.js Client](https://github.com/f/graphql.js) is a tiny client that is platform- and framework-agnostic. It works well with `graphql-ruby` servers, since GraphQL requests are simple query strings transported over HTTP.
