@@ -194,6 +194,10 @@ module GraphQL
       @result ||= Query::Result.new(query: self, values: @result_values)
     end
 
+    def executed?
+      @executed
+    end
+
     def static_errors
       validation_errors + analysis_errors + context.errors
     end

@@ -276,6 +276,17 @@ describe GraphQL::Query do
     end
   end
 
+  describe '#executed?' do
+    it "returns false if the query hasn't been executed" do
+      refute query.executed?
+    end
+
+    it "returns true if the query has been executed" do
+      query.result
+      assert query.executed?
+    end
+  end
+
   it "uses root_value as the object for the root type" do
     result = GraphQL::Query.new(schema, '{ root }', root_value: "I am root").result
     assert_equal 'I am root', result.fetch('data').fetch('root')
