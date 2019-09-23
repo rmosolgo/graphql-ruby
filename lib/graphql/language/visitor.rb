@@ -7,7 +7,7 @@ module GraphQL
     #   class NameCounter < GraphQL::Language::Visitor
     #     def initialize(document, field_name)
     #       super(document)
-    #       @field_name
+    #       @field_name = field_name
     #       @count = 0
     #     end
     #
@@ -16,7 +16,7 @@ module GraphQL
     #     def on_field(node, parent)
     #       # if this field matches our search, increment the counter
     #       if node.name == @field_name
-    #         @count = 0
+    #         @count += 1
     #       end
     #       # Continue visiting subfields:
     #       super
