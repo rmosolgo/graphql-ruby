@@ -740,9 +740,7 @@ module GraphQL
         :metadata, :redefine,
         :id_from_object_proc, :object_from_id_proc,
         :id_from_object=, :object_from_id=,
-        :remove_handler,
-        # Members
-        :find
+        :remove_handler
 
       # @return [GraphQL::Subscriptions]
       attr_accessor :subscriptions
@@ -776,6 +774,14 @@ module GraphQL
       # @return [GraphQL::Language::Document]
       def to_document
         GraphQL::Language::DocumentFromSchemaDefinition.new(self).document
+      end
+
+      def find(path)
+        if !@finder
+          @find_cache = {}
+          @finder ||= GraphQL::Schema::Finder.new(self)
+        end
+        @find_cache[path] ||= @finder.find(path)
       end
 
       def graphql_definition

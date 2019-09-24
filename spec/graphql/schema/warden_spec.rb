@@ -477,7 +477,7 @@ describe GraphQL::Schema::Warden do
       assert_equal [], res["data"]["Query"]["fields"]
 
       # Unreferenced but still visible because orphan type
-      schema.graphql_definition.orphan_types = [schema.find("BagOfThings")]
+      schema.graphql_definition.orphan_types = [schema.find("BagOfThings").graphql_definition]
       res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
       assert res["data"]["BagOfThings"]
     end
