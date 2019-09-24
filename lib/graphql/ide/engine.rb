@@ -13,4 +13,4 @@ else
 end
 
 require_relative "./lib/ide/engine"
-require_relative './lib/parameters'
+require_relative './endpoint'

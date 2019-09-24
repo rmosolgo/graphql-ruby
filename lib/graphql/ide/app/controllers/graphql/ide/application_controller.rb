@@ -4,9 +4,10 @@ module GraphQL
       protect_from_forgery with: :exception
 
       def show
-        ide = Parameters.from_request_env(request.env, view_context: self.view_context)
+        editor, options, extras = Endpoint.params_from_env(request.env, view_context: view_context)
+          .values_at(:editor, :options, :extras)
 
-        render ide.editor, locals: { ide: ide }
+        render editor, locals: { options: options, extras: extras }
       end
     end
   end

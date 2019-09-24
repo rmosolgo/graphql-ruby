@@ -517,11 +517,23 @@
       </div>
     </div>
 
-    <div id="root" data-options="<%= JSON.generate(ide.options.merge(headers: ide.headers)) %>"></div>
+    <div id="root" data-options='<%= ERB::Util.html_escape(JSON.generate(options)) %>' data-extras="<%= ERB::Util.html_escape(JSON.generate(extras)) %>"></div>
+
     <script type="text/javascript">
       window.addEventListener('load', function (event) {
+        const dataset = document.getElementById('root').dataset;
+        const playgroundOptions = JSON.parse(dataset.options);
+        const extras = JSON.parse(dataset.extras) || {};
 
-        const playgroundOptions = JSON.parse(document.getElementById('root').dataset.options);
+        if(extras.csrf_token) {
+          playgroundOptions.headers = playgroundOptions.headers || {};
+          playgroundOptions.settings = playgroundOptions.settings || {};
+
+          playgroundOptions.headers['X-CSRF-TOKEN'] = extras.csrf_token;
+
+          playgroundOptions.settings['request.credentials'] = 'include'; // CSRF token is in the cookie
+        }
+
         const loadingWrapper = document.getElementById('loading-wrapper');
         loadingWrapper.classList.add('fadeOut');
 
