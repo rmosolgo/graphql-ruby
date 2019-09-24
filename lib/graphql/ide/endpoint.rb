@@ -2,8 +2,7 @@ module GraphQL
   module IDE
     class Endpoint
       EDITORS = {
-        'playground' => File.expand_path('./app/views/graphql/ide/application/playground.html.erb', __dir__),
-        'graphiql' => File.expand_path('./app/views/graphql/ide/application/graphiql.html.erb', __dir__)
+        'playground' => File.expand_path('./app/views/graphql/ide/application/playground.html.erb', __dir__)
       }.freeze
 
       def self.params_from_env(env, view_context: nil)
