@@ -8,7 +8,7 @@ desc: The top-level "errors" array and how to use it.
 index: 1
 ---
 
-The GraphQL specification [allows for a top-level `"errors"` key](https://facebook.github.io/graphql/October2016/#sec-Errors) in the response which may contain information about what went wrong during execution. For example:
+The GraphQL specification [allows for a top-level `"errors"` key](https://graphql.github.io/graphql-spec/June2018/#sec-Errors) in the response which may contain information about what went wrong during execution. For example:
 
 ```ruby
 {
