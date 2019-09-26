@@ -44,6 +44,30 @@ describe GraphQL::Schema::List do
     end
   end
 
+  describe "handling null" do
+    class ListNullHandlingSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :strings, [String, null: true], null: true do
+          argument :strings, [String, null: true], required: false
+        end
+
+        def strings(strings:)
+          strings
+        end
+      end
+
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+      query(Query)
+    end
+
+    it "passes `nil` as `nil`" do
+      str = "query($strings: [String]){ strings(strings: $strings) }"
+      res = ListNullHandlingSchema.execute(str, variables: { strings: nil })
+      assert_nil res["data"]["strings"]
+    end
+  end
+
   describe "validation" do
     class ListEnumValidationSchema < GraphQL::Schema
       class Item < GraphQL::Schema::Enum

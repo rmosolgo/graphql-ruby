@@ -453,6 +453,8 @@ module GraphQL
           kwarg_arguments
         end
 
+        # TODO CAN THIS USE `.coerce_input` ???
+
         # Get a Ruby-ready value from a client query.
         # @param graphql_object [Object] The owner of the field whose argument this is
         # @param arg_type [Class, GraphQL::Schema::NonNull, GraphQL::Schema::List]
@@ -473,14 +475,18 @@ module GraphQL
           elsif arg_type.is_a?(GraphQL::Schema::NonNull)
             arg_to_value(graphql_object, arg_type.of_type, ast_value, already_arguments: already_arguments)
           elsif arg_type.is_a?(GraphQL::Schema::List)
-            # Treat a single value like a list
-            arg_value = Array(ast_value)
-            list = []
-            arg_value.map do |inner_v|
-              _present, value = arg_to_value(graphql_object, arg_type.of_type, inner_v, already_arguments: already_arguments)
-              list << value
+            if ast_value.nil?
+              return true, nil
+            else
+              # Treat a single value like a list
+              arg_value = Array(ast_value)
+              list = []
+              arg_value.map do |inner_v|
+                _present, value = arg_to_value(graphql_object, arg_type.of_type, inner_v, already_arguments: already_arguments)
+                list << value
+              end
+              return true, list
             end
-            return true, list
           elsif arg_type.is_a?(Class) && arg_type < GraphQL::Schema::InputObject
             if already_arguments
               # This came from a variable, already prepared.
