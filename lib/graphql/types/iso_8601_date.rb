@@ -6,7 +6,7 @@ module GraphQL
     #
     # Use it for fields or arguments as follows:
     #
-    #     field :created_at, GraphQL::Types::ISO8601Date, null: false
+    #     field :published_at, GraphQL::Types::ISO8601Date, null: false
     #
     #     argument :deliver_at, GraphQL::Types::ISO8601Date, null: false
     #
