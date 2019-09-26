@@ -6,9 +6,6 @@ module GraphQL
       extend GraphQL::Schema::Member::ValidatesInput
 
       class << self
-        extend Forwardable
-        def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result
-
         def coerce_input(val, ctx)
           val
         end
@@ -47,7 +44,12 @@ module GraphQL
         def validate_input(value, ctx)
           result = Query::InputValidationResult.new
           if !value.nil? && coerce_input(value, ctx).nil?
-            result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{graphql_name}")
+            str_value = if value == Float::INFINITY
+              ""
+            else
+              " #{GraphQL::Language.serialize(value)}"
+            end
+            result.add_problem("Could not coerce value#{str_value} to #{graphql_name}")
           end
           result
         end

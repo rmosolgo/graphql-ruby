@@ -24,9 +24,6 @@ module GraphQL
       extend GraphQL::Schema::Member::ValidatesInput
 
       class << self
-        extend Forwardable
-        def_delegators :graphql_definition
-
         # Define a value for this enum
         # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`
         # @param description [String], the GraphQL description for this value, present in documentation
