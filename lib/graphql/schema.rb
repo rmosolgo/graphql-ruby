@@ -873,9 +873,9 @@ module GraphQL
         schema_defn
       end
 
-      # TODO make sure this is cached at runtime
       # Build a map of `{ name => type }` and return it
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
+      # @see find_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
       def types
         non_introspection_types.merge(introspection_system.types)
       end
@@ -1013,9 +1013,9 @@ module GraphQL
       def get_field(type_or_name, field_name)
         parent_type = case type_or_name
         when LateBoundType
-          types[type_or_name.name]
+          find_type(type_or_name.name)
         when String
-          types.fetch(type_or_name)
+          find_type(type_or_name)
         when Module
           type_or_name
         else
@@ -1591,7 +1591,7 @@ module GraphQL
             update_type_owner(type_owner, type)
             add_type(type, owner: type_owner, late_types: late_types)
           elsif lt.is_a?(LateBoundType)
-            if (type = types[lt.graphql_name])
+            if (type = find_type(lt.graphql_name))
               # Reset the counter, since we might succeed next go-round
               missed_late_types = 0
               update_type_owner(type_owner, type)
@@ -1690,7 +1690,7 @@ module GraphQL
           um << owner
         end
 
-        if (prev_type = types[type.graphql_name])
+        if (prev_type = find_type(type.graphql_name))
           if prev_type != type
             raise ArgumentError, "Conflicting type definitions for `#{type.graphql_name}`: #{prev_type} (#{prev_type.class}), #{type} #{type.class}"
           else

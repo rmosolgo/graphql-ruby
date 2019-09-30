@@ -26,6 +26,7 @@ describe GraphQL::Types::ISO8601Date do
       query(Query)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
     end
   end
@@ -58,7 +59,7 @@ describe GraphQL::Types::ISO8601Date do
     end
 
     it "adds an error for invalid dates" do
-      expected_errors = ["Variable date of type ISO8601Date! was provided invalid value"]
+      expected_errors = ["Variable $date of type ISO8601Date! was provided invalid value"]
 
       assert_equal expected_errors, parse_date("2018-26-07").map { |e| e["message"] }
       assert_equal expected_errors, parse_date("xyz").map { |e| e["message"] }
