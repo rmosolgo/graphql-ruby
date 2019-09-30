@@ -19,9 +19,15 @@ describe GraphQL::Types::ISO8601DateTime do
         argument :date, GraphQL::Types::ISO8601DateTime, required: true
       end
 
+      field :constant_date, DateTimeObject, null: false
+
       def parse_date(date:)
         # Date is parsed by the scalar, so it's already a DateTime
         date
+      end
+
+      def constant_date
+        Date.new(2019, 9, 10)
       end
     end
 
@@ -116,6 +122,23 @@ describe GraphQL::Types::ISO8601DateTime do
         date_str = "2010-02-02T22:30:30.123-06:00"
         full_res = DateTimeTest::Schema.execute(query_str, variables: { date: date_str })
         assert_equal date_str, full_res["data"]["parseDate"]["iso8601"]
+      end
+    end
+
+    describe "with Date value" do
+      it "raises an error" do
+        query_str = <<-GRAPHQL
+        query {
+          constantDate {
+            iso8601
+          }
+        }
+        GRAPHQL
+
+        err = assert_raises(GraphQL::Error) do
+          DateTimeTest::Schema.execute(query_str)
+        end
+        assert_equal err.message, "An incompatible object (Date) was given to GraphQL::Types::ISO8601DateTime. Make sure that only DateTimes are used with this type."
       end
     end
   end
