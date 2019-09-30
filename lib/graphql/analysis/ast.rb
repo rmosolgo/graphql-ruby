@@ -7,7 +7,6 @@ require "graphql/analysis/ast/max_query_complexity"
 require "graphql/analysis/ast/query_depth"
 require "graphql/analysis/ast/max_query_depth"
 
-# frozen_string_literal: true
 module GraphQL
   module Analysis
     module AST

@@ -37,7 +37,7 @@ function sendPayload(payload, options) {
     auth: parsedURL.auth,
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(postData)
     }
   };
@@ -51,6 +51,7 @@ function sendPayload(payload, options) {
     var header = "GraphQL::Pro " + clientName + " " + authDigest
     if (verbose) {
       console.log("[Sync] Header: ", header)
+      console.log("[Sync] Data:", postData)
     }
     options.headers["Authorization"] = header
   }

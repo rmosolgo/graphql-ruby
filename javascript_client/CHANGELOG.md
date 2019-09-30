@@ -1,5 +1,13 @@
 # graphql-ruby-client
 
+## 1.6.8 (18 Sept 2019)
+
+- Properly send `Content-Type: application/json` when posting persisted operations
+
+## 1.6.7 (18 Sept 2019)
+
+- Add post data to `--verbose` output of `sync`
+
 ## 1.6.6 (6 Aug 2019)
 
 - Add `--relay-persisted-output` for working with Relay Compiler's new `--persist-output` option #2415

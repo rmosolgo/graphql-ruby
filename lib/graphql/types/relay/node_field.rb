@@ -16,7 +16,7 @@ module GraphQL
       #     end
       #
       #   def node(id:)
-      #     context.schema.object_from_id(context, id)
+      #     context.schema.object_from_id(id, context)
       #   end
       #
       NodeField = GraphQL::Schema::Field.new(

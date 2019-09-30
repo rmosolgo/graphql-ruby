@@ -7,7 +7,7 @@ module GraphQL
     #   class NameCounter < GraphQL::Language::Visitor
     #     def initialize(document, field_name)
     #       super(document)
-    #       @field_name
+    #       @field_name = field_name
     #       @count = 0
     #     end
     #
@@ -16,7 +16,7 @@ module GraphQL
     #     def on_field(node, parent)
     #       # if this field matches our search, increment the counter
     #       if node.name == @field_name
-    #         @count = 0
+    #         @count += 1
     #       end
     #       # Continue visiting subfields:
     #       super
@@ -211,7 +211,10 @@ module GraphQL
 
       # If one of the visitors returns SKIP, stop visiting this node
       def self.apply_hooks(hooks, node, parent)
-        hooks.reduce(true) { |memo, proc| memo && (proc.call(node, parent) != SKIP) }
+        hooks.each do |proc|
+          return false if proc.call(node, parent) == SKIP
+        end
+        true
       end
 
       # Collect `enter` and `leave` hooks for classes in {GraphQL::Language::Nodes}
