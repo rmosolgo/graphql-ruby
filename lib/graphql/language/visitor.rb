@@ -96,8 +96,8 @@ module GraphQL
         else
           # Run hooks if there are any
           new_node = node
-          begin_hooks_ok = @visitors.empty? || begin_visit(new_node, parent)
-          if begin_hooks_ok
+          no_hooks = !@visitors.key?(node.class)
+          if no_hooks || begin_visit(new_node, parent)
             node.children.each do |child_node|
               new_child_and_node = on_node_with_modifications(child_node, new_node)
               # Reassign `node` in case the child hook makes a modification
@@ -106,7 +106,7 @@ module GraphQL
               end
             end
           end
-          @visitors.any? && end_visit(new_node, parent)
+          end_visit(new_node, parent) unless no_hooks
 
           if new_node.equal?(node)
             nil
