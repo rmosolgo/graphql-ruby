@@ -33,14 +33,7 @@ module GraphQL
       end
 
       def self.build(onlies)
-        case onlies
-        when 0
-          nil
-        when 1
-          onlies[0]
-        else
-          onlies.reduce { |memo, only| self.new(memo, only) }
-        end
+        onlies.reduce { |memo, only| self.new(memo, only) }
       end
     end
 
