@@ -211,7 +211,10 @@ module GraphQL
 
       # If one of the visitors returns SKIP, stop visiting this node
       def self.apply_hooks(hooks, node, parent)
-        hooks.reduce(true) { |memo, proc| memo && (proc.call(node, parent) != SKIP) }
+        hooks.each do |proc|
+          return false if proc.call(node, parent) == SKIP
+        end
+        true
       end
 
       # Collect `enter` and `leave` hooks for classes in {GraphQL::Language::Nodes}
