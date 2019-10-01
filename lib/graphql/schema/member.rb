@@ -22,7 +22,7 @@ module GraphQL
       extend CachedGraphQLDefinition
       extend GraphQL::Relay::TypeExtensions
       extend BaseDSLMethods
-      extend BaseDSLMethods::IntrospectionExtension
+      extend BaseDSLMethods::ConfigurationExtension
       introspection(false)
       extend TypeSystemHelpers
       extend Scoped

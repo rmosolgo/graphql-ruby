@@ -7,6 +7,7 @@ module GraphQL
         include GraphQL::Schema::Member::CachedGraphQLDefinition
         include GraphQL::Relay::TypeExtensions
         include GraphQL::Schema::Member::BaseDSLMethods
+        # ConfigurationExtension's responsibilities are in `def included` below
         include GraphQL::Schema::Member::TypeSystemHelpers
         include GraphQL::Schema::Member::HasFields
         include GraphQL::Schema::Member::HasPath
@@ -58,6 +59,11 @@ module GraphQL
               child_class.instance_variable_set(:@_definition_methods, defn_methods_module)
               child_class.const_set(:DefinitionMethods, defn_methods_module)
               child_class.extend(child_class::DefinitionMethods)
+            end
+            child_class.introspection(introspection)
+            child_class.description(description)
+            if overridden_graphql_name
+              child_class.graphql_name(overridden_graphql_name)
             end
           elsif child_class < GraphQL::Schema::Object
             # This is being included into an object type, make sure it's using `implements(...)`

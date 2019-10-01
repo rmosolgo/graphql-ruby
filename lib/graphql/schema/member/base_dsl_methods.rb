@@ -18,14 +18,15 @@ module GraphQL
         # @param new_name [String]
         # @return [String]
         def graphql_name(new_name = nil)
-          case
-          when new_name
+          if new_name
             @graphql_name = new_name
-          when overridden = overridden_graphql_name
-            overridden
           else
-            default_graphql_name
+            overridden_graphql_name || default_graphql_name
           end
+        end
+
+        def overridden_graphql_name
+          @graphql_name
         end
 
         # Just a convenience method to point out that people should use graphql_name instead
@@ -46,13 +47,19 @@ module GraphQL
           if new_description
             @description = new_description
           else
-            @description || find_inherited_value(:description)
+            @description
           end
         end
 
-        module IntrospectionExtension
+        # This pushes some configurations _down_ the inheritance tree,
+        # in order to prevent repetitive lookups at runtime.
+        module ConfigurationExtension
           def inherited(child_class)
             child_class.introspection(introspection)
+            child_class.description(description)
+            if overridden_graphql_name
+              child_class.graphql_name(overridden_graphql_name)
+            end
             super
           end
         end
@@ -85,10 +92,6 @@ module GraphQL
         end
 
         alias :unwrap :itself
-
-        def overridden_graphql_name
-          @graphql_name || find_inherited_value(:overridden_graphql_name)
-        end
 
         # Creates the default name for a schema member.
         # The default name is the Ruby constant name,
