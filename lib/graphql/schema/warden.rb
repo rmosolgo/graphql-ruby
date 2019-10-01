@@ -40,6 +40,10 @@ module GraphQL
       # @param deep_check [Boolean]
       def initialize(filter, context:, schema:)
         @schema = schema.interpreter? ? schema : schema.graphql_definition
+        # Cache these to avoid repeated hits to the inheritance chain when one isn't present
+        @query = @schema.query
+        @mutation = @schema.mutation
+        @subscription = @schema.subscription
         @visibility_cache = read_through { |m| filter.call(m, context) }
       end
 
@@ -166,9 +170,9 @@ module GraphQL
       end
 
       def root_type?(type_defn)
-        @schema.query == type_defn ||
-          @schema.mutation == type_defn ||
-          @schema.subscription == type_defn
+        @query == type_defn ||
+          @mutation == type_defn ||
+          @subscription == type_defn
       end
 
       def referenced?(type_defn)
