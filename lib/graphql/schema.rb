@@ -926,7 +926,7 @@ module GraphQL
       def subscription(new_subscription_object = nil)
         if new_subscription_object
           if @subscription_object
-            raise GraphQL::Error, "Second definition of `subscription(...)` (#{new_subscription_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
+            raise GraphQL::Error, "Second definition of `subscription(...)` (#{new_subscription_object.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           else
             @subscription_object = new_subscription_object
             add_type_and_traverse(new_subscription_object, root: true)
@@ -1022,7 +1022,7 @@ module GraphQL
           raise ArgumentError, "unexpected field owner for #{field_name.inspect}: #{type_or_name.inspect} (#{type_or_name.class})"
         end
 
-        if parent_type.kind.fields? && (field = parent_type.fields[field_name])
+        if parent_type.kind.fields? && (field = parent_type.get_field(field_name))
           field
         elsif parent_type == query && (entry_point_field = introspection_system.entry_point(name: field_name))
           entry_point_field
