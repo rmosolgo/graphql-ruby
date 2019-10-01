@@ -336,6 +336,7 @@ module GraphQL
       end
     end
 
+    # TODO rename to `get_type` like `get_field`
     def find_type(type_name)
       @types[type_name]
     end
