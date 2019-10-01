@@ -138,7 +138,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   end
 
   describe "using enums for scalar arguments it adds an error" do
-    let(:query_string) { <<~GRAPHQL
+    let(:query_string) { <<-GRAPHQL
       {
         cheese(id: I_AM_ENUM_VALUE) {
           source
@@ -150,7 +150,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     let(:enum_invalid_for_id_error) do
       {
         "message" => "Argument 'id' on Field 'cheese' has an invalid value. Expected type 'Int!'.",
-        "locations" => [{ "line" => 2, "column" => 3 }],
+        "locations" => [{ "line" => 2, "column" => 9 }],
         "path"=> ["query", "cheese", "id"],
         "extensions"=> { "code" => "argumentLiteralsIncompatible", "typeName" => "Field", "argumentName" => "id" }
       }
