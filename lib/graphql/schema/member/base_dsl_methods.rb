@@ -50,12 +50,19 @@ module GraphQL
           end
         end
 
+        module IntrospectionExtension
+          def inherited(child_class)
+            child_class.introspection(introspection)
+            super
+          end
+        end
+
         # @return [Boolean] If true, this object is part of the introspection system
         def introspection(new_introspection = nil)
           if !new_introspection.nil?
             @introspection = new_introspection
           else
-            @introspection || find_inherited_value(:introspection, false)
+            @introspection
           end
         end
 
