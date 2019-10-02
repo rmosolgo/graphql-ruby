@@ -232,7 +232,7 @@ describe GraphQL::Query::Executor do
                 "message"=>"Error was handled!",
                 "locations" => [{"line"=>1, "column"=>17}],
                 "path"=>["error"],
-                "extensions"=>{code: "DUMMY_ERROR"}
+                "extensions"=>{"code" => "DUMMY_ERROR"}
               }
             ]
           }
