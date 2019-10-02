@@ -1274,6 +1274,7 @@ module GraphQL
       def accessible?(member, ctx)
         member.accessible?(ctx)
       end
+
       # This hook is called when a client tries to access one or more
       # fields that fail the `accessible?` check.
       #
