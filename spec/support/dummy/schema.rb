@@ -125,7 +125,7 @@ module Dummy
 
     # Keywords can be used for definition methods
     field :fat_content,
-      type: GraphQL::FLOAT_TYPE,
+      type: Float,
       null: false,
       description: "Percentage which is milkfat",
       deprecation_reason: "Diet fashion has changed"

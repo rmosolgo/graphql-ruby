@@ -616,8 +616,39 @@ module GraphQL
 
     # Can't delegate to `class`
     alias :_schema_class :class
-    def_delegators :_schema_class, :visible?, :accessible?, :authorized?, :unauthorized_object, :unauthorized_field, :inaccessible_fields
+    def_delegators :_schema_class, :unauthorized_object, :unauthorized_field, :inaccessible_fields
     def_delegators :_schema_class, :directive
+
+
+    # Given this schema member, find the class-based definition object
+    # whose `method_name` should be treated as an application hook
+    # @see {.visible?}
+    # @see {.accessible?}
+    def call_on_type_class(member, method_name, context, default:)
+      member = if member.respond_to?(:type_class)
+        member.type_class
+      else
+        member
+      end
+
+      if member.respond_to?(:relay_node_type) && (t = member.relay_node_type)
+        member = t
+      end
+
+      if member.respond_to?(method_name)
+        member.public_send(method_name, context)
+      else
+        default
+      end
+    end
+
+    def visible?(member, context)
+      call_on_type_class(member, :visible?, context, default: true)
+    end
+
+    def accessible?(member, context)
+      call_on_type_class(member, :accessible?, context, default: true)
+    end
 
     # A function to call when {#execute} receives an invalid query string
     #
@@ -1236,14 +1267,13 @@ module GraphQL
         raise NotImplementedError, "#{self.name}.id_from_object(object, type, ctx) must be implemented to create global ids (tried to create an id for `#{object.inspect}`)"
       end
 
-      def visible?(member, context)
-        call_on_type_class(member, :visible?, context, default: true)
+      def visible?(member, ctx)
+        member.visible?(ctx)
       end
 
-      def accessible?(member, context)
-        call_on_type_class(member, :accessible?, context, default: true)
+      def accessible?(member, ctx)
+        member.accessible?(ctx)
       end
-
       # This hook is called when a client tries to access one or more
       # fields that fail the `accessible?` check.
       #
@@ -1547,29 +1577,6 @@ module GraphQL
 
       def own_multiplex_analyzers
         @own_multiplex_analyzers ||= []
-      end
-
-      # Given this schema member, find the class-based definition object
-      # whose `method_name` should be treated as an application hook
-      # @see {.visible?}
-      # @see {.accessible?}
-      # @see {.authorized?}
-      def call_on_type_class(member, method_name, *args, default:)
-        member = if member.respond_to?(:metadata) && member.metadata.is_a?(Hash)
-          member.metadata[:type_class] || member
-        else
-          member
-        end
-
-        if member.respond_to?(:relay_node_type) && (t = member.relay_node_type)
-          member = t
-        end
-
-        if member.respond_to?(method_name)
-          member.public_send(method_name, *args)
-        else
-          default
-        end
       end
 
       # @param t [Module, Array<Module>]
