@@ -96,7 +96,12 @@ module GraphQL
         end
 
         def interfaces
-          own_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces : [])
+          inherited_interfaces = (superclass.respond_to?(:interfaces) ? superclass.interfaces : nil)
+          if inherited_interfaces && !inherited_interfaces.empty?
+            own_interfaces + inherited_interfaces
+          else
+            own_interfaces
+          end
         end
 
         def own_interfaces
