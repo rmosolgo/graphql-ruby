@@ -720,15 +720,6 @@ type Query {
       build_schema_and_compare_output(schema.chop)
     end
 
-    it 'supports empty types' do
-      schema = <<-SCHEMA
-type Query {
-}
-      SCHEMA
-
-      build_schema_and_compare_output(schema.chop)
-    end
-
     it "tracks original AST node" do
       schema_definition = <<-GRAPHQL
 schema @custom(thing: true) {

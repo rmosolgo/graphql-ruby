@@ -104,6 +104,8 @@ describe GraphQL::Authorization do
       def self.visible?(ctx)
         super && !ctx[:hide]
       end
+
+      field :some_field, String, null: true
     end
 
     class RelayObject < BaseObject
@@ -118,6 +120,8 @@ describe GraphQL::Authorization do
       def self.authorized?(_val, ctx)
         super && !ctx[:unauthorized_relay]
       end
+
+      field :some_field, String, null: true
     end
 
     # TODO test default behavior for abstract types,
@@ -140,6 +144,8 @@ describe GraphQL::Authorization do
       def self.resolve_type(obj, ctx)
         InaccessibleObject
       end
+
+      field :some_field, String, null: true
     end
 
     class InaccessibleObject < BaseObject
@@ -148,6 +154,8 @@ describe GraphQL::Authorization do
       def self.accessible?(ctx)
         super && !ctx[:hide]
       end
+
+      field :some_field, String, null: true
     end
 
     class UnauthorizedObject < BaseObject
@@ -359,6 +367,8 @@ describe GraphQL::Authorization do
       def self.visible?(ctx)
         super && !ctx[:hidden_mutation]
       end
+
+      field :some_return_field, String, null: true
     end
 
     class DoInaccessibleStuff < GraphQL::Schema::RelayClassicMutation
