@@ -35,11 +35,17 @@
   RBRACKET =      ']';
   COLON =         ':';
   QUOTE =         '"';
+  BACKSLASH = '\\';
+  # Could limit to hex here, but “bad unicode escape” on 0XXF is probably a
+  # more helpful error than “unknown char”
+  UNICODE_ESCAPE = '\\u' [0-9A-Za-z]{4};
+  # https://graphql.github.io/graphql-spec/June2018/#sec-String-Value
+  STRING_ESCAPE = '\\' [\\/bfnrt];
   BLOCK_QUOTE =   '"""';
   ESCAPED_BLOCK_QUOTE = '\\"""';
   BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^QUOTE | QUOTE{1,2} ^QUOTE);
   ESCAPED_QUOTE = '\\"';
-  STRING_CHAR =   (ESCAPED_QUOTE | ^QUOTE);
+  STRING_CHAR =   ((ESCAPED_QUOTE | ^QUOTE) - BACKSLASH) | UNICODE_ESCAPE | STRING_ESCAPE;
   VAR_SIGN =      '$';
   DIR_SIGN =      '@';
   ELLIPSIS =      '...';
@@ -52,6 +58,11 @@
   BLOCK_STRING = BLOCK_QUOTE BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE;
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
+
+  # Used with ragel -V for graphviz visualization
+  str := |*
+      QUOTED_STRING => { emit_string(ts, te, meta, block: false) };
+  *|;
 
   main := |*
     INT           => { emit(:INT, ts, te, meta) };

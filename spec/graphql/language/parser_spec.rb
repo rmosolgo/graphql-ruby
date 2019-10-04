@@ -122,6 +122,30 @@ describe GraphQL::Language::Parser do
     end
   end
 
+  it "parses backslashes in arguments" do
+    document = subject.parse <<-GRAPHQL
+      query {
+        item(text: "a", otherText: "b\\\\") {
+          text
+          otherText
+        }
+      }
+    GRAPHQL
+    assert_equal "b\\", document.definitions[0].selections[0].arguments[1].value
+  end
+
+  it "parses backslases in non-last arguments" do
+    document = subject.parse <<-GRAPHQL
+      query {
+        item(text: "b\\\\", otherText: "a") {
+          text
+          otherText
+        }
+      }
+    GRAPHQL
+    assert_equal "b\\", document.definitions[0].selections[0].arguments[0].value
+  end
+
   it "parses the test schema" do
     schema = Dummy::Schema
     schema_string = GraphQL::Schema::Printer.print_schema(schema)

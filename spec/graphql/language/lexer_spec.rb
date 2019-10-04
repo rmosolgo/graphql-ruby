@@ -32,6 +32,11 @@ describe GraphQL::Language::Lexer do
       assert_equal 'c', tokens[1].value
     end
 
+    it "handles escaped backslashes before escaped quotes" do
+      tokens = subject.tokenize('text: "b\\\\", otherText: "a"')
+      assert_equal ['text', ':', 'b\\', 'otherText', ':', 'a',], tokens.map(&:value)
+    end
+
     describe "block strings" do
       let(:query_string) { %|{ a(b: """\nc\n \\""" d\n""" """""e""""")}|}
 
@@ -59,6 +64,11 @@ describe GraphQL::Language::Lexer do
         tokens = subject.tokenize(empty_block_string)
 
         assert_equal '', tokens[0].value
+      end
+
+      it "tokenizes escaped backslashes at the end of blocks" do
+        tokens = subject.tokenize('text: """b\\\\""", otherText: "a"')
+        assert_equal ['text', ':', 'b\\', 'otherText', ':', 'a',], tokens.map(&:value)
       end
     end
 
