@@ -25,7 +25,7 @@ module GraphQL
 
       def has_next_page
         if first
-          paged_nodes.length >= first && sliced_nodes_count > first
+          paged_nodes.length >= first && nodes.offset(first).exists?
         elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && last
           sliced_nodes_count >= last
         else
