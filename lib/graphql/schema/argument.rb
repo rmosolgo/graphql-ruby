@@ -93,8 +93,25 @@ module GraphQL
         true
       end
 
-      def authorized?(obj, ctx)
-        true
+      def authorized?(obj, value, ctx)
+        arg_type = type.unwrap
+        if arg_type.kind.input_object?
+          arg_type.arguments.each do |_name, input_obj_arg|
+            if value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
+              return false
+            end
+          end
+          true
+        else
+          true
+        end
+      end
+
+      def self.method_added(method_name)
+        if method_name == :authorized && instance_method(:authorized).arity == 2
+          raise ArgumentError, "`authorized?` is now called with three values, `def authorized?(parent_object, arg_value, ctx)`. Please update your method definition!"
+        end
+        super
       end
 
       def to_graphql
