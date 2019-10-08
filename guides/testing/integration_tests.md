@@ -117,7 +117,7 @@ it "loads user token into the viewer" do
   user = create(:user)
   post graphql_path,
     params: { query: query_string },
-    headers: { "Authentication" => "Bearer #{user.auth_token}" }
+    headers: { "Authorization" => "Bearer #{user.auth_token}" }
 
   json_response = JSON.parse(@response.body)
   assert_equal user.username, json_response["data"]["viewer"], "Authenticated requests load the viewer"
