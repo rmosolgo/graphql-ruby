@@ -24,6 +24,16 @@ describe GraphQL::Authorization do
       end
     end
 
+    class BaseInputObjectArgument < BaseArgument
+      def authorized?(parent_object, context)
+        super && parent_object != :hide3
+      end
+    end
+
+    class BaseInputObject < GraphQL::Schema::InputObject
+      argument_class BaseInputObjectArgument
+    end
+
     class BaseField < GraphQL::Schema::Field
       def initialize(*args, edge_class: nil, **kwargs, &block)
         @edge_class = edge_class
@@ -243,6 +253,11 @@ describe GraphQL::Authorization do
       value "TAR_PIT", role: :hidden
     end
 
+    class AddInput < BaseInputObject
+      argument :left, Integer, required: true
+      argument :right, Integer, required: true
+    end
+
     class Query < BaseObject
       def self.authorized?(obj, ctx)
         !ctx[:query_unauthorized]
@@ -346,6 +361,14 @@ describe GraphQL::Authorization do
       field :replaced_object, ReplacedObject, null: false
       def replaced_object
         Replaceable.new
+      end
+
+      field :add_inputs, Integer, null: true do
+        argument :input, AddInput, required: true
+      end
+
+      def add_inputs(input:)
+        input[:left] + input[:right]
       end
     end
 
@@ -735,6 +758,21 @@ describe GraphQL::Authorization do
       assert_nil hidden_response["data"].fetch("int2")
       visible_response = auth_execute(query)
       assert_equal 5, visible_response["data"]["int2"]
+    end
+
+    it "halts on unauthorized input object arguments, using the parent object" do
+      query = "{ addInputs(input: { left: 3, right: 2 }) }"
+      hidden_field_argument_response = auth_execute(query, root_value: :hide2)
+      assert_nil hidden_field_argument_response["data"].fetch("addInputs")
+      assert_equal ["Unauthorized Query: :hide2"], hidden_field_argument_response["errors"].map { |e| e["message"] }
+
+      hidden_input_obj_argument_response = auth_execute(query, root_value: :hide3)
+      assert_nil hidden_input_obj_argument_response["data"].fetch("addInputs")
+      assert_equal ["Unauthorized Query: :hide3"], hidden_input_obj_argument_response["errors"].map { |e| e["message"] }
+
+      visible_response = auth_execute(query)
+      assert_equal 5, visible_response["data"]["addInputs"]
+      refute visible_response.key?("errors")
     end
 
     it "works with edges and connections" do
