@@ -11,14 +11,14 @@ Examples:</p>
 <p>class NameCounter &lt; GraphQL::Language::Visitor
 def initialize(document, field_name)
 super(document)
-@field_name
+@field_name = field_name
 @count = 0
 end
 attr_reader :count
 def on_field(node, parent)</p>
 <h1 id="if-this-field-matches-our-search-increment-the-counter">if this field matches our search, increment the counter</h1>
 <p>if node.name == @field_name
-@count = 0
+@count += 1
 end</p>
 <h1 id="continue-visiting-subfields">Continue visiting subfields:</h1>
 <p>super

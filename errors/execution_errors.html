@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Top-level "errors"</h1>
 <div class="guide-container">
-  <p>The GraphQL specification <a href="https://facebook.github.io/graphql/October2016/#sec-Errors">allows for a top-level <code class="highlighter-rouge">"errors"</code> key</a> in the response which may contain information about what went wrong during execution. For example:</p>
+  <p>The GraphQL specification <a href="https://graphql.github.io/graphql-spec/June2018/#sec-Errors">allows for a top-level <code class="highlighter-rouge">"errors"</code> key</a> in the response which may contain information about what went wrong during execution. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
   <span class="s2">"errors"</span> <span class="o">=&gt;</span> <span class="p">[</span> <span class="o">...</span> <span class="p">]</span>
@@ -97,7 +97,7 @@
 
 <h2 id="customizing-error-json">Customizing Error JSON</h2>
 
-<p>The default error JSON includes <code class="highlighter-rouge">"message"</code>, <code class="highlighter-rouge">"locations"</code> and <code class="highlighter-rouge">"path"</code>. The <a href="https://facebook.github.io/graphql/draft/#example-fce18">forthcoming version</a> of the GraphQL spec recommends putting custom data in the <code class="highlighter-rouge">"extensions"</code> key of the error JSON.</p>
+<p>The default error JSON includes <code class="highlighter-rouge">"message"</code>, <code class="highlighter-rouge">"locations"</code> and <code class="highlighter-rouge">"path"</code>. The <a href="https://graphql.github.io/graphql-spec/draft/#example-fce18">forthcoming version</a> of the GraphQL spec recommends putting custom data in the <code class="highlighter-rouge">"extensions"</code> key of the error JSON.</p>
 
 <p>You can customize this in two ways:</p>
 

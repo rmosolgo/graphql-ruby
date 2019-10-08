@@ -56,6 +56,7 @@
   <li><code class="highlighter-rouge">Boolean</code>, like a JSON or Ruby boolean (<code class="highlighter-rouge">true</code> or <code class="highlighter-rouge">false</code>)</li>
   <li><code class="highlighter-rouge">ID</code>, which a specialized <code class="highlighter-rouge">String</code> for representing unique object identifiers</li>
   <li><code class="highlighter-rouge">ISO8601DateTime</code>, an ISO 8601-encoded datetime</li>
+  <li><code class="highlighter-rouge">ISO8601Date</code>, an ISO 8601-encoded date</li>
   <li><code class="highlighter-rouge">JSON</code>, ⚠ This returns arbitrary JSON (Ruby hashes, arrays, strings, integers, floats, booleans and nils). Take care: by using this type, you completely lose all GraphQL type safety. Consider building object types for your data instead.</li>
 </ul>
 
@@ -75,6 +76,8 @@
 <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 <span class="c1"># ISO8601DateTime field</span>
 <span class="n">field</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">ISO8601DateTime</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+<span class="c1"># ISO8601Date field</span>
+<span class="n">field</span> <span class="ss">:birthday</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">ISO8601Date</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 <span class="c1"># JSON field ⚠</span>
 <span class="n">field</span> <span class="ss">:parameters</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">JSON</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 </code></pre></div></div>
