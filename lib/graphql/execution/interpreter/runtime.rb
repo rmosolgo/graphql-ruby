@@ -402,12 +402,12 @@ module GraphQL
               @interpreter_context[:current_field] = field
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
-              inner_obj = query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
-                begin
+              inner_obj = begin
+                query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
                   schema.sync_lazy(lazy_obj)
+                end
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
                   yield(err)
-                end
               end
               after_lazy(inner_obj, owner: owner, field: field, path: path, owner_object: owner_object, arguments: arguments, eager: eager) do |really_inner_obj|
                 yield(really_inner_obj)

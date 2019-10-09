@@ -43,7 +43,7 @@ describe "GraphQL::Execution::Errors" do
 
       field :f2, Int, null: true
       def f2
-        GraphQL::Execution::Lazy.new { raise ErrorA, "f2 broke" }
+        -> { raise ErrorA, "f2 broke" }
       end
 
       field :f3, Int, null: true
@@ -61,9 +61,15 @@ describe "GraphQL::Execution::Errors" do
       def f5
         raise ErrorASubclass, "raised subclass"
       end
+
+      field :f6, Int, null: true
+      def f6
+        -> { raise ErrorB }
+      end
     end
 
     query(Query)
+    lazy_resolve(Proc, :call)
   end
 
   describe "rescue_from handling" do
@@ -79,6 +85,16 @@ describe "GraphQL::Execution::Errors" do
       res = ErrorsTestSchema.execute("{ f2 }", context: ctx)
       assert_equal({ "data" => { "f2" => nil } }, res)
       assert_equal ["f2 broke (ErrorsTestSchema::Query.f2, nil, {})"], ctx[:errors]
+    end
+
+    it "rescues errors from lazy code with handlers that re-raise" do
+      res = ErrorsTestSchema.execute("{ f6 }")
+      expected_error = {
+        "message"=>"boom!",
+        "locations"=>[{"line"=>1, "column"=>3}],
+        "path"=>["f6"]
+      }
+      assert_equal({ "data" => { "f6" => nil }, "errors" => [expected_error] }, res)
     end
 
     it "can raise new errors" do
