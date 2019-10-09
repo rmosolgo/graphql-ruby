@@ -471,12 +471,6 @@ module GraphQL
         end
       end
 
-      def self.method_added(method_name)
-        if method_name == :authorized && instance_method(:authorized).arity == 2
-          raise ArgumentError, "`authorized?` is now called with three values, `def authorized?(parent_object, args, ctx)`. Please update your method definition!"
-        end
-        super
-      end
       # Implement {GraphQL::Field}'s resolve API.
       #
       # Eventually, we might hook up field instances to execution in another way. TBD.
@@ -488,21 +482,22 @@ module GraphQL
           # Some legacy fields can have `nil` here, not exactly sure why.
           # @see https://github.com/rmosolgo/graphql-ruby/issues/1990 before removing
           inner_obj = after_obj && after_obj.object
-          ruby_args = to_ruby_args(after_obj, args, ctx)
-          if authorized?(inner_obj, ruby_args, query_ctx)
-            # Then if it passed, resolve the field
-            if @resolve_proc
-              # Might be nil, still want to call the func in that case
-              with_extensions(inner_obj, ruby_args, query_ctx) do |extended_obj, extended_args|
-                # Pass the GraphQL args here for compatibility:
-                @resolve_proc.call(extended_obj, args, ctx)
+          ctx.schema.after_lazy(to_ruby_args(after_obj, args, ctx)) do |ruby_args|
+            if authorized?(inner_obj, ruby_args, query_ctx)
+              # Then if it passed, resolve the field
+              if @resolve_proc
+                # Might be nil, still want to call the func in that case
+                with_extensions(inner_obj, ruby_args, query_ctx) do |extended_obj, extended_args|
+                  # Pass the GraphQL args here for compatibility:
+                  @resolve_proc.call(extended_obj, args, ctx)
+                end
+              else
+                public_send_field(after_obj, ruby_args, ctx)
               end
             else
-              public_send_field(after_obj, ruby_args, ctx)
+              err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
+              query_ctx.schema.unauthorized_field(err)
             end
-          else
-            err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
-            query_ctx.schema.unauthorized_field(err)
           end
         end
       end

@@ -24,7 +24,7 @@ describe GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent do
   |}
   describe "with error bubbling disabled" do
     missing_required_field_error = {
-      "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
+      "message"=>"Argument 'product' on Field 'missingSource' has an invalid value ([{fatContent: 1.1}]). Expected type '[DairyProductInput]'.",
       "locations"=>[{"line"=>7, "column"=>7}],
       "path"=>["query getCheese", "missingSource", "product"],
       "extensions"=>{

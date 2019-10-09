@@ -106,7 +106,7 @@ describe GraphQL::Query::Variables do
         let(:provided_variables) { { "product" => [] } }
 
         it "validates invalid input objects" do
-          expected = "Variable product of type DairyProductInput was provided invalid value"
+          expected = "Variable $product of type DairyProductInput was provided invalid value"
           assert_equal expected, variables.errors.first.message
         end
       end
@@ -126,7 +126,7 @@ describe GraphQL::Query::Variables do
         let(:provided_variables) { { "time" => "a" } }
 
         it "validates invalid input objects" do
-          expected = "Variable time of type Time was provided invalid value"
+          expected = "Variable $time of type Time was provided invalid value"
           assert_equal expected, variables.errors.first.message
         end
       end

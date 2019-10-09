@@ -443,7 +443,7 @@ module GraphQL
       @instrumented_field_map[type.graphql_name]
     end
 
-    def type_from_ast(ast_node)
+    def type_from_ast(ast_node, context:)
       GraphQL::Schema::TypeExpression.build_type(self.types, ast_node)
     end
 

@@ -73,7 +73,7 @@ module GraphQL
     # @return [GraphQL::ObjectType, nil] The type named `type_name` if it exists and is a member of this {UnionType}, (else `nil`)
     def get_possible_type(type_name, ctx)
       type = ctx.query.get_type(type_name)
-      type if type && ctx.query.schema.possible_types(self).include?(type)
+      type if type && ctx.query.warden.possible_types(self).include?(type)
     end
 
     # Check if a type is a possible type of this {UnionType}

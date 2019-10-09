@@ -126,7 +126,7 @@ describe GraphQL::Analysis do
 
       it "returns an error" do
         error = query.result["errors"].first
-        assert_equal "Variable cheeseId of type Int! was provided invalid value", error["message"]
+        assert_equal "Variable $cheeseId of type Int! was provided invalid value", error["message"]
       end
     end
 

@@ -2,7 +2,7 @@
 module GraphQL
   module StaticValidation
     # The problem is
-    #   - Variable usage must be determined at the OperationDefinition level
+    #   - Variable $usage must be determined at the OperationDefinition level
     #   - You can't tell how fragments use variables until you visit FragmentDefinitions (which may be at the end of the document)
     #
     #  So, this validator includes some crazy logic to follow fragment spreads recursively, while avoiding infinite loops.

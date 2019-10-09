@@ -115,6 +115,7 @@ module GraphQL
           end
         elsif as_type.kind.input_object?
           as_type.arguments.each do |_name, input_obj_arg|
+            input_obj_arg = input_obj_arg.type_class
             if value.key?(input_obj_arg.keyword) &&  !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
               return false
             end
@@ -123,14 +124,6 @@ module GraphQL
         # None of the early-return conditions were activated,
         # so this is authorized.
         true
-      end
-
-      # TODO test this and add a similar hook to Field
-      def self.method_added(method_name)
-        if method_name == :authorized? && instance_method(:authorized?).arity == 2
-          raise ArgumentError, "`authorized?` is now called with three values, `def authorized?(parent_object, arg_value, ctx)`. Please update your method definition!"
-        end
-        super
       end
 
       def to_graphql
