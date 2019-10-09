@@ -196,6 +196,10 @@ module GraphQL
 
     attr_accessor :ast_node
 
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_definition :itself
+
     # @return [Boolean]
     def connection?
       @connection
@@ -313,6 +317,10 @@ module GraphQL
       GraphQL::Execution::Lazy.new {
         lazy_resolve(obj, args, ctx)
       }
+    end
+
+    def type_class
+      metadata[:type_class]
     end
 
     private

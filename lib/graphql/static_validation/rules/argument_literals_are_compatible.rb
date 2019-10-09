@@ -11,7 +11,7 @@ module GraphQL
             nil
           else
             arg_ret_type = arg_defn.type.unwrap
-            if !arg_ret_type.is_a?(GraphQL::InputObjectType)
+            if !arg_ret_type.kind.input_object?
               nil
             else
               arg_ret_type
@@ -54,7 +54,7 @@ module GraphQL
                 node.value.arguments.include?(err.ast_value)
               else
                 # otherwise we just check equality
-                node.value == (err.ast_value)
+                node.value == err.ast_value
               end
               if !matched
                 # This node isn't the node that caused the error,
@@ -67,9 +67,14 @@ module GraphQL
               error ||= begin
                 kind_of_node = node_type(parent)
                 error_arg_name = parent_name(parent, parent_defn)
+                string_value = if node.value == Float::INFINITY
+                  ""
+                else
+                  " (#{GraphQL::Language::Printer.new.print(node.value)})"
+                end
 
                 GraphQL::StaticValidation::ArgumentLiteralsAreCompatibleError.new(
-                  "Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value. Expected type '#{arg_defn.type}'.",
+                  "Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value#{string_value}. Expected type '#{arg_defn.type.to_type_signature}'.",
                   nodes: parent,
                   type: kind_of_node,
                   argument: node.name
@@ -92,7 +97,7 @@ module GraphQL
         elsif parent.is_a?(GraphQL::Language::Nodes::InputObject)
           type_defn.name
         else
-          parent.name
+          parent.graphql_name
         end
       end
 

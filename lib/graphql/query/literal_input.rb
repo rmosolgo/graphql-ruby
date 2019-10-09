@@ -12,8 +12,8 @@ module GraphQL
         when Language::Nodes::VariableIdentifier
           variables[ast_node.name]
         else
-          case type
-          when GraphQL::ScalarType
+          case type.kind.name
+          when "SCALAR"
             # TODO smell
             # This gets used for plain values during subscriber.trigger
             if variables
@@ -21,7 +21,7 @@ module GraphQL
             else
               type.coerce_isolated_input(ast_node)
             end
-          when GraphQL::EnumType
+          when "ENUM"
             # TODO smell
             # This gets used for plain values sometimes
             v = ast_node.is_a?(GraphQL::Language::Nodes::Enum) ? ast_node.name : ast_node
@@ -30,18 +30,20 @@ module GraphQL
             else
               type.coerce_isolated_input(v)
             end
-          when GraphQL::NonNullType
+          when "NON_NULL"
             LiteralInput.coerce(type.of_type, ast_node, variables)
-          when GraphQL::ListType
+          when "LIST"
             if ast_node.is_a?(Array)
               ast_node.map { |element_ast| LiteralInput.coerce(type.of_type, element_ast, variables) }
             else
               [LiteralInput.coerce(type.of_type, ast_node, variables)]
             end
-          when GraphQL::InputObjectType
+          when "INPUT_OBJECT"
             # TODO smell: handling AST vs handling plain Ruby
             next_args = ast_node.is_a?(Hash) ? ast_node : ast_node.arguments
             from_arguments(next_args, type, variables)
+          else
+            raise "Invariant: unexpected type to coerce to: #{type}"
           end
         end
       end
@@ -78,7 +80,10 @@ module GraphQL
             if (!value_is_a_variable || (value_is_a_variable && variables.key?(arg_value.name)))
 
               value = coerce(arg_defn.type, arg_value, variables)
-              value = arg_defn.prepare(value, context)
+              # Legacy `prepare` application
+              if arg_defn.is_a?(GraphQL::Argument)
+                value = arg_defn.prepare(value, context)
+              end
 
               if value.is_a?(GraphQL::ExecutionError)
                 value.ast_node = ast_arg
@@ -98,7 +103,9 @@ module GraphQL
             defaults_used << arg_name
             # `context` isn't present when pre-calculating defaults
             if context
-              value = arg_defn.prepare(value, context)
+              if arg_defn.is_a?(GraphQL::Argument)
+                value = arg_defn.prepare(value, context)
+              end
               if value.is_a?(GraphQL::ExecutionError)
                 value.ast_node = ast_arg
                 raise value
@@ -108,7 +115,20 @@ module GraphQL
           end
         end
 
-        argument_owner.arguments_class.new(values_hash, context: context, defaults_used: defaults_used)
+        if argument_owner.is_a?(Class) || argument_owner.is_a?(GraphQL::Schema::Field)
+          # A Schema::InputObject, Schema::GraphQL::Field, Schema::Directive, logic from Query::Arguments#to_kwargs
+          ruby_kwargs = {}
+          values_hash.each do |key, value|
+            ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = value
+          end
+          if argument_owner.is_a?(Class) && argument_owner < GraphQL::Schema::InputObject
+            argument_owner.new(ruby_kwargs: ruby_kwargs, context: context, defaults_used: defaults_used)
+          else
+            ruby_kwargs
+          end
+        else
+          argument_owner.arguments_class.new(values_hash, context: context, defaults_used: defaults_used)
+        end
       end
     end
   end

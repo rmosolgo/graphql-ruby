@@ -689,7 +689,7 @@ describe GraphQL::Schema::Warden do
           res = MaskHelpers.query_with_mask(query_string, mask)
           expected_errors =
             [
-              "Argument 'within' on Field 'languages' has an invalid value. Expected type 'WithinInput'.",
+              "Argument 'within' on Field 'languages' has an invalid value ({latitude: 1.0, longitude: 2.2, miles: 3.3}). Expected type 'WithinInput'.",
               "InputObject 'WithinInput' doesn't accept argument 'miles'"
             ]
           assert_equal expected_errors, error_messages(res)
@@ -703,7 +703,7 @@ describe GraphQL::Schema::Warden do
         languages(within: $nearby) { name }
       }|
       res = MaskHelpers.query_with_mask(query_string, mask, variables: { "latitude" => 1.0, "longitude" => 2.2, "miles" => 3.3})
-      expected_errors = ["Variable nearby of type WithinInput! was provided invalid value"]
+      expected_errors = ["Variable $nearby of type WithinInput! was provided invalid value"]
       assert_equal expected_errors, error_messages(res)
     end
   end
@@ -791,7 +791,7 @@ describe GraphQL::Schema::Warden do
       res = MaskHelpers.query_with_mask(query_string, mask)
       # It's not a good error message ... but it's something!
       expected_errors = [
-        "Argument 'manners' on Field 'phonemes' has an invalid value. Expected type '[Manner!]'.",
+        "Argument 'manners' on Field 'phonemes' has an invalid value ([STOP, TRILL]). Expected type '[Manner!]'.",
       ]
       assert_equal expected_errors, error_messages(res)
     end
@@ -814,7 +814,7 @@ describe GraphQL::Schema::Warden do
       res = MaskHelpers.query_with_mask(query_string, mask, variables: { "manners" => ["STOP", "TRILL"] })
       # It's not a good error message ... but it's something!
       expected_errors = [
-        "Variable manners of type [Manner!]! was provided invalid value for 1 (Expected \"TRILL\" to be one of: STOP, AFFRICATE, FRICATIVE, APPROXIMANT, VOWEL)",
+        "Variable $manners of type [Manner!]! was provided invalid value for 1 (Expected \"TRILL\" to be one of: STOP, AFFRICATE, FRICATIVE, APPROXIMANT, VOWEL)",
       ]
       assert_equal expected_errors, error_messages(res)
     end

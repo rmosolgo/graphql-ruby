@@ -534,7 +534,7 @@ describe GraphQL::Authorization do
       }
       GRAPHQL
 
-      assert_equal ["Argument 'enum' on Field 'landscapeFeature' has an invalid value. Expected type 'LandscapeFeature'."], hidden_res_1["errors"].map { |e| e["message"] }
+      assert_equal ["Argument 'enum' on Field 'landscapeFeature' has an invalid value (TAR_PIT). Expected type 'LandscapeFeature'."], hidden_res_1["errors"].map { |e| e["message"] }
 
       hidden_res_2 = auth_execute <<-GRAPHQL, context: { hide: true }
       {
@@ -542,7 +542,7 @@ describe GraphQL::Authorization do
       }
       GRAPHQL
 
-      assert_equal ["Argument 'enums' on Field 'landscapeFeatures' has an invalid value. Expected type '[LandscapeFeature!]'."], hidden_res_2["errors"].map { |e| e["message"] }
+      assert_equal ["Argument 'enums' on Field 'landscapeFeatures' has an invalid value ([STREAM, TAR_PIT]). Expected type '[LandscapeFeature!]'."], hidden_res_2["errors"].map { |e| e["message"] }
 
       success_res = auth_execute <<-GRAPHQL, context: { hide: false }
       {

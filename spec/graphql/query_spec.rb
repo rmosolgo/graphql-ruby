@@ -431,7 +431,7 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable $cheeseId of type Int! was provided invalid value",
               "locations"=>[{ "line" => 2, "column" => 23 }],
               "extensions" => {
                 "value" => "2",
@@ -451,7 +451,7 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable $cheeseId of type Int! was provided invalid value",
               "locations" => [{"line" => 2, "column" => 23}],
               "extensions" => {
                 "value" => nil,
@@ -471,7 +471,7 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable $cheeseId of type Int! was provided invalid value",
               "locations" => [{"line" => 2, "column" => 23}],
               "extensions" => {
                 "value" => nil,
