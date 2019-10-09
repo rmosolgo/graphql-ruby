@@ -71,11 +71,8 @@ module GraphQL
           GraphQL::TypeKinds::ENUM
         end
 
-        def validate_input(value_name, ctx)
+        def validate_non_null_input(value_name, ctx)
           result = GraphQL::Query::InputValidationResult.new
-          if value_name.nil?
-            return result
-          end
 
           allowed_values = ctx.warden.enum_values(self)
           matching_value = allowed_values.find { |v| v.graphql_name == value_name }
@@ -88,10 +85,6 @@ module GraphQL
         end
 
         def coerce_result(value, ctx)
-          if value.nil?
-            return nil
-          end
-
           warden = ctx.warden
           all_values = warden ? warden.enum_values(self) : values.each_value
           enum_value = all_values.find { |val| val.value == value }
@@ -102,7 +95,7 @@ module GraphQL
           end
         end
 
-        def coerce_input(value_name, ctx)
+        def coerce_non_null_input(value_name, ctx)
           all_values = ctx.warden ? ctx.warden.enum_values(self) : values.each_value
 
           if v = all_values.find { |val| val.graphql_name == value_name }

@@ -8,6 +8,22 @@ module GraphQL
           validate_input(val, ctx).valid?
         end
 
+        def validate_input(val, ctx)
+          if val.nil?
+            GraphQL::Query::InputValidationResult.new
+          else
+            validate_non_null_input(val, ctx)
+          end
+        end
+
+        def coerce_input(val, ctx)
+          if val.nil?
+            nil
+          else
+            coerce_non_null_input(val, ctx)
+          end
+        end
+
         def valid_isolated_input?(v)
           valid_input?(v, GraphQL::Query::NullContext)
         end

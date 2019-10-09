@@ -32,33 +32,21 @@ module GraphQL
       end
 
       def coerce_result(value, ctx)
-        if value.nil?
-          nil
-        else
-          value.map { |i| of_type.coerce_result(i, ctx) }
-        end
+        value.map { |i| i.nil? ? nil : of_type.coerce_result(i, ctx) }
       end
 
-      def coerce_input(value, ctx)
-        if value.nil?
-          nil
-        else
-          Array(value).map { |item| of_type.coerce_input(item, ctx) }
-        end
+      def coerce_non_null_input(value, ctx)
+        Array(value).map { |item| of_type.coerce_input(item, ctx) }
       end
 
-      def validate_input(value, ctx)
+      def validate_non_null_input(value, ctx)
         result = GraphQL::Query::InputValidationResult.new
-
-        if !value.nil?
-          Array(value).each_with_index do |item, index|
-            item_result = of_type.validate_input(item, ctx)
-            if !item_result.valid?
-              result.merge_result!(index, item_result)
-            end
+        Array(value).each_with_index do |item, index|
+          item_result = of_type.validate_input(item, ctx)
+          if !item_result.valid?
+            result.merge_result!(index, item_result)
           end
         end
-
         result
       end
     end

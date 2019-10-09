@@ -134,12 +134,9 @@ module GraphQL
         INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object responding to `to_h` or `to_unsafe_h`."
 
 
-        def validate_input(input, ctx)
+        def validate_non_null_input(input, ctx)
           result = GraphQL::Query::InputValidationResult.new
-          # This is fine -- non-null type would catch it.
-          if input.nil?
-            return result
-          end
+
           warden = ctx.warden
 
           if input.is_a?(Array)
@@ -183,11 +180,7 @@ module GraphQL
           result
         end
 
-        def coerce_input(value, ctx)
-          if value.nil?
-            return value
-          end
-
+        def coerce_non_null_input(value, ctx)
           input_values = {}
 
           arguments.each do |name, argument_defn|

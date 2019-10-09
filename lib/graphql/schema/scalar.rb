@@ -6,7 +6,7 @@ module GraphQL
       extend GraphQL::Schema::Member::ValidatesInput
 
       class << self
-        def coerce_input(val, ctx)
+        def coerce_non_null_input(val, ctx)
           val
         end
 
@@ -41,9 +41,9 @@ module GraphQL
           @default_scalar ||= false
         end
 
-        def validate_input(value, ctx)
+        def validate_non_null_input(value, ctx)
           result = Query::InputValidationResult.new
-          if !value.nil? && coerce_input(value, ctx).nil?
+          if coerce_input(value, ctx).nil?
             str_value = if value == Float::INFINITY
               ""
             else
