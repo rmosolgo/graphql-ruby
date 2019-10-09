@@ -243,7 +243,7 @@ type Query {
 
     it "builds from a file" do
       schema = GraphQL::Schema.from_definition("spec/support/magic_cards/schema.graphql")
-      assert_instance_of GraphQL::Schema, schema
+      assert_instance_of Class, schema
       expected_types =  ["Card", "Color", "Expansion", "Printing"]
       assert_equal expected_types, (expected_types & schema.types.keys)
     end

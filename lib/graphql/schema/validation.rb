@@ -121,7 +121,7 @@ module GraphQL
 
         TYPE_IS_VALID_INPUT_TYPE = ->(type) {
           outer_type = type.type
-          inner_type = outer_type.is_a?(GraphQL::BaseType) ? outer_type.unwrap : nil
+          inner_type = outer_type.respond_to?(:unwrap) ? outer_type.unwrap : nil
 
           case inner_type
           when GraphQL::ScalarType, GraphQL::InputObjectType, GraphQL::EnumType

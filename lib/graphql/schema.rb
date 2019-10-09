@@ -81,6 +81,7 @@ module GraphQL
   class Schema
     extend Forwardable
     extend GraphQL::Schema::Member::AcceptsDefinition
+    extend GraphQL::Schema::Member::HasAstNode
     include GraphQL::Define::InstanceDefinable
     extend GraphQL::Schema::FindInheritedValue
 
@@ -697,6 +698,12 @@ module GraphQL
       JSON.pretty_generate(as_json(*args))
     end
 
+    def new_connections?
+      !!connections
+    end
+
+    attr_accessor :connections
+
     class << self
       extend Forwardable
       # For compatibility, these methods all:
@@ -705,7 +712,7 @@ module GraphQL
       # Eventually, the methods will be moved into this class, removing the need for the singleton.
       def_delegators :graphql_definition,
         # Schema structure
-        :as_json, :to_json, :to_document, :to_definition, :ast_node,
+        :as_json, :to_json, :to_document, :to_definition,
         # Execution
         :execute, :multiplex,
         :static_validator, :introspection_system,
@@ -807,6 +814,9 @@ module GraphQL
 
         schema_defn
       end
+
+      # @return [GraphQL::Pagination::Connections] if installed
+      attr_accessor :connections
 
       def query(new_query_object = nil)
         if new_query_object

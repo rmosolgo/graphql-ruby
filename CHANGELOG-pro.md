@@ -8,6 +8,13 @@
 
 ### Bug Fix
 
+## 1.10.8 (8 Oct 2019)
+
+### Bug Fix
+
+- Continue authorizing input object arguments
+- Use millisecond-aware string format for datetimes in cursors
+
 ## 1.10.7 (22 Jul 2019)
 
 ### Bug Fix

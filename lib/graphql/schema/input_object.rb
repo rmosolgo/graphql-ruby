@@ -113,6 +113,7 @@ module GraphQL
           type_defn.description = description
           type_defn.metadata[:type_class] = self
           type_defn.mutation = mutation
+          type_defn.ast_node = ast_node
           arguments.each do |name, arg|
             type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition
           end

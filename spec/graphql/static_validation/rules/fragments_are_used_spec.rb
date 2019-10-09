@@ -31,16 +31,6 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
     })
   end
 
-  describe "queries that are comments" do
-    let(:query_string) {%|
-      # I am a comment.
-    |}
-    let(:result) { Dummy::Schema.execute(query_string) }
-    it "handles them gracefully" do
-      assert_equal({}, result)
-    end
-  end
-
   describe "invalid unused fragments" do
     let(:query_string) {"
       query getCheese {

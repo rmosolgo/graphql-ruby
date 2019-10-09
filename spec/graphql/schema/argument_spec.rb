@@ -157,7 +157,7 @@ describe GraphQL::Schema::Argument do
   describe "default_value:" do
     it 'uses default_value: with no input' do
       query_str = <<-GRAPHQL
-      { field() }
+      { field }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)

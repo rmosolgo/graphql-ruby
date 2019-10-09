@@ -31,12 +31,17 @@ module GraphQL
           end
         end
 
+        def default_directive?
+          default_directive
+        end
+
         def to_graphql
           defn = GraphQL::Directive.new
           defn.name = self.graphql_name
           defn.description = self.description
           defn.locations = self.locations
           defn.default_directive = self.default_directive
+          defn.ast_node = ast_node
           defn.metadata[:type_class] = self
           arguments.each do |name, arg_defn|
             arg_graphql = arg_defn.to_graphql

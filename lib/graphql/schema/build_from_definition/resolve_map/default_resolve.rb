@@ -20,7 +20,7 @@ module GraphQL
           def call(obj, args, ctx)
             method_name = @field_name
             if !obj.respond_to?(method_name)
-              raise KeyError, "Can't resolve field #{method_name} on #{obj}"
+              raise KeyError, "Can't resolve field #{method_name} on #{obj.inspect}"
             else
               method_arity = obj.method(method_name).arity
               resolver = case method_arity

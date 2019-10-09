@@ -31,7 +31,7 @@ describe GraphQL::Query do
   |}
   let(:operation_name) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
-  let(:schema) { Dummy::Schema }
+  let(:schema) { Dummy::Schema.graphql_definition }
   let(:document) { GraphQL.parse(query_string) }
 
   let(:query) { GraphQL::Query.new(
@@ -423,14 +423,6 @@ describe GraphQL::Query do
         cheese(id: $cheeseId) { flavor }
       }
     |}
-
-    describe "when they can be coerced" do
-      let(:query_variables) { {"cheeseId" => 2.0} }
-
-      it "coerces them on the way in" do
-        assert("Gouda", result["data"]["cheese"]["flavor"])
-      end
-    end
 
     describe "when they can't be coerced" do
       let(:query_variables) { {"cheeseId" => "2"} }

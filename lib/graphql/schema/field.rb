@@ -13,6 +13,7 @@ module GraphQL
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasArguments
+      include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
@@ -36,7 +37,7 @@ module GraphQL
       # @return [Class] The type that this field belongs to
       attr_reader :owner
 
-      # @return [Symobol] the original name of the field, passed in by the user
+      # @return [Symbol] the original name of the field, passed in by the user
       attr_reader :original_name
 
       # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one
@@ -135,6 +136,11 @@ module GraphQL
         end
       end
 
+      # @return [Boolean] Should we warn if this field's name conflicts with a built-in method?
+      def method_conflict_warning?
+        @method_conflict_warning
+      end
+
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param type [Class, GraphQL::BaseType, Array] The return type of this field
       # @param owner [Class] The type that this field belongs to
@@ -158,7 +164,9 @@ module GraphQL
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       # @param extensions [Array<Class, Hash<Class => Object>>] Named extensions to apply to this field (see also {#extension})
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &definition_block)
+      # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
+      # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, arguments: {}, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -219,6 +227,8 @@ module GraphQL
         @trace = trace
         @relay_node_field = relay_node_field
         @relay_nodes_field = relay_nodes_field
+        @ast_node = ast_node
+        @method_conflict_warning = method_conflict_warning
 
         # Override the default from HasArguments
         @own_arguments = {}
@@ -399,6 +409,7 @@ module GraphQL
         field_defn.introspection = @introspection
         field_defn.complexity = @complexity
         field_defn.subscription_scope = @subscription_scope
+        field_defn.ast_node = ast_node
 
         arguments.each do |name, defn|
           arg_graphql = defn.to_graphql
@@ -422,8 +433,11 @@ module GraphQL
 
       def type
         @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
-      rescue
-        raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: #{$!.message}", $!.backtrace
+      rescue GraphQL::Schema::InvalidDocumentError => err
+        # Let this propagate up
+        raise err
+      rescue StandardError => err
+        raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: (#{err.class}) #{err.message}", err.backtrace
       end
 
       def visible?(context)
@@ -583,7 +597,7 @@ module GraphQL
 
       # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
       def fetch_extra(extra_name, ctx)
-        if extra_name != :path && respond_to?(extra_name)
+        if extra_name != :path && extra_name != :ast_node && respond_to?(extra_name)
           self.public_send(extra_name)
         elsif ctx.respond_to?(extra_name)
           ctx.public_send(extra_name)

@@ -138,14 +138,14 @@ module GraphQL
             # But if this argument was "just" a plain argument, like
             # a boolean, then authorize it based on the mutation.
             authorization_value = if loads_type
-              value
+              arg_value
             else
               self
             end
 
-            arg_auth, err = argument.authorized?(authorization_value, arg_value, context)
+            arg_auth, err = argument.authorized?(self, arg_value, context)
             if !arg_auth
-              return arg_auth, err
+              return unauthorized_argument(err)
             else
               true
             end
@@ -156,6 +156,10 @@ module GraphQL
       end
 
       private
+
+      def unauthorized_argument(err)
+        return [false, err]
+      end
 
       def load_arguments(args)
         prepared_args = {}

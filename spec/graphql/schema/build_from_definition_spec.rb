@@ -1174,7 +1174,7 @@ SCHEMA
         schema = GraphQL::Schema.from_definition(schema_defn, default_resolve: AppResolver.new)
         schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"})
         result = schema.execute("query { allTodos: all_todos { text, from_context } }")
-        assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
+        assert_equal('{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}', result.to_json)
       end
     end
 

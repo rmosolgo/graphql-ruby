@@ -5,6 +5,7 @@ module GraphQL
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
+      include GraphQL::Schema::Member::HasAstNode
 
       NO_DEFAULT = :__no_default__
 
@@ -93,22 +94,31 @@ module GraphQL
         true
       end
 
-      def authorized?(obj, value, ctx)
-        arg_type = type.unwrap
-        if arg_type.kind.input_object?
+      def authorized?(obj, value, ctx, as_type: type)
+        if as_type.kind.non_null?
+          as_type = as_type.unwrap
+        end
+
+        if as_type.kind.list?
+          value.each do |v|
+            if !authorized?(obj, v, ctx, as_type: as_type)
+              return false
+            end
+          end
+        elsif as_type.kind.input_object?
           arg_type.arguments.each do |_name, input_obj_arg|
             if value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
               return false
             end
           end
-          true
-        else
-          true
         end
+        # None of the early-return conditions were activated,
+        # so this is authorized.
+        true
       end
 
       def self.method_added(method_name)
-        if method_name == :authorized && instance_method(:authorized).arity == 2
+        if method_name == :authorized? && instance_method(:authorized?).arity == 2
           raise ArgumentError, "`authorized?` is now called with three values, `def authorized?(parent_object, arg_value, ctx)`. Please update your method definition!"
         end
         super
@@ -121,6 +131,7 @@ module GraphQL
         argument.description = @description
         argument.metadata[:type_class] = self
         argument.as = @as
+        argument.ast_node = ast_node
         argument.method_access = @method_access
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value

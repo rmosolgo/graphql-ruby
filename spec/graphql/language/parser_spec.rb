@@ -4,6 +4,14 @@ require "spec_helper"
 describe GraphQL::Language::Parser do
   subject { GraphQL::Language::Parser }
 
+  describe "when there are no selections" do
+    it 'raises a ParseError' do
+      assert_raises(GraphQL::ParseError) {
+        GraphQL.parse('# comment')
+      }
+    end
+  end
+
   describe "anonymous fragment extension" do
     let(:document) { GraphQL.parse(query_string) }
     let(:query_string) {%|
@@ -109,10 +117,9 @@ describe GraphQL::Language::Parser do
     end
   end
 
-  it "parses empty arguments" do
+  it "parses query without arguments" do
     strings = [
-      "{ field { inner } }",
-      "{ field() { inner }}",
+      "{ field { inner } }"
     ]
     strings.each do |query_str|
       doc = subject.parse(query_str)
@@ -157,6 +164,24 @@ describe GraphQL::Language::Parser do
     it "raises parse errors for nil" do
       assert_raises(GraphQL::ParseError) {
         GraphQL.parse(nil)
+      }
+    end
+
+    it 'raises parse errors for empty argument sets' do
+      # Regression spec from https://github.com/rmosolgo/graphql-ruby/pull/2344
+      query_with_empty_arguments = '{ node() { id } }'
+
+      assert_raises(GraphQL::ParseError) {
+        subject.parse(query_with_empty_arguments)
+      }
+    end
+
+    it 'raises parse errors for argument sets without value' do
+      # Regression spec from https://github.com/rmosolgo/graphql-ruby/pull/2344
+      query_with_malformed_argument_value = '{ node(id:) { name } }'
+
+      assert_raises(GraphQL::ParseError) {
+        subject.parse(query_with_malformed_argument_value)
       }
     end
   end
