@@ -8,6 +8,27 @@
 
 ### Bug fixes
 
+## 1.9.13 (8 Oct 2019)
+
+### Breaking changes
+
+- Enum values were (erroneously) accepted as ID or String values, but they aren't anymore. #2505
+
+### New features
+
+- Add `Query#executed?` #2486
+- Add `Types::ISO8601Date` #2471
+
+### Bug fixes
+
+- Don't accept Enums as IDs or Strings #2505
+- Call `.authorized?` hooks on arguments that belong to input objects #2519
+- Fix backslash parsing edge case #2510
+- Improve performance #2504 #2498
+- Properly stringify keys in error extensions #2508
+- Fix `extras:` handling in RelayClassicMutation #2484
+- Use `Types::BaseField` in scaffold #2470
+
 ## 1.9.12 (9 Sept 2019)
 
 ### Breaking Changes
