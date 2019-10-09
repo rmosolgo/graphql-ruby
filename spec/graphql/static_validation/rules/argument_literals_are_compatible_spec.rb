@@ -282,7 +282,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
           without_error_bubbling(schema) do
             assert_equal 1, errors.length
             refute_includes errors, {
-              "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
+              "message"=>"Argument 'arg' on Field 'field' has an invalid value ({a: null, b: null}). Expected type 'Input'.",
               "locations"=>[{"line"=>3, "column"=>11}],
               "path"=>["query", "field", "arg"],
               "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"arg"}
