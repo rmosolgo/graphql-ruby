@@ -27,16 +27,16 @@ The types are `GraphQL::Schema::Object` classes, for example:
 ```ruby
 # app/graphql/types/query_type.rb
 class Types::QueryType < GraphQL::Schema::Object
-  # ...
+  field :all_posts, [PostType], 'Returns all blog posts', null: false
 end
 
 # Similarly:
 class Types::MutationType < GraphQL::Schema::Object
-  # ...
+  field :create_post, mutation: Mutations::AddPost
 end
 # and
 class Types::SubscriptionType < GraphQL::Schema::Object
-  # ...
+  field :comment_added, subscription: Subscriptions::CommentAdded
 end
 ```
 
