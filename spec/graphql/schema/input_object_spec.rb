@@ -170,19 +170,39 @@ describe GraphQL::Schema::InputObject do
 
   describe "loading application object(s)" do
     module InputObjectLoadsTest
+      class BaseArgument < GraphQL::Schema::Argument
+        def authorized?(obj, val, ctx)
+          if contains_spinal_tap?(val)
+            false
+          else
+            true
+          end
+        end
+
+        def contains_spinal_tap?(val)
+          if val.is_a?(Array)
+            val.any? { |v| contains_spinal_tap?(v) }
+          else
+            val.is_a?(Jazz::Models::Ensemble) && val.name == "Spinal Tap"
+          end
+        end
+      end
+
       class SingleLoadInputObj < GraphQL::Schema::InputObject
+        argument_class BaseArgument
         argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
       end
 
       class MultiLoadInputObj < GraphQL::Schema::InputObject
+        argument_class BaseArgument
         argument :instrument_ids, [ID], required: true, loads: Jazz::InstrumentType
       end
 
       class Query < GraphQL::Schema::Object
-        field :single_load_input, Jazz::InstrumentType, null: false do
+        field :single_load_input, Jazz::InstrumentType, null: true do
           argument :input, SingleLoadInputObj, required: true
         end
-        field :multi_load_input, [Jazz::InstrumentType], null: false do
+        field :multi_load_input, [Jazz::InstrumentType], null: true do
           argument :input, MultiLoadInputObj, required: true
         end
 
@@ -239,6 +259,14 @@ describe GraphQL::Schema::InputObject do
     it "loads arguments as objects of the given type and strips `_ids` suffix off argument name and appends `s`" do
       res = InputObjectLoadsTest::Schema.execute(multi_query_str, variables: { ids: ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"]})
       assert_equal ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"], res["data"]["multiLoadInput"].map { |e| e["id"] }
+    end
+
+    it "authorizes based on loaded objects" do
+      res = InputObjectLoadsTest::Schema.execute(single_query_str, variables: { id: "Ensemble/Spinal Tap" })
+      assert_nil res["data"]["singleLoadInput"]
+
+      res2 = InputObjectLoadsTest::Schema.execute(multi_query_str, variables: { ids: ["Ensemble/Robert Glasper Experiment", "Ensemble/Spinal Tap"]})
+      assert_nil res2["data"]["multiLoadInput"]
     end
   end
 
