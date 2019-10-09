@@ -94,20 +94,28 @@ module GraphQL
         true
       end
 
-      def authorized?(obj, value, ctx, as_type: type)
+      def authorized?(obj, value, ctx)
+        authorized_as_type?(obj, value, ctx, as_type: type)
+      end
+
+      def authorized_as_type?(obj, value, ctx, as_type:)
+        if value.nil?
+          return true
+        end
+
         if as_type.kind.non_null?
-          as_type = as_type.unwrap
+          as_type = as_type.of_type
         end
 
         if as_type.kind.list?
           value.each do |v|
-            if !authorized?(obj, v, ctx, as_type: as_type)
+            if !authorized_as_type?(obj, v, ctx, as_type: as_type.of_type)
               return false
             end
           end
         elsif as_type.kind.input_object?
-          arg_type.arguments.each do |_name, input_obj_arg|
-            if value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
+          as_type.arguments.each do |_name, input_obj_arg|
+            if value.key?(input_obj_arg.keyword) &&  !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
               return false
             end
           end
@@ -117,6 +125,7 @@ module GraphQL
         true
       end
 
+      # TODO test this and add a similar hook to Field
       def self.method_added(method_name)
         if method_name == :authorized? && instance_method(:authorized?).arity == 2
           raise ArgumentError, "`authorized?` is now called with three values, `def authorized?(parent_object, arg_value, ctx)`. Please update your method definition!"
