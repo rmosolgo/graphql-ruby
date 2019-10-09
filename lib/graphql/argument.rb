@@ -113,6 +113,10 @@ module GraphQL
       @prepare_proc = BackwardsCompatibility.wrap_arity(prepare_proc, from: 1, to: 2, name: "Argument#prepare(value, ctx)")
     end
 
+    def type_class
+      metadata[:type_class]
+    end
+
     NO_DEFAULT_VALUE = Object.new
     # @api private
     def self.from_dsl(name, type_or_argument = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, prepare: DefaultPrepare, **kwargs, &block)

@@ -98,6 +98,10 @@ module GraphQL
         arg_type = type.unwrap
         if arg_type.kind.input_object? && arg_type != @owner
           arg_type.arguments.each do |_name, input_obj_arg|
+            if input_obj_arg.is_a?(GraphQL::Argument)
+              input_obj_arg = input_obj_arg.type_class
+            end
+
             if !input_obj_arg.authorized?(obj, ctx)
               return false
             end
