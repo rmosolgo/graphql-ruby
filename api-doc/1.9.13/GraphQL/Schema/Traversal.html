@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Schema::Traversal
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Schema::Traversal";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (T)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span>
+     &raquo; 
+    <span class="title">Traversal</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Schema::Traversal
+  
+  
+  <span class="private note title">Private</span>
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Schema::Traversal</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/traversal.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This class is part of a private API.</strong>
+  You should avoid using this class if possible, as it may be removed or be changed in the future.
+</p>
+<p>Visit the members of this schema and build up artifacts for runtime.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#instrumented_field_map-instance_method" title="#instrumented_field_map (instance method)">#<strong>instrumented_field_map</strong>  &#x21d2; Hash&lt;String =&gt; Hash&lt;String =&gt; GraphQL::Field&gt;&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#type_map-instance_method" title="#type_map (instance method)">#<strong>type_map</strong>  &#x21d2; Hash&lt;String =&gt; GraphQL::BaseType] </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Hash&lt;String =&gt; GraphQL::BaseType].</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#type_reference_map-instance_method" title="#type_reference_map (instance method)">#<strong>type_reference_map</strong>  &#x21d2; Hash&lt;String =&gt; Array&lt;GraphQL::Field || GraphQL::Argument || GraphQL::Directive&gt;] </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><table>
+  <tbody>
+    <tr>
+      <td>Hash&lt;String =&gt; Array&lt;GraphQL::Field</td>
+      <td> </td>
+      <td>GraphQL::Argument</td>
+      <td> </td>
+      <td>GraphQL::Directive&gt;].</td>
+    </tr>
+  </tbody>
+</table>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#union_memberships-instance_method" title="#union_memberships (instance method)">#<strong>union_memberships</strong>  &#x21d2; Hash&lt;String =&gt; Array&lt;GraphQL::BaseType&gt;] </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Hash&lt;String =&gt; Array&lt;GraphQL::BaseType&gt;].</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(schema, introspection: true)  &#x21d2; Traversal </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Traversal.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(schema, introspection: true)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Schema::Traversal (class)">Traversal</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns a new instance of Traversal</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>schema</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">GraphQL::Schema</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/traversal.rb', line 21</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='comma'>,</span> <span class='label'>introspection:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='ivar'>@schema</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span>
+  <span class='ivar'>@introspection</span> <span class='op'>=</span> <span class='id identifier rubyid_introspection'>introspection</span>
+  <span class='id identifier rubyid_built_in_insts'>built_in_insts</span> <span class='op'>=</span> <span class='lbracket'>[</span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay.html" title="GraphQL::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay/ConnectionInstrumentation.html" title="GraphQL::Relay::ConnectionInstrumentation (module)">ConnectionInstrumentation</a></span></span><span class='comma'>,</span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay.html" title="GraphQL::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay/EdgesInstrumentation.html" title="GraphQL::Relay::EdgesInstrumentation (module)">EdgesInstrumentation</a></span></span><span class='comma'>,</span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay.html" title="GraphQL::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay/Mutation.html" title="GraphQL::Relay::Mutation (class)">Mutation</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay/Mutation/Instrumentation.html" title="GraphQL::Relay::Mutation::Instrumentation (module)">Instrumentation</a></span></span><span class='comma'>,</span>
+  <span class='rbracket'>]</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_query_execution_strategy'>query_execution_strategy</span> <span class='op'>!=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Execution.html" title="GraphQL::Execution (module)">Execution</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Execution/Interpreter.html" title="GraphQL::Execution::Interpreter (class)">Interpreter</a></span></span>
+    <span class='id identifier rubyid_built_in_insts'>built_in_insts</span> <span class='op'>&lt;&lt;</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Member/Instrumentation.html" title="GraphQL::Schema::Member::Instrumentation (module)">Instrumentation</a></span></span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@field_instrumenters</span> <span class='op'>=</span>
+    <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_instrumenters'>instrumenters</span><span class='lbracket'>[</span><span class='symbol'>:field</span><span class='rbracket'>]</span> <span class='op'>+</span>
+      <span class='id identifier rubyid_built_in_insts'>built_in_insts</span> <span class='op'>+</span>
+      <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_instrumenters'>instrumenters</span><span class='lbracket'>[</span><span class='symbol'>:field_after_built_ins</span><span class='rbracket'>]</span>
+
+  <span class='comment'># These fields have types specified by _name_,
+</span>  <span class='comment'># So we need to inspect the schema and find those types,
+</span>  <span class='comment'># then update their references.
+</span>  <span class='ivar'>@late_bound_fields</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@type_map</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@instrumented_field_map</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span> <span class='rbrace'>}</span>
+  <span class='ivar'>@type_reference_map</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+  <span class='ivar'>@union_memberships</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_visit'>visit</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='comma'>,</span> <span class='id identifier rubyid_schema'>schema</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_resolve_late_bound_fields'>resolve_late_bound_fields</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="instrumented_field_map-instance_method">
+  
+    #<strong>instrumented_field_map</strong>  &#x21d2; <tt>Hash&lt;String =&gt; Hash&lt;String =&gt; <span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">GraphQL::Field</a></span>&gt;&gt;</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash&lt;String =&gt; Hash&lt;String =&gt; <span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">GraphQL::Field</a></span>&gt;&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+11
+12
+13</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/traversal.rb', line 11</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_instrumented_field_map'>instrumented_field_map</span>
+  <span class='ivar'>@instrumented_field_map</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="type_map-instance_method">
+  
+    #<strong>type_map</strong>  &#x21d2; <tt>Hash&lt;String =&gt; <span class='object_link'><a href="../BaseType.html" title="GraphQL::BaseType (class)">GraphQL::BaseType</a></span>]</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Hash&lt;String =&gt; GraphQL::BaseType]</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash&lt;String =&gt; <span class='object_link'><a href="../BaseType.html" title="GraphQL::BaseType (class)">GraphQL::BaseType</a></span>]</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Hash&lt;String =&gt; GraphQL::BaseType]</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+8
+9
+10</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/traversal.rb', line 8</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_type_map'>type_map</span>
+  <span class='ivar'>@type_map</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="type_reference_map-instance_method">
+  
+    #<strong>type_reference_map</strong>  &#x21d2; <tt>Hash&lt;String =&gt; Array&lt;<span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">GraphQL::Field</a></span> || <span class='object_link'><a href="../Argument.html" title="GraphQL::Argument (class)">GraphQL::Argument</a></span> || <span class='object_link'><a href="../Directive.html" title="GraphQL::Directive (class)">GraphQL::Directive</a></span>&gt;]</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<table>
+  <tbody>
+    <tr>
+      <td>Returns Hash&lt;String =&gt; Array&lt;GraphQL::Field</td>
+      <td> </td>
+      <td>GraphQL::Argument</td>
+      <td> </td>
+      <td>GraphQL::Directive&gt;]</td>
+    </tr>
+  </tbody>
+</table>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash&lt;String =&gt; Array&lt;<span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">GraphQL::Field</a></span> || <span class='object_link'><a href="../Argument.html" title="GraphQL::Argument (class)">GraphQL::Argument</a></span> || <span class='object_link'><a href="../Directive.html" title="GraphQL::Directive (class)">GraphQL::Directive</a></span>&gt;]</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><table>
+  <tbody>
+    <tr>
+      <td>Hash&lt;String =&gt; Array&lt;GraphQL::Field</td>
+      <td> </td>
+      <td>GraphQL::Argument</td>
+      <td> </td>
+      <td>GraphQL::Directive&gt;]</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+14
+15
+16</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/traversal.rb', line 14</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_type_reference_map'>type_reference_map</span>
+  <span class='ivar'>@type_reference_map</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="union_memberships-instance_method">
+  
+    #<strong>union_memberships</strong>  &#x21d2; <tt>Hash&lt;String =&gt; Array&lt;<span class='object_link'><a href="../BaseType.html" title="GraphQL::BaseType (class)">GraphQL::BaseType</a></span>&gt;]</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Hash&lt;String =&gt; Array&lt;GraphQL::BaseType&gt;]</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash&lt;String =&gt; Array&lt;<span class='object_link'><a href="../BaseType.html" title="GraphQL::BaseType (class)">GraphQL::BaseType</a></span>&gt;]</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Hash&lt;String =&gt; Array&lt;GraphQL::BaseType&gt;]</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+17
+18
+19</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/traversal.rb', line 17</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_union_memberships'>union_memberships</span>
+  <span class='ivar'>@union_memberships</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Oct  8 20:51:29 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.19 (ruby-2.6.2).
+</div>
+
+    </div>
+  </body>
+</html>

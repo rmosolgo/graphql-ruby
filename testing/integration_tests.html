@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.12/">API</a>
+          <a href="/api-doc/1.9.13/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -156,7 +156,7 @@
   <span class="n">user</span> <span class="o">=</span> <span class="n">create</span><span class="p">(</span><span class="ss">:user</span><span class="p">)</span>
   <span class="n">post</span> <span class="n">graphql_path</span><span class="p">,</span>
     <span class="ss">params: </span><span class="p">{</span> <span class="ss">query: </span><span class="n">query_string</span> <span class="p">},</span>
-    <span class="ss">headers: </span><span class="p">{</span> <span class="s2">"Authentication"</span> <span class="o">=&gt;</span> <span class="s2">"Bearer </span><span class="si">#{</span><span class="n">user</span><span class="p">.</span><span class="nf">auth_token</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+    <span class="ss">headers: </span><span class="p">{</span> <span class="s2">"Authorization"</span> <span class="o">=&gt;</span> <span class="s2">"Bearer </span><span class="si">#{</span><span class="n">user</span><span class="p">.</span><span class="nf">auth_token</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
 
   <span class="n">json_response</span> <span class="o">=</span> <span class="no">JSON</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="vi">@response</span><span class="p">.</span><span class="nf">body</span><span class="p">)</span>
   <span class="n">assert_equal</span> <span class="n">user</span><span class="p">.</span><span class="nf">username</span><span class="p">,</span> <span class="n">json_response</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"viewer"</span><span class="p">],</span> <span class="s2">"Authenticated requests load the viewer"</span>
