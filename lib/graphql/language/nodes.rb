@@ -505,7 +505,7 @@ module GraphQL
         })
 
         # @!attribute variables
-        #   @return [Array<VariableDefinition>] Variable definitions for this operation
+        #   @return [Array<VariableDefinition>] Variable $definitions for this operation
 
         # @!attribute selections
         #   @return [Array<Field>] Root-level fields on this operation
