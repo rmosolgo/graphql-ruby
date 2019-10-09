@@ -117,8 +117,6 @@ module GraphQL
         value.to_h
       elsif value.is_a?(Array)
         value.map { |element| raw_coercion_input(element) }
-      elsif value.is_a?(GraphQL::Language::Nodes::Enum)
-        value.name
       else
         value
       end
@@ -126,7 +124,7 @@ module GraphQL
 
     def validate_non_null_input(value, ctx)
       result = Query::InputValidationResult.new
-      if coerce_non_null_input(value, ctx).nil?
+      if value.is_a?(GraphQL::Language::Nodes::Enum) || coerce_non_null_input(value, ctx).nil?
         result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{name}")
       end
       result

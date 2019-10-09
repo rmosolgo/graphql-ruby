@@ -419,7 +419,7 @@ module Dummy
 
     field :execution_error_with_extensions, Integer, null: true
     def execution_error_with_extensions
-      GraphQL::ExecutionError.new("Permission Denied!", extensions: { "code" => "permission_denied" })
+      GraphQL::ExecutionError.new("Permission Denied!", extensions: { code: "permission_denied" })
     end
 
     # To test possibly-null fields

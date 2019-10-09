@@ -22,10 +22,20 @@ describe GraphQL::ID_TYPE do
     end
   end
 
-  describe "coercion for other types" do
+  describe "coercion for float" do
     let(:query_string) { %|query getMilk { cow: milk(id: 1.0) { id } }| }
 
-    it "doesn't allow other types" do
+    it "results in an error" do
+      assert_nil result["data"]
+
+      assert_equal 1, result["errors"].length
+    end
+  end
+
+  describe "coercion for enum values" do
+    let(:query_string) { %|query getMilk { milk(id: dairy_rocks) { id } }|}
+
+    it "results in an error" do
       assert_nil result["data"]
       assert_equal 1, result["errors"].length
     end

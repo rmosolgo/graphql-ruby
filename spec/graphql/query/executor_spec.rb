@@ -197,11 +197,11 @@ describe GraphQL::Query::Executor do
         expected = {
             "data" => {"error" => nil},
             "errors"=>[
-                {
-                    "message"=>"Error was handled!",
-                    "locations" => [{"line"=>1, "column"=>17}],
-                    "path"=>["error"]
-                }
+              {
+                "message"=>"Error was handled!",
+                "locations" => [{"line"=>1, "column"=>17}],
+                "path"=>["error"],
+              }
             ]
         }
         assert_equal(expected, result)
@@ -223,7 +223,7 @@ describe GraphQL::Query::Executor do
               "message"=>"Error was handled!",
               "locations" => [{"line"=>1, "column"=>17}],
               "path"=>["error"],
-              "extensions"=>{code: "DUMMY_ERROR"}
+              "extensions"=>{ "code" => "DUMMY_ERROR"}
             }
           ]
         }

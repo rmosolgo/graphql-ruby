@@ -48,8 +48,9 @@ module GraphQL
         hash.merge!(options)
       end
       if extensions
-        hash["extensions"] ||= {}
-        hash["extensions"].merge!(extensions)
+        hash["extensions"] = extensions.each_with_object({}) { |(key, value), ext|
+          ext[key.to_s] = value
+        }
       end
       hash
     end
