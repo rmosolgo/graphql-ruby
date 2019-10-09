@@ -85,7 +85,7 @@ module GraphQL
       def resolve_late_binding(late_bound_type)
         case late_bound_type
         when GraphQL::Schema::LateBoundType
-          @schema.find_type(late_bound_type.name)
+          @schema.get_type(late_bound_type.name)
         when GraphQL::Schema::List, GraphQL::ListType
           resolve_late_binding(late_bound_type.of_type).to_list_type
         when GraphQL::Schema::NonNull, GraphQL::NonNullType

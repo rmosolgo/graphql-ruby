@@ -85,7 +85,7 @@ module GraphQL
               end
             when GraphQL::Language::Nodes::InlineFragment
               if node.type
-                type_defn = schema.find_type(node.type.name)
+                type_defn = schema.get_type(node.type.name)
                 # Faster than .map{}.include?()
                 query.warden.possible_types(type_defn).each do |t|
                   if t == owner_type
@@ -99,7 +99,7 @@ module GraphQL
               end
             when GraphQL::Language::Nodes::FragmentSpread
               fragment_def = query.fragments[node.name]
-              type_defn = schema.find_type(fragment_def.type.name)
+              type_defn = schema.get_type(fragment_def.type.name)
               query.warden.possible_types(type_defn).each do |t|
                 if t == owner_type
                   gather_selections(owner_object, owner_type, fragment_def.selections, selections_by_name)

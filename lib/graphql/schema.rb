@@ -337,7 +337,7 @@ module GraphQL
     end
 
     # TODO rename to `get_type` like `get_field`
-    def find_type(type_name)
+    def get_type(type_name)
       @types[type_name]
     end
 
@@ -907,14 +907,14 @@ module GraphQL
 
       # Build a map of `{ name => type }` and return it
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
-      # @see find_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
+      # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
       def types
         non_introspection_types.merge(introspection_system.types)
       end
 
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
-      def find_type(type_name)
+      def get_type(type_name)
         own_types[type_name] ||
           introspection_system.types[type_name] ||
           find_inherited_value(:types, EMPTY_HASH)[type_name]
@@ -1045,9 +1045,9 @@ module GraphQL
       def get_field(type_or_name, field_name)
         parent_type = case type_or_name
         when LateBoundType
-          find_type(type_or_name.name)
+          get_type(type_or_name.name)
         when String
-          find_type(type_or_name)
+          get_type(type_or_name)
         when Module
           type_or_name
         else
@@ -1600,7 +1600,7 @@ module GraphQL
             update_type_owner(type_owner, type)
             add_type(type, owner: type_owner, late_types: late_types)
           elsif lt.is_a?(LateBoundType)
-            if (type = find_type(lt.graphql_name))
+            if (type = get_type(lt.graphql_name))
               # Reset the counter, since we might succeed next go-round
               missed_late_types = 0
               update_type_owner(type_owner, type)
@@ -1699,7 +1699,7 @@ module GraphQL
           um << owner
         end
 
-        if (prev_type = find_type(type.graphql_name))
+        if (prev_type = get_type(type.graphql_name))
           if prev_type != type
             raise ArgumentError, "Conflicting type definitions for `#{type.graphql_name}`: #{prev_type} (#{prev_type.class}), #{type} #{type.class}"
           else
