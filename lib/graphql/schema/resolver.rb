@@ -133,7 +133,7 @@ module GraphQL
           if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
             arg_auth, err = argument.authorized?(self, arg_value, context)
             if !arg_auth
-              return unauthorized_argument(err)
+              return arg_auth, err
             else
               true
             end
@@ -144,10 +144,6 @@ module GraphQL
       end
 
       private
-
-      def unauthorized_argument(err)
-        return [false, err]
-      end
 
       def load_arguments(args)
         prepared_args = {}
