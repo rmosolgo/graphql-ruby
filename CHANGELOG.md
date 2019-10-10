@@ -8,6 +8,30 @@
 
 ### Bug fixes
 
+## 1.10.0.pre1 (10 Oct 2019)
+
+### Breaking changes
+
+- Field and Argument `#authorized?` methods now accept _three_ arguments (instead of 2). They now accept `(obj, args, ctx)`, where `args` is the arguments (for a field) or the argument value (for an argument). #2536
+- Double-null `!!` is disallowed by the parser #2397
+- (Non-interpreter only) The return value of subscription fields is passed along to execute the subscription. Return `nil` to get the previous behavior. #2536
+- `Schema.from_definition` builds a _class-based schema_ from the definition string #2178
+- Only integers are accepted for `Int` type #2404
+
+### New features
+
+- Input object arguments with `loads:` get the loaded object in their `authorized?` hook, as `arg` in `authorized?(obj, args, ctx)`. #2536
+- `GraphQL::Pagination` auto-pagination system #2143
+- `Schema.from_definition` builds a _class-based schema_ from the definition string #2178
+
+### Bug fixes
+
+- Return parse errors for empty documents and empty argument lists #2344
+- Properly serialize `defaultValue` of input objects containing enum values #2439
+- Don't crash when a query contains `!!`. #2397
+- Resolver `loads:` assign the value to argument `@loads` #2364
+- Only integers are accepted for `Int` type #2404
+
 ## 1.9.13 (8 Oct 2019)
 
 ### Breaking changes
