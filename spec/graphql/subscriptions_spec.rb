@@ -185,9 +185,9 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
 
   Resolvers = {
     "Subscription" => {
-      "payload" => ->(o,a,c) { o },
-      "myEvent" => ->(o,a,c) { o },
-      "event" => ->(o,a,c) { o },
+      "payload" => ->(o,a,c) { nil },
+      "myEvent" => ->(o,a,c) { nil },
+      "event" => ->(o,a,c) { nil },
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
   }
