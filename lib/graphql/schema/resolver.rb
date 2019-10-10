@@ -130,20 +130,8 @@ module GraphQL
       def authorized?(**inputs)
         self.class.arguments.each_value do |argument|
           arg_keyword = argument.keyword
-          if inputs.key?(arg_keyword) && !(value = inputs[arg_keyword]).nil? && (value != argument.default_value)
-            loads_type = @arguments_loads_as_type[arg_keyword]
-            # If this argument resulted in an object being loaded,
-            # then authorize this loaded object with its own policy.
-            #
-            # But if this argument was "just" a plain argument, like
-            # a boolean, then authorize it based on the mutation.
-            authorization_value = if loads_type
-              value
-            else
-              self
-            end
-
-            arg_auth, err = argument.authorized?(authorization_value, context)
+          if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
+            arg_auth, err = argument.authorized?(self, arg_value, context)
             if !arg_auth
               return arg_auth, err
             else

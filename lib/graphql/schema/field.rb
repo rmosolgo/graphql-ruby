@@ -456,14 +456,14 @@ module GraphQL
         end
       end
 
-      def authorized?(object, context)
+      def authorized?(object, args, context)
         if @resolver_class
           # The resolver will check itself during `resolve()`
           @resolver_class.authorized?(object, context)
         else
           # Faster than `.any?`
           arguments.each_value do |arg|
-            if !arg.authorized?(object, context)
+            if args.key?(arg.keyword) && !arg.authorized?(object, args[arg.keyword], context)
               return false
             end
           end
@@ -482,21 +482,22 @@ module GraphQL
           # Some legacy fields can have `nil` here, not exactly sure why.
           # @see https://github.com/rmosolgo/graphql-ruby/issues/1990 before removing
           inner_obj = after_obj && after_obj.object
-          if authorized?(inner_obj, query_ctx)
-            ruby_args = to_ruby_args(after_obj, args, ctx)
-            # Then if it passed, resolve the field
-            if @resolve_proc
-              # Might be nil, still want to call the func in that case
-              with_extensions(inner_obj, ruby_args, query_ctx) do |extended_obj, extended_args|
-                # Pass the GraphQL args here for compatibility:
-                @resolve_proc.call(extended_obj, args, ctx)
+          ctx.schema.after_lazy(to_ruby_args(after_obj, args, ctx)) do |ruby_args|
+            if authorized?(inner_obj, ruby_args, query_ctx)
+              # Then if it passed, resolve the field
+              if @resolve_proc
+                # Might be nil, still want to call the func in that case
+                with_extensions(inner_obj, ruby_args, query_ctx) do |extended_obj, extended_args|
+                  # Pass the GraphQL args here for compatibility:
+                  @resolve_proc.call(extended_obj, args, ctx)
+                end
+              else
+                public_send_field(after_obj, ruby_args, ctx)
               end
             else
-              public_send_field(after_obj, ruby_args, ctx)
+              err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
+              query_ctx.schema.unauthorized_field(err)
             end
-          else
-            err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
-            query_ctx.schema.unauthorized_field(err)
           end
         end
       end
@@ -513,7 +514,7 @@ module GraphQL
         begin
           # Unwrap the GraphQL object to get the application object.
           application_object = object.object
-          if self.authorized?(application_object, ctx)
+          if self.authorized?(application_object, args, ctx)
             # Apply field extensions
             with_extensions(object, args, ctx) do |extended_obj, extended_args|
               field_receiver = if @resolver_class

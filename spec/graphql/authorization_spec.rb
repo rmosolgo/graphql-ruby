@@ -19,13 +19,13 @@ describe GraphQL::Authorization do
         super && (context[:hide] ? @name != "inaccessible" : true)
       end
 
-      def authorized?(parent_object, context)
+      def authorized?(parent_object, value, context)
         super && parent_object != :hide2
       end
     end
 
     class BaseInputObjectArgument < BaseArgument
-      def authorized?(parent_object, context)
+      def authorized?(parent_object, value, context)
         super && parent_object != :hide3
       end
     end
@@ -57,7 +57,7 @@ describe GraphQL::Authorization do
         super && (context[:hide] ? @name != "inaccessible" : true)
       end
 
-      def authorized?(object, context)
+      def authorized?(object, args, context)
         if object == :raise
           raise GraphQL::UnauthorizedFieldError.new("raised authorized field error", object: object)
         end
