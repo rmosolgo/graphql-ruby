@@ -5,10 +5,15 @@ module GraphQL
     class Field
       class ConnectionExtension < GraphQL::Schema::FieldExtension
         def apply
-          field.argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
-          field.argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false
-          field.argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
-          field.argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
+          if field.pagination_direction != :backward
+            field.argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
+            field.argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
+          end
+
+          if field.pagination_direction != :forward
+            field.argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false
+            field.argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
+          end
         end
 
         # Remove pagination args before passing it to a user method

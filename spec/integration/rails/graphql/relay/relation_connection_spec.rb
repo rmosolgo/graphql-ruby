@@ -326,6 +326,13 @@ describe GraphQL::Relay::RelationConnection do
       end
     end
 
+    describe "pagination_direction" do
+      it "limits what pagination arguments are added" do
+        assert_equal ["after", "first"],
+          StarWars::Schema.types["Faction"].fields["shipsWithPaginationDirection"].arguments.keys
+      end
+    end
+
     describe "applying default_max_page_size" do
       let(:query_string) {%|
         query getBases($first: Int, $after: String, $last: Int, $before: String){

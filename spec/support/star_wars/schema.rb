@@ -157,6 +157,11 @@ module StarWars
 
     field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, resolver: ShipsWithMaxPageSize
 
+    field :shipsWithPaginationDirection,
+      ShipConnectionWithParentType, "Ships with pagination direction",
+      method: :ships, connection: true, null: true,
+      pagination_direction: :forward
+
     field :bases, BasesConnectionWithTotalCountType, null: true, connection: true do
       argument :nameIncludes, String, required: false
       argument :complexOrder, Boolean, required: false
