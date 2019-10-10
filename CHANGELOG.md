@@ -20,6 +20,8 @@
 
 ### New features
 
+- Add `$` to variable names in error messages #2531
+- Add invalid value to argument error message #2531
 - Input object arguments with `loads:` get the loaded object in their `authorized?` hook, as `arg` in `authorized?(obj, args, ctx)`. #2536
 - `GraphQL::Pagination` auto-pagination system #2143
 - `Schema.from_definition` builds a _class-based schema_ from the definition string #2178
