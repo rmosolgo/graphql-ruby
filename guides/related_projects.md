@@ -25,6 +25,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
   - [`graphql-rails_logger`](https://github.com/jetruby/graphql-rails_logger), a logger which allows you to inspect GraphQL queries in a more readable format.
   - [`apollo_upload_server-ruby`](https://github.com/jetruby/apollo_upload_server-ruby), a middleware which allows you to upload files with GraphQL and multipart/form-data using [`apollo-upload-client`](https://github.com/jaydenseric/apollo-upload-client) library on front-end.
 - [`search_object_graphql`](https://github.com/rstankov/SearchObjectGraphQL), a DSL for defining search resolvers for GraphQL.
+- [`graphql_rails`](https://github.com/samesystem/graphql_rails), Rails way GraphQL build tool
 
 ## Blog Posts
 
