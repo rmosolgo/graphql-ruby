@@ -8,6 +8,13 @@
 
 ### Bug Fix
 
+## 1.11.0 (10 Oct 2019)
+
+### New Features
+
+- Forwards-compatibility for graphql 1.10.0
+- Support 1.10.0.pre1's input object argument `loads:` authorization
+
 ## 1.10.8 (8 Oct 2019)
 
 ### Bug Fix

@@ -26,6 +26,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
   - [`apollo_upload_server-ruby`](https://github.com/jetruby/apollo_upload_server-ruby), a middleware which allows you to upload files with GraphQL and multipart/form-data using [`apollo-upload-client`](https://github.com/jaydenseric/apollo-upload-client) library on front-end.
 - [`search_object_graphql`](https://github.com/rstankov/SearchObjectGraphQL), a DSL for defining search resolvers for GraphQL.
 - [`action_policy-graphql`](https://github.com/palkan/action_policy-graphql), an integration for using [`action_policy`](https://github.com/palkan/action_policy) as an authorization framework for GraphQL applications.
+- [`graphql_rails`](https://github.com/samesystem/graphql_rails), Rails way GraphQL build tool
 
 ## Blog Posts
 

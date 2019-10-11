@@ -4,7 +4,8 @@ doc_stub: false
 search: true
 title: Lazy Execution
 section: Schema
-desc: Resolve functions can return "unfinished" results. GraphQL will defer finishing them until other fields have been resolved.
+desc: Resolve functions can return "unfinished" results that are deferred for batch resolution.
+index: 4
 ---
 
 With lazy execution, you can optimize access to external services (such as databases) by making batched calls. Building a lazy loader has three steps:
