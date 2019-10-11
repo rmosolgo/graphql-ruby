@@ -106,6 +106,7 @@ module GraphQL
 
         HAS_AT_LEAST_ONE_FIELD = Rules.count_at_least("field", 1, ->(type) { type.all_fields })
         FIELDS_ARE_VALID = Rules.assert_named_items_are_valid("field", ->(type) { type.all_fields })
+        HAS_AT_LEAST_ONE_ARGUMENT = Rules.count_at_least("argument", 1, ->(type) { type.arguments })
 
         HAS_ONE_OR_MORE_POSSIBLE_TYPES = ->(type) {
           type.possible_types.length >= 1 ? nil : "must have at least one possible type"
@@ -279,6 +280,7 @@ module GraphQL
           Rules::INTERFACES_ARE_IMPLEMENTED,
         ],
         GraphQL::InputObjectType => [
+          Rules::HAS_AT_LEAST_ONE_ARGUMENT,
           Rules::ARGUMENTS_ARE_STRING_TO_ARGUMENT,
           Rules::ARGUMENTS_ARE_VALID,
         ],
