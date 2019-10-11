@@ -276,12 +276,21 @@ describe GraphQL::Schema::Validation do
       end
     }
 
+    let(:no_arguments_input) {
+      GraphQL::InputObjectType.define do
+        name "NoArguments"
+      end
+    }
     it "requires {String => Argument} arguments" do
       assert_error_includes invalid_arguments_input, "map String => GraphQL::Argument, not #{integer_class_name} => Symbol"
     end
 
     it "applies validation to its member Arguments" do
       assert_error_includes invalid_argument_member_input, "default value [\"xyz\"] is not valid for type Float"
+    end
+
+    it "requires one argument" do
+      assert_error_includes no_arguments_input, "must define at least 1 argument"
     end
   end
 
