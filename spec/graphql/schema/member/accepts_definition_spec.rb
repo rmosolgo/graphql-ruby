@@ -56,6 +56,8 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
 
     class SomeObject < BaseObject
       metadata :a, :aaa
+
+      field :some_field, String, null: true
     end
 
     class SomeObject2 < SomeObject

@@ -122,6 +122,8 @@ describe GraphQL::Schema::Validation do
       GraphQL::ObjectType.define do
         name "InvalidInterfaceMember"
         interfaces [:not_an_interface]
+
+        field :foo, :string
       end
     }
 
@@ -132,12 +134,25 @@ describe GraphQL::Schema::Validation do
       end
     }
 
+    let(:invalid_object_without_fields) {
+      GraphQL::ObjectType.define do
+        name "InvalidObjectWithoutFields"
+      end
+    }
+
     it "requires an Array for interfaces" do
       assert_error_includes invalid_interface_member_object, "must contain GraphQL::InterfaceType, not Symbol"
     end
 
     it "validates the fields" do
       assert_error_includes invalid_field_object, "must return GraphQL::BaseType, not Symbol"
+    end
+
+    it "validates that Object types define at least one field" do
+      assert_error_includes(
+        invalid_object_without_fields,
+        "InvalidObjectWithoutFields must define at least 1 field. 0 defined."
+      )
     end
 
     it "requires interfaces to be implemented" do
