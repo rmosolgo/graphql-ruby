@@ -118,6 +118,8 @@ module GraphQL
         ruby_kwargs
       end
 
+      alias :to_hash :to_kwargs
+
       private
 
       class ArgumentValue
