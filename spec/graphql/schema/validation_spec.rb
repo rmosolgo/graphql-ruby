@@ -371,7 +371,7 @@ describe GraphQL::Schema::Validation do
       end
     }
     it "finds instrumenters missing methods" do
-      err = assert_raises(NotImplementedError) { schema }
+      err = assert_raises(GraphQL::RequiredImplementationMissingError) { schema }
       assert_includes err.message, "before_query(query)"
       assert_includes err.message, "instrument(type, field)"
     end

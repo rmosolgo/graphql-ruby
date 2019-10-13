@@ -281,13 +281,13 @@ module GraphQL
       ensure_defined
       # Assert that all necessary configs are present:
       validation_error = Validation.validate(self)
-      validation_error && raise(NotImplementedError, validation_error)
+      validation_error && raise(GraphQL::RequiredImplementationMissingError, validation_error)
       rebuild_artifacts
 
       @definition_error = nil
       nil
     rescue StandardError => err
-      if @raise_definition_error || err.is_a?(CyclicalDefinitionError)
+      if @raise_definition_error || err.is_a?(CyclicalDefinitionError) || err.is_a?(GraphQL::RequiredImplementationMissingError)
         raise
       else
         # Raise this error _later_ to avoid messing with Rails constant loading
@@ -492,7 +492,7 @@ module GraphQL
     def resolve_type(type, object, ctx = :__undefined__)
       check_resolved_type(type, object, ctx) do |ok_type, ok_object, ok_ctx|
         if @resolve_type_proc.nil?
-          raise(NotImplementedError, "Can't determine GraphQL type for: #{ok_object.inspect}, define `resolve_type (type, obj, ctx) -> { ... }` inside `Schema.define`.")
+          raise(GraphQL::RequiredImplementationMissingError, "Can't determine GraphQL type for: #{ok_object.inspect}, define `resolve_type (type, obj, ctx) -> { ... }` inside `Schema.define`.")
         end
         @resolve_type_proc.call(ok_type, ok_object, ok_ctx)
       end
@@ -553,7 +553,7 @@ module GraphQL
     # @return [Any] The application object identified by `id`
     def object_from_id(id, ctx)
       if @object_from_id_proc.nil?
-        raise(NotImplementedError, "Can't fetch an object for id \"#{id}\" because the schema's `object_from_id (id, ctx) -> { ... }` function is not defined")
+        raise(GraphQL::RequiredImplementationMissingError, "Can't fetch an object for id \"#{id}\" because the schema's `object_from_id (id, ctx) -> { ... }` function is not defined")
       else
         @object_from_id_proc.call(id, ctx)
       end
@@ -620,7 +620,7 @@ module GraphQL
     # @return [String] a unique identifier for `object` which clients can use to refetch it
     def id_from_object(object, type, ctx)
       if @id_from_object_proc.nil?
-        raise(NotImplementedError, "Can't generate an ID for #{object.inspect} of type #{type}, schema's `id_from_object` must be defined")
+        raise(GraphQL::RequiredImplementationMissingError, "Can't generate an ID for #{object.inspect} of type #{type}, schema's `id_from_object` must be defined")
       else
         @id_from_object_proc.call(object, type, ctx)
       end
@@ -956,16 +956,16 @@ module GraphQL
         if type.kind.object?
           type
         else
-          raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
+          raise GraphQL::RequiredImplementationMissingError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
         end
       end
 
       def object_from_id(node_id, ctx)
-        raise NotImplementedError, "#{self.name}.object_from_id(node_id, ctx) must be implemented to load by ID (tried to load from id `#{node_id}`)"
+        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.object_from_id(node_id, ctx) must be implemented to load by ID (tried to load from id `#{node_id}`)"
       end
 
       def id_from_object(object, type, ctx)
-        raise NotImplementedError, "#{self.name}.id_from_object(object, type, ctx) must be implemented to create global ids (tried to create an id for `#{object.inspect}`)"
+        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.id_from_object(object, type, ctx) must be implemented to create global ids (tried to create an id for `#{object.inspect}`)"
       end
 
       def visible?(member, context)

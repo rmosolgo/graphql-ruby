@@ -22,7 +22,7 @@ module GraphQL
         # in a query error.
         # @return [Any] The analyzer result
         def result
-          raise NotImplementedError
+          raise GraphQL::RequiredImplementationMissingError
         end
 
         class << self

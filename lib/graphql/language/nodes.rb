@@ -66,7 +66,7 @@ module GraphQL
 
         # @return [Symbol] the method to call on {Language::Visitor} for this node
         def visit_method
-          raise NotImplementedError, "#{self.class.name}#visit_method shold return a symbol"
+          raise GraphQL::RequiredImplementationMissingError, "#{self.class.name}#visit_method shold return a symbol"
         end
 
         def position
