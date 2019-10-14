@@ -103,11 +103,13 @@ describe GraphQL::Schema::Traversal do
     let(:type_1) {
       GraphQL::ObjectType.define do
         name "MyType"
+        field :some_field, types.String
       end
     }
     let(:type_2) {
       GraphQL::ObjectType.define do
         name "MyType"
+        field :some_field, types.String
       end
     }
     it "raises an error" do
@@ -165,10 +167,12 @@ describe GraphQL::Schema::Traversal do
   it "finds unions from which types are members" do
     b_type = GraphQL::ObjectType.define do
       name "B"
+      field :some_field, types.String
     end
 
     c_type = GraphQL::ObjectType.define do
       name "C"
+      field :some_field, types.String
     end
 
     union = GraphQL::UnionType.define do
@@ -192,10 +196,12 @@ describe GraphQL::Schema::Traversal do
   it "finds orphan types from interfaces" do
     b_type = GraphQL::ObjectType.define do
       name "B"
+      field :some_field, types.String
     end
 
     c_type = GraphQL::ObjectType.define do
       name "C"
+      field :some_field, types.String
     end
 
     interface = GraphQL::InterfaceType.define do

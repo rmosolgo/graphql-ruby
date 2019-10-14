@@ -5,9 +5,10 @@ search: true
 section: Schema
 title: Root Types
 desc: Root types are the entry points for queries, mutations and subscriptions.
+index: 2
 ---
 
-GraphQL queries begin from [root types](https://graphql.org/learn/schema/#the-query-and-mutation-types): `query`, `mutation`, and `subscription` (experimental).
+GraphQL queries begin from [root types](https://graphql.org/learn/schema/#the-query-and-mutation-types): `query`, `mutation`, and `subscription`.
 
 Attach these to your schema using methods with the same name:
 
@@ -26,16 +27,16 @@ The types are `GraphQL::Schema::Object` classes, for example:
 ```ruby
 # app/graphql/types/query_type.rb
 class Types::QueryType < GraphQL::Schema::Object
-  # ...
+  field :all_posts, [PostType], 'Returns all blog posts', null: false
 end
 
 # Similarly:
 class Types::MutationType < GraphQL::Schema::Object
-  # ...
+  field :create_post, mutation: Mutations::AddPost
 end
 # and
 class Types::SubscriptionType < GraphQL::Schema::Object
-  # ...
+  field :comment_added, subscription: Subscriptions::CommentAdded
 end
 ```
 

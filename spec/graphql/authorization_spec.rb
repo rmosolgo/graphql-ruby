@@ -19,13 +19,13 @@ describe GraphQL::Authorization do
         super && (context[:hide] ? @name != "inaccessible" : true)
       end
 
-      def authorized?(parent_object, context)
+      def authorized?(parent_object, value, context)
         super && parent_object != :hide2
       end
     end
 
     class BaseInputObjectArgument < BaseArgument
-      def authorized?(parent_object, context)
+      def authorized?(parent_object, value, context)
         super && parent_object != :hide3
       end
     end
@@ -57,7 +57,7 @@ describe GraphQL::Authorization do
         super && (context[:hide] ? @name != "inaccessible" : true)
       end
 
-      def authorized?(object, context)
+      def authorized?(object, args, context)
         if object == :raise
           raise GraphQL::UnauthorizedFieldError.new("raised authorized field error", object: object)
         end
@@ -114,6 +114,8 @@ describe GraphQL::Authorization do
       def self.visible?(ctx)
         super && !ctx[:hide]
       end
+
+      field :some_field, String, null: true
     end
 
     class RelayObject < BaseObject
@@ -128,6 +130,8 @@ describe GraphQL::Authorization do
       def self.authorized?(_val, ctx)
         super && !ctx[:unauthorized_relay]
       end
+
+      field :some_field, String, null: true
     end
 
     # TODO test default behavior for abstract types,
@@ -150,6 +154,8 @@ describe GraphQL::Authorization do
       def self.resolve_type(obj, ctx)
         InaccessibleObject
       end
+
+      field :some_field, String, null: true
     end
 
     class InaccessibleObject < BaseObject
@@ -158,6 +164,8 @@ describe GraphQL::Authorization do
       def self.accessible?(ctx)
         super && !ctx[:hide]
       end
+
+      field :some_field, String, null: true
     end
 
     class UnauthorizedObject < BaseObject
@@ -382,6 +390,8 @@ describe GraphQL::Authorization do
       def self.visible?(ctx)
         super && !ctx[:hidden_mutation]
       end
+
+      field :some_return_field, String, null: true
     end
 
     class DoInaccessibleStuff < GraphQL::Schema::RelayClassicMutation

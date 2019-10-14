@@ -94,22 +94,36 @@ module GraphQL
         true
       end
 
-      def authorized?(obj, ctx)
-        arg_type = type.unwrap
-        if arg_type.kind.input_object? && arg_type != @owner
-          arg_type.arguments.each do |_name, input_obj_arg|
-            if input_obj_arg.is_a?(GraphQL::Argument)
-              input_obj_arg = input_obj_arg.type_class
-            end
+      def authorized?(obj, value, ctx)
+        authorized_as_type?(obj, value, ctx, as_type: type)
+      end
 
-            if !input_obj_arg.authorized?(obj, ctx)
+      def authorized_as_type?(obj, value, ctx, as_type:)
+        if value.nil?
+          return true
+        end
+
+        if as_type.kind.non_null?
+          as_type = as_type.of_type
+        end
+
+        if as_type.kind.list?
+          value.each do |v|
+            if !authorized_as_type?(obj, v, ctx, as_type: as_type.of_type)
               return false
             end
           end
-          true
-        else
-          true
+        elsif as_type.kind.input_object?
+          as_type.arguments.each do |_name, input_obj_arg|
+            input_obj_arg = input_obj_arg.type_class
+            if value.key?(input_obj_arg.keyword) &&  !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
+              return false
+            end
+          end
         end
+        # None of the early-return conditions were activated,
+        # so this is authorized.
+        true
       end
 
       def to_graphql

@@ -44,7 +44,10 @@ module GraphQL
 
         # Wrap the proc with subscription registration logic
         def call(obj, args, ctx)
-          @inner_proc.call(obj, args, ctx) if @inner_proc && !@inner_proc.is_a?(GraphQL::Field::Resolve::BuiltInResolve)
+          result = nil
+          if @inner_proc && !@inner_proc.is_a?(GraphQL::Field::Resolve::BuiltInResolve)
+            result = @inner_proc.call(obj, args, ctx)
+          end
 
           events = ctx.namespace(:subscriptions)[:events]
 
@@ -56,10 +59,12 @@ module GraphQL
               arguments: args,
               context: ctx,
             )
-            ctx.skip
+            result
           elsif ctx.irep_node.subscription_topic == ctx.query.subscription_topic
-            # The root object is _already_ the subscription update:
-            if obj.is_a?(GraphQL::Schema::Object)
+            if !result.nil?
+              result
+            elsif obj.is_a?(GraphQL::Schema::Object)
+              # The root object is _already_ the subscription update:
               obj.object
             else
               obj

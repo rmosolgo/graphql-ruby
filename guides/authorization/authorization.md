@@ -11,14 +11,16 @@ While a query is running, you can check each object to see whether the current u
 
 ## Adding Authorization Checks
 
-Schema members have `.authorized?(value, context)` methods which will be called during execution:
+Schema members have `authorized?` methods which will be called during execution:
 
-- Type classes have `.authorized?(value, context)` class methods
-- Fields and arguments have `#authorized?(value, context)` instance methods
+- Type classes have `.authorized?(object, context)` class methods
+- Fields have `#authorized?(object, args, context)` instance methods
+- Arguments have `#authorized?(object, arg_value, context)` instance methods
 
 These methods are called with:
 
-- `value`: the object from your application which was returned from a field
+- `object`: the object from your application which was returned from a field
+- `args`/`arg_value`: The arguments for a field, or the value of an argument
 - `context`: the query context, based on the hash passed as `context:`
 
 When you implement this method to return `false`, the query will be halted, for example:

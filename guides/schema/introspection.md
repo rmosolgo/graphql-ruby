@@ -5,7 +5,7 @@ search: true
 title: Introspection
 section: Schema
 desc: GraphQL has an introspection system that tells about the schema.
-index: 2
+index: 3
 ---
 
 A GraphQL schema has a [built-in introspection system](https://graphql.org/learn/introspection/) that publishes the schema's structure. In fact, the introspection system can be queried using GraphQL, for example:

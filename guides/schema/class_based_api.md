@@ -3,12 +3,14 @@ layout: guide
 doc_stub: false
 search: true
 section: Schema
-title: Class-based API
-desc: Define your GraphQL schema with Ruby classes (1.8.x alpha releases)
-index: 10
+title: Class-based API Migration
+desc: Migrate from legacy .define DSL to Ruby classes.
+index: 6
 ---
 
 In GraphQL `1.8`+, you can use Ruby classes to build your schema. You can __mix__ class-style and `.define`-style type definitions in a schema.
+
+The `.define` DSL is deprecated and will be removed at version 2.0.
 
 You can get an overview of this new feature:
 

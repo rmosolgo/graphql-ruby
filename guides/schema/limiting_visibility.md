@@ -5,6 +5,7 @@ search: true
 title: Limiting Visibility
 section: Schema
 desc: Flag types and fields so that only some clients can see them.
+index: 5
 ---
 
 Sometimes, you want to hide schema elements from some users. For example:
