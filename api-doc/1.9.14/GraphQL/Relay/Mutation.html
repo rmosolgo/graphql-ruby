@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Relay::Mutation
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Relay::Mutation";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (M)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Relay.html" title="GraphQL::Relay (module)">Relay</a></span></span>
+     &raquo; 
+    <span class="title">Mutation</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Relay::Mutation
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Relay::Mutation</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd><span class='object_link'><a href="../Define/InstanceDefinable.html" title="GraphQL::Define::InstanceDefinable (module)">Define::InstanceDefinable</a></span></dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/relay/mutation.rb<span class="defines">,<br />
+  lib/graphql/relay/mutation/result.rb,<br /> lib/graphql/relay/mutation/resolve.rb,<br /> lib/graphql/relay/mutation/instrumentation.rb</span>
+</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Define a Relay mutation:
+  - give it a name (used for derived inputs &amp; outputs)
+  - declare its inputs
+  - declare its outputs
+  - declare the mutation procedure</p>
+
+<p><code>resolve</code> should return a hash with a key for each of the <code>return_field</code>s</p>
+
+<p>Inputs may also contain a <code>clientMutationId</code></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'><p>Updating the name of an item</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='const'>UpdateNameMutation</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay.html" title="GraphQL::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'>Mutation</span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="../Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UpdateName</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='id identifier rubyid_input_field'>input_field</span> <span class='symbol'>:name</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_input_field'>input_field</span> <span class='symbol'>:itemId</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>ID</span>
+
+  <span class='id identifier rubyid_return_field'>return_field</span> <span class='symbol'>:item</span><span class='comma'>,</span> <span class='const'>ItemType</span>
+
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_inputs'>inputs</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_item'>item</span> <span class='op'>=</span> <span class='const'>Item</span><span class='period'>.</span><span class='id identifier rubyid_find_by_id'>find_by_id</span><span class='lparen'>(</span><span class='id identifier rubyid_inputs'>inputs</span><span class='lbracket'>[</span><span class='symbol'>:id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_item'>item</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span><span class='lparen'>(</span><span class='label'>name:</span> <span class='id identifier rubyid_inputs'>inputs</span><span class='lbracket'>[</span><span class='symbol'>:name</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='lbrace'>{</span><span class='label'>item:</span> <span class='id identifier rubyid_item'>item</span><span class='rbrace'>}</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span>
+
+<span class='const'>MutationType</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="../Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='comment'># The mutation object exposes a field:
+</span>  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:updateName</span><span class='comma'>,</span> <span class='label'>field:</span> <span class='const'>UpdateNameMutation</span><span class='period'>.</span><span class='id identifier rubyid_field'>field</span>
+<span class='kw'>end</span>
+
+<span class='comment'># Then query it:
+</span><span class='id identifier rubyid_query_string'>query_string</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>%|</span><span class='tstring_content'>
+  mutation updateName {
+    updateName(input: {itemId: 1, name: &quot;new name&quot;, clientMutationId: &quot;1234&quot;}) {
+      item { name }
+      clientMutationId
+  }</span><span class='tstring_end'>|</span></span>
+
+ <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Query.html#initialize-instance_method" title="GraphQL::Query#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='const'>MySchema</span><span class='comma'>,</span> <span class='id identifier rubyid_query_string'>query_string</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_result'><span class='object_link'><a href="../Query.html#result-instance_method" title="GraphQL::Query#result (method)">result</a></span></span>
+ <span class='comment'># {&quot;data&quot; =&gt; {
+</span> <span class='comment'>#   &quot;updateName&quot; =&gt; {
+</span> <span class='comment'>#     &quot;item&quot; =&gt; { &quot;name&quot; =&gt; &quot;new name&quot;},
+</span> <span class='comment'>#     &quot;clientMutationId&quot; =&gt; &quot;1234&quot;
+</span> <span class='comment'>#   }
+</span> <span class='comment'># }}</span></code></pre>
+    
+      
+        <p class="example_title"><div class='inline'><p>Using a GraphQL::Function</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='kw'>class</span> <span class='const'>UpdateAttributes</span> <span class='op'>&lt;</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Function.html" title="GraphQL::Function (class)">Function</a></span></span>
+  <span class='id identifier rubyid_attr_reader'>attr_reader</span> <span class='symbol'>:model</span><span class='comma'>,</span> <span class='symbol'>:return_as</span><span class='comma'>,</span> <span class='symbol'>:arguments</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>model:</span><span class='comma'>,</span> <span class='label'>return_as:</span><span class='comma'>,</span> <span class='label'>attributes:</span><span class='rparen'>)</span>
+    <span class='ivar'>@model</span> <span class='op'>=</span> <span class='id identifier rubyid_model'>model</span>
+    <span class='ivar'>@arguments</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+    <span class='id identifier rubyid_attributes'>attributes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='op'>|</span>
+      <span class='id identifier rubyid_arg_name'>arg_name</span> <span class='op'>=</span> <span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
+      <span class='ivar'>@arguments</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Argument.html" title="GraphQL::Argument (class)">Argument</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="../Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span><span class='lparen'>(</span><span class='label'>name:</span> <span class='id identifier rubyid_arg_name'>arg_name</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='ivar'>@arguments</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>id</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Argument.html" title="GraphQL::Argument (class)">Argument</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="../Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span><span class='lparen'>(</span><span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>id</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>type:</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../GraphQL.html#ID_TYPE-constant" title="GraphQL::ID_TYPE (constant)">ID_TYPE</a></span></span><span class='rparen'>)</span>
+    <span class='ivar'>@return_as</span> <span class='op'>=</span> <span class='id identifier rubyid_return_as'>return_as</span>
+    <span class='ivar'>@attributes</span> <span class='op'>=</span> <span class='id identifier rubyid_attributes'>attributes</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_type'>type</span>
+    <span class='id identifier rubyid_fn'>fn</span> <span class='op'>=</span> <span class='kw'>self</span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="../Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Update</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_fn'>fn</span><span class='period'>.</span><span class='id identifier rubyid_model'>model</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>AttributesResponse</span><span class='tstring_end'>&quot;</span></span>
+      <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:clientMutationId</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>ID</span>
+      <span class='id identifier rubyid_field'>field</span> <span class='id identifier rubyid_fn'>fn</span><span class='period'>.</span><span class='id identifier rubyid_return_as'>return_as</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_fn'>fn</span><span class='period'>.</span><span class='id identifier rubyid_return_as'>return_as</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_record'>record</span> <span class='op'>=</span> <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span><span class='lparen'>(</span><span class='id identifier rubyid_args'>args</span><span class='lbracket'>[</span><span class='symbol'>:inputs</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='symbol'>:id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_new_values'>new_values</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+    <span class='ivar'>@attributes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_a'>a</span><span class='op'>|</span> <span class='id identifier rubyid_new_values'>new_values</span><span class='lbracket'>[</span><span class='id identifier rubyid_a'>a</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_args'>args</span><span class='lbracket'>[</span><span class='id identifier rubyid_a'>a</span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+    <span class='id identifier rubyid_record'>record</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span><span class='lparen'>(</span><span class='id identifier rubyid_new_values'>new_values</span><span class='rparen'>)</span>
+    <span class='lbrace'>{</span> <span class='ivar'>@return_as</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_record'>record</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+
+<span class='const'>UpdateNameMutation</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Relay.html" title="GraphQL::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'>Mutation</span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="../Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UpdateName</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_function'>function</span> <span class='const'>UpdateAttributes</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>model:</span> <span class='const'>Item</span><span class='comma'>,</span> <span class='label'>return_as:</span> <span class='lbrace'>{</span> <span class='label'>item:</span> <span class='const'>ItemType</span> <span class='rbrace'>}</span><span class='comma'>,</span> <span class='label'>attributes:</span> <span class='lbrace'>{</span><span class='label'>name:</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Mutation/Instrumentation.html" title="GraphQL::Relay::Mutation::Instrumentation (module)">Instrumentation</a></span>
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Mutation/Resolve.html" title="GraphQL::Relay::Mutation::Resolve (class)">Resolve</a></span>, <span class='object_link'><a href="Mutation/Result.html" title="GraphQL::Relay::Mutation::Result (class)">Result</a></span>
+    
+  
+</p>
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#arguments-instance_method" title="#arguments (instance method)">#<strong>arguments</strong>  &#x21d2; Object </a>
+    
+
+    
+      (also: #input_fields)
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute arguments.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#description-instance_method" title="#description (instance method)">#<strong>description</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute description.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fields-instance_method" title="#fields (instance method)">#<strong>fields</strong>  &#x21d2; Object </a>
+    
+
+    
+      (also: #return_fields)
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#name-instance_method" title="#name (instance method)">#<strong>name</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute name.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#return_interfaces-instance_method" title="#return_interfaces (instance method)">#<strong>return_interfaces</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#return_type-instance_method" title="#return_type (instance method)">#<strong>return_type</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#field-instance_method" title="#field (instance method)">#<strong>field</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#has_generated_return_type%3F-instance_method" title="#has_generated_return_type? (instance method)">#<strong>has_generated_return_type?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>  &#x21d2; Mutation </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Mutation.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#input_type-instance_method" title="#input_type (instance method)">#<strong>input_type</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve=-instance_method" title="#resolve= (instance method)">#<strong>resolve=</strong>(new_resolve_proc)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#result_class-instance_method" title="#result_class (instance method)">#<strong>result_class</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../Define/InstanceDefinable.html" title="GraphQL::Define::InstanceDefinable (module)">Define::InstanceDefinable</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">#define</a></span>, <span class='object_link'><a href="../Define/InstanceDefinable.html#initialize_copy-instance_method" title="GraphQL::Define::InstanceDefinable#initialize_copy (method)">#initialize_copy</a></span>, <span class='object_link'><a href="../Define/InstanceDefinable.html#metadata-instance_method" title="GraphQL::Define::InstanceDefinable#metadata (method)">#metadata</a></span>, <span class='object_link'><a href="../Define/InstanceDefinable.html#redefine-instance_method" title="GraphQL::Define::InstanceDefinable#redefine (method)">#redefine</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Relay::Mutation (class)">Mutation</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Mutation</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+117
+118
+119
+120
+121</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 117</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+  <span class='ivar'>@fields</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@arguments</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@has_generated_return_type</span> <span class='op'>=</span> <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="arguments=-instance_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="arguments-instance_method">
+  
+    #<strong>arguments</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='input_fields-instance_method'>input_fields</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute arguments</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+104
+105
+106</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 104</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_arguments'>arguments</span>
+  <span class='ivar'>@arguments</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="description=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="description-instance_method">
+  
+    #<strong>description</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute description</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+104
+105
+106</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 104</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_description'>description</span>
+  <span class='ivar'>@description</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="fields=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="fields-instance_method">
+  
+    #<strong>fields</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='return_fields-instance_method'>return_fields</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+104
+105
+106</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 104</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fields'>fields</span>
+  <span class='ivar'>@fields</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="name=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="name-instance_method">
+  
+    #<strong>name</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute name</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+104
+105
+106</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 104</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
+  <span class='ivar'>@name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="return_interfaces=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="return_interfaces-instance_method">
+  
+    #<strong>return_interfaces</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+147
+148
+149</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 147</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_return_interfaces'>return_interfaces</span>
+  <span class='ivar'>@return_interfaces</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="return_type=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="return_type-instance_method">
+  
+    #<strong>return_type</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 151</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_return_type'>return_type</span>
+  <span class='ivar'>@return_type</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='ivar'>@has_generated_return_type</span> <span class='op'>=</span> <span class='kw'>true</span>
+    <span class='id identifier rubyid_relay_mutation'>relay_mutation</span> <span class='op'>=</span> <span class='kw'>self</span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="../Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_name'>name</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>Payload</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_description'>description</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Autogenerated return type of </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:clientMutationId</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A unique identifier for the client performing the mutation.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>property:</span> <span class='symbol'>:client_mutation_id</span>
+      <span class='id identifier rubyid_interfaces'>interfaces</span> <span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='period'>.</span><span class='id identifier rubyid_return_interfaces'>return_interfaces</span>
+      <span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='period'>.</span><span class='id identifier rubyid_return_fields'>return_fields</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_field_obj'>field_obj</span><span class='op'>|</span>
+        <span class='id identifier rubyid_field'>field</span> <span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>field:</span> <span class='id identifier rubyid_field_obj'>field_obj</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_mutation'>mutation</span><span class='lparen'>(</span><span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="field-instance_method">
+  
+    #<strong>field</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 133</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_field'>field</span>
+  <span class='ivar'>@field</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='id identifier rubyid_relay_mutation'>relay_mutation</span> <span class='op'>=</span> <span class='kw'>self</span>
+    <span class='id identifier rubyid_field_resolve_proc'>field_resolve_proc</span> <span class='op'>=</span> <span class='ivar'>@resolve_proc</span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="../Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_type'>type</span><span class='lparen'>(</span><span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='period'>.</span><span class='id identifier rubyid_return_type'>return_type</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_description'>description</span><span class='lparen'>(</span><span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_argument'>argument</span> <span class='symbol'>:input</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='period'>.</span><span class='id identifier rubyid_input_type'>input_type</span>
+      <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='id identifier rubyid_field_resolve_proc'>field_resolve_proc</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_mutation'>mutation</span><span class='lparen'>(</span><span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="has_generated_return_type?-instance_method">
+  
+    #<strong>has_generated_return_type?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+123
+124
+125
+126
+127</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 123</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_has_generated_return_type?'>has_generated_return_type?</span>
+  <span class='comment'># Trigger the generation of the return type, if it is dynamically generated:
+</span>  <span class='id identifier rubyid_return_type'>return_type</span>
+  <span class='ivar'>@has_generated_return_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="input_type-instance_method">
+  
+    #<strong>input_type</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 168</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_input_type'>input_type</span>
+  <span class='ivar'>@input_type</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='id identifier rubyid_relay_mutation'>relay_mutation</span> <span class='op'>=</span> <span class='kw'>self</span>
+    <span class='id identifier rubyid_input_object_type'>input_object_type</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../InputObjectType.html" title="GraphQL::InputObjectType (class)">InputObjectType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="../Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_name'>name</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>Input</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_description'>description</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Autogenerated input type of </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_input_field'>input_field</span> <span class='symbol'>:clientMutationId</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A unique identifier for the client performing the mutation.</span><span class='tstring_end'>&quot;</span></span>
+      <span class='id identifier rubyid_mutation'>mutation</span><span class='lparen'>(</span><span class='id identifier rubyid_relay_mutation'>relay_mutation</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_input_fields'>input_fields</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_arg'>arg</span><span class='op'>|</span>
+      <span class='id identifier rubyid_input_object_type'>input_object_type</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lbracket'>[</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_arg'>arg</span>
+    <span class='kw'>end</span>
+
+    <span class='id identifier rubyid_input_object_type'>input_object_type</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolve=-instance_method">
+  
+    #<strong>resolve=</strong>(new_resolve_proc)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+129
+130
+131</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 129</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_resolve='>resolve=</span><span class='lparen'>(</span><span class='id identifier rubyid_new_resolve_proc'>new_resolve_proc</span><span class='rparen'>)</span>
+  <span class='ivar'>@resolve_proc</span> <span class='op'>=</span> <span class='id identifier rubyid_new_resolve_proc'>new_resolve_proc</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="result_class-instance_method">
+  
+    #<strong>result_class</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+185
+186
+187</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/relay/mutation.rb', line 185</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_result_class'>result_class</span>
+  <span class='ivar'>@result_class</span> <span class='op'>||=</span> <span class='const'><span class='object_link'><a href="Mutation/Result.html" title="GraphQL::Relay::Mutation::Result (class)">Result</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define_subclass'><span class='object_link'><a href="Mutation/Result.html#define_subclass-class_method" title="GraphQL::Relay::Mutation::Result.define_subclass (method)">define_subclass</a></span></span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon Oct 14 11:54:03 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.19 (ruby-2.6.2).
+</div>
+
+    </div>
+  </body>
+</html>

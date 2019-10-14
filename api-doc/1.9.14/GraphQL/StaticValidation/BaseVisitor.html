@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::StaticValidation::BaseVisitor
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::StaticValidation::BaseVisitor";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (B)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../StaticValidation.html" title="GraphQL::StaticValidation (module)">StaticValidation</a></span></span>
+     &raquo; 
+    <span class="title">BaseVisitor</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::StaticValidation::BaseVisitor
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../Language/Visitor.html" title="GraphQL::Language::Visitor (class)">Language::Visitor</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="../Language/Visitor.html" title="GraphQL::Language::Visitor (class)">Language::Visitor</a></span></li>
+          
+            <li class="next">GraphQL::StaticValidation::BaseVisitor</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/static_validation/base_visitor.rb</dd>
+  </dl>
+  
+</div>
+
+<div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="DefaultVisitor.html" title="GraphQL::StaticValidation::DefaultVisitor (class)">DefaultVisitor</a></span>, <span class='object_link'><a href="InterpreterVisitor.html" title="GraphQL::StaticValidation::InterpreterVisitor (class)">InterpreterVisitor</a></span>, <span class='object_link'><a href="NoValidateVisitor.html" title="GraphQL::StaticValidation::NoValidateVisitor (class)">NoValidateVisitor</a></span></p>
+</div>
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="BaseVisitor/ContextMethods.html" title="GraphQL::StaticValidation::BaseVisitor::ContextMethods (module)">ContextMethods</a></span>
+    
+  
+    
+  
+</p>
+
+
+
+  <h2>Constant Summary</h2>
+  
+  <h3 class="inherited">Constants inherited
+     from <span class='object_link'><a href="../Language/Visitor.html" title="GraphQL::Language::Visitor (class)">Language::Visitor</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Language/Visitor.html#DELETE_NODE-constant" title="GraphQL::Language::Visitor::DELETE_NODE (constant)">Language::Visitor::DELETE_NODE</a></span>, <span class='object_link'><a href="../Language/Visitor.html#SKIP-constant" title="GraphQL::Language::Visitor::SKIP (constant)">Language::Visitor::SKIP</a></span></p>
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#context-instance_method" title="#context (instance method)">#<strong>context</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute context.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#object_types-instance_method" title="#object_types (instance method)">#<strong>object_types</strong>  &#x21d2; Array&lt;GraphQL::ObjectType&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Types whose scope we’ve entered.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+  
+  
+  <h3 class="inherited">Attributes inherited from <span class='object_link'><a href="../Language/Visitor.html" title="GraphQL::Language::Visitor (class)">Language::Visitor</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Language/Visitor.html#result-instance_method" title="GraphQL::Language::Visitor#result (method)">#result</a></span></p>
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#including_rules-class_method" title="including_rules (class method)">.<strong>including_rules</strong>(rules, rewrite: true)  &#x21d2; Class </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Build a class to visit the AST and perform validation, or use a pre-built class if rules is <code>ALL_RULES</code> or empty.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(document, context)  &#x21d2; BaseVisitor </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of BaseVisitor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#path-instance_method" title="#path (instance method)">#<strong>path</strong>  &#x21d2; Array&lt;String&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The nesting of the current position in the AST.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#rewrite_document-instance_method" title="#rewrite_document (instance method)">#<strong>rewrite_document</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>This will be overwritten by <span class='object_link'><a href="../InternalRepresentation/Rewrite.html" title="GraphQL::InternalRepresentation::Rewrite (module)">InternalRepresentation::Rewrite</a></span> if it’s included.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="../Language/Visitor.html" title="GraphQL::Language::Visitor (class)">Language::Visitor</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Language/Visitor.html#[]-instance_method" title="GraphQL::Language::Visitor#[] (method)">#[]</a></span>, <span class='object_link'><a href="../Language/Visitor.html#make_visit_method-class_method" title="GraphQL::Language::Visitor.make_visit_method (method)">make_visit_method</a></span>, <span class='object_link'><a href="../Language/Visitor.html#on_abstract_node-instance_method" title="GraphQL::Language::Visitor#on_abstract_node (method)">#on_abstract_node</a></span>, <span class='object_link'><a href="../Language/Visitor.html#visit-instance_method" title="GraphQL::Language::Visitor#visit (method)">#visit</a></span>, <span class='object_link'><a href="../Language/Visitor.html#visit_node-instance_method" title="GraphQL::Language::Visitor#visit_node (method)">#visit_node</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(document, context)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::StaticValidation::BaseVisitor (class)">BaseVisitor</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of BaseVisitor</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/base_visitor.rb', line 5</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_document'>document</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='ivar'>@path</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@object_types</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@directives</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@field_definitions</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@argument_definitions</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@directive_definitions</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@context</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span>
+  <span class='ivar'>@schema</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_document'>document</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="context-instance_method">
+  
+    #<strong>context</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute context</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/base_visitor.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_context'>context</span>
+  <span class='ivar'>@context</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="object_types-instance_method">
+  
+    #<strong>object_types</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">GraphQL::ObjectType</a></span>&gt;</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Types whose scope we’ve entered</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">GraphQL::ObjectType</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Types whose scope we’ve entered</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+25
+26
+27</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/base_visitor.rb', line 25</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_object_types'>object_types</span>
+  <span class='ivar'>@object_types</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="including_rules-class_method">
+  
+    .<strong>including_rules</strong>(rules, rewrite: true)  &#x21d2; <tt>Class</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Build a class to visit the AST and perform validation,
+or use a pre-built class if rules is <code>ALL_RULES</code> or empty.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>rules</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Module, Class&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>rewrite</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if <code>false</code>, don’t include rewrite</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A class for validating <code>rules</code> during visitation</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/base_visitor.rb', line 37</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_including_rules'>including_rules</span><span class='lparen'>(</span><span class='id identifier rubyid_rules'>rules</span><span class='comma'>,</span> <span class='label'>rewrite:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_rules'>rules</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_rewrite'>rewrite</span>
+      <span class='const'><span class='object_link'><a href="NoValidateVisitor.html" title="GraphQL::StaticValidation::NoValidateVisitor (class)">NoValidateVisitor</a></span></span>
+    <span class='kw'>else</span>
+      <span class='comment'># It&#39;s not doing _anything?!?_
+</span>      <span class='const'><span class='object_link'><a href="" title="GraphQL::StaticValidation::BaseVisitor (class)">BaseVisitor</a></span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_rules'>rules</span> <span class='op'>==</span> <span class='const'><span class='object_link'><a href="../StaticValidation.html#ALL_RULES-constant" title="GraphQL::StaticValidation::ALL_RULES (constant)">ALL_RULES</a></span></span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_rewrite'>rewrite</span>
+      <span class='const'><span class='object_link'><a href="DefaultVisitor.html" title="GraphQL::StaticValidation::DefaultVisitor (class)">DefaultVisitor</a></span></span>
+    <span class='kw'>else</span>
+      <span class='const'><span class='object_link'><a href="InterpreterVisitor.html" title="GraphQL::StaticValidation::InterpreterVisitor (class)">InterpreterVisitor</a></span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_visitor_class'>visitor_class</span> <span class='op'>=</span> <span class='const'>Class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_include'>include</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../StaticValidation.html" title="GraphQL::StaticValidation (module)">StaticValidation</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="DefinitionDependencies.html" title="GraphQL::StaticValidation::DefinitionDependencies (module)">DefinitionDependencies</a></span></span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+
+    <span class='id identifier rubyid_rules'>rules</span><span class='period'>.</span><span class='id identifier rubyid_reverse_each'>reverse_each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_r'>r</span><span class='op'>|</span>
+      <span class='comment'># If it&#39;s a class, it gets attached later.
+</span>      <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Class</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_visitor_class'>visitor_class</span><span class='period'>.</span><span class='id identifier rubyid_include'>include</span><span class='lparen'>(</span><span class='id identifier rubyid_r'>r</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+
+    <span class='kw'>if</span> <span class='id identifier rubyid_rewrite'>rewrite</span>
+      <span class='id identifier rubyid_visitor_class'>visitor_class</span><span class='period'>.</span><span class='id identifier rubyid_include'>include</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../InternalRepresentation.html" title="GraphQL::InternalRepresentation (module)">InternalRepresentation</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../InternalRepresentation/Rewrite.html" title="GraphQL::InternalRepresentation::Rewrite (module)">Rewrite</a></span></span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_visitor_class'>visitor_class</span><span class='period'>.</span><span class='id identifier rubyid_include'>include</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="BaseVisitor/ContextMethods.html" title="GraphQL::StaticValidation::BaseVisitor::ContextMethods (module)">ContextMethods</a></span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_visitor_class'>visitor_class</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="path-instance_method">
+  
+    #<strong>path</strong>  &#x21d2; <tt>Array&lt;String&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The nesting of the current position in the AST</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;String&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The nesting of the current position in the AST</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+28
+29
+30</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/base_visitor.rb', line 28</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_path'>path</span>
+  <span class='ivar'>@path</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="rewrite_document-instance_method">
+  
+    #<strong>rewrite_document</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>This will be overwritten by <span class='object_link'><a href="../InternalRepresentation/Rewrite.html" title="GraphQL::InternalRepresentation::Rewrite (module)">InternalRepresentation::Rewrite</a></span> if it’s included</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/base_visitor.rb', line 18</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_rewrite_document'>rewrite_document</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon Oct 14 11:54:14 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.19 (ruby-2.6.2).
+</div>
+
+    </div>
+  </body>
+</html>
