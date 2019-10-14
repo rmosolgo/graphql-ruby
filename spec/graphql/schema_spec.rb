@@ -11,11 +11,23 @@ describe GraphQL::Schema do
 
     end
 
+    class Query < GraphQL::Schema::Object
+      field :some_field, String, null: true
+    end
+
+    class Mutation < GraphQL::Schema::Object
+      field :some_field, String, null: true
+    end
+
+    class Subscription < GraphQL::Schema::Object
+      field :some_field, String, null: true
+    end
+
     let(:base_schema) do
       Class.new(GraphQL::Schema) do
-        query GraphQL::Schema::Object
-        mutation GraphQL::Schema::Object
-        subscription GraphQL::Schema::Object
+        query Query
+        mutation Mutation
+        subscription Subscription
         max_complexity 1
         max_depth 2
         default_max_page_size 3
@@ -70,14 +82,17 @@ describe GraphQL::Schema do
       schema = Class.new(base_schema)
       query = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Query'
+        field :some_field, String, null: true
       end
       schema.query(query)
       mutation = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Mutation'
+        field :some_field, String, null: true
       end
       schema.mutation(mutation)
       subscription = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Subscription'
+        field :some_field, String, null: true
       end
       schema.subscription(subscription)
       introspection = Module.new

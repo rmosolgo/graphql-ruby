@@ -316,4 +316,37 @@ describe GraphQL::Schema::Field do
       assert_equal :my_field, field.original_name
     end
   end
+
+  describe "generated default" do
+    class TestSchema < GraphQL::Schema
+      class BaseField < GraphQL::Schema::Field
+        def resolve_field(obj, args, ctx)
+          resolve(obj, args, ctx)
+        end
+      end
+
+      class Company < GraphQL::Schema::Object
+        field :id, ID, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field_class BaseField
+
+        field :company, Company, null: true do
+          argument :id, ID, required: true
+        end
+
+        def company(id:)
+          OpenStruct.new(id: id)
+        end
+      end
+
+      query(Query)
+    end
+
+    it "works" do
+      res = TestSchema.execute("{ company(id: \"1\") { id } }")
+      assert_equal "1", res["data"]["company"]["id"]
+    end
+  end
 end
