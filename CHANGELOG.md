@@ -8,6 +8,19 @@
 
 ### Bug fixes
 
+## 1.9.14 (14 Oct 2019)
+
+## New features
+
+- Add `null_session` CSRF handing in `install` generator #2524
+- Correctly report InputObjects without arguments and Objects without fields as invalid #2539 #2462
+
+## Bug fixes
+
+- Fix argument incompatibility #2541
+- Add a `require` for `Types::ISO8691Date` #2528
+- Fix errors re-raised after lazy fields #2525
+
 ## 1.9.13 (8 Oct 2019)
 
 ### Breaking changes
