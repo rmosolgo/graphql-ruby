@@ -842,7 +842,7 @@ type Hello { }
 SCHEMA
 
       err = assert_raises(GraphQL::Schema::InvalidTypeError) do
-        GraphQL::Schema.from_definition(schema)
+        GraphQL::Schema.from_definition(schema).to_graphql
       end
       assert_equal 'Hello is invalid: Hello must define at least 1 field. 0 defined.', err.message
     end

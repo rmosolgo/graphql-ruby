@@ -6,7 +6,7 @@ module GraphQL
       extend GraphQL::Schema::Member::ValidatesInput
 
       class << self
-        def coerce_non_null_input(val, ctx)
+        def coerce_input(val, ctx)
           val
         end
 

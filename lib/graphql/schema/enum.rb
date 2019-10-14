@@ -95,7 +95,7 @@ module GraphQL
           end
         end
 
-        def coerce_non_null_input(value_name, ctx)
+        def coerce_input(value_name, ctx)
           all_values = ctx.warden ? ctx.warden.enum_values(self) : values.each_value
 
           if v = all_values.find { |val| val.graphql_name == value_name }

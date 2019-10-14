@@ -1698,7 +1698,7 @@ module GraphQL
           um << owner
         end
 
-        if (prev_type = get_type(type.graphql_name))
+        if (prev_type = own_types[type.graphql_name])
           if prev_type != type
             raise ArgumentError, "Conflicting type definitions for `#{type.graphql_name}`: #{prev_type} (#{prev_type.class}), #{type} #{type.class}"
           else

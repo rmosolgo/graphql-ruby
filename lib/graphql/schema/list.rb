@@ -35,8 +35,8 @@ module GraphQL
         value.map { |i| i.nil? ? nil : of_type.coerce_result(i, ctx) }
       end
 
-      def coerce_non_null_input(value, ctx)
-        Array(value).map { |item| of_type.coerce_input(item, ctx) }
+      def coerce_input(value, ctx)
+        Array(value).map { |item| item.nil? ? item : of_type.coerce_input(item, ctx) }
       end
 
       def validate_non_null_input(value, ctx)

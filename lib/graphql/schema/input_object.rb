@@ -180,7 +180,7 @@ module GraphQL
           result
         end
 
-        def coerce_non_null_input(value, ctx)
+        def coerce_input(value, ctx)
           input_values = {}
 
           arguments.each do |name, argument_defn|

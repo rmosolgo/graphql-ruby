@@ -35,7 +35,11 @@ module GraphQL
               if validation_result.valid?
                 if value_was_provided
                   # Add the variable if a value was provided
-                  memo[variable_name] = variable_type.coerce_input(provided_value, ctx)
+                  memo[variable_name] = if provided_value.nil?
+                    nil
+                  else
+                    variable_type.coerce_input(provided_value, ctx)
+                  end
                 elsif default_value != nil
                   # Add the variable if it wasn't provided but it has a default value (including `null`)
                   memo[variable_name] = GraphQL::Query::LiteralInput.coerce(variable_type, default_value, self)
