@@ -445,13 +445,23 @@ describe GraphQL::Schema::Subscription do
     end
   end
 
+  describe "applying `loads:`" do
+    it "includes `as:` in the event topic" do
+      assert_equal [], SubscriptionFieldSchema::InMemorySubscriptions::EVENT_REGISTRY.keys
+      matz = SubscriptionFieldSchema::USERS["matz"]
+      obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: matz)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+      assert_equal [":tootWasTooted:user:matz"], SubscriptionFieldSchema::InMemorySubscriptions::EVENT_REGISTRY.keys
+    end
+  end
+
   describe "`subscription_scope` method" do
     it "provdes a subscription scope that is recognized in the schema" do
       scoped_subscription = SubscriptionFieldSchema::get_field("Subscription", "directTootWasTooted")
-  
+
       assert_equal :viewer, scoped_subscription.subscription_scope
     end
-  
+
     it "provides a subscription scope that is used in execution" do
       res = exec_query <<-GRAPHQL, context: { viewer: :me }
         subscription {

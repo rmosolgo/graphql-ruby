@@ -116,7 +116,7 @@ module GraphQL
         end
 
         NullResolveType = ->(type, obj, ctx) {
-          raise(NotImplementedError, "Generated Schema cannot use Interface or Union types for execution. Implement resolve_type on your resolver.")
+          raise(GraphQL::RequiredImplementationMissingError, "Generated Schema cannot use Interface or Union types for execution. Implement resolve_type on your resolver.")
         }
 
         def build_enum_type(enum_type_definition, type_resolver)

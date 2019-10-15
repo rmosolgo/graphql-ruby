@@ -143,7 +143,7 @@ module GraphQL
 
       # An opaque operation which returns a connection-specific cursor.
       def cursor_from_node(object)
-        raise NotImplementedError, "must return a cursor for this object/connection pair"
+        raise GraphQL::RequiredImplementationMissingError, "must return a cursor for this object/connection pair"
       end
 
       def inspect
@@ -165,11 +165,11 @@ module GraphQL
       end
 
       def paged_nodes
-        raise NotImplementedError, "must return nodes for this connection after paging"
+        raise GraphQL::RequiredImplementationMissingError, "must return nodes for this connection after paging"
       end
 
       def sliced_nodes
-        raise NotImplementedError, "must return  all nodes for this connection after chopping off first and last"
+        raise GraphQL::RequiredImplementationMissingError, "must return  all nodes for this connection after chopping off first and last"
       end
     end
   end
