@@ -54,7 +54,7 @@ describe GraphQL::Function do
     assert_equal(nil, default_func.type)
     assert_equal(nil, default_func.description)
     assert_equal(nil, default_func.deprecation_reason)
-    assert_raises(NotImplementedError) {
+    assert_raises(GraphQL::RequiredImplementationMissingError) {
       default_func.call(nil, nil, nil)
     }
   end

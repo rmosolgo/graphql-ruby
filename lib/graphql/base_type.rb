@@ -167,7 +167,7 @@ module GraphQL
     end
 
     def coerce_result(value, ctx)
-      raise NotImplementedError
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # Types with fields may override this

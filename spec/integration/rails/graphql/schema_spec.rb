@@ -103,7 +103,7 @@ describe GraphQL::Schema do
 
     describe "when the hook wasn't implemented" do
       it "raises not implemented" do
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           empty_schema.resolve_type(nil, nil)
         }
       end
@@ -120,7 +120,7 @@ describe GraphQL::Schema do
           field :something, interface
         end
 
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           GraphQL::Schema.define do
             query(query_type)
           end
@@ -150,7 +150,7 @@ describe GraphQL::Schema do
   describe "object_from_id" do
     describe "when the hook wasn't implemented" do
       it "raises not implemented" do
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           empty_schema.object_from_id(nil, nil)
         }
       end
@@ -168,7 +168,7 @@ describe GraphQL::Schema do
           field :thing, thing_type
         end
 
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           GraphQL::Schema.define do
             query(query_type)
             resolve_type NO_OP_RESOLVE_TYPE
@@ -181,7 +181,7 @@ describe GraphQL::Schema do
   describe "id_from_object" do
     describe "when the hook wasn't implemented" do
       it "raises not implemented" do
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           empty_schema.id_from_object(nil, nil, nil)
         }
       end
@@ -194,7 +194,7 @@ describe GraphQL::Schema do
           field :node, GraphQL::Relay::Node.field
         end
 
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           GraphQL::Schema.define do
             query(query_type)
             resolve_type NO_OP_RESOLVE_TYPE

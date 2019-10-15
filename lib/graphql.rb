@@ -10,6 +10,9 @@ module GraphQL
   class Error < StandardError
   end
 
+  class RequiredImplementationMissingError < Error
+  end
+
   # Turn a query string or schema definition into an AST
   # @param graphql_string [String] a GraphQL query string or schema definition
   # @return [GraphQL::Language::Nodes::Document]

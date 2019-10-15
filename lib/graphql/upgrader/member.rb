@@ -13,7 +13,7 @@ module GraphQL
       # @param input_text [String] Untransformed GraphQL-Ruby code
       # @return [String] The input text, with a transformation applied if necessary
       def apply(input_text)
-        raise NotImplementedError, "Return transformed text here"
+        raise GraphQL::RequiredImplementationMissingError, "Return transformed text here"
       end
 
       # Recursively transform a `.define`-DSL-based type expression into a class-ready expression, for example:
