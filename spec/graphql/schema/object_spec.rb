@@ -55,7 +55,7 @@ describe GraphQL::Schema::Object do
 
     it "raise on anonymous class without declared graphql name" do
       anonymous_class = Class.new(GraphQL::Schema::Object)
-      assert_raises NotImplementedError do
+      assert_raises GraphQL::RequiredImplementationMissingError do
         anonymous_class.graphql_name
       end
     end

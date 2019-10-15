@@ -103,7 +103,7 @@ module GraphQL
       # Do the work. Everything happens here.
       # @return [Object] An object corresponding to the return type
       def resolve(**args)
-        raise NotImplementedError, "#{self.class.name}#resolve should execute the field's logic"
+        raise GraphQL::RequiredImplementationMissingError, "#{self.class.name}#resolve should execute the field's logic"
       end
 
       # Called before arguments are prepared.

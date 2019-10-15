@@ -254,7 +254,7 @@ class DummySchema < GraphQL::Schema
   def self.resolve_type(type, obj, ctx)
     # TODO: Implement this function
     # to return the correct type for `obj`
-    raise(NotImplementedError)
+    raise(GraphQL::RequiredImplementationMissingError)
   end
 
   # GraphQL::Batch setup:

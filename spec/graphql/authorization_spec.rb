@@ -494,7 +494,7 @@ describe GraphQL::Authorization do
       assert_equal ["Field 'doHiddenStuff' doesn't exist on type 'Mutation'"], res["errors"].map { |e| e["message"] }
 
       # `#resolve` isn't implemented, so this errors out:
-      assert_raises NotImplementedError do
+      assert_raises GraphQL::RequiredImplementationMissingError do
         auth_execute(query)
       end
 
@@ -519,7 +519,7 @@ describe GraphQL::Authorization do
       assert_equal ["Field 'doHiddenStuff2' doesn't exist on type 'Mutation'"], res["errors"].map { |e| e["message"] }
 
       # `#resolve` isn't implemented, so this errors out:
-      assert_raises NotImplementedError do
+      assert_raises GraphQL::RequiredImplementationMissingError do
         auth_execute(query)
       end
     end
@@ -653,7 +653,7 @@ describe GraphQL::Authorization do
         res = auth_execute(query, context: { inaccessible_mutation: true })
         assert_equal ["Some fields in this query are not accessible: doInaccessibleStuff"], res["errors"].map { |e| e["message"] }
 
-        assert_raises NotImplementedError do
+        assert_raises GraphQL::RequiredImplementationMissingError do
           auth_execute(query)
         end
       end
@@ -688,7 +688,7 @@ describe GraphQL::Authorization do
       query = "mutation { doUnauthorizedStuff(input: {}) { __typename } }"
       res = auth_execute(query, context: { unauthorized_mutation: true })
       assert_nil res["data"].fetch("doUnauthorizedStuff")
-      assert_raises NotImplementedError do
+      assert_raises GraphQL::RequiredImplementationMissingError do
         auth_execute(query)
       end
     end

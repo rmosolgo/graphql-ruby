@@ -58,7 +58,7 @@ module GraphQL
         # @param context [GraphQL::Query::Context]
         # @return [Boolean] If truthy, execution will continue
         def self.enabled?(flag_name, object, context)
-          raise NotImplementedError, "Implement `.enabled?(flag_name, object, context)` to return true or false for the feature flag (#{flag_name.inspect})"
+          raise GraphQL::RequiredImplementationMissingError, "Implement `.enabled?(flag_name, object, context)` to return true or false for the feature flag (#{flag_name.inspect})"
         end
       end
     end

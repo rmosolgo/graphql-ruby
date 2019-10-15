@@ -610,7 +610,7 @@ module GraphQL
         elsif ctx.respond_to?(extra_name)
           ctx.public_send(extra_name)
         else
-          raise NotImplementedError, "Unknown field extra for #{self.path}: #{extra_name.inspect}"
+          raise GraphQL::RequiredImplementationMissingError, "Unknown field extra for #{self.path}: #{extra_name.inspect}"
         end
       end
 

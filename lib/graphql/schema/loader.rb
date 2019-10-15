@@ -34,7 +34,7 @@ module GraphQL
       end
 
       NullResolveType = ->(type, obj, ctx) {
-        raise(NotImplementedError, "This schema was loaded from string, so it can't resolve types for objects")
+        raise(GraphQL::RequiredImplementationMissingError, "This schema was loaded from string, so it can't resolve types for objects")
       }
 
       NullScalarCoerce = ->(val, _ctx) { val }
@@ -57,7 +57,7 @@ module GraphQL
           when "NON_NULL"
             NonNullType.new(of_type: resolve_type(types, type.fetch("ofType")))
           else
-            fail NotImplementedError, "#{kind} not implemented"
+            fail GraphQL::RequiredImplementationMissingError, "#{kind} not implemented"
           end
         end
 
@@ -177,7 +177,7 @@ module GraphQL
               }
             )
           else
-            fail NotImplementedError, "#{type["kind"]} not implemented"
+            fail GraphQL::RequiredImplementationMissingError, "#{type["kind"]} not implemented"
           end
         end
       end

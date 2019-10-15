@@ -207,7 +207,7 @@ module GraphQL
         when "LIST"
           default_value.to_a.map { |v| build_default_value(v, type.of_type) }
         else
-          raise NotImplementedError, "Unexpected default value type #{type.inspect}"
+          raise GraphQL::RequiredImplementationMissingError, "Unexpected default value type #{type.inspect}"
         end
       end
 

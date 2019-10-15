@@ -463,7 +463,6 @@ describe GraphQL::Schema::Subscription do
       matz = SubscriptionFieldSchema::USERS["matz"]
       obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: matz)
       SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
-      # TODO How does this compare to before-this-change?
       assert_equal [":tootWasTooted:user:matz"], SubscriptionFieldSchema::InMemorySubscriptions::EVENT_REGISTRY.keys
     end
   end

@@ -88,7 +88,7 @@ module GraphQL
 
         # @return [GraphQL::BaseType] Convert this type to a legacy-style object.
         def to_graphql
-          raise NotImplementedError
+          raise GraphQL::RequiredImplementationMissingError
         end
 
         alias :unwrap :itself
@@ -98,7 +98,7 @@ module GraphQL
         # without any namespaces and with any `-Type` suffix removed
         def default_graphql_name
           @default_graphql_name ||= begin
-            raise NotImplementedError, 'Anonymous class should declare a `graphql_name`' if name.nil?
+            raise GraphQL::RequiredImplementationMissingError, 'Anonymous class should declare a `graphql_name`' if name.nil?
 
             name.split("::").last.sub(/Type\Z/, "")
           end

@@ -129,7 +129,7 @@ module GraphQL
     # @yieldparam subscription_id [String]
     # @return [void]
     def each_subscription_id(event)
-      raise NotImplementedError
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # The system wants to send an update to this subscription.
@@ -137,7 +137,7 @@ module GraphQL
     # @param subscription_id [String]
     # @return [Hash] Containing required keys
     def read_subscription(subscription_id)
-      raise NotImplementedError
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # A subscription query was re-evaluated, returning `result`.
@@ -146,7 +146,7 @@ module GraphQL
     # @param result [Hash]
     # @return [void]
     def deliver(subscription_id, result)
-      raise NotImplementedError
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # `query` was executed and found subscriptions to `events`.
@@ -155,7 +155,7 @@ module GraphQL
     # @param events [Array<GraphQL::Subscriptions::Event>]
     # @return [void]
     def write_subscription(query, events)
-      raise NotImplementedError
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # A subscription was terminated server-side.
@@ -163,7 +163,7 @@ module GraphQL
     # @param subscription_id [String]
     # @return void.
     def delete_subscription(subscription_id)
-      raise NotImplementedError
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # @return [String] A new unique identifier for a subscription
