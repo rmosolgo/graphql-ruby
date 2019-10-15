@@ -78,7 +78,7 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil, warden: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
 
@@ -86,10 +86,10 @@ module GraphQL
       if schema.is_a?(Class) && !schema.interpreter?
         schema = schema.graphql_definition
       end
-
       @schema = schema
       @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
+      @warden = warden
       @subscription_topic = subscription_topic
       @root_value = root_value
       @fragments = nil
@@ -320,8 +320,7 @@ module GraphQL
 
     def prepare_ast
       @prepared_ast = true
-      @warden = GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
-
+      @warden ||= GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
         if query_string

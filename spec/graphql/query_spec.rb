@@ -814,4 +814,10 @@ describe GraphQL::Query do
       assert_equal msg, err.message
     end
   end
+
+  it "Accepts a passed-in warden" do
+    warden = GraphQL::Schema::Warden.new(->(t, ctx) { false }, schema: Jazz::Schema, context: nil)
+    res = Jazz::Schema.execute("{ __typename } ", warden: warden)
+    assert_equal ["Field '__typename' doesn't exist on type 'Query'"], res["errors"].map { |e| e["message"] }
+  end
 end
