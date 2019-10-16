@@ -55,20 +55,27 @@ module GraphQL
 
       class << self
         private
-        def stringify_args(args)
+        def stringify_args(arg_owner, args)
           case args
           when Hash
             next_args = {}
             args.each do |k, v|
-              str_k = GraphQL::Schema::Member::BuildType.camelize(k.to_s)
-              next_args[str_k] = stringify_args(v)
+              arg_name = k.to_s
+              arg_defn = arg_owner.arguments[arg_name]
+              if arg_defn
+                normalized_arg_name = arg_name
+              else
+                normalized_arg_name = GraphQL::Schema::Member::BuildType.camelize(arg_name)
+                arg_defn = arg_owner.arguments[normalized_arg_name]
+              end
+              next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
             end
             # Make sure they're deeply sorted
             next_args.sort.to_h
           when Array
-            args.map { |a| stringify_args(a) }
+            args.map { |a| stringify_args(arg_owner, a) }
           when GraphQL::Schema::InputObject
-            stringify_args(args.to_h)
+            stringify_args(arg_owner, args.to_h)
           else
             args
           end
