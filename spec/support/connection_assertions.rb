@@ -3,7 +3,7 @@
 # A shared module for testing ArrayConnection, RelationConnection,
 # DatasetConnection and MongoRelationConnection.
 #
-# The test must implement `TestSchema` to serve the queries below with the expected results.
+# The test must implement `schema` to serve the queries below with the expected results.
 module ConnectionAssertions
   MAX_PAGE_SIZE = 6
   NAMES = [
@@ -88,7 +88,7 @@ module ConnectionAssertions
   def self.included(child_module)
     child_module.class_exec do
       def exec_query(query_str, variables)
-        TestSchema.execute(query_str, variables: variables)
+        schema.execute(query_str, variables: variables)
       end
 
       def get_page_info(result, page_info_field)
@@ -201,7 +201,7 @@ module ConnectionAssertions
 
       describe "customizing" do
         it "serves custom fields" do
-          res = TestSchema.execute <<-GRAPHQL
+          res = schema.execute <<-GRAPHQL
           {
             items: customItems(first: 3) {
               nodes {
@@ -223,7 +223,7 @@ module ConnectionAssertions
 
         it "applies local max-page-size settings" do
           # Smaller default:
-          res = TestSchema.execute <<-GRAPHQL
+          res = schema.execute <<-GRAPHQL
           {
             items(first: 10, maxPageSizeOverride: 3) {
               nodes {
@@ -241,7 +241,7 @@ module ConnectionAssertions
           assert_names(["Avocado", "Beet", "Cucumber"], res)
 
           # Larger than the default:
-          res = TestSchema.execute <<-GRAPHQL
+          res = schema.execute <<-GRAPHQL
           {
             items(first: 10, maxPageSizeOverride: 7) {
               nodes {
@@ -260,7 +260,7 @@ module ConnectionAssertions
         end
 
         it "applies a field-level max-page-size configuration" do
-          res = TestSchema.execute <<-GRAPHQL
+          res = schema.execute <<-GRAPHQL
           {
             items: limitedItems(first: 10) {
               nodes {

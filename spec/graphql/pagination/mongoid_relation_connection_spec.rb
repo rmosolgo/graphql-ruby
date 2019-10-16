@@ -18,11 +18,13 @@ if testing_mongoid?
       end
     end
 
-    TestSchema = ConnectionAssertions.build_schema(
-      connection_class: GraphQL::Pagination::MongoidRelationConnection,
-      total_count_connection_class: MongoidRelationConnectionWithTotalCount,
-      get_items: -> { Food.all }
-    )
+    let(:schema) {
+      ConnectionAssertions.build_schema(
+        connection_class: GraphQL::Pagination::MongoidRelationConnection,
+        total_count_connection_class: MongoidRelationConnectionWithTotalCount,
+        get_items: -> { Food.all }
+      )
+    }
 
     include ConnectionAssertions
   end

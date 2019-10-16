@@ -16,11 +16,13 @@ if testing_rails?
       end
     end
 
-    TestSchema = ConnectionAssertions.build_schema(
-      connection_class: GraphQL::Pagination::SequelDatasetConnection,
-      total_count_connection_class: SequelDatasetConnectionWithTotalCount,
-      get_items: -> { SequelFood.dataset }
-    )
+    let(:schema) {
+      ConnectionAssertions.build_schema(
+        connection_class: GraphQL::Pagination::SequelDatasetConnection,
+        total_count_connection_class: SequelDatasetConnectionWithTotalCount,
+        get_items: -> { SequelFood.dataset }
+      )
+    }
 
     include ConnectionAssertions
   end

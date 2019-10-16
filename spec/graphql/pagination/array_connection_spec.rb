@@ -10,11 +10,13 @@ describe GraphQL::Pagination::ArrayConnection do
     end
   end
 
-  TestSchema = ConnectionAssertions.build_schema(
-    connection_class: GraphQL::Pagination::ArrayConnection,
-    total_count_connection_class: ArrayConnectionWithTotalCount,
-    get_items: -> { ITEMS }
-  )
+  let(:schema) {
+    ConnectionAssertions.build_schema(
+      connection_class: GraphQL::Pagination::ArrayConnection,
+      total_count_connection_class: ArrayConnectionWithTotalCount,
+      get_items: -> { ITEMS }
+    )
+  }
 
   include ConnectionAssertions
 end

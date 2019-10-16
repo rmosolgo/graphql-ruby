@@ -21,17 +21,19 @@ if testing_rails?
       end
     end
 
-    TestSchema = ConnectionAssertions.build_schema(
-      connection_class: GraphQL::Pagination::ActiveRecordRelationConnection,
-      total_count_connection_class: RelationConnectionWithTotalCount,
-      get_items: -> {
-        if Food.respond_to?(:scoped)
-          Food.scoped # Rails 3-friendly version of .all
-        else
-          Food.all
-        end
-      }
-    )
+    let(:schema) {
+      ConnectionAssertions.build_schema(
+        connection_class: GraphQL::Pagination::ActiveRecordRelationConnection,
+        total_count_connection_class: RelationConnectionWithTotalCount,
+        get_items: -> {
+          if Food.respond_to?(:scoped)
+            Food.scoped # Rails 3-friendly version of .all
+          else
+            Food.all
+          end
+        }
+      )
+    }
 
     include ConnectionAssertions
   end

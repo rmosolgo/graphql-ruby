@@ -167,8 +167,6 @@ module GraphQL
     attr_reader :tracers
 
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"].freeze
-    EMPTY_ARRAY = [].freeze
-    EMPTY_HASH = {}.freeze
 
     attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
 
