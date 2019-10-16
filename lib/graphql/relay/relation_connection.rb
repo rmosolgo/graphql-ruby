@@ -23,26 +23,18 @@ module GraphQL
         end
       end
 
-      def record_exists?(record)
-        if(defined?(ActiveRecord::Relation) && record.is_a?(ActiveRecord::Relation))
-          record.exists?
-        else
-          !record.empty?
-        end
-      end
-
       def has_next_page
         if first
-          if after
-            paged_nodes.length >= first && record_exists?(nodes.offset(first + offset_from_cursor(after)))
-          else
-            paged_nodes.length >= first && record_exists?(nodes.offset(first))
+          if defined?(ActiveRecord::Relation) && nodes.is_a?(ActiveRecord::Relation)
+            initial_offset = after ? offset_from_cursor(after) : 0
+            return paged_nodes.length >= first && nodes.offset(first + initial_offset).exists?
           end
-        elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && last
-          sliced_nodes_count >= last
-        else
-          false
+          return paged_nodes.length >= first && sliced_nodes_count > first
         end
+        if GraphQL::Relay::ConnectionType.bidirectional_pagination && last
+          return sliced_nodes_count >= last
+        end
+        false
       end
 
       def has_previous_page
