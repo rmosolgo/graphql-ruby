@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require 'irb/ruby-token'
+
 module GraphQL
   class Schema
     class Member
@@ -38,16 +40,23 @@ module GraphQL
           end
         end
 
+        # A list of Ruby keywords.
+        #
+        # @api private
+        RUBY_KEYWORDS = RubyToken::TokenDefinitions.select { |definition| definition[1] == RubyToken::TkId }
+                                                   .map { |definition| definition[2] }
+                                                   .compact
+
+        # A list of GraphQL-Ruby keywords.
+        #
+        # @api private
+        GRAPHQL_RUBY_KEYWORDS = [:context, :object, :method]
+
         # A list of field names that we should advise users to pick a different
         # resolve method name.
         #
         # @api private
-        CONFLICT_FIELD_NAMES = Set.new([
-          # GraphQL-Ruby conflicts
-          :context, :object,
-          # Ruby built-ins conflicts
-          :method, :class
-        ])
+        CONFLICT_FIELD_NAMES = Set.new(GRAPHQL_RUBY_KEYWORDS + RUBY_KEYWORDS)
 
         # Register this field with the class, overriding a previous one if needed.
         # @param field_defn [GraphQL::Schema::Field]
