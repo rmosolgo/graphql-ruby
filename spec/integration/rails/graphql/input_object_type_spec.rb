@@ -53,7 +53,7 @@ describe GraphQL::InputObjectType do
           b: Int!
         }
       |) }
-      let(:input_type) { schema.types['ExampleInputObject'] }
+      let(:input_type) { schema.types['ExampleInputObject'].graphql_definition }
 
       it "returns an invalid result when value is null for non-null argument" do
         invalid_input = MinimumInputObject.new({"a" => "Test", "b" => nil})
@@ -259,7 +259,7 @@ describe GraphQL::InputObjectType do
         example: ExampleInputObject = {b: 42, d: true}
       }
     |) }
-    let(:input_type) { schema.types['ExampleInputObject'] }
+    let(:input_type) { schema.types['ExampleInputObject'].graphql_definition }
 
     it "null values are returned in coerced input" do
       input = MinimumInputObject.new({"a" => "Test", "b" => nil,"c" => "Test"})
@@ -301,7 +301,7 @@ describe GraphQL::InputObjectType do
     end
 
     it "merges defaults of nested input objects" do
-      result = schema.types['SecondLevelInputObject'].coerce_isolated_input({})
+      result = schema.types['SecondLevelInputObject'].graphql_definition.coerce_isolated_input({})
       assert_equal 42, result['example']['b']
       assert_equal "Default", result['example']['c']
       assert_equal true, result['example']['d']

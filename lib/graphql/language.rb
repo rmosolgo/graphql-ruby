@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 require "graphql/language/block_string"
 require "graphql/language/printer"
-require "graphql/language/definition_slice"
 require "graphql/language/document_from_schema_definition"
 require "graphql/language/generation"
 require "graphql/language/lexer"
@@ -9,6 +8,7 @@ require "graphql/language/nodes"
 require "graphql/language/parser"
 require "graphql/language/token"
 require "graphql/language/visitor"
+require "graphql/language/definition_slice"
 
 module GraphQL
   module Language

@@ -125,7 +125,7 @@ module Dummy
 
     # Keywords can be used for definition methods
     field :fat_content,
-      type: GraphQL::FLOAT_TYPE,
+      type: Float,
       null: false,
       description: "Percentage which is milkfat",
       deprecation_reason: "Diet fashion has changed"
@@ -488,10 +488,9 @@ module Dummy
     mutation DairyAppMutation
     subscription Subscription
     max_depth 5
-    # TODO why is `.graphql_definition` required here?
-    orphan_types Honey, Beverage.graphql_definition
+    orphan_types Honey, Beverage
 
-    rescue_from(NoSuchDairyError) { |err| err.message  }
+    rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 
     def self.resolve_type(type, obj, ctx)
       Schema.types[obj.class.name.split("::").last]
@@ -508,9 +507,9 @@ module Dummy
       end
     end
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-    end
+    use GraphQL::Execution::Interpreter
+    use GraphQL::Analysis::AST
+    use GraphQL::Execution::Errors
   end
 
   class AdminSchema < GraphQL::Schema

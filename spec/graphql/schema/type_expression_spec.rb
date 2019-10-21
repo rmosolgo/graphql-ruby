@@ -13,14 +13,14 @@ describe GraphQL::Schema::TypeExpression do
     describe "simple types" do
       let(:type_name) { "DairyProductInput" }
       it "it gets types from the provided types" do
-        assert_equal(Dummy::DairyProductInput.graphql_definition, type_expression_result)
+        assert_equal(Dummy::DairyProductInput, type_expression_result)
       end
     end
 
     describe "non-null types" do
       let(:type_name) { "String!"}
       it "makes non-null types" do
-        assert_equal(GraphQL::STRING_TYPE.to_non_null_type,type_expression_result)
+        assert_equal(GraphQL::Types::String.to_non_null_type, type_expression_result)
       end
     end
 
@@ -28,7 +28,7 @@ describe GraphQL::Schema::TypeExpression do
       let(:type_name) { "[DairyAnimal!]!" }
 
       it "makes list types" do
-        expected = Dummy::DairyAnimal.graphql_definition
+        expected = Dummy::DairyAnimal
           .to_non_null_type
           .to_list_type
           .to_non_null_type

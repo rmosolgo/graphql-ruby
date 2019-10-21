@@ -351,10 +351,8 @@ describe GraphQL::Execution::Interpreter do
       Dummy::Schema.graphql_definition
       if TESTING_INTERPRETER
         assert_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
-        assert_equal GraphQL::Execution::Interpreter, Dummy::Schema.query_execution_strategy
       else
         refute_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
-        refute_equal GraphQL::Execution::Interpreter, Dummy::Schema.query_execution_strategy
       end
     end
   end

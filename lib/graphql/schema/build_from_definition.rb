@@ -5,9 +5,9 @@ module GraphQL
   class Schema
     module BuildFromDefinition
       class << self
-        def from_definition(definition_string, default_resolve:, parser: DefaultParser)
+        def from_definition(definition_string, default_resolve:, using: {}, interpreter: true, parser: DefaultParser)
           document = parser.parse(definition_string)
-          Builder.build(document, default_resolve: default_resolve)
+          Builder.build(document, default_resolve: default_resolve, using: using, interpreter: interpreter)
         end
       end
 
@@ -29,34 +29,39 @@ module GraphQL
       module Builder
         extend self
 
-        def build(document, default_resolve: DefaultResolve)
+        def build(document, default_resolve: DefaultResolve, using: {}, interpreter: true)
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
 
           if default_resolve.is_a?(Hash)
             default_resolve = ResolveMap.new(default_resolve)
           end
 
-          schema_definition = nil
+          schema_defns = document.definitions.select { |d| d.is_a?(GraphQL::Language::Nodes::SchemaDefinition) }
+          if schema_defns.size > 1
+            raise InvalidDocumentError.new('Must provide only one schema definition.')
+          end
+          schema_definition = schema_defns.first
           types = {}
           types.merge!(GraphQL::Schema::BUILT_IN_TYPES)
           directives = {}
-          type_resolver = ->(type) { -> { resolve_type(types, type) } }
+          type_resolver = ->(type) { resolve_type(types, type)  }
 
           document.definitions.each do |definition|
             case definition
             when GraphQL::Language::Nodes::SchemaDefinition
-              raise InvalidDocumentError.new('Must provide only one schema definition.') if schema_definition
-              schema_definition = definition
+              nil # already handled
             when GraphQL::Language::Nodes::EnumTypeDefinition
-              types[definition.name] = build_enum_type(definition, type_resolver).graphql_definition
+              types[definition.name] = build_enum_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ObjectTypeDefinition
-              types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve).graphql_definition
+              is_subscription_root = (definition.name == "Subscription" && (schema_definition.nil? || schema_definition.subscription.nil?)) || (schema_definition && (definition.name == schema_definition.subscription))
+              should_extend_subscription_root = is_subscription_root && interpreter
+              types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve, extend_subscription_root: should_extend_subscription_root)
             when GraphQL::Language::Nodes::InterfaceTypeDefinition
-              types[definition.name] = build_interface_type(definition, type_resolver).graphql_definition
+              types[definition.name] = build_interface_type(definition, type_resolver)
             when GraphQL::Language::Nodes::UnionTypeDefinition
-              types[definition.name] = build_union_type(definition, type_resolver).graphql_definition
+              types[definition.name] = build_union_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ScalarTypeDefinition
-              types[definition.name] = build_scalar_type(definition, type_resolver, default_resolve: default_resolve).graphql_definition
+              types[definition.name] = build_scalar_type(definition, type_resolver, default_resolve: default_resolve)
             when GraphQL::Language::Nodes::InputObjectTypeDefinition
               types[definition.name] = build_input_object_type(definition, type_resolver)
             when GraphQL::Language::Nodes::DirectiveDefinition
@@ -90,10 +95,18 @@ module GraphQL
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
           Class.new(GraphQL::Schema) do
-            query query_root_type
-            mutation mutation_root_type
-            subscription subscription_root_type
-            orphan_types types.values
+            begin
+              # Add these first so that there's some chance of resolving late-bound types
+              orphan_types types.values
+              query query_root_type
+              mutation mutation_root_type
+              subscription subscription_root_type
+            rescue Schema::UnresolvedLateBoundTypeError  => err
+              type_name = err.type.name
+              err_backtrace =  err.backtrace
+              raise InvalidDocumentError, "Type \"#{type_name}\" not found in document.", err_backtrace
+            end
+
             if default_resolve.respond_to?(:resolve_type)
               define_singleton_method(:resolve_type) do |*args|
                 default_resolve.resolve_type(*args)
@@ -110,8 +123,14 @@ module GraphQL
               ast_node(schema_definition)
             end
 
-            # Load caches, check for errors
-            graphql_definition
+            if interpreter
+              use GraphQL::Execution::Interpreter
+              use GraphQL::Analysis::AST
+            end
+
+            using.each do |plugin, options|
+              use(plugin, options)
+            end
           end
         end
 
@@ -141,7 +160,7 @@ module GraphQL
           return unless deprecated_directive
 
           reason = deprecated_directive.arguments.find{ |a| a.name == 'reason' }
-          return GraphQL::Directive::DEFAULT_DEPRECATION_REASON unless reason
+          return GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON unless reason
 
           reason.value
         end
@@ -173,15 +192,19 @@ module GraphQL
           end
         end
 
-        def build_object_type(object_type_definition, type_resolver, default_resolve:)
+        def build_object_type(object_type_definition, type_resolver, default_resolve:, extend_subscription_root:)
           builder = self
           type_def = nil
-          typed_resolve_fn = ->(field, obj, args, ctx) { default_resolve.call(type_def.graphql_definition, field, obj, args, ctx) }
+          typed_resolve_fn = ->(field, obj, args, ctx) { default_resolve.call(type_def, field, obj, args, ctx) }
           Class.new(GraphQL::Schema::Object) do
             type_def = self
             graphql_name(object_type_definition.name)
             description(object_type_definition.description)
             ast_node(object_type_definition)
+            if extend_subscription_root
+              # This has to come before `field ...` configurations since it modifies them
+              extend Subscriptions::SubscriptionRoot
+            end
 
             object_type_definition.interfaces.each do |interface_name|
               interface_defn = type_resolver.call(interface_name)
@@ -268,32 +291,42 @@ module GraphQL
           field_definitions.map do |field_definition|
             type_name = resolve_type_name(field_definition.type)
 
-            field = owner.field(
+            owner.field(
               field_definition.name,
               description: field_definition.description,
               type: type_resolver.call(field_definition.type),
               null: true,
               connection: type_name.end_with?("Connection"),
-              resolve: ->(obj, args, ctx) { default_resolve.call(field.graphql_definition, obj, args, ctx) },
               deprecation_reason: build_deprecation_reason(field_definition.directives),
               ast_node: field_definition,
               method_conflict_warning: false,
               camelize: false,
             ) do
               builder.build_arguments(self, field_definition.arguments, type_resolver)
+
+              # Don't do this for interfaces
+              if default_resolve
+                # TODO fragile hack. formalize this API?
+                define_singleton_method :resolve_field_method do |obj, args, ctx|
+                  default_resolve.call(self, obj.object, args, ctx)
+                end
+              end
             end
           end
         end
 
         def resolve_type(types, ast_node)
-          type = GraphQL::Schema::TypeExpression.build_type(types, ast_node)
-          if type.nil?
-            while ast_node.respond_to?(:of_type)
-              ast_node = ast_node.of_type
-            end
-            raise InvalidDocumentError.new("Type \"#{ast_node.name}\" not found in document.")
+          case ast_node
+          when GraphQL::Language::Nodes::TypeName
+            type_name = ast_node.name
+            types[type_name] ||= GraphQL::Schema::LateBoundType.new(type_name)
+          when GraphQL::Language::Nodes::NonNullType
+            resolve_type(types, ast_node.of_type).to_non_null_type
+          when GraphQL::Language::Nodes::ListType
+            resolve_type(types, ast_node.of_type).to_list_type
+          else
+            raise "Unexpected ast_node: #{ast_node.inspect}"
           end
-          type
         end
 
         def resolve_type_name(type)

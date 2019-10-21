@@ -154,7 +154,7 @@ module GraphQL
         }
 
         SCHEMA_CAN_FETCH_IDS = ->(schema) {
-          has_node_field = schema.query && schema.query.all_fields.any?(&:relay_node_field)
+          has_node_field = schema.query && schema.query.fields.each_value.any?(&:relay_node_field)
           if has_node_field && schema.object_from_id_proc.nil?
             "schema contains `node(id:...)` field, so you must define a `object_from_id -> (id, ctx) { ... }` function"
           else

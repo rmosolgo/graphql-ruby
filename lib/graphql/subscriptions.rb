@@ -18,12 +18,17 @@ module GraphQL
 
     # @see {Subscriptions#initialize} for options, concrete implementations may add options.
     def self.use(defn, options = {})
-      schema = defn.target
+      schema = defn.is_a?(Class) ? defn : defn.target
+
+      if schema.subscriptions
+        raise ArgumentError, "Can't reinstall subscriptions. #{schema} is using #{schema.subscriptions}, can't also add #{self}"
+      end
+
+      instrumentation = Subscriptions::Instrumentation.new(schema: schema)
+      defn.instrument(:query, instrumentation)
+      defn.instrument(:field, instrumentation)
       options[:schema] = schema
       schema.subscriptions = self.new(options)
-      instrumentation = Subscriptions::Instrumentation.new(schema: schema)
-      defn.instrument(:field, instrumentation)
-      defn.instrument(:query, instrumentation)
       nil
     end
 
@@ -188,7 +193,11 @@ module GraphQL
     # @return [Any] normalized arguments value
     def normalize_arguments(event_name, arg_owner, args)
       case arg_owner
-      when GraphQL::Field, GraphQL::InputObjectType
+      when GraphQL::Field, GraphQL::InputObjectType, GraphQL::Schema::Field, Class
+        if arg_owner.is_a?(Class) && !arg_owner.kind.input_object?
+          # it's a type, but not an input object
+          return args
+        end
         normalized_args = {}
         missing_arg_names = []
         args.each do |k, v|
@@ -202,6 +211,11 @@ module GraphQL
           end
 
           if arg_defn
+            # TODO will this break compatibility with existing subscriptions?
+            # It changes the topic
+            if arg_defn.keyword
+              normalized_arg_name = arg_defn.keyword.to_s
+            end
             normalized_args[normalized_arg_name] = normalize_arguments(event_name, arg_defn.type, v)
           else
             # Couldn't find a matching argument definition
@@ -209,9 +223,21 @@ module GraphQL
           end
         end
 
+        # Backfill default values so that trigger arguments
+        # match query arguments.
+        arg_owner.arguments.each do |name, arg_defn|
+          if arg_defn.default_value? && !normalized_args.key?(arg_defn.name)
+            normalized_args[arg_defn.name] = arg_defn.default_value
+          end
+        end
+
         if missing_arg_names.any?
           arg_owner_name = if arg_owner.is_a?(GraphQL::Field)
             "Subscription.#{arg_owner.name}"
+          elsif arg_owner.is_a?(GraphQL::Schema::Field)
+            arg_owner.path
+          elsif arg_owner.is_a?(Class)
+            arg_owner.graphql_name
           else
             arg_owner.to_s
           end
@@ -219,9 +245,9 @@ module GraphQL
         end
 
         normalized_args
-      when GraphQL::ListType
+      when GraphQL::ListType, GraphQL::Schema::List
         args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a) }
-      when GraphQL::NonNullType
+      when GraphQL::NonNullType, GraphQL::Schema::NonNull
         normalize_arguments(event_name, arg_owner.of_type, args)
       else
         args

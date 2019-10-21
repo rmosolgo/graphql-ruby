@@ -24,30 +24,37 @@ describe GraphQL::Relay::RangeAdd do
       )
     ]
 
-    item = GraphQL::ObjectType.define do
-      name "Item"
-      field :price, !types.Int
-      field :name, !types.String
+    item = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Item"
+      field :price, Integer, null: false
+      field :name, String, null: false
     end
-    menu = GraphQL::ObjectType.define do
-      name "Menu"
-      field :name, !types.String
-      field :items, !item.connection_type
-    end
-    query = GraphQL::ObjectType.define do
-      name "Query"
-      field :menus, types[menu], resolve: Proc.new { menus }
-    end
-    add_item = GraphQL::Relay::Mutation.define do
-      name "AddItem"
-      input_field :name, !types.String
-      input_field :price, !types.Int
-      input_field :menu_idx, !types.Int
 
-      return_field :item_edge, item.edge_type
-      return_field :items, item.connection_type
-      return_field :menu, menu
-      resolve ->(obj, input, ctx) {
+    menu = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Menu"
+      field :name, String, null: false
+      field :items, item.connection_type, null: false
+    end
+
+    query = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Query"
+      field :menus, [menu], null: false
+      define_method :menus do
+        menus
+      end
+    end
+
+    add_item = Class.new(GraphQL::Schema::RelayClassicMutation) do
+      graphql_name "AddItem"
+      argument :name, String, required: true
+      argument :price, Integer, required: true
+      argument :menu_idx, Integer, required: true
+
+      field :item_edge, item.edge_type, null: false
+      field :items, item.connection_type, null: false, connection: false
+      field :menu, menu, null: false
+
+      define_method :resolve do |input|
         this_menu = menus[input[:menu_idx]]
         new_item = OpenStruct.new(name: input[:name], price: input[:price])
         this_menu.items << new_item
@@ -55,7 +62,7 @@ describe GraphQL::Relay::RangeAdd do
           parent: this_menu,
           item: new_item,
           collection: this_menu.items,
-          context: ctx,
+          context: context,
         )
 
         {
@@ -63,11 +70,12 @@ describe GraphQL::Relay::RangeAdd do
           items: range_add.connection,
           item_edge: range_add.edge,
         }
-      }
+      end
     end
-    mutation = GraphQL::ObjectType.define do
-      name "Mutation"
-      field :add_item, add_item.field
+
+    mutation = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Mutation"
+      field :add_item, mutation: add_item
     end
 
     Class.new(GraphQL::Schema) do
@@ -81,11 +89,11 @@ describe GraphQL::Relay::RangeAdd do
   describe "returning Relay objects" do
     let(:query_str) { <<-GRAPHQL
     mutation {
-      add_item(input: {name: "Chilaquiles", price: 699, menu_idx: 0}) {
+      addItem(input: {name: "Chilaquiles", price: 699, menuIdx: 0}) {
         menu {
           name
         }
-        item_edge {
+        itemEdge {
           node {
             name
             price
@@ -107,9 +115,9 @@ describe GraphQL::Relay::RangeAdd do
     it "returns a connection and an edge" do
       res = schema.execute(query_str)
 
-      mutation_res = res["data"]["add_item"]
+      mutation_res = res["data"]["addItem"]
       assert_equal("Los Primos", mutation_res["menu"]["name"])
-      assert_equal({"name"=>"Chilaquiles", "price"=>699}, mutation_res["item_edge"]["node"])
+      assert_equal({"name"=>"Chilaquiles", "price"=>699}, mutation_res["itemEdge"]["node"])
       assert_equal(["California Burrito", "Fish Taco", "Chilaquiles"], mutation_res["items"]["edges"].map { |e| e["node"]["name"] })
       assert_equal(["__1", "__2", "__3"], mutation_res["items"]["edges"].map { |e| e["cursor"] })
     end

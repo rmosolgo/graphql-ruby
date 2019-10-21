@@ -416,12 +416,14 @@ describe GraphQL::Authorization do
     class Schema < GraphQL::Schema
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
+      else
+        # Opt in to accessible? checks
+        query_analyzer GraphQL::Authorization::Analyzer
       end
+
       query(Query)
       mutation(Mutation)
-
-      # Opt in to accessible? checks
-      query_analyzer GraphQL::Authorization::Analyzer
 
       lazy_resolve(Box, :value)
 
@@ -443,6 +445,7 @@ describe GraphQL::Authorization do
     class SchemaWithFieldHook < GraphQL::Schema
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
       query(Query)
 
@@ -450,7 +453,7 @@ describe GraphQL::Authorization do
         if err.object == :replace
           42
         elsif err.object == :raise
-          raise GraphQL::ExecutionError, "#{err.message} in field #{err.field.name}"
+          raise GraphQL::ExecutionError, "#{err.message} in field #{err.field.graphql_name}"
         else
           raise GraphQL::ExecutionError, "Unauthorized field #{err.field.graphql_name} on #{err.type.graphql_name}: #{err.object}"
         end
@@ -611,61 +614,64 @@ describe GraphQL::Authorization do
     end
   end
 
-  describe "applying the accessible? method" do
-    it "works with fields and arguments" do
-      queries = {
-        "{ inaccessible }" => ["Some fields in this query are not accessible: inaccessible"],
-        "{ int2(inaccessible: 1) }" => ["Some fields in this query are not accessible: int2"],
-      }
+  if !TESTING_INTERPRETER
+    # This isn't supported when running the interpreter
+    describe "applying the accessible? method" do
+      it "works with fields and arguments" do
+        queries = {
+          "{ inaccessible }" => ["Some fields in this query are not accessible: inaccessible"],
+          "{ int2(inaccessible: 1) }" => ["Some fields in this query are not accessible: int2"],
+        }
 
-      queries.each do |query_str, errors|
-        res = auth_execute(query_str, context: { hide: true })
-        assert_equal errors, res.fetch("errors").map { |e| e["message"] }
+        queries.each do |query_str, errors|
+          res = auth_execute(query_str, context: { hide: true })
+          assert_equal errors, res.fetch("errors").map { |e| e["message"] }
 
-        res = auth_execute(query_str, context: { hide: false })
-        refute res.key?("errors")
+          res = auth_execute(query_str, context: { hide: false })
+          refute res.key?("errors")
+        end
       end
-    end
 
-    it "works with return types" do
-      queries = {
-        "{ inaccessibleObject { __typename } }" => ["Some fields in this query are not accessible: inaccessibleObject"],
-        "{ inaccessibleInterface { __typename } }" => ["Some fields in this query are not accessible: inaccessibleInterface"],
-        "{ inaccessibleDefaultInterface { __typename } }" => ["Some fields in this query are not accessible: inaccessibleDefaultInterface"],
-      }
+      it "works with return types" do
+        queries = {
+          "{ inaccessibleObject { __typename } }" => ["Some fields in this query are not accessible: inaccessibleObject"],
+          "{ inaccessibleInterface { __typename } }" => ["Some fields in this query are not accessible: inaccessibleInterface"],
+          "{ inaccessibleDefaultInterface { __typename } }" => ["Some fields in this query are not accessible: inaccessibleDefaultInterface"],
+        }
 
-      queries.each do |query_str, errors|
-        res = auth_execute(query_str, context: { hide: true })
-        assert_equal errors, res["errors"].map { |e| e["message"] }
+        queries.each do |query_str, errors|
+          res = auth_execute(query_str, context: { hide: true })
+          assert_equal errors, res["errors"].map { |e| e["message"] }
 
-        res = auth_execute(query_str, context: { hide: false })
-        refute res.key?("errors")
+          res = auth_execute(query_str, context: { hide: false })
+          refute res.key?("errors")
+        end
       end
-    end
 
-    it "works with mutations" do
-      query = "mutation { doInaccessibleStuff(input: {}) { __typename } }"
-      res = auth_execute(query, context: { inaccessible_mutation: true })
-      assert_equal ["Some fields in this query are not accessible: doInaccessibleStuff"], res["errors"].map { |e| e["message"] }
+      it "works with mutations" do
+        query = "mutation { doInaccessibleStuff(input: {}) { __typename } }"
+        res = auth_execute(query, context: { inaccessible_mutation: true })
+        assert_equal ["Some fields in this query are not accessible: doInaccessibleStuff"], res["errors"].map { |e| e["message"] }
 
-      assert_raises GraphQL::RequiredImplementationMissingError do
-        auth_execute(query)
+        assert_raises GraphQL::RequiredImplementationMissingError do
+          auth_execute(query)
+        end
       end
-    end
 
-    it "works with edges and connections" do
-      query = <<-GRAPHQL
-      {
-        inaccessibleConnection { __typename }
-        inaccessibleEdge { __typename }
-      }
-      GRAPHQL
+      it "works with edges and connections" do
+        query = <<-GRAPHQL
+        {
+          inaccessibleConnection { __typename }
+          inaccessibleEdge { __typename }
+        }
+        GRAPHQL
 
-      inaccessible_res = auth_execute(query, context: { inaccessible_relay: true })
-      assert_equal ["Some fields in this query are not accessible: inaccessibleConnection, inaccessibleEdge"], inaccessible_res["errors"].map { |e| e["message"] }
+        inaccessible_res = auth_execute(query, context: { inaccessible_relay: true })
+        assert_equal ["Some fields in this query are not accessible: inaccessibleConnection, inaccessibleEdge"], inaccessible_res["errors"].map { |e| e["message"] }
 
-      accessible_res = auth_execute(query)
-      refute accessible_res.key?("errors")
+        accessible_res = auth_execute(query)
+        refute accessible_res.key?("errors")
+      end
     end
   end
 
@@ -1008,8 +1014,10 @@ describe GraphQL::Authorization do
         end
       end
       query(Query)
+
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
     end
 

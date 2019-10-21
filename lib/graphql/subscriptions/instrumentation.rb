@@ -11,7 +11,7 @@ module GraphQL
       end
 
       def instrument(type, field)
-        if type == @schema.subscription
+        if type == @schema.subscription.graphql_definition
           # This is a root field of `subscription`
           subscribing_resolve_proc = SubscriptionRegistrationResolve.new(field.resolve_proc)
           field.redefine(resolve: subscribing_resolve_proc)

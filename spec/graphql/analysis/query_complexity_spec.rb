@@ -6,7 +6,7 @@ describe GraphQL::Analysis::QueryComplexity do
   let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |this_query, complexity|  complexities << this_query << complexity } }
   let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [query_complexity]) }
   let(:variables) { {} }
-  let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
+  let(:query) { GraphQL::Query.new(Dummy::Schema.graphql_definition, query_string, variables: variables) }
 
   describe "simple queries" do
     let(:query_string) {%|
@@ -190,7 +190,7 @@ describe GraphQL::Analysis::QueryComplexity do
   end
 
   describe "relay types" do
-    let(:query) { GraphQL::Query.new(StarWars::Schema, query_string) }
+    let(:query) { GraphQL::Query.new(StarWars::Schema.graphql_definition, query_string) }
     let(:query_string) {%|
     {
       rebels {

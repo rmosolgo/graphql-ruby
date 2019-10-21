@@ -8,6 +8,7 @@ require 'graphql/schema/member/has_path'
 require 'graphql/schema/member/relay_shortcuts'
 require 'graphql/schema/member/scoped'
 require 'graphql/schema/member/type_system_helpers'
+require 'graphql/schema/member/validates_input'
 require "graphql/relay/type_extensions"
 
 module GraphQL
@@ -21,6 +22,8 @@ module GraphQL
       extend CachedGraphQLDefinition
       extend GraphQL::Relay::TypeExtensions
       extend BaseDSLMethods
+      extend BaseDSLMethods::ConfigurationExtension
+      introspection(false)
       extend TypeSystemHelpers
       extend Scoped
       extend RelayShortcuts

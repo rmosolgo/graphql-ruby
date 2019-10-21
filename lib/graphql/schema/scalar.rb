@@ -3,11 +3,9 @@ module GraphQL
   class Schema
     class Scalar < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::AcceptsDefinition
+      extend GraphQL::Schema::Member::ValidatesInput
 
       class << self
-        extend Forwardable
-        def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result
-
         def coerce_input(val, ctx)
           val
         end
@@ -37,6 +35,23 @@ module GraphQL
             @default_scalar = is_default
           end
           @default_scalar
+        end
+
+        def default_scalar?
+          @default_scalar ||= false
+        end
+
+        def validate_non_null_input(value, ctx)
+          result = Query::InputValidationResult.new
+          if coerce_input(value, ctx).nil?
+            str_value = if value == Float::INFINITY
+              ""
+            else
+              " #{GraphQL::Language.serialize(value)}"
+            end
+            result.add_problem("Could not coerce value#{str_value} to #{graphql_name}")
+          end
+          result
         end
       end
     end

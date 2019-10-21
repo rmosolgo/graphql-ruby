@@ -38,9 +38,9 @@ module GraphQL
 
       def build_schema_node
         GraphQL::Language::Nodes::SchemaDefinition.new(
-          query: warden.root_type_for_operation("query"),
-          mutation: warden.root_type_for_operation("mutation"),
-          subscription: warden.root_type_for_operation("subscription"),
+          query: (q = warden.root_type_for_operation("query")) && q.graphql_name,
+          mutation: (m = warden.root_type_for_operation("mutation")) && m.graphql_name,
+          subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,
           # This only supports directives from parsing,
           # use a custom printer to add to this list.
           directives: @schema.ast_node ? @schema.ast_node.directives : [],
@@ -49,8 +49,8 @@ module GraphQL
 
       def build_object_type_node(object_type)
         GraphQL::Language::Nodes::ObjectTypeDefinition.new(
-          name: object_type.name,
-          interfaces: warden.interfaces(object_type).sort_by(&:name).map { |iface| build_type_name_node(iface) },
+          name: object_type.graphql_name,
+          interfaces: warden.interfaces(object_type).sort_by(&:graphql_name).map { |iface| build_type_name_node(iface) },
           fields: build_field_nodes(warden.fields(object_type)),
           description: object_type.description,
         )
@@ -58,7 +58,7 @@ module GraphQL
 
       def build_field_node(field)
         field_node = GraphQL::Language::Nodes::FieldDefinition.new(
-          name: field.name,
+          name: field.graphql_name,
           arguments: build_argument_nodes(warden.arguments(field)),
           type: build_type_name_node(field.type),
           description: field.description,
@@ -66,7 +66,7 @@ module GraphQL
 
         if field.deprecation_reason
           field_node = field_node.merge_directive(
-            name: GraphQL::Directive::DeprecatedDirective.name,
+            name: GraphQL::Directive::DeprecatedDirective.graphql_name,
             arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: field.deprecation_reason)]
           )
         end
@@ -76,15 +76,15 @@ module GraphQL
 
       def build_union_type_node(union_type)
         GraphQL::Language::Nodes::UnionTypeDefinition.new(
-          name: union_type.name,
+          name: union_type.graphql_name,
           description: union_type.description,
-          types: warden.possible_types(union_type).sort_by(&:name).map { |type| build_type_name_node(type) }
+          types: warden.possible_types(union_type).sort_by(&:graphql_name).map { |type| build_type_name_node(type) }
         )
       end
 
       def build_interface_type_node(interface_type)
         GraphQL::Language::Nodes::InterfaceTypeDefinition.new(
-          name: interface_type.name,
+          name: interface_type.graphql_name,
           description: interface_type.description,
           fields: build_field_nodes(warden.fields(interface_type))
         )
@@ -92,8 +92,8 @@ module GraphQL
 
       def build_enum_type_node(enum_type)
         GraphQL::Language::Nodes::EnumTypeDefinition.new(
-          name: enum_type.name,
-          values: warden.enum_values(enum_type).sort_by(&:name).map do |enum_value|
+          name: enum_type.graphql_name,
+          values: warden.enum_values(enum_type).sort_by(&:graphql_name).map do |enum_value|
             build_enum_value_node(enum_value)
           end,
           description: enum_type.description,
@@ -102,13 +102,13 @@ module GraphQL
 
       def build_enum_value_node(enum_value)
         enum_value_node = GraphQL::Language::Nodes::EnumValueDefinition.new(
-          name: enum_value.name,
+          name: enum_value.graphql_name,
           description: enum_value.description,
         )
 
         if enum_value.deprecation_reason
           enum_value_node = enum_value_node.merge_directive(
-            name: GraphQL::Directive::DeprecatedDirective.name,
+            name: GraphQL::Directive::DeprecatedDirective.graphql_name,
             arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: enum_value.deprecation_reason)]
           )
         end
@@ -118,7 +118,7 @@ module GraphQL
 
       def build_scalar_type_node(scalar_type)
         GraphQL::Language::Nodes::ScalarTypeDefinition.new(
-          name: scalar_type.name,
+          name: scalar_type.graphql_name,
           description: scalar_type.description,
         )
       end
@@ -131,7 +131,7 @@ module GraphQL
         end
 
         argument_node = GraphQL::Language::Nodes::InputValueDefinition.new(
-          name: argument.name,
+          name: argument.graphql_name,
           description: argument.description,
           type: build_type_name_node(argument.type),
           default_value: default_value,
@@ -142,7 +142,7 @@ module GraphQL
 
       def build_input_object_node(input_object)
         GraphQL::Language::Nodes::InputObjectTypeDefinition.new(
-          name: input_object.name,
+          name: input_object.graphql_name,
           fields: build_argument_nodes(warden.arguments(input_object)),
           description: input_object.description,
         )
@@ -168,17 +168,17 @@ module GraphQL
       end
 
       def build_type_name_node(type)
-        case type
-        when GraphQL::ListType
+        case type.kind.name
+        when "LIST"
           GraphQL::Language::Nodes::ListType.new(
             of_type: build_type_name_node(type.of_type)
           )
-        when GraphQL::NonNullType
+        when "NON_NULL"
           GraphQL::Language::Nodes::NonNullType.new(
             of_type: build_type_name_node(type.of_type)
           )
         else
-          GraphQL::Language::Nodes::TypeName.new(name: type.name)
+          GraphQL::Language::Nodes::TypeName.new(name: type.graphql_name)
         end
       end
 
@@ -187,24 +187,24 @@ module GraphQL
           return GraphQL::Language::Nodes::NullValue.new(name: "null")
         end
 
-        case type
-        when GraphQL::ScalarType
+        case type.kind.name
+        when "SCALAR"
           type.coerce_isolated_result(default_value)
-        when EnumType
+        when "ENUM"
           GraphQL::Language::Nodes::Enum.new(name: type.coerce_isolated_result(default_value))
-        when InputObjectType
+        when "INPUT_OBJECT"
           GraphQL::Language::Nodes::InputObject.new(
             arguments: default_value.to_h.map do |arg_name, arg_value|
-              arg_type = type.input_fields.fetch(arg_name.to_s).type
+              arg_type = type.arguments.fetch(arg_name.to_s).type
               GraphQL::Language::Nodes::Argument.new(
-                name: arg_name,
+                name: arg_name.to_s,
                 value: build_default_value(arg_value, arg_type)
               )
             end
           )
-        when NonNullType
+        when "NON_NULL"
           build_default_value(default_value, type.of_type)
-        when ListType
+        when "LIST"
           default_value.to_a.map { |v| build_default_value(v, type.of_type) }
         else
           raise GraphQL::RequiredImplementationMissingError, "Unexpected default value type #{type.inspect}"
@@ -212,18 +212,18 @@ module GraphQL
       end
 
       def build_type_definition_node(type)
-        case type
-        when GraphQL::ObjectType
+        case type.kind.name
+        when "OBJECT"
           build_object_type_node(type)
-        when GraphQL::UnionType
+        when "UNION"
           build_union_type_node(type)
-        when GraphQL::InterfaceType
+        when "INTERFACE"
           build_interface_type_node(type)
-        when GraphQL::ScalarType
+        when "SCALAR"
           build_scalar_type_node(type)
-        when GraphQL::EnumType
+        when "ENUM"
           build_enum_type_node(type)
-        when GraphQL::InputObjectType
+        when "INPUT_OBJECT"
           build_input_object_node(type)
         else
           raise TypeError
@@ -250,7 +250,7 @@ module GraphQL
         definitions = []
         definitions << build_schema_node if include_schema_node?
         definitions += build_directive_nodes(warden.directives)
-        definitions += build_type_definition_nodes(warden.types)
+        definitions += build_type_definition_nodes(warden.types.values)
         definitions
       end
 
@@ -260,7 +260,7 @@ module GraphQL
         end
 
         if !include_built_in_scalars
-          types = types.reject { |type| type.default_scalar? }
+          types = types.reject { |type| type.kind.scalar? && type.default_scalar? }
         end
 
         types
@@ -281,9 +281,9 @@ module GraphQL
       end
 
       def schema_respects_root_name_conventions?(schema)
-        (schema.query.nil? || schema.query.name == 'Query') &&
-        (schema.mutation.nil? || schema.mutation.name == 'Mutation') &&
-        (schema.subscription.nil? || schema.subscription.name == 'Subscription')
+        (schema.query.nil? || schema.query.graphql_name == 'Query') &&
+        (schema.mutation.nil? || schema.mutation.graphql_name == 'Mutation') &&
+        (schema.subscription.nil? || schema.subscription.graphql_name == 'Subscription')
       end
 
       attr_reader :schema, :warden, :always_include_schema,

@@ -44,6 +44,30 @@ describe GraphQL::Schema::List do
     end
   end
 
+  describe "handling null" do
+    class ListNullHandlingSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :strings, [String, null: true], null: true do
+          argument :strings, [String, null: true], required: false
+        end
+
+        def strings(strings:)
+          strings
+        end
+      end
+
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+      query(Query)
+    end
+
+    it "passes `nil` as `nil`" do
+      str = "query($strings: [String]){ strings(strings: $strings) }"
+      res = ListNullHandlingSchema.execute(str, variables: { strings: nil })
+      assert_nil res["data"]["strings"]
+    end
+  end
+
   describe "validation" do
     class ListEnumValidationSchema < GraphQL::Schema
       class Item < GraphQL::Schema::Enum
@@ -68,6 +92,11 @@ describe GraphQL::Schema::List do
       res = ListEnumValidationSchema.execute "{ echo(items: [A, B, \"C\"]) }"
       expected_error = "Argument 'items' on Field 'echo' has an invalid value ([A, B, \"C\"]). Expected type '[Item!]!'."
       assert_equal [expected_error], res["errors"].map { |e| e["message"] }
+    end
+
+    it "works with #valid_input?" do
+      assert ListEnumValidationSchema::Item.to_list_type.valid_isolated_input?(["A", "B"])
+      refute ListEnumValidationSchema::Item.to_list_type.valid_isolated_input?(["A", "B", "C"])
     end
   end
 end

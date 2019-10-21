@@ -16,6 +16,7 @@ describe GraphQL::Tracing::SkylightTracing do
       use(GraphQL::Tracing::SkylightTracing)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
     end
 
@@ -24,6 +25,7 @@ describe GraphQL::Tracing::SkylightTracing do
       use(GraphQL::Tracing::SkylightTracing, set_endpoint_name: true)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
     end
 

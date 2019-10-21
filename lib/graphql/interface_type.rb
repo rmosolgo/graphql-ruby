@@ -71,7 +71,7 @@ module GraphQL
     # @return [GraphQL::ObjectType, nil] The type named `type_name` if it exists and implements this {InterfaceType}, (else `nil`)
     def get_possible_type(type_name, ctx)
       type = ctx.query.get_type(type_name)
-      type if type && ctx.query.schema.possible_types(self).include?(type)
+      type if type && ctx.query.warden.possible_types(self).include?(type)
     end
 
     # Check if a type is a possible type of this {InterfaceType}

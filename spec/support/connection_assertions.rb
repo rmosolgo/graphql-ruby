@@ -59,13 +59,13 @@ module ConnectionAssertions
         end
 
         def items(max_page_size_override: nil)
-          context.schema.class.connection_class.new(get_items, max_page_size: max_page_size_override)
+          context.schema.connection_class.new(get_items, max_page_size: max_page_size_override)
         end
 
         field :custom_items, custom_item_connection, null: false
 
         def custom_items
-          context.schema.class.total_count_connection_class.new(get_items)
+          context.schema.total_count_connection_class.new(get_items)
         end
 
         field :limited_items, item.connection_type, null: false, max_page_size: 2
@@ -77,11 +77,14 @@ module ConnectionAssertions
         private
 
         def get_items
-          context.schema.class.get_items.call
+          context.schema.get_items.call
         end
       end
 
       query(query)
+
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
     end
   end
 

@@ -9,7 +9,6 @@ ENV["BACKTRACE"] = "1"
 # Set this env var to use Interpreter for fixture schemas.
 # Eventually, interpreter will be the default.
 TESTING_INTERPRETER = ENV["TESTING_INTERPRETER"]
-TESTING_RESCUE_FROM = !TESTING_INTERPRETER
 
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
@@ -73,7 +72,9 @@ end
   begin
     Object.const_get(integration)
     Dir["#{File.dirname(__FILE__)}/integration/#{integration.downcase}/**/*.rb"].each do |f|
-      require f
+      if f.end_with?("spec_helper.rb") || ENV["TEST"].nil?
+        require f
+      end
     end
   rescue NameError
     # ignore

@@ -35,7 +35,7 @@ module GraphQL
       attr_reader :resolver_method
 
       # @return [Class] The type that this field belongs to
-      attr_reader :owner
+      attr_accessor :owner
 
       # @return [Symbol] the original name of the field, passed in by the user
       attr_reader :original_name
@@ -51,7 +51,7 @@ module GraphQL
       attr_reader :trace
 
       # @return [String, nil]
-      attr_reader :subscription_scope
+      attr_accessor :subscription_scope
 
       # Create a field instance from a list of arguments, keyword arguments, and a block.
       #
@@ -135,6 +135,9 @@ module GraphQL
           @return_type_expr && (@return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.include?("[")) || connection?)
         end
       end
+
+      # @return Boolean
+      attr_reader :relay_node_field
 
       # @return [Boolean] Should we warn if this field's name conflicts with a built-in method?
       def method_conflict_warning?
@@ -340,7 +343,7 @@ module GraphQL
         end
       end
 
-      def complexity(new_complexity)
+      def complexity(new_complexity = nil)
         case new_complexity
         when Proc
           if new_complexity.parameters.size != 3
@@ -353,6 +356,8 @@ module GraphQL
           end
         when Numeric
           @complexity = new_complexity
+        when nil
+          @complexity
         else
           raise("Invalid complexity: #{new_complexity.inspect} on #{@name}")
         end
@@ -427,12 +432,20 @@ module GraphQL
 
         # Ok, `self` isn't a class, but this is for consistency with the classes
         field_defn.metadata[:type_class] = self
-
+        field_defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(field_defn)
         field_defn
       end
 
+      attr_writer :type
+
       def type
-        @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+        @type ||= if @function
+          Member::BuildType.parse_type(@function.type, null: false)
+        elsif @field
+          Member::BuildType.parse_type(@field.type, null: false)
+        else
+          Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+        end
       rescue GraphQL::Schema::InvalidDocumentError => err
         # Let this propagate up
         raise err

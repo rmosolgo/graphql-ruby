@@ -115,6 +115,7 @@ describe GraphQL::Schema::InputObject do
         mutation(Mutation)
         if TESTING_INTERPRETER
           use GraphQL::Execution::Interpreter
+          use GraphQL::Analysis::AST
         end
 
         def self.object_from_id(id, ctx)
@@ -124,6 +125,8 @@ describe GraphQL::Schema::InputObject do
         def self.resolve_type(type, obj, ctx)
           type
         end
+
+        orphan_types [Jazz::InstrumentType]
       end
     end
 
@@ -219,6 +222,7 @@ describe GraphQL::Schema::InputObject do
         query(Query)
         if TESTING_INTERPRETER
           use GraphQL::Execution::Interpreter
+          use GraphQL::Analysis::AST
         end
 
         def self.object_from_id(id, ctx)
@@ -296,6 +300,36 @@ describe GraphQL::Schema::InputObject do
       ]
       assert_equal expected_info, res["data"]["inspectInput"]
     end
+
+    it "uses empty object when no variable value is given" do
+      query_str = <<-GRAPHQL
+      query($input: InspectableInput){
+        inspectInput(input: {
+          nestedInput: $input,
+          stringValue: "xyz"
+        })
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str, variables: { input: nil }, context: { message: "hi" })
+      expected_info = [
+        "Jazz::InspectableInput",
+        "hi, xyz, -, (-)",
+        "xyz",
+        "xyz",
+        "true",
+        "xyz",
+        "No ensemble",
+        "false"
+      ]
+
+      assert_equal expected_info, res["data"]["inspectInput"]
+    end
+
+    it "handles camelized booleans" do
+      res = Jazz::Schema.execute("query($input: CamelizedBooleanInput!){ inputObjectCamelization(input: $input) }", variables: { input: { camelizedBoolean: false } })
+      assert_equal "{:camelized_boolean=>false}", res["data"]["inputObjectCamelization"]
+    end
   end
 
   describe "when used with default_value" do
@@ -369,7 +403,7 @@ describe GraphQL::Schema::InputObject do
 
       @input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
-        context: OpenStruct.new(schema: Jazz::Schema),
+        context: OpenStruct.new(warden: Jazz::Schema, schema: Jazz::Schema),
         defaults_used: Set.new
       )
     end

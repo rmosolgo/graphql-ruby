@@ -45,7 +45,13 @@ module GraphQL
         def resolve_type(types, type)
           case kind = type.fetch("kind")
           when "ENUM", "INTERFACE", "INPUT_OBJECT", "OBJECT", "SCALAR", "UNION"
-            types.fetch(type.fetch("name"))
+            type_name = type.fetch("name")
+            type = types[type_name] || Schema::BUILT_IN_TYPES[type_name]
+            if type.nil?
+              raise "Type not found: #{type_name.inspect} among #{types.keys.sort}"
+            else
+              type.graphql_definition
+            end
           when "LIST"
             ListType.new(of_type: resolve_type(types, type.fetch("ofType")))
           when "NON_NULL"

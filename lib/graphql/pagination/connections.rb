@@ -29,9 +29,7 @@ module GraphQL
       end
 
       def self.use(schema_defn)
-        [schema_defn.target, schema_defn.target.class].each do |schema|
-          schema.connections = self.new
-        end
+        schema_defn.connections = self.new
       end
 
       def initialize

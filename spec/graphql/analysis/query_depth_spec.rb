@@ -5,7 +5,7 @@ describe GraphQL::Analysis::QueryDepth do
   let(:depths) { [] }
   let(:query_depth) { GraphQL::Analysis::QueryDepth.new { |query, max_depth|  depths << query << max_depth } }
   let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [query_depth]) }
-  let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
+  let(:query) { GraphQL::Query.new(Dummy::Schema.graphql_definition, query_string, variables: variables) }
   let(:variables) { {} }
 
   describe "simple queries" do

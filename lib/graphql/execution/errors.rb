@@ -18,12 +18,7 @@ module GraphQL
     #
     class Errors
       def self.use(schema)
-        schema_class = schema.is_a?(Class) ? schema : schema.target.class
-        schema.tracer(self.new(schema_class))
-      end
-
-      def initialize(schema)
-        @schema = schema
+        schema.tracer(self.new)
       end
 
       def trace(event, data)
@@ -40,12 +35,13 @@ module GraphQL
       def with_error_handling(trace_data)
         yield
       rescue StandardError => err
-        rescues = @schema.rescues
+        ctx = trace_data[:query].context
+        schema = ctx.schema
+        rescues = schema.rescues
         _err_class, handler = rescues.find { |err_class, handler| err.is_a?(err_class) }
         if handler
           obj = trace_data[:object]
           args = trace_data[:arguments]
-          ctx = trace_data[:query].context
           field = trace_data[:field]
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object

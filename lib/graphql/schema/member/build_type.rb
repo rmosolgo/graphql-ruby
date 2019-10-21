@@ -81,7 +81,7 @@ module GraphQL
           end
 
           if return_type.nil?
-            raise "Unexpected type input: #{type_expr} (#{type_expr.class})"
+            raise "Unexpected type input: #{type_expr.inspect} (#{type_expr.class})"
           end
 
           # Apply list_type first, that way the

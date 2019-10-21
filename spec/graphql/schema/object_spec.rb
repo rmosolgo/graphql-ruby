@@ -105,7 +105,8 @@ describe GraphQL::Schema::Object do
     end
   end
 
-  describe "using GraphQL::Function" do
+  if !TESTING_INTERPRETER
+  describe "using GraphQL::Function" do # rubocop:disable Layout/IndentationWidth
     new_test_func_payload = Class.new(GraphQL::Schema::Object) do
       graphql_name "TestFuncPayload"
       field :name, String, null: false
@@ -174,6 +175,7 @@ describe GraphQL::Schema::Object do
       res = schema.execute(query_str)
       assert_equal "graphql", res["data"]["testConn"]["edges"][0]["node"]["name"]
     end
+  end
   end
 
   describe "wrapping a Hash" do

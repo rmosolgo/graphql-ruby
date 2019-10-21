@@ -7,7 +7,7 @@ describe GraphQL::Schema::Finder do
   describe "#find" do
     it "finds a valid object type" do
       type = finder.find("Ensemble")
-      assert_equal "Ensemble", type.name
+      assert_equal "Ensemble", type.graphql_name
     end
 
     it "raises when finding an invalid object type" do
@@ -20,7 +20,7 @@ describe GraphQL::Schema::Finder do
 
     it "finds a valid directive" do
       directive = finder.find("@include")
-      assert_equal "include", directive.name
+      assert_equal "include", directive.graphql_name
     end
 
     it "raises when finding an invalid directive" do
@@ -33,12 +33,12 @@ describe GraphQL::Schema::Finder do
 
     it "finds a valid field" do
       field = finder.find("Ensemble.musicians")
-      assert_equal "musicians", field.name
+      assert_equal "musicians", field.graphql_name
     end
 
     it "finds a meta field" do
       field = finder.find("Ensemble.__typename")
-      assert_equal "__typename", field.name
+      assert_equal "__typename", field.graphql_name
     end
 
     it "raises when finding an in valid field" do
@@ -51,7 +51,7 @@ describe GraphQL::Schema::Finder do
 
     it "finds a valid argument" do
       arg = finder.find("Query.find.id")
-      assert_equal "id", arg.name
+      assert_equal "id", arg.graphql_name
     end
 
     it "raises when finding an invalid argument" do
@@ -72,17 +72,17 @@ describe GraphQL::Schema::Finder do
 
     it "finds a valid interface" do
       type = finder.find("NamedEntity")
-      assert_equal "NamedEntity", type.name
+      assert_equal "NamedEntity", type.graphql_name
     end
 
     it "finds a valid input type" do
       type = finder.find("LegacyInput")
-      assert_equal "LegacyInput", type.name
+      assert_equal "LegacyInput", type.graphql_name
     end
 
     it "finds a valid input field" do
       input_field = finder.find("LegacyInput.intValue")
-      assert_equal "intValue", input_field.name
+      assert_equal "intValue", input_field.graphql_name
     end
 
     it "raises when finding an invalid input field" do
@@ -95,7 +95,7 @@ describe GraphQL::Schema::Finder do
 
     it "finds a valid union type" do
       type = finder.find("PerformingAct")
-      assert_equal "PerformingAct", type.name
+      assert_equal "PerformingAct", type.graphql_name
     end
 
     it "raises when selecting a possible type" do
@@ -108,12 +108,12 @@ describe GraphQL::Schema::Finder do
 
     it "finds a valid enum type" do
       type = finder.find("Family")
-      assert_equal "Family", type.name
+      assert_equal "Family", type.graphql_name
     end
 
     it "finds a valid enum value" do
       value = finder.find("Family.BRASS")
-      assert_equal "BRASS", value.name
+      assert_equal "BRASS", value.graphql_name
     end
 
     it "raises when finding an invalid enum value" do

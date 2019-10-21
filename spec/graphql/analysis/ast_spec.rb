@@ -138,7 +138,7 @@ describe GraphQL::Analysis::AST do
     let(:analyzers) { [AstTypeCollector, AstNodeCounter] }
     let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, analyzers) }
     let(:variables) { {} }
-    let(:query) { GraphQL::Query.new(Dummy::Schema.graphql_definition, query_string, variables: variables) }
+    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -187,7 +187,7 @@ describe GraphQL::Analysis::AST do
 
         it "it runs the analyzer" do
           prev_field = reduce_result.first
-          assert_equal "__Schema.types", prev_field.metadata[:type_class].path
+          assert_equal "__Schema.types", prev_field.path
         end
       end
 
@@ -202,8 +202,8 @@ describe GraphQL::Analysis::AST do
 
         it "it runs the analyzer" do
           argument, prev_argument = reduce_result.first
-          assert_equal "DairyProductInput.source", argument.metadata[:type_class].path
-          assert_equal "Query.searchDairy.product", prev_argument.metadata[:type_class].path
+          assert_equal "DairyProductInput.source", argument.path
+          assert_equal "Query.searchDairy.product", prev_argument.path
         end
       end
     end
@@ -211,10 +211,10 @@ describe GraphQL::Analysis::AST do
     it "calls the defined analyzers" do
       collected_types, node_counts = reduce_result
       expected_visited_types = [
-        Dummy::DairyAppQuery.graphql_definition,
-        Dummy::Cheese.graphql_definition,
-        GraphQL::INT_TYPE,
-        GraphQL::STRING_TYPE
+        Dummy::DairyAppQuery,
+        Dummy::Cheese,
+        GraphQL::Types::Int,
+        GraphQL::Types::String
       ]
       assert_equal expected_visited_types, collected_types
 

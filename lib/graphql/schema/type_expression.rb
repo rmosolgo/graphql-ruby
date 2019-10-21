@@ -5,38 +5,36 @@ module GraphQL
     module TypeExpression
       # Fetch a type from a type map by its AST specification.
       # Return `nil` if not found.
-      # @param types [GraphQL::Schema::TypeMap]
+      # @param types [#fetch] A thing for looking up types by name
       # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
-      # @return [GraphQL::BaseType, nil]
+      # @return [Class, GraphQL::Schema::NonNull, GraphQL::Schema:List]
       def self.build_type(types, ast_node)
-        t = type_from_ast(types, ast_node)
-        # maybe nil:
-        t ? t.graphql_definition : t
+        case ast_node
+        when GraphQL::Language::Nodes::TypeName
+          types[ast_node.name]
+        when GraphQL::Language::Nodes::NonNullType
+          ast_inner_type = ast_node.of_type
+          inner_type = build_type(types, ast_inner_type)
+          wrap_type(inner_type, :to_non_null_type)
+        when GraphQL::Language::Nodes::ListType
+          ast_inner_type = ast_node.of_type
+          inner_type = build_type(types, ast_inner_type)
+          wrap_type(inner_type, :to_list_type)
+        else
+          raise "Invariant: unexpected type from ast: #{ast_node.inspect}"
+        end
       end
 
       class << self
         private
 
-        def type_from_ast(types, ast_node)
-          case ast_node
-          when GraphQL::Language::Nodes::TypeName
-            types.fetch(ast_node.name, nil)
-          when GraphQL::Language::Nodes::NonNullType
-            ast_inner_type = ast_node.of_type
-            inner_type = build_type(types, ast_inner_type)
-            wrap_type(inner_type, GraphQL::Schema::NonNull)
-          when GraphQL::Language::Nodes::ListType
-            ast_inner_type = ast_node.of_type
-            inner_type = build_type(types, ast_inner_type)
-            wrap_type(inner_type, GraphQL::Schema::List)
-          end
-        end
-
-        def wrap_type(of_type, wrapper)
-          if of_type.nil?
+        def wrap_type(type, wrapper_method)
+          if type.nil?
             nil
+          elsif wrapper_method == :to_list_type || wrapper_method == :to_non_null_type
+            type.public_send(wrapper_method)
           else
-            wrapper.new(of_type)
+            raise ArgumentError, "Unexpected wrapper method: #{wrapper_method.inspect}"
           end
         end
       end
