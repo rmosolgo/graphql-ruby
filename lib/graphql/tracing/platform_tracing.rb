@@ -21,12 +21,33 @@ module GraphQL
       def trace(key, data)
         case key
         when "lex", "parse", "validate", "analyze_query", "analyze_multiplex", "execute_query", "execute_query_lazy", "execute_multiplex"
+          data.fetch(:query).context.namespace(self.class)[:platform_key_cache] = {} if key == "execute_query"
           platform_key = @platform_keys.fetch(key)
           platform_trace(platform_key, key, data) do
             yield
           end
         when "execute_field", "execute_field_lazy"
-          if (platform_key = data[:context].field.metadata[:platform_key])
+          if data[:context]
+            field = data[:context].field
+            platform_key = field.metadata[:platform_key]
+            trace_field = true # implemented with instrumenter
+          else
+            field = data[:field]
+            platform_key_cache = data.fetch(:query).context.namespace(self.class).fetch(:platform_key_cache)
+            platform_key = platform_key_cache.fetch(field) do
+              platform_key_cache[field] = platform_field_key(data[:owner], field)
+            end
+
+            return_type = field.type.unwrap
+            # Handle LateBoundTypes, which don't have `#kind`
+            trace_field = if return_type.respond_to?(:kind) && (return_type.kind.scalar? || return_type.kind.enum?)
+              (field.trace.nil? && @trace_scalars) || field.trace
+            else
+              true
+            end
+          end
+
+          if platform_key && trace_field
             platform_trace(platform_key, key, data) do
               yield
             end

@@ -8,17 +8,19 @@ module GraphQL
       # - `children` returns all AST nodes attached to this one. Used for tree traversal.
       # - `scalars` returns all scalar (Ruby) values attached to this one. Used for comparing nodes.
       # - `to_query_string` turns an AST node into a GraphQL string
-
       class AbstractNode
-        module Scalars # :nodoc:
-          module Name
-            def scalars
-              super + [name]
-            end
+        module DefinitionNode
+          # This AST node's {#line} returns the first line, which may be the description.
+          # @return [Integer] The first line of the definition (not the description)
+          attr_reader :definition_line
+
+          def initialize(options = {})
+            @definition_line = options.delete(:definition_line)
+            super(options)
           end
         end
 
-        attr_accessor :line, :col, :filename
+        attr_reader :line, :col, :filename
 
         # Initialize a node by extracting its position,
         # then calling the class's `initialize_node` method.
@@ -34,11 +36,6 @@ module GraphQL
           initialize_node(options)
         end
 
-        # This is called with node-specific options
-        def initialize_node(options={})
-          raise NotImplementedError
-        end
-
         # Value equality
         # @return [Boolean] True if `self` is equivalent to `other`
         def eql?(other)
@@ -48,14 +45,28 @@ module GraphQL
             other.children.eql?(self.children)
         end
 
+        NO_CHILDREN = [].freeze
+
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] all nodes in the tree below this one
         def children
-          []
+          NO_CHILDREN
         end
 
         # @return [Array<Integer, Float, String, Boolean, Array>] Scalar values attached to this node
         def scalars
-          []
+          NO_CHILDREN
+        end
+
+        # This might be unnecessary, but its easiest to add it here.
+        def initialize_copy(other)
+          @children = nil
+          @scalars = nil
+          @query_string = nil
+        end
+
+        # @return [Symbol] the method to call on {Language::Visitor} for this node
+        def visit_method
+          raise GraphQL::RequiredImplementationMissingError, "#{self.class.name}#visit_method shold return a symbol"
         end
 
         def position
@@ -63,37 +74,213 @@ module GraphQL
         end
 
         def to_query_string(printer: GraphQL::Language::Printer.new)
-          printer.print(self)
+          if printer.is_a?(GraphQL::Language::Printer)
+            @query_string ||= printer.print(self)
+          else
+            printer.print(self)
+          end
+        end
+
+        # This creates a copy of `self`, with `new_options` applied.
+        # @param new_options [Hash]
+        # @return [AbstractNode] a shallow copy of `self`
+        def merge(new_options)
+          dup.merge!(new_options)
+        end
+
+        # Copy `self`, but modify the copy so that `previous_child` is replaced by `new_child`
+        def replace_child(previous_child, new_child)
+          # Figure out which list `previous_child` may be found in
+          method_name = previous_child.children_method_name
+          # Get the value from this (original) node
+          prev_children = public_send(method_name)
+          if prev_children.is_a?(Array)
+            # Copy that list, and replace `previous_child` with `new_child`
+            # in the list.
+            new_children = prev_children.dup
+            prev_idx = new_children.index(previous_child)
+            new_children[prev_idx] = new_child
+          else
+            # Use the new value for the given attribute
+            new_children = new_child
+          end
+          # Copy this node, but with the new child value
+          copy_of_self = merge(method_name => new_children)
+          # Return the copy:
+          copy_of_self
+        end
+
+        # TODO DRY with `replace_child`
+        def delete_child(previous_child)
+          # Figure out which list `previous_child` may be found in
+          method_name = previous_child.children_method_name
+          # Copy that list, and delete previous_child
+          new_children = public_send(method_name).dup
+          new_children.delete(previous_child)
+          # Copy this node, but with the new list of children:
+          copy_of_self = merge(method_name => new_children)
+          # Return the copy:
+          copy_of_self
+        end
+
+        protected
+
+        def merge!(new_options)
+          new_options.each do |key, value|
+            instance_variable_set(:"@#{key}", value)
+          end
+          self
+        end
+
+        class << self
+          # Add a default `#visit_method` and `#children_method_name` using the class name
+          def inherited(child_class)
+            super
+            name_underscored = child_class.name
+              .split("::").last
+              .gsub(/([a-z])([A-Z])/,'\1_\2') # insert underscores
+              .downcase # remove caps
+
+            child_class.module_eval <<-RUBY
+              def visit_method
+                :on_#{name_underscored}
+              end
+
+              def children_method_name
+                :#{name_underscored}s
+              end
+            RUBY
+          end
+
+          private
+
+          # Name accessors which return lists of nodes,
+          # along with the kind of node they return, if possible.
+          # - Add a reader for these children
+          # - Add a persistent update method to add a child
+          # - Generate a `#children` method
+          def children_methods(children_of_type)
+            if @children_methods
+              raise "Can't re-call .children_methods for #{self} (already have: #{@children_methods})"
+            else
+              @children_methods = children_of_type
+            end
+
+            if children_of_type == false
+              @children_methods = {}
+              # skip
+            else
+
+              children_of_type.each do |method_name, node_type|
+                module_eval <<-RUBY, __FILE__, __LINE__
+                  # A reader for these children
+                  attr_reader :#{method_name}
+                RUBY
+
+                if node_type
+                  # Only generate a method if we know what kind of node to make
+                  module_eval <<-RUBY, __FILE__, __LINE__
+                    # Singular method: create a node with these options
+                    # and return a new `self` which includes that node in this list.
+                    def merge_#{method_name.to_s.sub(/s$/, "")}(node_opts)
+                      merge(#{method_name}: #{method_name} + [#{node_type.name}.new(node_opts)])
+                    end
+                  RUBY
+                end
+              end
+
+              if children_of_type.size == 1
+                module_eval <<-RUBY, __FILE__, __LINE__
+                  alias :children #{children_of_type.keys.first}
+                RUBY
+              else
+                module_eval <<-RUBY, __FILE__, __LINE__
+                  def children
+                    @children ||= (#{children_of_type.keys.map { |k| "@#{k}" }.join(" + ")}).freeze
+                  end
+                RUBY
+              end
+            end
+
+            if defined?(@scalar_methods)
+              generate_initialize_node
+            else
+              raise "Can't generate_initialize_node because scalar_methods wasn't called; call it before children_methods"
+            end
+          end
+
+          # These methods return a plain Ruby value, not another node
+          # - Add reader methods
+          # - Add a `#scalars` method
+          def scalar_methods(*method_names)
+            if @scalar_methods
+              raise "Can't re-call .scalar_methods for #{self} (already have: #{@scalar_methods})"
+            else
+              @scalar_methods = method_names
+            end
+
+            if method_names == [false]
+              @scalar_methods = []
+              # skip it
+            else
+              module_eval <<-RUBY, __FILE__, __LINE__
+                # add readers for each scalar
+                attr_reader #{method_names.map { |m| ":#{m}"}.join(", ")}
+
+                def scalars
+                  @scalars ||= [#{method_names.map { |k| "@#{k}" }.join(", ")}].freeze
+                end
+              RUBY
+            end
+          end
+
+          def generate_initialize_node
+            scalar_method_names = @scalar_methods
+            # TODO: These probably should be scalar methods, but `types` returns an array
+            [:types, :description].each do |extra_method|
+              if method_defined?(extra_method)
+                scalar_method_names += [extra_method]
+              end
+            end
+
+            all_method_names = scalar_method_names + @children_methods.keys
+            if all_method_names.include?(:alias)
+              # Rather than complicating this special case,
+              # let it be overridden (in field)
+              return
+            else
+              arguments = scalar_method_names.map { |m| "#{m}: nil"} +
+                @children_methods.keys.map { |m| "#{m}: []" }
+
+              assignments = scalar_method_names.map { |m| "@#{m} = #{m}"} +
+                @children_methods.keys.map { |m| "@#{m} = #{m}.freeze" }
+
+              module_eval <<-RUBY, __FILE__, __LINE__
+                def initialize_node #{arguments.join(", ")}
+                  #{assignments.join("\n")}
+                end
+              RUBY
+            end
+          end
         end
       end
 
       # Base class for non-null type names and list type names
       class WrapperType < AbstractNode
-        attr_accessor :of_type
-
-        def initialize_node(of_type: nil)
-          @of_type = of_type
-        end
-
-        def scalars
-          [of_type]
-        end
+        scalar_methods :of_type
+        children_methods(false)
       end
 
       # Base class for nodes whose only value is a name (no child nodes or other scalars)
       class NameOnlyNode < AbstractNode
-        include Scalars::Name
-
-        attr_accessor :name
-
-        def initialize_node(name: nil)
-          @name = name
-        end
+        scalar_methods :name
+        children_methods(false)
       end
 
       # A key-value pair for a field's inputs
       class Argument < AbstractNode
-        attr_accessor :name, :value
+        scalar_methods :name, :value
+        children_methods(false)
 
         # @!attribute name
         #   @return [String] the key for this argument
@@ -101,50 +288,28 @@ module GraphQL
         # @!attribute value
         #   @return [String, Float, Integer, Boolean, Array, InputObject] The value passed for this key
 
-        def initialize_node(name: nil, value: nil)
-          @name = name
-          @value = value
-        end
-
-        def scalars
-          [name, value]
-        end
-
         def children
-          [value].flatten.select { |v| v.is_a?(AbstractNode) }
+          @children ||= Array(value).flatten.select { |v| v.is_a?(AbstractNode) }
         end
       end
 
       class Directive < AbstractNode
-        include Scalars::Name
+        scalar_methods :name
+        children_methods(arguments: GraphQL::Language::Nodes::Argument)
+      end
 
-        attr_accessor :name, :arguments
-        alias :children :arguments
-
-        def initialize_node(name: nil, arguments: [])
-          @name = name
-          @arguments = arguments
-        end
+      class DirectiveLocation < NameOnlyNode
       end
 
       class DirectiveDefinition < AbstractNode
-        include Scalars::Name
-
-        attr_accessor :name, :arguments, :locations, :description
-
-        def initialize_node(name: nil, arguments: [], locations: [], description: nil)
-          @name = name
-          @arguments = arguments
-          @locations = locations
-          @description = description
-        end
-
-        def children
-          arguments + locations
-        end
+        include DefinitionNode
+        attr_reader :description
+        scalar_methods :name
+        children_methods(
+          locations: Nodes::DirectiveLocation,
+          arguments: Nodes::Argument,
+        )
       end
-
-      class DirectiveLocation < NameOnlyNode; end
 
       # This is the AST root for normal queries
       #
@@ -165,14 +330,10 @@ module GraphQL
       #  document.to_query_string(printer: VariableSrubber.new)
       #
       class Document < AbstractNode
-        attr_accessor :definitions
-        alias :children :definitions
-
+        scalar_methods false
+        children_methods(definitions: nil)
         # @!attribute definitions
         #   @return [Array<OperationDefinition, FragmentDefinition>] top-level GraphQL units: operations or fragments
-        def initialize_node(definitions: [])
-          @definitions = definitions
-        end
 
         def slice_definition(name)
           GraphQL::Language::DefinitionSlice.slice(self, name)
@@ -180,39 +341,47 @@ module GraphQL
       end
 
       # An enum value. The string is available as {#name}.
-      class Enum < NameOnlyNode; end
+      class Enum < NameOnlyNode
+      end
 
       # A null value literal.
-      class NullValue < NameOnlyNode; end
+      class NullValue < NameOnlyNode
+      end
 
       # A single selection in a GraphQL query.
       class Field < AbstractNode
-        attr_accessor :name, :alias, :arguments, :directives, :selections
+        scalar_methods :name, :alias
+        children_methods({
+          arguments: GraphQL::Language::Nodes::Argument,
+          selections: GraphQL::Language::Nodes::Field,
+          directives: GraphQL::Language::Nodes::Directive,
+        })
 
         # @!attribute selections
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
 
         def initialize_node(name: nil, arguments: [], directives: [], selections: [], **kwargs)
           @name = name
-          # oops, alias is a keyword:
-          @alias = kwargs.fetch(:alias, nil)
           @arguments = arguments
           @directives = directives
           @selections = selections
+          # oops, alias is a keyword:
+          @alias = kwargs.fetch(:alias, nil)
         end
 
-        def scalars
-          [name, self.alias]
-        end
-
-        def children
-          arguments + directives + selections
+        # Override this because default is `:fields`
+        def children_method_name
+          :selections
         end
       end
 
       # A reusable fragment, defined at document-level.
       class FragmentDefinition < AbstractNode
-        attr_accessor :name, :type, :directives, :selections
+        scalar_methods :name, :type
+        children_methods({
+          selections: GraphQL::Language::Nodes::Field,
+          directives: GraphQL::Language::Nodes::Directive,
+        })
 
         # @!attribute name
         #   @return [String] the identifier for this fragment, which may be applied with `...#{name}`
@@ -226,64 +395,47 @@ module GraphQL
           @selections = selections
         end
 
-        def children
-          directives + selections
-        end
-
-        def scalars
-          [name, type]
+        def children_method_name
+          :definitions
         end
       end
 
       # Application of a named fragment in a selection
       class FragmentSpread < AbstractNode
-        include Scalars::Name
+        scalar_methods :name
+        children_methods(directives: GraphQL::Language::Nodes::Directive)
 
-        attr_accessor :name, :directives
-        alias :children :directives
+        def children_method_name
+          :selections
+        end
 
         # @!attribute name
         #   @return [String] The identifier of the fragment to apply, corresponds with {FragmentDefinition#name}
-
-        def initialize_node(name: nil, directives: [])
-          @name = name
-          @directives = directives
-        end
       end
 
       # An unnamed fragment, defined directly in the query with `... {  }`
       class InlineFragment < AbstractNode
-        attr_accessor :type, :directives, :selections
+        scalar_methods :type
+        children_methods({
+          selections: GraphQL::Language::Nodes::Field,
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+
+        def children_method_name
+          :selections
+        end
 
         # @!attribute type
         #   @return [String, nil] Name of the type this fragment applies to, or `nil` if this fragment applies to any type
-
-        def initialize_node(type: nil, directives: [], selections: [])
-          @type = type
-          @directives = directives
-          @selections = selections
-        end
-
-        def children
-          directives + selections
-        end
-
-        def scalars
-          [type]
-        end
       end
 
       # A collection of key-value inputs which may be a field argument
       class InputObject < AbstractNode
-        attr_accessor :arguments
-        alias :children :arguments
+        scalar_methods(false)
+        children_methods(arguments: GraphQL::Language::Nodes::Argument)
 
         # @!attribute arguments
         #   @return [Array<Nodes::Argument>] A list of key-value pairs inside this input object
-
-        def initialize_node(arguments: [])
-          @arguments = arguments
-        end
 
         # @return [Hash<String, Any>] Recursively turn this input object into a Ruby Hash
         def to_h(options={})
@@ -292,6 +444,10 @@ module GraphQL
             memo[pair.name] = serialize_value_for_hash v
             memo
           end
+        end
+
+        def children_method_name
+          :value
         end
 
         private
@@ -316,16 +472,37 @@ module GraphQL
 
 
       # A list type definition, denoted with `[...]` (used for variable type definitions)
-      class ListType < WrapperType; end
+      class ListType < WrapperType
+      end
 
       # A non-null type definition, denoted with `...!` (used for variable type definitions)
-      class NonNullType < WrapperType; end
+      class NonNullType < WrapperType
+      end
+
+      # An operation-level query variable
+      class VariableDefinition < AbstractNode
+        scalar_methods :name, :type, :default_value
+        children_methods false
+        # @!attribute default_value
+        #   @return [String, Integer, Float, Boolean, Array, NullValue] A Ruby value to use if no other value is provided
+
+        # @!attribute type
+        #   @return [TypeName, NonNullType, ListType] The expected type of this value
+
+        # @!attribute name
+        #   @return [String] The identifier for this variable, _without_ `$`
+      end
 
       # A query, mutation or subscription.
       # May be anonymous or named.
       # May be explicitly typed (eg `mutation { ... }`) or implicitly a query (eg `{ ... }`).
       class OperationDefinition < AbstractNode
-        attr_accessor :operation_type, :name, :variables, :directives, :selections
+        scalar_methods :operation_type, :name
+        children_methods({
+          variables: GraphQL::Language::Nodes::VariableDefinition,
+          selections: GraphQL::Language::Nodes::Field,
+          directives: GraphQL::Language::Nodes::Directive,
+        })
 
         # @!attribute variables
         #   @return [Array<VariableDefinition>] Variable definitions for this operation
@@ -339,314 +516,225 @@ module GraphQL
         # @!attribute name
         #   @return [String, nil] The name for this operation, or `nil` if unnamed
 
-        def initialize_node(operation_type: nil, name: nil, variables: [], directives: [], selections: [])
-          @operation_type = operation_type
-          @name = name
-          @variables = variables
-          @directives = directives
-          @selections = selections
-        end
-
-        def children
-          variables + directives + selections
-        end
-
-        def scalars
-          [operation_type, name]
+        def children_method_name
+          :definitions
         end
       end
 
       # A type name, used for variable definitions
-      class TypeName < NameOnlyNode; end
-
-      # An operation-level query variable
-      class VariableDefinition < AbstractNode
-        attr_accessor :name, :type, :default_value
-
-        # @!attribute default_value
-        #   @return [String, Integer, Float, Boolean, Array, NullValue] A Ruby value to use if no other value is provided
-
-        # @!attribute type
-        #   @return [TypeName, NonNullType, ListType] The expected type of this value
-
-        # @!attribute name
-        #   @return [String] The identifier for this variable, _without_ `$`
-
-        def initialize_node(name: nil, type: nil, default_value: nil)
-          @name = name
-          @type = type
-          @default_value = default_value
-        end
-
-        def scalars
-          [name, type, default_value]
-        end
+      class TypeName < NameOnlyNode
       end
 
       # Usage of a variable in a query. Name does _not_ include `$`.
-      class VariableIdentifier < NameOnlyNode; end
+      class VariableIdentifier < NameOnlyNode
+      end
 
       class SchemaDefinition < AbstractNode
-        attr_accessor :query, :mutation, :subscription, :directives
-
-        def initialize_node(query: nil, mutation: nil, subscription: nil, directives: [])
-          @query = query
-          @mutation = mutation
-          @subscription = subscription
-          @directives = directives
+        include DefinitionNode
+        scalar_methods :query, :mutation, :subscription
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+        def children_method_name
+          :definitions
         end
-
-        def scalars
-          [query, mutation, subscription]
-        end
-
-        alias :children :directives
       end
 
       class SchemaExtension < AbstractNode
-        attr_accessor :query, :mutation, :subscription, :directives
-
-        def initialize_node(query: nil, mutation: nil, subscription: nil, directives: [])
-          @query = query
-          @mutation = mutation
-          @subscription = subscription
-          @directives = directives
+        scalar_methods :query, :mutation, :subscription
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+        def children_method_name
+          :definitions
         end
-
-        def scalars
-          [query, mutation, subscription]
-        end
-
-        alias :children :directives
       end
 
       class ScalarTypeDefinition < AbstractNode
-        include Scalars::Name
-
-        attr_accessor :name, :directives, :description
-        alias :children :directives
-
-        def initialize_node(name:, directives: [], description: nil)
-          @name = name
-          @directives = directives
-          @description = description
+        include DefinitionNode
+        attr_reader :description
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+        def children_method_name
+          :definitions
         end
       end
 
       class ScalarTypeExtension < AbstractNode
-        attr_accessor :name, :directives
-        alias :children :directives
-
-        def initialize_node(name:, directives: [])
-          @name = name
-          @directives = directives
-        end
-      end
-
-      class ObjectTypeDefinition < AbstractNode
-        include Scalars::Name
-
-        attr_accessor :name, :interfaces, :fields, :directives, :description
-
-        def initialize_node(name:, interfaces:, fields:, directives: [], description: nil)
-          @name = name
-          @interfaces = interfaces || []
-          @directives = directives
-          @fields = fields
-          @description = description
-        end
-
-        def children
-          interfaces + fields + directives
-        end
-      end
-
-      class ObjectTypeExtension < AbstractNode
-        attr_accessor :name, :interfaces, :fields, :directives
-
-        def initialize_node(name:, interfaces:, fields:, directives: [])
-          @name = name
-          @interfaces = interfaces || []
-          @directives = directives
-          @fields = fields
-        end
-
-        def children
-          interfaces + fields + directives
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+        def children_method_name
+          :definitions
         end
       end
 
       class InputValueDefinition < AbstractNode
-        attr_accessor :name, :type, :default_value, :directives,:description
-        alias :children :directives
-
-        def initialize_node(name:, type:, default_value: nil, directives: [], description: nil)
-          @name = name
-          @type = type
-          @default_value = default_value
-          @directives = directives
-          @description = description
-        end
-
-        def scalars
-          [name, type, default_value]
+        include DefinitionNode
+        attr_reader :description
+        scalar_methods :name, :type, :default_value
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+        def children_method_name
+          :fields
         end
       end
 
       class FieldDefinition < AbstractNode
-        attr_accessor :name, :arguments, :type, :directives, :description
-
-        def initialize_node(name:, arguments:, type:, directives: [], description: nil)
-          @name = name
-          @arguments = arguments
-          @type = type
-          @directives = directives
-          @description = description
+        include DefinitionNode
+        attr_reader :description
+        scalar_methods :name, :type
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+          arguments: GraphQL::Language::Nodes::InputValueDefinition,
+        })
+        def children_method_name
+          :fields
         end
 
-        def children
-          arguments + directives
+        # this is so that `children_method_name` of `InputValueDefinition` works properly
+        # with `#replace_child`
+        alias :fields :arguments
+        def merge(new_options)
+          if (f = new_options.delete(:fields))
+            new_options[:arguments] = f
+          end
+          super
         end
+      end
 
-        def scalars
-          [name, type]
+      class ObjectTypeDefinition < AbstractNode
+        include DefinitionNode
+        attr_reader :description
+        scalar_methods :name, :interfaces
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+          fields: GraphQL::Language::Nodes::FieldDefinition,
+        })
+        def children_method_name
+          :definitions
+        end
+      end
+
+      class ObjectTypeExtension < AbstractNode
+        scalar_methods :name, :interfaces
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+          fields: GraphQL::Language::Nodes::FieldDefinition,
+        })
+        def children_method_name
+          :definitions
         end
       end
 
       class InterfaceTypeDefinition < AbstractNode
-        include Scalars::Name
-
-        attr_accessor :name, :fields, :directives, :description
-
-        def initialize_node(name:, fields:, directives: [], description: nil)
-          @name = name
-          @fields = fields
-          @directives = directives
-          @description = description
-        end
-
-        def children
-          fields + directives
+        include DefinitionNode
+        attr_reader :description
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+          fields: GraphQL::Language::Nodes::FieldDefinition,
+        })
+        def children_method_name
+          :definitions
         end
       end
 
       class InterfaceTypeExtension < AbstractNode
-        attr_accessor :name, :fields, :directives
-
-        def initialize_node(name:, fields:, directives: [])
-          @name = name
-          @fields = fields
-          @directives = directives
-        end
-
-        def children
-          fields + directives
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+          fields: GraphQL::Language::Nodes::FieldDefinition,
+        })
+        def children_method_name
+          :definitions
         end
       end
 
       class UnionTypeDefinition < AbstractNode
-        include Scalars::Name
-
-        attr_accessor :name, :types, :directives, :description
-
-        def initialize_node(name:, types:, directives: [], description: nil)
-          @name = name
-          @types = types
-          @directives = directives
-          @description = description
-        end
-
-        def children
-          types + directives
+        include DefinitionNode
+        attr_reader :description, :types
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+        def children_method_name
+          :definitions
         end
       end
 
       class UnionTypeExtension < AbstractNode
-        attr_accessor :name, :types, :directives
-
-        def initialize_node(name:, types:, directives: [])
-          @name = name
-          @types = types
-          @directives = directives
-        end
-
-        def children
-          types + directives
-        end
-      end
-
-      class EnumTypeDefinition < AbstractNode
-        include Scalars::Name
-
-        attr_accessor :name, :values, :directives, :description
-
-        def initialize_node(name:, values:, directives: [], description: nil)
-          @name = name
-          @values = values
-          @directives = directives
-          @description = description
-        end
-
-        def children
-          values + directives
-        end
-      end
-
-      class EnumTypeExtension < AbstractNode
-        attr_accessor :name, :values, :directives
-
-        def initialize_node(name:, values:, directives: [])
-          @name = name
-          @values = values
-          @directives = directives
-        end
-
-        def children
-          values + directives
+        attr_reader :types
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+        def children_method_name
+          :definitions
         end
       end
 
       class EnumValueDefinition < AbstractNode
-        include Scalars::Name
+        include DefinitionNode
+        attr_reader :description
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+        def children_method_name
+          :values
+        end
+      end
 
-        attr_accessor :name, :directives, :description
-        alias :children :directives
+      class EnumTypeDefinition < AbstractNode
+        include DefinitionNode
+        attr_reader :description
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+          values: GraphQL::Language::Nodes::EnumValueDefinition,
+        })
+        def children_method_name
+          :definitions
+        end
+      end
 
-        def initialize_node(name:, directives: [], description: nil)
-          @name = name
-          @directives = directives
-          @description = description
+      class EnumTypeExtension < AbstractNode
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+          values: GraphQL::Language::Nodes::EnumValueDefinition,
+        })
+        def children_method_name
+          :definitions
         end
       end
 
       class InputObjectTypeDefinition < AbstractNode
-        include Scalars::Name
-
-        attr_accessor :name, :fields, :directives, :description
-
-        def initialize_node(name:, fields:, directives: [], description: nil)
-          @name = name
-          @fields = fields
-          @directives = directives
-          @description = description
-        end
-
-        def children
-          fields + directives
+        include DefinitionNode
+        attr_reader :description
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+          fields: GraphQL::Language::Nodes::InputValueDefinition,
+        })
+        def children_method_name
+          :definitions
         end
       end
 
       class InputObjectTypeExtension < AbstractNode
-        attr_accessor :name, :fields, :directives
-
-        def initialize_node(name:, fields:, directives: [])
-          @name = name
-          @fields = fields
-          @directives = directives
-        end
-
-        def children
-          fields + directives
+        scalar_methods :name
+        children_methods({
+          directives: GraphQL::Language::Nodes::Directive,
+          fields: GraphQL::Language::Nodes::InputValueDefinition,
+        })
+        def children_method_name
+          :definitions
         end
       end
     end

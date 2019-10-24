@@ -18,7 +18,12 @@ module GraphQL
         @input_value_type = load_constant(:InputValueType).to_graphql
         @type_kind_enum = load_constant(:TypeKindEnum).to_graphql
         @directive_location_enum = load_constant(:DirectiveLocationEnum).to_graphql
-        @entry_point_fields = get_fields_from_class(class_sym: :EntryPoints)
+        @entry_point_fields =
+          if schema.disable_introspection_entry_points
+            {}
+          else
+            get_fields_from_class(class_sym: :EntryPoints)
+          end
         @dynamic_fields = get_fields_from_class(class_sym: :DynamicFields)
       end
 

@@ -135,4 +135,4 @@ To accomplish these, you can use GraphQL-Ruby's authorization framework. The fra
 - {% internal_link "Accessibility", "/authorization/accessibility" %} prevents running queries which access parts of the GraphQL schema, unless users have the required permission.
 - {% internal_link "Authorization", "/authorization/authorization" %} checks application objects during execution to be sure the user has permission to access them.
 
-Also, [GraphQL::Pro](http://graphql.pro) has integrations for {% internal_link "CanCan", "/authorization/can_can_integration" %} and {% internal_link "Pundit", "/authorization/pundit_integration" %}.
+Also, [GraphQL::Pro](https://graphql.pro) has integrations for {% internal_link "CanCan", "/authorization/can_can_integration" %} and {% internal_link "Pundit", "/authorization/pundit_integration" %}.

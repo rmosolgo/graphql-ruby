@@ -27,7 +27,7 @@ module GraphQL
   #    tracer MyTracer # <= responds to .trace(key, data, &block)
   #  end
   #
-  # @example Adding a tracer to a query
+  # @example Adding a tracer to a single query
   #   MySchema.execute(query_str, context: { backtrace: true })
   #
   # Events:
@@ -42,8 +42,13 @@ module GraphQL
   # execute_multiplex | `{ multiplex: GraphQL::Execution::Multiplex }`
   # execute_query | `{ query: GraphQL::Query }`
   # execute_query_lazy | `{ query: GraphQL::Query?, multiplex: GraphQL::Execution::Multiplex? }`
-  # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
-  # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
+  # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext?, owner: Class?, field: GraphQL::Schema::Field?, query: GraphQL::Query?, path: Array<String, Integer>?}`
+  # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext?, owner: Class?, field: GraphQL::Schema::Field?, query: GraphqL::Query?, path: Array<String, Integer>?}`
+  #
+  # Note that `execute_field` and `execute_field_lazy` receive different data in different settings:
+  #
+  # - When using {GraphQL::Execution::Interpreter}, they receive `{field:, path:, query:}`
+  # - Otherwise, they receive `{context: ...}`
   #
   module Tracing
     # Objects may include traceable to gain a `.trace(...)` method.

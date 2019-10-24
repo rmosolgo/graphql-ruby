@@ -37,6 +37,10 @@ describe GraphQL::Schema::RelayClassicMutation do
   end
 
   describe "execution" do
+    after do
+      Jazz::Models.reset
+    end
+
     it "works with no arguments" do
       res = Jazz::Schema.execute <<-GRAPHQL
       mutation {
@@ -49,6 +53,59 @@ describe GraphQL::Schema::RelayClassicMutation do
       GRAPHQL
 
       assert_equal "Sitar", res["data"]["addSitar"]["instrument"]["name"]
+    end
+
+    it "works with InputObject arguments" do
+      res = Jazz::Schema.execute <<-GRAPHQL
+      mutation {
+        addEnsembleRelay(input: { ensemble: { name: "Miles Davis Quartet" } }) {
+          ensemble {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal "Miles Davis Quartet", res["data"]["addEnsembleRelay"]["ensemble"]["name"]
+    end
+
+    it "supports extras" do
+      res = Jazz::Schema.execute <<-GRAPHQL
+      mutation {
+        hasExtras(input: {}) {
+          nodeClass
+          int
+        }
+      }
+      GRAPHQL
+
+      assert_equal "GraphQL::Language::Nodes::Field", res["data"]["hasExtras"]["nodeClass"]
+      assert_nil res["data"]["hasExtras"]["int"]
+
+      # Also test with given args
+      res = Jazz::Schema.execute <<-GRAPHQL
+      mutation {
+        hasExtras(input: {int: 5}) {
+          nodeClass
+          int
+        }
+      }
+      GRAPHQL
+      assert_equal "GraphQL::Language::Nodes::Field", res["data"]["hasExtras"]["nodeClass"]
+      assert_equal 5, res["data"]["hasExtras"]["int"]
+    end
+
+    it "can strip out extras" do
+      ctx = {}
+      res = Jazz::Schema.execute <<-GRAPHQL, context: ctx
+      mutation {
+        hasExtrasStripped(input: {}) {
+          int
+        }
+      }
+      GRAPHQL
+      assert_equal true, ctx[:has_lookahead]
+      assert_equal 51, res["data"]["hasExtrasStripped"]["int"]
     end
   end
 

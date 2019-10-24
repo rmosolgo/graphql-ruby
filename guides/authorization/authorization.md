@@ -13,7 +13,7 @@ While a query is running, you can check each object to see whether the current u
 
 Schema members have `.authorized?(value, context)` methods which will be called during execution:
 
-- Type and mutation classes have `.authorized?(value, context)` class methods
+- Type classes have `.authorized?(value, context)` class methods
 - Fields and arguments have `#authorized?(value, context)` instance methods
 
 These methods are called with:
@@ -43,7 +43,7 @@ By default, GraphQL-Ruby silently replaces unauthorized objects with `nil`, as i
 
 ```ruby
 class MySchema < GraphQL::Schema
-  # Override this hook to handle cases when `authorized?` returns false:
+  # Override this hook to handle cases when `authorized?` returns false for an object:
   def self.unauthorized_object(error)
     # Add a top-level error to the response instead of returning nil:
     raise GraphQL::ExecutionError, "An object of type #{error.type.graphql_name} was hidden due to permissions"
@@ -54,3 +54,15 @@ end
 Now, the custom hook will be called instead of the default one.
 
 If `.unauthorized_object` returns a non-`nil` object (and doesn't `raise` an error), then that object will be used in place of the unauthorized object.
+
+A similar hook is available for unauthorized fields:
+
+```ruby
+class MySchema < GraphQL::Schema
+  # Override this hook to handle cases when `authorized?` returns false for a field:
+  def self.unauthorized_field(error)
+    # Add a top-level error to the response instead of returning nil:
+    raise GraphQL::ExecutionError, "The field #{error.field.graphql_name} on an object of type #{error.type.graphql_name} was hidden due to permissions"
+  end
+end
+```

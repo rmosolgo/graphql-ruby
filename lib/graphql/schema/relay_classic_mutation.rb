@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/types/string"
 
 module GraphQL
   class Schema
@@ -27,10 +28,52 @@ module GraphQL
 
       # Override {GraphQL::Schema::Resolver#resolve_with_support} to
       # delete `client_mutation_id` from the kwargs.
-      def resolve_with_support(**kwargs)
-        # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
-        kwargs.delete(:client_mutation_id)
-        super
+      def resolve_with_support(**inputs)
+        # Without the interpreter, the inputs are unwrapped by an instrumenter.
+        # But when using the interpreter, no instrumenters are applied.
+        if context.interpreter?
+          input = inputs[:input].to_kwargs
+          # Transfer these from the top-level hash to the
+          # shortcutted `input:` object
+          self.class.extras.each do |ext|
+            # It's possible that the `extra` was not passed along by this point,
+            # don't re-add it if it wasn't given here.
+            if inputs.key?(ext)
+              input[ext] = inputs[ext]
+            end
+          end
+        else
+          input = inputs
+        end
+
+        if input
+          # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
+          input_kwargs = input.to_h
+          client_mutation_id = input_kwargs.delete(:client_mutation_id)
+        else
+          # Relay Classic Mutations with no `argument`s
+          # don't require `input:`
+          input_kwargs = {}
+        end
+
+        return_value = if input_kwargs.any?
+          super(input_kwargs)
+        else
+          super()
+        end
+
+        # Again, this is done by an instrumenter when using non-interpreter execution.
+        if context.interpreter?
+          context.schema.after_lazy(return_value) do |return_hash|
+            # It might be an error
+            if return_hash.is_a?(Hash)
+              return_hash[:client_mutation_id] = client_mutation_id
+            end
+            return_hash
+          end
+        else
+          return_value
+        end
       end
 
       class << self

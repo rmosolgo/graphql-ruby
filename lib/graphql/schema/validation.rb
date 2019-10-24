@@ -12,11 +12,16 @@ module GraphQL
       # @param object [Object] something to be validated
       # @return [String, Nil] error message, if there was one
       def self.validate(object)
-        rules = RULES.reduce([]) do |memo, (parent_class, validations)|
-          memo + (object.is_a?(parent_class) ? validations : [])
+        RULES.each do |parent_class, validations|
+          if object.is_a?(parent_class)
+            validations.each do |rule|
+              if error = rule.call(object)
+                return error
+              end
+            end
+          end
         end
-        # Stops after the first error
-        rules.reduce(nil) { |memo, rule| memo || rule.call(object) }
+        nil
       end
 
       module Rules
@@ -72,6 +77,18 @@ module GraphQL
           }
         end
 
+        def self.count_at_least(item_name, minimum_count, get_items_proc)
+          ->(type) {
+            items = get_items_proc.call(type)
+
+            if items.size < minimum_count
+              "#{type.name} must define at least #{minimum_count} #{item_name}. #{items.size} defined."
+            else
+              nil
+            end
+          }
+        end
+
         def self.assert_named_items_are_valid(item_name, get_items_proc)
           ->(type) {
             items = get_items_proc.call(type)
@@ -87,7 +104,9 @@ module GraphQL
           }
         end
 
+        HAS_AT_LEAST_ONE_FIELD = Rules.count_at_least("field", 1, ->(type) { type.all_fields })
         FIELDS_ARE_VALID = Rules.assert_named_items_are_valid("field", ->(type) { type.all_fields })
+        HAS_AT_LEAST_ONE_ARGUMENT = Rules.count_at_least("argument", 1, ->(type) { type.arguments })
 
         HAS_ONE_OR_MORE_POSSIBLE_TYPES = ->(type) {
           type.possible_types.length >= 1 ? nil : "must have at least one possible type"
@@ -99,10 +118,6 @@ module GraphQL
         ARGUMENTS_ARE_VALID =  Rules.assert_named_items_are_valid("argument", ->(type) { type.arguments.values })
 
         DEFAULT_VALUE_IS_VALID_FOR_TYPE = ->(type) {
-          if !type.default_value.nil? && type.type.is_a?(NonNullType)
-            return %Q(Variable #{type.name} of type "#{type.type}" is required and will not use the default value. Perhaps you meant to use type "#{type.type.of_type}".)
-          end
-
           if !type.default_value.nil?
             coerced_value = begin
               type.type.coerce_isolated_result(type.default_value)
@@ -259,11 +274,13 @@ module GraphQL
           Rules::DESCRIPTION_IS_STRING_OR_NIL,
         ],
         GraphQL::ObjectType => [
+          Rules::HAS_AT_LEAST_ONE_FIELD,
           Rules.assert_property_list_of(:interfaces, GraphQL::InterfaceType),
           Rules::FIELDS_ARE_VALID,
           Rules::INTERFACES_ARE_IMPLEMENTED,
         ],
         GraphQL::InputObjectType => [
+          Rules::HAS_AT_LEAST_ONE_ARGUMENT,
           Rules::ARGUMENTS_ARE_STRING_TO_ARGUMENT,
           Rules::ARGUMENTS_ARE_VALID,
         ],

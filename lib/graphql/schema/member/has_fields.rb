@@ -1,50 +1,11 @@
 # frozen_string_literal: true
+require 'irb/ruby-token'
+
 module GraphQL
   class Schema
     class Member
       # Shared code for Object and Interface
       module HasFields
-        class << self
-          # When this module is added to a class,
-          # add a place for that class's default behaviors
-          def self.extended(child_class)
-            add_default_resolve_module(child_class)
-            super
-          end
-
-          # Create a module which will have instance methods for implementing fields.
-          # These will be `super` methods for fields in interfaces, objects and mutations.
-          # Use an instance variable on the class instead of a constant
-          # so that module namespaces won't be an issue. (If we used constants,
-          # `child_class::DefaultResolve` might find a constant from an included module.)
-          def add_default_resolve_module(child_class)
-            if child_class.instance_variable_get(:@_default_resolve)
-              # This can happen when an object implements an interface,
-              # since that interface has the `included` hook above.
-              return
-            end
-
-            default_resolve_module = Module.new
-            child_class.instance_variable_set(:@_default_resolve, default_resolve_module)
-            child_class.include(default_resolve_module)
-          end
-        end
-
-        # When this is included into interfaces,
-        # add a place for default field behaviors
-        def included(child_class)
-          HasFields.add_default_resolve_module(child_class)
-          # Also, prepare a place for default field implementations
-          super
-        end
-
-        # When a subclass of objects are created,
-        # add a place for that subclass's default field behaviors
-        def inherited(child_class)
-          HasFields.add_default_resolve_module(child_class)
-          super
-        end
-
         # Add a field to this object or interface with the given definition
         # @see {GraphQL::Schema::Field#initialize} for method signature
         # @return [void]
@@ -67,24 +28,44 @@ module GraphQL
         end
 
         def get_field(field_name)
-          for ancestor in ancestors
-            if ancestor.respond_to?(:own_fields) && f = ancestor.own_fields[field_name]
-              return f
+          if (f = own_fields[field_name])
+            f
+          else
+            for ancestor in ancestors
+              if ancestor.respond_to?(:own_fields) && f = ancestor.own_fields[field_name]
+                return f
+              end
             end
+            nil
           end
-          nil
         end
 
+        # A list of Ruby keywords.
+        #
+        # @api private
+        RUBY_KEYWORDS = RubyToken::TokenDefinitions.select { |definition| definition[1] == RubyToken::TkId }
+                                                   .map { |definition| definition[2] }
+                                                   .compact
+
+        # A list of GraphQL-Ruby keywords.
+        #
+        # @api private
+        GRAPHQL_RUBY_KEYWORDS = [:context, :object, :method]
+
+        # A list of field names that we should advise users to pick a different
+        # resolve method name.
+        #
+        # @api private
+        CONFLICT_FIELD_NAMES = Set.new(GRAPHQL_RUBY_KEYWORDS + RUBY_KEYWORDS)
+
         # Register this field with the class, overriding a previous one if needed.
-        # Also, add a parent method for resolving this field.
         # @param field_defn [GraphQL::Schema::Field]
         # @return [void]
         def add_field(field_defn)
-          own_fields[field_defn.name] = field_defn
-          if !method_defined?(field_defn.method_sym)
-            # Only add the super method if there isn't one already.
-            add_super_method(field_defn.name.inspect, field_defn.method_sym)
+          if CONFLICT_FIELD_NAMES.include?(field_defn.original_name) && field_defn.original_name == field_defn.resolver_method
+            warn "#{self.graphql_name}'s `field :#{field_defn.original_name}` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.original_name}` and `def resolve_#{field_defn.original_name}`)"
           end
+          own_fields[field_defn.name] = field_defn
           nil
         end
 
@@ -103,35 +84,16 @@ module GraphQL
         end
 
         def global_id_field(field_name)
-          field field_name, "ID", null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: self)
+          id_resolver = GraphQL::Relay::GlobalIdResolve.new(type: self)
+          field field_name, "ID", null: false
+          define_method(field_name) do
+            id_resolver.call(object, {}, context)
+          end
         end
 
         # @return [Array<GraphQL::Schema::Field>] Fields defined on this class _specifically_, not parent classes
         def own_fields
           @own_fields ||= {}
-        end
-
-        private
-        # Find the magic module for holding super methods,
-        # and add a field named `method_name` for implementing the field
-        # called `field_name`.
-        # It will be the `super` method if the method is overwritten in the class definition.
-        def add_super_method(field_key, method_name)
-          default_resolve_module = @_default_resolve
-          if default_resolve_module.nil?
-            # This should have been set up in one of the inherited or included hooks above,
-            # if it wasn't, it's because those hooks weren't called because `super` wasn't present.
-            raise <<-ERR
-Uh oh! #{self} doesn't have a default resolve module. This probably means that an `inherited` hook didn't call super.
-Check `inherited` on #{self}'s superclasses.
-ERR
-          end
-          default_resolve_module.module_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def #{method_name}(**args)
-              field_inst = self.class.fields[#{field_key}] || raise(%|Failed to find field #{field_key} for \#{self.class} among \#{self.class.fields.keys}|)
-              field_inst.resolve_field_method(self, args, context)
-            end
-          RUBY
         end
       end
     end

@@ -1,5 +1,31 @@
 # graphql-ruby-client
 
+## 1.6.8 (18 Sept 2019)
+
+- Properly send `Content-Type: application/json` when posting persisted operations
+
+## 1.6.7 (18 Sept 2019)
+
+- Add post data to `--verbose` output of `sync`
+
+## 1.6.6 (6 Aug 2019)
+
+- Add `--relay-persisted-output` for working with Relay Compiler's new `--persist-output` option #2415
+
+## 1.6.5 (17 July 2019)
+
+- Update dependencies #2335
+
+## 1.6.4 (11 May 2019)
+
+- Add `--verbose` option to `sync` #2075
+- Support Relay 2.0.0 #2121
+- ActionCableLink: support subscriber when there are errors but no data #2176
+
+## 1.6.3 (11 Jan 2019)
+
+- Fix `.unsubscribe()` for PusherLink #2042
+
 ## 1.6.2 (14 Dec 2018)
 
 - Support identified Ably client #2003

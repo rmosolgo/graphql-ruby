@@ -4,17 +4,15 @@ appraise 'rails_3.2' do
   gem 'activerecord', '~> 3.2.21'
   gem 'actionpack', '~> 3.2.21'
   gem 'test-unit'
-  gem 'sqlite3', platform: :ruby
+  gem 'sqlite3', "~> 1.3.6", platform: :ruby
   gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
   gem 'sequel'
 end
 
 appraise 'rails_4.1' do
-  gem 'rails', '~> 4.1', require: 'rails/all'
-  gem 'activerecord', '~> 4.1.10'
-  gem 'actionpack', '~> 4.1.10'
+  gem 'rails', '~> 4.1.10', require: 'rails/all'
   gem 'test-unit'
-  gem 'sqlite3', platform: :ruby
+  gem 'sqlite3', "~> 1.3.6", platform: :ruby
   gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
   gem 'sequel'
 end
@@ -24,7 +22,7 @@ appraise 'rails_4.2' do
   gem 'activerecord', '~> 4.2.4'
   gem 'actionpack', '~> 4.2.4'
   gem 'concurrent-ruby', '1.0.0'
-  gem 'sqlite3', platform: :ruby
+  gem 'sqlite3', "~> 1.3.6", platform: :ruby
   gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
   gem 'sequel'
 end
@@ -33,7 +31,7 @@ appraise 'rails_5.0' do
   gem 'rails', '~> 5.0', require: 'rails/all'
   gem 'activerecord', '~> 5.0.0'
   gem 'actionpack', '~> 5.0.0'
-  gem 'sqlite3', platform: :ruby
+  gem 'sqlite3', "~> 1.3.6", platform: :ruby
   gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
   gem 'sequel'
 end
@@ -45,14 +43,14 @@ appraise 'rails_5.1' do
   # Required for system tests
   gem 'capybara', '~> 2.13'
   gem 'selenium-webdriver'
-  gem 'sqlite3', platform: :ruby
+  gem 'sqlite3', "~> 1.3.6", platform: :ruby
   gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
   gem 'sequel'
 end
 
 appraise 'rails_5.2' do
   gem 'rails', '~> 5.2.0', require: 'rails/all'
-  gem 'sqlite3', platform: :ruby
+  gem 'sqlite3', "~> 1.3.6", platform: :ruby
   gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
   gem 'sequel'
 end

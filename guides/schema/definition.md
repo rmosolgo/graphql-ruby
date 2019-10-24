@@ -5,7 +5,6 @@ search: true
 section: Schema
 title: Definition
 desc: Defining your schema
-class_based_api: true
 index: 1
 ---
 
@@ -43,11 +42,13 @@ There are lots of schema configuration options:
 - [default limits](#default-limits)
 - [plugins](#plugins)
 
+For defining GraphQL types, see the guides for those types: {% internal_link "object types", "/type_definitions/objects" %}, {% internal_link "interface types", "/type_definitions/interfaces" %}, {% internal_link "union types", "/type_definitions/unions" %},  {% internal_link "input object types", "/type_definitions/input_objects" %}, {% internal_link "enum types", "/type_definitions/enums" %}, and {% internal_link "scalar types", "/type_definitions/scalars" %}.
+
 ## Root Objects, Introspection and Orphan Types
 
 A GraphQL schema is a web of interconnected types, and it has a few starting points for discovering the elements of that web:
 
-__Root types__ (`query`, `mutation`, and `subscription`) are the [entry points for queries to the system](http://graphql.org/learn/schema/#the-query-and-mutation-types). Each one is an object type which can be connected to the schema by a method with the same name:
+__Root types__ (`query`, `mutation`, and `subscription`) are the [entry points for queries to the system](https://graphql.org/learn/schema/#the-query-and-mutation-types). Each one is an object type which can be connected to the schema by a method with the same name:
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -90,7 +91,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`object_from_id`__ is used by Relay's `node(id: ID!): Node` field. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if the should be hidden from the current user).
+__`object_from_id`__ is used by Relay's `node(id: ID!): Node` field. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
 
 ```ruby
 class MySchema < GraphQL::Schema

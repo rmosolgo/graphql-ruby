@@ -19,9 +19,10 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 
     assert_file "app/graphql/types/.keep"
     assert_file "app/graphql/mutations/.keep"
-    ["base_object", "base_input_object", "base_enum", "base_scalar", "base_union", "base_interface"].each do |base_type|
+    ["base_input_object", "base_enum", "base_scalar", "base_union"].each do |base_type|
       assert_file "app/graphql/types/#{base_type}.rb"
     end
+
     expected_query_route = %|post "/graphql", to: "graphql#execute"|
     expected_graphiql_route = %|
   if Rails.env.development?
@@ -65,6 +66,46 @@ RUBY
 
     assert_file "app/graphql/types/query_type.rb", expected_query_type
     assert_file "app/controllers/graphql_controller.rb", EXPECTED_GRAPHQLS_CONTROLLER
+    expected_base_field = <<-RUBY
+module Types
+  class BaseField < GraphQL::Schema::Field
+    argument_class Types::BaseArgument
+
+    def resolve_field(obj, args, ctx)
+      resolve(obj, args, ctx)
+    end
+  end
+end
+RUBY
+    assert_file "app/graphql/types/base_field.rb", expected_base_field
+
+    expected_base_argument = <<-RUBY
+module Types
+  class BaseArgument < GraphQL::Schema::Argument
+  end
+end
+RUBY
+    assert_file "app/graphql/types/base_argument.rb", expected_base_argument
+
+    expected_base_object = <<-RUBY
+module Types
+  class BaseObject < GraphQL::Schema::Object
+    field_class Types::BaseField
+  end
+end
+RUBY
+    assert_file "app/graphql/types/base_object.rb", expected_base_object
+
+    expected_base_interface = <<-RUBY
+module Types
+  module BaseInterface
+    include GraphQL::Schema::Interface
+
+    field_class Types::BaseField
+  end
+end
+RUBY
+    assert_file "app/graphql/types/base_interface.rb", expected_base_interface
   end
 
   test "it allows for a user-specified install directory" do
@@ -135,6 +176,11 @@ RUBY
 
   EXPECTED_GRAPHQLS_CONTROLLER = <<-'RUBY'
 class GraphqlController < ApplicationController
+  # If accessing from outside this domain, nullify the session
+  # This allows for outside API access while preventing CSRF attacks,
+  # but you'll have to authenticate your user separately
+  # protect_from_forgery with: :null_session
+
   def execute
     variables = ensure_hash(params[:variables])
     query = params[:query]
@@ -208,7 +254,7 @@ class DummySchema < GraphQL::Schema
   def self.resolve_type(type, obj, ctx)
     # TODO: Implement this function
     # to return the correct type for `obj`
-    raise(NotImplementedError)
+    raise(GraphQL::RequiredImplementationMissingError)
   end
 
   # GraphQL::Batch setup:

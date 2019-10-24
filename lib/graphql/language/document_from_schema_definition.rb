@@ -11,7 +11,7 @@ module GraphQL
     # @param except [<#call(member, ctx)>]
     # @param include_introspection_types [Boolean] Whether or not to include introspection types in the AST
     # @param include_built_in_scalars [Boolean] Whether or not to include built in scalars in the AST
-    # @param include_built_in_directives [Boolean] Whether or not to include built in diirectives in the AST
+    # @param include_built_in_directives [Boolean] Whether or not to include built in directives in the AST
     class DocumentFromSchemaDefinition
       def initialize(
         schema, context: nil, only: nil, except: nil, include_introspection_types: false,
@@ -65,7 +65,7 @@ module GraphQL
         )
 
         if field.deprecation_reason
-          field_node.directives << GraphQL::Language::Nodes::Directive.new(
+          field_node = field_node.merge_directive(
             name: GraphQL::Directive::DeprecatedDirective.name,
             arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: field.deprecation_reason)]
           )
@@ -107,7 +107,7 @@ module GraphQL
         )
 
         if enum_value.deprecation_reason
-          enum_value_node.directives << GraphQL::Language::Nodes::Directive.new(
+          enum_value_node = enum_value_node.merge_directive(
             name: GraphQL::Directive::DeprecatedDirective.name,
             arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: enum_value.deprecation_reason)]
           )
@@ -124,15 +124,18 @@ module GraphQL
       end
 
       def build_argument_node(argument)
+        if argument.default_value?
+          default_value = build_default_value(argument.default_value, argument.type)
+        else
+          default_value = nil
+        end
+
         argument_node = GraphQL::Language::Nodes::InputValueDefinition.new(
           name: argument.name,
           description: argument.description,
           type: build_type_name_node(argument.type),
+          default_value: default_value,
         )
-
-        if argument.default_value?
-          argument_node.default_value = build_default_value(argument.default_value, argument.type)
-        end
 
         argument_node
       end
@@ -204,7 +207,7 @@ module GraphQL
         when ListType
           default_value.to_a.map { |v| build_default_value(v, type.of_type) }
         else
-          raise NotImplementedError, "Unexpected default value type #{type.inspect}"
+          raise GraphQL::RequiredImplementationMissingError, "Unexpected default value type #{type.inspect}"
         end
       end
 

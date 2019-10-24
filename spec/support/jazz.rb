@@ -9,7 +9,7 @@ module Jazz
     Key = Struct.new(:root, :sharp, :flat) do
       def self.from_notation(key_str)
         key, sharp_or_flat = key_str.split("")
-        sharp = sharp_or_flat ==  "♯"
+        sharp = sharp_or_flat == "♯"
         flat = sharp_or_flat == "♭"
         Models::Key.new(key, sharp, flat)
       end
@@ -36,7 +36,7 @@ module Jazz
         ],
         "Musician" => [
           Models::Musician.new("Herbie Hancock", Models::Key.from_notation("B♭")),
-        ]
+        ],
       }
     end
 
@@ -62,12 +62,22 @@ module Jazz
   class BaseField < GraphQL::Schema::Field
     argument_class BaseArgument
     attr_reader :upcase
+
     def initialize(*args, **options, &block)
       @upcase = options.delete(:upcase)
       super(*args, **options, &block)
     end
 
     def resolve_field(*)
+      result = super
+      if @upcase && result
+        result.upcase
+      else
+        result
+      end
+    end
+
+    def resolve(*)
       result = super
       if @upcase && result
         result.upcase
@@ -92,7 +102,7 @@ module Jazz
 
       def to_graphql
         type_defn = super
-        configs.each do |k,v|
+        configs.each do |k, v|
           type_defn.metadata[k] = v
         end
         type_defn
@@ -141,7 +151,7 @@ module Jazz
       null: false,
       description: "A unique identifier for this object",
     )
-    upcased_field :upcased_id, ID, null: false, method: :id # upcase: true added by helper
+    upcased_field :upcased_id, ID, null: false, resolver_method: :id # upcase: true added by helper
 
     def id
       GloballyIdentifiableType.to_id(@object)
@@ -157,10 +167,9 @@ module Jazz
     end
   end
 
-  # A legacy-style interface used by new-style types
-  NamedEntity = GraphQL::InterfaceType.define do
-    name "NamedEntity"
-    field :name, !types.String
+  module NamedEntity
+    include BaseInterface
+    field :name, String, null: false
   end
 
   # test field inheritance
@@ -178,12 +187,11 @@ module Jazz
     field :musicians, "[Jazz::Musician]", null: false
   end
 
-
   # Here's a new-style GraphQL type definition
   class Ensemble < ObjectWithUpcasedName
     # Test string type names
     # This method should override inherited one
-    field :name, "String", null: false, method: :overridden_name
+    field :name, "String", null: false, resolver_method: :overridden_name
     implements GloballyIdentifiableType, NamedEntity, HasMusicians
     description "A group of musicians playing together"
     config :config, :configged
@@ -211,23 +219,23 @@ module Jazz
     value "KEYS" do
       description "Neither here nor there, really"
     end
+    value "SILENCE", "Makes no sound", value: false
   end
 
   # Lives side-by-side with an old-style definition
   using GraphQL::DeprecatedDSL # for ! and types[]
-  InstrumentType = GraphQL::ObjectType.define do
-    name "Instrument"
-    interfaces [NamedEntity]
+
+  class InstrumentType < BaseObject
+    implements NamedEntity
     implements GloballyIdentifiableType
 
-    field :id, !types.ID, "A unique identifier for this object", resolve: ->(obj, args, ctx) { GloballyIdentifiableType.to_id(obj) }
-    field :upcasedId, !types.ID, resolve: ->(obj, args, ctx) { GloballyIdentifiableType.to_id(obj).upcase }
-    if RUBY_ENGINE == "jruby"
-      # JRuby doesn't support refinements, so the `using` above won't work
-      field :family, Family.to_non_null_type
-    else
-      field :family, !Family
+    field :upcased_id, ID, null: false
+
+    def upcased_id
+      GloballyIdentifiableType.to_id(object).upcase
     end
+
+    field :family, Family, null: false
   end
 
   class Key < GraphQL::Schema::Scalar
@@ -238,16 +246,6 @@ module Jazz
 
     def self.coerce_result(val, ctx)
       val.to_notation
-    end
-  end
-
-  class RawJson < GraphQL::Schema::Scalar
-    def self.coerce_input(val, ctx)
-      val
-    end
-
-    def self.coerce_result(val, ctx)
-      val
     end
   end
 
@@ -262,6 +260,7 @@ module Jazz
     # Test lists with nullable members:
     field :inspect_context, [String, null: true], null: false
     field :add_error, String, null: false, extras: [:execution_errors]
+
     def inspect_context
       [
         @context.custom_method,
@@ -277,21 +276,23 @@ module Jazz
     end
   end
 
-  LegacyInputType = GraphQL::InputObjectType.define do
-    name "LegacyInput"
-    argument :intValue, !types.Int
+  # Since this is not a legacy input type, this test can be removed
+  class LegacyInputType < GraphQL::Schema::InputObject
+    argument :int_value, Int, required: true
   end
 
   class InspectableInput < GraphQL::Schema::InputObject
+    argument :ensemble_id, ID, required: false, loads: Ensemble
     argument :string_value, String, required: true, description: "Test description kwarg"
     argument :nested_input, InspectableInput, required: false
     argument :legacy_input, LegacyInputType, required: false
+
     def helper_method
       [
         # Context is available in the InputObject
         context[:message],
-        # A GraphQL::Query::Arguments instance is available
-        arguments[:stringValue],
+        # ~~A GraphQL::Query::Arguments instance is available~~ not anymore
+        self[:string_value],
         # Legacy inputs have underscored method access too
         legacy_input ? legacy_input.int_value : "-",
         # Access by method call is available
@@ -310,10 +311,12 @@ module Jazz
     possible_types Musician, Ensemble
 
     def self.resolve_type(object, context)
-      if object.is_a?(Models::Ensemble)
-        Ensemble
-      else
-        Musician
+      GraphQL::Execution::Lazy.new do
+        if object.is_a?(Models::Ensemble)
+          Ensemble
+        else
+          Musician
+        end
       end
     end
   end
@@ -337,24 +340,27 @@ module Jazz
     field :inspect_key, InspectableKey, null: false do
       argument :key, Key, required: true
     end
-    field :nowPlaying, PerformingAct, null: false, resolve: ->(o, a, c) { Models.data["Ensemble"].first }
+    field :now_playing, PerformingAct, null: false
+
+    def now_playing; Models.data["Ensemble"].first; end
+
     # For asserting that the object is initialized once:
-    field :object_id, Integer, null: false
+    field :object_id, String, null: false
     field :inspect_context, [String], null: false
     field :hashyEnsemble, Ensemble, null: false
 
-    field :echo_json, RawJson, null: false do
-      argument :input, RawJson, required: true
+    field :echo_json, GraphQL::Types::JSON, null: false do
+      argument :input, GraphQL::Types::JSON, required: true
     end
 
-    field :echo_first_json, RawJson, null: false do
-      argument :input, [RawJson], required: true
+    field :echo_first_json, GraphQL::Types::JSON, null: false do
+      argument :input, [GraphQL::Types::JSON], required: true
     end
 
-    field :upcase_check_1, String, null: true, method: :upcase_check, extras: [:upcase]
-    field :upcase_check_2, String, null: false, upcase: false, method: :upcase_check, extras: [:upcase]
-    field :upcase_check_3, String, null: false, upcase: true, method: :upcase_check, extras: [:upcase]
-    field :upcase_check_4, String, null: false, upcase: "why not?", method: :upcase_check, extras: [:upcase]
+    field :upcase_check_1, String, null: true, resolver_method: :upcase_check, extras: [:upcase]
+    field :upcase_check_2, String, null: false, upcase: false, resolver_method: :upcase_check, extras: [:upcase]
+    field :upcase_check_3, String, null: false, upcase: true, resolver_method: :upcase_check, extras: [:upcase]
+    field :upcase_check_4, String, null: false, upcase: "why not?", resolver_method: :upcase_check, extras: [:upcase]
     def upcase_check(upcase:)
       upcase.inspect
     end
@@ -390,8 +396,10 @@ module Jazz
         # Access by key:
         input[:string_value],
         input.key?(:string_value).to_s,
-        # Access by legacy key
-        input[:stringValue],
+        # ~~Access by legacy key~~ # not anymore
+        input[:string_value],
+        input.ensemble,
+        input.key?(:ensemble).to_s,
       ]
     end
 
@@ -403,7 +411,7 @@ module Jazz
       [
         context.custom_method,
         context[:magic_key],
-        context[:normal_key]
+        context[:normal_key],
       ]
     end
 
@@ -411,11 +419,11 @@ module Jazz
       # Both string and symbol keys are supported:
 
       {
-          name: "The Grateful Dead",
-          "musicians" => [
-            OpenStruct.new(name: "Jerry Garcia"),
-          ],
-          "formedAtDate" => "May 5, 1965",
+        name: "The Grateful Dead",
+        "musicians" => [
+          OpenStruct.new(name: "Jerry Garcia"),
+        ],
+        "formedAtDate" => "May 5, 1965",
       }
     end
 
@@ -429,12 +437,13 @@ module Jazz
 
     field :hash_by_string, HashKeyTest, null: false
     field :hash_by_sym, HashKeyTest, null: false
+
     def hash_by_string
-      { "falsey" => false }
+      {"falsey" => false}
     end
 
     def hash_by_sym
-      { falsey: false }
+      {falsey: false}
     end
 
     field :named_entities, [NamedEntity, null: true], null: false
@@ -442,6 +451,20 @@ module Jazz
     def named_entities
       [Models.data["Ensemble"].first, nil]
     end
+
+    field :default_value_test, String, null: false do
+      if TESTING_INTERPRETER
+        argument :arg_with_default, InspectableInput, required: false, default_value: { string_value: "S" }
+      else
+        argument :arg_with_default, InspectableInput, required: false, default_value: { "stringValue" => "S" }
+      end
+    end
+
+    def default_value_test(arg_with_default:)
+      "#{arg_with_default.class.name} -> #{arg_with_default.to_h}"
+    end
+
+    field :complex_hash_key, String, null: false, hash_key: :'foo bar/fizz-buzz'
   end
 
   class EnsembleInput < GraphQL::Schema::InputObject
@@ -462,10 +485,22 @@ module Jazz
 
     field :ee, String, null: false
     extras [:execution_errors]
+
     def resolve(name:, family:, execution_errors:)
       instrument = Jazz::Models::Instrument.new(name, family)
       Jazz::Models.data["Instrument"] << instrument
-      { instrument: instrument, entries: Jazz::Models.data["Instrument"], ee: execution_errors.class.name}
+      {instrument: instrument, entries: Jazz::Models.data["Instrument"], ee: execution_errors.class.name}
+    end
+  end
+
+  class AddEnsembleRelay < GraphQL::Schema::RelayClassicMutation
+    argument :ensemble, EnsembleInput, required: true
+    field :ensemble, Ensemble, null: false
+
+    def resolve(ensemble:)
+      ens = Models::Ensemble.new(ensemble.name)
+      Models.data["Ensemble"] << ens
+      { ensemble: ens }
     end
   end
 
@@ -477,9 +512,50 @@ module Jazz
 
     def resolve
       instrument = Models::Instrument.new("Sitar", :str)
-      { instrument: instrument }
+      {instrument: instrument}
     end
   end
+
+  class HasExtras < GraphQL::Schema::RelayClassicMutation
+    null true
+    description "Test extras in RelayClassicMutation"
+
+    argument :int, Integer, required: false
+    extras [:ast_node]
+
+    field :node_class, String, null: false
+    field :int, Integer, null: true
+
+    def resolve(int: nil, ast_node:)
+      {
+        int: int,
+        node_class: ast_node.class.name,
+      }
+    end
+  end
+
+  class StripsExtras < GraphQL::Schema::RelayClassicMutation
+    extras [:lookahead]
+    def resolve_with_support(lookahead: , **rest)
+      context[:has_lookahead] = !!lookahead
+      super(**rest)
+    end
+  end
+
+  class HasExtrasStripped < StripsExtras
+    field :int, Integer, null: false
+
+    def authorized?
+      true
+    end
+
+    def resolve
+      {
+        int: 51,
+      }
+    end
+  end
+
 
   class RenameNamedEntity < GraphQL::Schema::RelayClassicMutation
     argument :named_entity_id, ID, required: true, loads: NamedEntity
@@ -526,7 +602,7 @@ module Jazz
       dup_ensemble = ensemble.dup
       dup_ensemble.name = new_name
       {
-        ensemble: dup_ensemble
+        ensemble: dup_ensemble,
       }
     end
   end
@@ -581,6 +657,7 @@ module Jazz
     end
 
     field :add_instrument, mutation: AddInstrument
+    field :add_ensemble_relay, mutation: AddEnsembleRelay
     field :add_sitar, mutation: AddSitar
     field :rename_ensemble, mutation: RenameEnsemble
     field :rename_named_entity, mutation: RenameNamedEntity
@@ -589,6 +666,8 @@ module Jazz
     field :upvote_ensembles_as_bands, mutation: UpvoteEnsemblesAsBands
     field :upvote_ensembles_ids, mutation: UpvoteEnsemblesIds
     field :rename_ensemble_as_band, mutation: RenameEnsembleAsBand
+    field :has_extras, mutation: HasExtras
+    field :has_extras_stripped, mutation: HasExtrasStripped
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
@@ -632,8 +711,17 @@ module Jazz
 
   module Introspection
     class TypeType < GraphQL::Introspection::TypeType
+      def self.authorized?(_obj, ctx)
+        if ctx[:cant_introspect]
+          raise GraphQL::ExecutionError, "You're not allowed to introspect here"
+        else
+          super
+        end
+      end
+
       def name
-        object.name.upcase
+        n = object.graphql_name
+        n && n.upcase
       end
     end
 
@@ -653,6 +741,7 @@ module Jazz
       graphql_name "__Schema"
 
       field :is_jazzy, Boolean, null: false
+
       def is_jazzy
         true
       end
@@ -661,7 +750,8 @@ module Jazz
     class DynamicFields < GraphQL::Introspection::DynamicFields
       field :__typename_length, Int, null: false, extras: [:irep_node]
       field :__ast_node_class, String, null: false, extras: [:ast_node]
-      def __typename_length(irep_node:)
+
+      def __typename_length(irep_node: nil)
         __typename(irep_node: irep_node).length
       end
 
@@ -672,8 +762,13 @@ module Jazz
 
     class EntryPoints < GraphQL::Introspection::EntryPoints
       field :__classname, String, "The Ruby class name of the root object", null: false
+
       def __classname
-        object.class.name
+        if context.interpreter?
+          object.object.class.name
+        else
+          object.class.name
+        end
       end
     end
   end
@@ -693,5 +788,15 @@ module Jazz
     def self.object_from_id(id, ctx)
       GloballyIdentifiableType.find(id)
     end
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+    end
+  end
+
+  class SchemaWithoutIntrospection < GraphQL::Schema
+    query(Query)
+
+    disable_introspection_entry_points
   end
 end

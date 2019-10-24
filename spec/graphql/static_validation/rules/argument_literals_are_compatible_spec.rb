@@ -10,7 +10,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       stringCheese: cheese(id: "aasdlkfj") { ...cheeseFields }
       cheese(id: 1) { source @skip(if: "whatever") }
       yakSource: searchDairy(product: [{source: COW, fatContent: 1.1}]) { __typename }
-      badSource: searchDairy(product: [{source: 1.1}]) { __typename }
+      badSource: searchDairy(product: {source: 1.1}) { __typename }
       missingSource: searchDairy(product: [{fatContent: 1.1}]) { __typename }
       listCoerce: cheese(id: 1) { similarCheese(source: YAK) { __typename } }
       missingInputField: searchDairy(product: [{source: YAK, wacky: 1}]) { __typename }
@@ -20,6 +20,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       similarCheese(source: 4.5) { __typename }
     }
   |}
+
   describe "with error bubbling disabled" do
     it "finds undefined or missing-required arguments to fields and directives" do
       without_error_bubbling(schema) do
@@ -30,28 +31,32 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         query_root_error = {
           "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
           "locations"=>[{"line"=>3, "column"=>7}],
-          "fields"=>["query getCheese", "stringCheese", "id"],
+          "path"=>["query getCheese", "stringCheese", "id"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"id"},
         }
         assert_includes(errors, query_root_error)
 
         directive_error = {
           "message"=>"Argument 'if' on Directive 'skip' has an invalid value. Expected type 'Boolean!'.",
           "locations"=>[{"line"=>4, "column"=>30}],
-          "fields"=>["query getCheese", "cheese", "source", "if"],
+          "path"=>["query getCheese", "cheese", "source", "if"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Directive", "argumentName"=>"if"},
         }
         assert_includes(errors, directive_error)
 
         input_object_field_error = {
           "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
-          "locations"=>[{"line"=>6, "column"=>40}],
-          "fields"=>["query getCheese", "badSource", "product", "source"],
+          "locations"=>[{"line"=>6, "column"=>39}],
+          "path"=>["query getCheese", "badSource", "product", 0, "source"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"InputObject", "argumentName"=>"source"},
         }
         assert_includes(errors, input_object_field_error)
 
         fragment_error = {
           "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
           "locations"=>[{"line"=>13, "column"=>7}],
-          "fields"=>["fragment cheeseFields", "similarCheese", "source"],
+          "path"=>["fragment cheeseFields", "similarCheese", "source"],
+          "extensions"=> {"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"source"}
         }
         assert_includes(errors, fragment_error)
       end
@@ -63,42 +68,48 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         query_root_error = {
           "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
           "locations"=>[{"line"=>3, "column"=>7}],
-          "fields"=>["query getCheese", "stringCheese", "id"],
+          "path"=>["query getCheese", "stringCheese", "id"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"id"},
         }
         assert_includes(errors, query_root_error)
 
         directive_error = {
           "message"=>"Argument 'if' on Directive 'skip' has an invalid value. Expected type 'Boolean!'.",
           "locations"=>[{"line"=>4, "column"=>30}],
-          "fields"=>["query getCheese", "cheese", "source", "if"],
+          "path"=>["query getCheese", "cheese", "source", "if"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Directive", "argumentName"=>"if"},
         }
         assert_includes(errors, directive_error)
 
         input_object_error = {
           "message"=>"Argument 'product' on Field 'badSource' has an invalid value. Expected type '[DairyProductInput]'.",
           "locations"=>[{"line"=>6, "column"=>7}],
-          "fields"=>["query getCheese", "badSource", "product"],
+          "path"=>["query getCheese", "badSource", "product"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"product"},
         }
         assert_includes(errors, input_object_error)
 
         input_object_field_error = {
           "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
-          "locations"=>[{"line"=>6, "column"=>40}],
-          "fields"=>["query getCheese", "badSource", "product", "source"],
+          "locations"=>[{"line"=>6, "column"=>39}],
+          "path"=>["query getCheese", "badSource", "product", 0, "source"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"InputObject", "argumentName"=>"source"},
         }
         assert_includes(errors, input_object_field_error)
 
         missing_required_field_error = {
           "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
           "locations"=>[{"line"=>7, "column"=>7}],
-          "fields"=>["query getCheese", "missingSource", "product"],
+          "path"=>["query getCheese", "missingSource", "product"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"product"}
         }
         assert_includes(errors, missing_required_field_error)
 
         fragment_error = {
           "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
           "locations"=>[{"line"=>13, "column"=>7}],
-          "fields"=>["fragment cheeseFields", "similarCheese", "source"],
+          "path"=>["fragment cheeseFields", "similarCheese", "source"],
+          "extensions"=> {"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"source"}
         }
         assert_includes(errors, fragment_error)
       end
@@ -122,6 +133,40 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         # TODO:
         # It's annoying that this error cascades up, there should only be one:
         assert_equal 2, errors.length
+      end
+    end
+  end
+
+  describe "using enums for scalar arguments it adds an error" do
+    let(:query_string) { <<-GRAPHQL
+      {
+        cheese(id: I_AM_ENUM_VALUE) {
+          source
+        }
+      }
+    GRAPHQL
+    }
+
+    let(:enum_invalid_for_id_error) do
+      {
+        "message" => "Argument 'id' on Field 'cheese' has an invalid value. Expected type 'Int!'.",
+        "locations" => [{ "line" => 2, "column" => 9 }],
+        "path"=> ["query", "cheese", "id"],
+        "extensions"=> { "code" => "argumentLiteralsIncompatible", "typeName" => "Field", "argumentName" => "id" }
+      }
+    end
+
+    it "works with error bubbling disabled" do
+      without_error_bubbling(schema) do
+        assert_includes(errors, enum_invalid_for_id_error)
+        assert_equal 1, errors.length
+      end
+    end
+
+    it "works with error bubbling enabled" do
+      with_error_bubbling(schema) do
+        assert_includes(errors, enum_invalid_for_id_error)
+        assert_equal 1, errors.length
       end
     end
   end
@@ -164,7 +209,8 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_equal [{
           "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type 'Int!'.",
           "locations"=>[{"line"=>3, "column"=>11}],
-          "fields"=>["query", "field", "arg"],
+          "path"=>["query", "field", "arg"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"arg"}
         }], errors
       end
     end
@@ -187,7 +233,8 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_equal [{
           "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type '[Int!]'.",
           "locations"=>[{"line"=>3, "column"=>11}],
-          "fields"=>["query", "field", "arg"],
+          "path"=>["query", "field", "arg"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"arg"}
         }], errors
       end
     end
@@ -234,32 +281,36 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         it "works with error bubbling disabled" do
           without_error_bubbling(schema) do
             assert_equal 1, errors.length
-            refute_includes errors, {"message"=>
-              "Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
-            "locations"=>[{"line"=>3, "column"=>11}],
-            "fields"=>["query", "field", "arg"]}
+            refute_includes errors, {
+              "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
+              "locations"=>[{"line"=>3, "column"=>11}],
+              "path"=>["query", "field", "arg"],
+              "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"arg"}
+            }
             assert_includes errors, {
               "message"=>"Argument 'b' on InputObject 'Input' has an invalid value. Expected type 'Int!'.",
               "locations"=>[{"line"=>3, "column"=>22}],
-              "fields"=>["query", "field", "arg", "b"]
+              "path"=>["query", "field", "arg", "b"],
+              "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"InputObject", "argumentName"=>"b"}
             }
-
           end
         end
         it "works with error bubbling enabled" do
           with_error_bubbling(schema) do
             assert_equal 2, errors.length
-            assert_includes errors, {"message"=>
-              "Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
-            "locations"=>[{"line"=>3, "column"=>11}],
-            "fields"=>["query", "field", "arg"]}
+            assert_includes errors, {
+              "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
+              "locations"=>[{"line"=>3, "column"=>11}],
+              "path"=>["query", "field", "arg"],
+              "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"arg"}
+            }
 
             assert_includes errors, {
               "message"=>"Argument 'b' on InputObject 'Input' has an invalid value. Expected type 'Int!'.",
               "locations"=>[{"line"=>3, "column"=>22}],
-              "fields"=>["query", "field", "arg", "b"]
+              "path"=>["query", "field", "arg", "b"],
+              "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"InputObject", "argumentName"=>"b"}
             }
-
           end
         end
       end
@@ -277,7 +328,8 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       assert_includes(errors, {
         "message"=>"Argument 'name' on Field '__type' has an invalid value. Expected type 'String!'.",
         "locations"=>[{"line"=>3, "column"=>9}],
-        "fields"=>["query", "__type", "name"],
+        "path"=>["query", "__type", "name"],
+        "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"name"}
       })
     end
   end
@@ -337,7 +389,8 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_includes errors, {
           "message"=> "cannot coerce to Float",
           "locations"=>[{"line"=>3, "column"=>9}],
-          "fields"=>["query", "time", "value"]
+          "path"=>["query", "time", "value"],
+          "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"CoercionError"}
         }
       end
     end
@@ -352,19 +405,22 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       from_error = {
         "message"=>"cannot coerce to Float",
         "locations"=>[{"line"=>3, "column"=>23}],
-        "fields"=>["query", "time", "range", "from"]
+        "path"=>["query", "time", "range", "from"],
+        "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"CoercionError"},
       }
 
       to_error = {
         "message"=>"cannot coerce to Float",
         "locations"=>[{"line"=>3, "column"=>23}],
-        "fields"=>["query", "time", "range", "to"]
+        "path"=>["query", "time", "range", "to"],
+        "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"CoercionError"},
       }
 
       bubbling_error = {
         "message"=>"cannot coerce to Float",
         "locations"=>[{"line"=>3, "column"=>11}],
-        "fields"=>["query", "time", "range"]
+        "path"=>["query", "time", "range"],
+        "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"CoercionError"},
       }
 
       describe "sets deep error message from a CoercionError if raised" do
@@ -385,6 +441,59 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
             refute_includes(errors, bubbling_error)
           end
         end
+      end
+    end
+  end
+
+  describe "custom error extensions" do
+    let(:schema) {
+      CoerceTestEmailType ||= GraphQL::ScalarType.define do
+        name "Email"
+        description "Email address"
+
+        coerce_input ->(value, ctx) do
+          if URI::MailTo::EMAIL_REGEXP.match(value)
+            value
+          else
+            raise GraphQL::CoercionError.new("Invalid email address", extensions: { "code" => "invalid_email_address" })
+          end
+        end
+
+        coerce_result ->(value, ctx) { value.to_f }
+      end
+
+      CoerceTestEmailQueryType ||= GraphQL::ObjectType.define do
+        name "Query"
+        description "The query root of this schema"
+
+        field :email do
+          type CoerceTestEmailType
+          argument :value, CoerceTestEmailType
+          resolve ->(obj, args, ctx) { args[:value] }
+        end
+      end
+
+      GraphQL::Schema.define do
+        query CoerceTestEmailQueryType
+      end
+    }
+
+    let(:query_string) {%|
+      query {
+        email(value: "a")
+      }
+    |}
+
+    describe "with a shallow coercion" do
+      it "sets error extensions code from a CoercionError if raised" do
+        assert_equal 1, errors.length
+
+        assert_includes errors, {
+          "message"=> "Invalid email address",
+          "locations"=>[{"line"=>3, "column"=>9}],
+          "path"=>["query", "email", "value"],
+          "extensions"=>{"code"=>"invalid_email_address", "typeName"=>"CoercionError"}
+        }
       end
     end
   end

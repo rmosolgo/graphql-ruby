@@ -4,6 +4,10 @@ module GraphQL
     # Emitted by the lexer and passed to the parser.
     # Contains type, value and position data.
     class Token
+      if !String.method_defined?(:-@)
+        using GraphQL::StringDedupBackport
+      end
+
       # @return [Symbol] The kind of token this is
       attr_reader :name
       # @return [String] The text of this token
@@ -12,7 +16,7 @@ module GraphQL
 
       def initialize(value:, name:, line:, col:, prev_token:)
         @name = name
-        @value = value.freeze
+        @value = -value
         @line = line
         @col = col
         @prev_token = prev_token

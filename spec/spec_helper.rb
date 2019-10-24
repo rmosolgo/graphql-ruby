@@ -6,6 +6,10 @@ Bundler.require
 
 # Print full backtrace for failiures:
 ENV["BACKTRACE"] = "1"
+# Set this env var to use Interpreter for fixture schemas.
+# Eventually, interpreter will be the default.
+TESTING_INTERPRETER = ENV["TESTING_INTERPRETER"]
+TESTING_RESCUE_FROM = !TESTING_INTERPRETER
 
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
@@ -102,6 +106,7 @@ module TestTracing
 
     def trace(key, data)
       data[:key] = key
+      data[:path] ||= data.key?(:context) ? data[:context].path : nil
       result = yield
       data[:result] = result
       traces << data

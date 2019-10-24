@@ -14,7 +14,7 @@ module GraphQL
       end
 
       def to_graphql
-        raise NotImplementedError
+        raise GraphQL::RequiredImplementationMissingError
       end
 
       def unwrap

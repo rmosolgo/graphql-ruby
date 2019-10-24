@@ -5,6 +5,7 @@ search: true
 title: Limiting Visibility
 section: Schema
 desc: Flag types and fields so that only some clients can see them.
+index: 5
 ---
 
 Sometimes, you want to hide schema elements from some users. For example:
@@ -12,7 +13,7 @@ Sometimes, you want to hide schema elements from some users. For example:
 - some elements are feature flagged; or
 - some elements require higher permissions
 
-If you only want to limit _access_ to these fields, consider using {% internal_link "field instrumentation","/fields/instrumentation" %} to check objects at runtime or {% internal_link "query analyzers","/queries/analysis" %} to check queries before running them.
+If you only want to limit _access_ to these fields, consider using the {% internal_link "authorization framework", "/authorization/overview" %}.
 
 If you want to _completely hide_ some fields, types, enum values or arguments, read on!
 

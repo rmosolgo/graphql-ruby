@@ -27,7 +27,7 @@ Then, install the dependencies:
 
 - Install SQLite3 and MongoDB (eg, `brew install sqlite && brew install mongodb`)
 - `bundle install`
-- Optional: [Ragel](http://www.colm.net/open-source/ragel/) is required to build the lexer
+- Optional: [Ragel](https://www.colm.net/open-source/ragel/) is required to build the lexer
 
 ### Running the Tests
 
@@ -121,7 +121,7 @@ BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake
 
 ### Debugging with Pry
 
-[`pry`](http://pryrepl.org/) is included with GraphQL-Ruby's development setup to help with debugging.
+[`pry`](https://pryrepl.org/) is included with GraphQL-Ruby's development setup to help with debugging.
 
 To pause execution in Ruby code, add:
 
@@ -176,7 +176,7 @@ The lexer and parser use a multistep build process:
 - Run the generator (Ragel or Racc) to create `.rb` files (`lexer.rb` or `parser.rb`)
 - `require` those `.rb` files in GraphQL-Ruby
 
-To update the lexer or parser, you should update their corresponding _definitions_ (`lexer.rl` or `parser.y`). Then, you can run `bundle exec build_parser` to re-generate the `.rb` files.
+To update the lexer or parser, you should update their corresponding _definitions_ (`lexer.rl` or `parser.y`). Then, you can run `bundle exec rake build_parser` to re-generate the `.rb` files.
 
 You will need Ragel to build the lexer (see above).
 
@@ -224,7 +224,7 @@ Then, check them out locally:
 
 ```
 $ bundle exec rake site:serve
-# then visit localhost:4000/api-doc/1.8.0/
+# then visit http://localhost:4000/api-doc/1.8.0/
 ```
 
 Then, publish them as part of the whole site:
@@ -265,7 +265,9 @@ To cut a release:
     - Include the PR number beside the change description for future reference
 - Update `lib/graphql/version.rb` with the new version number
 - Commit changes to master
-- Release to RubyGems with `bundle exec rake release`
+- Release to RubyGems
+  - Without 2FA 😢: `bundle exec rake release`
+  - With 2FA 😎: `bundle exec rake build` then `gem push pkg/graphql-<version>.gem`, `git tag v<version> && git push v<version>`
 - Update the website:
   - Generate new API docs with `bundle exec rake apidocs:gen_version[<your.version.number>]`
   - Push them to the website with `bundle exec rake site:publish`

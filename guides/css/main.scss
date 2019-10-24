@@ -215,8 +215,13 @@ a:hover, a:hover code {
   background-color: $background-color;
   color: $color;
   border-radius: $code-border-radius;
-  padding: 10px 10px 0px 10px;
+  padding: 10px 10px 10px 10px;
+  margin-bottom: 10px;
   border: 1px solid $color;
+  p {
+    margin: 0px;
+    padding: 0px;
+  }
   a {
     color: $color;
     &:hover {

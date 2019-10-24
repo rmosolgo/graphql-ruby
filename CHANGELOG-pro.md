@@ -8,6 +8,134 @@
 
 ### Bug Fix
 
+## 1.11.0 (10 Oct 2019)
+
+### New Features
+
+- Forwards-compatibility for graphql 1.10.0
+- Support 1.10.0.pre1's input object argument `loads:` authorization
+
+## 1.10.8 (8 Oct 2019)
+
+### Bug Fix
+
+- Continue authorizing input object arguments
+- Use millisecond-aware string format for datetimes in cursors
+
+## 1.10.7 (22 Jul 2019)
+
+### Bug Fix
+
+- Support multiple subscriptions in one document
+
+## 1.10.6 (27 Jun 2019)
+
+### New Features
+
+- Support custom `#can_can_ability` methods on query context for CanCanIntegration
+- Support custom `#pundit_user` method on query context for PunditIntegration
+
+### Bug Fix
+
+- Fix off-by-one error when paginating backwards from the last item in a stable relation connection
+
+## 1.10.5 (11 May 2019)
+
+### New Features
+
+- Include expected HMAC digest in OperationStore debug output
+
+## 1.10.4 (26 Mar 2019)
+
+### Bug Fix
+
+- Include content-length and content-type headers in OperationStore JSON responses
+
+## 1.10.3 (13 Mar 2019)
+
+### Bug Fix
+
+- Support stable connections ordered by Arel SQL literals
+
+## 1.10.2 (11 Mar 2019)
+
+### Bug Fix
+
+- Support stable connections on realized views (which don't have primary keys)
+
+## 1.10.1 (8 Mar 2019)
+
+### Bug Fix
+
+- Pundit integration: support `pundit_policy_class` String names when scoping connections
+
+## 1.10.0 (5 Mar 2019)
+
+### New Features
+
+- Add `GraphQL::Pro::Defer`, implementing `@defer` for streaming responses
+
+## 1.9.13 (4 Mar 2019)
+
+### Bug Fix
+
+- Pundit integration: correctly authorize fields when Query root is nil
+
+## 1.9.12 (22 Feb 2019)
+
+### Bug Fix
+
+- Pundit integration: use overriden `pundit_policy_class` for scoping and mutation authorization
+
+## 1.9.11 (20 Feb 2019)
+
+### Bug Fix
+
+- Pundit integration: Fields use the owner's configured `pundit_policy_class` if there is one
+- Pundit integration: avoid conflicts with `#initialize` for schema classes that don't need it
+
+## 1.9.10 (19 Feb 2019)
+
+### Bug Fix
+
+- Support inheritance with `pundit_policy_class(...)`
+
+## 1.9.9 (13 Feb 2019)
+
+### New Features
+
+- Support `pundit_policy_class(...)` and `pundit_policy_class:` to manually specify a class or class name.
+
+## 1.9.8 (30 Jan 2019)
+
+### New Features
+
+- Inject `context` into policy lookup hooks instead of just the user
+
+## 1.9.7 (30 Jan 2019)
+
+### New Features
+
+- Extract `pundit_policy` and `scope_by_pundit_policy` hooks for user override
+
+## 1.9.6 (18 Jan 2019)
+
+### Bug Fix
+
+- Properly render subscription context in dashboard
+
+## 1.9.5 (14 Jan 2019)
+
+## Bug Fix
+
+- Don't pass arrays to Pundit scopes (fixes https://github.com/rmosolgo/graphql-ruby/issues/2008)
+
+## 1.9.4 (11 Jan 2019)
+
+## Bug Fix
+
+- Prepare for future compat with graphql-ruby 1.9
+
 ## 1.9.3 (3 Dec 2018)
 
 ### Bug Fix

@@ -18,14 +18,14 @@ __NOTE:__ A new {% internal_link "Pundit integration", "/authorization/pundit_in
 
 Fields and types can be [authorized at runtime](#runtime-authorization), [rejected during validation](#access-authorization), or [hidden entirely](#visibility-authorization). Default authorization can be [applied at schema-level](#fallback-authorization)
 
-`GraphQL::Pro` integrates has out-of-the-box [Pundit support](#pundit) and [CanCan support](#cancan) and supports [custom authorization strategies](#custom-authorization-strategy)
+`GraphQL::Pro` integrates out-of-the-box [Pundit support](#pundit) and [CanCan support](#cancan) and supports [custom authorization strategies](#custom-authorization-strategy)
 
 ## Configuration
 
 To use authorization, specify an authorization strategy in your schema:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class Schema < GraphQL::Schema
   # ...
   authorization :pundit
   # or:
@@ -52,7 +52,7 @@ result = MySchema.execute(query_string, context: { current_user: current_user })
 You can specify a fallback auth configuration for the entire schema:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class Schema < GraphQL::Schema
   # Always require logged-in users to see anything:
   authorization(..., fallback: { view: :logged_in })
 end
@@ -65,7 +65,7 @@ This rule will be applied to fields which don't have a rule of their own or a ru
 You can customize the `current_user:` context key with `authorization(..., current_user: ...)`:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class Schema < GraphQL::Schema
   # Current user is identified as `ctx[:viewer]`
   authorization :pundit, current_user: :viewer
 end
@@ -93,8 +93,7 @@ end
 Also, you can specify authentication at __type-level__, for example:
 
 ```ruby
-AccountBalanceType = GraphQL::ObjectType.define do
-  name "AccountBalance"
+class AccountBalanceType < GraphQL::Schema::Object
   # Only billing administrators can see
   # objects of this type:
   authorize :billing_administrator
@@ -113,10 +112,9 @@ If an object doesn't pass permission checks, it is removed from the response. If
 You can also limit access to fields based on their parent objects with `parent_role:`. For example, to restrict a student's GPA to that student:
 
 ```ruby
-StudentType = GraphQL::ObjectType.define do
-  name "Student"
-  field :name, !types.String
-  field :gpa, types.Float do
+class StudentType < GraphQL::Schema::Object
+  field :name, String, null: false
+  field :gpa, Float, null: true do 
     # only show `Student.gpa` if the
     # student is the viewer:
     authorize parent_role: :current_user
@@ -136,96 +134,48 @@ When an object fails a runtime authorization check, the default behavior is:
 You can override this behavior by providing a schema-level `unauthorized_object` function:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
-  unauthorized_object ->(obj, ctx) { ... }
-end
-# OR
-MySchema = GraphQL::Schema.define do
-  unauthorized_object(MyUnauthorizedObjectHook)
+class Schema < GraphQL::Schema
+  # Override this hook to handle cases when `authorized?` returns false for an object:
+  def self.unauthorized_object(error)
+    # Add a top-level error to the response instead of returning nil:
+    raise GraphQL::ExecutionError, "An object of type #{error.type.graphql_name} was hidden due to permissions"
+  end
 end
 ```
 
-The function is called with two arguments:
+The function is used to handle unauthorized objects:
 
-- `obj` is the object which failed a runtime check
-- `ctx` is the field context for the failed check
-
-Within the function, you can:
-
-- Write log entries
-- Add GraphQL errors, for example:
-
-  ```ruby
-  # Add an error to the graphql response:
-  err = GraphQL::ExecutionError.new("You don't have permission to see #{obj.name}")
-  ctx.add_error(err)
-  ```
-
-- Return a different value for the query.
-
-  To return a different value, use `yield` (or `next` for a Proc). For example:
-
-  ```ruby
-  module MyUnauthorizedObjectHook
-    def self.call(obj, ctx)
-      if obj.is_a?(User)
-        # Write a log entry
-        logger.log("Invalid user access: #{ctx[:current_user]} tried to access #{obj}")
-        # Replace an unauthorized object with a null object
-        yield(AnonymousUser)
-      end
-    end
-  end
-  ```
-
-  For procs, use `next` instead of `yield`:
-
-  ```ruby
-  -> (obj, ctx) {
-    if obj.is_a?(User)
-      # Write a log entry
-      logger.log("Invalid user access: #{ctx[:current_user]} tried to access #{obj}")
-      # Replace an unauthorized object with a null object
-      next(AnonymousUser)
-    end
-  }
-  ```
-
-  (`yield` isn't valid for procs. Long story 😅.)
-
-  Using `yield` allows the library to skip objects entirely when nothing is yielded.
+You could refer to the basic authorization {% internal_link "guide", "/authorization/authorization" %} for more details. 
 
 ## Access Authorization
 
 You can prevent access to fields and types from certain users. (They can see them, but if they request them, the request is rejected with an error message.) Use the `access:` keyword for this feature.
 
 ```ruby
-# Non-owners may _see_ these,
-# but they may not request them:
-field :telephone_number, types.String, access: :owner
-
-AddressType = GraphQL::ObjectType.define do
-  name "Address"
+class AddressType < GraphQL::Schema::Object
+  # Non-owners may see this type, but they may not request them. 
   access :owner
-  # ...
+
+  # Non-owners may see this field, but they may not request them. 
+  field :telephone_number, String, null: true, access: :owner
 end
 ```
 
 When a user requests access to an unpermitted field, GraphQL returns an error message. You can customize this error message by providing an `unauthorized_fields` hook:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
-  # ...
-  unauthorized_fields ->(irep_nodes, ctx) {
-    GraphQL::AnalysisError.new("Sorry, you're not allowed to see that!")
-  }
+class Schema < GraphQL::Schema
+  # Override this hook to handle cases when `authorized?` returns false for a field:
+  def self.unauthorized_field(error)
+    # Add a top-level error to the response instead of returning nil:
+    raise GraphQL::ExecutionError, "The field #{error.field.graphql_name} on an object of type #{error.type.graphql_name} was hidden due to permissions"
+  end  
 end
 ```
 
-The hook should return a {{ "GraphQL::AnalysisError" | api_doc }}. It is called with:
+The function is used to handle unauthorized fields:
 
-- `irep_nodes`: an array of {{ "GraphQL::InternalRepresentation::Node" | api_doc }}s which represent unpermitted fields in the incoming query.
-- `ctx`: the {{ "GraphQL::Query::Context" | api_doc }} (which includes `:current_user`).
+You could refer to the basic authorization {% internal_link "guide", "/authorization/authorization" %} for more details. 
 
 ## Visibility Authorization
 
@@ -234,16 +184,12 @@ You can hide fields and types from certain users. If they request these types or
 The `view` keyword specifies visibility permission:
 
 ```ruby
-# These types and fields are
-# invisible to non-admins:
+class PassportApplicationType < GraphQL::Schema::Object
+  # Every field on this type is invisible to non-admins
+  view :admin 
 
-# field-level:
-field :social_security_number, types.String, view: :admin
-
-# type-level:
-PassportApplicationType = GraphQL::ObjectType.define do
-  name "PassportApplication"
-  view :admin
+  # This field is invisible to non-admins
+  field :social_security_number, String, null: true, view: :admin
   # ...
 end
 ```
@@ -255,7 +201,7 @@ __NOTE:__ A new {% internal_link "Pundit integration", "/authorization/pundit_in
 `GraphQL::Pro` includes built-in support for [Pundit](https://github.com/elabs/pundit):
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class Schema < GraphQL::Schema
   authorization(:pundit)
 end
 ```
@@ -301,8 +247,7 @@ authorize(:pundit, namespace: Policies)
 Now, policies will be looked up by name inside `Policies::`, for example:
 
 ```ruby
-AccountType = GraphQL::ObjectType.define do
-  name "Account"
+class AccountType < GraphQL::Schema::Object
   access :admin # will use Policies::AccountPolicy#admin?
   # ...
 end
@@ -321,7 +266,7 @@ __NOTE:__ A new {% internal_link "CanCan integration", "/authorization/can_can_i
 `GraphQL::Pro` includes built-in support for [CanCan](https://github.com/CanCanCommunity/cancancan):
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class Schema < GraphQL::Schema
   authorization(:cancan)
 end
 ```
@@ -336,7 +281,7 @@ field :phone_number, PhoneNumberType, authorize: :view
 For compile-time checks (`view` and `access`), the object is always `nil`.
 
 ```ruby
-field :social_security_number, types.String, view: :admin
+field :social_security_number, String, null: true, view: :admin
 # => calls `can?(:admin, nil)`
 ```
 
@@ -351,7 +296,7 @@ See [Scoping](#scoping) for details.
 By default, GraphQL looks for a top-level `Ability` class. You can specify a different class with the `ability_class:` option. For example:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class Schema < GraphQL::Schema
   authorization(:cancan, ability_class: Permissions::CustomAbility)
 end
 ```
@@ -363,7 +308,7 @@ Now, GraphQL will use `Permissions::CustomAbility#can?` to determine permissions
 You can provide custom authorization logic by providing a class:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class Schema < GraphQL::Schema
   # Custom authorization strategy class:
   authorization(MyAuthStrategy)
 end

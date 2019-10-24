@@ -14,7 +14,15 @@ module GraphQL
     attr_accessor :ast_node
     # @api private
     attr_writer :default_directive
-    ensure_defined(:locations, :arguments, :name, :description, :default_directive?)
+    ensure_defined(:locations, :arguments, :graphql_name, :name, :description, :default_directive?)
+
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_name :name
+
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_definition :itself
 
     LOCATIONS = [
       QUERY =                  :QUERY,
@@ -83,6 +91,10 @@ module GraphQL
     # @return [Boolean] Is this directive supplied by default? (eg `@skip`)
     def default_directive?
       @default_directive
+    end
+
+    def inspect
+      "#<GraphQL::Directive #{name}>"
     end
   end
 end

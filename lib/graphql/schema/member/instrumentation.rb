@@ -28,6 +28,12 @@ module GraphQL
             wrapper_class = root_type.metadata[:type_class]
             if wrapper_class
               new_root_value = wrapper_class.authorized_new(query.root_value, query.context)
+              new_root_value = query.schema.sync_lazy(new_root_value)
+              if new_root_value.nil?
+                # This is definitely a hack,
+                # but we need some way to tell execute.rb not to run.
+                query.context[:__root_unauthorized] = true
+              end
               query.root_value = new_root_value
             end
           end
@@ -91,7 +97,7 @@ module GraphQL
                   # For lists with nil, we need another nil check here
                   nil
                 else
-                  concrete_type = case @inner_return_type
+                  concrete_type_or_lazy = case @inner_return_type
                   when GraphQL::UnionType, GraphQL::InterfaceType
                     ctx.query.resolve_type(@inner_return_type, inner_obj)
                   when GraphQL::ObjectType
@@ -100,12 +106,15 @@ module GraphQL
                     raise "unexpected proxying type #{@inner_return_type} for #{inner_obj} at #{ctx.owner_type}.#{ctx.field.name}"
                   end
 
-                  if concrete_type && (object_class = concrete_type.metadata[:type_class])
-                    # use the query-level context here, since it won't be field-specific anyways
-                    query_ctx = ctx.query.context
-                    object_class.authorized_new(inner_obj, query_ctx)
-                  else
-                    inner_obj
+                  # .resolve_type may have returned a lazy
+                  ctx.schema.after_lazy(concrete_type_or_lazy) do |concrete_type|
+                    if concrete_type && (object_class = concrete_type.metadata[:type_class])
+                      # use the query-level context here, since it won't be field-specific anyways
+                      query_ctx = ctx.query.context
+                      object_class.authorized_new(inner_obj, query_ctx)
+                    else
+                      inner_obj
+                    end
                   end
                 end
               end

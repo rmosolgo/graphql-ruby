@@ -32,7 +32,9 @@ module GraphQL
       # - Merging in the default arguments
       # - Transforming its resolve function to return a connection object
       def self.instrument(type, field)
-        if field.connection?
+        # Don't apply the wrapper to class-based fields, since they
+        # use Schema::Field::ConnectionFilter
+        if field.connection? && !field.metadata[:type_class]
           connection_arguments = default_arguments.merge(field.arguments)
           original_resolve = field.resolve_proc
           original_lazy_resolve = field.lazy_resolve_proc

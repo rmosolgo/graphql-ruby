@@ -24,6 +24,16 @@ describe GraphQL::Authorization do
       end
     end
 
+    class BaseInputObjectArgument < BaseArgument
+      def authorized?(parent_object, context)
+        super && parent_object != :hide3
+      end
+    end
+
+    class BaseInputObject < GraphQL::Schema::InputObject
+      argument_class BaseInputObjectArgument
+    end
+
     class BaseField < GraphQL::Schema::Field
       def initialize(*args, edge_class: nil, **kwargs, &block)
         @edge_class = edge_class
@@ -48,7 +58,10 @@ describe GraphQL::Authorization do
       end
 
       def authorized?(object, context)
-        super && object != :hide
+        if object == :raise
+          raise GraphQL::UnauthorizedFieldError.new("raised authorized field error", object: object)
+        end
+        super && object != :hide && object != :replace
       end
     end
 
@@ -101,6 +114,8 @@ describe GraphQL::Authorization do
       def self.visible?(ctx)
         super && !ctx[:hide]
       end
+
+      field :some_field, String, null: true
     end
 
     class RelayObject < BaseObject
@@ -115,6 +130,8 @@ describe GraphQL::Authorization do
       def self.authorized?(_val, ctx)
         super && !ctx[:unauthorized_relay]
       end
+
+      field :some_field, String, null: true
     end
 
     # TODO test default behavior for abstract types,
@@ -137,6 +154,8 @@ describe GraphQL::Authorization do
       def self.resolve_type(obj, ctx)
         InaccessibleObject
       end
+
+      field :some_field, String, null: true
     end
 
     class InaccessibleObject < BaseObject
@@ -145,12 +164,19 @@ describe GraphQL::Authorization do
       def self.accessible?(ctx)
         super && !ctx[:hide]
       end
+
+      field :some_field, String, null: true
     end
 
     class UnauthorizedObject < BaseObject
       def self.authorized?(value, context)
+        if context[:raise]
+          raise GraphQL::UnauthorizedError.new("raised authorized object error", object: value.object)
+        end
         super && !context[:hide]
       end
+
+      field :value, String, null: false, method: :itself
     end
 
     class UnauthorizedBox < BaseObject
@@ -159,7 +185,7 @@ describe GraphQL::Authorization do
         super && value != "a"
       end
 
-      field :value, String, null: false, method: :object
+      field :value, String, null: false, method: :itself
     end
 
     module UnauthorizedInterface
@@ -186,7 +212,7 @@ describe GraphQL::Authorization do
         Box.new(value: Box.new(value: Box.new(value: Box.new(value: is_authed))))
       end
 
-      field :value, String, null: false, method: :object
+      field :value, String, null: false, method: :itself
     end
 
     class IntegerObject < BaseObject
@@ -197,7 +223,7 @@ describe GraphQL::Authorization do
         is_allowed = !(ctx[:unauthorized_relay] || obj == ctx[:exclude_integer])
         Box.new(value: Box.new(value: is_allowed))
       end
-      field :value, Integer, null: false, method: :object
+      field :value, Integer, null: false, method: :itself
     end
 
     class IntegerObjectEdge < GraphQL::Types::Relay::BaseEdge
@@ -235,9 +261,18 @@ describe GraphQL::Authorization do
       value "TAR_PIT", role: :hidden
     end
 
+    class AddInput < BaseInputObject
+      argument :left, Integer, required: true
+      argument :right, Integer, required: true
+    end
+
     class Query < BaseObject
+      def self.authorized?(obj, ctx)
+        !ctx[:query_unauthorized]
+      end
+
       field :hidden, Integer, null: false
-      field :unauthorized, Integer, null: true, method: :object
+      field :unauthorized, Integer, null: true, method: :itself
       field :int2, Integer, null: true do
         argument :int, Integer, required: false
         argument :hidden, Integer, required: false
@@ -268,22 +303,22 @@ describe GraphQL::Authorization do
       end
 
       def empty_array; []; end
-      field :hidden_object, HiddenObject, null: false, method: :itself
-      field :hidden_interface, HiddenInterface, null: false, method: :itself
-      field :hidden_default_interface, HiddenDefaultInterface, null: false, method: :itself
-      field :hidden_connection, RelayObject.connection_type, null: :false, method: :empty_array
-      field :hidden_edge, RelayObject.edge_type, null: :false, method: :edge_object
+      field :hidden_object, HiddenObject, null: false, resolver_method: :itself
+      field :hidden_interface, HiddenInterface, null: false, resolver_method: :itself
+      field :hidden_default_interface, HiddenDefaultInterface, null: false, resolver_method: :itself
+      field :hidden_connection, RelayObject.connection_type, null: :false, resolver_method: :empty_array
+      field :hidden_edge, RelayObject.edge_type, null: :false, resolver_method: :edge_object
 
       field :inaccessible, Integer, null: false, method: :object_id
-      field :inaccessible_object, InaccessibleObject, null: false, method: :itself
-      field :inaccessible_interface, InaccessibleInterface, null: false, method: :itself
-      field :inaccessible_default_interface, InaccessibleDefaultInterface, null: false, method: :itself
-      field :inaccessible_connection, RelayObject.connection_type, null: :false, method: :empty_array
-      field :inaccessible_edge, RelayObject.edge_type, null: :false, method: :edge_object
+      field :inaccessible_object, InaccessibleObject, null: false, resolver_method: :itself
+      field :inaccessible_interface, InaccessibleInterface, null: false, resolver_method: :itself
+      field :inaccessible_default_interface, InaccessibleDefaultInterface, null: false, resolver_method: :itself
+      field :inaccessible_connection, RelayObject.connection_type, null: :false, resolver_method: :empty_array
+      field :inaccessible_edge, RelayObject.edge_type, null: :false, resolver_method: :edge_object
 
-      field :unauthorized_object, UnauthorizedObject, null: true, method: :itself
-      field :unauthorized_connection, RelayObject.connection_type, null: false, method: :array_with_item
-      field :unauthorized_edge, RelayObject.edge_type, null: false, method: :edge_object
+      field :unauthorized_object, UnauthorizedObject, null: true, resolver_method: :itself
+      field :unauthorized_connection, RelayObject.connection_type, null: false, resolver_method: :array_with_item
+      field :unauthorized_edge, RelayObject.edge_type, null: false, resolver_method: :edge_object
 
       def edge_object
         OpenStruct.new(node: 100)
@@ -305,11 +340,11 @@ describe GraphQL::Authorization do
         [self, self]
       end
 
-      field :unauthorized_lazy_check_box, UnauthorizedCheckBox, null: true, method: :unauthorized_lazy_box do
+      field :unauthorized_lazy_check_box, UnauthorizedCheckBox, null: true, resolver_method: :unauthorized_lazy_box do
         argument :value, String, required: true
       end
 
-      field :unauthorized_interface, UnauthorizedInterface, null: true, method: :unauthorized_lazy_box do
+      field :unauthorized_interface, UnauthorizedInterface, null: true, resolver_method: :unauthorized_lazy_box do
         argument :value, String, required: true
       end
 
@@ -335,6 +370,14 @@ describe GraphQL::Authorization do
       def replaced_object
         Replaceable.new
       end
+
+      field :add_inputs, Integer, null: true do
+        argument :input, AddInput, required: true
+      end
+
+      def add_inputs(input:)
+        input[:left] + input[:right]
+      end
     end
 
     class DoHiddenStuff < GraphQL::Schema::RelayClassicMutation
@@ -347,6 +390,8 @@ describe GraphQL::Authorization do
       def self.visible?(ctx)
         super && !ctx[:hidden_mutation]
       end
+
+      field :some_return_field, String, null: true
     end
 
     class DoInaccessibleStuff < GraphQL::Schema::RelayClassicMutation
@@ -369,20 +414,47 @@ describe GraphQL::Authorization do
     end
 
     class Schema < GraphQL::Schema
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
       query(Query)
       mutation(Mutation)
+
+      # Opt in to accessible? checks
+      query_analyzer GraphQL::Authorization::Analyzer
 
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
         if err.object.respond_to?(:replacement)
           err.object.replacement
+        elsif err.object == :replace
+          33
+        elsif err.object == :raise_from_object
+          raise GraphQL::ExecutionError, err.message
         else
-          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object}"
+          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object.inspect}"
         end
       end
 
       # use GraphQL::Backtrace
+    end
+
+    class SchemaWithFieldHook < GraphQL::Schema
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
+      query(Query)
+
+      def self.unauthorized_field(err)
+        if err.object == :replace
+          42
+        elsif err.object == :raise
+          raise GraphQL::ExecutionError, "#{err.message} in field #{err.field.name}"
+        else
+          raise GraphQL::ExecutionError, "Unauthorized field #{err.field.graphql_name} on #{err.type.graphql_name}: #{err.object}"
+        end
+      end
     end
   end
 
@@ -419,7 +491,7 @@ describe GraphQL::Authorization do
       assert_equal ["Field 'doHiddenStuff' doesn't exist on type 'Mutation'"], res["errors"].map { |e| e["message"] }
 
       # `#resolve` isn't implemented, so this errors out:
-      assert_raises NotImplementedError do
+      assert_raises GraphQL::RequiredImplementationMissingError do
         auth_execute(query)
       end
 
@@ -444,7 +516,7 @@ describe GraphQL::Authorization do
       assert_equal ["Field 'doHiddenStuff2' doesn't exist on type 'Mutation'"], res["errors"].map { |e| e["message"] }
 
       # `#resolve` isn't implemented, so this errors out:
-      assert_raises NotImplementedError do
+      assert_raises GraphQL::RequiredImplementationMissingError do
         auth_execute(query)
       end
     end
@@ -576,7 +648,7 @@ describe GraphQL::Authorization do
       res = auth_execute(query, context: { inaccessible_mutation: true })
       assert_equal ["Some fields in this query are not accessible: doInaccessibleStuff"], res["errors"].map { |e| e["message"] }
 
-      assert_raises NotImplementedError do
+      assert_raises GraphQL::RequiredImplementationMissingError do
         auth_execute(query)
       end
     end
@@ -598,7 +670,7 @@ describe GraphQL::Authorization do
   end
 
   describe "applying the authorized? method" do
-    it "halts on unauthorized objects" do
+    it "halts on unauthorized objects, replacing the object with nil" do
       query = "{ unauthorizedObject { __typename } }"
       hidden_response = auth_execute(query, context: { hide: true })
       assert_nil hidden_response["data"].fetch("unauthorizedObject")
@@ -610,8 +682,75 @@ describe GraphQL::Authorization do
       query = "mutation { doUnauthorizedStuff(input: {}) { __typename } }"
       res = auth_execute(query, context: { unauthorized_mutation: true })
       assert_nil res["data"].fetch("doUnauthorizedStuff")
-      assert_raises NotImplementedError do
+      assert_raises GraphQL::RequiredImplementationMissingError do
         auth_execute(query)
+      end
+    end
+
+    describe "field level authorization" do
+      describe "unauthorized field" do
+        describe "with an unauthorized field hook configured" do
+          describe "when the hook returns a value" do
+            it "replaces the response with the return value of the unauthorized field hook" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :replace)
+              assert_equal 42, response["data"].fetch("unauthorized")
+            end
+          end
+
+          describe "when the field hook raises an error" do
+            it "returns nil" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :hide)
+              assert_nil response["data"].fetch("unauthorized")
+            end
+
+            it "adds the error to the errors key" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :hide)
+              assert_equal ["Unauthorized field unauthorized on Query: hide"], response["errors"].map { |e| e["message"] }
+            end
+          end
+
+          describe "when the field authorization raises an UnauthorizedFieldError" do
+            it "receives the raised error" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :raise)
+              assert_equal ["raised authorized field error in field unauthorized"], response["errors"].map { |e| e["message"] }
+            end
+          end
+        end
+
+        describe "with an unauthorized field hook not configured" do
+          describe "When the object hook replaces the field" do
+            it "delegates to the unauthorized object hook, which replaces the object" do
+              query = "{ unauthorized }"
+              response = AuthTest::Schema.execute(query, root_value: :replace)
+              assert_equal 33, response["data"].fetch("unauthorized")
+            end
+          end
+          describe "When the object hook raises an error" do
+            it "returns nil" do
+              query = "{ unauthorized }"
+              response = AuthTest::Schema.execute(query, root_value: :hide)
+              assert_nil response["data"].fetch("unauthorized")
+            end
+
+            it "adds the error to the errors key" do
+              query = "{ unauthorized }"
+              response = AuthTest::Schema.execute(query, root_value: :hide)
+              assert_equal ["Unauthorized Query: :hide"], response["errors"].map { |e| e["message"] }
+            end
+          end
+        end
+      end
+
+      describe "authorized field" do
+        it "returns the field data" do
+          query = "{ unauthorized }"
+          response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 1)
+          assert_equal 1, response["data"].fetch("unauthorized")
+        end
       end
     end
 
@@ -629,6 +768,21 @@ describe GraphQL::Authorization do
       assert_nil hidden_response["data"].fetch("int2")
       visible_response = auth_execute(query)
       assert_equal 5, visible_response["data"]["int2"]
+    end
+
+    it "halts on unauthorized input object arguments, using the parent object" do
+      query = "{ addInputs(input: { left: 3, right: 2 }) }"
+      hidden_field_argument_response = auth_execute(query, root_value: :hide2)
+      assert_nil hidden_field_argument_response["data"].fetch("addInputs")
+      assert_equal ["Unauthorized Query: :hide2"], hidden_field_argument_response["errors"].map { |e| e["message"] }
+
+      hidden_input_obj_argument_response = auth_execute(query, root_value: :hide3)
+      assert_nil hidden_input_obj_argument_response["data"].fetch("addInputs")
+      assert_equal ["Unauthorized Query: :hide3"], hidden_input_obj_argument_response["errors"].map { |e| e["message"] }
+
+      visible_response = auth_execute(query)
+      assert_equal 5, visible_response["data"]["addInputs"]
+      refute visible_response.key?("errors")
     end
 
     it "works with edges and connections" do
@@ -658,7 +812,25 @@ describe GraphQL::Authorization do
       unauthorized_res = auth_execute(query, context: { unauthorized_relay: true })
       conn = unauthorized_res["data"].fetch("unauthorizedConnection")
       assert_equal "RelayObjectConnection", conn.fetch("__typename")
-      assert_equal nil, conn.fetch("nodes")
+      # This is tricky: the previous behavior was to replace the _whole_
+      # list with `nil`. This was due to an implementation detail:
+      # The list field's return value (an array of integers) was wrapped
+      # _before_ returning, and during this wrapping, a cascading error
+      # caused the entire field to be nilled out.
+      #
+      # In the interpreter, each list item is contained and the error doesn't propagate
+      # up to the whole list.
+      #
+      # Originally, I thought that this was a _feature_ that obscured list entries.
+      # But really, look at the test below: you don't get this "feature" if
+      # you use `edges { node }`, so it can't be relied on in any way.
+      #
+      # All that to say, in the interpreter, `nodes` and `edges { node }` behave
+      # the same.
+      #
+      # TODO revisit the docs for this.
+      failed_nodes_value = TESTING_INTERPRETER ? [nil] : nil
+      assert_equal failed_nodes_value, conn.fetch("nodes")
       assert_equal [{"node" => nil, "__typename" => "RelayObjectEdge"}], conn.fetch("edges")
 
       edge = unauthorized_res["data"].fetch("unauthorizedEdge")
@@ -667,7 +839,7 @@ describe GraphQL::Authorization do
 
       unauthorized_object_paths = [
         ["unauthorizedConnection", "edges", 0, "node"],
-        ["unauthorizedConnection", "nodes"],
+        TESTING_INTERPRETER ? ["unauthorizedConnection", "nodes", 0] : ["unauthorizedConnection", "nodes"],
         ["unauthorizedEdge", "node"]
       ]
 
@@ -723,7 +895,7 @@ describe GraphQL::Authorization do
       assert_nil unauthorized_res["data"].fetch("a")
       assert_equal "b", unauthorized_res["data"]["b"]["value"]
       # Also, the custom handler was called:
-      assert_equal ["Unauthorized UnauthorizedCheckBox: a"], unauthorized_res["errors"].map { |e| e["message"] }
+      assert_equal ["Unauthorized UnauthorizedCheckBox: \"a\""], unauthorized_res["errors"].map { |e| e["message"] }
     end
 
     it "Works for lazy connections" do
@@ -788,17 +960,63 @@ describe GraphQL::Authorization do
 
       res = auth_execute(query)
       # An error from two, values from the others
-      assert_equal ["Unauthorized UnauthorizedCheckBox: a", "Unauthorized UnauthorizedCheckBox: a"], res["errors"].map { |e| e["message"] }
+      assert_equal ["Unauthorized UnauthorizedCheckBox: \"a\"", "Unauthorized UnauthorizedCheckBox: \"a\""], res["errors"].map { |e| e["message"] }
       assert_equal [{"value" => "z"}, {"value" => "z2"}, nil, nil], res["data"]["unauthorizedLazyListInterface"]
     end
 
-    it "replaces objects from the unauthorized_object hook" do
-      query = "{ replacedObject { replaced } }"
-      res = auth_execute(query, context: { replace_me: true })
-      assert_equal true, res["data"]["replacedObject"]["replaced"]
+    describe "with an unauthorized field hook configured" do
+      it "replaces objects from the unauthorized_object hook" do
+        query = "{ replacedObject { replaced } }"
+        res = auth_execute(query, context: { replace_me: true })
+        assert_equal true, res["data"]["replacedObject"]["replaced"]
 
-      res = auth_execute(query, context: { replace_me: false })
-      assert_equal false, res["data"]["replacedObject"]["replaced"]
+        res = auth_execute(query, context: { replace_me: false })
+        assert_equal false, res["data"]["replacedObject"]["replaced"]
+      end
+
+      it "works when the query hook returns false and there's no root object" do
+        query = "{ __typename }"
+        res = auth_execute(query)
+        assert_equal "Query", res["data"]["__typename"]
+
+        unauth_res = auth_execute(query, context: { query_unauthorized: true })
+        assert_nil unauth_res["data"]
+        assert_equal [{"message"=>"Unauthorized Query: nil"}], unauth_res["errors"]
+      end
+
+      describe "when the object authorization raises an UnauthorizedFieldError" do
+        it "receives the raised error" do
+          query = "{ unauthorizedObject { value } }"
+          response = auth_execute(query, context: { raise: true }, root_value: :raise_from_object)
+          assert_equal ["raised authorized object error"], response["errors"].map { |e| e["message"] }
+        end
+      end
+    end
+  end
+
+  describe "returning false" do
+    class FalseSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          false
+        end
+
+        field :int, Integer, null: false
+
+        def int
+          1
+        end
+      end
+      query(Query)
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
+    end
+
+    it "works out-of-the-box" do
+      res = FalseSchema.execute("{ int }")
+      assert_nil res.fetch("data")
+      refute res.key?("errors")
     end
   end
 end

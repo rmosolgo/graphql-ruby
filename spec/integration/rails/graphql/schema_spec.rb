@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Schema do
   let(:schema) { Dummy::Schema }
+  let(:admin_schema) { Dummy::AdminSchema }
   let(:relay_schema)  { StarWars::Schema }
   let(:empty_schema) { GraphQL::Schema.define }
 
@@ -73,10 +74,13 @@ describe GraphQL::Schema do
     end
   end
 
-  describe "#subscription" do
-    it "calls fields on the subscription type" do
-      res = schema.execute("subscription { test }")
-      assert_equal("Test", res["data"]["test"])
+  # Interpreter has subscription support hardcoded, it doesn't just call through.
+  if !TESTING_INTERPRETER
+    describe "#subscription" do
+      it "calls fields on the subscription type" do
+        res = schema.execute("subscription { test }")
+        assert_equal("Test", res["data"]["test"])
+      end
     end
   end
 
@@ -99,7 +103,7 @@ describe GraphQL::Schema do
 
     describe "when the hook wasn't implemented" do
       it "raises not implemented" do
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           empty_schema.resolve_type(nil, nil)
         }
       end
@@ -116,7 +120,7 @@ describe GraphQL::Schema do
           field :something, interface
         end
 
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           GraphQL::Schema.define do
             query(query_type)
           end
@@ -125,10 +129,28 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "#disable_introspection_entry_points" do
+    it "enables entry points by default" do
+      refute_empty empty_schema.introspection_system.entry_points
+    end
+
+    describe "when disable_introspection_entry_points is configured" do
+      let(:schema) do
+        GraphQL::Schema.define do
+          disable_introspection_entry_points
+        end
+      end
+
+      it "clears entry points" do
+        assert_empty schema.introspection_system.entry_points
+      end
+    end
+  end
+
   describe "object_from_id" do
     describe "when the hook wasn't implemented" do
       it "raises not implemented" do
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           empty_schema.object_from_id(nil, nil)
         }
       end
@@ -146,7 +168,7 @@ describe GraphQL::Schema do
           field :thing, thing_type
         end
 
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           GraphQL::Schema.define do
             query(query_type)
             resolve_type NO_OP_RESOLVE_TYPE
@@ -159,7 +181,7 @@ describe GraphQL::Schema do
   describe "id_from_object" do
     describe "when the hook wasn't implemented" do
       it "raises not implemented" do
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           empty_schema.id_from_object(nil, nil, nil)
         }
       end
@@ -172,7 +194,7 @@ describe GraphQL::Schema do
           field :node, GraphQL::Relay::Node.field
         end
 
-        assert_raises(NotImplementedError) {
+        assert_raises(GraphQL::RequiredImplementationMissingError) {
           GraphQL::Schema.define do
             query(query_type)
             resolve_type NO_OP_RESOLVE_TYPE
@@ -428,6 +450,18 @@ type Query {
     it "accepts a list of custom rules" do
       custom_rules = GraphQL::StaticValidation::ALL_RULES - [GraphQL::StaticValidation::FragmentsAreNamed]
       errors = schema.validate("fragment on Cheese { id }", rules: custom_rules)
+      assert_equal([], errors)
+    end
+
+    it "accepts a context hash" do
+      context = { admin: false }
+      # AdminSchema is a barebones dummy schema, where fields are visible only with context[:admin] == true
+      errors = admin_schema.validate('query { adminOnlyMessage }', context: context)
+      assert_equal 1, errors.length
+      assert_equal("Field 'adminOnlyMessage' doesn't exist on type 'AdminDairyAppQuery'", errors.first.message)
+
+      context = { admin: true }
+      errors = admin_schema.validate('query { adminOnlyMessage }', context: context)
       assert_equal([], errors)
     end
   end

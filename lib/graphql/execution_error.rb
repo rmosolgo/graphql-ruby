@@ -4,7 +4,7 @@ module GraphQL
   # the error will be inserted into the response's `"errors"` key
   # and the field will resolve to `nil`.
   class ExecutionError < GraphQL::Error
-    # @return [GraphQL::Language::Nodes::Field] the field where the error occured
+    # @return [GraphQL::Language::Nodes::Field] the field where the error occurred
     attr_accessor :ast_node
 
     # @return [String] an array describing the JSON-path into the execution
@@ -48,8 +48,9 @@ module GraphQL
         hash.merge!(options)
       end
       if extensions
-        hash["extensions"] ||= {}
-        hash["extensions"].merge!(extensions)
+        hash["extensions"] = extensions.each_with_object({}) { |(key, value), ext|
+          ext[key.to_s] = value
+        }
       end
       hash
     end

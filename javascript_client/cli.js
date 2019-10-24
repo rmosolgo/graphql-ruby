@@ -17,6 +17,8 @@ optional arguments:
   --outfile=<generated-filename>  Target file for generated code
   --outfile-type=<type>           Target type for generated code (default is "js")
   --key=<key>                     HMAC authentication key
+  --relay-persisted-output=<path> Path to a .json file from "relay-compiler ... --persist-output"
+                                    (Outfile generation is skipped by default.)
   --mode=<mode>                   Treat files like a certain kind of project:
                                     relay: treat files like relay-compiler output
                                     project: treat files like a cohesive project (fragments are shared, names must be unique)
@@ -27,6 +29,7 @@ optional arguments:
                                     - otherwise, "project"
   --add-typename                  Automatically adds the "__typename" field to your queries
   --quiet                         Suppress status logging
+  --verbose                       Print debug output
   --help                          Print this message
 `)
 } else {
@@ -38,6 +41,7 @@ optional arguments:
     var sync = require("./sync")
     var result = sync({
       path: argv.path,
+      relayPersistedOutput: argv["relay-persisted-output"],
       url: argv.url,
       client: argv.client,
       outfile: argv.outfile,
@@ -46,6 +50,7 @@ optional arguments:
       mode: argv.mode,
       addTypename: argv["add-typename"],
       quiet: argv.hasOwnProperty("quiet"),
+      verbose: argv.hasOwnProperty("verbose"),
     })
 
     result.then(function(res) {

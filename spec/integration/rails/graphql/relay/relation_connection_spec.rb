@@ -21,7 +21,7 @@ describe GraphQL::Relay::RelationConnection do
 
   describe "results" do
     let(:query_string) {%|
-      query getShips($first: Int, $after: String, $last: Int, $before: String,  $nameIncludes: String){
+      query getShips($first: Int, $after: String, $last: Int, $before: String, $nameIncludes: String){
         empire {
           bases(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
             ... basesConnection
@@ -51,19 +51,52 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal(2, get_names(result).length)
       assert_equal(true, get_page_info(result)["hasNextPage"])
       assert_equal(false, get_page_info(result)["hasPreviousPage"])
-      assert_equal("MQ==", get_page_info(result)["startCursor"])
-      assert_equal("Mg==", get_page_info(result)["endCursor"])
-      assert_equal("MQ==", get_first_cursor(result))
-      assert_equal("Mg==", get_last_cursor(result))
+      assert_equal("MQ", get_page_info(result)["startCursor"])
+      assert_equal("Mg", get_page_info(result)["endCursor"])
+      assert_equal("MQ", get_first_cursor(result))
+      assert_equal("Mg", get_last_cursor(result))
 
       result = star_wars_query(query_string, "first" => 3)
       assert_equal(3, get_names(result).length)
       assert_equal(false, get_page_info(result)["hasNextPage"])
       assert_equal(false, get_page_info(result)["hasPreviousPage"])
-      assert_equal("MQ==", get_page_info(result)["startCursor"])
-      assert_equal("Mw==", get_page_info(result)["endCursor"])
-      assert_equal("MQ==", get_first_cursor(result))
-      assert_equal("Mw==", get_last_cursor(result))
+      assert_equal("MQ", get_page_info(result)["startCursor"])
+      assert_equal("Mw", get_page_info(result)["endCursor"])
+      assert_equal("MQ", get_first_cursor(result))
+      assert_equal("Mw", get_last_cursor(result))
+    end
+
+    it "uses unscope(:order) count(*) when the relation has some complicated SQL" do
+      query_s = <<-GRAPHQL
+        query getShips($first: Int, $after: String, $complexOrder: Boolean){
+          empire {
+            bases(first: $first, after: $after, complexOrder: $complexOrder) {
+              edges {
+                node {
+                  name
+                }
+              }
+              pageInfo {
+                hasNextPage
+              }
+            }
+          }
+        }
+      GRAPHQL
+      result = nil
+      log = with_active_record_log do
+        result = star_wars_query(query_s, "first" => 1, "after" => "MQ==", "complexOrder" => true)
+      end
+
+      conn = result["data"]["empire"]["bases"]
+      assert_equal(1, conn["edges"].size)
+      assert_equal(true, conn["pageInfo"]["hasNextPage"])
+
+      log_entries = log.split("\n")
+      assert_equal 2, log_entries.size, "It ran 2 sql queries"
+      edges_query, has_next_page_query = log_entries
+      assert_includes edges_query, "ORDER BY bases.name", "The query for edges _is_ ordered"
+      refute_includes has_next_page_query, "ORDER BY bases.name", "The count query **does not** have an order"
     end
 
     it 'provides custom fields on the connection type' do
@@ -90,15 +123,11 @@ describe GraphQL::Relay::RelationConnection do
         }
       }
       GRAPHQL
-      io = StringIO.new
-      begin
-        prev_logger = ActiveRecord::Base.logger
-        ActiveRecord::Base.logger = Logger.new(io)
+      result = nil
+      log = with_active_record_log do
         result = star_wars_query(query_str, "first" => 2)
-      ensure
-        ActiveRecord::Base.logger = prev_logger
       end
-      assert_equal 2, io.string.scan("\n").count, "Two log entries"
+      assert_equal 2, log.scan("\n").count, "Two log entries"
       assert_equal 3, result["data"]["empire"]["bases"]["totalCount"]
       assert_equal 2, result["data"]["empire"]["bases"]["edges"].size
     end
@@ -288,7 +317,7 @@ describe GraphQL::Relay::RelationConnection do
         assert_equal(first_and_second_names, get_names(result))
         assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
 
-        third_cursor = "Mw=="
+        third_cursor = "Mw"
         result = star_wars_query(query_string, "last" => 100, "before" => third_cursor)
         assert_equal(first_and_second_names, get_names(result))
 
@@ -528,19 +557,19 @@ describe GraphQL::Relay::RelationConnection do
         assert_equal(2, get_names(result).length)
         assert_equal(true, get_page_info(result)["hasNextPage"])
         assert_equal(false, get_page_info(result)["hasPreviousPage"])
-        assert_equal("MQ==", get_page_info(result)["startCursor"])
-        assert_equal("Mg==", get_page_info(result)["endCursor"])
-        assert_equal("MQ==", get_first_cursor(result))
-        assert_equal("Mg==", get_last_cursor(result))
+        assert_equal("MQ", get_page_info(result)["startCursor"])
+        assert_equal("Mg", get_page_info(result)["endCursor"])
+        assert_equal("MQ", get_first_cursor(result))
+        assert_equal("Mg", get_last_cursor(result))
 
         result = star_wars_query(query_string, "first" => 3)
         assert_equal(3, get_names(result).length)
         assert_equal(false, get_page_info(result)["hasNextPage"])
         assert_equal(false, get_page_info(result)["hasPreviousPage"])
-        assert_equal("MQ==", get_page_info(result)["startCursor"])
-        assert_equal("Mw==", get_page_info(result)["endCursor"])
-        assert_equal("MQ==", get_first_cursor(result))
-        assert_equal("Mw==", get_last_cursor(result))
+        assert_equal("MQ", get_page_info(result)["startCursor"])
+        assert_equal("Mw", get_page_info(result)["endCursor"])
+        assert_equal("MQ", get_first_cursor(result))
+        assert_equal("Mw", get_last_cursor(result))
       end
 
       it 'provides custom fields on the connection type' do
@@ -635,8 +664,8 @@ describe GraphQL::Relay::RelationConnection do
     let(:connection) { GraphQL::Relay::RelationConnection.new(StarWars::Base.where(faction_id: 1), {}) }
 
     it "returns the cursor for a node in the connection" do
-      assert_equal "MQ==", connection.cursor_from_node(StarWars::Base.all[0])
-      assert_equal "Mg==", connection.cursor_from_node(StarWars::Base.all[1])
+      assert_equal "MQ", connection.cursor_from_node(StarWars::Base.all[0])
+      assert_equal "Mg", connection.cursor_from_node(StarWars::Base.all[1])
     end
 
     it "raises when the node isn't found" do

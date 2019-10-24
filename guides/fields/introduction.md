@@ -108,6 +108,23 @@ field :players, [User], null: false,
   hash_key: "allPlayers"
 ```
 
+To pass-through the underlying object without calling a method on it, you can use `method: :itself`:
+
+```ruby
+field :player, User, null: false,
+  method: :itself
+```
+
+This is equivalent to:
+
+```ruby
+field :player, User, null: false
+
+def player
+  object
+end
+```
+
 If you don't want to delegate to the underlying object, you can define a method for each field:
 
 ```ruby
@@ -137,6 +154,24 @@ def current_winning_streak(include_ties:)
 end
 ```
 
+As the examples above show, by default the custom method name must match the field name. If you want to use a different custom method, the `resolver_method` option is available:
+
+```ruby
+# Use the custom method with a non-default name below to resolve this field
+field :total_games_played, Integer, null: false, resolver_method: :games_played
+
+def games_played
+  object.games.count
+end
+```
+
+`resolver_method` has two main use cases:
+
+1. resolver re-use between multiple fields
+2. dealing with method conflicts (specifically if you have fields named `context` or `object`)
+
+Note that `resolver_method` _cannot_ be used in combination with `method` or `hash_key`.
+
 ### Field Arguments
 
 _Arguments_ allow fields to take input to their resolution. For example:
@@ -153,10 +188,12 @@ Inside a field method, you can access some low-level objects from the GraphQL-Ru
 
 A few `extras` are available:
 
-- `irep_node`
 - `ast_node`
-- `parent`, the parent field context
+- `graphql_name` (the field's name)
+- `owner` (the type that this field belongs to)
+- `lookahead` (see {% internal_link "Lookahead", "/queries/lookahead" %})
 - `execution_errors`, whose `#add(err_or_msg)` method should be used for adding errors
+- Custom extras, see below
 
 To inject them into your field method, first, add the `extras:` option to the field definition:
 
@@ -178,7 +215,7 @@ __Custom extras__ are also possible. Any method on your field class can be passe
 
 ### Field Parameter Default Values
 
-The field method requires you to pass `null:` keyword argument to determine whether the field is nullable or not. Another field you may want to overrid is `camelize`, which is `true` by default. You can override this behavior by adding a custom field.
+The field method requires you to pass `null:` keyword argument to determine whether the field is nullable or not. For another field you may want to override `camelize`, which is `true` by default. You can override this behavior by adding a custom field with overwritten `camelize` option, which is `true` by default.
 
 ```ruby
 class CustomField < GraphQL::Schema::Field

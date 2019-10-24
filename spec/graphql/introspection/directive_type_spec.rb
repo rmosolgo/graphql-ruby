@@ -17,7 +17,12 @@ describe GraphQL::Introspection::DirectiveType do
       }
     }
   |}
-  let(:result) { Dummy::Schema.execute(query_string) }
+
+  let(:schema) { Class.new(Dummy::Schema) }
+  let(:result) { schema.execute(query_string) }
+  before do
+    schema.max_depth(100)
+  end
 
   it "shows directive info " do
     expected = { "data" => {

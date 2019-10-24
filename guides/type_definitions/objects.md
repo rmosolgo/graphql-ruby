@@ -6,7 +6,6 @@ section: Type Definitions
 title: Objects
 desc: Objects expose data and link to other objects
 index: 0
-class_based_api: true
 ---
 
 GraphQL object types are the bread and butter of GraphQL APIs. Each object has _fields_ which expose data and may be queried by name. For example, we can query a `User` like this:
@@ -29,7 +28,7 @@ And get back values like this:
 }
 ```
 
-Generally speaking, GraphQL object types correspond to models in your application, like `User`, `Product`, or `Comment`.  Sometimes, object types are described using the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
+Generally speaking, GraphQL object types correspond to models in your application, like `User`, `Product`, or `Comment`.  Sometimes, object types are described using the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL):
 
 ```ruby
 type User {
@@ -48,18 +47,18 @@ This means that `User` objects have three fields:
 The same object can be defined using Ruby:
 
 ```ruby
-class User < GraphQL::Schema::Object
+class Types::User < GraphQL::Schema::Object
   field :email, String, null: true
   field :handle, String, null: false
   field :friends, [User], null: false
 end
 ```
 
-The rest of this guide will describe how to define GraphQL object types in Ruby. To learn more about GraphQL object types in general, see the [GraphQL docs](http://graphql.org/learn/schema/#object-types-and-fields).
+The rest of this guide will describe how to define GraphQL object types in Ruby. To learn more about GraphQL object types in general, see the [GraphQL docs](https://graphql.org/learn/schema/#object-types-and-fields).
 
 ## Object classes
 
-Classes extending {{ "GraphQL::Schema::Object" | api_doc }} describe [Object types](http://graphql.org/learn/schema/#object-types-and-fields) and customize their behavior.
+Classes extending {{ "GraphQL::Schema::Object" | api_doc }} describe [Object types](https://graphql.org/learn/schema/#object-types-and-fields) and customize their behavior.
 
 Object fields can be created with the `field(...)` class method, [described in detail below](#fields)
 

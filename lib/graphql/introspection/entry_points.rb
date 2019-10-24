@@ -15,14 +15,19 @@ module GraphQL
       end
 
       def __type(name:)
-        type = @context.warden.get_type(name)
-        if type
-          # Apply wrapping manually since this field isn't wrapped by instrumentation
-          type_type = @context.schema.introspection_system.type_type
-          type_type.metadata[:type_class].authorized_new(type, @context)
-        else
-          nil
+        type = context.warden.get_type(name)
+
+        if type && context.interpreter?
+          type = type.metadata[:type_class] || raise("Invariant: interpreter requires class-based type for #{name}")
         end
+
+        # The interpreter provides this wrapping, other execution doesnt, so support both.
+        if type && !context.interpreter?
+          # Apply wrapping manually since this field isn't wrapped by instrumentation
+          type_type = context.schema.introspection_system.type_type
+          type = type_type.metadata[:type_class].authorized_new(type, context)
+        end
+        type
       end
     end
   end

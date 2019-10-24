@@ -6,6 +6,7 @@ require "graphql/subscriptions/serialize"
 if defined?(ActionCable)
   require "graphql/subscriptions/action_cable_subscriptions"
 end
+require "graphql/subscriptions/subscription_root"
 
 module GraphQL
   class Subscriptions
@@ -42,12 +43,12 @@ module GraphQL
       event_name = event_name.to_s
 
       # Try with the verbatim input first:
-      field = @schema.get_field("Subscription", event_name)
+      field = @schema.get_field(@schema.subscription, event_name)
 
       if field.nil?
         # And if it wasn't found, normalize it:
         normalized_event_name = normalize_name(event_name)
-        field = @schema.get_field("Subscription", normalized_event_name)
+        field = @schema.get_field(@schema.subscription, normalized_event_name)
         if field.nil?
           raise InvalidTriggerError, "No subscription matching trigger: #{event_name} (looked for #{@schema.subscription.graphql_name}.#{normalized_event_name})"
         end
@@ -99,6 +100,12 @@ module GraphQL
         }
       )
       deliver(subscription_id, result)
+    rescue GraphQL::Schema::Subscription::NoUpdateError
+      # This update was skipped in user code; do nothing.
+    rescue GraphQL::Schema::Subscription::UnsubscribedError
+      # `unsubscribe` was called, clean up on our side
+      # TODO also send `{more: false}` to client?
+      delete_subscription(subscription_id)
     end
 
     # Event `event` occurred on `object`,
@@ -117,7 +124,7 @@ module GraphQL
     # @yieldparam subscription_id [String]
     # @return [void]
     def each_subscription_id(event)
-      raise NotImplementedError
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # The system wants to send an update to this subscription.
@@ -125,17 +132,16 @@ module GraphQL
     # @param subscription_id [String]
     # @return [Hash] Containing required keys
     def read_subscription(subscription_id)
-      raise NotImplementedError
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # A subscription query was re-evaluated, returning `result`.
     # The result should be send to `subscription_id`.
     # @param subscription_id [String]
     # @param result [Hash]
-    # @param context [GraphQL::Query::Context]
     # @return [void]
-    def deliver(subscription_id, result, context)
-      raise NotImplementedError
+    def deliver(subscription_id, result)
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # `query` was executed and found subscriptions to `events`.
@@ -144,7 +150,15 @@ module GraphQL
     # @param events [Array<GraphQL::Subscriptions::Event>]
     # @return [void]
     def write_subscription(query, events)
-      raise NotImplementedError
+      raise GraphQL::RequiredImplementationMissingError
+    end
+
+    # A subscription was terminated server-side.
+    # Clean up the database.
+    # @param subscription_id [String]
+    # @return void.
+    def delete_subscription(subscription_id)
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # @return [String] A new unique identifier for a subscription

@@ -24,6 +24,23 @@ module GraphQL
         GraphQL::Execution::Flatten.call(query.context)
       end
 
+      def self.begin_multiplex(_multiplex)
+      end
+
+      def self.begin_query(query, _multiplex)
+        ExecutionFunctions.resolve_root_selection(query)
+      end
+
+      def self.finish_multiplex(results, multiplex)
+        ExecutionFunctions.lazy_resolve_root_selection(results, multiplex: multiplex)
+      end
+
+      def self.finish_query(query, _multiplex)
+        {
+          "data" => Execution::Flatten.call(query.context)
+        }
+      end
+
       # @api private
       module ExecutionFunctions
         module_function
@@ -33,12 +50,16 @@ module GraphQL
             operation = query.selected_operation
             op_type = operation.operation_type
             root_type = query.root_type_for_operation(op_type)
-            resolve_selection(
-              query.root_value,
-              root_type,
-              query.context,
-              mutation: query.mutation?
-            )
+            if query.context[:__root_unauthorized]
+              # This was set by member/instrumentation.rb so that we wouldn't continue.
+            else
+              resolve_selection(
+                query.root_value,
+                root_type,
+                query.context,
+                mutation: query.mutation?
+              )
+            end
           end
         end
 
@@ -107,6 +128,9 @@ module GraphQL
               field_ctx.trace("execute_field", { context: field_ctx }) do
                 field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
               end
+            rescue GraphQL::UnauthorizedFieldError => err
+              err.field ||= field
+              field_ctx.schema.unauthorized_field(err)
             rescue GraphQL::UnauthorizedError => err
               field_ctx.schema.unauthorized_object(err)
             end
@@ -173,13 +197,13 @@ module GraphQL
             raw_value.path = field_ctx.path
             query.context.errors.push(raw_value)
           when Array
-            if !field_type.list?
+            if field_type.non_null?
               # List type errors are handled above, this is for the case of fields returning an array of errors
               list_errors = raw_value.each_with_index.select { |value, _| value.is_a?(GraphQL::ExecutionError) }
               if list_errors.any?
                 list_errors.each do |error, index|
                   error.ast_node = field_ctx.ast_node
-                  error.path = field_ctx.path + [index]
+                  error.path = field_ctx.path + (field_ctx.type.list? ? [index] : [])
                   query.context.errors.push(error)
                 end
               end
@@ -264,20 +288,22 @@ module GraphQL
               )
             when GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE
               query = field_ctx.query
-              resolved_type = field_type.resolve_type(value, field_ctx)
-              possible_types = query.possible_types(field_type)
+              resolved_type_or_lazy = field_type.resolve_type(value, field_ctx)
+              query.schema.after_lazy(resolved_type_or_lazy) do |resolved_type|
+                possible_types = query.possible_types(field_type)
 
-              if !possible_types.include?(resolved_type)
-                parent_type = field_ctx.irep_node.owner_type
-                type_error = GraphQL::UnresolvedTypeError.new(value, field_defn, parent_type, resolved_type, possible_types)
-                field_ctx.schema.type_error(type_error, field_ctx)
-                PROPAGATE_NULL
-              else
-                resolve_value(
-                  value,
-                  resolved_type,
-                  field_ctx,
-                )
+                if !possible_types.include?(resolved_type)
+                  parent_type = field_ctx.irep_node.owner_type
+                  type_error = GraphQL::UnresolvedTypeError.new(value, field_defn, parent_type, resolved_type, possible_types)
+                  field_ctx.schema.type_error(type_error, field_ctx)
+                  PROPAGATE_NULL
+                else
+                  resolve_value(
+                    value,
+                    resolved_type,
+                    field_ctx,
+                  )
+                end
               end
             else
               raise("Unknown type kind: #{field_type.kind}")

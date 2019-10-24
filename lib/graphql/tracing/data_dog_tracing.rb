@@ -21,6 +21,11 @@ module GraphQL
           if key == 'execute_multiplex'
             operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
             span.resource = operations unless operations.empty?
+
+            # For top span of query, set the analytics sample rate tag, if available.
+            if analytics_enabled?
+              Datadog::Contrib::Analytics.set_sample_rate(span, analytics_sample_rate)
+            end
           end
 
           if key == 'execute_query'
@@ -41,8 +46,22 @@ module GraphQL
         options.fetch(:tracer, Datadog.tracer)
       end
 
+      def analytics_available?
+        defined?(Datadog::Contrib::Analytics) \
+          && Datadog::Contrib::Analytics.respond_to?(:enabled?) \
+          && Datadog::Contrib::Analytics.respond_to?(:set_sample_rate)
+      end
+
+      def analytics_enabled?
+        analytics_available? && Datadog::Contrib::Analytics.enabled?(options.fetch(:analytics_enabled, false))
+      end
+
+      def analytics_sample_rate
+        options.fetch(:analytics_sample_rate, 1.0)
+      end
+
       def platform_field_key(type, field)
-        "#{type.name}.#{field.name}"
+        "#{type.graphql_name}.#{field.graphql_name}"
       end
     end
   end

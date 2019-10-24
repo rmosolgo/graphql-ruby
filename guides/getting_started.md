@@ -41,32 +41,36 @@ Or, you can build a GraphQL server by hand:
 
 ### Declare types
 
-Types describe objects in your application and form the basis for [GraphQL's type system](http://graphql.org/learn/schema/#type-system).
+Types describe objects in your application and form the basis for [GraphQL's type system](https://graphql.org/learn/schema/#type-system).
 
 ```ruby
-# app/graphql/post_type.graphql
-class PostType < GraphQL::Schema::Object
-  description "A blog post"
-  field :id, ID, null: false
-  field :title, String, null: false
-  # fields should be queried in camel-case (this will be `truncatedPreview`)
-  field :truncated_preview, String, null: false
-  # Fields can return lists of other objects:
-  field :comments, [CommentType], null: true,
-    # And fields can have their own descriptions:
-    description: "This post's comments, or null if this post has comments disabled."
+# app/graphql/types/post_type.rb
+module Types
+  class PostType < Types::BaseObject
+    description "A blog post"
+    field :id, ID, null: false
+    field :title, String, null: false
+    # fields should be queried in camel-case (this will be `truncatedPreview`)
+    field :truncated_preview, String, null: false
+    # Fields can return lists of other objects:
+    field :comments, [Types::CommentType], null: true,
+      # And fields can have their own descriptions:
+      description: "This post's comments, or null if this post has comments disabled."
+  end
 end
 
-# app/graphql/comment_type.graphql
-class CommentType < GraphQL::Schema::Object
-  field :id, ID, null: false
-  field :post, PostType, null: false
+# app/graphql/types/comment_type.rb
+module Types
+  class CommentType < Types::BaseObject
+    field :id, ID, null: false
+    field :post, PostType, null: false
+  end
 end
 ```
 
 ### Build a Schema
 
-Before building a schema, you have to define an [entry point to your system, the "query root"](http://graphql.org/learn/schema/#the-query-and-mutation-types):
+Before building a schema, you have to define an [entry point to your system, the "query root"](https://graphql.org/learn/schema/#the-query-and-mutation-types):
 
 ```ruby
 class QueryType < GraphQL::Schema::Object
@@ -124,15 +128,15 @@ See {% internal_link "Executing Queries","/queries/executing_queries" %} for mor
 
 ## Use with Relay
 
-If you're building a backend for [Relay](http://facebook.github.io/relay/), you'll need:
+If you're building a backend for [Relay](https://facebook.github.io/relay/), you'll need:
 
 - A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
 - Relay-specific helpers for GraphQL, see the `GraphQL::Relay` guides.
 
 ## Use with Apollo Client
 
-[Apollo Client](http://dev.apollodata.com/) is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don't need to do anything special to connect Apollo Client to a `graphql-ruby` server.
+[Apollo Client](https://www.apollographql.com/) is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don't need to do anything special to connect Apollo Client to a `graphql-ruby` server.
 
 ## Use with GraphQL.js Client
 
-[GraphQL.js Client](https://github.com/f/graphql.js) is a tiny client that is platform- and framework-agnostic. It works well with `graphql-ruby` servers, since GraphQL requests are simple query strings transport over HTTP.
+[GraphQL.js Client](https://github.com/f/graphql.js) is a tiny client that is platform- and framework-agnostic. It works well with `graphql-ruby` servers, since GraphQL requests are simple query strings transported over HTTP.

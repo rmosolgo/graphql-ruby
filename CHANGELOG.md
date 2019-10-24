@@ -8,6 +8,299 @@
 
 ### Bug fixes
 
+## 1.9.14 (14 Oct 2019)
+
+## New features
+
+- Add `null_session` CSRF handing in `install` generator #2524
+- Correctly report InputObjects without arguments and Objects without fields as invalid #2539 #2462
+
+## Bug fixes
+
+- Fix argument incompatibility #2541
+- Add a `require` for `Types::ISO8691Date` #2528
+- Fix errors re-raised after lazy fields #2525
+
+## 1.9.13 (8 Oct 2019)
+
+### Breaking changes
+
+- Enum values were (erroneously) accepted as ID or String values, but they aren't anymore. #2505
+
+### New features
+
+- Add `Query#executed?` #2486
+- Add `Types::ISO8601Date` #2471
+
+### Bug fixes
+
+- Don't accept Enums as IDs or Strings #2505
+- Call `.authorized?` hooks on arguments that belong to input objects #2519
+- Fix backslash parsing edge case #2510
+- Improve performance #2504 #2498
+- Properly stringify keys in error extensions #2508
+- Fix `extras:` handling in RelayClassicMutation #2484
+- Use `Types::BaseField` in scaffold #2470
+
+## 1.9.12 (9 Sept 2019)
+
+### Breaking Changes
+
+- AST Analyzers follow fragments spreads as if they were inline fragments. #2463
+
+### New Features
+
+- `use GraphQL::Execution::Errors` provides error handling for the new interpreter. #2458
+
+### Bug Fixes
+
+- Fix false positive on enum value validation #2454
+
+## 1.9.11 (29 Aug 2019)
+
+### Breaking Changes
+
+- Introspection fields are now considered for query depth validations, so you'll need at least `max_depth: 13` to run the introspection query #2437
+
+### New features
+
+- Add `extras` setter to `GraphQL::Schema::Field` #2450
+- Add extensions in `CoercionError` #2431
+
+### Bug fixes
+
+- Make `extensions` kwarg on field on more flexible for extensions with options #2443
+- Fix list validation error handling #2441
+- Include introspective fields in query depth calculations #2437
+- Correct the example for using 'a class method to generate fields' #2435
+- Enable multiple execution errors for Fields defined to return a list #2433
+
+## 1.9.10 (20 Aug 2019)
+
+### New features
+
+- Support required arguments with default values #2416
+
+### Bug fixes
+
+- Properly disable `max_complexity` and `max_depth` when `nil` is passed #2409
+- Fix printing class-based schemas #2406
+- Improve field method naming conflict check #2420
+
+## 1.9.9 (30 July 2019)
+
+### New features
+
+- Memoize generated strings in `.to_query_string` #2400
+- Memoize generated strings in platform tracing #2401
+
+### Bug fixes
+
+- Support class-based subscription type in `.define`-based schema #2403
+
+## 1.9.8 (24 July 2019)
+
+### New features
+
+- Schema classes pass their configuration to subclasses #2384
+- Improve memory consumption of lexer and complexity validator #2389
+- The `install` generator creates a BaseArgument #2379
+- When a field name conflicts with a built-in method name, give a warning #2376
+
+### Bug fixes
+
+- When a resolver argument uses `loads:`, the argument definition will preserve the type in `.loads` #2365
+- When an required argument is hidden, it won't add a validation error #2393
+- Fix handling of invalid UTF-8 #2372, #2377
+- Empty block strings are parsed correctly #2381
+- For resolvers, only authorize arguments once #2378
+
+## 1.9.7 (25 June 2019)
+
+### Breaking changes
+
+- `Analysis::AST::Visitor#argument_definition` no longer returns the _previous_ argument definition. Instead, it returns the _current_ argument definition and `#previous_argument_definition` returns the previous one. You might have to replace calls to `.argument_definition` with `.previous_argument_definition` for compatibility. #2226
+
+### New features
+
+- Accept a `subscription_scope` configuration in Subscription classes #2297
+- Add a `disable_introspection_entry_points` configuration in Schema classes #2327
+- Add `Analysis::AST::Visitor#argument_definition` which returns the _current_ argument definition, `#previous_argument_definition` returns the _previous_ one  #2226
+- Run CI on Ruby 2.6 #2328
+- Autogenerate base field class #2216
+- Add timeout support with interpreter #2220
+
+### Bug fixes
+
+- Fix Stack overflow when calling `.to_json` on input objects #2343
+- Fix off-by-one error with hasNextPage and ArrayConnections #2349
+- Fix GraphQL-Pro operation store compatibility #2350
+- Fix class-based transformer when multiple mutations are in one file #2309
+- Use `default_graphql_name` for Edge classes #2224
+- Support nested `loads:` with input objects #2323
+- Support `max_complexity` with multiplex & AST analysis #2306
+
+## 1.9.6 (23 May 2019)
+
+### Bug fixes
+
+- Backport `String#-@` for Ruby 2.2 support #2305
+
+## 1.9.5 (22 May 2019)
+
+### New features
+
+- Support `rescue_from` returning `GraphQL::ExecutionError` #2140
+- Accept `context:` in `Schema.validate` #2256
+- Include `query:` in interpreter tracing for `execute_field` and `execute_field_lazy` #2236
+- Add `Types::JSON` #2227
+- Add `null:` option to `BaseEdge.node_type` #2249
+
+### Bug fixes
+
+- Fix Ruby 2.2 compatibility #2302
+- Distinguish aliased selections in lookahead #2266
+- Properly show list enum default values in introspection #2263
+- Performance improvements: #2289, #2244, #2258, #2257, #2240
+- Don't recursively unwrap inputs for RelayClassicMutation #2236
+- Fix `Schema::Field#scoped?` when no return type #2255
+- Properly forward more authorization errors  #2165
+- Raise `ParseError` for `.parse(nil)` #2238
+
+## 1.9.4 (5 Apr 2019)
+
+### Breaking Changes
+
+- `GraphQL::Schema::Resolver::LoadApplicationObjectFailedError` was renamed to `GraphQL::LoadApplicationObjectFailedError`. (This will only break if you're referencing the class by name and running Ruby 2.5+) #2080
+
+### New features
+
+- Add `Types::BigInt` #2150
+- Add auto-loading arguments support in Input Object types #2080
+- Add analytics tag to Datadog tracing #2154
+
+### Bug fixes
+
+- Fix `Query#execute` when no explicit query string is passed in #2142
+- Fix when a root type returns nil because unauthorized #2144
+- Fix tracing `node` by threading `owner:` through field tracing #2156
+- Fix interpreter handling of exceptions raised during argument preparation #2198
+- Fix ActionCableLink when there are errors but no data #2176
+- Provide empty hash as default option for field resolvers #2189
+- Prevent argument names from overwriting Arguments methods #2171
+- Include array indices in error paths #2162
+- Handle non-node arrays in AST visitor #2161
+
+## 1.9.3 (20 Feb 2019)
+
+### Bug fixes
+
+- Fix `Schema::Subscription` when it has no arguments #2135
+- Don't try to scope `nil`, just skip scoping altogether #2134
+- Fix when a root `.authorized?` returns `false` and there's no `root_value` #2136
+- Fix platform tracing with interpreter & introspection #2137
+- Support root Subscription types with name other than `Subscription` #2102
+- Fix nested list-type input object nullability validation #2123
+
+## 1.9.2 (15 Feb 2019)
+
+### Bug fixes
+
+- Properly support connection fields with resolve procs #2115
+
+## 1.9.1 (14 Feb 2019)
+
+### Bug fixes
+
+- Properly pass errors to Resolver `load_application_object_failed` methods #2110
+
+## 1.9.0 (13 Feb 2019)
+
+### Breaking Changes
+
+- AST nodes are immutable. To modify a parsed GraphQL query, see `GraphQL::Language::Visitor` for its mutation API, which builds a new AST with the specified mutations applied. #1338, #1740
+- Cursors use urlsafe Base64. This won't break your clients (it's backwards-compatible), but it might break your tests, so it's listed here. #1698
+- Add `field(..., resolver_method:)` for when GraphQL-Ruby should call a method _other than_ the one whose name matches the field name (#1961). This means that if you're using `method:` to call a different method _on the Schema::Object subclass_, you should update that configuration to `resolver_method:`. (`method:` is still used to call a different method on the _underlying application object_.)
+- `Int` type now applies boundaries as [described in the spec](https://facebook.github.io/graphql/June2018/#sec-Int) #2101. To preserve the previous, unbounded behavior, handle the error in your schema's `.type_error(err, ctx)` hook, for example:
+
+  ```ruby
+  class MySchema < GraphQL::Schema
+    def self.type_error(err, ctx)
+      if err.is_a?(GraphQL::IntegerEncodingError)
+        # Preserve the previous unbounded behavior
+        # by returning the out-of-bounds value
+        err.integer_value
+      else
+        super
+      end
+    end
+  end
+  ```
+
+- `field(...)` configurations don't create implicit method definitions (#1961). If one resolver method depended on the implicitly-created method from another field, you'll have to refactor that call or manually add a `def ...` for that field.
+- Calling `super` in a field method doesn't work anymore (#1961)
+- Error `"problems"` are now in `"extensions" : { "problems": ... }` #2077
+- Change schema default to `error_bubbling false` #2069
+
+### New Features
+
+- Add class-based subscriptions with `GraphQL::Schema::Subscription` #1930
+- Add `GraphQL::Execution::Interpreter` (#1394) and `GraphQL::Analysis::AST` (#1824) which together cut GraphQL overhead by half (time and memory)
+- Add `Schema.unauthorized_field(err)` for when `Field#authorized?` checks fail (#1994)
+- Add class-based custom directives for the interpreter (#2055)
+- Add `Schema::FieldExtension` for customizing field execution with class-based fields #1795
+- Add `Query#lookahead` for root-level selection info #1931
+- Validation errors have `"extensions": { ... }` which includes metadata about that error #1970
+
+### Bug fixes
+
+- Fix list-type arguments passed with a single value #2085
+- Support `false` as an Enum value #2050
+- Support `hash_key:` fields when the key isn't a valid Ruby method name #2016
+
+## 1.8.15 (13 Feb 2019)
+
+### Bug fixes
+
+- Fix unwrapping inputobject types when turning arguments to hashes #2094
+- Support lazy objects from `.resolve_type` hooks #2108
+
+## 1.8.14 (9 Feb 2019)
+
+### Bug Fixes
+
+- Fix single-item list inputs that aren't passed as lists #2095
+
+## 1.8.13 (4 Jan 2019)
+
+### Bug fixes
+
+- Fix regression in block string parsing #2032
+
+## 1.8.12 (3 Jan 2019)
+
+### Breaking changes
+
+- When an input object's argument has a validation error, that error is reported on the _argument_ instead of its parent input object. #2013
+
+### New features
+
+- Add `error_bubbling false` Schema configuration for nicer validation of compound inputs #2013
+- Print descriptions as block strings in SDL #2011
+- Improve string-to-constant resolution #1810
+- Add `Query::Context#to_hash` for splatting #1955
+- Add `#dig` to `Schema::InputObject` and `Query::Arguments` #1968
+- Add `.*_execution_strategy` methods to class-based schemas #1914
+- Accept multiple errors when adding `.rescue_from` handlers #1991
+
+### Bug fixes
+
+- Fix scalar tracing in NewRelic and Skylight #1954
+- Fix lexer for multiple block strings #1937
+- Add `unscope(:order)` when counting relations #1911
+- Improve build-from-definition error message #1998
+- Fix regression in legacy compat #2000
+
 ## 1.8.11 (16 Oct 2018)
 
 ### New features

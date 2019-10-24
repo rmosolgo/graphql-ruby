@@ -13,7 +13,8 @@ describe GraphQL::Schema::Member::Scoped do
         elsif context[:english]
           items.select { |i| i.name == "Paperclip" }
         else
-          []
+          # boot everything
+          items.reject { true }
         end
       end
 
@@ -54,11 +55,26 @@ describe GraphQL::Schema::Member::Scoped do
       field :items, [Item], null: false
       field :unscoped_items, [Item], null: false,
         scope: false,
-        method: :items
+        resolver_method: :items
+
+      field :nil_items, [Item], null: true
+      def nil_items
+        nil
+      end
+
       field :french_items, [FrenchItem], null: false,
-        method: :items
-      field :items_connection, Item.connection_type, null: false,
-        method: :items
+        resolver_method: :items
+      if TESTING_INTERPRETER
+        field :items_connection, Item.connection_type, null: false,
+          resolver_method: :items
+      else
+        field :items_connection, Item.connection_type, null: false, resolve: ->(obj, args, ctx) {
+          [
+            OpenStruct.new(name: "Trombone"),
+            OpenStruct.new(name: "Paperclip"),
+          ]
+        }
+      end
 
       def items
         [
@@ -67,13 +83,27 @@ describe GraphQL::Schema::Member::Scoped do
         ]
       end
 
-      field :things, [Thing], null: false
-      def things
-        items + [OpenStruct.new(name: "Turbine")]
+      if TESTING_INTERPRETER
+        field :things, [Thing], null: false
+        def things
+          items + [OpenStruct.new(name: "Turbine")]
+        end
+      else
+        # Make sure it works with resolve procs, too
+        field :things, [Thing], null: false, resolve: ->(obj, args, ctx) {
+          [
+            OpenStruct.new(name: "Trombone"),
+            OpenStruct.new(name: "Paperclip"),
+            OpenStruct.new(name: "Turbine"),
+          ]
+        }
       end
     end
 
     query(Query)
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
   end
 
   describe ".scope_items(items, ctx)" do
@@ -99,6 +129,19 @@ describe GraphQL::Schema::Member::Scoped do
       assert_equal ["Trombone", "Paperclip"], get_item_names_with_context({}, field_name: "unscopedItems")
     end
 
+    it "returns null when the value is nil" do
+      query_str = "
+      {
+        nilItems {
+          name
+        }
+      }
+      "
+      res = ScopeSchema.execute(query_str)
+      refute res.key?("errors")
+      assert_nil res.fetch("data").fetch("nilItems")
+    end
+
     it "is inherited" do
       assert_equal ["Trombone"], get_item_names_with_context({}, field_name: "frenchItems")
     end
@@ -117,6 +160,19 @@ describe GraphQL::Schema::Member::Scoped do
       "
       res = ScopeSchema.execute(query_str, context: {english: true})
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
+      assert_equal ["Paperclip"], names
+
+      query_str = "
+      {
+        itemsConnection {
+          nodes {
+            name
+          }
+        }
+      }
+      "
+      res = ScopeSchema.execute(query_str, context: {english: true})
+      names = res["data"]["itemsConnection"]["nodes"].map { |e| e["name"] }
       assert_equal ["Paperclip"], names
     end
 

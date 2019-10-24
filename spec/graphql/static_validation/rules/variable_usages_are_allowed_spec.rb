@@ -43,22 +43,26 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       {
         "message"=>"Nullability mismatch on variable $badInt and argument id (Int / Int!)",
         "locations"=>[{"line"=>14, "column"=>28}],
-        "fields"=>["query getCheese", "badCheese", "id"],
+        "path"=>["query getCheese", "badCheese", "id"],
+        "extensions"=>{"code"=>"variableMismatch", "variableName"=>"badInt", "typeName"=>"Int", "argumentName"=>"id", "errorMessage"=>"Nullability mismatch"}
       },
       {
         "message"=>"Type mismatch on variable $badStr and argument id (String! / Int!)",
         "locations"=>[{"line"=>15, "column"=>28}],
-        "fields"=>["query getCheese", "badStrCheese", "id"],
+        "path"=>["query getCheese", "badStrCheese", "id"],
+        "extensions"=>{"code"=>"variableMismatch", "variableName"=>"badStr", "typeName"=>"String!", "argumentName"=>"id", "errorMessage"=>"Type mismatch"}
       },
       {
         "message"=>"Nullability mismatch on variable $badAnimals and argument source ([DairyAnimal]! / [DairyAnimal!]!)",
         "locations"=>[{"line"=>18, "column"=>30}],
-        "fields"=>["query getCheese", "cheese", "other", "source"],
+        "path"=>["query getCheese", "cheese", "other", "source"],
+        "extensions"=>{"code"=>"variableMismatch", "variableName"=>"badAnimals", "typeName"=>"[DairyAnimal]!", "argumentName"=>"source", "errorMessage"=>"Nullability mismatch"}
       },
       {
         "message"=>"List dimension mismatch on variable $deepAnimals and argument source ([[DairyAnimal!]!]! / [DairyAnimal!]!)",
         "locations"=>[{"line"=>19, "column"=>32}],
-        "fields"=>["query getCheese", "cheese", "tooDeep", "source"],
+        "path"=>["query getCheese", "cheese", "tooDeep", "source"],
+        "extensions"=>{"code"=>"variableMismatch", "variableName"=>"deepAnimals", "typeName"=>"[[DairyAnimal!]!]!", "argumentName"=>"source", "errorMessage"=>"List dimension mismatch"}
       }
     ]
     assert_equal(expected, errors)

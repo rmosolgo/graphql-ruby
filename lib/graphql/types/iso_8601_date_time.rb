@@ -33,6 +33,8 @@ module GraphQL
       # @return [String]
       def self.coerce_result(value, _ctx)
         value.iso8601(time_precision)
+      rescue ArgumentError
+        raise GraphQL::Error, "An incompatible object (#{value.class}) was given to #{self}. Make sure that only DateTimes are used with this type."
       end
 
       # @param str_value [String]

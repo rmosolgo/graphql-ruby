@@ -11,7 +11,7 @@ module GraphQL
       def validate(ast_value, type)
         if type.nil?
           # this means we're an undefined argument, see #present_input_field_values_are_valid
-          return maybe_raise_if_invalid(ast_value) do
+          maybe_raise_if_invalid(ast_value) do
             false
           end
         elsif ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
@@ -87,7 +87,7 @@ module GraphQL
         present_field_names = ast_node.arguments.map(&:name)
         missing_required_field_names = required_field_names - present_field_names
         if @context.schema.error_bubbling
-          missing_required_field_names.none?
+          missing_required_field_names.empty?
         else
           missing_required_field_names.all? do |name|
             validate(GraphQL::Language::Nodes::NullValue.new(name: name), @warden.arguments(type).find { |f| f.name == name }.type )

@@ -2,6 +2,8 @@
 require "spec_helper"
 
 describe GraphQL::FLOAT_TYPE do
+  let(:enum) { GraphQL::Language::Nodes::Enum.new(name: 'MILK') }
+
   describe "coerce_input" do
     it "accepts ints and floats" do
       assert_equal 1.0, GraphQL::FLOAT_TYPE.coerce_isolated_input(1)
@@ -11,6 +13,7 @@ describe GraphQL::FLOAT_TYPE do
     it "rejects other types" do
       assert_nil GraphQL::FLOAT_TYPE.coerce_isolated_input("55")
       assert_nil GraphQL::FLOAT_TYPE.coerce_isolated_input(true)
+      assert_nil GraphQL::FLOAT_TYPE.coerce_isolated_input(enum)
     end
   end
 end

@@ -9,7 +9,7 @@ pro: true
 ---
 
 
-[GraphQL::Pro](http://graphql.pro) includes an integration for powering GraphQL authorization with [CanCan](https://github.com/CanCanCommunity/cancancan).
+[GraphQL::Pro](https://graphql.pro) includes an integration for powering GraphQL authorization with [CanCan](https://github.com/CanCanCommunity/cancancan).
 
 __Why bother?__ You _could_ put your authorization code in your GraphQL types themselves, but writing a separate authorization layer gives you a few advantages:
 
@@ -146,6 +146,10 @@ module Types::BaseInterface
   # ...
   field_class Types::BaseField
 end
+# app/graphql/mutations/base_mutation.rb
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
+  field_class Types::BaseField
+end
 ```
 
 Then, you can add `can_can_action:` options to your fields:
@@ -184,6 +188,10 @@ end
 class Types::BaseInputObject < GraphQL::Schema::InputObject
   argument_class Types::BaseArgument
 end
+
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
+  argument_class Types::BaseArgument
+end
 ```
 
 Now, arguments accept a `can_can_action:` option, for example:
@@ -213,7 +221,7 @@ Also, you can configure [unauthorized object handling](#unauthorized-mutations)
 Add `MutationIntegration` to your base mutation, for example:
 
 ```ruby
-class Mutations::BaseMutation < GraphQL::Schema::Mutation
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   include GraphQL::Pro::CanCanIntegration::MutationIntegration
 
   # Also, to use argument-level authorization:
@@ -236,6 +244,7 @@ And hook it up to your base mutation:
 ```ruby
 class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   object_class Types::BaseMutationPayload
+  field_class Types::BaseField
 end
 ```
 

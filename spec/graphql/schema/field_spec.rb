@@ -45,6 +45,12 @@ describe GraphQL::Schema::Field do
       assert_equal 'underscored_arg', arg_defn.name
     end
 
+    it "works with arbitrary hash keys" do
+      result = Jazz::Schema.execute "{ complexHashKey }", root_value: { :'foo bar/fizz-buzz' => "OK!"}
+      hash_val = result["data"]["complexHashKey"]
+      assert_equal "OK!", hash_val, "It looked up the hash key"
+    end
+
     it "exposes the method override" do
       object = Class.new(Jazz::BaseObject) do
         field :t, String, method: :tt, null: true
@@ -122,6 +128,24 @@ describe GraphQL::Schema::Field do
         assert_equal "false", res["data"]["upcaseCheck2"]
         assert_equal "TRUE", res["data"]["upcaseCheck3"]
         assert_equal "\"WHY NOT?\"", res["data"]["upcaseCheck4"]
+      end
+
+      it "can be read via #extras" do
+        field = Jazz::Musician.fields["addError"]
+        assert_equal [:execution_errors], field.extras
+      end
+
+      it "can be added by passing an array of symbols to #extras" do
+        object = Class.new(Jazz::BaseObject) do
+          graphql_name "JustAName"
+
+          field :test, String, null: true, extras: [:lookahead]
+        end
+
+        field = object.fields['test']
+
+        field.extras([:ast_node])
+        assert_equal [:lookahead, :ast_node], field.extras
       end
     end
 
@@ -228,14 +252,12 @@ describe GraphQL::Schema::Field do
     end
 
     it "makes a suggestion when the type is false" do
-      thing = Class.new(GraphQL::Schema::Object) do
-        graphql_name "Thing"
-        # False might come from an invalid `!`
-        field :stuff, false, null: false
-      end
-
       err = assert_raises ArgumentError do
-        thing.fields["stuff"].type
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "Thing"
+          # False might come from an invalid `!`
+          field :stuff, false, null: false
+        end
       end
 
       assert_includes err.message, "Thing.stuff"
@@ -292,6 +314,39 @@ describe GraphQL::Schema::Field do
       )
 
       assert_equal :my_field, field.original_name
+    end
+  end
+
+  describe "generated default" do
+    class TestSchema < GraphQL::Schema
+      class BaseField < GraphQL::Schema::Field
+        def resolve_field(obj, args, ctx)
+          resolve(obj, args, ctx)
+        end
+      end
+
+      class Company < GraphQL::Schema::Object
+        field :id, ID, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field_class BaseField
+
+        field :company, Company, null: true do
+          argument :id, ID, required: true
+        end
+
+        def company(id:)
+          OpenStruct.new(id: id)
+        end
+      end
+
+      query(Query)
+    end
+
+    it "works" do
+      res = TestSchema.execute("{ company(id: \"1\") { id } }")
+      assert_equal "1", res["data"]["company"]["id"]
     end
   end
 end

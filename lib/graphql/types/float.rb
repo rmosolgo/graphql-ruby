@@ -3,7 +3,7 @@
 module GraphQL
   module Types
     class Float < GraphQL::Schema::Scalar
-      description "Represents signed double-precision fractional values as specified by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point)."
+      description "Represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point)."
 
       def self.coerce_input(value, _ctx)
         value.is_a?(Numeric) ? value.to_f : nil

@@ -8,7 +8,7 @@ desc: The top-level "errors" array and how to use it.
 index: 1
 ---
 
-The GraphQL specification [allows for a top-level `"errors"` key](http://facebook.github.io/graphql/October2016/#sec-Errors) in the response which may contain information about what went wrong during execution. For example:
+The GraphQL specification [allows for a top-level `"errors"` key](https://graphql.github.io/graphql-spec/June2018/#sec-Errors) in the response which may contain information about what went wrong during execution. For example:
 
 ```ruby
 {
@@ -62,7 +62,7 @@ When this error is raised, its `message` will be added to the `"errors"` key and
 
 ## Customizing Error JSON
 
-The default error JSON includes `"message"`, `"locations"` and `"path"`. The [forthcoming version](http://facebook.github.io/graphql/draft/#example-fce18) of the GraphQL spec recommends putting custom data in the `"extensions"` key of the error JSON.
+The default error JSON includes `"message"`, `"locations"` and `"path"`. The [forthcoming version](https://graphql.github.io/graphql-spec/draft/#example-fce18) of the GraphQL spec recommends putting custom data in the `"extensions"` key of the error JSON.
 
 You can customize this in two ways:
 

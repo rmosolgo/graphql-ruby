@@ -36,10 +36,10 @@ MySchema.multiplex([
 
 There are also several options you can use:
 
-- `variables:` provides values for `$`-named [query variables](http://graphql.org/learn/queries/#variables)
+- `variables:` provides values for `$`-named [query variables](https://graphql.org/learn/queries/#variables)
 - `context:` accepts application-specific data to pass to `resolve` functions
 - `root_value:` will be provided to root-level `resolve` functions as `obj`
-- `operation_name:` picks a [named operation](http://graphql.org/learn/queries/#operation-name) from the incoming string to execute
+- `operation_name:` picks a [named operation](https://graphql.org/learn/queries/#operation-name) from the incoming string to execute
 - `document:` accepts an already-parsed query (instead of a string), see {{ "GraphQL.parse" | api_doc }}
 - `validate:` may be `false` to skip static validation for this query
 - `max_depth:` and `max_complexity:` may override schema-level values
@@ -48,7 +48,7 @@ Some of these options are described in more detail below, see {{ "GraphQL::Query
 
 ## Variables
 
-GraphQL provides [query variables](http://graphql.org/learn/queries/#variables) as a way to parameterize query strings. If your query string contains variables, you can provide values in a hash of `{ String => value }` pairs. The keys should _not_ contain `"$"`.
+GraphQL provides [query variables](https://graphql.org/learn/queries/#variables) as a way to parameterize query strings. If your query string contains variables, you can provide values in a hash of `{ String => value }` pairs. The keys should _not_ contain `"$"`.
 
 For example, to provide variables to a query:
 
@@ -135,7 +135,7 @@ MySchema.execute(query_string, root_value: current_org)
 That value will be provided to root-level fields, such as mutation fields. For example:
 
 ```ruby
-class MutationType < GraphQL::Schema::Object
+class Types::MutationType < GraphQL::Schema::Object
   field :create_post, Post, null: true
 
   def create_post(**args)

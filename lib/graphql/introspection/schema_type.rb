@@ -14,7 +14,12 @@ module GraphQL
       field :directives, [GraphQL::Schema::LateBoundType.new("__Directive")], "A list of all directives supported by this server.", null: false
 
       def types
-        @context.warden.types
+        types = @context.warden.types
+        if context.interpreter?
+          types.map { |t| t.metadata[:type_class] || raise("Invariant: can't introspect non-class-based type: #{t}") }
+        else
+          types
+        end
       end
 
       def query_type
@@ -30,7 +35,7 @@ module GraphQL
       end
 
       def directives
-        @object.directives.values
+        context.schema.directives.values
       end
 
       private

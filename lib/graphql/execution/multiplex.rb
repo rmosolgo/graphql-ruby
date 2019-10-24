@@ -29,8 +29,8 @@ module GraphQL
 
       include Tracing::Traceable
 
-      attr_reader :context, :queries, :schema
-      def initialize(schema:, queries:, context:)
+      attr_reader :context, :queries, :schema, :max_complexity
+      def initialize(schema:, queries:, context:, max_complexity:)
         @schema = schema
         @queries = queries
         @context = context
@@ -40,6 +40,7 @@ module GraphQL
         if context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
           @tracers << GraphQL::Backtrace::Tracer
         end
+        @max_complexity = max_complexity
       end
 
       class << self
@@ -54,19 +55,19 @@ module GraphQL
         # @param max_complexity [Integer, nil]
         # @return [Array<Hash>] One result per query
         def run_queries(schema, queries, context: {}, max_complexity: schema.max_complexity)
-          multiplex = self.new(schema: schema, queries: queries, context: context)
+          multiplex = self.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
           multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
-            if has_custom_strategy?(schema)
+            if supports_multiplexing?(schema)
+              instrument_and_analyze(multiplex) do
+                run_as_multiplex(multiplex)
+              end
+            else
               if queries.length != 1
                 raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
               else
-                instrument_and_analyze(multiplex, max_complexity: max_complexity) do
+                instrument_and_analyze(multiplex) do
                   [run_one_legacy(schema, queries.first)]
                 end
-              end
-            else
-              instrument_and_analyze(multiplex, max_complexity: max_complexity) do
-                run_as_multiplex(multiplex)
               end
             end
           end
@@ -75,19 +76,21 @@ module GraphQL
         private
 
         def run_as_multiplex(multiplex)
+
+          multiplex.schema.query_execution_strategy.begin_multiplex(multiplex)
           queries = multiplex.queries
           # Do as much eager evaluation of the query as possible
           results = queries.map do |query|
-            begin_query(query)
+            begin_query(query, multiplex)
           end
 
           # Then, work through lazy results in a breadth-first way
-          GraphQL::Execution::Execute::ExecutionFunctions.lazy_resolve_root_selection(results, { multiplex: multiplex })
+          multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
 
           # Then, find all errors and assign the result to the query object
           results.each_with_index.map do |data_result, idx|
             query = queries[idx]
-            finish_query(data_result, query)
+            finish_query(data_result, query, multiplex)
             # Get the Query::Result, not the Hash
             query.result
           end
@@ -99,13 +102,14 @@ module GraphQL
 
         # @param query [GraphQL::Query]
         # @return [Hash] The initial result (may not be finished if there are lazy values)
-        def begin_query(query)
+        def begin_query(query, multiplex)
           operation = query.selected_operation
           if operation.nil? || !query.valid? || query.context.errors.any?
             NO_OPERATION
           else
             begin
-              GraphQL::Execution::Execute::ExecutionFunctions.resolve_root_selection(query)
+              # These were checked to be the same in `#supports_multiplexing?`
+              query.schema.query_execution_strategy.begin_query(query, multiplex)
             rescue GraphQL::ExecutionError => err
               query.context.errors << err
               NO_OPERATION
@@ -116,7 +120,7 @@ module GraphQL
         # @param data_result [Hash] The result for the "data" key, if any
         # @param query [GraphQL::Query] The query which was run
         # @return [Hash] final result of this query, including all values and errors
-        def finish_query(data_result, query)
+        def finish_query(data_result, query, multiplex)
           # Assign the result so that it can be accessed in instrumentation
           query.result_values = if data_result.equal?(NO_OPERATION)
             if !query.valid? || query.context.errors.any?
@@ -127,9 +131,7 @@ module GraphQL
             end
           else
             # Use `context.value` which was assigned during execution
-            result = {
-              "data" => Execution::Flatten.call(query.context)
-            }
+            result = query.schema.query_execution_strategy.finish_query(query, multiplex)
 
             if query.context.errors.any?
               error_result = query.context.errors.map(&:to_h)
@@ -154,24 +156,33 @@ module GraphQL
           end
         end
 
-        def has_custom_strategy?(schema)
-          schema.query_execution_strategy != GraphQL::Execution::Execute ||
-            schema.mutation_execution_strategy != GraphQL::Execution::Execute ||
-            schema.subscription_execution_strategy != GraphQL::Execution::Execute
+        DEFAULT_STRATEGIES = [
+          GraphQL::Execution::Execute,
+          GraphQL::Execution::Interpreter
+        ]
+        # @return [Boolean] True if the schema is only using one strategy, and it's one that supports multiplexing.
+        def supports_multiplexing?(schema)
+          schema_strategies = [schema.query_execution_strategy, schema.mutation_execution_strategy, schema.subscription_execution_strategy]
+          schema_strategies.uniq!
+          schema_strategies.size == 1 && DEFAULT_STRATEGIES.include?(schema_strategies.first)
         end
 
         # Apply multiplex & query instrumentation to `queries`.
         #
         # It yields when the queries should be executed, then runs teardown.
-        def instrument_and_analyze(multiplex, max_complexity:)
+        def instrument_and_analyze(multiplex)
           GraphQL::Execution::Instrumentation.apply_instrumenters(multiplex) do
             schema = multiplex.schema
             multiplex_analyzers = schema.multiplex_analyzers
-            if max_complexity
-              multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)]
+            if multiplex.max_complexity
+              multiplex_analyzers += if schema.using_ast_analysis?
+                [GraphQL::Analysis::AST::MaxQueryComplexity]
+              else
+                [GraphQL::Analysis::MaxQueryComplexity.new(multiplex.max_complexity)]
+              end
             end
 
-            GraphQL::Analysis.analyze_multiplex(multiplex, multiplex_analyzers)
+            schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
             yield
           end
         end

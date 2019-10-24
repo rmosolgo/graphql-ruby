@@ -23,29 +23,37 @@ module GraphQL
       # @return [Array<Hash>]
       def validate(query, validate: true)
         query.trace("validate", { validate: validate, query: query }) do
-          context = GraphQL::StaticValidation::ValidationContext.new(query)
-          rewrite = GraphQL::InternalRepresentation::Rewrite.new
+          can_skip_rewrite = query.context.interpreter? && query.schema.using_ast_analysis?
+          errors = if validate == false && can_skip_rewrite
+            []
+          else
+            rules_to_use = validate ? @rules : []
+            visitor_class = BaseVisitor.including_rules(rules_to_use, rewrite: !can_skip_rewrite)
 
-          # Put this first so its enters and exits are always called
-          rewrite.validate(context)
+            context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class)
 
-          # If the caller opted out of validation, don't attach these
-          if validate
-            @rules.each do |rules|
-              rules.new.validate(context)
+            # Attach legacy-style rules
+            rules_to_use.each do |rule_class_or_module|
+              if rule_class_or_module.method_defined?(:validate)
+                rule_class_or_module.new.validate(context)
+              end
             end
+
+            context.visitor.visit
+            context.errors
           end
 
-          context.visitor.visit
-          rewrite_result = rewrite.document
 
-          # Post-validation: allow validators to register handlers on rewritten query nodes
-          GraphQL::InternalRepresentation::Visit.visit_each_node(rewrite_result.operation_definitions, context.each_irep_node_handlers)
+          irep = if errors.empty? && context
+            # Only return this if there are no errors and validation was actually run
+            context.visitor.rewrite_document
+          else
+            nil
+          end
 
           {
-            errors: context.errors,
-            # If there were errors, the irep is garbage
-            irep: context.errors.any? ? nil : rewrite_result,
+            errors: errors,
+            irep: irep,
           }
         end
       end

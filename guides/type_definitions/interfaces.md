@@ -6,7 +6,6 @@ section: Type Definitions
 title: Interfaces
 desc: Interfaces are lists of fields which objects may implement
 index: 4
-class_based_api: true
 redirect_from:
   - /types/abstract_types/
 ---
@@ -15,7 +14,7 @@ Interfaces are lists of fields which may be implemented by object types.
 
 An interface has fields, but it's never actually instantiated. Instead, objects may _implement_ interfaces, which makes them a _member_ of that interface. Also, fields may _return_ interface types. When this happens, the returned object may be any member of that interface.
 
-For example, let's say a `Customer` (interface) may be either an `Individual` (object) or a `Company` (object). Here's the structure in the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
+For example, let's say a `Customer` (interface) may be either an `Individual` (object) or a `Company` (object). Here's the structure in the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL):
 
 ```graphql
 interface Customer {
@@ -101,23 +100,25 @@ end
 
 Interface classes are never instantiated. At runtime, only their `.resolve_type` methods are called (if they're defined).
 
-### Implementing Variant Types
+### Implementing Interfaces
 
-To define types that implement this interface use the `implements` method:
+To define object types that implement this interface use the `implements` method:
 
 ```ruby
 class Types::Car < Types::BaseObject
-  implements Types::RetailObject
+  implements Types::RetailItem
 
   # ... additional fields
 end
 
 class Types::Purse < Types::BaseObject
-  implements Types::RetailObject
+  implements Types::RetailItem
 
   # ... additional fields
 end
 ```
+
+Those object types will _inherit_ field definitions from those interfaces.
 
 ### Implementing Fields
 

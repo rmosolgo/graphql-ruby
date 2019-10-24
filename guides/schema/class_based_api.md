@@ -3,13 +3,14 @@ layout: guide
 doc_stub: false
 search: true
 section: Schema
-title: Class-based API
-desc: Define your GraphQL schema with Ruby classes (1.8.x alpha releases)
-class_based_api: true
-index: 10
+title: Class-based API Migration
+desc: Migrate from legacy .define DSL to Ruby classes.
+index: 6
 ---
 
 In GraphQL `1.8`+, you can use Ruby classes to build your schema. You can __mix__ class-style and `.define`-style type definitions in a schema.
+
+The `.define` DSL is deprecated and will be removed at version 2.0.
 
 You can get an overview of this new feature:
 
@@ -49,6 +50,10 @@ In general, each `.define { ... }` block will be converted to a class.
 - Any class hierarchy is supported; It's recommended to create a base class for your application, then extend the base class for each of your types (like `ApplicationController` in Rails, see [Customizing Definitions](#customizing-defintions)).
 
 See sections below for specific information about each schema definition class.
+
+### ⚠️ Heads up ⚠️
+
+Keep in mind that class based Schemas will be initialized at execution time instead of application boot, depending on the size of your schema, this could result in request timeouts for your users after your application restarts. For a workaround please check https://github.com/rmosolgo/graphql-ruby/issues/2034
 
 ### Type Instances
 

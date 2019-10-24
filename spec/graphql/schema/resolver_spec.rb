@@ -171,23 +171,35 @@ describe GraphQL::Schema::Resolver do
       include GraphQL::Schema::Interface
       field :value, Integer, null: false
       def self.resolve_type(obj, ctx)
-        if obj.is_a?(Integer)
-          IntegerWrapper
-        else
-          raise "Unexpected: #{obj.inspect}"
-        end
+        LazyBlock.new {
+          if obj.is_a?(Integer)
+            IntegerWrapper
+          elsif obj == :resolve_type_as_wrong_type
+            GraphQL::Types::String
+          else
+            raise "Unexpected: #{obj.inspect}"
+          end
+        }
       end
     end
 
     class IntegerWrapper < GraphQL::Schema::Object
       implements HasValue
-      field :value, Integer, null: false, method: :object
+      field :value, Integer, null: false, method: :itself
+
+      def self.authorized?(value, ctx)
+        if ctx[:max_value] && value > ctx[:max_value]
+          false
+        else
+          true
+        end
+      end
     end
 
     class PrepResolver9 < BaseResolver
       argument :int_id, ID, required: true, loads: HasValue
       # Make sure the lazy object is resolved properly:
-      type HasValue, null: false
+      type HasValue, null: true
       def object_from_id(type, id, ctx)
         # Make sure a lazy object is handled appropriately
         LazyBlock.new {
@@ -215,6 +227,30 @@ describe GraphQL::Schema::Resolver do
 
       def resolve(ints:)
         ints.map { |int| int * 3}
+      end
+    end
+
+    class ResolverWithErrorHandler < BaseResolver
+      argument :int, ID, required: true, loads: HasValue
+      type HasValue, null: true
+      def object_from_id(type, id, ctx)
+        LazyBlock.new {
+          if id == "failed_to_find"
+            nil
+          elsif id == "resolve_type_as_wrong_type"
+            :resolve_type_as_wrong_type
+          else
+            id.length
+          end
+        }
+      end
+
+      def resolve(int:)
+        int * 4
+      end
+
+      def load_application_object_failed(err)
+        raise GraphQL::ExecutionError.new("ResolverWithErrorHandler failed for id: #{err.id.inspect} (#{err.object.inspect}) (#{err.class.name})")
       end
     end
 
@@ -319,6 +355,14 @@ describe GraphQL::Schema::Resolver do
           end
           value
         end
+
+        def resolve(*)
+          value = super
+          if @name == "resolver3"
+            value << -1
+          end
+          value
+        end
       end
 
       field_class(CustomField)
@@ -348,6 +392,7 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_12, resolver: PrepResolver12
       field :prep_resolver_13, resolver: PrepResolver13
       field :prep_resolver_14, resolver: PrepResolver14
+      field :resolver_with_error_handler, resolver: ResolverWithErrorHandler
     end
 
     class Schema < GraphQL::Schema
@@ -355,6 +400,9 @@ describe GraphQL::Schema::Resolver do
       mutation(Mutation)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+      end
 
       def object_from_id(id, ctx)
         if id == "invalid"
@@ -422,6 +470,51 @@ describe GraphQL::Schema::Resolver do
     end
   end
 
+  describe "load_application_object_failed hook" do
+    it "isn't called for successful queries" do
+      query_str = <<-GRAPHQL
+      {
+        resolverWithErrorHandler(int: "abcd") { value }
+      }
+      GRAPHQL
+
+      res = exec_query(query_str)
+      assert_equal 16, res["data"]["resolverWithErrorHandler"]["value"]
+      refute res.key?("errors")
+    end
+
+    describe "when the id doesn't find anything" do
+      it "passes an error to the handler" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "failed_to_find") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str)
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        expected_err = "ResolverWithErrorHandler failed for id: \"failed_to_find\" (nil) (GraphQL::LoadApplicationObjectFailedError)"
+        assert_equal [expected_err], res["errors"].map { |e| e["message"] }
+      end
+    end
+
+    describe "when resolve_type returns a no-good type" do
+      it "calls the handler" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "resolve_type_as_wrong_type") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str)
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        expected_err = "ResolverWithErrorHandler failed for id: \"resolve_type_as_wrong_type\" (:resolve_type_as_wrong_type) (GraphQL::LoadApplicationObjectFailedError)"
+        assert_equal [expected_err], res["errors"].map { |e| e["message"] }
+      end
+    end
+  end
+
+
   describe "extras" do
     it "is inherited" do
       res = exec_query " { resolver4 resolver5 } ", root_value: OpenStruct.new(value: 0)
@@ -468,6 +561,11 @@ describe GraphQL::Schema::Resolver do
       res = exec_query("{ int: #{field_name}(int: 200) }")
       assert_nil res["data"].fetch("int"), "#{description}: No result for authorization error"
       refute res.key?("errors"), "#{description}: silent auth failure (no top-level error)"
+    end
+
+    it "keeps track of the `loads:` option" do
+      arg = ResolverTest::MutationWithNullableLoadsArgument.arguments["labelId"]
+      assert_equal ResolverTest::HasValue, arg.loads
     end
 
     describe "ready?" do
@@ -571,6 +669,22 @@ describe GraphQL::Schema::Resolver do
         it "works with no arguments for RelayClassicMutation" do
           res = exec_query("{ prepResolver14(input: {}) { number } }")
           assert_equal 1, res["data"]["prepResolver14"]["number"]
+        end
+
+        it "uses loaded objects" do
+          query_str = "{ prepResolver9(intId: 9) { value } }"
+          # This will cause an unauthorized response
+          # by `HasValue.authorized?`
+          context = { max_value: 8 }
+          res = exec_query(query_str, context: context)
+          assert_nil res["data"]["prepResolver9"]
+          # This is OK
+          context = { max_value: 900 }
+          res = exec_query(query_str, context: context)
+          assert_equal 51, res["data"]["prepResolver9"]["value"]
+          # This is the transformation applied by the resolver,
+          # just make sure it matches the response
+          assert_equal 51, (9 + "HasValue".size) * 3
         end
       end
     end

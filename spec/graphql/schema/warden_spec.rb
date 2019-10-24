@@ -3,20 +3,45 @@ require "spec_helper"
 include ErrorBubblingHelpers
 
 module MaskHelpers
-  PhonemeType = GraphQL::ObjectType.define do
-    name "Phoneme"
-    description "A building block of sound in a given language"
-    metadata :hidden_type, true
-    interfaces [LanguageMemberInterface]
-
-    field :name, types.String.to_non_null_type
-    field :symbol, types.String.to_non_null_type
-    field :languages, LanguageType.to_list_type
-    field :manner, MannerEnum
+  class BaseArgument < GraphQL::Schema::Argument
+    accepts_definition :metadata
   end
 
-  MannerEnum = GraphQL::EnumType.define do
-    name "Manner"
+  class BaseField < GraphQL::Schema::Field
+    accepts_definition :metadata
+    argument_class BaseArgument
+  end
+
+  class BaseObject < GraphQL::Schema::Object
+    accepts_definition :metadata
+    field_class BaseField
+  end
+
+  class BaseEnumValue < GraphQL::Schema::EnumValue
+    accepts_definition :metadata
+  end
+
+  class BaseEnum < GraphQL::Schema::Enum
+    accepts_definition :metadata
+    enum_value_class BaseEnumValue
+  end
+
+  class BaseInputObject < GraphQL::Schema::InputObject
+    accepts_definition :metadata
+    argument_class BaseArgument
+  end
+
+  class BaseUnion < GraphQL::Schema::Union
+    accepts_definition :metadata
+  end
+
+  module BaseInterface
+    include GraphQL::Schema::Interface
+    accepts_definition :metadata
+    field_class BaseField
+  end
+
+  class MannerType < BaseEnum
     description "Manner of articulation for this sound"
     metadata :hidden_input_type, true
     value "STOP"
@@ -29,105 +54,108 @@ module MaskHelpers
     end
   end
 
-  LanguageType = GraphQL::ObjectType.define do
-    name "Language"
-    field :name, types.String.to_non_null_type
-    field :families, types.String.to_list_type
-    field :phonemes, PhonemeType.to_list_type
-    field :graphemes, GraphemeType.to_list_type
+  class LanguageType < BaseObject
+    field :name, String, null: false
+    field :families, [String], null: false
+    field :phonemes, "[MaskHelpers::PhonemeType]", null: false
+    field :graphemes, "[MaskHelpers::GraphemeType]", null: false
   end
 
-  GraphemeType = GraphQL::ObjectType.define do
-    name "Grapheme"
-    description "A building block of spelling in a given language"
-    interfaces [LanguageMemberInterface]
-
-    field :name, types.String.to_non_null_type
-    field :glyph, types.String.to_non_null_type
-    field :languages, LanguageType.to_list_type
-  end
-
-  LanguageMemberInterface = GraphQL::InterfaceType.define do
-    name "LanguageMember"
+  module LanguageMemberType
+    include BaseInterface
     metadata :hidden_abstract_type, true
     description "Something that belongs to one or more languages"
-    field :languages, LanguageType.to_list_type
+    field :languages, [LanguageType], null: false
   end
 
-  EmicUnitUnion = GraphQL::UnionType.define do
-    name "EmicUnit"
+  class GraphemeType < BaseObject
+    description "A building block of spelling in a given language"
+    implements LanguageMemberType
+
+    field :name, String, null: false
+    field :glyph, String, null: false
+    field :languages, [LanguageType], null: false
+  end
+
+  class PhonemeType < BaseObject
+    description "A building block of sound in a given language"
+    metadata :hidden_type, true
+    implements LanguageMemberType
+
+    field :name, String, null: false
+    field :symbol, String, null: false
+    field :languages, [LanguageType], null: false
+    field :manner, MannerType, null: false
+  end
+
+  class EmicUnitType < BaseUnion
     description "A building block of a word in a given language"
-    possible_types [GraphemeType, PhonemeType]
+    possible_types GraphemeType, PhonemeType
   end
 
-  WithinInputType = GraphQL::InputObjectType.define do
-    name "WithinInput"
+  class WithinInputType < BaseInputObject
     metadata :hidden_input_object_type, true
-    argument :latitude, !types.Float
-    argument :longitude, !types.Float
-    argument :miles, !types.Float do
+    argument :latitude, Float, required: true
+    argument :longitude, Float, required: true
+    argument :miles, Float, required: true do
       metadata :hidden_input_field, true
     end
   end
 
-  CheremeInput = GraphQL::InputObjectType.define do
-    name "CheremeInput"
-    input_field :name, types.String
+  class CheremeInput < BaseInputObject
+    argument :name, String, required: false
   end
 
-  Chereme = GraphQL::ObjectType.define do
-    name "Chereme"
+  class Chereme < BaseObject
     description "A basic unit of signed communication"
-    field :name, types.String.to_non_null_type
+    field :name, String, null: false
   end
 
-  Character = GraphQL::ObjectType.define do
-    name "Character"
-    interfaces [LanguageMemberInterface]
-    field :code, types.Int
+  class Character < BaseObject
+    implements LanguageMemberType
+    field :code, Int, null: false
   end
 
-  QueryType = GraphQL::ObjectType.define do
-    name "Query"
-    field :languages, LanguageType.to_list_type do
-      argument :within, WithinInputType, "Find languages nearby a point" do
+  class QueryType < BaseObject
+    field :languages, [LanguageType], null: false do
+      argument :within, WithinInputType, required: false, description: "Find languages nearby a point" do
         metadata :hidden_argument_with_input_object, true
       end
     end
-    field :language, LanguageType do
+
+    field :language, LanguageType, null: true do
       metadata :hidden_field, true
-      argument :name, !types.String do
+      argument :name, String, required: true do
         metadata :hidden_argument, true
       end
     end
 
-    field :chereme, Chereme do
+    field :chereme, Chereme, null: false do
       metadata :hidden_field, true
     end
 
-    field :phonemes, PhonemeType.to_list_type do
-      argument :manners, MannerEnum.to_list_type, "Filter phonemes by manner of articulation"
+    field :phonemes, [PhonemeType], null: false do
+      argument :manners, [MannerType], required: false, description: "Filter phonemes by manner of articulation"
     end
 
-    field :phoneme, PhonemeType do
+    field :phoneme, PhonemeType, null: true do
       description "Lookup a phoneme by symbol"
-      argument :symbol, !types.String
+      argument :symbol, String, required: true
     end
 
-    field :unit, EmicUnitUnion do
+    field :unit, EmicUnitType, null: true do
       description "Find an emic unit by its name"
-      argument :name, types.String.to_non_null_type
+      argument :name, String, required: true
     end
   end
 
-  MutationType = GraphQL::ObjectType.define do
-    name "Mutation"
-    field :add_phoneme, PhonemeType do
-      argument :symbol, types.String
+  class MutationType < BaseObject
+    field :add_phoneme, PhonemeType, null: true do
+      argument :symbol, String, required: false
     end
 
-    field :add_chereme, types.String do
-      argument :chereme, CheremeInput do
+    field :add_chereme, String, null: true do
+      argument :chereme, CheremeInput, required: false do
         metadata :hidden_argument, true
       end
     end
@@ -146,18 +174,25 @@ module MaskHelpers
     def self.after_query(q); end
   end
 
-  Schema = GraphQL::Schema.define do
+  class Schema < GraphQL::Schema
     query QueryType
     mutation MutationType
     subscription MutationType
     orphan_types [Character]
-    resolve_type ->(type, obj, ctx) { PhonemeType }
+    def self.resolve_type(type, obj, ctx)
+      PhonemeType
+    end
+
     instrument :query, FilterInstrumentation
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+    end
   end
 
   module Data
     UVULAR_TRILL = OpenStruct.new({name: "Uvular Trill", symbol: "ʀ", manner: "TRILL"})
-    def self.unit
+    def self.unit(name:)
       UVULAR_TRILL
     end
   end
@@ -206,16 +241,16 @@ describe GraphQL::Schema::Warden do
   end
 
   describe "hiding root types" do
-    let(:mask) { ->(m, ctx) { m == MaskHelpers::MutationType } }
+    let(:mask) { ->(m, ctx) { m == MaskHelpers::MutationType.graphql_definition } }
 
     it "acts as if the root doesn't exist" do
-      query_string = %|mutation { add_phoneme(symbol: "ϕ") { name } }|
+      query_string = %|mutation { addPhoneme(symbol: "ϕ") { name } }|
       res = MaskHelpers.query_with_mask(query_string, mask)
       assert MaskHelpers::Schema.mutation # it _does_ exist
       assert_equal 1, res["errors"].length
       assert_equal "Schema is not configured for mutations", res["errors"][0]["message"]
 
-      query_string = %|subscription { add_phoneme(symbol: "ϕ") { name } }|
+      query_string = %|subscription { addPhoneme(symbol: "ϕ") { name } }|
       res = MaskHelpers.query_with_mask(query_string, mask)
       assert MaskHelpers::Schema.subscription # it _does_ exist
       assert_equal 1, res["errors"].length
@@ -558,7 +593,6 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-
   describe "hiding arguments" do
     let(:mask) {
       ->(member, ctx) { member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
@@ -760,30 +794,30 @@ describe GraphQL::Schema::Warden do
       res = MaskHelpers.query_with_mask(query_string, mask)
       # It's not a good error message ... but it's something!
       expected_errors = [
-        "Argument 'manners' on Field 'phonemes' has an invalid value. Expected type '[Manner]'.",
+        "Argument 'manners' on Field 'phonemes' has an invalid value. Expected type '[Manner!]'.",
       ]
       assert_equal expected_errors, error_messages(res)
     end
 
     it "isn't a valid default value" do
       query_string = %|
-      query getPhonemes($manners: [Manner] = [STOP, TRILL]){ phonemes(manners: $manners) { symbol } }
+      query getPhonemes($manners: [Manner!] = [STOP, TRILL]){ phonemes(manners: $manners) { symbol } }
       |
       res = MaskHelpers.query_with_mask(query_string, mask)
-      expected_errors = ["Default value for $manners doesn't match type [Manner]"]
+      expected_errors = ["Default value for $manners doesn't match type [Manner!]"]
       assert_equal expected_errors, error_messages(res)
     end
 
     it "isn't a valid variable input" do
       query_string = %|
-      query getPhonemes($manners: [Manner]!) {
+      query getPhonemes($manners: [Manner!]!) {
         phonemes(manners: $manners) { symbol }
       }
       |
       res = MaskHelpers.query_with_mask(query_string, mask, variables: { "manners" => ["STOP", "TRILL"] })
       # It's not a good error message ... but it's something!
       expected_errors = [
-        "Variable manners of type [Manner]! was provided invalid value",
+        "Variable manners of type [Manner!]! was provided invalid value for 1 (Expected \"TRILL\" to be one of: STOP, AFFRICATE, FRICATIVE, APPROXIMANT, VOWEL)",
       ]
       assert_equal expected_errors, error_messages(res)
     end

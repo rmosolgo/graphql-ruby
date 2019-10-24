@@ -40,11 +40,16 @@ module GraphQL
     # @return [Boolean] if false, static validation is skipped (execution behavior for invalid queries is undefined)
     attr_accessor :validate
 
-    attr_accessor :query_string
+    attr_writer :query_string
 
     # @return [GraphQL::Language::Nodes::Document]
     def document
-      with_prepared_ast { @document }
+      # It's ok if this hasn't been assigned yet
+      if @query_string || @document
+        with_prepared_ast { @document }
+      else
+        nil
+      end
     end
 
     def inspect
@@ -73,7 +78,7 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
@@ -122,8 +127,8 @@ module GraphQL
       @operation_name = operation_name
       @prepared_ast = false
       @validation_pipeline = nil
-      @max_depth = max_depth || schema.max_depth
-      @max_complexity = max_complexity || schema.max_complexity
+      @max_depth = max_depth
+      @max_complexity = max_complexity
 
       @result_values = nil
       @executed = false
@@ -135,8 +140,26 @@ module GraphQL
       end
     end
 
+    # If a document was provided to `GraphQL::Schema#execute` instead of the raw query string, we will need to get it from the document
+    def query_string
+      @query_string ||= (document ? document.to_query_string : nil)
+    end
+
+    def_delegators :@schema, :interpreter?
+
     def subscription_update?
       @subscription_topic && subscription?
+    end
+
+    # A lookahead for the root selections of this query
+    # @return [GraphQL::Execution::Lookahead]
+    def lookahead
+      @lookahead ||= begin
+        ast_node = selected_operation
+        root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
+        root_type = root_type.metadata[:type_class] || raise("Invariant: `lookahead` only works with class-based types")
+        GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
+      end
     end
 
     # @api private
@@ -169,6 +192,10 @@ module GraphQL
         }
       end
       @result ||= Query::Result.new(query: self, values: @result_values)
+    end
+
+    def executed?
+      @executed
     end
 
     def static_errors
@@ -221,11 +248,12 @@ module GraphQL
       with_prepared_ast { @validation_pipeline }
     end
 
-    def_delegators :validation_pipeline, :validation_errors, :internal_representation, :analyzers
+    def_delegators :validation_pipeline, :validation_errors, :internal_representation,
+                   :analyzers, :ast_analyzers, :max_depth, :max_complexity
 
     attr_accessor :analysis_errors
     def valid?
-      validation_pipeline.valid? && analysis_errors.none?
+      validation_pipeline.valid? && analysis_errors.empty?
     end
 
     def warden
@@ -344,7 +372,7 @@ module GraphQL
         parse_error: parse_error,
         operation_name_error: operation_name_error,
         max_depth: @max_depth,
-        max_complexity: @max_complexity || schema.max_complexity,
+        max_complexity: @max_complexity
       )
     end
 

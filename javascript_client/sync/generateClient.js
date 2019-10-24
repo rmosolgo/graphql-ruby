@@ -24,7 +24,7 @@ var generators = {
 */
 function generateClient(options) {
   var payload = gatherOperations(options)
-  var generatedCode = generateClientCode(options.clientName, payload.operations, options.clientType)
+  var generatedCode = generateClientCode(options.client, payload.operations, options.clientType)
   return generatedCode
 }
 
@@ -38,15 +38,15 @@ function generateClient(options) {
  * @param {String} options.clientType - The type of the generated code (i.e., json, js)
  * @param {String} options.client - the Client ID that these operations belong to
  * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
- * @return {Array} Array of operations with name and alias
+ * @param {Boolean} options.verbose - If true, print debug output
+ * @return {Object} An object whose `operations:` key is an array of operations with name and alias
 */
 function gatherOperations(options) {
   var graphqlGlob = options.path || "./"
   var hashFunc = options.hash || md5
   var filesMode = options.mode || (graphqlGlob.indexOf("__generated__") > -1 ? "relay" : "project")
-  var clientName = options.client
-  var clientType = options.clientType
   var addTypename = options.addTypename
+  var verbose = options.verbose
 
   // Check for file ext already, add it if missing
   var containsFileExt = graphqlGlob.indexOf(".graphql") > -1 || graphqlGlob.indexOf(".gql") > -1
@@ -57,6 +57,11 @@ function gatherOperations(options) {
     operations: []
   }
   var filenames = glob.sync(graphqlGlob, {})
+  if (verbose) {
+    console.log("[Sync] glob: ", graphqlGlob)
+    console.log("[Sync] " + filenames.length + " files:")
+    console.log(filenames.map(function(f) { return "[Sync]   - " + f }).join("\n"))
+  }
   if (filesMode == "relay") {
     payload.operations = prepareRelay(filenames)
   } else {

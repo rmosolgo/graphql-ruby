@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 require "bundler/setup"
+Bundler.require
 Bundler::GemHelper.install_tasks
 
 require "rake/testtask"
 require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
 
-Bundler.require
 
 Rake::TestTask.new do |t|
   t.libs << "spec" << "lib"
@@ -62,7 +62,7 @@ ERR
   end
 
   assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
-  assert_dependency_version("Racc", "1.4.14", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
+  assert_dependency_version("Racc", "1.4.15", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
   `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
@@ -91,6 +91,12 @@ namespace :bench do
   task :profile do
     prepare_benchmark
     GraphQLBenchmark.profile
+  end
+
+  desc "Run benchmarks on a very large result"
+  task :profile_large_result do
+    prepare_benchmark
+    GraphQLBenchmark.profile_large_result
   end
 end
 

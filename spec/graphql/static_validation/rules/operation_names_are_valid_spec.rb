@@ -25,7 +25,8 @@ describe GraphQL::StaticValidation::OperationNamesAreValid do
       requires_name_error = {
         "message"=>"Operation name is required when multiple operations are present",
         "locations"=>[{"line"=>5, "column"=>5}, {"line"=>9, "column"=>5}],
-        "fields"=>[],
+        "path"=>[],
+        "extensions"=>{"code"=>"uniquelyNamedOperations"}
       }
       assert_includes(errors, requires_name_error)
     end
@@ -48,7 +49,8 @@ describe GraphQL::StaticValidation::OperationNamesAreValid do
       requires_name_error = {
         "message"=>"Operation name is required when multiple operations are present",
         "locations"=>[{"line"=>1, "column"=>5}, {"line"=>5, "column"=>5}],
-        "fields"=>[],
+        "path"=>[],
+        "extensions"=>{"code"=>"uniquelyNamedOperations"}
       }
       assert_includes(errors, requires_name_error)
     end
@@ -71,7 +73,8 @@ describe GraphQL::StaticValidation::OperationNamesAreValid do
       name_uniqueness_error = {
         "message"=>'Operation name "getCheese" must be unique',
         "locations"=>[{"line"=>1, "column"=>5}, {"line"=>5, "column"=>5}],
-        "fields"=>[],
+        "path"=>[],
+        "extensions"=>{"code"=>"uniquelyNamedOperations", "operationName"=>"getCheese"}
       }
       assert_includes(errors, name_uniqueness_error)
     end

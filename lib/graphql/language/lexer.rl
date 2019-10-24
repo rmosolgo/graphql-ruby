@@ -35,11 +35,17 @@
   RBRACKET =      ']';
   COLON =         ':';
   QUOTE =         '"';
+  BACKSLASH = '\\';
+  # Could limit to hex here, but “bad unicode escape” on 0XXF is probably a
+  # more helpful error than “unknown char”
+  UNICODE_ESCAPE = '\\u' [0-9A-Za-z]{4};
+  # https://graphql.github.io/graphql-spec/June2018/#sec-String-Value
+  STRING_ESCAPE = '\\' [\\/bfnrt];
   BLOCK_QUOTE =   '"""';
   ESCAPED_BLOCK_QUOTE = '\\"""';
-  BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^QUOTE | ^QUOTE QUOTE{1,2} ^QUOTE);
+  BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^QUOTE | QUOTE{1,2} ^QUOTE);
   ESCAPED_QUOTE = '\\"';
-  STRING_CHAR =   (ESCAPED_QUOTE | ^QUOTE);
+  STRING_CHAR =   ((ESCAPED_QUOTE | ^QUOTE) - BACKSLASH) | UNICODE_ESCAPE | STRING_ESCAPE;
   VAR_SIGN =      '$';
   DIR_SIGN =      '@';
   ELLIPSIS =      '...';
@@ -49,9 +55,14 @@
   AMP =           '&';
 
   QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
-  BLOCK_STRING = BLOCK_QUOTE (QUOTE{1,2} ^QUOTE){0,1} BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE;
+  BLOCK_STRING = BLOCK_QUOTE BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE;
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
+
+  # Used with ragel -V for graphviz visualization
+  str := |*
+      QUOTED_STRING => { emit_string(ts, te, meta, block: false) };
+  *|;
 
   main := |*
     INT           => { emit(:INT, ts, te, meta) };
@@ -105,6 +116,7 @@
   *|;
 }%%
 
+# frozen_string_literal: true
 
 module GraphQL
   module Language
@@ -152,7 +164,7 @@ module GraphQL
       def self.record_comment(ts, te, meta)
         token = GraphQL::Language::Token.new(
           name: :COMMENT,
-          value: meta[:data][ts...te].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
+          value: meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
           line: meta[:line],
           col: meta[:col],
           prev_token: meta[:previous_token],
@@ -166,7 +178,7 @@ module GraphQL
       def self.emit(token_name, ts, te, meta)
         meta[:tokens] << token = GraphQL::Language::Token.new(
           name: token_name,
-          value: meta[:data][ts...te].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
+          value: meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
           line: meta[:line],
           col: meta[:col],
           prev_token: meta[:previous_token],
@@ -198,12 +210,15 @@ module GraphQL
 
       def self.emit_string(ts, te, meta, block:)
         quotes_length = block ? 3 : 1
-        ts += quotes_length
-        value = meta[:data][ts...te - quotes_length].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
-        if block
+        value = meta[:data][ts + quotes_length, te - ts - 2 * quotes_length].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING) || ''
+        line_incr = 0
+        if block && !value.length.zero?
+          line_incr = value.count("\n")
           value = GraphQL::Language::BlockString.trim_whitespace(value)
         end
-        if value !~ VALID_STRING
+        # TODO: replace with `String#match?` when we support only Ruby 2.4+
+        # (It's faster: https://bugs.ruby-lang.org/issues/8110)
+        if !value.valid_encoding? || value !~ VALID_STRING
           meta[:tokens] << token = GraphQL::Language::Token.new(
             name: :BAD_UNICODE_ESCAPE,
             value: value,
@@ -214,17 +229,28 @@ module GraphQL
         else
           replace_escaped_characters_in_place(value)
 
-          meta[:tokens] << token = GraphQL::Language::Token.new(
-            name: :STRING,
-            value: value,
-            line: meta[:line],
-            col: meta[:col],
-            prev_token: meta[:previous_token],
-          )
+          if !value.valid_encoding?
+            meta[:tokens] << token = GraphQL::Language::Token.new(
+              name: :BAD_UNICODE_ESCAPE,
+              value: value,
+              line: meta[:line],
+              col: meta[:col],
+              prev_token: meta[:previous_token],
+            )
+          else
+            meta[:tokens] << token = GraphQL::Language::Token.new(
+              name: :STRING,
+              value: value,
+              line: meta[:line],
+              col: meta[:col],
+              prev_token: meta[:previous_token],
+            )
+          end
         end
 
         meta[:previous_token] = token
         meta[:col] += te - ts
+        meta[:line] += line_incr
       end
     end
   end

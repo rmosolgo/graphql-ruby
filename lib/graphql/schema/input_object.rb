@@ -7,14 +7,31 @@ module GraphQL
       extend GraphQL::Schema::Member::HasArguments
       include GraphQL::Dig
 
-      def initialize(values, context:, defaults_used:)
+      def initialize(values = nil, ruby_kwargs: nil, context:, defaults_used:)
         @context = context
-        @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
-        # Symbolized, underscored hash:
-        @ruby_style_hash = @arguments.to_kwargs
+        if ruby_kwargs
+          @ruby_style_hash = ruby_kwargs
+        else
+          @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
+          # Symbolized, underscored hash:
+          @ruby_style_hash = @arguments.to_kwargs
+        end
         # Apply prepares, not great to have it duplicated here.
+        @arguments_by_keyword = {}
         self.class.arguments.each do |name, arg_defn|
+          @arguments_by_keyword[arg_defn.keyword] = arg_defn
           ruby_kwargs_key = arg_defn.keyword
+          loads = arg_defn.loads
+
+          if @ruby_style_hash.key?(ruby_kwargs_key) && loads && !arg_defn.from_resolver?
+            value = @ruby_style_hash[ruby_kwargs_key]
+            @ruby_style_hash[ruby_kwargs_key] = if arg_defn.type.list?
+              GraphQL::Execution::Lazy.all(value.map { |val| load_application_object(arg_defn, loads, val) })
+            else
+              load_application_object(arg_defn, loads, value)
+            end
+          end
+
           if @ruby_style_hash.key?(ruby_kwargs_key) && arg_defn.prepare
             @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
           end
@@ -34,6 +51,10 @@ module GraphQL
         @ruby_style_hash.inject({}) do |h, (key, value)|
           h.merge(key => unwrap_value(value))
         end
+      end
+
+      def to_hash
+        to_h
       end
 
       def prepare
@@ -61,13 +82,15 @@ module GraphQL
       def [](key)
         if @ruby_style_hash.key?(key)
           @ruby_style_hash[key]
-        else
+        elsif @arguments
           @arguments[key]
+        else
+          nil
         end
       end
 
       def key?(key)
-        @ruby_style_hash.key?(key) || @arguments.key?(key)
+        @ruby_style_hash.key?(key) || (@arguments && @arguments.key?(key))
       end
 
       # A copy of the Ruby-style hash
@@ -79,12 +102,12 @@ module GraphQL
         # @return [Class<GraphQL::Arguments>]
         attr_accessor :arguments_class
 
-        def argument(*args)
-          argument_defn = super
+        def argument(*args, **kwargs, &block)
+          argument_defn = super(*args, **kwargs, &block)
           # Add a method access
-          arg_name = argument_defn.graphql_definition.name
-          define_method(Member::BuildType.underscore(arg_name)) do
-            @arguments.public_send(arg_name)
+          method_name = argument_defn.keyword
+          define_method(method_name) do
+            self[method_name]
           end
         end
 

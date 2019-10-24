@@ -11,9 +11,7 @@ module GraphQL
     #   - re-visiting the AST for each validator
     #   - allowing validators to say `followSpreads: true`
     #
-    class VariablesAreUsedAndDefined
-      include GraphQL::StaticValidation::Message::MessageHelper
-
+    module VariablesAreUsedAndDefined
       class VariableUsage
         attr_accessor :ast_node, :used_by, :declared_by, :path
         def used?
@@ -25,73 +23,67 @@ module GraphQL
         end
       end
 
-      def variable_hash
-        Hash.new {|h, k| h[k] = VariableUsage.new }
+      def initialize(*)
+        super
+        @variable_usages_for_context = Hash.new {|hash, key| hash[key] = Hash.new {|h, k| h[k] = VariableUsage.new } }
+        @spreads_for_context = Hash.new {|hash, key| hash[key] = [] }
+        @variable_context_stack = []
       end
 
-      def validate(context)
-        variable_usages_for_context = Hash.new {|hash, key| hash[key] = variable_hash }
-        spreads_for_context = Hash.new {|hash, key| hash[key] = [] }
-        variable_context_stack = []
-
-        # OperationDefinitions and FragmentDefinitions
-        # both push themselves onto the context stack (and pop themselves off)
-        push_variable_context_stack = ->(node, parent) {
-          # initialize the hash of vars for this context:
-          variable_usages_for_context[node]
-          variable_context_stack.push(node)
+      def on_operation_definition(node, parent)
+        # initialize the hash of vars for this context:
+        @variable_usages_for_context[node]
+        @variable_context_stack.push(node)
+        # mark variables as defined:
+        var_hash = @variable_usages_for_context[node]
+        node.variables.each { |var|
+          var_usage = var_hash[var.name]
+          var_usage.declared_by = node
+          var_usage.path = context.path
         }
+        super
+        @variable_context_stack.pop
+      end
 
-        pop_variable_context_stack = ->(node, parent) {
-          variable_context_stack.pop
-        }
+      def on_fragment_definition(node, parent)
+        # initialize the hash of vars for this context:
+        @variable_usages_for_context[node]
+        @variable_context_stack.push(node)
+        super
+        @variable_context_stack.pop
+      end
 
+      # For FragmentSpreads:
+      #  - find the context on the stack
+      #  - mark the context as containing this spread
+      def on_fragment_spread(node, parent)
+        variable_context = @variable_context_stack.last
+        @spreads_for_context[variable_context] << node.name
+        super
+      end
 
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << push_variable_context_stack
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent) {
-          # mark variables as defined:
-          var_hash = variable_usages_for_context[node]
-          node.variables.each { |var|
-            var_usage = var_hash[var.name]
-            var_usage.declared_by = node
-            var_usage.path = context.path
-          }
-        }
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition].leave << pop_variable_context_stack
+      # For VariableIdentifiers:
+      #  - mark the variable as used
+      #  - assign its AST node
+      def on_variable_identifier(node, parent)
+        usage_context = @variable_context_stack.last
+        declared_variables = @variable_usages_for_context[usage_context]
+        usage = declared_variables[node.name]
+        usage.used_by = usage_context
+        usage.ast_node = node
+        usage.path = context.path
+        super
+      end
 
-        context.visitor[GraphQL::Language::Nodes::FragmentDefinition] << push_variable_context_stack
-        context.visitor[GraphQL::Language::Nodes::FragmentDefinition].leave << pop_variable_context_stack
+      def on_document(node, parent)
+        super
+        fragment_definitions = @variable_usages_for_context.select { |key, value| key.is_a?(GraphQL::Language::Nodes::FragmentDefinition) }
+        operation_definitions = @variable_usages_for_context.select { |key, value| key.is_a?(GraphQL::Language::Nodes::OperationDefinition) }
 
-        # For FragmentSpreads:
-        #  - find the context on the stack
-        #  - mark the context as containing this spread
-        context.visitor[GraphQL::Language::Nodes::FragmentSpread] << ->(node, parent) {
-          variable_context = variable_context_stack.last
-          spreads_for_context[variable_context] << node.name
-        }
-
-        # For VariableIdentifiers:
-        #  - mark the variable as used
-        #  - assign its AST node
-        context.visitor[GraphQL::Language::Nodes::VariableIdentifier] << ->(node, parent) {
-          usage_context = variable_context_stack.last
-          declared_variables = variable_usages_for_context[usage_context]
-          usage = declared_variables[node.name]
-          usage.used_by = usage_context
-          usage.ast_node = node
-          usage.path = context.path
-        }
-
-
-        context.visitor[GraphQL::Language::Nodes::Document].leave << ->(node, parent) {
-          fragment_definitions = variable_usages_for_context.select { |key, value| key.is_a?(GraphQL::Language::Nodes::FragmentDefinition) }
-          operation_definitions = variable_usages_for_context.select { |key, value| key.is_a?(GraphQL::Language::Nodes::OperationDefinition) }
-
-          operation_definitions.each do |node, node_variables|
-            follow_spreads(node, node_variables, spreads_for_context, fragment_definitions, [])
-            create_errors(node_variables, context)
-          end
-        }
+        operation_definitions.each do |node, node_variables|
+          follow_spreads(node, node_variables, @spreads_for_context, fragment_definitions, [])
+          create_errors(node_variables)
+        end
       end
 
       private
@@ -129,16 +121,32 @@ module GraphQL
 
       # Determine all the error messages,
       # Then push messages into the validation context
-      def create_errors(node_variables, context)
+      def create_errors(node_variables)
         # Declared but not used:
         node_variables
           .select { |name, usage| usage.declared? && !usage.used? }
-          .each { |var_name, usage| context.errors << message("Variable $#{var_name} is declared by #{usage.declared_by.name} but not used", usage.declared_by, path: usage.path) }
+          .each { |var_name, usage|
+            add_error(GraphQL::StaticValidation::VariablesAreUsedAndDefinedError.new(
+              "Variable $#{var_name} is declared by #{usage.declared_by.name} but not used",
+              nodes: usage.declared_by,
+              path: usage.path,
+              name: var_name,
+              error_type: VariablesAreUsedAndDefinedError::VIOLATIONS[:VARIABLE_NOT_USED]
+            ))
+          }
 
         # Used but not declared:
         node_variables
           .select { |name, usage| usage.used? && !usage.declared? }
-          .each { |var_name, usage| context.errors << message("Variable $#{var_name} is used by #{usage.used_by.name} but not declared", usage.ast_node, path: usage.path) }
+          .each { |var_name, usage|
+            add_error(GraphQL::StaticValidation::VariablesAreUsedAndDefinedError.new(
+              "Variable $#{var_name} is used by #{usage.used_by.name} but not declared",
+              nodes: usage.ast_node,
+              path: usage.path,
+              name: var_name,
+              error_type: VariablesAreUsedAndDefinedError::VIOLATIONS[:VARIABLE_NOT_DEFINED]
+            ))
+          }
       end
     end
   end

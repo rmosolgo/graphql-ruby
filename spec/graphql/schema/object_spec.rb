@@ -55,7 +55,7 @@ describe GraphQL::Schema::Object do
 
     it "raise on anonymous class without declared graphql name" do
       anonymous_class = Class.new(GraphQL::Schema::Object)
-      assert_raises NotImplementedError do
+      assert_raises GraphQL::RequiredImplementationMissingError do
         anonymous_class.graphql_name
       end
     end
@@ -102,6 +102,77 @@ describe GraphQL::Schema::Object do
       object_type.implements(InterfaceType)
       new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
       assert_equal method_defs, new_method_defs
+    end
+  end
+
+  describe "using GraphQL::Function" do
+    new_test_func_payload = Class.new(GraphQL::Schema::Object) do
+      graphql_name "TestFuncPayload"
+      field :name, String, null: false
+    end
+
+    it "returns data on a field" do
+      new_func_class = Class.new(GraphQL::Function) do
+        argument :name, GraphQL::STRING_TYPE
+        type new_test_func_payload
+
+        def call(o, a, c)
+          { name: a[:name] }
+        end
+      end
+
+      new_object_class = Class.new(GraphQL::Schema::Object) do
+        graphql_name "GraphQL"
+        field :test, function: new_func_class.new
+      end
+
+      schema = Class.new(GraphQL::Schema) do
+        query(new_object_class)
+      end
+
+      query_str = <<-GRAPHQL
+      {
+        test(name: "graphql") {
+          name
+        }
+      }
+      GRAPHQL
+      res = schema.execute(query_str)
+      assert_equal "graphql", res["data"]["test"]["name"]
+    end
+
+    it "returns data on a connection" do
+      new_func_class = Class.new(GraphQL::Function) do
+        argument :name, GraphQL::STRING_TYPE
+        type new_test_func_payload.connection_type
+
+        def call(o, a, c)
+          [{ name: a[:name] }]
+        end
+      end
+
+      new_object_class = Class.new(GraphQL::Schema::Object) do
+        graphql_name "GraphQL"
+        field :test_conn, function: new_func_class.new
+      end
+
+      schema = Class.new(GraphQL::Schema) do
+        query(new_object_class)
+      end
+
+      query_str = <<-GRAPHQL
+      {
+        testConn(name: "graphql") {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+      GRAPHQL
+      res = schema.execute(query_str)
+      assert_equal "graphql", res["data"]["testConn"]["edges"][0]["node"]["name"]
     end
   end
 
@@ -236,7 +307,49 @@ describe GraphQL::Schema::Object do
     it "skips fields properly" do
       query_str = "{ find(id: \"MagicalSkipId\") { __typename } }"
       res = Jazz::Schema.execute(query_str)
-      assert_equal({"data" => nil }, res.to_h)
+      # TBH I think `{}` is probably righter than `nil`, I guess we'll see.
+      skip_value = TESTING_INTERPRETER ? {} : nil
+      assert_equal({"data" => skip_value }, res.to_h)
+    end
+  end
+
+  describe "when fields conflict with built-ins" do
+    it "warns when no override" do
+      expected_warning = "X's `field :method` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_method` and `def resolve_method`)\n"
+      assert_output "", expected_warning do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :method, String, null: true
+        end
+      end
+    end
+
+    it "warns when override matches field name" do
+      expected_warning = "X's `field :object` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_object` and `def resolve_object`)\n"
+      assert_output "", expected_warning do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :object, String, null: true, resolver_method: :object
+        end
+      end
+    end
+
+    it "doesn't warn with an override" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :method, String, null: true, resolver_method: :resolve_method
+        end
+      end
+    end
+
+    it "doesn't warn when passing object through using resolver_method" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :thing, String, null: true, resolver_method: :object
+        end
+      end
     end
   end
 end

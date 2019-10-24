@@ -24,9 +24,13 @@ module GraphQL
       def list?
         @of_type.list?
       end
-      
+
       def to_type_signature
         "#{@of_type.to_type_signature}!"
+      end
+
+      def inspect
+        "#<#{self.class.name} @of_type=#{@of_type.inspect}>"
       end
     end
   end

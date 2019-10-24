@@ -14,68 +14,25 @@ module GraphQL
     class ValidationContext
       extend Forwardable
 
-      attr_reader :query, :errors, :visitor, :dependencies, :each_irep_node_handlers
+      attr_reader :query, :errors, :visitor,
+        :on_dependency_resolve_handlers
 
       def_delegators :@query, :schema, :document, :fragments, :operations, :warden
 
-      def initialize(query)
+      def initialize(query, visitor_class)
         @query = query
         @literal_validator = LiteralValidator.new(context: query.context)
         @errors = []
-        @visitor = GraphQL::Language::Visitor.new(document)
-        @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
-        definition_dependencies = DefinitionDependencies.mount(self)
         @on_dependency_resolve_handlers = []
-        @each_irep_node_handlers = []
-        visitor[GraphQL::Language::Nodes::Document].leave << ->(_n, _p) {
-          @dependencies = definition_dependencies.dependency_map { |defn, spreads, frag|
-            @on_dependency_resolve_handlers.each { |h| h.call(defn, spreads, frag) }
-          }
-        }
+        @visitor = visitor_class.new(document, self)
       end
+
+      def_delegators :@visitor,
+        :path, :type_definition, :field_definition, :argument_definition,
+        :parent_type_definition, :directive_definition, :object_types, :dependencies
 
       def on_dependency_resolve(&handler)
         @on_dependency_resolve_handlers << handler
-      end
-
-      def object_types
-        @type_stack.object_types
-      end
-
-      def each_irep_node(&handler)
-        @each_irep_node_handlers << handler
-      end
-
-      # @return [GraphQL::BaseType] The current object type
-      def type_definition
-        object_types.last
-      end
-
-      # @return [GraphQL::BaseType] The type which the current type came from
-      def parent_type_definition
-        object_types[-2]
-      end
-
-      # @return [GraphQL::Field, nil] The most-recently-entered GraphQL::Field, if currently inside one
-      def field_definition
-        @type_stack.field_definitions.last
-      end
-
-      # @return [Array<String>] Field names to get to the current field
-      def path
-        @type_stack.path.dup
-      end
-
-      # @return [GraphQL::Directive, nil] The most-recently-entered GraphQL::Directive, if currently inside one
-      def directive_definition
-        @type_stack.directive_definitions.last
-      end
-
-      # @return [GraphQL::Argument, nil] The most-recently-entered GraphQL::Argument, if currently inside one
-      def argument_definition
-        # Don't get the _last_ one because that's the current one.
-        # Get the second-to-last one, which is the parent of the current one.
-        @type_stack.argument_definitions[-2]
       end
 
       def valid_literal?(ast_value, type)

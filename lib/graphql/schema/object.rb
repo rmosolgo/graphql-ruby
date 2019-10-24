@@ -35,19 +35,33 @@ module GraphQL
         # @return [GraphQL::Schema::Object, GraphQL::Execution::Lazy]
         # @raise [GraphQL::UnauthorizedError] if the user-provided hook returns `false`
         def authorized_new(object, context)
-          context.schema.after_lazy(authorized?(object, context)) do |is_authorized|
+          auth_val = begin
+            authorized?(object, context)
+          rescue GraphQL::UnauthorizedError => err
+            context.schema.unauthorized_object(err)
+          end
+
+          context.schema.after_lazy(auth_val) do |is_authorized|
             if is_authorized
               self.new(object, context)
             else
               # It failed the authorization check, so go to the schema's authorized object hook
               err = GraphQL::UnauthorizedError.new(object: object, type: self, context: context)
               # If a new value was returned, wrap that instead of the original value
-              new_obj = context.schema.unauthorized_object(err)
-              if new_obj
-                self.new(new_obj, context)
+              begin
+                new_obj = context.schema.unauthorized_object(err)
+                if new_obj
+                  self.new(new_obj, context)
+                else
+                  nil
+                end
+              # rescue GraphQL::ExecutionError => err
+              #   err
               end
             end
           end
+        # rescue GraphQL::ExecutionError => err
+        #   err
         end
       end
 

@@ -14,21 +14,22 @@ module GraphQL
           self.argument_definitions = argument_definitions
 
           argument_definitions.each do |_arg_name, arg_definition|
-            expose_as = arg_definition.expose_as.to_s
-            expose_as_underscored = GraphQL::Schema::Member::BuildType.underscore(expose_as)
-            method_names = [expose_as, expose_as_underscored].uniq
-            method_names.each do |method_name|
-              # Don't define a helper method if it would override something.
-              if instance_methods.include?(method_name)
-                warn(
-                  "Unable to define a helper for argument with name '#{method_name}' "\
-                  "as this is a reserved name. If you're using an argument such as "\
-                  "`argument #{method_name}`, consider renaming this argument.`"
-                )
-              else
-                define_method(method_name) do
-                  # Always use `expose_as` here, since #[] doesn't accept underscored names
-                  self[expose_as]
+            if arg_definition.method_access?
+              expose_as = arg_definition.expose_as.to_s.freeze
+              expose_as_underscored = GraphQL::Schema::Member::BuildType.underscore(expose_as).freeze
+              method_names = [expose_as, expose_as_underscored].uniq
+              method_names.each do |method_name|
+                # Don't define a helper method if it would override something.
+                if method_defined?(method_name)
+                  warn(
+                    "Unable to define a helper for argument with name '#{method_name}' "\
+                    "as this is a reserved name. Add `method_access: false` to stop this warning."
+                  )
+                else
+                  define_method(method_name) do
+                    # Always use `expose_as` here, since #[] doesn't accept underscored names
+                    self[expose_as]
+                  end
                 end
               end
             end
@@ -41,7 +42,7 @@ module GraphQL
       def initialize(values, context:, defaults_used:)
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
           arg_name = inner_key.to_s
-          arg_defn = self.class.argument_definitions[arg_name]
+          arg_defn = self.class.argument_definitions[arg_name] || raise("Not found #{arg_name} among #{self.class.argument_definitions.keys}")
           arg_default_used = defaults_used.include?(arg_name)
           arg_value = wrap_value(inner_value, arg_defn.type, context)
           string_key = arg_defn.expose_as
@@ -121,6 +122,8 @@ module GraphQL
         ruby_kwargs
       end
 
+      alias :to_hash :to_kwargs
+
       private
 
       class ArgumentValue
@@ -173,7 +176,7 @@ module GraphQL
             memo[key] = unwrap_value(value)
             memo
           end
-        when GraphQL::Query::Arguments
+        when GraphQL::Query::Arguments, GraphQL::Schema::InputObject
           value.to_h
         else
           value

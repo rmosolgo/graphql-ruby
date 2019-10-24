@@ -20,7 +20,8 @@ describe GraphQL::StaticValidation::FragmentNamesAreUnique do
     fragment_def_error = {
       "message"=>"Fragment name \"frag1\" must be unique",
       "locations"=>[{"line"=>8, "column"=>5}, {"line"=>9, "column"=>5}],
-      "fields"=>[],
+      "path"=>[],
+      "extensions"=>{"code"=>"fragmentNotUnique", "fragmentName"=>"frag1"}
     }
     assert_includes(errors, fragment_def_error)
   end

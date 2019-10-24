@@ -22,21 +22,24 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
     query_root_error = {
       "message"=>"Field 'cheese' is missing required arguments: id",
       "locations"=>[{"line"=>4, "column"=>7}],
-      "fields"=>["query getCheese", "cheese"],
+      "path"=>["query getCheese", "cheese"],
+      "extensions"=>{"code"=>"missingRequiredArguments", "className"=>"Field", "name"=>"cheese", "arguments"=>"id"}
     }
     assert_includes(errors, query_root_error)
 
     fragment_error = {
       "message"=>"Field 'similarCheese' is missing required arguments: source",
       "locations"=>[{"line"=>8, "column"=>7}],
-      "fields"=>["fragment cheeseFields", "similarCheese"],
+      "path"=>["fragment cheeseFields", "similarCheese"],
+      "extensions"=>{"code"=>"missingRequiredArguments", "className"=>"Field", "name"=>"similarCheese", "arguments"=>"source"}
     }
     assert_includes(errors, fragment_error)
 
     directive_error = {
       "message"=>"Directive 'skip' is missing required arguments: if",
       "locations"=>[{"line"=>10, "column"=>10}],
-      "fields"=>["fragment cheeseFields", "id"],
+      "path"=>["fragment cheeseFields", "id"],
+      "extensions"=>{"code"=>"missingRequiredArguments", "className"=>"Directive", "name"=>"skip", "arguments"=>"if"}
     }
     assert_includes(errors, directive_error)
   end
@@ -55,10 +58,41 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
           "locations"=>[
             {"line"=>3, "column"=>9}
           ],
-          "fields"=>["query", "__type"],
+          "path"=>["query", "__type"],
+          "extensions"=>{
+            "code"=>"missingRequiredArguments",
+            "className"=>"Field",
+            "name"=>"__type",
+            "arguments"=>"name"
+          }
         }
       ]
       assert_equal(expected_errors, errors)
+    end
+  end
+
+  describe "when a required arg is hidden" do
+    class Query < GraphQL::Schema::Object
+      field :int, Integer, null: true do
+        argument :input, Integer, required: true do
+          def visible?(*)
+            false
+          end
+        end
+      end
+
+      def int(input: -1)
+        input
+      end
+    end
+
+    class HiddenArgSchema < GraphQL::Schema
+      query(Query)
+    end
+
+    it "Doesn't require a hidden input" do
+      res = HiddenArgSchema.execute("{ int }")
+      assert_equal -1, res["data"]["int"]
     end
   end
 end

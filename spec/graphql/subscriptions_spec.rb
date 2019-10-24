@@ -109,32 +109,32 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class Subscription < GraphQL::Schema::Object
+    if TESTING_INTERPRETER
+      extend GraphQL::Subscriptions::SubscriptionRoot
+    else
+      # Stub methods are required
+      [:payload, :event, :my_event].each do |m|
+        define_method(m) { |*a| nil }
+      end
+    end
     field :payload, Payload, null: false do
       argument :id, ID, required: true
-    end
-
-    def payload(id:)
-      object
     end
 
     field :event, Payload, null: true do
       argument :stream, StreamInput, required: false
     end
 
-    def event(stream: nil)
-      object
-    end
-
     field :my_event, Payload, null: true, subscription_scope: :me do
       argument :type, PayloadType, required: false
     end
 
-    def my_event(type: nil)
-      object
+    field :failed_event, Payload, null: false  do
+      argument :id, ID, required: true
     end
 
-    field :failed_event, Payload, null: false, resolve: ->(o, a, c) { raise GraphQL::ExecutionError.new("unauthorized") }  do
-      argument :id, ID, required: true
+    def failed_event(id:)
+      raise GraphQL::ExecutionError.new("unauthorized")
     end
   end
 
@@ -146,6 +146,9 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     query(Query)
     subscription(Subscription)
     use InMemoryBackend::Subscriptions, extra: 123
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
   end
 end
 
@@ -236,9 +239,17 @@ describe GraphQL::Subscriptions do
           res_1 = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
           res_2 = schema.execute(query_str, context: { socket: "2" }, variables: { "id" => "200" }, root_value: root_object)
 
+          # This difference is because of how `SKIP` is handled.
+          # Honestly the new way is probably better, since it puts a value there.
+          empty_response = if TESTING_INTERPRETER && schema == ClassBasedInMemoryBackend::Schema
+            {}
+          else
+            nil
+          end
+
           # Initial response is nil, no broadcasts yet
-          assert_equal(nil, res_1["data"])
-          assert_equal(nil, res_2["data"])
+          assert_equal(empty_response, res_1["data"])
+          assert_equal(empty_response, res_2["data"])
           assert_equal [], deliveries["1"]
           assert_equal [], deliveries["2"]
 
@@ -254,6 +265,44 @@ describe GraphQL::Subscriptions do
           assert_equal({"str" => "Update", "int" => 1}, deliveries["1"][0]["data"]["firstPayload"])
           assert_equal({"str" => "Update", "int" => 2}, deliveries["2"][0]["data"]["firstPayload"])
           assert_equal({"str" => "Update", "int" => 3}, deliveries["1"][1]["data"]["firstPayload"])
+        end
+      end
+
+      describe "passing a document into #execute" do
+        it "sends the updated data" do
+          query_str = <<-GRAPHQL
+        subscription ($id: ID!){
+          payload(id: $id) { str, int }
+        }
+          GRAPHQL
+
+          document = GraphQL.parse(query_str)
+
+          # Initial subscriptions
+          response = schema.execute(nil, document: document, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
+
+          # This difference is because of how `SKIP` is handled.
+          # Honestly the new way is probably better, since it puts a value there.
+          empty_response = if TESTING_INTERPRETER && schema == ClassBasedInMemoryBackend::Schema
+            {}
+          else
+            nil
+          end
+
+          # Initial response is nil, no broadcasts yet
+          assert_equal(empty_response, response["data"])
+          assert_equal [], deliveries["1"]
+
+          # Application stuff happens.
+          # The application signals graphql via `subscriptions.trigger`:
+          schema.subscriptions.trigger(:payload, {"id" => "100"}, root_object.payload)
+          # Symobls are OK too
+          schema.subscriptions.trigger(:payload, {:id => "100"}, root_object.payload)
+          schema.subscriptions.trigger("payload", {"id" => "300"}, nil)
+
+          # Let's see what GraphQL sent over the wire:
+          assert_equal({"str" => "Update", "int" => 1}, deliveries["1"][0]["data"]["payload"])
+          assert_equal({"str" => "Update", "int" => 2}, deliveries["1"][1]["data"]["payload"])
         end
       end
 
@@ -410,12 +459,12 @@ describe GraphQL::Subscriptions do
             failedEvent(id: $id) { str, int }
           }
             GRAPHQL
-
             assert_equal nil, res["data"]
             assert_equal "unauthorized", res["errors"][0]["message"]
 
             # this is to make sure nothing actually got subscribed.. but I don't have any idea better than checking its instance variable
-            assert_equal 0, schema.subscriptions.instance_variable_get(:@subscriptions).size
+            subscriptions = schema.subscriptions.instance_variable_get(:@subscriptions)
+            assert_equal 0, subscriptions.size
           end
 
           it "lets unhandled errors crash" do

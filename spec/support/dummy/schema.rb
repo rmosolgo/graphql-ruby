@@ -11,6 +11,12 @@ module Dummy
     accepts_definition :joins
   end
 
+  class AdminField < GraphQL::Schema::Field
+    def visible?(context)
+      context[:admin] == true
+    end
+  end
+
   module BaseInterface
     include GraphQL::Schema::Interface
   end
@@ -270,42 +276,43 @@ module Dummy
     end
   end
 
-  class FetchItem < GraphQL::Function
-    attr_reader :type, :description, :arguments
-
-    def initialize(type:, data:, id_type: !GraphQL::INT_TYPE)
-      @type = type
-      @data = data
-      @description = "Find a #{type.name} by id"
-      @arguments = self.class.arguments.merge({"id" => GraphQL::Argument.define(name: "id", type: id_type)})
+  class FetchItem < GraphQL::Schema::Resolver
+    class << self
+      attr_accessor :data
     end
 
-    def call(obj, args, ctx)
-      id_string = args["id"].to_s # Cheese has Int type, Milk has ID type :(
-      _id, item = @data.find { |id, _item| id.to_s == id_string }
+    def self.build(type:, data:, id_type: "Int")
+      Class.new(self) do
+        self.data = data
+        type(type, null: true)
+        description("Find a #{type.name} by id")
+        argument :id, id_type, required: true
+      end
+    end
+
+    def resolve(id:)
+      id_string = id.to_s # Cheese has Int type, Milk has ID type :(
+      _id, item = self.class.data.find { |item_id, _item| item_id.to_s == id_string }
       item
     end
   end
 
-  class GetSingleton < GraphQL::Function
-    attr_reader :description, :type
-
-    def initialize(type:, data:)
-      @description = "Find the only #{type.name}"
-      @type = type
-      @data = data
+  class GetSingleton < GraphQL::Schema::Resolver
+    class << self
+      attr_accessor :data
     end
 
-    def call(obj, args, ctx)
-      @data
+    def self.build(type:, data:)
+      Class.new(self) do
+        description("Find the only #{type.name}")
+        type(type, null: true)
+        self.data = data
+      end
     end
-  end
 
-  FavoriteFieldDefn = GraphQL::Field.define do
-    name "favoriteEdible"
-    description "My favorite food"
-    type Edible
-    resolve ->(t, a, c) { MILKS[1] }
+    def resolve
+      self.class.data
+    end
   end
 
   class DairyAppQuery < BaseObject
@@ -316,9 +323,9 @@ module Dummy
     def root
       object
     end
-    field :cheese, function: FetchItem.new(type: Cheese, data: CHEESES)
-    field :milk, function: FetchItem.new(type: Milk, data: MILKS, id_type: GraphQL::Types::ID.to_non_null_type)
-    field :dairy, function: GetSingleton.new(type: Dairy, data: DAIRY)
+    field :cheese, resolver: FetchItem.build(type: Cheese, data: CHEESES)
+    field :milk, resolver: FetchItem.build(type: Milk, data: MILKS, id_type: "ID")
+    field :dairy, resolver: GetSingleton.build(type: Dairy, data: DAIRY)
     field :from_source, [Cheese, null: true], null: true, description: "Cheese from source" do
       argument :source, DairyAnimal, required: false, default_value: 1
     end
@@ -326,12 +333,16 @@ module Dummy
       CHEESES.values.select { |c| c.source == source }
     end
 
-    field :favorite_edible, field: FavoriteFieldDefn
-    field :cow, function: GetSingleton.new(type: Cow, data: COWS[1])
+    field :favorite_edible, Edible, null: true, description: "My favorite food"
+    def favorite_edible
+      MILKS[1]
+    end
+
+    field :cow, resolver: GetSingleton.build(type: Cow, data: COWS[1])
     field :search_dairy, DairyProduct, null: false do
       description "Find dairy products matching a description"
       # This is a list just for testing 😬
-      argument :product, [DairyProductInput, null: true], required: false, default_value: [{"source" => "SHEEP"}]
+      argument :product, [DairyProductInput, null: true], required: false, default_value: [{source: "SHEEP"}]
       argument :expires_after, Time, required: false
     end
 
@@ -349,7 +360,7 @@ module Dummy
       COWS.values + GOATS.values
     end
 
-    field :all_animal_as_cow, [AnimalAsCow, null: true], null: false, method: :all_animal
+    field :all_animal_as_cow, [AnimalAsCow, null: true], null: false, resolver_method: :all_animal
 
     field :all_dairy, [DairyProduct, null: true], null: true do
       argument :execution_error_at_index, Integer, required: false
@@ -367,7 +378,7 @@ module Dummy
       CHEESES.values + MILKS.values
     end
 
-    field :all_edible_as_milk, [EdibleAsMilk, null: true], null: true, method: :all_edible
+    field :all_edible_as_milk, [EdibleAsMilk, null: true], null: true, resolver_method: :all_edible
 
     field :error, String, null: true, description: "Raise an error"
     def error
@@ -393,6 +404,14 @@ module Dummy
       ]
     end
 
+    field :multiple_errors_on_non_nullable_list_field, [String], null: false
+    def multiple_errors_on_non_nullable_list_field
+      [
+        GraphQL::ExecutionError.new("The first error message for a field defined to return a list of strings."),
+        GraphQL::ExecutionError.new("The second error message for a field defined to return a list of strings.")
+      ]
+    end
+
     field :execution_error_with_options, Integer, null: true
     def execution_error_with_options
       GraphQL::ExecutionError.new("Permission Denied!", options: { "code" => "permission_denied" })
@@ -400,7 +419,7 @@ module Dummy
 
     field :execution_error_with_extensions, Integer, null: true
     def execution_error_with_extensions
-      GraphQL::ExecutionError.new("Permission Denied!", extensions: { "code" => "permission_denied" })
+      GraphQL::ExecutionError.new("Permission Denied!", extensions: { code: "permission_denied" })
     end
 
     # To test possibly-null fields
@@ -422,10 +441,19 @@ module Dummy
     def deep_non_null; :deep_non_null; end
   end
 
+  class AdminDairyAppQuery < BaseObject
+    field_class AdminField
+
+    field :admin_only_message, String, null: true
+    def admin_only_message
+      "This field is only visible to admin"
+    end
+  end
+
   GLOBAL_VALUES = []
 
   class ReplaceValuesInput < BaseInputObject
-    argument :values, [Integer], required: true
+    argument :values, [Integer], required: true, method_access: false
   end
 
   class DairyAppMutation < BaseObject
@@ -445,7 +473,7 @@ module Dummy
 
     def replace_values(input:)
       GLOBAL_VALUES.clear
-      GLOBAL_VALUES.concat(input["values"])
+      GLOBAL_VALUES.concat(input[:values])
       GLOBAL_VALUES
     end
   end
@@ -468,5 +496,24 @@ module Dummy
     def self.resolve_type(type, obj, ctx)
       Schema.types[obj.class.name.split("::").last]
     end
+
+    # This is used to confirm that the hook is called:
+    MAGIC_INT_COERCE_VALUE = -1
+
+    def self.type_error(err, ctx)
+      if err.is_a?(GraphQL::IntegerEncodingError) && err.integer_value == 99**99
+        MAGIC_INT_COERCE_VALUE
+      else
+        super
+      end
+    end
+
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
+  end
+
+  class AdminSchema < GraphQL::Schema
+    query AdminDairyAppQuery
   end
 end

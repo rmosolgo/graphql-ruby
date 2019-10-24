@@ -14,6 +14,7 @@ var addTypenameToSelectionSet = require("./addTypenameToSelectionSet")
  */
 
 function prepareProject(filenames, addTypename) {
+  if(!filenames.length) { return []; }
   var allGraphQL = ""
   filenames.forEach(function(filename) {
     allGraphQL += fs.readFileSync(filename)

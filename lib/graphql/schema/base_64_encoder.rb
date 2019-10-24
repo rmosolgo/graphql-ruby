@@ -7,7 +7,7 @@ module GraphQL
     # @api private
     module Base64Encoder
       def self.encode(unencoded_text, nonce: false)
-        Base64.strict_encode64(unencoded_text)
+        Base64Bp.urlsafe_encode64(unencoded_text, padding: false)
       end
 
       def self.decode(encoded_text, nonce: false)

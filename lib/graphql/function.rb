@@ -43,7 +43,7 @@ module GraphQL
 
     # @return [Object] This function's resolver
     def call(obj, args, ctx)
-      raise NotImplementedError
+      raise GraphQL::RequiredImplementationMissingError
     end
 
     # @return [String, nil]

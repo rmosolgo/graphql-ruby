@@ -2,19 +2,34 @@
 require "spec_helper"
 
 describe GraphQL::Function do
+  TestFuncPayload = GraphQL::ObjectType.define do
+    name "TestFuncPayload"
+    field :name, types.String, hash_key: :name
+  end
+
   class TestFunc < GraphQL::Function
     argument :name, GraphQL::STRING_TYPE
     argument :age, types.Int
-    type do
-      name "TestFuncPayload"
-      field :name, types.String, hash_key: :name
-    end
+    type TestFuncPayload
 
     description "Returns the string you give it"
     deprecation_reason "It's useless"
     complexity 9
     def call(o, a, c)
       { name: a[:name] }
+    end
+  end
+
+  class TestFuncConn < GraphQL::Function
+    argument :name, GraphQL::STRING_TYPE
+    argument :age, types.Int
+    type TestFuncPayload.connection_type
+
+    description "Returns the string you give it"
+    deprecation_reason "It's useless"
+    complexity 9
+    def call(o, a, c)
+      [{ name: a[:name] }]
     end
   end
 
@@ -39,7 +54,7 @@ describe GraphQL::Function do
     assert_equal(nil, default_func.type)
     assert_equal(nil, default_func.description)
     assert_equal(nil, default_func.deprecation_reason)
-    assert_raises(NotImplementedError) {
+    assert_raises(GraphQL::RequiredImplementationMissingError) {
       default_func.call(nil, nil, nil)
     }
   end
@@ -49,7 +64,7 @@ describe GraphQL::Function do
       query_type = GraphQL::ObjectType.define do
         name "Query"
         field :test, function: TestFunc.new
-        connection :testConn, function: TestFunc.new
+        connection :testConn, function: TestFuncConn.new
       end
 
       relay_mutation = GraphQL::Relay::Mutation.define do
@@ -84,6 +99,14 @@ describe GraphQL::Function do
       GRAPHQL
       res = schema.execute(query_str)
       assert_equal "graphql", res["data"]["test"]["name"]
+    end
+
+    it "can be used as a connection" do
+      query_str = <<-GRAPHQL
+        { testConn(name: "graphql") { edges { node { name } } } }
+      GRAPHQL
+      res = schema.execute(query_str)
+      assert_equal "graphql", res["data"]["testConn"]["edges"][0]["node"]["name"]
     end
 
     it "can be used as a mutation" do

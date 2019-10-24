@@ -55,7 +55,6 @@ module StarTrek
 
   class CustomBaseEdgeType < GraphQL::Types::Relay::BaseEdge
     node_type(BaseType)
-    graphql_name "CustomBaseEdge"
     field :upcased_name, String, null: true
     field :upcased_parent_name, String, null: true
     field :edge_class_name, String, null: true
@@ -79,18 +78,18 @@ module StarTrek
     end
   end
 
-  # Example of GraphQL::Function used with the connection helper:
-  class ShipsWithMaxPageSize < GraphQL::Function
-    argument :nameIncludes, GraphQL::STRING_TYPE
-    def call(obj, args, ctx)
-      all_ships = obj.ships.map { |ship_id| StarTrek::DATA["Ship"][ship_id] }
-      if args[:nameIncludes]
-        all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
+
+  class ShipsWithMaxPageSize < GraphQL::Schema::Resolver
+    argument :name_includes, String, required: false
+    type Ship.connection_type, null: true
+
+    def resolve(name_includes: nil)
+      all_ships = object.ships.map { |ship_id| StarTrek::DATA["Ship"][ship_id] }
+      if name_includes
+        all_ships = all_ships.select { |ship| ship.name.include?(name_includes)}
       end
       all_ships
     end
-
-    type Ship.connection_type
   end
 
   class ShipConnectionWithParentType < GraphQL::Types::Relay::BaseConnection
@@ -107,10 +106,14 @@ module StarTrek
 
     field :id, ID, null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
     field :name, String, null: true
-    field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true, resolve: ->(obj, args, ctx) {
-      all_ships = obj.ships.map {|ship_id| StarTrek::DATA["Ship"][ship_id] }
-      if args[:nameIncludes]
-        case args[:nameIncludes]
+    field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true do
+      argument :name_includes, String, required: false
+    end
+
+    def ships(name_includes: nil)
+      all_ships = object.ships.map {|ship_id| StarTrek::DATA["Ship"][ship_id] }
+      if name_includes
+        case name_includes
         when "error"
           all_ships = GraphQL::ExecutionError.new("error from within connection")
         when "raisedError"
@@ -125,25 +128,24 @@ module StarTrek
           prev_all_ships = all_ships
           all_ships = LazyWrapper.new { prev_all_ships }
         else
-          all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
+          all_ships = all_ships.select { |ship| ship.name.include?(name_includes)}
         end
       end
       all_ships
-    } do
-      # You can define arguments here and use them in the connection
-      argument :nameIncludes, String, required: false
     end
 
-    field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, function: ShipsWithMaxPageSize.new
+    field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, resolver: ShipsWithMaxPageSize
 
-    field :bases, BaseConnectionWithTotalCountType, null: true, connection: true, resolve: ->(obj, args, ctx) {
-      all_bases = obj.bases
-      if args[:nameIncludes]
-        all_bases = all_bases.where(name: Regexp.new(args[:nameIncludes]))
+    field :bases, BaseConnectionWithTotalCountType, null: true, connection: true do
+      argument :name_includes, String, required: false
+    end
+
+    def bases(name_includes: nil)
+      all_bases = object.bases
+      if name_includes
+        all_bases = all_bases.where(name: Regexp.new(name_includes))
       end
       all_bases
-    } do
-      argument :nameIncludes, String, required: false
     end
 
     field :basesClone, BaseType.connection_type, null: true
@@ -158,13 +160,24 @@ module StarTrek
       end
     end
 
-    field :basesWithMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 2, resolve: Proc.new { Base.all}
-    field :basesWithMaxLimitArray, BaseType.connection_type, null: true, max_page_size: 2, resolve: Proc.new { Base.all.to_a }
-    field :basesWithDefaultMaxLimitRelation, BaseType.connection_type, null: true, resolve: Proc.new { Base.all }
-    field :basesWithDefaultMaxLimitArray, BaseType.connection_type, null: true, resolve: Proc.new { Base.all.to_a }
-    field :basesWithLargeMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 1000, resolve: Proc.new { Base.all }
+    def all_bases
+      Base.all
+    end
 
-    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, resolve: ->(o, a, c) { LazyNodesWrapper.new(o.bases) }
+    def all_bases_array
+      all_bases.to_a
+    end
+
+    field :basesWithMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 2, resolver_method: :all_bases
+    field :basesWithMaxLimitArray, BaseType.connection_type, null: true, max_page_size: 2, resolver_method: :all_bases_array
+    field :basesWithDefaultMaxLimitRelation, BaseType.connection_type, null: true, resolver_method: :all_bases
+    field :basesWithDefaultMaxLimitArray, BaseType.connection_type, null: true, resolver_method: :all_bases_array
+    field :basesWithLargeMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 1000, resolver_method: :all_bases
+
+    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true
+    def bases_with_custom_edge
+      LazyNodesWrapper.new(object.bases)
+    end
   end
 
   class IntroduceShipMutation < GraphQL::Schema::RelayClassicMutation
@@ -302,7 +315,9 @@ module StarTrek
 
     field :largestBase, BaseType, null: true, resolve: ->(obj, args, ctx) { Base.find(3) }
 
-    field :newestBasesGroupedByFaction, BaseType.connection_type, null: true, resolve: ->(obj, args, ctx) {
+    field :newestBasesGroupedByFaction, BaseType.connection_type, null: true
+
+    def newest_bases_grouped_by_faction
       agg = Base.collection.aggregate([{
         "$group" => {
           "_id" => "$faction_id",
@@ -312,11 +327,13 @@ module StarTrek
       Base.
         in(id: agg.map { |doc| doc['baseId'] }).
         order_by(faction_id: -1)
-    }
+    end
 
-    field :basesWithNullName, BaseType.connection_type, null: false, resolve: ->(obj, args, ctx) {
+    field :basesWithNullName, BaseType.connection_type, null: false
+
+    def bases_with_null_name
       [OpenStruct.new(id: nil)]
-    }
+    end
 
     field :node, field: GraphQL::Relay::Node.field
 
@@ -371,6 +388,10 @@ module StarTrek
     mutation(MutationType)
     default_max_page_size 3
 
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
+
     def self.resolve_type(type, object, ctx)
       if object == :test_error
         :not_a_type
@@ -391,7 +412,7 @@ module StarTrek
     end
 
     def self.id_from_object(object, type, ctx)
-      GraphQL::Schema::UniqueWithinType.encode(type.name, object.id)
+      GraphQL::Schema::UniqueWithinType.encode(type.graphql_name, object.id)
     end
 
     lazy_resolve(LazyWrapper, :value)

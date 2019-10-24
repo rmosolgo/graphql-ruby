@@ -8,7 +8,7 @@ index: 4
 pro: true
 ---
 
-[GraphQL::Pro](http://graphql.pro) includes an integration for powering GraphQL authorization with [Pundit](https://github.com/varvet/pundit) policies.
+[GraphQL::Pro](https://graphql.pro) includes an integration for powering GraphQL authorization with [Pundit](https://github.com/varvet/pundit) policies.
 
 __Why bother?__ You _could_ put your authorization code in your GraphQL types themselves, but writing a separate authorization layer gives you a few advantages:
 
@@ -45,6 +45,7 @@ And read on about the different features of the integration:
 - [Authorizing Fields](#authorizing-fields)
 - [Authorizing Arguments](#authorizing-arguments)
 - [Authorizing Mutations](#authorizing-mutations)
+- [Custom Policy Lookup](#custom-policy-lookup)
 
 ## Authorizing Objects
 
@@ -77,7 +78,7 @@ end
 
 For each object returned by GraphQL, the integration matches it to a policy and method.
 
-The policy is found using [`Pundit.policy!`](https://www.rubydoc.info/gems/pundit/Pundit%2Epolicy!), which looks up a policy using the object's class name.
+The policy is found using [`Pundit.policy!`](https://www.rubydoc.info/gems/pundit/Pundit%2Epolicy!), which looks up a policy using the object's class name. (This can be customized, see below.)
 
 Then, GraphQL will call a method on the policy to see whether the object is permitted or not. This method is assigned in the object class, for example:
 
@@ -91,6 +92,20 @@ end
 ```
 
 That configuration will call `#employer_or_self?` on the corresponding Pundit policy.
+
+#### Custom Policy Class
+
+By default, the integration uses `Pundit.policy!(current_user, object)` to find a policy. You can specify a policy class using `pundit_policy_class(...)`:
+
+```ruby
+class Types::Employee < Types::BaseObject
+  pundit_policy_class(Policies::CustomEmployeePolicy)
+  # Or, you could use a string:
+  # pundit_policy_class("Policies::CustomEmployeePolicy")
+end
+```
+
+For really custom policy lookup, see [Custom Policy Lookup](#custom-policy-lookup) below.
 
 #### Bypassing Policies
 
@@ -124,7 +139,9 @@ module BaseInterface
 end
 ```
 
-Note that Pundit scopes are best for database relations, but don't play well with Arrays. See below for bypassing Pundit if you want to return an Array.
+Pundit scopes [don't play well](https://github.com/rmosolgo/graphql-ruby/issues/2008) with `Array`s, so the integration _skips_ scopes on Arrays. You can also opt out on a field-by-field basis as described below.
+
+You can also customize how the scopes are looked up and applied, see below.
 
 #### Bypassing scopes
 
@@ -162,6 +179,10 @@ module Types::BaseInterface
   # ...
   field_class Types::BaseField
 end
+# app/graphql/mutations/base_mutation.rb
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
+  field_class Types::BaseField
+end
 ```
 
 Then, you can add `pundit_role:` options to your fields:
@@ -179,6 +200,26 @@ end
 ```
 
 It will call the named role (eg, `#staff?`) on the parent object's policy (eg `JobPostingPolicy`).
+
+#### Custom Policy Class
+
+You can override the policy class for a field using `pundit_policy_class:`, for example:
+
+```ruby
+class Types::JobPosting < Types::BaseObject
+  # Only allow `ApplicantsPolicy#staff?` users to see
+  # who has applied
+  field :applicants, [Types::User], null: true,
+    pundit_role: :staff,
+    pundit_policy_class: ApplicantsPolicy
+    # Or with a string:
+    # pundit_policy_class: "ApplicantsPolicy"
+end
+```
+
+This will initialize an `ApplicantsPolicy` with the parent object (a `Job`) and call `#staff?` on it.
+
+For really custom policy lookup, see [Custom Policy Lookup](#custom-policy-lookup) below.
 
 ## Authorizing Arguments
 
@@ -201,6 +242,10 @@ class Types::BaseField < GraphQL::Schema::Field
 end
 
 class Types::BaseInputObject < GraphQL::Schema::InputObject
+  argument_class Types::BaseArgument
+end
+
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   argument_class Types::BaseArgument
 end
 ```
@@ -232,7 +277,7 @@ Also, you can configure [unauthorized object handling](#unauthorized-mutations)
 Add `MutationIntegration` to your base mutation, for example:
 
 ```ruby
-class Mutations::BaseMutation < GraphQL::Schema::Mutation
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   include GraphQL::Pro::PunditIntegration::MutationIntegration
 
   # Also, to use argument-level authorization:
@@ -255,6 +300,7 @@ And hook it up to your base mutation:
 ```ruby
 class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   object_class Types::BaseMutationPayload
+  field_class Types::BaseField
 end
 ```
 
@@ -360,3 +406,87 @@ class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   end
 end
 ```
+
+## Custom Policy Lookup
+
+By default, the integration uses `Pundit`'s top-level methods to interact with policies:
+
+- `Pundit.policy!(context[:current_user], object)` is called to find a policy instance
+- `Pundit.policy_scope!(context[:current_user], items)` is called to filter `items`
+
+You can override these by defining the following methods in your schema:
+
+- `pundit_policy(context, object)` to find a policy (or raise an error if one isn't found)
+- `scope_by_pundit_policy(context, items)` to apply a scope to `items` (or raise an error if one isn't found)
+
+Since different objects have different lifecycles, the hooks are installed slightly different ways:
+
+- Your base argument, field, and mutation classes should have _instance methods_ with those names
+- Your base type classes should have _class methods_ with that name
+
+Here's an example of how the custom hooks can be installed:
+
+```ruby
+module CustomPolicyLookup
+  # Lookup policies in the `SystemAdmin::` namespace for system_admin users
+  def pundit_policy(context, object)
+    current_user = context[:current_user]
+    if current_user.system_admin?
+      policy_class = SystemAdmin.const_get("#{object.class.name}Policy")
+      policy_class.new(current_user, object)
+    else
+      super
+    end
+  end
+end
+
+# Add policy hooks as class methods
+class Types::BaseObject < GraphQL::Schema::Object
+  extend CustomPolicyLookup
+end
+class Types::BaseUnion < GraphQL::Schema::Union
+  extend CustomPolicyLookup
+end
+module Types::BaseInterface
+  include GraphQL::Schema::Interface
+  # Add this as a class method that will be "inherited" by other interfaces:
+  definition_methods do
+    include CustomPolicyLookup
+  end
+end
+
+# Add policy hooks as instance methods
+class Types::BaseField < GraphQL::Schema::Field
+  include CustomPolicyLookup
+end
+class Types::BaseArgument < GraphQL::Schema::Argument
+  include CustomPolicyLookup
+end
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
+  include CustomPolicyLookup
+end
+```
+
+## Custom User Lookup
+
+By default, the Pundit integration looks for the current user in `context[:current_user]`. You can override this by implementing `#pundit_user` on your custom query context class. For example:
+
+```ruby
+# app/graphql/query_context.rb
+class QueryContext < GraphQL::Query::Context
+  def pundit_user
+    # Lookup `context[:viewer]` instead:
+    self[:viewer]
+  end
+end
+```
+
+Then be sure to hook up your custom class in the schema:
+
+```ruby
+class MySchema < GraphQL::Schema
+  context_class(QueryContext)
+end
+```
+
+Then, the Pundit integration will use your `def pundit_user` to get the current user at runtime.

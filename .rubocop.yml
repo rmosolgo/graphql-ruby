@@ -1,6 +1,9 @@
+require:
+  - ./cop/none_without_block_cop
+
 AllCops:
   DisabledByDefault: true
-  TargetRubyVersion: 2.3
+  TargetRubyVersion: 2.2
   Exclude:
     - 'lib/graphql/language/lexer.rb'
     - 'lib/graphql/language/parser.rb'
@@ -21,6 +24,9 @@ Layout/EndAlignment:
   EnforcedStyleAlignWith: variable
 
 Lint/UselessAssignment:
+  Enabled: true
+
+Lint/DuplicateMethods:
   Enabled: true
 
 Metrics/ParameterLists:

@@ -3,24 +3,26 @@ module GraphQL
   module StaticValidation
     # Scalars _can't_ have selections
     # Objects _must_ have selections
-    class FieldsHaveAppropriateSelections
-      include GraphQL::StaticValidation::Message::MessageHelper
+    module FieldsHaveAppropriateSelections
+      include GraphQL::StaticValidation::Error::ErrorHelper
 
-      def validate(context)
-        context.visitor[GraphQL::Language::Nodes::Field] << ->(node, parent)  {
-          field_defn = context.field_definition
-          validate_field_selections(node, field_defn.type.unwrap, context)
-        }
+      def on_field(node, parent)
+        field_defn = field_definition
+        if validate_field_selections(node, field_defn.type.unwrap)
+          super
+        end
+      end
 
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent)  {
-          validate_field_selections(node, context.type_definition, context)
-        }
+      def on_operation_definition(node, _parent)
+        if validate_field_selections(node, type_definition)
+          super
+        end
       end
 
       private
 
 
-      def validate_field_selections(ast_node, resolved_type, context)
+      def validate_field_selections(ast_node, resolved_type)
         msg = if resolved_type.nil?
           nil
         elsif resolved_type.kind.scalar? && ast_node.selections.any?
@@ -29,7 +31,7 @@ module GraphQL
           else
             "Selections can't be made on scalars (%{node_name} returns #{resolved_type.name} but has selections [#{ast_node.selections.map(&:name).join(", ")}])"
           end
-        elsif resolved_type.kind.fields? && ast_node.selections.none?
+        elsif resolved_type.kind.fields? && ast_node.selections.empty?
           "Field must have selections (%{node_name} returns #{resolved_type.name} but has no selections. Did you mean '#{ast_node.name} { ... }'?)"
         else
           nil
@@ -48,8 +50,22 @@ module GraphQL
           else
             raise("Unexpected node #{ast_node}")
           end
-          context.errors << message(msg % { node_name: node_name }, ast_node, context: context)
-          GraphQL::Language::Visitor::SKIP
+          extensions = {
+            "rule": "StaticValidation::FieldsHaveAppropriateSelections",
+            "name": node_name.to_s
+          }
+          unless resolved_type.nil?
+            extensions["type"] = resolved_type.to_s
+          end
+          add_error(GraphQL::StaticValidation::FieldsHaveAppropriateSelectionsError.new(
+            msg % { node_name: node_name },
+            nodes: ast_node,
+            node_name: node_name.to_s,
+            type: resolved_type.nil? ? nil : resolved_type.to_s
+          ))
+          false
+        else
+          true
         end
       end
     end

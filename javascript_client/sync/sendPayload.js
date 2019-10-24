@@ -13,6 +13,7 @@ var crypto = require('crypto')
  * @param {String} options.url - Target URL
  * @param {String} options.secret - (optional) used for HMAC header if provided
  * @param {String} options.client - (optional) used for HMAC header if provided
+ * @param {Boolean} options.verbose - (optional) if true, print extra info for debugging
  * @return {Promise}
 */
 
@@ -20,6 +21,7 @@ function sendPayload(payload, options) {
   var syncUrl = options.url
   var key = options.secret
   var clientName = options.client
+  var verbose = options.verbose
   // Prepare JS object as form data
   var postData = JSON.stringify(payload)
 
@@ -35,7 +37,7 @@ function sendPayload(payload, options) {
     auth: parsedURL.auth,
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(postData)
     }
   };
@@ -46,7 +48,12 @@ function sendPayload(payload, options) {
     authDigest = crypto.createHmac('sha256', key)
       .update(postData)
       .digest('hex')
-    options.headers["Authorization"] = "GraphQL::Pro " + clientName + " " + authDigest
+    var header = "GraphQL::Pro " + clientName + " " + authDigest
+    if (verbose) {
+      console.log("[Sync] Header: ", header)
+      console.log("[Sync] Data:", postData)
+    }
+    options.headers["Authorization"] = header
   }
 
   var httpClient = parsedURL.protocol === "https:" ? https : http

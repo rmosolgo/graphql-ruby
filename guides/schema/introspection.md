@@ -5,11 +5,10 @@ search: true
 title: Introspection
 section: Schema
 desc: GraphQL has an introspection system that tells about the schema.
-class_based_api: true
-index: 2
+index: 3
 ---
 
-A GraphQL schema has a [built-in introspection system](http://graphql.org/learn/introspection/) that publishes the schema's structure. In fact, the introspection system can be queried using GraphQL, for example:
+A GraphQL schema has a [built-in introspection system](https://graphql.org/learn/introspection/) that publishes the schema's structure. In fact, the introspection system can be queried using GraphQL, for example:
 
 ```graphql
 {
@@ -188,3 +187,13 @@ end
 ```
 
 Any fields defined there will be available in any selection, but ignored in introspection (just like `__typename`).
+
+## Disabling Introspection
+
+In case you want to turn off introspection entry points `__schema` and `__type` (for instance in the production environment) you can use a `#disable_introspection_entry_points` shorthand method:
+
+```ruby
+class MySchema < GraphQL::Schema
+  disable_introspection_entry_points if Rails.env.production?
+end
+```

@@ -11,9 +11,10 @@ module GraphQL
       GraphQL::StaticValidation::DirectivesAreDefined,
       GraphQL::StaticValidation::DirectivesAreInValidLocations,
       GraphQL::StaticValidation::UniqueDirectivesPerLocation,
+      GraphQL::StaticValidation::OperationNamesAreValid,
+      GraphQL::StaticValidation::FragmentNamesAreUnique,
       GraphQL::StaticValidation::FragmentsAreFinite,
       GraphQL::StaticValidation::FragmentsAreNamed,
-      GraphQL::StaticValidation::FragmentNamesAreUnique,
       GraphQL::StaticValidation::FragmentsAreUsed,
       GraphQL::StaticValidation::FragmentTypesExist,
       GraphQL::StaticValidation::FragmentsAreOnCompositeTypes,
@@ -33,7 +34,6 @@ module GraphQL
       GraphQL::StaticValidation::VariableUsagesAreAllowed,
       GraphQL::StaticValidation::MutationRootExists,
       GraphQL::StaticValidation::SubscriptionRootExists,
-      GraphQL::StaticValidation::OperationNamesAreValid,
     ]
   end
 end

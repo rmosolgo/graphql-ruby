@@ -13,7 +13,7 @@ module GraphQL
       # @param input_text [String] Untransformed GraphQL-Ruby code
       # @return [String] The input text, with a transformation applied if necessary
       def apply(input_text)
-        raise NotImplementedError, "Return transformed text here"
+        raise GraphQL::RequiredImplementationMissingError, "Return transformed text here"
       end
 
       # Recursively transform a `.define`-DSL-based type expression into a class-ready expression, for example:
@@ -125,7 +125,7 @@ module GraphQL
       end
 
       def apply(input_text)
-        input_text.sub(@find_pattern, @replace_pattern)
+        input_text.gsub(@find_pattern, @replace_pattern)
       end
     end
 
@@ -147,10 +147,10 @@ module GraphQL
             name = matches[:overridden_name]
             if type_name_without_the_type_part != name
               # If the overridden name is still required, use `graphql_name` for it
-              transformable = transformable.sub(/ name (.*)/, ' graphql_name \1')
+              transformable = transformable.gsub(/ name (.*)/, ' graphql_name \1')
             else
               # Otherwise, remove it altogether
-              transformable = transformable.sub(/\s+name ('|").*('|")/, '')
+              transformable = transformable.gsub(/\s+name ('|").*('|")/, '')
             end
           end
         end
@@ -285,43 +285,57 @@ module GraphQL
       def apply(input_text)
         if input_text =~ @proc_check_pattern
           processor = apply_processor(input_text, NamedProcProcessor.new(@proc_name))
-          proc_body = input_text[processor.proc_body_start..processor.proc_body_end]
-          method_defn_indent = " " * processor.proc_defn_indent
-          method_defn = "def self.#{@proc_name}(#{processor.proc_arg_names.join(", ")})\n#{method_defn_indent}  #{proc_body}\n#{method_defn_indent}end\n"
-          method_defn = trim_lines(method_defn)
-          # replace the proc with the new method
-          input_text[processor.proc_defn_start..processor.proc_defn_end] = method_defn
+          processor.proc_to_method_sections.reverse.each do |proc_to_method_section|
+            proc_body = input_text[proc_to_method_section.proc_body_start..proc_to_method_section.proc_body_end]
+            method_defn_indent = " " * proc_to_method_section.proc_defn_indent
+            method_defn = "def self.#{@proc_name}(#{proc_to_method_section.proc_arg_names.join(", ")})\n#{method_defn_indent}  #{proc_body}\n#{method_defn_indent}end\n"
+            method_defn = trim_lines(method_defn)
+            # replace the proc with the new method
+            input_text[proc_to_method_section.proc_defn_start..proc_to_method_section.proc_defn_end] = method_defn
+          end
         end
         input_text
       end
 
       class NamedProcProcessor < Parser::AST::Processor
-        attr_reader :proc_arg_names, :proc_defn_start, :proc_defn_end, :proc_defn_indent, :proc_body_start, :proc_body_end
+        attr_reader :proc_to_method_sections
         def initialize(proc_name)
           @proc_name_sym = proc_name.to_sym
-          @proc_arg_names = nil
-          # Beginning of the `#{proc_name} -> {...}` call
-          @proc_defn_start = nil
-          # End of the last `end/}`
-          @proc_defn_end = nil
-          # Amount of whitespace to insert to the rewritten body
-          @proc_defn_indent = nil
-          # First statement of the proc
-          @proc_body_start = nil
-          # End of last statement in the proc
-          @proc_body_end = nil
-          # Used for identifying the proper block
-          @inside_proc = false
+          @proc_to_method_sections = []
+        end
+
+        class ProcToMethodSection
+          attr_accessor :proc_arg_names, :proc_defn_start, :proc_defn_end, :proc_defn_indent, :proc_body_start, :proc_body_end, :inside_proc
+
+          def initialize
+            # @proc_name_sym = proc_name.to_sym
+            @proc_arg_names = nil
+            # Beginning of the `#{proc_name} -> {...}` call
+            @proc_defn_start = nil
+            # End of the last `end/}`
+            @proc_defn_end = nil
+            # Amount of whitespace to insert to the rewritten body
+            @proc_defn_indent = nil
+            # First statement of the proc
+            @proc_body_start = nil
+            # End of last statement in the proc
+            @proc_body_end = nil
+            # Used for identifying the proper block
+            @inside_proc = false
+          end
         end
 
         def on_send(node)
           receiver, method_name, _args = *node
           if method_name == @proc_name_sym && receiver.nil?
+            proc_section = ProcToMethodSection.new
             source_exp = node.loc.expression
-            @proc_defn_start = source_exp.begin.begin_pos
-            @proc_defn_end = source_exp.end.end_pos
-            @proc_defn_indent = source_exp.column
-            @inside_proc = true
+            proc_section.proc_defn_start = source_exp.begin.begin_pos
+            proc_section.proc_defn_end = source_exp.end.end_pos
+            proc_section.proc_defn_indent = source_exp.column
+            proc_section.inside_proc = true
+
+            @proc_to_method_sections << proc_section
           end
           res = super(node)
           @inside_proc = false
@@ -331,11 +345,14 @@ module GraphQL
         def on_block(node)
           send_node, args_node, body_node = node.children
           _receiver, method_name, _send_args_node = *send_node
-          if method_name == :lambda && @inside_proc
+          if method_name == :lambda && !@proc_to_method_sections.empty? && @proc_to_method_sections[-1].inside_proc
+            proc_to_method_section = @proc_to_method_sections[-1]
+
             source_exp = body_node.loc.expression
-            @proc_arg_names = args_node.children.map { |arg_node| arg_node.children[0].to_s }
-            @proc_body_start = source_exp.begin.begin_pos
-            @proc_body_end = source_exp.end.end_pos
+            proc_to_method_section.proc_arg_names = args_node.children.map { |arg_node| arg_node.children[0].to_s }
+            proc_to_method_section.proc_body_start = source_exp.begin.begin_pos
+            proc_to_method_section.proc_body_end = source_exp.end.end_pos
+            proc_to_method_section.inside_proc = false
           end
           super(node)
         end
@@ -353,30 +370,34 @@ module GraphQL
         if input_text =~ /GraphQL::Relay::Mutation\.define/
           named_proc_processor = apply_processor(input_text, ProcToClassMethodTransform::NamedProcProcessor.new(@proc_name))
           resolve_proc_processor = apply_processor(input_text, ResolveProcToMethodTransform::ResolveProcProcessor.new)
-          proc_body = input_text[named_proc_processor.proc_body_start..named_proc_processor.proc_body_end]
-          method_defn_indent = " " * named_proc_processor.proc_defn_indent
 
-          obj_arg_name, args_arg_name, ctx_arg_name = resolve_proc_processor.proc_arg_names
-          # This is not good, it will hit false positives
-          # Should use AST to make this substitution
-          if obj_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1object\2')
-          end
-          if ctx_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1context\2')
-          end
+          named_proc_processor.proc_to_method_sections.zip(resolve_proc_processor.resolve_proc_sections).reverse.each do |pair|
+            proc_to_method_section, resolve_proc_section = *pair
+            proc_body = input_text[proc_to_method_section.proc_body_start..proc_to_method_section.proc_body_end]
+            method_defn_indent = " " * proc_to_method_section.proc_defn_indent
 
-          method_defn = "def #{@proc_name}(**#{args_arg_name})\n#{method_defn_indent}  #{proc_body}\n#{method_defn_indent}end\n"
-          method_defn = trim_lines(method_defn)
-          # Update usage of args keys
-          method_defn = method_defn.gsub(/#{args_arg_name}(?<method_begin>\.key\?\(?|\[)["':](?<arg_name>[a-zA-Z0-9_]+)["']?(?<method_end>\]|\))?/) do
-            method_begin = $~[:method_begin]
-            arg_name = underscorize($~[:arg_name])
-            method_end = $~[:method_end]
-            "#{args_arg_name}#{method_begin}:#{arg_name}#{method_end}"
+            obj_arg_name, args_arg_name, ctx_arg_name = resolve_proc_section.proc_arg_names
+            # This is not good, it will hit false positives
+            # Should use AST to make this substitution
+            if obj_arg_name != "_"
+              proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1object\2')
+            end
+            if ctx_arg_name != "_"
+              proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1context\2')
+            end
+
+            method_defn = "def #{@proc_name}(**#{args_arg_name})\n#{method_defn_indent}  #{proc_body}\n#{method_defn_indent}end\n"
+            method_defn = trim_lines(method_defn)
+            # Update usage of args keys
+            method_defn = method_defn.gsub(/#{args_arg_name}(?<method_begin>\.key\?\(?|\[)["':](?<arg_name>[a-zA-Z0-9_]+)["']?(?<method_end>\]|\))?/) do
+              method_begin = $~[:method_begin]
+              arg_name = underscorize($~[:arg_name])
+              method_end = $~[:method_end]
+              "#{args_arg_name}#{method_begin}:#{arg_name}#{method_end}"
+            end
+            # replace the proc with the new method
+            input_text[proc_to_method_section.proc_defn_start..proc_to_method_section.proc_defn_end] = method_defn
           end
-          # replace the proc with the new method
-          input_text[named_proc_processor.proc_defn_start..named_proc_processor.proc_defn_end] = method_defn
         end
         input_text
       end
@@ -512,74 +533,86 @@ module GraphQL
           input_text.match(/(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)/)
           field_name = $~[:name]
           processor = apply_processor(input_text, ResolveProcProcessor.new)
-          proc_body = input_text[processor.proc_start..processor.proc_end]
-          obj_arg_name, args_arg_name, ctx_arg_name = processor.proc_arg_names
-          # This is not good, it will hit false positives
-          # Should use AST to make this substitution
-          if obj_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1object\2')
-          end
-          if ctx_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1context\2')
-          end
 
-          method_def_indent = " " * (processor.resolve_indent - 2)
-          # Turn the proc body into a method body
-          method_body = reindent_lines(proc_body, from_indent: processor.resolve_indent + 2, to_indent: processor.resolve_indent)
-          # Add `def... end`
-          method_def = if input_text.include?("argument ")
-            # This field has arguments
-            "def #{field_name}(**#{args_arg_name})"
-          else
-            # No field arguments, so, no method arguments
-            "def #{field_name}"
-          end
-          # Wrap the body in def ... end
-          method_body = "\n#{method_def_indent}#{method_def}\n#{method_body}\n#{method_def_indent}end\n"
-          # Update Argument access to be underscore and symbols
-          # Update `args[...]` and `args.key?`
-          method_body = method_body.gsub(/#{args_arg_name}(?<method_begin>\.key\?\(?|\[)["':](?<arg_name>[a-zA-Z0-9_]+)["']?(?<method_end>\]|\))?/) do
-            method_begin = $~[:method_begin]
-            arg_name = underscorize($~[:arg_name])
-            method_end = $~[:method_end]
-            "#{args_arg_name}#{method_begin}:#{arg_name}#{method_end}"
-          end
+          processor.resolve_proc_sections.reverse.each do |resolve_proc_section|
+            proc_body = input_text[resolve_proc_section.proc_start..resolve_proc_section.proc_end]
+            obj_arg_name, args_arg_name, ctx_arg_name = resolve_proc_section.proc_arg_names
+            # This is not good, it will hit false positives
+            # Should use AST to make this substitution
+            if obj_arg_name != "_"
+              proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1object\2')
+            end
+            if ctx_arg_name != "_"
+              proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1context\2')
+            end
 
-          # Replace the resolve proc with the method
-          input_text[processor.resolve_start..processor.resolve_end] = ""
-          # The replacement above might have left some preceeding whitespace,
-          # so remove it by deleting all whitespace chars before `resolve`:
-          preceeding_whitespace = processor.resolve_start - 1
-          while input_text[preceeding_whitespace] == " " && preceeding_whitespace > 0
-            input_text[preceeding_whitespace] = ""
-            preceeding_whitespace -= 1
+            method_def_indent = " " * (resolve_proc_section.resolve_indent - 2)
+            # Turn the proc body into a method body
+            method_body = reindent_lines(proc_body, from_indent: resolve_proc_section.resolve_indent + 2, to_indent: resolve_proc_section.resolve_indent)
+            # Add `def... end`
+            method_def = if input_text.include?("argument ")
+              # This field has arguments
+              "def #{field_name}(**#{args_arg_name})"
+            else
+              # No field arguments, so, no method arguments
+              "def #{field_name}"
+            end
+            # Wrap the body in def ... end
+            method_body = "\n#{method_def_indent}#{method_def}\n#{method_body}\n#{method_def_indent}end\n"
+            # Update Argument access to be underscore and symbols
+            # Update `args[...]` and `args.key?`
+            method_body = method_body.gsub(/#{args_arg_name}(?<method_begin>\.key\?\(?|\[)["':](?<arg_name>[a-zA-Z0-9_]+)["']?(?<method_end>\]|\))?/) do
+              method_begin = $~[:method_begin]
+              arg_name = underscorize($~[:arg_name])
+              method_end = $~[:method_end]
+              "#{args_arg_name}#{method_begin}:#{arg_name}#{method_end}"
+            end
+
+            # Replace the resolve proc with the method
+            input_text[resolve_proc_section.resolve_start..resolve_proc_section.resolve_end] = ""
+            # The replacement above might have left some preceeding whitespace,
+            # so remove it by deleting all whitespace chars before `resolve`:
+            preceeding_whitespace = resolve_proc_section.resolve_start - 1
+            while input_text[preceeding_whitespace] == " " && preceeding_whitespace > 0
+              input_text[preceeding_whitespace] = ""
+              preceeding_whitespace -= 1
+            end
+            input_text += method_body
+            input_text
           end
-          input_text += method_body
-          input_text
-        else
-          # No resolve proc
-          input_text
         end
+
+        input_text
       end
 
       class ResolveProcProcessor < Parser::AST::Processor
-        attr_reader :proc_start, :proc_end, :proc_arg_names, :resolve_start, :resolve_end, :resolve_indent
+        attr_reader :resolve_proc_sections
         def initialize
-          @proc_arg_names = nil
-          @resolve_start = nil
-          @resolve_end = nil
-          @resolve_indent = nil
-          @proc_start = nil
-          @proc_end = nil
+          @resolve_proc_sections = []
+        end
+
+        class ResolveProcSection
+          attr_accessor :proc_start, :proc_end, :proc_arg_names, :resolve_start, :resolve_end, :resolve_indent
+          def initialize
+            @proc_arg_names = nil
+            @resolve_start = nil
+            @resolve_end = nil
+            @resolve_indent = nil
+            @proc_start = nil
+            @proc_end = nil
+          end
         end
 
         def on_send(node)
           receiver, method_name, _args = *node
           if method_name == :resolve && receiver.nil?
+            resolve_proc_section = ResolveProcSection.new
             source_exp = node.loc.expression
-            @resolve_start = source_exp.begin.begin_pos
-            @resolve_end = source_exp.end.end_pos
-            @resolve_indent = source_exp.column
+            resolve_proc_section.resolve_start = source_exp.begin.begin_pos
+            resolve_proc_section.resolve_end = source_exp.end.end_pos
+            resolve_proc_section.resolve_indent = source_exp.column
+
+            @resolve_proc_sections << resolve_proc_section
           end
           super(node)
         end
@@ -588,11 +621,15 @@ module GraphQL
           send_node, args_node, body_node = node.children
           _receiver, method_name, _send_args_node = *send_node
           # Assume that the first three-argument proc we enter is the resolve
-          if method_name == :lambda && args_node.children.size == 3 && @proc_arg_names.nil?
+          if (
+            method_name == :lambda && args_node.children.size == 3 &&
+            !@resolve_proc_sections.empty? && @resolve_proc_sections[-1].proc_arg_names.nil?
+          )
+            resolve_proc_section = @resolve_proc_sections[-1]
             source_exp = body_node.loc.expression
-            @proc_arg_names = args_node.children.map { |arg_node| arg_node.children[0].to_s }
-            @proc_start = source_exp.begin.begin_pos
-            @proc_end = source_exp.end.end_pos
+            resolve_proc_section.proc_arg_names = args_node.children.map { |arg_node| arg_node.children[0].to_s }
+            resolve_proc_section.proc_start = source_exp.begin.begin_pos
+            resolve_proc_section.proc_end = source_exp.end.end_pos
           end
           super(node)
         end

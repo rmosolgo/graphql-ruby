@@ -1,40 +1,40 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class NoDefinitionsArePresent
-      include GraphQL::StaticValidation::Message::MessageHelper
+    module NoDefinitionsArePresent
+      include GraphQL::StaticValidation::Error::ErrorHelper
 
-      def validate(context)
-        schema_definition_nodes = []
-        register_node = ->(node, _p) {
-          schema_definition_nodes << node
-          GraphQL::Language::Visitor::SKIP
-        }
+      def initialize(*)
+        super
+        @schema_definition_nodes = []
+      end
 
-        visitor = context.visitor
+      def on_invalid_node(node, parent)
+        @schema_definition_nodes << node
+        nil
+      end
 
-        visitor[GraphQL::Language::Nodes::DirectiveDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::SchemaDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::ScalarTypeDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::ObjectTypeDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::InputObjectTypeDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::InterfaceTypeDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::UnionTypeDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::EnumTypeDefinition] << register_node
+      alias :on_directive_definition :on_invalid_node
+      alias :on_schema_definition :on_invalid_node
+      alias :on_scalar_type_definition :on_invalid_node
+      alias :on_object_type_definition :on_invalid_node
+      alias :on_input_object_type_definition :on_invalid_node
+      alias :on_interface_type_definition :on_invalid_node
+      alias :on_union_type_definition :on_invalid_node
+      alias :on_enum_type_definition :on_invalid_node
+      alias :on_schema_extension :on_invalid_node
+      alias :on_scalar_type_extension :on_invalid_node
+      alias :on_object_type_extension :on_invalid_node
+      alias :on_input_object_type_extension :on_invalid_node
+      alias :on_interface_type_extension :on_invalid_node
+      alias :on_union_type_extension :on_invalid_node
+      alias :on_enum_type_extension :on_invalid_node
 
-        visitor[GraphQL::Language::Nodes::SchemaExtension] << register_node
-        visitor[GraphQL::Language::Nodes::ScalarTypeExtension] << register_node
-        visitor[GraphQL::Language::Nodes::ObjectTypeExtension] << register_node
-        visitor[GraphQL::Language::Nodes::InputObjectTypeExtension] << register_node
-        visitor[GraphQL::Language::Nodes::InterfaceTypeExtension] << register_node
-        visitor[GraphQL::Language::Nodes::UnionTypeExtension] << register_node
-        visitor[GraphQL::Language::Nodes::EnumTypeExtension] << register_node
-
-        visitor[GraphQL::Language::Nodes::Document].leave << ->(node, _p) {
-          if schema_definition_nodes.any?
-            context.errors << message(%|Query cannot contain schema definitions|, schema_definition_nodes, context: context)
-          end
-        }
+      def on_document(node, parent)
+        super
+        if @schema_definition_nodes.any?
+          add_error(GraphQL::StaticValidation::NoDefinitionsArePresentError.new(%|Query cannot contain schema definitions|, nodes: @schema_definition_nodes))
+        end
       end
     end
   end

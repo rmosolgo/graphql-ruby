@@ -1,27 +1,31 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class VariablesAreInputTypes
-      include GraphQL::StaticValidation::Message::MessageHelper
-
-      def validate(context)
-        context.visitor[GraphQL::Language::Nodes::VariableDefinition] << ->(node, parent) {
-          validate_is_input_type(node, context)
-        }
-      end
-
-      private
-
-      def validate_is_input_type(node, context)
+    module VariablesAreInputTypes
+      def on_variable_definition(node, parent)
         type_name = get_type_name(node.type)
         type = context.warden.get_type(type_name)
 
         if type.nil?
-          context.errors << message("#{type_name} isn't a defined input type (on $#{node.name})", node, context: context)
+          add_error(GraphQL::StaticValidation::VariablesAreInputTypesError.new(
+            "#{type_name} isn't a defined input type (on $#{node.name})",
+            nodes: node,
+            name: node.name,
+            type: type_name
+          ))
         elsif !type.kind.input?
-          context.errors << message("#{type.name} isn't a valid input type (on $#{node.name})", node, context: context)
+          add_error(GraphQL::StaticValidation::VariablesAreInputTypesError.new(
+            "#{type.name} isn't a valid input type (on $#{node.name})",
+            nodes: node,
+            name: node.name,
+            type: type_name
+          ))
         end
+
+        super
       end
+
+      private
 
       def get_type_name(ast_type)
         if ast_type.respond_to?(:of_type)

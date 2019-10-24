@@ -6,7 +6,6 @@ section: Type Definitions
 title: Input Objects
 desc: Input objects are sets of key-value pairs which can be used as field arguments.
 index: 3
-class_based_api: true
 ---
 
 Input object types are complex inputs for GraphQL operations. They're great for fields that need a lot of structured input, like mutations or search fields. In a GraphQL request, it might look like this:
@@ -19,7 +18,7 @@ mutation {
 }
 ```
 
-Like a Ruby `Hash`, an input object consists of keys and values. Unlike a Hash, its keys and value types must be defined statically, as part of the GraphQL system. For example, here's an input object, expressed in the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
+Like a Ruby `Hash`, an input object consists of keys and values. Unlike a Hash, its keys and value types must be defined statically, as part of the GraphQL system. For example, here's an input object, expressed in the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL):
 
 ```ruby
 input PostAttributes {
@@ -83,7 +82,22 @@ end
 
 ## Customizing Input Objects
 
-You can add or override methods on input object classes to customize them.  They have two instance variables by default:
+You can customize the `GraphQL::Schema::Argument` class which is used for input objects: 
+
+```ruby 
+class Types::BaseArgument < GraphQL::Schema::Argument 
+  # your customization here ... 
+end 
+
+
+class Types::BaseInputObject < GraphQL::Schema::InputObject 
+  # Hook up the customized argument class 
+  argument_class(Types::BaseArgument)  
+end 
+```
+
+
+You can also add or override methods on input object classes to customize them.  They have two instance variables by default:
 
 - `@arguments`: A {{ "GraphQL::Query::Arguments" | api_doc }} instance
 - `@context`: The current {{ "GraphQL::Query::Context" | api_doc }}

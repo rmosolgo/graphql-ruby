@@ -8,10 +8,11 @@ desc: Javascript tooling for persisted queries with GraphQL-Ruby
 index: 1
 ---
 
-JavaScript support for GraphQL projects using [graphql-pro](http://graphql.pro)'s `OperationStore` for persisted queries.
+JavaScript support for GraphQL projects using [graphql-pro](https://graphql.pro)'s `OperationStore` for persisted queries.
 
 - [`sync` CLI](#sync-utility)
-- [Relay support](#use-with-relay)
+- [Relay <2 support](#use-with-relay-2)
+- [Relay 2+ support](#use-with-relay-persisted-output)
 - [Apollo Client support](#use-with-apollo-client)
 - [Apollo Link support](#use-with-apollo-link)
 - [Plain JS support](#use-with-plain-javascript)
@@ -40,16 +41,19 @@ option | description
 --------|----------
 `--url` | {% internal_link "Sync API", "/operation_store/getting_started.html#add-routes" %} url
 `--path` | Local directory to search for `.graphql` / `.graphql.js` files
+`--relay-persisted-output` | Path to a `.json` file from `relay-compiler ... --persist-output`
 `--client` | Client ID ({% internal_link "created on server", "/operation_store/client_workflow" %})
 `--secret` | Client Secret ({% internal_link "created on server", "/operation_store/client_workflow" %})
-`--outfile` | Destination for generated JS code
+`--outfile` | Destination for generated code
+`--outfile-type` | What kind of code to generate (`js` or `json`)
 `--add-typename` | Add `__typename` to all selection sets (for use with Apollo Client)
+`--verbose` | Output some debug information
 
 You can see these and a few others with `graphql-ruby-client sync --help`.
 
-## Use with Relay
+## Use with Relay <2
 
-`graphql-ruby-client` can persist queries from `relay-compiler` using the embedded `@relayHash` value.
+`graphql-ruby-client` can persist queries from `relay-compiler` using the embedded `@relayHash` value. (This was created in Relay before 2.0.0. See below for Relay 2.0+.)
 
 To sync your queries with the server, use the `--path` option to point to your `__generated__` directory, for example:
 
@@ -91,6 +95,49 @@ function fetchQuery(operation, variables, cacheConfig, uploadables) {
 ```
 
 (Only Relay Modern is supported. Legacy Relay can't generate static queries.)
+
+## Use With Relay Persisted Output
+
+Relay 2.0+ includes a `--persist-output` option for `relay-compiler` which works perfectly with GraphQL-Ruby. (Relay's own docs, for reference: https://relay.dev/docs/en/persisted-queries.)
+
+When generating queries for Relay, include `--persist-output`:
+
+```
+$ relay-compiler ... --persist-output path/to/persisted-queries.json
+```
+
+Then, push Relay's generated queries to your OperationStore server with `--relay-persisted-output`:
+
+```
+$ graphql-ruby-client sync --relay-persisted-output=path/to/persisted-queries.json --url=...
+```
+
+In this case, `sync` _won't_ generate a JavaScript module because `relay-compiler` has already prepared its queries for persisted use. Instead, update your network layer to include the _client name_ and _operation id_ in the HTTP params:
+
+```js
+const operationStoreClientName = "MyRelayApp";
+
+function fetchQuery(operation, variables,) {
+  return fetch('/graphql', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      // Pass the client name and the operation ID, joined by `/`
+      documentId: operationStoreClientName + "/" + operation.id,
+      // query: operation.text, // this is now obsolete because text is null
+      variables,
+    }),
+  }).then(response => {
+    return response.json();
+  });
+}
+```
+
+(Inspired by https://relay.dev/docs/en/persisted-queries#network-layer-changes.)
+
+Now, your Relay app will only send operation IDs over the wire to the server.
 
 ## Use with Apollo Client
 

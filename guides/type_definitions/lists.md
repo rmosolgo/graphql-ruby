@@ -6,10 +6,9 @@ section: Type Definitions
 title: Lists
 desc: Ordered lists containing other types
 index: 6
-class_based_api: true
 ---
 
-GraphQL has _list types_ which are ordered lists containing items of other types. The following examples use the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL).
+GraphQL has _list types_ which are ordered lists containing items of other types. The following examples use the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL).
 
 Fields may return a single scalar value (eg `String`), or a _list_ of scalar values (eg, `[String]`, a list of strings):
 

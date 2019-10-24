@@ -22,10 +22,10 @@ module GraphQLSite
 
     def link_to_img(img_path, img_title)
       full_img_path = "#{@context.registers[:site].baseurl}#{img_path}"
-      <<~HTML
-        <a href="#{full_img_path}" target="_blank" class="img-link">
-          <img src="#{full_img_path}" title="#{img_title}" alt="#{img_title}" />
-        </a>
+      <<-HTML
+<a href="#{full_img_path}" target="_blank" class="img-link">
+  <img src="#{full_img_path}" title="#{img_title}" alt="#{img_title}" />
+</a>
       HTML
     end
   end
@@ -74,8 +74,8 @@ module GraphQLSite
     end
 
     def render(context)
-      <<~HTML.chomp
-      <a href="#{context["site"]["baseurl"]}/#{@path}">#{@text}</a>
+      <<-HTML.chomp
+<a href="#{context["site"]["baseurl"]}/#{@path}">#{@text}</a>
       HTML
     end
 

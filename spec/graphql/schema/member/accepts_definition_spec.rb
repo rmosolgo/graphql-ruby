@@ -6,6 +6,10 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
     accepts_definition :set_metadata
     set_metadata :a, 999
 
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+    end
+
     class BaseField < GraphQL::Schema::Field
       class BaseField < GraphQL::Schema::Argument
         accepts_definition :metadata
@@ -52,6 +56,8 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
 
     class SomeObject < BaseObject
       metadata :a, :aaa
+
+      field :some_field, String, null: true
     end
 
     class SomeObject2 < SomeObject

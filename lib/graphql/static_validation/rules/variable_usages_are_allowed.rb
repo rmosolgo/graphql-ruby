@@ -1,53 +1,57 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class VariableUsagesAreAllowed
-      include GraphQL::StaticValidation::Message::MessageHelper
-
-      def validate(context)
+    module VariableUsagesAreAllowed
+      def initialize(*)
+        super
         # holds { name => ast_node } pairs
-        declared_variables = {}
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent) {
-          declared_variables = node.variables.each_with_object({}) { |var, memo| memo[var.name] = var }
-        }
+        @declared_variables = {}
+      end
 
-        context.visitor[GraphQL::Language::Nodes::Argument] << ->(node, parent) {
-          node_values = if node.value.is_a?(Array)
-            node.value
-          else
-            [node.value]
-          end
-          node_values = node_values.select { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier }
+      def on_operation_definition(node, parent)
+        @declared_variables = node.variables.each_with_object({}) { |var, memo| memo[var.name] = var }
+        super
+      end
 
-          return if node_values.none?
+      def on_argument(node, parent)
+        node_values = if node.value.is_a?(Array)
+          node.value
+        else
+          [node.value]
+        end
+        node_values = node_values.select { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier }
 
-          arguments = nil
-          case parent
+        if node_values.any?
+          arguments = case parent
           when GraphQL::Language::Nodes::Field
-            arguments = context.field_definition.arguments
+            context.field_definition.arguments
           when GraphQL::Language::Nodes::Directive
-            arguments = context.directive_definition.arguments
+            context.directive_definition.arguments
           when GraphQL::Language::Nodes::InputObject
             arg_type = context.argument_definition.type.unwrap
             if arg_type.is_a?(GraphQL::InputObjectType)
               arguments = arg_type.input_fields
+            else
+              # This is some kind of error
+              nil
             end
           else
             raise("Unexpected argument parent: #{parent}")
           end
 
           node_values.each do |node_value|
-            var_defn_ast = declared_variables[node_value.name]
+            var_defn_ast = @declared_variables[node_value.name]
             # Might be undefined :(
             # VariablesAreUsedAndDefined can't finalize its search until the end of the document.
-            var_defn_ast && arguments && validate_usage(arguments, node, var_defn_ast, context)
+            var_defn_ast && arguments && validate_usage(arguments, node, var_defn_ast)
           end
-        }
+        end
+        super
       end
 
       private
 
-      def validate_usage(arguments, arg_node, ast_var, context)
+      def validate_usage(arguments, arg_node, ast_var)
         var_type = context.schema.type_from_ast(ast_var.type)
         if var_type.nil?
           return
@@ -71,16 +75,23 @@ module GraphQL
         var_type = wrap_var_type_with_depth_of_arg(var_type, arg_node)
 
         if var_inner_type != arg_inner_type
-          context.errors << create_error("Type mismatch", var_type, ast_var, arg_defn, arg_node, context)
+          create_error("Type mismatch", var_type, ast_var, arg_defn, arg_node)
         elsif list_dimension(var_type) != list_dimension(arg_defn_type)
-          context.errors << create_error("List dimension mismatch", var_type, ast_var, arg_defn, arg_node, context)
+          create_error("List dimension mismatch", var_type, ast_var, arg_defn, arg_node)
         elsif !non_null_levels_match(arg_defn_type, var_type)
-          context.errors << create_error("Nullability mismatch", var_type, ast_var, arg_defn, arg_node, context)
+          create_error("Nullability mismatch", var_type, ast_var, arg_defn, arg_node)
         end
       end
 
-      def create_error(error_message, var_type, ast_var, arg_defn, arg_node, context)
-        message("#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})", arg_node, context: context)
+      def create_error(error_message, var_type, ast_var, arg_defn, arg_node)
+        add_error(GraphQL::StaticValidation::VariableUsagesAreAllowedError.new(
+          "#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})",
+          nodes: arg_node,
+          name: ast_var.name,
+          type: var_type.to_s,
+          argument: arg_node.name,
+          error: error_message
+        ))
       end
 
       def wrap_var_type_with_depth_of_arg(var_type, arg_node)

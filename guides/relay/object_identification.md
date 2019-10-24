@@ -39,7 +39,7 @@ An unencrypted ID generator is provided in the gem. It uses `Base64` to encode v
 class MySchema < GraphQL::Schema
   # Create UUIDs by joining the type name & ID, then base64-encoding it
   def self.id_from_object(object, type_definition, query_ctx)
-    GraphQL::Schema::UniqueWithinType.encode(type_definition.name, object.id)
+    GraphQL::Schema::UniqueWithinType.encode(type_definition.graphql_name, object.id)
   end
 
   def self.object_from_id(id, query_ctx)
@@ -117,7 +117,7 @@ end
 You can also provide a root-level `nodes` field so that Relay can refetch objects by IDs. Similarly, it is provided as `GraphQL::Relay::Node.plural_field`:
 
 ```ruby
-class QueryType < GraphQL::Schema::Object
+class Types::QueryType < GraphQL::Schema::Object
   # Fetches a list of objects given a list of IDs
   field :nodes, field: GraphQL::Relay::Node.plural_field
   # ...

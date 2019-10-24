@@ -1,34 +1,45 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class UniqueDirectivesPerLocation
-      include GraphQL::StaticValidation::Message::MessageHelper
+    module UniqueDirectivesPerLocation
+      DIRECTIVE_NODE_HOOKS = [
+        :on_fragment_definition,
+        :on_fragment_spread,
+        :on_inline_fragment,
+        :on_operation_definition,
+        :on_scalar_type_definition,
+        :on_object_type_definition,
+        :on_input_value_definition,
+        :on_field_definition,
+        :on_interface_type_definition,
+        :on_union_type_definition,
+        :on_enum_type_definition,
+        :on_enum_value_definition,
+        :on_input_object_type_definition,
+        :on_field,
+      ]
 
-      NODES_WITH_DIRECTIVES = GraphQL::Language::Nodes.constants
-        .map{|c| GraphQL::Language::Nodes.const_get(c)}
-        .select{|c| c.is_a?(Class) && c.instance_methods.include?(:directives)}
-
-      def validate(context)
-        NODES_WITH_DIRECTIVES.each do |node_class|
-          context.visitor[node_class] << ->(node, _) {
-            validate_directives(node, context) unless node.directives.empty?
-          }
+      DIRECTIVE_NODE_HOOKS.each do |method_name|
+        define_method(method_name) do |node, parent|
+          if node.directives.any?
+            validate_directive_location(node)
+          end
+          super(node, parent)
         end
       end
 
       private
 
-      def validate_directives(node, context)
+      def validate_directive_location(node)
         used_directives = {}
-
         node.directives.each do |ast_directive|
           directive_name = ast_directive.name
           if used_directives[directive_name]
-            context.errors << message(
+            add_error(GraphQL::StaticValidation::UniqueDirectivesPerLocationError.new(
               "The directive \"#{directive_name}\" can only be used once at this location.",
-              [used_directives[directive_name], ast_directive],
-              context: context
-            )
+              nodes: [used_directives[directive_name], ast_directive],
+              directive: directive_name,
+            ))
           else
             used_directives[directive_name] = ast_directive
           end
