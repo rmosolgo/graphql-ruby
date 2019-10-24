@@ -349,4 +349,34 @@ describe GraphQL::Schema::Field do
       assert_equal "1", res["data"]["company"]["id"]
     end
   end
+
+  describe ".connection_extension" do
+    class CustomConnectionExtension < GraphQL::Schema::Field::ConnectionExtension
+      def apply
+        super
+        field.argument(:z, String, required: false)
+      end
+    end
+
+    class CustomExtensionField < GraphQL::Schema::Field
+      connection_extension(CustomConnectionExtension)
+    end
+
+    class CustomExtensionObject < GraphQL::Schema::Object
+      field_class CustomExtensionField
+
+      field :ints, GraphQL::Types::Int.connection_type, null: false, scope: false
+    end
+
+    it "can be customized" do
+      field = CustomExtensionObject.fields["ints"]
+      assert_equal [CustomConnectionExtension], field.extensions.map(&:class)
+      assert_equal ["after", "before", "first", "last", "z"], field.arguments.keys.sort
+    end
+
+    it "can be inherited" do
+      child_field_class = Class.new(CustomExtensionField)
+      assert_equal CustomConnectionExtension, child_field_class.connection_extension
+    end
+  end
 end
