@@ -289,53 +289,6 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-  describe "prepare (entire input object)" do
-    module InputObjectPrepareTest
-      class InputObj < GraphQL::Schema::InputObject
-        argument :min, Integer, required: true
-        argument :max, Integer, required: false
-
-        def prepare
-          min..max
-        end
-      end
-
-      class Query < GraphQL::Schema::Object
-        field :inputs, String, null: false do
-          argument :input, InputObj, required: true
-        end
-
-        def inputs(input:)
-          input.inspect
-        end
-      end
-
-      class Schema < GraphQL::Schema
-        query(Query)
-      end
-    end
-
-    it "calls prepare on the input object (literal)" do
-      query_str = <<-GRAPHQL
-      { inputs(input: { min: 5, max: 10 }) }
-      GRAPHQL
-
-      res = InputObjectPrepareTest::Schema.execute(query_str)
-      expected_obj = (5..10).inspect
-      assert_equal expected_obj, res["data"]["inputs"]
-    end
-
-    it "calls prepare on the input object (variable)" do
-      query_str = <<-GRAPHQL
-      query ($input: InputObj!){ inputs(input: $input) }
-      GRAPHQL
-
-      res = InputObjectPrepareTest::Schema.execute(query_str, variables: { input: { min: 5, max: 10 } })
-      expected_obj = (5..10).inspect
-      assert_equal expected_obj, res["data"]["inputs"]
-    end    
-  end
-
   describe "in queries" do
     it "is passed to the field method" do
       query_str = <<-GRAPHQL
