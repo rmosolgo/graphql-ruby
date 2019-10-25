@@ -28,6 +28,7 @@ module GraphQL
     class EnumValue < GraphQL::Schema::Member
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
+      include GraphQL::Schema::Member::HasAstNode
 
       attr_reader :graphql_name
 
@@ -37,12 +38,13 @@ module GraphQL
       # @return [String] Explains why this value was deprecated (if present, this will be marked deprecated in introspection)
       attr_accessor :deprecation_reason
 
-      def initialize(graphql_name, desc = nil, owner:, description: nil, value: nil, deprecation_reason: nil, &block)
+      def initialize(graphql_name, desc = nil, owner:, ast_node: nil, description: nil, value: nil, deprecation_reason: nil, &block)
         @graphql_name = graphql_name.to_s
         @description = desc || description
         @value = value.nil? ? @graphql_name : value
         @deprecation_reason = deprecation_reason
         @owner = owner
+        @ast_node = ast_node
 
         if block_given?
           instance_eval(&block)
@@ -71,6 +73,7 @@ module GraphQL
         enum_value.value = @value
         enum_value.deprecation_reason = @deprecation_reason
         enum_value.metadata[:type_class] = self
+        enum_value.ast_node = ast_node
         enum_value
       end
 

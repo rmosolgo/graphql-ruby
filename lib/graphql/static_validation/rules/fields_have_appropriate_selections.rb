@@ -27,12 +27,12 @@ module GraphQL
           nil
         elsif resolved_type.kind.scalar? && ast_node.selections.any?
           if ast_node.selections.first.is_a?(GraphQL::Language::Nodes::InlineFragment)
-            "Selections can't be made on scalars (%{node_name} returns #{resolved_type.name} but has inline fragments [#{ast_node.selections.map(&:type).map(&:name).join(", ")}])"
+            "Selections can't be made on scalars (%{node_name} returns #{resolved_type.graphql_name} but has inline fragments [#{ast_node.selections.map(&:type).map(&:name).join(", ")}])"
           else
-            "Selections can't be made on scalars (%{node_name} returns #{resolved_type.name} but has selections [#{ast_node.selections.map(&:name).join(", ")}])"
+            "Selections can't be made on scalars (%{node_name} returns #{resolved_type.graphql_name} but has selections [#{ast_node.selections.map(&:name).join(", ")}])"
           end
         elsif resolved_type.kind.fields? && ast_node.selections.empty?
-          "Field must have selections (%{node_name} returns #{resolved_type.name} but has no selections. Did you mean '#{ast_node.name} { ... }'?)"
+          "Field must have selections (%{node_name} returns #{resolved_type.graphql_name} but has no selections. Did you mean '#{ast_node.name} { ... }'?)"
         else
           nil
         end
@@ -55,13 +55,13 @@ module GraphQL
             "name": node_name.to_s
           }
           unless resolved_type.nil?
-            extensions["type"] = resolved_type.to_s
+            extensions["type"] = resolved_type.to_type_signature
           end
           add_error(GraphQL::StaticValidation::FieldsHaveAppropriateSelectionsError.new(
             msg % { node_name: node_name },
             nodes: ast_node,
             node_name: node_name.to_s,
-            type: resolved_type.nil? ? nil : resolved_type.to_s
+            type: resolved_type.nil? ? nil : resolved_type.graphql_name,
           ))
           false
         else

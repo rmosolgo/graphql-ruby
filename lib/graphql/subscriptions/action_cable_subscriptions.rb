@@ -26,7 +26,7 @@ module GraphQL
     #       variables = ensure_hash(data["variables"])
     #       operation_name = data["operationName"]
     #       context = {
-    #         # Re-implement whatever context methods you need 
+    #         # Re-implement whatever context methods you need
     #         # in this channel or ApplicationCable::Channel
     #         # current_user: current_user,
     #         # Make sure the channel is in the context
@@ -41,7 +41,7 @@ module GraphQL
     #       })
     #
     #       payload = {
-    #         result: result.subscription? ? { data: nil } : result.to_h,
+    #         result: result.to_h,
     #         more: result.subscription?,
     #       }
     #

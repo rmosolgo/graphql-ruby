@@ -16,7 +16,7 @@ describe GraphQL::Introspection::SchemaType do
   it "exposes the schema" do
     expected = { "data" => {
       "__schema" => {
-        "types" => Dummy::Schema.types.values.map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} },
+        "types" => Dummy::Schema.types.values.map { |t| t.graphql_name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.graphql_name} },
         "queryType"=>{
           "fields"=>[
             {"name"=>"allAnimal"},
@@ -52,6 +52,6 @@ describe GraphQL::Introspection::SchemaType do
         },
       }
     }}
-    assert_equal(expected, result)
+    assert_equal(expected, result.to_h)
   end
 end

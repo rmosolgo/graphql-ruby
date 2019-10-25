@@ -3,9 +3,9 @@ require "spec_helper"
 
 describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
   let(:schema) {
-    StarWars::Schema.redefine {
+    Class.new(StarWars::Schema) do
       tracer GraphQL::Tracing::ActiveSupportNotificationsTracing
-    }
+    end
   }
 
   it "pushes through AS::N" do

@@ -84,10 +84,14 @@ module GraphQL
           field_name = "#{ctx.irep_node.owner_type.name}.#{ctx.field.name}"
           position = "#{ctx.ast_node.line}:#{ctx.ast_node.col}"
           field_alias = ctx.ast_node.alias
+          object = ctx.object
+          if object.is_a?(GraphQL::Schema::Object)
+            object = object.object
+          end
           rows << [
             "#{position}",
             "#{field_name}#{field_alias ? " as #{field_alias}" : ""}",
-            "#{ctx.object.inspect}",
+            "#{object.inspect}",
             ctx.irep_node.arguments.to_h.inspect,
             Backtrace::InspectResult.inspect_result(top && @override_value ? @override_value : ctx.value),
           ]
@@ -104,10 +108,14 @@ module GraphQL
             position = "?:?"
           end
           op_name = query.selected_operation_name
+          object = query.root_value
+          if object.is_a?(GraphQL::Schema::Object)
+            object = object.object
+          end
           rows << [
             "#{position}",
             "#{op_type}#{op_name ? " #{op_name}" : ""}",
-            "#{query.root_value.inspect}",
+            "#{object.inspect}",
             query.variables.to_h.inspect,
             Backtrace::InspectResult.inspect_result(query.context.value),
           ]

@@ -44,7 +44,6 @@ module GraphQL
               context: context,
               field: field,
             )
-            # TODO compat with non-class-based subscriptions?
             value
           elsif context.query.subscription_topic == Subscriptions::Event.serialize(
               field.name,

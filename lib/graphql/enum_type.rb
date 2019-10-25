@@ -151,6 +151,10 @@ module GraphQL
       def graphql_name
         name
       end
+
+      def type_class
+        metadata[:type_class]
+      end
     end
 
     class UnresolvedValueError < GraphQL::Error

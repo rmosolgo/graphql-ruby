@@ -13,7 +13,7 @@ module GraphQL
               error_type: VariableDefaultValuesAreCorrectlyTypedError::VIOLATIONS[:INVALID_ON_NON_NULL]
             ))
           else
-            type = context.schema.type_from_ast(node.type)
+            type = context.schema.type_from_ast(node.type, context: context)
             if type.nil?
               # This is handled by another validator
             else
@@ -26,13 +26,13 @@ module GraphQL
               end
 
               if !valid
-                error_message ||= "Default value for $#{node.name} doesn't match type #{type}"
+                error_message ||= "Default value for $#{node.name} doesn't match type #{type.to_type_signature}"
                 VariableDefaultValuesAreCorrectlyTypedError
                 add_error(GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTypedError.new(
                   error_message,
                   nodes: node,
                   name: node.name,
-                  type: type.to_s,
+                  type: type.to_type_signature,
                   error_type: VariableDefaultValuesAreCorrectlyTypedError::VIOLATIONS[:INVALID_TYPE]
                 ))
               end

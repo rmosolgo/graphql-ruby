@@ -46,6 +46,7 @@ describe GraphQL::Schema::Argument do
       query(Query)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
     end
   end
@@ -157,7 +158,7 @@ describe GraphQL::Schema::Argument do
   describe "default_value:" do
     it 'uses default_value: with no input' do
       query_str = <<-GRAPHQL
-      { field() }
+      { field }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
@@ -179,7 +180,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
-      assert_equal "Argument 'requiredWithDefaultArg' on Field 'field' has an invalid value. Expected type 'Int!'.", res['errors'][0]['message']
+      assert_equal "Argument 'requiredWithDefaultArg' on Field 'field' has an invalid value (null). Expected type 'Int!'.", res['errors'][0]['message']
     end
 
   end

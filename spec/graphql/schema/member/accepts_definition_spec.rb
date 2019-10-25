@@ -8,6 +8,7 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
 
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
     end
 
     class BaseField < GraphQL::Schema::Field
@@ -102,13 +103,13 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
   end
 
   it "passes along configs for fields and arguments" do
-    assert_equal :def, AcceptsDefinitionSchema.find("Query.option").metadata[:a]
-    assert_equal :ghi, AcceptsDefinitionSchema.find("Query.option.value").metadata[:a]
+    assert_equal :def, AcceptsDefinitionSchema.find("Query.option").graphql_definition.metadata[:a]
+    assert_equal :ghi, AcceptsDefinitionSchema.find("Query.option.value").graphql_definition.metadata[:a]
   end
 
   it "passes along configs for enum values" do
-    assert_equal 456, AcceptsDefinitionSchema.find("Option.A").metadata[:a]
-    assert_nil AcceptsDefinitionSchema.find("Option.B").metadata[:a]
+    assert_equal 456, AcceptsDefinitionSchema.find("Option").graphql_definition.values["A"].metadata[:a]
+    assert_nil AcceptsDefinitionSchema.find("Option").graphql_definition.values["B"].metadata[:a]
   end
 
   it "passes along configs for schemas" do

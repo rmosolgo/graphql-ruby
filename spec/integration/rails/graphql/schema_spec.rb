@@ -40,7 +40,7 @@ describe GraphQL::Schema do
   describe "#to_document" do
     it "returns the AST for the schema IDL" do
       expected = GraphQL::Language::DocumentFromSchemaDefinition.new(schema).document
-      assert expected.eql?(schema.to_document)
+      assert_equal expected.to_query_string, schema.to_document.to_query_string
     end
   end
 
@@ -48,9 +48,9 @@ describe GraphQL::Schema do
     it "returns a list of the schema's root types" do
       assert_equal(
         [
-          Dummy::DairyAppQuery.graphql_definition,
-          Dummy::DairyAppMutation.graphql_definition.graphql_definition,
-          Dummy::Subscription.graphql_definition
+          Dummy::DairyAppQuery,
+          Dummy::DairyAppMutation,
+          Dummy::Subscription
         ],
         schema.root_types
       )
@@ -87,7 +87,7 @@ describe GraphQL::Schema do
   describe "#resolve_type" do
     describe "when the return value is nil" do
       it "returns nil" do
-        result = relay_schema.resolve_type(123, nil)
+        result = relay_schema.resolve_type(123, nil, GraphQL::Query::NullContext)
         assert_equal(nil, result)
       end
     end
@@ -95,7 +95,7 @@ describe GraphQL::Schema do
     describe "when the return value is not a BaseType" do
       it "raises an error " do
         err = assert_raises(RuntimeError) {
-          relay_schema.resolve_type(:test_error, nil)
+          relay_schema.resolve_type(nil, :test_error, GraphQL::Query::NullContext)
         }
         assert_includes err.message, "not_a_type (Symbol)"
       end
@@ -243,7 +243,7 @@ type Query {
 
     it "builds from a file" do
       schema = GraphQL::Schema.from_definition("spec/support/magic_cards/schema.graphql")
-      assert_instance_of GraphQL::Schema, schema
+      assert_instance_of Class, schema
       expected_types =  ["Card", "Color", "Expansion", "Printing"]
       assert_equal expected_types, (expected_types & schema.types.keys)
     end
@@ -484,16 +484,16 @@ type Query {
   describe "#get_field" do
     it "returns fields by type or type name" do
       field = schema.get_field("Cheese", "id")
-      assert_instance_of GraphQL::Field, field
-      field_2 = schema.get_field(Dummy::Cheese.graphql_definition, "id")
+      assert_instance_of Dummy::BaseField, field
+      field_2 = schema.get_field(Dummy::Cheese, "id")
       assert_equal field, field_2
     end
   end
 
   describe "class-based schemas" do
-    it "delegates to the graphql definition" do
+    it "implements methods" do
       # Not delegated:
-      assert_equal Jazz::Query.graphql_definition, Jazz::Schema.query
+      assert_equal Jazz::Query, Jazz::Schema.query
       assert Jazz::Schema.respond_to?(:query)
       # Delegated
       assert_equal [], Jazz::Schema.tracers

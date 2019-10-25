@@ -11,7 +11,7 @@ module GraphQL
 
         def on_leave_field(node, parent, visitor)
           field_defn = visitor.field_definition
-          field = "#{visitor.parent_type_definition.name}.#{field_defn.name}"
+          field = "#{visitor.parent_type_definition.graphql_name}.#{field_defn.graphql_name}"
           @used_fields << field
           @used_deprecated_fields << field if field_defn.deprecation_reason
         end

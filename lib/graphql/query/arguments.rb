@@ -11,6 +11,7 @@ module GraphQL
       def self.construct_arguments_class(argument_owner)
         argument_definitions = argument_owner.arguments
         argument_owner.arguments_class = Class.new(self) do
+          self.argument_owner = argument_owner
           self.argument_definitions = argument_definitions
 
           argument_definitions.each do |_arg_name, arg_definition|
@@ -97,7 +98,7 @@ module GraphQL
       end
 
       class << self
-        attr_accessor :argument_definitions
+        attr_accessor :argument_definitions, :argument_owner
       end
 
       NoArguments = Class.new(self) do

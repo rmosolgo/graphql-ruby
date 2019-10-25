@@ -179,7 +179,9 @@ describe GraphQL::Schema::RelayClassicMutation do
       <<-GRAPHQL
         mutation($id: ID!, $newName: String!) {
           renameEnsemble(input: {ensembleId: $id, newName: $newName}) {
+            __typename
             ensemble {
+              __typename
               name
             }
           }

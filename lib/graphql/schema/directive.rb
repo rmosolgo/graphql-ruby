@@ -27,8 +27,12 @@ module GraphQL
           elsif @default_directive.nil?
             @default_directive = (superclass.respond_to?(:default_directive) ? superclass.default_directive : false)
           else
-            @default_directive
+            !!@default_directive
           end
+        end
+
+        def default_directive?
+          default_directive
         end
 
         def to_graphql
@@ -37,11 +41,15 @@ module GraphQL
           defn.description = self.description
           defn.locations = self.locations
           defn.default_directive = self.default_directive
+          defn.ast_node = ast_node
           defn.metadata[:type_class] = self
           arguments.each do |name, arg_defn|
             arg_graphql = arg_defn.to_graphql
             defn.arguments[arg_graphql.name] = arg_graphql
           end
+          # Make a reference to a classic-style Arguments class
+          defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(defn)
+
           defn
         end
 
@@ -53,6 +61,18 @@ module GraphQL
         # Continuing is passed as a block; `yield` to continue
         def resolve(object, arguments, context)
           yield
+        end
+
+        def on_field?
+          locations.include?(FIELD)
+        end
+
+        def on_fragment?
+          locations.include?(FRAGMENT_SPREAD) && locations.include?(INLINE_FRAGMENT)
+        end
+
+        def on_operation?
+          locations.include?(QUERY) && locations.include?(MUTATION) && locations.include?(SUBSCRIPTION)
         end
       end
 

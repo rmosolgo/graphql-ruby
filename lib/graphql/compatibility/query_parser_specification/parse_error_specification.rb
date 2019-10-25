@@ -70,15 +70,11 @@ module GraphQL
           ")
         end
 
-        def assert_empty_document(query_string)
-          doc = parse(query_string)
-          assert_equal 0, doc.definitions.length
-        end
-
-        def test_it_parses_blank_queries
-          assert_empty_document("")
-          assert_empty_document(" ")
-          assert_empty_document("\t \t")
+        def test_it_rejects_blank_queries
+          assert_raises_parse_error("")
+          assert_raises_parse_error(" ")
+          assert_raises_parse_error("\t \t")
+          assert_raises_parse_error(" # comment ")
         end
 
         def test_it_restricts_on

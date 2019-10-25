@@ -7,11 +7,13 @@ module GraphQL
         include GraphQL::Schema::Member::CachedGraphQLDefinition
         include GraphQL::Relay::TypeExtensions
         include GraphQL::Schema::Member::BaseDSLMethods
+        # ConfigurationExtension's responsibilities are in `def included` below
         include GraphQL::Schema::Member::TypeSystemHelpers
         include GraphQL::Schema::Member::HasFields
         include GraphQL::Schema::Member::HasPath
         include GraphQL::Schema::Member::RelayShortcuts
         include GraphQL::Schema::Member::Scoped
+        include GraphQL::Schema::Member::HasAstNode
 
         # Methods defined in this block will be:
         # - Added as class methods to this interface
@@ -20,14 +22,9 @@ module GraphQL
           self::DefinitionMethods.module_eval(&block)
         end
 
-        # The interface is visible if any of its possible types are visible
+        # @see {Schema::Warden} hides interfaces without visible implementations
         def visible?(context)
-          context.schema.possible_types(self).each do |type|
-            if context.schema.visible?(type, context)
-              return true
-            end
-          end
-          false
+          true
         end
 
         # The interface is accessible if any of its possible types are accessible
@@ -63,6 +60,11 @@ module GraphQL
               child_class.const_set(:DefinitionMethods, defn_methods_module)
               child_class.extend(child_class::DefinitionMethods)
             end
+            child_class.introspection(introspection)
+            child_class.description(description)
+            if overridden_graphql_name
+              child_class.graphql_name(overridden_graphql_name)
+            end
           elsif child_class < GraphQL::Schema::Object
             # This is being included into an object type, make sure it's using `implements(...)`
             backtrace_line = caller(0, 10).find { |line| line.include?("schema/object.rb") && line.include?("in `implements'")}
@@ -89,6 +91,7 @@ module GraphQL
           type_defn.name = graphql_name
           type_defn.description = description
           type_defn.orphan_types = orphan_types
+          type_defn.ast_node = ast_node
           fields.each do |field_name, field_inst|
             field_defn = field_inst.graphql_definition
             type_defn.fields[field_defn.name] = field_defn

@@ -5,6 +5,7 @@ module GraphQL
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
+      include GraphQL::Schema::Member::HasAstNode
 
       NO_DEFAULT = :__no_default__
 
@@ -93,18 +94,36 @@ module GraphQL
         true
       end
 
-      def authorized?(obj, ctx)
-        arg_type = type.unwrap
-        if arg_type.kind.input_object? && arg_type != @owner
-          arg_type.arguments.each do |_name, input_obj_arg|
-            if !input_obj_arg.authorized?(obj, ctx)
+      def authorized?(obj, value, ctx)
+        authorized_as_type?(obj, value, ctx, as_type: type)
+      end
+
+      def authorized_as_type?(obj, value, ctx, as_type:)
+        if value.nil?
+          return true
+        end
+
+        if as_type.kind.non_null?
+          as_type = as_type.of_type
+        end
+
+        if as_type.kind.list?
+          value.each do |v|
+            if !authorized_as_type?(obj, v, ctx, as_type: as_type.of_type)
               return false
             end
           end
-          true
-        else
-          true
+        elsif as_type.kind.input_object?
+          as_type.arguments.each do |_name, input_obj_arg|
+            input_obj_arg = input_obj_arg.type_class
+            if value.key?(input_obj_arg.keyword) &&  !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
+              return false
+            end
+          end
         end
+        # None of the early-return conditions were activated,
+        # so this is authorized.
+        true
       end
 
       def to_graphql
@@ -114,12 +133,15 @@ module GraphQL
         argument.description = @description
         argument.metadata[:type_class] = self
         argument.as = @as
+        argument.ast_node = ast_node
         argument.method_access = @method_access
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value
         end
         argument
       end
+
+      attr_writer :type
 
       def type
         @type ||= Member::BuildType.parse_type(@type_expr, null: @null)
@@ -130,13 +152,21 @@ module GraphQL
       # Apply the {prepare} configuration to `value`, using methods from `obj`.
       # Used by the runtime.
       # @api private
-      def prepare_value(obj, value)
+      def prepare_value(obj, value, context: nil)
         if @prepare.nil?
           value
         elsif @prepare.is_a?(String) || @prepare.is_a?(Symbol)
-          obj.public_send(@prepare, value)
+          if obj.nil?
+            # The problem here is, we _used to_ prepare while building variables.
+            # But now we don't have the runtime object there.
+            #
+            # This will have to be called later, when the runtime object _is_ available.
+            value
+          else
+            obj.public_send(@prepare, value)
+          end
         elsif @prepare.respond_to?(:call)
-          @prepare.call(value, obj.context)
+          @prepare.call(value, context || obj.context)
         else
           raise "Invalid prepare for #{@owner.name}.name: #{@prepare.inspect}"
         end
