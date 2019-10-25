@@ -31,7 +31,7 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
     first_id = StarWars::Base.first.id
     last_id = StarWars::Base.last.id
 
-    ActiveSupport::Notifications.subscribed(callback, /^graphql/) do
+    ActiveSupport::Notifications.subscribed(callback, /graphql$/) do
       schema.execute(query_string, variables: {
         "id1" => first_id,
         "id2" => last_id,
@@ -39,23 +39,23 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
     end
 
     expected_traces = [
-      "graphql.lex",
-      "graphql.parse",
-      "graphql.validate",
-      "graphql.analyze_query",
-      "graphql.analyze_multiplex",
-      "graphql.execute_field (Query.batchedBase)",
-      "graphql.execute_field (Query.batchedBase)",
-      "graphql.execute_query",
-      "graphql.lazy_loader",
-      "graphql.execute_field_lazy (Query.batchedBase)",
-      "graphql.execute_field (Base.name)",
-      "graphql.execute_field_lazy (Query.batchedBase)",
-      "graphql.execute_field (Base.name)",
-      "graphql.execute_field_lazy (Base.name)",
-      "graphql.execute_field_lazy (Base.name)",
-      "graphql.execute_query_lazy",
-      "graphql.execute_multiplex",
+      "lex.graphql",
+      "parse.graphql",
+      "validate.graphql",
+      "analyze_query.graphql",
+      "analyze_multiplex.graphql",
+      "execute_field.graphql (Query.batchedBase)",
+      "execute_field.graphql (Query.batchedBase)",
+      "execute_query.graphql",
+      "lazy_loader.graphql",
+      "execute_field_lazy.graphql (Query.batchedBase)",
+      "execute_field.graphql (Base.name)",
+      "execute_field_lazy.graphql (Query.batchedBase)",
+      "execute_field.graphql (Base.name)",
+      "execute_field_lazy.graphql (Base.name)",
+      "execute_field_lazy.graphql (Base.name)",
+      "execute_query_lazy.graphql",
+      "execute_multiplex.graphql",
     ]
     assert_equal expected_traces, traces
   end
