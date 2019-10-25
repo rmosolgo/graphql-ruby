@@ -151,7 +151,7 @@ module GraphQL
         else
           @connection_extension ||= find_inherited_value(:connection_extension, ConnectionExtension)
         end
-      end 
+      end
 
       # @return Boolean
       attr_reader :relay_node_field
