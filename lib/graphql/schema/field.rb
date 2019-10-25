@@ -137,14 +137,6 @@ module GraphQL
         end
       end
 
-      # @return Boolean
-      attr_reader :relay_node_field
-
-      # @return [Boolean] Should we warn if this field's name conflicts with a built-in method?
-      def method_conflict_warning?
-        @method_conflict_warning
-      end
-
       # This extension is applied to fields when {#connection?} is true.
       #
       # You can override it in your base field definition.
@@ -159,6 +151,14 @@ module GraphQL
         else
           @connection_extension ||= find_inherited_value(:connection_extension, ConnectionExtension)
         end
+      end
+
+      # @return Boolean
+      attr_reader :relay_node_field
+
+      # @return [Boolean] Should we warn if this field's name conflicts with a built-in method?
+      def method_conflict_warning?
+        @method_conflict_warning
       end
 
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
