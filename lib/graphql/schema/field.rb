@@ -15,6 +15,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasArguments
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
+      extend GraphQL::Schema::FindInheritedValue
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
@@ -144,6 +145,22 @@ module GraphQL
         @method_conflict_warning
       end
 
+      # This extension is applied to fields when {#connection?} is true.
+      #
+      # You can override it in your base field definition.
+      # @return [Class] A {FieldExtension} subclass for implementing pagination behavior.
+      # @example Configuring a custom extension
+      #   class Types::BaseField < GraphQL::Schema::Field
+      #     connection_extension(MyCustomExtension)
+      #   end
+      def self.connection_extension(new_extension_class = nil)
+        if new_extension_class
+          @connection_extension = new_extension_class
+        else
+          @connection_extension ||= find_inherited_value(:connection_extension, ConnectionExtension)
+        end
+      end
+
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param type [Class, GraphQL::BaseType, Array] The return type of this field
       # @param owner [Class] The type that this field belongs to
@@ -259,7 +276,7 @@ module GraphQL
         # The problem with putting this after the definition_block
         # is that it would override arguments
         if connection?
-          self.extension(ConnectionExtension)
+          self.extension(self.class.connection_extension)
         end
 
         if definition_block
