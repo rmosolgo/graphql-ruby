@@ -37,7 +37,7 @@ module GraphQL
           arguments
         when Hash
           if field.is_a?(GraphQL::Schema::Field)
-            arguments
+            stringify_args(field, arguments)
           else
             GraphQL::Query::LiteralInput.from_arguments(
               arguments,
