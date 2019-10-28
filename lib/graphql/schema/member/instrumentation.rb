@@ -78,7 +78,7 @@ module GraphQL
 
           def call(obj, args, ctx)
             result = @inner_resolve.call(obj, args, ctx)
-            if ctx.skip == result || ctx.schema.lazy?(result) || result.nil? || result.is_a?(GraphQL::ExecutionError) || ctx.wrapped_object
+            if ctx.skip == result || ctx.schema.lazy?(result) || result.nil? || execution_errors?(result) || ctx.wrapped_object
               result
             else
               ctx.wrapped_object = true
@@ -87,6 +87,11 @@ module GraphQL
           end
 
           private
+
+          def execution_errors?(result)
+            result.is_a?(GraphQL::ExecutionError) ||
+              (result.is_a?(Array) && result.any? && result.all? { |v| v.is_a?(GraphQL::ExecutionError) })
+          end
 
           def proxy_to_depth(inner_obj, depth, ctx)
             if depth > 0
