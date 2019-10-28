@@ -61,14 +61,14 @@ module GraphQL
             next_args = {}
             args.each do |k, v|
               arg_name = k.to_s
-              arg_defn = arg_owner.arguments[arg_name]
+              arg_defn = get_arg_definition(arg_owner, arg_name)
               if arg_defn
                 normalized_arg_name = arg_name
               else
                 normalized_arg_name = GraphQL::Schema::Member::BuildType.camelize(arg_name)
-                arg_defn = arg_owner.arguments[normalized_arg_name]
+                arg_defn = get_arg_definition(arg_owner, normalized_arg_name)
               end
-              next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
+              next_args[normalized_arg_name] = stringify_args(arg_defn[1].type, v)
             end
             # Make sure they're deeply sorted
             next_args.sort.to_h
@@ -79,6 +79,10 @@ module GraphQL
           else
             args
           end
+        end
+
+        def get_arg_definition(arg_owner, arg_name)
+          arg_owner.arguments.find { |k, v| k == arg_name || v.keyword.to_s == arg_name }
         end
       end
     end

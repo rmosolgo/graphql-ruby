@@ -34,7 +34,8 @@ describe GraphQL::Schema::Subscription do
     end
 
     class TootWasTooted < BaseSubscription
-      argument :handle, String, required: true, loads: User, as: :user
+      argument :toot_handle, String, required: true, loads: User, as: :user, camelize: false
+
       field :toot, Toot, null: false
       field :user, User, null: false
       # Can't subscribe to private users
@@ -117,7 +118,7 @@ describe GraphQL::Schema::Subscription do
         handle = context[:viewer][:handle]
         toot = { handle: handle, body: body }
         TOOTS << toot
-        SubscriptionFieldSchema.trigger(:toot_was_tooted, {handle: handle}, toot)
+        SubscriptionFieldSchema.trigger(:toot_was_tooted, {toot_handle: handle}, toot)
       end
     end
 
@@ -243,7 +244,7 @@ describe GraphQL::Schema::Subscription do
     it "rejects the subscription if #subscribe raises an error" do
       res = exec_query <<-GRAPHQL, context: { prohibit_subscriptions: true }
       subscription {
-        tootWasTooted(handle: "matz") {
+        tootWasTooted(toot_handle: "matz") {
           toot { body }
         }
       }
@@ -267,7 +268,7 @@ describe GraphQL::Schema::Subscription do
     it "doesn't subscribe if `loads:` fails" do
       res = exec_query <<-GRAPHQL
       subscription {
-        tootWasTooted(handle: "jack") {
+        tootWasTooted(toot_handle: "jack") {
           toot { body }
         }
       }
@@ -277,7 +278,7 @@ describe GraphQL::Schema::Subscription do
         "data" => nil,
         "errors" => [
           {
-            "message"=>"No object found for `handle: \"jack\"`",
+            "message"=>"No object found for `toot_handle: \"jack\"`",
             "locations"=>[{"line"=>2, "column"=>9}],
             "path"=>["tootWasTooted"]
           }
@@ -290,7 +291,7 @@ describe GraphQL::Schema::Subscription do
     it "rejects if #authorized? fails" do
       res = exec_query <<-GRAPHQL
       subscription {
-        tootWasTooted(handle: "_why") {
+        tootWasTooted(toot_handle: "_why") {
           toot { body }
         }
       }
@@ -313,7 +314,7 @@ describe GraphQL::Schema::Subscription do
 
       res = exec_query <<-GRAPHQL
       subscription {
-        tootWasTooted(handle: "matz") {
+        tootWasTooted(toot_handle: "matz") {
           toot { body }
         }
       }
@@ -343,14 +344,14 @@ describe GraphQL::Schema::Subscription do
     it "updates with `object` by default" do
       res = exec_query <<-GRAPHQL
       subscription {
-        tootWasTooted(handle: "matz") {
+        tootWasTooted(toot_handle: "matz") {
           toot { body }
         }
       }
       GRAPHQL
       assert_equal 1, in_memory_subscription_count
       obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: SubscriptionFieldSchema::USERS["matz"])
-      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {toot_handle: "matz"}, obj)
 
       mailbox = res.context[:subscription_mailbox]
       update_payload = mailbox.first
@@ -378,7 +379,7 @@ describe GraphQL::Schema::Subscription do
     it "skips the update if `:no_update` is returned, but updates other subscribers" do
       query_str = <<-GRAPHQL
       subscription {
-        tootWasTooted(handle: "matz") {
+        tootWasTooted(toot_handle: "matz") {
           toot { body }
         }
       }
@@ -389,7 +390,7 @@ describe GraphQL::Schema::Subscription do
       assert_equal 2, in_memory_subscription_count
 
       obj = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: SubscriptionFieldSchema::USERS["matz"])
-      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {toot_handle: "matz"}, obj)
 
       mailbox1 = res1.context[:subscription_mailbox]
       mailbox2 = res2.context[:subscription_mailbox]
@@ -402,14 +403,14 @@ describe GraphQL::Schema::Subscription do
     it "unsubscribes if a `loads:` argument is not found" do
       res = exec_query <<-GRAPHQL
       subscription {
-        tootWasTooted(handle: "matz") {
+        tootWasTooted(toot_handle: "matz") {
           toot { body }
         }
       }
       GRAPHQL
       assert_equal 1, in_memory_subscription_count
       obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: SubscriptionFieldSchema::USERS["matz"])
-      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {toot_handle: "matz"}, obj)
 
       # Get 1 successful update
       mailbox = res.context[:subscription_mailbox]
@@ -420,7 +421,7 @@ describe GraphQL::Schema::Subscription do
       # Then cause a not-found and update again
       matz = SubscriptionFieldSchema::USERS.delete("matz")
       obj = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: matz)
-      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {toot_handle: "matz"}, obj)
       # there was no subsequent update
       assert_equal 1, mailbox.size
       # The database was cleaned up
@@ -430,7 +431,7 @@ describe GraphQL::Schema::Subscription do
     it "sends an error if `#authorized?` fails" do
       res = exec_query <<-GRAPHQL
       subscription {
-        tootWasTooted(handle: "matz") {
+        tootWasTooted(toot_handle: "matz") {
           toot { body }
         }
       }
@@ -438,7 +439,7 @@ describe GraphQL::Schema::Subscription do
       assert_equal 1, in_memory_subscription_count
       matz = SubscriptionFieldSchema::USERS["matz"]
       obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: matz)
-      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {toot_handle: "matz"}, obj)
 
       # Get 1 successful update
       mailbox = res.context[:subscription_mailbox]
@@ -449,7 +450,7 @@ describe GraphQL::Schema::Subscription do
       # Cause an authorized failure
       matz[:private] = true
       obj = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: matz)
-      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {toot_handle: "matz"}, obj)
       assert_equal 2, mailbox.size
       assert_equal ["Can't subscribe to private user"], mailbox.last["errors"].map { |e| e["message"] }
       # The subscription remains in place
