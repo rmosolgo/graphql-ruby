@@ -104,8 +104,8 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class StreamInput < GraphQL::Schema::InputObject
-    argument :user_id, ID, required: true
-    argument :type, PayloadType, required: false, default_value: "ONE"
+    argument :user_id, ID, required: true, camelize: false
+    argument :payload_type, PayloadType, required: false, default_value: "ONE"
   end
 
   class Subscription < GraphQL::Schema::Object
@@ -126,7 +126,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     end
 
     field :my_event, Payload, null: true, subscription_scope: :me do
-      argument :type, PayloadType, required: false
+      argument :payload_type, PayloadType, required: false
     end
 
     field :failed_event, Payload, null: false  do
@@ -158,7 +158,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   type Subscription {
     payload(id: ID!): Payload!
     event(stream: StreamInput): Payload
-    myEvent(type: PayloadType): Payload
+    myEvent(payloadType: PayloadType): Payload
     failedEvent(id: ID!): Payload!
   }
 
@@ -168,8 +168,8 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   }
 
   input StreamInput {
-    userId: ID!
-    type: PayloadType = ONE
+    user_id: ID!
+    payloadType: PayloadType = ONE
   }
 
   # Arbitrary "kinds" of payloads which may be
@@ -353,7 +353,7 @@ describe GraphQL::Subscriptions do
         it "coerces args" do
           query_str = <<-GRAPHQL
         subscription($type: PayloadType) {
-          e1: event(stream: { userId: "3", type: $type }) { int }
+          e1: event(stream: { user_id: "3", payloadType: $type }) { int }
         }
           GRAPHQL
 
@@ -367,14 +367,14 @@ describe GraphQL::Subscriptions do
           schema.execute(query_str, context: { socket: "4" }, variables: { "type" => nil }, root_value: root_object)
 
           # Trigger the subscription with coerceable args, different orders:
-          schema.subscriptions.trigger("event", { "stream" => {"userId" => 3, "type" => "ONE"} }, OpenStruct.new(str: "", int: 1))
-          schema.subscriptions.trigger("event", { "stream" => {"type" => "ONE", "userId" => "3"} }, OpenStruct.new(str: "", int: 2))
+          schema.subscriptions.trigger("event", { "stream" => {"user_id" => 3, "payloadType" => "ONE"} }, OpenStruct.new(str: "", int: 1))
+          schema.subscriptions.trigger("event", { "stream" => {"payloadType" => "ONE", "user_id" => "3"} }, OpenStruct.new(str: "", int: 2))
           # This is a non-trigger
-          schema.subscriptions.trigger("event", { "stream" => {"userId" => "3", "type" => "TWO"} }, OpenStruct.new(str: "", int: 3))
+          schema.subscriptions.trigger("event", { "stream" => {"user_id" => "3", "payloadType" => "TWO"} }, OpenStruct.new(str: "", int: 3))
           # These get default value of ONE (underscored / symbols are ok)
           schema.subscriptions.trigger("event", { stream: { user_id: "3"} }, OpenStruct.new(str: "", int: 4))
           # Trigger with null updates subscriptionss to null
-          schema.subscriptions.trigger("event", { "stream" => {"userId" => 3, "type" => nil} }, OpenStruct.new(str: "", int: 5))
+          schema.subscriptions.trigger("event", { "stream" => {"user_id" => 3, "payloadType" => nil} }, OpenStruct.new(str: "", int: 5))
 
           assert_equal [1,2,4], deliveries["1"].map { |d| d["data"]["e1"]["int"] }
 
@@ -391,7 +391,7 @@ describe GraphQL::Subscriptions do
         it "allows context-scoped subscriptions" do
           query_str = <<-GRAPHQL
         subscription($type: PayloadType) {
-          myEvent(type: $type) { int }
+          myEvent(payloadType: $type) { int }
         }
           GRAPHQL
 
@@ -401,9 +401,9 @@ describe GraphQL::Subscriptions do
           # Subscription for user 2
           schema.execute(query_str, context: { socket: "3", me: "2" }, variables: { "type" => "ONE" }, root_value: root_object)
 
-          schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 1), scope: "1")
-          schema.subscriptions.trigger("myEvent", { "type" => "TWO" }, OpenStruct.new(str: "", int: 2), scope: "1")
-          schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 3), scope: "2")
+          schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, OpenStruct.new(str: "", int: 1), scope: "1")
+          schema.subscriptions.trigger("myEvent", { "payloadType" => "TWO" }, OpenStruct.new(str: "", int: 2), scope: "1")
+          schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, OpenStruct.new(str: "", int: 3), scope: "2")
 
           # Delivered to user 1
           assert_equal [1], deliveries["1"].map { |d| d["data"]["myEvent"]["int"] }
@@ -461,13 +461,13 @@ describe GraphQL::Subscriptions do
           it "lets unhandled errors crash" do
             query_str = <<-GRAPHQL
           subscription($type: PayloadType) {
-            myEvent(type: $type) { int }
+            myEvent(payloadType: $type) { int }
           }
             GRAPHQL
 
             schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
             err = assert_raises(RuntimeError) {
-              schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, error_payload_class.new, scope: "1")
+              schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, error_payload_class.new, scope: "1")
             }
             assert_equal "Boom!", err.message
           end
@@ -476,12 +476,12 @@ describe GraphQL::Subscriptions do
         it "sends query errors to the subscriptions" do
           query_str = <<-GRAPHQL
         subscription($type: PayloadType) {
-          myEvent(type: $type) { str }
+          myEvent(payloadType: $type) { str }
         }
           GRAPHQL
 
           schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
-          schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, error_payload_class.new, scope: "1")
+          schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, error_payload_class.new, scope: "1")
           res = deliveries["1"].first
           assert_equal "This is handled", res["errors"][0]["message"]
         end
@@ -512,7 +512,7 @@ describe GraphQL::Subscriptions do
 
         it "raises when argument is not found" do
           err = assert_raises(GraphQL::Subscriptions::InvalidTriggerError) do
-            schema.subscriptions.trigger(:event, { scream: {"userId" => "😱"} }, nil)
+            schema.subscriptions.trigger(:event, { scream: {"user_id" => "😱"} }, nil)
           end
 
           assert_includes err.message, "arguments: scream"
