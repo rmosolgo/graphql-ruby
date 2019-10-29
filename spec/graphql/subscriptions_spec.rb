@@ -416,7 +416,7 @@ describe GraphQL::Subscriptions do
           it "allows complex object subscription scopes" do
             query_str = <<-GRAPHQL
           subscription($type: PayloadType) {
-            myEvent(type: $type) { int }
+            myEvent(payloadType: $type) { int }
           }
             GRAPHQL
 
@@ -428,10 +428,10 @@ describe GraphQL::Subscriptions do
             # Array of Objects
             schema.execute(query_str, context: { socket: "4", me: [GlobalIDUser.new(4), ToParamUser.new(5)] }, variables: { "type" => "ONE" }, root_value: root_object)
 
-            schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 1), scope: GlobalIDUser.new(1))
-            schema.subscriptions.trigger("myEvent", { "type" => "TWO" }, OpenStruct.new(str: "", int: 2), scope: GlobalIDUser.new(1))
-            schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 3), scope: ToParamUser.new(2))
-            schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 4), scope: [GlobalIDUser.new(4), ToParamUser.new(5)])
+            schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, OpenStruct.new(str: "", int: 1), scope: GlobalIDUser.new(1))
+            schema.subscriptions.trigger("myEvent", { "payloadType" => "TWO" }, OpenStruct.new(str: "", int: 2), scope: GlobalIDUser.new(1))
+            schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, OpenStruct.new(str: "", int: 3), scope: ToParamUser.new(2))
+            schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, OpenStruct.new(str: "", int: 4), scope: [GlobalIDUser.new(4), ToParamUser.new(5)])
 
             # Delivered to GlobalIDUser
             assert_equal [1], deliveries["1"].map { |d| d["data"]["myEvent"]["int"] }
