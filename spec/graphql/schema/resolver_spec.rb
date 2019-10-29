@@ -83,6 +83,23 @@ describe GraphQL::Schema::Resolver do
     class Resolver8 < Resolver7
     end
 
+    class GreetingExtension < GraphQL::Schema::FieldExtension
+      def resolve(object:, arguments:, **rest)
+        name = yield(object, arguments)
+        "#{options[:greeting]}, #{name}!"
+      end
+    end
+
+    class ResolverWithExtension < BaseResolver
+      type String, null: false
+
+      extension GreetingExtension, greeting: "Hi"
+
+      def resolve
+        "Robert"
+      end
+    end
+
     class PrepResolver1 < BaseResolver
       argument :int, Integer, required: true
       undef_method :load_int
@@ -376,6 +393,7 @@ describe GraphQL::Schema::Resolver do
       field :resolver_6, resolver: Resolver6
       field :resolver_7, resolver: Resolver7
       field :resolver_8, resolver: Resolver8
+      field :resolver_with_extension, resolver: ResolverWithExtension
       field :resolver_with_path, resolver: ResolverWithPath
 
       field :prep_resolver_1, resolver: PrepResolver1
@@ -737,6 +755,22 @@ describe GraphQL::Schema::Resolver do
 
         assert res["errors"]
         assert_equal 'No object found for `labelId: "invalid"`', res["errors"][0]["message"]
+      end
+    end
+
+    describe "extensions" do
+      it "returns extension whe no arguments passed" do
+        assert 1, ResolverTest::ResolverWithExtension.extensions.count
+      end
+
+      it "configures extensions for field" do
+        assert_kind_of ResolverTest::GreetingExtension,
+                       ResolverTest::Query.fields["resolverWithExtension"].extensions.first
+      end
+
+      it "uses extension to build response" do
+        res = exec_query " { resolverWithExtension } "
+        assert_equal "Hi, Robert!", res["data"]["resolverWithExtension"]
       end
     end
   end
