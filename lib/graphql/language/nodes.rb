@@ -28,7 +28,8 @@ module GraphQL
         def initialize(options={})
           if options.key?(:position_source)
             position_source = options.delete(:position_source)
-            @line, @col = position_source.line_and_column
+            @line = position_source.line
+            @col = position_source.col
           end
 
           @filename = options.delete(:filename)
@@ -350,6 +351,8 @@ module GraphQL
 
       # A single selection in a GraphQL query.
       class Field < AbstractNode
+        NONE = [].freeze
+
         scalar_methods :name, :alias
         children_methods({
           arguments: GraphQL::Language::Nodes::Argument,
@@ -360,13 +363,13 @@ module GraphQL
         # @!attribute selections
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
 
-        def initialize_node(name: nil, arguments: [], directives: [], selections: [], **kwargs)
-          @name = name
-          @arguments = arguments
-          @directives = directives
-          @selections = selections
+        def initialize_node(attributes)
+          @name = attributes[:name]
+          @arguments = attributes[:arguments] || NONE
+          @directives = attributes[:directives] || NONE
+          @selections = attributes[:selections] || NONE
           # oops, alias is a keyword:
-          @alias = kwargs.fetch(:alias, nil)
+          @alias = attributes[:alias]
         end
 
         # Override this because default is `:fields`

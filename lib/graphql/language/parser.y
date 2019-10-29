@@ -442,6 +442,7 @@ def initialize(query_string, filename:, tracer: Tracing::NullTracer)
   @query_string = query_string
   @filename = filename
   @tracer = tracer
+  @reused_next_token = [nil, nil]
 end
 
 def parse_document
@@ -472,7 +473,9 @@ def next_token
   if lexer_token.nil?
     nil
   else
-    [lexer_token.name, lexer_token]
+    @reused_next_token[0] = lexer_token.name
+    @reused_next_token[1] = lexer_token
+    @reused_next_token
   end
 end
 

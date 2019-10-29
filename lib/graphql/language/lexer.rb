@@ -314,7 +314,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:RCURLY, ts, te, meta) 
+											emit(:RCURLY, ts, te, meta, "}") 
 										end
 										
 									end
@@ -328,7 +328,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:LCURLY, ts, te, meta) 
+											emit(:LCURLY, ts, te, meta, "{") 
 										end
 										
 									end
@@ -342,7 +342,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:RPAREN, ts, te, meta) 
+											emit(:RPAREN, ts, te, meta, ")") 
 										end
 										
 									end
@@ -356,7 +356,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:LPAREN, ts, te, meta) 
+											emit(:LPAREN, ts, te, meta, "(")
 										end
 										
 									end
@@ -370,7 +370,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:RBRACKET, ts, te, meta) 
+											emit(:RBRACKET, ts, te, meta, "]") 
 										end
 										
 									end
@@ -384,7 +384,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:LBRACKET, ts, te, meta) 
+											emit(:LBRACKET, ts, te, meta, "[") 
 										end
 										
 									end
@@ -398,7 +398,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:COLON, ts, te, meta) 
+											emit(:COLON, ts, te, meta, ":") 
 										end
 										
 									end
@@ -440,7 +440,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:VAR_SIGN, ts, te, meta) 
+											emit(:VAR_SIGN, ts, te, meta, "$") 
 										end
 										
 									end
@@ -454,7 +454,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:DIR_SIGN, ts, te, meta) 
+											emit(:DIR_SIGN, ts, te, meta, "@") 
 										end
 										
 									end
@@ -468,7 +468,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:ELLIPSIS, ts, te, meta) 
+											emit(:ELLIPSIS, ts, te, meta, "...") 
 										end
 										
 									end
@@ -482,7 +482,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:EQUALS, ts, te, meta) 
+											emit(:EQUALS, ts, te, meta, "=") 
 										end
 										
 									end
@@ -496,7 +496,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:BANG, ts, te, meta) 
+											emit(:BANG, ts, te, meta, "!") 
 										end
 										
 									end
@@ -510,7 +510,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:PIPE, ts, te, meta) 
+											emit(:PIPE, ts, te, meta, "|") 
 										end
 										
 									end
@@ -524,7 +524,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit(:AMP, ts, te, meta) 
+											emit(:AMP, ts, te, meta, "&") 
 										end
 										
 									end
@@ -738,7 +738,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit(:ON, ts, te, meta) 
+												emit(:ON, ts, te, meta, "on") 
 											end
 											
 										end
@@ -746,7 +746,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit(:FRAGMENT, ts, te, meta) 
+												emit(:FRAGMENT, ts, te, meta, "fragment") 
 											end
 											
 										end
@@ -754,7 +754,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit(:TRUE, ts, te, meta) 
+												emit(:TRUE, ts, te, meta, "true") 
 											end
 											
 										end
@@ -762,7 +762,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit(:FALSE, ts, te, meta) 
+												emit(:FALSE, ts, te, meta, "false") 
 											end
 											
 										end
@@ -770,7 +770,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit(:NULL, ts, te, meta) 
+												emit(:NULL, ts, te, meta, "null") 
 											end
 											
 										end
@@ -778,7 +778,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit(:QUERY, ts, te, meta) 
+												emit(:QUERY, ts, te, meta, "query") 
 											end
 											
 										end
@@ -786,7 +786,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit(:MUTATION, ts, te, meta) 
+												emit(:MUTATION, ts, te, meta, "mutation") 
 											end
 											
 										end
@@ -794,7 +794,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit(:SUBSCRIPTION, ts, te, meta) 
+												emit(:SUBSCRIPTION, ts, te, meta, "subscription") 
 											end
 											
 										end
@@ -1371,11 +1371,11 @@ end
 
 def self.record_comment(ts, te, meta)
 token = GraphQL::Language::Token.new(
-name: :COMMENT,
-value: meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
-line: meta[:line],
-col: meta[:col],
-prev_token: meta[:previous_token],
+:COMMENT,
+meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
+meta[:line],
+meta[:col],
+meta[:previous_token],
 )
 
 meta[:previous_token] = token
@@ -1383,13 +1383,14 @@ meta[:previous_token] = token
 meta[:col] += te - ts
 end
 
-def self.emit(token_name, ts, te, meta)
+def self.emit(token_name, ts, te, meta, token_value = nil)
+token_value ||= meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
 meta[:tokens] << token = GraphQL::Language::Token.new(
-name: token_name,
-value: meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
-line: meta[:line],
-col: meta[:col],
-prev_token: meta[:previous_token],
+token_name,
+token_value,
+meta[:line],
+meta[:col],
+meta[:previous_token],
 )
 meta[:previous_token] = token
 # Bump the column counter for the next token
@@ -1428,30 +1429,30 @@ end
 # (It's faster: https://bugs.ruby-lang.org/issues/8110)
 if !value.valid_encoding? || value !~ VALID_STRING
 meta[:tokens] << token = GraphQL::Language::Token.new(
-name: :BAD_UNICODE_ESCAPE,
-value: value,
-line: meta[:line],
-col: meta[:col],
-prev_token: meta[:previous_token],
+:BAD_UNICODE_ESCAPE,
+value,
+meta[:line],
+meta[:col],
+meta[:previous_token],
 )
 else
 replace_escaped_characters_in_place(value)
 
 if !value.valid_encoding?
 	meta[:tokens] << token = GraphQL::Language::Token.new(
-	name: :BAD_UNICODE_ESCAPE,
-	value: value,
-	line: meta[:line],
-	col: meta[:col],
-	prev_token: meta[:previous_token],
+	:BAD_UNICODE_ESCAPE,
+	value,
+	meta[:line],
+	meta[:col],
+	meta[:previous_token],
 	)
 	else
 	meta[:tokens] << token = GraphQL::Language::Token.new(
-	name: :STRING,
-	value: value,
-	line: meta[:line],
-	col: meta[:col],
-	prev_token: meta[:previous_token],
+	:STRING,
+	value,
+	meta[:line],
+	meta[:col],
+	meta[:previous_token],
 	)
 	end
 end
