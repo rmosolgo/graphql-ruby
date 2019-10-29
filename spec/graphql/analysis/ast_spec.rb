@@ -82,6 +82,23 @@ describe GraphQL::Analysis::AST do
     end
   end
 
+  class AstArgumentsRecorded < GraphQL::Analysis::AST::Analyzer
+    def initialize(_query)
+      super
+
+      @node_names = []
+    end
+
+    def on_enter_argument(node, parent, visitor)
+      # TODO: Can we easily get argument_values for each, so they respond to things like #default_used?
+      @node_names << node.name
+    end
+
+    def result
+      @node_names
+    end
+  end
+
   describe "using the AST analysis engine" do
     let(:schema) do
       query_type = Class.new(GraphQL::Schema::Object) do
@@ -196,14 +213,73 @@ describe GraphQL::Analysis::AST do
         let(:query) do
           GraphQL::Query.new(
             Dummy::Schema,
-            '{ searchDairy(product: [{ source: "SHEEP" }]) { ... on Cheese { id } } }'
+            '{ searchDairy(product: [{ source: SHEEP }]) { ... on Cheese { id } } }'
           )
+
+          # NOTE, I think there are other (invalid?) cases of `source: "ENUM_VALUE"`
+          # that should be `source: ENUM_VALUE` in this test suite.
         end
 
         it "it runs the analyzer" do
           argument, prev_argument = reduce_result.first
           assert_equal "DairyProductInput.source", argument.metadata[:type_class].path
           assert_equal "Query.searchDairy.product", prev_argument.metadata[:type_class].path
+        end
+
+        describe "when nested input objects are provided" do
+          let(:analyzers) { [AstArgumentsRecorded] }
+          let(:expected_argument_node_names_encountered) { %w(product source nestedDairyProducts source source source) }
+
+          it "works when they are supplied as inline arguments" do
+            document = <<~GRAPHQL
+              {
+                searchDairy(product: [
+                  {
+                    source: SHEEP,
+                    nestedDairyProducts: [
+                      { source: COW },
+                      { source: DONKEY },
+                      { source: YAK },
+                    ]
+                  }
+                ])
+                {
+                  ... on Cheese { id } }
+                }
+            GRAPHQL
+
+            query = GraphQL::Query.new(Dummy::Schema, document)
+            results = GraphQL::Analysis::AST.analyze_query(query, analyzers)
+
+            assert_equal expected_argument_node_names_encountered, results.first
+          end
+
+          it "works when they are supplied as variables" do
+            document = <<~GRAPHQL
+              query MyQuery($dairyProductInput: [DairyProductInput!]) {
+                searchDairy(product: $dairyProductInput) {
+                  ... on Cheese { id } }
+                }
+            GRAPHQL
+
+            variables = {
+              dairyProductInput: [
+                {
+                  source: "SHEEP",
+                  nestedDairyProducts: [
+                    { source: "COW" },
+                    { source: "DONKEY" },
+                    { source: "YAK" },
+                  ]
+                }
+              ]
+            }
+
+            query = GraphQL::Query.new(Dummy::Schema, document, variables: variables)
+            results = GraphQL::Analysis::AST.analyze_query(query, analyzers)
+
+            assert_equal expected_argument_node_names_encountered, results.first
+          end
         end
       end
     end

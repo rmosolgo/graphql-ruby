@@ -241,6 +241,11 @@ module Dummy
     argument :direction, String, required: true, description: "ASC or DESC"
   end
 
+  class NestedDairyProductInput < BaseInputObject
+    description "Properties for finding a dairy product that is similar to other dairy products"
+    argument :source, DairyAnimal, required: true, description: "Where it came from"
+  end
+
   class DairyProductInput < BaseInputObject
     description "Properties for finding a dairy product"
     argument :source, DairyAnimal, required: true, description: "Where it came from"
@@ -248,6 +253,7 @@ module Dummy
     argument :fat_content, Float, required: false, description: "How much fat it has", default_value: 0.3
     argument :organic, Boolean, required: false, default_value: false
     argument :order_by, ResourceOrder, required: false, default_value: { direction: "ASC" }, camelize: false
+    argument :nested_dairy_products, [NestedDairyProductInput], required: false
   end
 
   class DeepNonNull < BaseObject
