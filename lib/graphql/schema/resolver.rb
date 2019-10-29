@@ -255,6 +255,7 @@ module GraphQL
             arguments: arguments,
             null: null,
             complexity: complexity,
+            extensions: extensions,
           }
         end
 
@@ -306,6 +307,18 @@ module GraphQL
         def arguments_loads_as_type
           inherited_lookups = superclass.respond_to?(:arguments_loads_as_type) ? superclass.arguments_loads_as_type : {}
           inherited_lookups.merge(own_arguments_loads_as_type)
+        end
+
+        # Registers new extension
+        # @param extension [Class] Extension class
+        # @param options [Hash] Optional extension options
+        def extension(extension, **options)
+          extensions << {extension => options}
+        end
+
+        # @api private
+        def extensions
+          @extensions ||= []
         end
 
         private
