@@ -200,3 +200,26 @@ end
 ```
 
 In doing so, you can defer the loading of the type class until the nested resolver has already been loaded.
+
+# Extensions
+
+In cases when you want your resolvers to add some extensions to the field they resolve, you can use `extension` method, which accepts extension class and options. Multiple extensions can be configured for a single resolver.
+
+```ruby
+class GreetingExtension < GraphQL::Schema::FieldExtension
+  def resolve(object:, arguments:, **rest)
+    name = yield(object, arguments)
+    "#{options[:greeting]}, #{name}!"
+  end
+end
+
+class ResolverWithExtension < BaseResolver
+  type String, null: false
+
+  extension GreetingExtension, greeting: "Hi"
+
+  def resolve
+    "Robert"
+  end
+end
+```
