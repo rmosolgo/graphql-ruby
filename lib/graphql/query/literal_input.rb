@@ -108,7 +108,8 @@ module GraphQL
           end
         end
 
-        argument_owner.arguments_class.new(values_hash, context: context, defaults_used: defaults_used)
+        result = argument_owner.arguments_class.new(values_hash, context: context, defaults_used: defaults_used)
+        result.prepare
       end
     end
   end
