@@ -94,17 +94,7 @@ module GraphQL
       end
 
       def authorized?(obj, ctx)
-        arg_type = type.unwrap
-        if arg_type.kind.input_object? && arg_type != @owner
-          arg_type.arguments.each do |_name, input_obj_arg|
-            if !input_obj_arg.authorized?(obj, ctx)
-              return false
-            end
-          end
-          true
-        else
-          true
-        end
+        true
       end
 
       def to_graphql
