@@ -75,7 +75,7 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
 
     it "detects the uniqueness problem" do
       assert_equal 1, errors.length
-      assert_equal("Fragment name \"frag1\" must be unique", errors[1]["message"])
+      assert_equal("Fragment name \"frag1\" must be unique", errors[0]["message"])
     end
   end
 
