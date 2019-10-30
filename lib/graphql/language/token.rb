@@ -14,7 +14,7 @@ module GraphQL
       attr_reader :value
       attr_reader :prev_token, :line, :col
 
-      def initialize(value:, name:, line:, col:, prev_token:)
+      def initialize(name, value, line, col, prev_token)
         @name = name
         @value = -value
         @line = line
