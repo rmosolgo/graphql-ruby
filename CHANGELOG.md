@@ -34,6 +34,25 @@
 - Resolver `loads:` assign the value to argument `@loads` #2364
 - Only integers are accepted for `Int` type #2404
 
+## 1.9.15 (30 Oct 2019)
+
+## New features
+
+- Improve parser performance #2572
+- Add `def prepare` API for input objects #1869
+- Support `extensions` config in Resolver classes #2570
+- Support custom `.connection_extension` in field classes #2561
+- Warn when a field name is a Ruby keyword #2559
+- Improve performance for ActiveRecord connection #2547
+
+## Bug fixes
+
+- Fix errantly generated `def resolve_field` method in `BaseField` #2578
+- Comment out the `null_session` handling in the generated controller, for better compat with Rails API mode #2557
+- Fix validation error with duplicate, self-referencing fragment #2577
+- Revert the `.authorized?` behavior of InputObjects to handle cyclical references. See 1.10.0.pre1 for a better behavior. #2576
+- Replace `NotImplementedError` (which is meant for operating system APIs) with `GraphQL::RequiredImplementationMissingError` #2543
+
 ## 1.9.14 (14 Oct 2019)
 
 ## New features
