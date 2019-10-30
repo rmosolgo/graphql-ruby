@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.14/">API</a>
+          <a href="/api-doc/1.9.15/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -47,13 +47,13 @@
 
 <h1 class="guide-header">Resolvers</h1>
 <div class="guide-container">
-  <p>A <a href="/api-doc/1.9.14/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a> is a container for field signature and resolution logic. It can be attached to a field with the <code class="highlighter-rouge">resolver:</code> keyword:</p>
+  <p>A <a href="/api-doc/1.9.15/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a> is a container for field signature and resolution logic. It can be attached to a field with the <code class="highlighter-rouge">resolver:</code> keyword:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use the resolver class to execute this field</span>
 <span class="n">field</span> <span class="ss">:pending_orders</span><span class="p">,</span> <span class="ss">resolver: </span><span class="no">PendingOrders</span>
 </code></pre></div></div>
 
-<p>Under the hood, <a href="/api-doc/1.9.14/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a> is a specialized subclass of <code class="highlighter-rouge">Resolver</code>.</p>
+<p>Under the hood, <a href="/api-doc/1.9.15/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a> is a specialized subclass of <code class="highlighter-rouge">Resolver</code>.</p>
 
 <h2 id="first-ask-yourself-">First, ask yourself …</h2>
 
@@ -240,6 +240,28 @@
 </code></pre></div></div>
 
 <p>In doing so, you can defer the loading of the type class until the nested resolver has already been loaded.</p>
+
+<h1 id="extensions">Extensions</h1>
+
+<p>In cases when you want your resolvers to add some extensions to the field they resolve, you can use <code class="highlighter-rouge">extension</code> method, which accepts extension class and options. Multiple extensions can be configured for a single resolver.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GreetingExtension</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">FieldExtension</span>
+  <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">object</span><span class="p">:,</span> <span class="n">arguments</span><span class="p">:,</span> <span class="o">**</span><span class="n">rest</span><span class="p">)</span>
+    <span class="nb">name</span> <span class="o">=</span> <span class="k">yield</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+    <span class="s2">"</span><span class="si">#{</span><span class="n">options</span><span class="p">[</span><span class="ss">:greeting</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">!"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">ResolverWithExtension</span> <span class="o">&lt;</span> <span class="no">BaseResolver</span>
+  <span class="n">type</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+  <span class="n">extension</span> <span class="no">GreetingExtension</span><span class="p">,</span> <span class="ss">greeting: </span><span class="s2">"Hi"</span>
+
+  <span class="k">def</span> <span class="nf">resolve</span>
+    <span class="s2">"Robert"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">
