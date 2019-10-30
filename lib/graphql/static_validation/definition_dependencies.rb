@@ -11,11 +11,11 @@ module GraphQL
         super
         @defdep_node_paths = {}
 
-        # { name => node } pairs for fragments
-        @defdep_fragment_definitions = {}
+        # { name => [node, ...] } pairs for fragments (although duplicate-named fragments are _invalid_, they are _possible_)
+        @defdep_fragment_definitions = Hash.new{ |h, k| h[k] = [] }
 
         # This tracks dependencies from fragment to Node where it was used
-        # { fragment_definition_node => [dependent_node, dependent_node]}
+        # { fragment_definition_name => [dependent_node, dependent_node]}
         @defdep_dependent_definitions = Hash.new { |h, k| h[k] = Set.new }
 
         # First-level usages of spreads within definitions
@@ -32,7 +32,7 @@ module GraphQL
       def on_document(node, parent)
         node.definitions.each do |definition|
           if definition.is_a? GraphQL::Language::Nodes::FragmentDefinition
-            @defdep_fragment_definitions[definition.name] = definition
+            @defdep_fragment_definitions[definition.name] << definition
           end
         end
         super
@@ -42,7 +42,7 @@ module GraphQL
       end
 
       def on_operation_definition(node, prev_node)
-        @defdep_node_paths[node] = NodeWithPath.new(node, context.path)
+        @defdep_node_paths[node.name] = NodeWithPath.new(node, context.path)
         @defdep_current_parent = node
         super
         @defdep_current_parent = nil
@@ -59,7 +59,7 @@ module GraphQL
         @defdep_node_paths[node] = NodeWithPath.new(node, context.path)
 
         # Track both sides of the dependency
-        @defdep_dependent_definitions[@defdep_fragment_definitions[node.name]] << @defdep_current_parent
+        @defdep_dependent_definitions[node.name] << @defdep_current_parent
         @defdep_immediate_dependencies[@defdep_current_parent] << node
         super
       end
@@ -116,24 +116,28 @@ module GraphQL
         dependency_map = DependencyMap.new
         # Don't allow the loop to run more times
         # than the number of fragments in the document
-        max_loops = @defdep_fragment_definitions.size
+        max_loops = 0
+        @defdep_fragment_definitions.each_value do |v|
+          max_loops += v.size
+        end
+
         loops = 0
 
         # Instead of tracking independent fragments _as you visit_,
         # determine them at the end. This way, we can treat fragments with the
         # same name as if they were the same name. If _any_ of the fragments
         # with that name has a dependency, we record it.
-        independent_fragment_nodes = @defdep_fragment_definitions.values - @defdep_immediate_dependencies.keys
+        independent_fragment_nodes = @defdep_fragment_definitions.values.flatten - @defdep_immediate_dependencies.keys
 
         while fragment_node = independent_fragment_nodes.pop
           loops += 1
           if loops > max_loops
-            raise("Resolution loops exceeded the number of definitions; infinite loop detected.")
+            raise("Resolution loops exceeded the number of definitions; infinite loop detected. (Max: #{max_loops}, Current: #{loops})")
           end
           # Since it's independent, let's remove it from here.
           # That way, we can use the remainder to identify cycles
           @defdep_immediate_dependencies.delete(fragment_node)
-          fragment_usages = @defdep_dependent_definitions[fragment_node]
+          fragment_usages = @defdep_dependent_definitions[fragment_node.name]
           if fragment_usages.empty?
             # If we didn't record any usages during the visit,
             # then this fragment is unused.
@@ -151,10 +155,15 @@ module GraphQL
               if block_given?
                 yield(definition_node, removed, fragment_node)
               end
-              if remaining.empty? && definition_node.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
+              if remaining.empty? &&
+                definition_node.is_a?(GraphQL::Language::Nodes::FragmentDefinition) &&
+                definition_node.name != fragment_node.name
                 # If all of this definition's dependencies have
                 # been resolved, we can now resolve its
                 # own dependents.
+                #
+                # But, it's possible to have a duplicate-named fragment here.
+                # Skip it in that case
                 independent_fragment_nodes << definition_node
               end
             end
@@ -166,7 +175,7 @@ module GraphQL
         # then they're still in there
         @defdep_immediate_dependencies.each do |defn_node, deps|
           deps.each do |spread|
-            if @defdep_fragment_definitions[spread.name].nil?
+            if !@defdep_fragment_definitions.key?(spread.name)
               dependency_map.unmet_dependencies[@defdep_node_paths[defn_node]] << @defdep_node_paths[spread]
               deps.delete(spread)
             end
