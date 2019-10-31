@@ -21,7 +21,7 @@ class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
 
   UPDATE_NAME_MUTATION = <<-RUBY
 module Mutations
-  class UpdateName < GraphQL::Schema::RelayClassicMutation
+  class UpdateName < BaseMutation
     # TODO: define return fields
     # field :post, Types::PostType, null: false
 
