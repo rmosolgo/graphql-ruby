@@ -24,6 +24,7 @@ module Graphql
     #       - query_type.rb
     #     - loaders/
     #     - mutations/
+    #       - base_mutation.rb
     #     - {app_name}_schema.rb
     # ```
     #

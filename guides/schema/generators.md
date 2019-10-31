@@ -29,6 +29,7 @@ This will:
 - Add schema definition
 - Add base type classes
 - Add a `Query` type definition
+- Add a `Mutation` type definition with a base mutation class
 - Add a route and controller for executing queries
 - Install [`graphiql-rails`](https://github.com/rmosolgo/graphiql-rails)
 
