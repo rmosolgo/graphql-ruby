@@ -19,6 +19,7 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 
     assert_file "app/graphql/types/.keep"
     assert_file "app/graphql/mutations/.keep"
+    assert_file "app/graphql/mutations/base_mutation.rb"
     ["base_input_object", "base_enum", "base_scalar", "base_union"].each do |base_type|
       assert_file "app/graphql/types/#{base_type}.rb"
     end
@@ -47,6 +48,17 @@ end
 RUBY
     assert_file "app/graphql/dummy_schema.rb", expected_schema
 
+    expected_base_mutation = <<-RUBY
+module Mutations
+  class BaseMutation < GraphQL::Schema::RelayClassicMutation
+    argument_class Types::BaseArgument
+    field_class Types::BaseField
+    input_object_class Types::BaseInputObject
+    object_class Types::BaseObject
+  end
+end
+RUBY
+    assert_file "app/graphql/mutations/base_mutation.rb", expected_base_mutation
 
     expected_query_type = <<-RUBY
 module Types

@@ -36,7 +36,7 @@ An additional `null` helper method is provided on classes inheriting from `Graph
 
 ## Example mutation class
 
-You should add a base class to your application, for example:
+If you used the {% internal_link "install generator", "/schema/generators#graphqlinstall" %}, a base mutation class will already have been generated for you. If that's not the case, you should add a base class to your application, for example:
 
 ```ruby
 class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
