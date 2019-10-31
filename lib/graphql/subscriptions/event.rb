@@ -37,7 +37,7 @@ module GraphQL
           arguments
         when Hash
           if field.is_a?(GraphQL::Schema::Field)
-            stringify_args(arguments)
+            stringify_args(field, arguments)
           else
             GraphQL::Query::LiteralInput.from_arguments(
               arguments,
@@ -55,20 +55,34 @@ module GraphQL
 
       class << self
         private
-        def stringify_args(args)
+        def stringify_args(arg_owner, args)
           case args
           when Hash
             next_args = {}
             args.each do |k, v|
-              str_k = GraphQL::Schema::Member::BuildType.camelize(k.to_s)
-              next_args[str_k] = stringify_args(v)
+              arg_name = k.to_s
+              camelized_arg_name = GraphQL::Schema::Member::BuildType.camelize(arg_name)
+              arg_defn = get_arg_definition(arg_owner, camelized_arg_name)
+
+              if arg_defn
+                normalized_arg_name = camelized_arg_name
+              else
+                normalized_arg_name = arg_name
+                arg_defn = get_arg_definition(arg_owner, normalized_arg_name)
+              end
+
+              next_args[normalized_arg_name] = stringify_args(arg_defn[1].type, v)
             end
             next_args
           when Array
-            args.map { |a| stringify_args(a) }
+            args.map { |a| stringify_args(arg_owner, a) }
           else
             args
           end
+        end
+
+        def get_arg_definition(arg_owner, arg_name)
+          arg_owner.arguments.find { |k, v| k == arg_name || v.keyword.to_s == arg_name }
         end
       end
     end

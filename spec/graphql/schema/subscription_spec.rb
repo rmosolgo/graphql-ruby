@@ -34,7 +34,8 @@ describe GraphQL::Schema::Subscription do
     end
 
     class TootWasTooted < BaseSubscription
-      argument :handle, String, required: true, loads: User, as: :user
+      argument :handle, String, required: true, loads: User, as: :user, camelize: false
+
       field :toot, Toot, null: false
       field :user, User, null: false
       # Can't subscribe to private users
