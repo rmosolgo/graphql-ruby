@@ -663,6 +663,23 @@ module Jazz
     end
   end
 
+  class DummyOutput < GraphQL::Schema::Object
+    graphql_name "DummyOutput"
+
+    field :name, String, null: true
+  end
+
+  class ReturnsMultipleErrors < GraphQL::Schema::Mutation
+    field :dummy_field, DummyOutput, null: false
+
+    def resolve
+      [
+        GraphQL::ExecutionError.new("First error"),
+        GraphQL::ExecutionError.new("Second error")
+      ]
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
@@ -678,6 +695,7 @@ module Jazz
     field :upvote_ensembles_as_bands, mutation: UpvoteEnsemblesAsBands
     field :upvote_ensembles_ids, mutation: UpvoteEnsemblesIds
     field :rename_ensemble_as_band, mutation: RenameEnsembleAsBand
+    field :returns_multiple_errors, mutation: ReturnsMultipleErrors, null: false
     field :has_extras, mutation: HasExtras
     field :has_extras_stripped, mutation: HasExtrasStripped
 
