@@ -146,3 +146,38 @@ end
 ```
 
 {{ "GraphQL::Relay::Mutation" | api_doc }} fields will also receive `root_value:` as `obj` (assuming they're attached directly to your `MutationType`).
+
+## Batch updates
+
+You can call a mutation that manipulates one object multiple times in one GraphQL request. This is accomplished using GraphQL `Aliases`. For example:
+
+```ruby
+mutation {
+  p001: createPost(
+    createdById: "1",
+    postParams: { title: "...", body: "..." }
+  ) {
+    id
+    title
+    createdBy { name }
+  }
+
+  p002: createPost(
+    createdById: "1",
+    postParams: { title: "...", body: "..." }
+  ) {
+    id
+    title
+    createdBy { name }
+  }
+
+  p003: createPost(
+    createdById: "1",
+    postParams: { title: "...", body: "..." }
+  ) {
+    id
+    title
+    createdBy { name }
+  }
+}
+```
