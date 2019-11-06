@@ -5,7 +5,7 @@ describe "GraphQL::Dataloader" do
   module DataloaderTest
     module Backend
       LOG = []
-      DATA = {
+      DEFAULT_DATA = {
         "b1" => { title: "Remembering", author_id: "a1" },
         "b2" => { title: "That Distant Land", author_id: "a1" },
         "b3" => { title: "Doggies", author_id: "a2" },
@@ -13,9 +13,17 @@ describe "GraphQL::Dataloader" do
         "a2" => { name: "Sandra Boynton", book_ids: ["b3"] },
       }
 
+      class << self
+        attr_accessor :data
+      end
+
       def self.mget(keys)
         LOG << "MGET #{keys}"
-        keys.map { |k| DATA[k] }
+        keys.map { |k| self.data[k] }
+      end
+
+      def self.set(id, object)
+        self.data[id] = object
       end
     end
 
@@ -66,7 +74,22 @@ describe "GraphQL::Dataloader" do
         end
       end
 
+      class Mutation < GraphQL::Schema::Object
+        field :add_author, Author, null: true do
+          argument :id, ID, required: true
+          argument :name, String, required: true
+          argument :book_ids, [ID], required: true
+        end
+
+        def add_author(id:, name:, book_ids:)
+          author = { name: name, book_ids: book_ids }
+          Backend.set(id, author)
+          author
+        end
+      end
+
       query(Query)
+      mutation(Mutation)
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
       use GraphQL::Dataloader
@@ -80,6 +103,7 @@ describe "GraphQL::Dataloader" do
   let(:log) { DataloaderTest::Backend::LOG }
 
   before do
+    DataloaderTest::Backend.data = DataloaderTest::Backend::DEFAULT_DATA
     log.clear
   end
 
@@ -143,5 +167,26 @@ describe "GraphQL::Dataloader" do
     assert_equal "Wendell Berry", results[0]["data"]["author"]["name"]
     assert_equal "Sandra Boynton", results[1]["data"]["author"]["name"]
     assert_equal ["MGET [\"a1\", \"a2\"]"], log
+  end
+
+  it "doesn't batch between mutations" do
+    query_str = <<-GRAPHQL
+      mutation {
+        add1: addAuthor(id: "a3", name: "Beatrix Potter", bookIds: ["b1", "b2"]) {
+          books {
+            title
+          }
+        }
+        add2: addAuthor(id: "a4", name: "Joel Salatin", bookIds: ["b1", "b3"]) {
+          books {
+            title
+          }
+        }
+      }
+    GRAPHQL
+
+    exec_query(query_str)
+    expected_log = ['MGET ["b1", "b2"]', 'MGET ["b1", "b3"]']
+    assert_equal expected_log, log
   end
 end

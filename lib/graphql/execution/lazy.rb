@@ -20,6 +20,15 @@ module GraphQL
         Resolve.resolve(val)
       end
 
+      # If `maybe_lazy` is a Lazy, sync it
+      def self.sync(maybe_lazy)
+        if maybe_lazy.is_a?(Lazy)
+          maybe_lazy.sync
+        else
+          maybe_lazy
+        end
+      end
+
       attr_reader :path, :field
 
       # Create a {Lazy} which will get its inner value by calling the block
