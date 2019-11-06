@@ -10,22 +10,12 @@ module GraphQL
     # A loader whose `#perform` will run on a background thread.
     #
     # It uses `Concurrent::Future` which uses a global thread pool.
+    # @return [Concurrent::Future]
     class BackgroundLoader < GraphQL::Dataloader::Loader
       def sync
         Concurrent::Future.execute do
-          setup_thread
           super
-          teardown_thread
         end
-      end
-
-      # Implement this method to prepare any thread state that your
-      # application depends on, for example, `Thread.current[:user] = @context[:current_user]`
-      def setup_thread
-      end
-
-      # Implement this method to remove any setup added in `setup_thread`
-      def teardown_thread
       end
     end
   end

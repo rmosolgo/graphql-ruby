@@ -3,12 +3,14 @@
 module GraphQL
   class Dataloader
     class Loader
-      class StateError < GraphQL::Error; end
-
       def self.load(context, key, value)
         dl = context[:dataloader]
         loader = dl.loaders[self][key]
         loader.load(value)
+      end
+
+      def self.load_all(context, key, values)
+        GraphQL::Execution::Lazy.all(values.map { |value| load(context, key, value) })
       end
 
       def initialize(context, key)
