@@ -181,3 +181,5 @@ mutation {
   }
 }
 ```
+
+Keep in mind that you have to handle issues when one mutation will fail while the other ones succeed.
