@@ -135,7 +135,7 @@ module GraphQL
       end
 
       def perform(values)
-        raise NotImplementedError, "`#{self.class}#perform` should load `values` for `@key` and return an item for each of `values`"
+        raise NotImplementedError, "`#{self.class}#perform` should call `fulfill(v, loaded_value)` for each of `values`"
       end
     end
   end
