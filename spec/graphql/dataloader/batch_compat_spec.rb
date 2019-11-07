@@ -186,9 +186,10 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
         variant_image_queries = variants.map do |variant|
           AssociationLoader.for(context, ProductVariant, :images).load(variant)
         end
-        GraphQL::Execution::Lazy.all(variant_image_queries).then(&:flatten)
+        # TODO this is not good -- needs a good public API
+        GraphQL::Dataloader::Loader::AllPendingLoads.new(variant_image_queries).then(&:flatten)
       end
-      GraphQL::Execution::Lazy.all([product_image_query, variant_images_query]).then do
+      GraphQL::Dataloader::Loader::AllPendingLoads.new([product_image_query, variant_images_query]).then do
         [product_image_query.value] + variant_images_query.value
       end
     end

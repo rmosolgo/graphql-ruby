@@ -8,6 +8,7 @@ module GraphQL
         dataloader_class: self,
       )
       schema.instrument(:multiplex, instrumenter)
+      schema.lazy_resolve(Dataloader::Loader::PendingLoad, :sync)
       # TODO clean this up when we can assume it's a class-based schema
       if !schema.is_a?(Class)
         schema = schema.target.class

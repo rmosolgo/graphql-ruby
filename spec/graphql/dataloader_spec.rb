@@ -33,6 +33,7 @@ describe "GraphQL::Dataloader" do
       end
 
       def perform(ids)
+        ids = ids.sort # for stable logging
         Backend.mget(ids).each_with_index do |item, idx|
           fulfill(ids[idx], item)
         end
@@ -80,7 +81,7 @@ describe "GraphQL::Dataloader" do
         end
 
         def books_count(author_id:)
-          # Of course this could be done without a load, but I want to test nested loaders
+          # Of course this could be done without a nested load, but I want to test nested loaders
           BackendLoader.load_object(@context, author_id).then do |author|
             BackendLoader.load_all(@context, nil, author[:book_ids]).then do |books|
               books.size
@@ -166,7 +167,7 @@ describe "GraphQL::Dataloader" do
     }')
 
     expected_log = [
-      'MGET ["b1", "a1"]',
+      'MGET ["a1", "b1"]',
       'MGET ["b2"]'
     ]
     assert_equal expected_log, log
