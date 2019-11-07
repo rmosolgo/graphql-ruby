@@ -3,17 +3,20 @@
 module GraphQL
   class Dataloader
     class Loader
-      def self.load(context, key, value)
+      def self.load(context, *key, value)
+        self.for(context, *key).load(value)
+      end
+
+      def self.for(context, *key_parts)
         dl = context[:dataloader]
-        loader = dl.loaders[self][key]
-        loader.load(value)
+        dl.loaders[self][key_parts]
       end
 
       def self.load_all(context, key, values)
         GraphQL::Execution::Lazy.all(values.map { |value| load(context, key, value) })
       end
 
-      def initialize(context, key)
+      def initialize(context, *key)
         @context = context
         @key = key
         @promises = {}
@@ -25,6 +28,7 @@ module GraphQL
           if !@loaded_values.key?(value)
             sync
           end
+          # TODO raise if key is missing?
           @loaded_values[value]
         end
       end
@@ -32,12 +36,16 @@ module GraphQL
       def sync
         # Promises might be added in the meantime, but they won't be included in this list.
         keys_to_load = @promises.keys - @loaded_values.keys
-        resolved_values = perform(keys_to_load)
-        keys_to_load.each_with_index do |k, i|
-          resolved_value = resolved_values[i]
-          @loaded_values[k] = resolved_value
-        end
+        perform(keys_to_load)
         nil
+      end
+
+      def fulfill(key, value)
+        @loaded_values[key] = value
+      end
+
+      def fulfilled?(key)
+        @loaded_values.key?(key)
       end
 
       def perform(values)

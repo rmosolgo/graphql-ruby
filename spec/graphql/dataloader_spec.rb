@@ -33,7 +33,9 @@ describe "GraphQL::Dataloader" do
       end
 
       def perform(ids)
-        Backend.mget(ids)
+        Backend.mget(ids).each_with_index do |item, idx|
+          fulfill(ids[idx], item)
+        end
       end
     end
 

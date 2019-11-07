@@ -23,7 +23,7 @@ module GraphQL
       # If `maybe_lazy` is a Lazy, sync it
       def self.sync(maybe_lazy)
         if maybe_lazy.is_a?(Lazy)
-          maybe_lazy.sync
+          maybe_lazy.value
         else
           maybe_lazy
         end
@@ -77,6 +77,10 @@ module GraphQL
         self.new {
           lazies.map { |l| l.is_a?(Lazy) ? l.value : l }
         }
+      end
+
+      def inspect
+        "#<#{self.class.name} #{@field || "unknown-field"} / #{@path || "unknown-path"} @resolved=#{@resolved} @value=#{@value.inspect}>"
       end
 
       # This can be used for fields which _had no_ lazy results
