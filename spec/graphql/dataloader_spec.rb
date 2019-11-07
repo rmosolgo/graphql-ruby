@@ -74,6 +74,19 @@ describe "GraphQL::Dataloader" do
         def author(id:)
           BackendLoader.load_object(@context, id)
         end
+
+        field :books_count, Integer, null: false do
+          argument :author_id, ID, required: true
+        end
+
+        def books_count(author_id:)
+          # Of course this could be done without a load, but I want to test nested loaders
+          BackendLoader.load_object(@context, author_id).then do |author|
+            BackendLoader.load_all(@context, nil, author[:book_ids]).then do |books|
+              books.size
+            end
+          end
+        end
       end
 
       class Mutation < GraphQL::Schema::Object
@@ -189,6 +202,23 @@ describe "GraphQL::Dataloader" do
 
     exec_query(query_str)
     expected_log = ['MGET ["b1", "b2"]', 'MGET ["b1", "b3"]']
+    assert_equal expected_log, log
+  end
+
+  it "works with nested loaders" do
+    query_str = <<-GRAPHQL
+    {
+      a1: booksCount(authorId: "a1")
+      a2: booksCount(authorId: "a2")
+    }
+    GRAPHQL
+
+    res = exec_query(query_str)
+    assert_equal({"data"=>{"a1"=>2, "a2"=>1}}, res)
+    expected_log = [
+      'MGET ["a1", "a2"]',
+      'MGET ["b1", "b2", "b3"]',
+    ]
     assert_equal expected_log, log
   end
 end
