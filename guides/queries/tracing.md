@@ -113,18 +113,18 @@ end
 
 ## Skylight
 
-To add [Skylight](https://www.skylight.io) instrumentation:
+To add [Skylight](https://www.skylight.io) instrumentation, you may either enable the [GraphQL probe](https://www.skylight.io/support/getting-more-from-skylight#graphql) or use [ActiveSupportNotificationsTracing](/queries/tracing.html#activesupportnotifications).
 
 ```ruby
-class MySchema < GraphQL::Schema
-  use(GraphQL::Tracing::SkylightTracing)
-end
+# config/application.rb
+config.skylight.probes << "graphql"
 ```
-
 
 <div class="monitoring-img-group">
   {{ "/queries/skylight_example.png" | link_to_img:"skylight monitoring" }}
 </div>
+
+GraphQL instrumentation for Skylight is available in versions >= 4.2.0.
 
 ## Datadog
 
