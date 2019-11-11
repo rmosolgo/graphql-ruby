@@ -185,6 +185,25 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         assert_equal 3, complexity
       end
     end
+
+    describe "redundant fields not within a fragment" do
+      let(:query_string) {%|
+      {
+        cheese {
+          id
+        }
+
+        cheese {
+          id
+        }
+      }
+      |}
+
+      it "only counts them once" do
+        complexity = reduce_result.first
+        assert_equal 2, complexity
+      end
+    end
   end
 
   describe "relay types" do
