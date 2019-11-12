@@ -2,6 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Introspection::SchemaType do
+  let(:schema) { Class.new(Dummy::Schema) }
   let(:query_string) {%|
     query getSchema {
       __schema {
@@ -11,12 +12,12 @@ describe GraphQL::Introspection::SchemaType do
       }
     }
   |}
-  let(:result) { Dummy::Schema.execute(query_string) }
+  let(:result) {schema.execute(query_string) }
 
   it "exposes the schema" do
     expected = { "data" => {
       "__schema" => {
-        "types" => Dummy::Schema.types.values.map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} },
+        "types" => schema.types.values.sort_by(&:graphql_name).map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} },
         "queryType"=>{
           "fields"=>[
             {"name"=>"allAnimal"},
@@ -53,5 +54,96 @@ describe GraphQL::Introspection::SchemaType do
       }
     }}
     assert_equal(expected, result)
+  end
+
+  describe "when the schema has types that are only reachable through hidden types" do
+    let(:schema) do
+      nested_invisible_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'NestedInvisible'
+        field :foo, String, null: false
+      end
+
+      invisible_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'Invisible'
+        field :foo, String, null: false
+        field :nested_invisible, nested_invisible_type, null: false
+
+        def self.visible?(context)
+          false
+        end
+      end
+
+      invisible_input_type = Class.new(GraphQL::Schema::InputObject) do
+        graphql_name 'InvisibleInput'
+        argument :foo, String, required: false
+
+        def self.visible?(context)
+          false
+        end
+      end
+
+      visible_input_type = Class.new(GraphQL::Schema::InputObject) do
+        graphql_name 'VisibleInput'
+        argument :foo, String, required: false
+      end
+
+      visible_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'Visible'
+        field :foo, String, null: false
+      end
+
+      invisible_orphan_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'InvisibleOrphan'
+        field :foo, String, null: false
+
+        def self.visible?(context)
+          false
+        end
+      end
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'Query'
+        field :foo, String, null: false
+        field :invisible, invisible_type, null: false
+        field :visible, visible_type, null: false
+        field :with_invisible_args, String, null: false do
+          argument :invisible, invisible_input_type, required: false
+          argument :visible, visible_input_type, required: true
+        end
+      end
+
+      Class.new(GraphQL::Schema) do
+        query query_type
+        orphan_types invisible_orphan_type
+      end
+    end
+
+    let(:query_string) {%|
+      query getSchema {
+        __schema {
+          types { name }
+        }
+      }
+    |}
+
+    it "only returns reachable types" do
+      expected_types = [
+        'Boolean',
+        'Query',
+        'String',
+        'Visible',
+        'VisibleInput',
+        '__Directive',
+        '__DirectiveLocation',
+        '__EnumValue',
+        '__Field',
+        '__InputValue',
+        '__Schema',
+        '__Type',
+        '__TypeKind'
+      ]
+      types = result.dig('data', '__schema', 'types').map { |type| type.fetch('name') }
+      assert_equal(expected_types, types)
+    end
   end
 end
