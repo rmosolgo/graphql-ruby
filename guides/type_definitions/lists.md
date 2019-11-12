@@ -109,7 +109,7 @@ Valid | Invalid
 ------|------
 `[]`  | `null`
 `[1, 2, ...]`| `[null]`
- | `[1, null, 2, ...]`
+| | `[1, null, 2, ...]`
 
 ### Non-null lists with nullable items
 
