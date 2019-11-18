@@ -33,6 +33,8 @@ module GraphQL
         # But when using the interpreter, no instrumenters are applied.
         if context.interpreter?
           input = inputs[:input].to_kwargs
+          input[:lookahead] = inputs[:lookahead] if inputs[:lookahead]
+
           # Transfer these from the top-level hash to the
           # shortcutted `input:` object
           self.class.extras.each do |ext|
