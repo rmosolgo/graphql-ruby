@@ -12,7 +12,7 @@ describe GraphQL::Introspection::SchemaType do
       }
     }
   |}
-  let(:result) {schema.execute(query_string) }
+  let(:result) { schema.execute(query_string) }
 
   it "exposes the schema" do
     expected = { "data" => {
