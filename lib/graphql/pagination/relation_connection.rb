@@ -53,6 +53,7 @@ module GraphQL
         raise "#{self.class}#null_relation(relation) must return an empty relation for a #{relation.class} (#{relation.inspect})"
       end
 
+      # @return [Integer]
       def offset_from_cursor(cursor)
         decode(cursor).to_i
       end

@@ -31,10 +31,10 @@ module GraphQL
           elsif value.is_a?(GraphQL::Pagination::Connection)
             # update the connection with some things that may not have been provided
             value.context ||= context
-            value.first ||= arguments[:first]
-            value.after ||= arguments[:after]
-            value.last ||= arguments[:last]
-            value.before ||= arguments[:before]
+            value.first_value ||= arguments[:first]
+            value.after_value ||= arguments[:after]
+            value.last_value ||= arguments[:last]
+            value.before_value ||= arguments[:before]
             value.max_page_size ||= field.max_page_size
             value
           elsif context.schema.new_connections?

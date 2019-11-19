@@ -68,7 +68,6 @@ module GraphQL
 
           limited_nodes = limited_nodes.first(first) if first
           limited_nodes = limited_nodes.last(last) if last
-          limited_nodes = limited_nodes.first(max_page_size) if max_page_size && !first && !last
 
           limited_nodes
         end

@@ -26,7 +26,18 @@ module GraphQL
       # @return [GraphQL::Query::Context]
       attr_accessor :context
 
-      attr_accessor :before, :after
+      # Raw access to client-provided values. (`max_page_size` not applied to first or last.)
+      attr_accessor :before_value, :after_value, :first_value, :last_value
+
+      # @return [String, nil] the client-provided cursor
+      def before
+        @before_value
+      end
+
+      # @return [String, nil] the client-provided cursor
+      def after
+        @after_value
+      end
 
       # @param items [Object] some unpaginated collection item, like an `Array` or `ActiveRecord::Relation`
       # @param context [Query::Context]
@@ -34,13 +45,14 @@ module GraphQL
       # @param after [String, nil] A cursor for pagination, if the client provided one
       # @param last [Integer, nil] Limit parameter from the client, if provided
       # @param before [String, nil] A cursor for pagination, if the client provided one.
+      # @param max_page_size [Integer, nil] A configured value to cap the result size. Applied as `first` if neither first or last are given.
       def initialize(items, context: nil, first: nil, after: nil, max_page_size: nil, last: nil, before: nil)
         @items = items
         @context = context
-        @first = first
-        @after = after
-        @last = last
-        @before = before
+        @first_value = first
+        @after_value = after
+        @last_value = last
+        @before_value = before
         @max_page_size = max_page_size
       end
 
@@ -50,15 +62,24 @@ module GraphQL
       end
 
       attr_writer :first
-      # @return [Integer, nil] a clamped `first` value. (The underlying instance variable doesn't have limits on it)
+      # @return [Integer, nil]
+      #   A clamped `first` value.
+      #   (The underlying instance variable doesn't have limits on it.)
+      #   If neither `first` nor `last` is given, but `max_page_size` is present, max_page_size is used for first.
       def first
-        limit_pagination_argument(@first, max_page_size)
+        @first ||= begin
+          capped = limit_pagination_argument(@first_value, max_page_size)
+          if capped.nil? && last.nil?
+            capped = max_page_size
+          end
+          capped
+        end
       end
 
       attr_writer :last
-      # @return [Integer, nil] a clamped `last` value. (The underlying instance variable doesn't have limits on it)
+      # @return [Integer, nil] A clamped `last` value. (The underlying instance variable doesn't have limits on it)
       def last
-        limit_pagination_argument(@last, max_page_size)
+        @last ||= limit_pagination_argument(@last_value, max_page_size)
       end
 
       # @return [Array<Edge>] {nodes}, but wrapped with Edge instances
@@ -66,7 +87,7 @@ module GraphQL
         @edges ||= nodes.map { |n| self.class.edge_class.new(n, self) }
       end
 
-      # @return [Array<Object>] A slice of {items}, constrained by {@first}/{@after}/{@last}/{@before}
+      # @return [Array<Object>] A slice of {items}, constrained by {@first_value}/{@after_value}/{@last_value}/{@before_value}
       def nodes
         raise PaginationImplementationMissingError, "Implement #{self.class}#nodes to paginate `@items`"
       end
