@@ -525,7 +525,7 @@ module GraphQL
                 else
                   extended_obj
                 end
-                @resolver_class.new(object: resolver_obj, context: ctx)
+                @resolver_class.new(object: resolver_obj, context: ctx, field: self)
               else
                 extended_obj
               end
@@ -642,7 +642,7 @@ module GraphQL
             if extended_obj.is_a?(GraphQL::Schema::Object)
               extended_obj = extended_obj.object
             end
-            extended_obj = @resolver_class.new(object: extended_obj, context: query_ctx)
+            extended_obj = @resolver_class.new(object: extended_obj, context: query_ctx, field: self)
           end
 
           if extended_obj.respond_to?(@resolver_method)
