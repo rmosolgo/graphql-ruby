@@ -131,13 +131,6 @@ module GraphQL
             end
           end
 
-          # Apply max page size if nothing else was applied
-          if max_page_size && !first && !last
-            if relation_limit(paginated_nodes).nil? || relation_limit(paginated_nodes) > max_page_size
-              paginated_nodes = set_limit(paginated_nodes, max_page_size)
-            end
-          end
-
           @has_next_page = !!(
             (before_offset && before_offset > 0) ||
             (first && sliced_nodes_count > first)
