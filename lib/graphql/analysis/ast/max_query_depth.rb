@@ -4,10 +4,10 @@ module GraphQL
     module AST
       class MaxQueryDepth < QueryDepth
         def result
-          configured_max_depth = if query.is_a?(GraphQL::Execution::Multiplex)
-            query.schema.max_depth
-          else
+          configured_max_depth = if query
             query.max_depth
+          else
+            multiplex.schema.max_depth
           end
 
           if configured_max_depth && @max_depth > configured_max_depth
