@@ -46,13 +46,13 @@ describe GraphQL::Introspection::EntryPoints do
 
     it "returns reachable types" do
       result = schema.execute(query_string, variables: { name: 'Visible' })
-      type_name = result.dig('data', '__type', 'name')
+      type_name = result['data']['__type']['name']
       assert_equal('Visible', type_name)
     end
 
     it "returns nil for unreachable types" do
       result = schema.execute(query_string, variables: { name: 'NestedInvisible' })
-      type_name = result.dig('data', '__type', 'name')
+      type_name = result['data']['__type']
       assert_nil(type_name)
     end
   end

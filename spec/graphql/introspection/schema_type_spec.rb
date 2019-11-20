@@ -142,7 +142,7 @@ describe GraphQL::Introspection::SchemaType do
         '__Type',
         '__TypeKind'
       ]
-      types = result.dig('data', '__schema', 'types').map { |type| type.fetch('name') }
+      types = result['data']['__schema']['types'].map { |type| type.fetch('name') }
       assert_equal(expected_types, types)
     end
   end
