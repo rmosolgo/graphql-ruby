@@ -148,6 +148,45 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "`use` works with plugins that attach instrumentation, tracers, query analyzers" do
+    let(:schema) do
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'Query'
+
+        field :foobar, Integer, null: false
+
+        def foobar
+          1337
+        end
+      end
+
+      module PluginWithInstrumentationTracingAndAnalyzer
+        def self.use(schema_defn_proxy)
+          schema_defn = schema_defn_proxy.target
+          schema_defn.instrument :query, NoOpInstrumentation
+          schema_defn.tracer NoOpTracer
+          schema_defn.query_analyzer NoOpAnalyzer
+        end
+      end
+
+      Class.new(GraphQL::Schema) do
+        query query_type
+        use GraphQL::Analysis::AST
+        use GraphQL::Execution::Interpreter
+
+        use PluginWithInstrumentationTracingAndAnalyzer
+      end
+    end
+
+    let(:query) { GraphQL::Query.new(schema, "query { foobar }") }
+
+    focus
+    it "attaches plugins correctly" do
+      res = query.result
+      assert res.key?("data")
+    end
+  end
+
   describe "when mixing define and class-based" do
     module MixedSchema
       class Query < GraphQL::Schema::Object

@@ -114,3 +114,32 @@ module TestTracing
     end
   end
 end
+
+module NoOpTracer
+  def trace(_key, _data)
+    yield
+  end
+end
+
+module NoOpTracer
+  def trace(_key, _data)
+    yield
+  end
+end
+
+module NoOpInstrumentation
+  module_function
+
+  # Log the time of the query
+  def before_query(_query)
+  end
+
+  def after_query(_query)
+  end
+end
+
+class NoOpAnalyzer < GraphQL::Analysis::AST::Analyzer
+  def result
+    # no op
+  end
+end
