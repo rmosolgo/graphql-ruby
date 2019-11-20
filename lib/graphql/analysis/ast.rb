@@ -22,7 +22,7 @@ module GraphQL
       #
       # @param multiplex [GraphQL::Execution::Multiplex]
       # @param analyzers [Array<GraphQL::Analysis::AST::Analyzer>]
-      # @return [void]
+      # @return [Array<Any>] Results from multiplex analyzers
       def analyze_multiplex(multiplex, analyzers)
         multiplex_analyzers = analyzers.map { |analyzer| analyzer.new(multiplex) }
 
@@ -45,8 +45,8 @@ module GraphQL
           multiplex.queries.each_with_index do |query, idx|
             query.analysis_errors = multiplex_errors + analysis_errors(query_results[idx])
           end
+          multiplex_results
         end
-        nil
       end
 
       # @param query [GraphQL::Query]
