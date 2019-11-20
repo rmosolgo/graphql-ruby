@@ -53,6 +53,7 @@ module GraphQL
         raise "#{self.class}#null_relation(relation) must return an empty relation for a #{relation.class} (#{relation.inspect})"
       end
 
+      # @return [Integer]
       def offset_from_cursor(cursor)
         decode(cursor).to_i
       end
@@ -127,13 +128,6 @@ module GraphQL
               offset = (relation_offset(paginated_nodes) || 0) + sliced_nodes_count - [last, sliced_nodes_count].min
               paginated_nodes = set_offset(paginated_nodes, offset)
               paginated_nodes = set_limit(paginated_nodes, last)
-            end
-          end
-
-          # Apply max page size if nothing else was applied
-          if max_page_size && !first && !last
-            if relation_limit(paginated_nodes).nil? || relation_limit(paginated_nodes) > max_page_size
-              paginated_nodes = set_limit(paginated_nodes, max_page_size)
             end
           end
 

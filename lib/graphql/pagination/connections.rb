@@ -29,7 +29,14 @@ module GraphQL
       end
 
       def self.use(schema_defn)
-        schema_defn.connections = self.new
+        if schema_defn.is_a?(Class)
+          schema_defn.connections = self.new
+        else
+          # Unwrap a `.define` object
+          schema_defn = schema_defn.target
+          schema_defn.connections = self.new
+          schema_defn.class.connections = schema_defn.connections
+        end
       end
 
       def initialize

@@ -191,14 +191,20 @@ module ConnectionAssertions
           res = exec_query(query_str, {})
           # Even though neither first nor last was provided, max_page_size was applied.
           assert_names(["Avocado", "Beet", "Cucumber", "Dill", "Eggplant", "Fennel"], res)
+          assert_equal true, get_page_info(res, "hasNextPage")
+          assert_equal false, get_page_info(res, "hasPreviousPage")
 
           # max_page_size overrides first
           res = exec_query(query_str, first: 10)
           assert_names(["Avocado", "Beet", "Cucumber", "Dill", "Eggplant", "Fennel"], res)
+          assert_equal true, get_page_info(res, "hasNextPage")
+          assert_equal false, get_page_info(res, "hasPreviousPage")
 
           # max_page_size overrides last
           res = exec_query(query_str, last: 10)
           assert_names(["Eggplant", "Fennel", "Ginger", "Horseradish", "I Can't Believe It's Not Butter", "Jicama"], res)
+          assert_equal false, get_page_info(res, "hasNextPage")
+          assert_equal true, get_page_info(res, "hasPreviousPage")
         end
       end
 
