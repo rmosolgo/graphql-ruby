@@ -34,9 +34,11 @@ module GraphQL
         if context.interpreter?
           input = inputs[:input].to_kwargs
 
+          new_extras = field.extras if field
+
           # Transfer these from the top-level hash to the
           # shortcutted `input:` object
-          self.class.extras(field&.extras).each do |ext|
+          self.class.extras(new_extras).each do |ext|
             # It's possible that the `extra` was not passed along by this point,
             # don't re-add it if it wasn't given here.
             if inputs.key?(ext)
