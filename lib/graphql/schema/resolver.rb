@@ -30,7 +30,7 @@ module GraphQL
       # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
       # @param context [GraphQL::Query::Context]
       # @param field [GraphQL::Schema::Field]
-      def initialize(object:, context:, field: nil)
+      def initialize(object:, context:, field:)
         @object = object
         @context = context
         @field = field

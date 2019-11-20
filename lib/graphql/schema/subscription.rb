@@ -29,7 +29,7 @@ module GraphQL
       # propagate null.
       null false
 
-      def initialize(object:, context:, field: nil)
+      def initialize(object:, context:, field:)
         super
         # Figure out whether this is an update or an initial subscription
         @mode = context.query.subscription_update? ? :update : :subscribe
