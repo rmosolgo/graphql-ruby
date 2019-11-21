@@ -18,7 +18,7 @@ describe GraphQL::Schema::Union do
 
   describe "filter_possible_types" do
     it "filters types" do
-      assert_equal [Jazz::Musician], union.possible_types(ctx: { no_ensemble: true })
+      assert_equal [Jazz::Musician], union.possible_types(ctx: { hide_ensemble: true })
     end
   end
 
@@ -55,7 +55,7 @@ describe GraphQL::Schema::Union do
       union_type = union.to_graphql
       expected_type = GraphQL::BaseType.resolve_related_type(Jazz::Musician)
 
-      assert_equal [expected_type], union_type.possible_types(no_ensemble: true)
+      assert_equal [expected_type], union_type.possible_types(hide_ensemble: true)
     end
   end
 
@@ -99,7 +99,8 @@ describe GraphQL::Schema::Union do
       }
       GRAPHQL
 
-      res = Jazz::Schema.execute(query_str, context: { no_ensemble: true })
+      res = Jazz::Schema.execute(query_str, context: { hide_ensemble: true })
+      assert_equal 1, res.to_h["errors"].count
       assert_equal "Fragment on Ensemble can't be spread inside PerformingAct", res.to_h["errors"].first["message"]
     end
   end

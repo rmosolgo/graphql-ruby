@@ -307,8 +307,18 @@ module Jazz
     field :is_flat, Boolean, null: false, method: :flat
   end
 
+  class HideEnsemble < GraphQL::Schema::TypeMembership
+    def visible?(ctx)
+      return true if visibility.nil?
+
+      !ctx[visibility]
+    end
+  end
+
   class PerformingAct < GraphQL::Schema::Union
-    possible_types Musician, Ensemble
+    type_visibility_class HideEnsemble
+    possible_types Musician
+    possible_types Ensemble, visibility: :hide_ensemble
 
     def self.resolve_type(object, context)
       GraphQL::Execution::Lazy.new do
@@ -318,14 +328,6 @@ module Jazz
           Musician
         end
       end
-    end
-
-    def self.filtered_possible_types(ctx)
-      types = []
-      if ctx[:no_ensemble]
-        types << Ensemble
-      end
-      types
     end
   end
 

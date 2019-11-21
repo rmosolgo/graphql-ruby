@@ -13,30 +13,29 @@ describe GraphQL::UnionType do
       possible_types(types)
     }
   }
-  let(:filtered_union) {
-    class FilteredUnion < GraphQL::UnionType 
-      def filtered_possible_types(ctx)
-        types = []
-        if ctx[:no_type_2]
-          types << OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT)
-        end
-        types
-      end
-    end
 
-    base_types = [type_2, type_3]
-    FilteredUnion.define {
-      name("FilteredUnion")
-      description("Union with Filters")
-      possible_types(base_types)
-    }
-  }
+  class FilterType2 < GraphQL::Schema::TypeMembership
+    def visible?(ctx)
+      return true if visibility.nil?
+
+      visibility[:private] && ctx[:private]
+    end
+  end
+
+  class FilteredUnion < GraphQL::UnionType 
+    type_visibility_class FilterType2
+
+    possible_types OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT), visibility: { private: true }
+    possible_types OpenStruct.new(kind: GraphQL::TypeKinds::SCALAR)
+  end
+
+  let(:filtered_union) { FilteredUnion.new }
 
   it "has a name" do
     assert_equal("MyUnion", union.name)
   end
 
-  it '#include? returns true if type in in possible_types' do
+  it '#include? returns true if type in possible_types' do
     assert union.include?(type_1)
   end
 
@@ -57,12 +56,11 @@ describe GraphQL::UnionType do
   end
 
   it '#possible_types returns only filtered types if context is present' do
-    context = { no_type_2: true }
-    assert_equal [type_3], filtered_union.possible_types(context)
+    assert_equal [type_3], filtered_union.possible_types(private: false)
   end
 
-  it '#possible_types returns all possible types if no context provided' do
-    assert_equal [type_2, type_3], filtered_union.possible_types
+  it '#possible_types returns all possible types provided in a private context' do
+    assert_equal [type_2, type_3], filtered_union.possible_types(private: true)
   end
 
   describe "#resolve_type" do

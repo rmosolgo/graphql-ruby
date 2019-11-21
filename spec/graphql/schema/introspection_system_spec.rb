@@ -54,7 +54,7 @@ describe GraphQL::Schema::IntrospectionSystem do
     end
 
     it "doesn't include invisible union types based on context" do
-      context = { no_ensemble: true }
+      context = { hide_ensemble: true }
       res = Jazz::Schema.execute('{ __type(name: "PerformingAct") { possibleTypes { name } } }', context: context)
 
       assert_equal 1, res["data"]["__type"]["possibleTypes"].length

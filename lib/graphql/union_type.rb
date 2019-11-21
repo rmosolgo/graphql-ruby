@@ -27,19 +27,38 @@ module GraphQL
     accepts_definitions :possible_types, :resolve_type
     ensure_defined :possible_types, :resolve_type, :resolve_type_proc
 
-    attr_accessor :resolve_type_proc, :filtered_possible_types_proc
+    attr_accessor :resolve_type_proc
+    attr_reader :type_visibilities
+
+    class << self
+      def possible_types(*types, visibility: nil)
+        type_visibilities << @type_visibility_class.new(types, visibility)
+      end
+
+      def type_visibility_class(visibility_class = nil)
+        if visibility_class
+          @type_visibility_class = visibility_class
+        else
+          @type_visibility_class || GraphQL::Schema::TypeMembership
+        end
+      end
+
+      def type_visibilities
+        @type_visibilities ||= []
+      end
+    end
 
     def initialize
       super
-      @dirty_possible_types = []
-      @clean_possible_types = nil
+      @type_visibilities = self.class.type_visibilities
+      @cached_possible_types = {}
       @resolve_type_proc = nil
     end
 
     def initialize_copy(other)
       super
-      @clean_possible_types = nil
-      @dirty_possible_types = other.dirty_possible_types.dup
+      @type_visibilities = other.type_visibilities.dup
+      @cached_possible_types = {}
     end
 
     def kind
@@ -51,22 +70,19 @@ module GraphQL
       possible_types(ctx).include?(child_type_defn)
     end
 
-    def possible_types=(new_possible_types)
-      @clean_possible_types = nil
-      @dirty_possible_types = new_possible_types
-    end
-
     # @return [Array<GraphQL::ObjectType>] Types which may be found in this union
     def possible_types(ctx = GraphQL::Query::NullContext)
-      @clean_possible_types ||= begin
-        if @dirty_possible_types.respond_to?(:map)
-          @dirty_possible_types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
-        else
-          @dirty_possible_types
+      @cached_possible_types[ctx] ||= begin
+        @type_visibilities.reduce([]) do |types, type_visibility|
+          selected_types = type_visibility.visible?(ctx) ? types + type_visibility.types : types
+          selected_types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
         end
       end
+    end
 
-      filter_possible_types(@clean_possible_types, ctx)
+    def possible_types=(types, visibility: nil)
+      @type_visibilities = [self.class.type_visibility_class.new(types, visibility)]
+      @cached_possible_types = {}
     end
 
     # Get a possible type of this {UnionType} by type name
@@ -87,26 +103,6 @@ module GraphQL
       !get_possible_type(type_name, ctx).nil?
     end
 
-    # Types to filter out of the possible_types array
-    # @param ctx [GraphQL::Query::Context] The context for the current query
-    # @return [Array<GraphQL::ObjectType>] The types that are meant to be filtered
-    def filtered_possible_types(ctx)
-      if @filtered_possible_types_proc
-        @filtered_possible_types_proc.call(ctx)
-      else
-        []
-      end
-    end
-
-    def filter_possible_types(types, ctx)
-      return types unless types.respond_to?(:map)
-
-      original_types = types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
-      types_to_filter = filtered_possible_types(ctx).map { |type| GraphQL::BaseType.resolve_related_type(type) }
-
-      original_types - types_to_filter
-    end
-
     def resolve_type(value, ctx)
       ctx.query.resolve_type(self, value)
     end
@@ -115,12 +111,9 @@ module GraphQL
       @resolve_type_proc = new_resolve_type_proc
     end
 
-    def filtered_possible_types=(new_filter_possible_types_proc)
-      @filtered_possible_types_proc = new_filter_possible_types_proc
+    def type_visibilities=(type_visibilities)
+      @cached_possible_types = {}
+      @type_visibilities = type_visibilities
     end
-
-    protected
-
-    attr_reader :dirty_possible_types
   end
 end
