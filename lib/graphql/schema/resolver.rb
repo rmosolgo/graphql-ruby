@@ -29,9 +29,11 @@ module GraphQL
 
       # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
       # @param context [GraphQL::Query::Context]
-      def initialize(object:, context:)
+      # @param field [GraphQL::Schema::Field]
+      def initialize(object:, context:, field:)
         @object = object
         @context = context
+        @field = field
         # Since this hash is constantly rebuilt, cache it for this call
         @arguments_by_keyword = {}
         self.class.arguments.each do |name, arg|
@@ -45,6 +47,9 @@ module GraphQL
 
       # @return [GraphQL::Query::Context]
       attr_reader :context
+
+      # @return [GraphQL::Schema::Field]
+      attr_reader :field
 
       # This method is _actually_ called by the runtime,
       # it does some preparation and then eventually calls

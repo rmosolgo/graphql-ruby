@@ -20,7 +20,7 @@ describe GraphQL::Schema::Resolver do
       argument :value, Integer, required: false
       type [Integer, null: true], null: false
 
-      def initialize(object:, context:)
+      def initialize(object:, context:, field:)
         super
         if defined?(@value)
           raise "The instance should start fresh"
@@ -447,7 +447,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     it "works on instances" do
-      r = ResolverTest::Resolver1.new(object: nil, context: nil)
+      r = ResolverTest::Resolver1.new(object: nil, context: nil, field: nil)
       assert_equal "Resolver1", r.path
     end
   end
