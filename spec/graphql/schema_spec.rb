@@ -149,41 +149,72 @@ describe GraphQL::Schema do
   end
 
   describe "`use` works with plugins that attach instrumentation, tracers, query analyzers" do
-    let(:schema) do
-      query_type = Class.new(GraphQL::Schema::Object) do
-        graphql_name 'Query'
+    query_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name 'Query'
+      field :foobar, Integer, null: false
+      def foobar; 1337; end
+    end
 
-        field :foobar, Integer, null: false
-
-        def foobar
-          1337
+    describe "when called on class definitions" do
+      let(:schema) do
+        schema = Class.new(GraphQL::Schema) do
+          query query_type
+          use GraphQL::Analysis::AST
+          use GraphQL::Execution::Interpreter
+          use PluginWithInstrumentationTracingAndAnalyzer
         end
       end
 
-      module PluginWithInstrumentationTracingAndAnalyzer
-        def self.use(schema_defn_proxy)
-          schema_defn = schema_defn_proxy.target
-          schema_defn.instrument :query, NoOpInstrumentation
-          schema_defn.tracer NoOpTracer
-          schema_defn.query_analyzer NoOpAnalyzer
-        end
-      end
+      let(:query) { GraphQL::Query.new(schema, "query { foobar }") }
 
-      Class.new(GraphQL::Schema) do
-        query query_type
-        use GraphQL::Analysis::AST
-        use GraphQL::Execution::Interpreter
+      it "attaches plugins correctly, runs all of their callbacks" do
+        res = query.result
+        assert res.key?("data")
 
-        use PluginWithInstrumentationTracingAndAnalyzer
+        # NOTE: these both pass currently
+        assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
+        assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
+
+        # TODO: these all fail currently
+        assert_equal true, query.context[:no_op_tracer_ran]
+        assert_equal true, query.context[:no_op_analyzer_ran_initialize]
+        assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
+        assert_equal true, query.context[:no_op_analyzer_ran_result]
       end
     end
 
-    let(:query) { GraphQL::Query.new(schema, "query { foobar }") }
+    describe "when called on class re-definitions" do
+      let(:schema) do
+        schema = Class.new(GraphQL::Schema) do
+          query query_type
+          use GraphQL::Analysis::AST
+          use GraphQL::Execution::Interpreter
+        end
 
-    focus
-    it "attaches plugins correctly" do
-      res = query.result
-      assert res.key?("data")
+        # NOTE/question: `.redefine` returns an instance of a modified schema, which if returned instead of the schema class
+        # will make the below test pass. Is there a way to append plugins to a class definition without having to
+        # use the schema instance returned by `.redefine`?
+        schema.redefine do
+          use PluginWithInstrumentationTracingAndAnalyzer
+        end
+
+        schema
+      end
+
+      let(:query) { GraphQL::Query.new(schema, "query { foobar }") }
+
+      it "attaches plugins correctly, runs all of their callbacks" do
+        res = query.result
+        assert res.key?("data")
+
+        # TODO: these all fail currently
+        assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
+        assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
+        assert_equal true, query.context[:no_op_tracer_ran]
+        assert_equal true, query.context[:no_op_analyzer_ran_initialize]
+        assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
+        assert_equal true, query.context[:no_op_analyzer_ran_result]
+      end
     end
   end
 

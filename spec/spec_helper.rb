@@ -115,31 +115,44 @@ module TestTracing
   end
 end
 
-module NoOpTracer
-  def trace(_key, _data)
+class NoOpTracer
+  def trace(_key, data)
+    if (query = data[:query])
+      query.context[:no_op_tracer_ran] = true
+    end
     yield
   end
 end
 
-module NoOpTracer
-  def trace(_key, _data)
-    yield
-  end
-end
-
-module NoOpInstrumentation
-  module_function
-
-  # Log the time of the query
-  def before_query(_query)
+class NoOpInstrumentation
+  def before_query(query)
+    query.context[:no_op_instrumentation_ran_before_query] = true
   end
 
-  def after_query(_query)
+  def after_query(query)
+    query.context[:no_op_instrumentation_ran_after_query] = true
   end
 end
 
 class NoOpAnalyzer < GraphQL::Analysis::AST::Analyzer
+  def initialize(query_or_multiplex)
+    query_or_multiplex.context[:no_op_analyzer_ran_initialize] = true
+    super
+  end
+
+  def on_leave_field(_node, _parent, visitor)
+    visitor.query.context[:no_op_analyzer_ran_on_leave_field] = true
+  end
+
   def result
-    # no op
+    query.context[:no_op_analyzer_ran_result] = true
+  end
+end
+
+module PluginWithInstrumentationTracingAndAnalyzer
+  def self.use(schema_defn)
+    schema_defn.instrument :query, NoOpInstrumentation.new
+    schema_defn.tracer NoOpTracer.new
+    schema_defn.query_analyzer NoOpAnalyzer
   end
 end
