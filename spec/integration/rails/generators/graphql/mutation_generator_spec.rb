@@ -39,7 +39,7 @@ RUBY
   EXPECTED_MUTATION_TYPE = <<-RUBY
 module Types
   class MutationType < Types::BaseObject
-    field :updateName, mutation: Mutations::UpdateName
+    field :update_name, mutation: Mutations::UpdateName
     # TODO: remove me
     field :test_field, String, null: false,
       description: "An example field added by the generator"
