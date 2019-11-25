@@ -2,9 +2,26 @@
 require "spec_helper"
 
 describe GraphQL::Analysis::AST::QueryComplexity do
+  let(:schema) {
+    schema = Class.new(Dummy::Schema)
+    schema.analysis_engine = GraphQL::Analysis::AST
+    schema
+  }
+
   let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::QueryComplexity]) }
+  let(:reduce_multiplex_result) {
+    GraphQL::Analysis::AST.analyze_multiplex(multiplex, [GraphQL::Analysis::AST::QueryComplexity])
+  }
   let(:variables) { {} }
-  let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
+  let(:query) { GraphQL::Query.new(schema, query_string, variables: variables) }
+  let(:multiplex) {
+    GraphQL::Execution::Multiplex.new(
+      schema: schema,
+      queries: [query.dup, query.dup],
+      context: {},
+      max_complexity: 10
+    )
+  }
 
   describe "simple queries" do
     let(:query_string) {%|
@@ -209,6 +226,39 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     it "gets the complexity" do
       complexity = reduce_result.first
       assert_equal 7, complexity
+    end
+  end
+
+  describe "calucation complexity for a multiplex" do
+    let(:query_string) {%|
+      query cheeses {
+        cheese(id: 1) {
+          id
+          flavor
+          source
+        }
+      }
+    |}
+
+
+    it "sums complexity for both queries" do
+      complexity = reduce_multiplex_result.first
+      assert_equal 8, complexity
+    end
+
+    describe "abstract type" do
+      let(:query_string) {%|
+        query Edible {
+          allEdible {
+            origin
+            fatContent
+          }
+        }
+      |}
+      it "sums complexity for both queries" do
+        complexity = reduce_multiplex_result.first
+        assert_equal 6, complexity
+      end
     end
   end
 

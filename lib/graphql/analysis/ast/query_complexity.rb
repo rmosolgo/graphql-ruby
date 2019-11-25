@@ -42,7 +42,7 @@ module GraphQL
           if @complexities_on_type.last.is_a?(AbstractTypeComplexity)
             key = selection_key(visitor.response_path, visitor.query)
             parent_type = visitor.parent_type_definition
-            query.possible_types(parent_type).each do |type|
+            visitor.query.possible_types(parent_type).each do |type|
               @complexities_on_type.last.merge(type, key, own_complexity)
             end
           else
@@ -74,7 +74,7 @@ module GraphQL
 
           case defined_complexity
           when Proc
-            defined_complexity.call(query.context, arguments, child_complexity)
+            defined_complexity.call(visitor.query.context, arguments, child_complexity)
           when Numeric
             defined_complexity + (child_complexity || 0)
           else
