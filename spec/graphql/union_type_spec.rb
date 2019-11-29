@@ -2,9 +2,9 @@
 require "spec_helper"
 
 describe GraphQL::UnionType do
-  let(:type_1) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT)}
-  let(:type_2) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT)}
-  let(:type_3) { OpenStruct.new(kind: GraphQL::TypeKinds::SCALAR)}
+  let(:type_1) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT, type: 1)}
+  let(:type_2) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT, type: 2)}
+  let(:type_3) { OpenStruct.new(kind: GraphQL::TypeKinds::SCALAR, type: 3)}
   let(:union) {
     types = [type_1, type_2]
     GraphQL::UnionType.define {
@@ -14,22 +14,30 @@ describe GraphQL::UnionType do
     }
   }
 
-  class FilterType2 < GraphQL::Schema::TypeMembership
-    def visible?(ctx)
-      return true if visibility.nil?
+  let(:filtered_union) {
+    defs = self
+    GraphQL::UnionType.define {
+      name("FilteredUnion")
+      type_membership_class(FilterType2)
 
-      visibility[:private] && ctx[:private]
+      possible_types([defs.type_2], visibility: { private: true })
+      possible_types([defs.type_3])
+    }
+  }
+
+  class FilterType2 < GraphQL::Schema::TypeMembership
+    def initialize(*args, visibility: nil, **kwargs)
+      @visibility = visibility
+      super(*args, **kwargs)
+    end
+
+    def visible?(ctx)
+      return true if @visibility.nil?
+
+      @visibility[:private] && ctx[:private]
     end
   end
 
-  class FilteredUnion < GraphQL::UnionType 
-    type_visibility_class FilterType2
-
-    possible_types OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT), visibility: { private: true }
-    possible_types OpenStruct.new(kind: GraphQL::TypeKinds::SCALAR)
-  end
-
-  let(:filtered_union) { FilteredUnion.new }
 
   it "has a name" do
     assert_equal("MyUnion", union.name)
@@ -178,6 +186,8 @@ describe GraphQL::UnionType do
     it "copies possible types without affecting the original" do
       union.possible_types # load the internal cache
       union_2 = union.dup
+      assert_equal 2, union.possible_types.size
+      assert_equal 2, union_2.possible_types.size
 
       union_2.possible_types = union_2.possible_types + [type_3]
       assert_equal 2, union.possible_types.size

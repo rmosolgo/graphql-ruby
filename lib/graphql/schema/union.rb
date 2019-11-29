@@ -5,14 +5,20 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
 
       class << self
-        def possible_types(*types, ctx: GraphQL::Query::NullContext, visibility: nil)
+        def possible_types(*types, context: GraphQL::Query::NullContext, **options)
           if types.any?
-            @type_visibilities ||= []
-            @type_visibilities << type_visibility_class.new(types, visibility)
+            types.each do |t|
+              type_memberships << type_membership_class.new(self, t, options)
+            end
           else
-            @type_visibilities.reduce([]) do |types, membership_visibility|
-              membership_visibility.visible?(ctx) ? types + membership_visibility.types : types
-            end.uniq
+            visible_types = []
+            type_memberships.each do |tv|
+              if tv.visible?(context)
+                visible_types << tv.object_type
+              end
+            end
+            visible_types.uniq!
+            visible_types
           end
         end
 
@@ -20,7 +26,7 @@ module GraphQL
           type_defn = GraphQL::UnionType.new
           type_defn.name = graphql_name
           type_defn.description = description
-          type_defn.type_visibilities = @type_visibilities || []
+          type_defn.type_memberships = type_memberships
           if respond_to?(:resolve_type)
             type_defn.resolve_type = method(:resolve_type)
           end
@@ -28,16 +34,22 @@ module GraphQL
           type_defn
         end
 
-        def type_visibility_class(visibility_class = nil)
+        def type_membership_class(visibility_class = nil)
           if visibility_class
-            @type_visibility_class = visibility_class
+            @type_membership_class = visibility_class
           else
-            @type_visibility_class || find_inherited_value(:type_visibility_class, GraphQL::Schema::TypeMembership)
+            @type_membership_class || find_inherited_value(:type_membership_class, GraphQL::Schema::TypeMembership)
           end
         end
 
         def kind
           GraphQL::TypeKinds::UNION
+        end
+
+        private
+
+        def type_memberships
+          @type_memberships ||= []
         end
       end
     end

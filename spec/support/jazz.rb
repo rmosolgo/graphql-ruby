@@ -308,15 +308,20 @@ module Jazz
   end
 
   class HideEnsemble < GraphQL::Schema::TypeMembership
-    def visible?(ctx)
-      return true if visibility.nil?
+    def initialize(*args, visibility: nil, **kwargs)
+      @visibility = visibility
+      super(*args, **kwargs)
+    end
 
-      !ctx[visibility]
+    def visible?(ctx)
+      return true if @visibility.nil?
+
+      !ctx[@visibility]
     end
   end
 
   class PerformingAct < GraphQL::Schema::Union
-    type_visibility_class HideEnsemble
+    type_membership_class HideEnsemble
     possible_types Musician
     possible_types Ensemble, visibility: :hide_ensemble
 

@@ -24,41 +24,27 @@ module GraphQL
   #  }
   #
   class UnionType < GraphQL::BaseType
-    accepts_definitions :possible_types, :resolve_type
-    ensure_defined :possible_types, :resolve_type, :resolve_type_proc
+    accepts_definitions :resolve_type, :type_membership_class,
+      possible_types: ->(target, possible_types, options = {}) { target.add_possible_types(possible_types, options) }
+    ensure_defined :possible_types, :resolve_type, :resolve_type_proc, :type_membership_class
 
     attr_accessor :resolve_type_proc
-    attr_reader :type_visibilities
-
-    class << self
-      def possible_types(*types, visibility: nil)
-        type_visibilities << @type_visibility_class.new(types, visibility)
-      end
-
-      def type_visibility_class(visibility_class = nil)
-        if visibility_class
-          @type_visibility_class = visibility_class
-        else
-          @type_visibility_class || GraphQL::Schema::TypeMembership
-        end
-      end
-
-      def type_visibilities
-        @type_visibilities ||= []
-      end
-    end
+    attr_reader :type_memberships
+    attr_accessor :type_membership_class
 
     def initialize
       super
-      @type_visibilities = self.class.type_visibilities
-      @cached_possible_types = {}
+      @type_membership_class = GraphQL::Schema::TypeMembership
+      @type_memberships = []
+      @cached_possible_types = nil
       @resolve_type_proc = nil
     end
 
     def initialize_copy(other)
       super
-      @type_visibilities = other.type_visibilities.dup
-      @cached_possible_types = {}
+      @type_membership_class = other.type_membership_class
+      @type_memberships = other.type_memberships.dup
+      @cached_possible_types = nil
     end
 
     def kind
@@ -72,17 +58,36 @@ module GraphQL
 
     # @return [Array<GraphQL::ObjectType>] Types which may be found in this union
     def possible_types(ctx = GraphQL::Query::NullContext)
-      @cached_possible_types[ctx] ||= begin
-        @type_visibilities.reduce([]) do |types, type_visibility|
-          selected_types = type_visibility.visible?(ctx) ? types + type_visibility.types : types
-          selected_types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
-        end
+      if ctx == GraphQL::Query::NullContext
+        # Only cache the default case; if we cached for every `ctx`, it would be a memory leak
+        # (The warden should cache calls to this method, so it's called only once per query,
+        # unless user code calls it directly.)
+        @cached_possible_types ||= possible_types_for_context(ctx)
+      else
+        possible_types_for_context(ctx)
       end
     end
 
-    def possible_types=(types, visibility: nil)
-      @type_visibilities = [self.class.type_visibility_class.new(types, visibility)]
-      @cached_possible_types = {}
+    def possible_types=(types_and_maybe_options)
+      if types_and_maybe_options.last.is_a?(Hash)
+        types = types_and_maybe_options[0..-2]
+        options = types_and_maybe_options[-1]
+      else
+        types = types_and_maybe_options
+        options = {}
+      end
+      # This is a re-assignment, so clear the previous values
+      @type_memberships = []
+      @cached_possible_types = nil
+      add_possible_types(types, options)
+    end
+
+    def add_possible_types(types, options)
+      @type_memberships ||= []
+      Array(types).each { |t|
+        @type_memberships << self.type_membership_class.new(self, t, options)
+      }
+      nil
     end
 
     # Get a possible type of this {UnionType} by type name
@@ -111,9 +116,21 @@ module GraphQL
       @resolve_type_proc = new_resolve_type_proc
     end
 
-    def type_visibilities=(type_visibilities)
-      @cached_possible_types = {}
-      @type_visibilities = type_visibilities
+    def type_memberships=(type_memberships)
+      @type_memberships = type_memberships
+    end
+
+    private
+
+    def possible_types_for_context(ctx)
+      visible_types = []
+      @type_memberships.each do |tv|
+        if tv.visible?(ctx)
+          visible_types << BaseType.resolve_related_type(tv.object_type)
+        end
+      end
+      visible_types.uniq!
+      visible_types
     end
   end
 end

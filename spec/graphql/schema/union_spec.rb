@@ -18,7 +18,7 @@ describe GraphQL::Schema::Union do
 
   describe "filter_possible_types" do
     it "filters types" do
-      assert_equal [Jazz::Musician], union.possible_types(ctx: { hide_ensemble: true })
+      assert_equal [Jazz::Musician], union.possible_types(context: { hide_ensemble: true })
     end
   end
 
