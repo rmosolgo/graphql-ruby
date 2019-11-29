@@ -17,7 +17,6 @@ module GraphQL
                 visible_types << type_membership.object_type
               end
             end
-            visible_types.uniq!
             visible_types
           end
         end
