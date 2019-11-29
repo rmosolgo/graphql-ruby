@@ -68,18 +68,11 @@ module GraphQL
       end
     end
 
-    def possible_types=(types_and_maybe_options)
-      if types_and_maybe_options.last.is_a?(Hash)
-        types = types_and_maybe_options[0..-2]
-        options = types_and_maybe_options[-1]
-      else
-        types = types_and_maybe_options
-        options = {}
-      end
+    def possible_types=(types)
       # This is a re-assignment, so clear the previous values
       @type_memberships = []
       @cached_possible_types = nil
-      add_possible_types(types, options)
+      add_possible_types(types, {})
     end
 
     def add_possible_types(types, options)
@@ -124,9 +117,9 @@ module GraphQL
 
     def possible_types_for_context(ctx)
       visible_types = []
-      @type_memberships.each do |tv|
-        if tv.visible?(ctx)
-          visible_types << BaseType.resolve_related_type(tv.object_type)
+      @type_memberships.each do |type_membership|
+        if type_membership.visible?(ctx)
+          visible_types << BaseType.resolve_related_type(type_membership.object_type)
         end
       end
       visible_types.uniq!

@@ -12,9 +12,9 @@ module GraphQL
             end
           else
             visible_types = []
-            type_memberships.each do |tv|
-              if tv.visible?(context)
-                visible_types << tv.object_type
+            type_memberships.each do |type_membership|
+              if type_membership.visible?(context)
+                visible_types << type_membership.object_type
               end
             end
             visible_types.uniq!
@@ -34,9 +34,9 @@ module GraphQL
           type_defn
         end
 
-        def type_membership_class(visibility_class = nil)
-          if visibility_class
-            @type_membership_class = visibility_class
+        def type_membership_class(membership_class = nil)
+          if membership_class
+            @type_membership_class = membership_class
           else
             @type_membership_class || find_inherited_value(:type_membership_class, GraphQL::Schema::TypeMembership)
           end
