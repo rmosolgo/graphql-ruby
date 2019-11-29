@@ -47,7 +47,7 @@ Then, pass them to `Schema#multiplex`:
 results = MySchema.multiplex(queries)
 ```
 
-`results` will contain the result for each query in `queries`.
+`results` will contain the result for each query in `queries`. __NOTE:__ The results will always be in the same order that their respective requests were sent in.
 
 ## Apollo Query Batching
 
