@@ -204,7 +204,6 @@ describe GraphQL::Schema::InputObject do
       GRAPHQL
 
       res = InputObjectPrepareObjectTest::Schema.execute(query_str)
-
       expected_obj = (5..10).inspect
       assert_equal expected_obj, res["data"]["inputs"]
     end
