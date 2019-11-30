@@ -201,6 +201,42 @@ describe GraphQL::Schema::InputObject do
         end
       end
 
+<<<<<<< HEAD
+=======
+      class Schema < GraphQL::Schema
+        query(Query)
+
+        if TESTING_INTERPRETER
+          use GraphQL::Execution::Interpreter
+        end
+      end
+    end
+
+    it "calls prepare on the input object (literal)" do
+      query_str = <<-GRAPHQL
+      { inputs(input: { min: 5, max: 10 }) }
+      GRAPHQL
+
+      res = InputObjectPrepareObjectTest::Schema.execute(query_str)
+
+      expected_obj = (5..10).inspect
+      assert_equal expected_obj, res["data"]["inputs"]
+    end
+
+    it "calls prepare on the input object (variable)" do
+      query_str = <<-GRAPHQL
+      query ($input: InputObj!){ inputs(input: $input) }
+      GRAPHQL
+
+      res = InputObjectPrepareObjectTest::Schema.execute(query_str, variables: { input: { min: 5, max: 10 } })
+      expected_obj = (5..10).inspect
+      assert_equal expected_obj, res["data"]["inputs"]
+    end
+  end
+
+  describe "loading application object(s)" do
+    module InputObjectLoadsTest
+>>>>>>> initial debug
       class SingleLoadInputObj < GraphQL::Schema::InputObject
         argument_class BaseArgument
         argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
