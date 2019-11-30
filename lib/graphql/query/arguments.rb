@@ -88,7 +88,6 @@ module GraphQL
       def_delegators :to_h, :keys, :values, :each, :any?
 
       def prepare
-        puts "CALLED Query::Arguments#prepare"
         self
       end
 

@@ -540,8 +540,6 @@ module GraphQL
               else
                 resolve_field_method(field_receiver, extended_args, ctx)
               end
-
-              #binding.pry
             end
           else
             err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
