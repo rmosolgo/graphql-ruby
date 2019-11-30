@@ -191,6 +191,10 @@ describe GraphQL::Schema::InputObject do
 
       class Schema < GraphQL::Schema
         query(Query)
+
+        if TESTING_INTERPRETER
+          use GraphQL::Execution::Interpreter
+        end
       end
     end
 
@@ -200,6 +204,7 @@ describe GraphQL::Schema::InputObject do
       GRAPHQL
 
       res = InputObjectPrepareObjectTest::Schema.execute(query_str)
+
       expected_obj = (5..10).inspect
       assert_equal expected_obj, res["data"]["inputs"]
     end
@@ -212,7 +217,7 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareObjectTest::Schema.execute(query_str, variables: { input: { min: 5, max: 10 } })
       expected_obj = (5..10).inspect
       assert_equal expected_obj, res["data"]["inputs"]
-    end    
+    end
   end
 
   describe "loading application object(s)" do

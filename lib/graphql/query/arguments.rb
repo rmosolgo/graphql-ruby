@@ -88,6 +88,7 @@ module GraphQL
       def_delegators :to_h, :keys, :values, :each, :any?
 
       def prepare
+        puts "CALLED Query::Arguments#prepare"
         self
       end
 
@@ -155,6 +156,7 @@ module GraphQL
           when GraphQL::NonNullType
             wrap_value(value, arg_defn_type.of_type, context)
           when GraphQL::InputObjectType
+            # BOOKMARK
             if value.is_a?(Hash)
               result = arg_defn_type.arguments_class.new(value, context: context, defaults_used: Set.new)
               result.prepare
