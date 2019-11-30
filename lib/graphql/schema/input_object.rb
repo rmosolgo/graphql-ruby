@@ -60,7 +60,6 @@ module GraphQL
       end
 
       def prepare
-        puts "schema/input_object#prepare CALLED"
         self
       end
 
