@@ -158,7 +158,7 @@ module GraphQL
         # later the obj#prepare (GraphQL::Schema::Object) be called upon the
         # InputObject prepared value? Or should it be one OR the another?
         if value.respond_to?(:prepare)
-          value = value.public_send(:prepare)
+          value = value.prepare
         end
 
         if @prepare.nil?
