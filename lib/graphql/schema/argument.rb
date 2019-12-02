@@ -153,11 +153,7 @@ module GraphQL
       # Used by the runtime.
       # @api private
       def prepare_value(obj, value, context: nil)
-        # NOTE: This fixes the issue on queries.
-        # QUESTION: Should an InputObject #prepare method be called and then
-        # later the obj#prepare (GraphQL::Schema::Object) be called upon the
-        # InputObject prepared value? Or should it be one OR the another?
-        if value.respond_to?(:prepare)
+        if value.is_a?(GraphQL::Schema::InputObject)
           value = value.prepare
         end
 
