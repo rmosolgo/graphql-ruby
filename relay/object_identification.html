@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.15/">API</a>
+          <a href="/api-doc/1.9.16/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -94,7 +94,7 @@
 
 <p>One requirement for Relay’s object management is implementing the <code class="highlighter-rouge">"Node"</code> interface.</p>
 
-<p>To implement the node interface, add <a href="/api-doc/1.9.15/GraphQL/Relay/Node#interface-class_method" target="_blank" title="API docs for GraphQL::Relay::Node.interface"><code>GraphQL::Relay::Node.interface</code></a> to your definition:</p>
+<p>To implement the node interface, add <a href="/api-doc/1.9.16/GraphQL/Relay/Node#interface-class_method" target="_blank" title="API docs for GraphQL::Relay::Node.interface"><code>GraphQL::Relay::Node.interface</code></a> to your definition:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Implement the "Node" interface for Relay</span>
@@ -142,7 +142,7 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Used by Relay to lookup objects by UUID:</span>
-  <span class="n">field</span> <span class="ss">:node</span><span class="p">,</span> <span class="ss">field: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">field</span>
+  <span class="n">add_field</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">NodeField</span><span class="p">)</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -153,7 +153,7 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Fetches a list of objects given a list of IDs</span>
-  <span class="n">field</span> <span class="ss">:nodes</span><span class="p">,</span> <span class="ss">field: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">plural_field</span>
+  <span class="n">add_field</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">NodesField</span><span class="p">)</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>

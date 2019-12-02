@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.15/">API</a>
+          <a href="/api-doc/1.9.16/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Tracing</h1>
 <div class="guide-container">
-  <p><a href="/api-doc/1.9.15/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> provides a <code class="highlighter-rouge">.trace</code> hook to observe events from the GraphQL runtime.</p>
+  <p><a href="/api-doc/1.9.16/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> provides a <code class="highlighter-rouge">.trace</code> hook to observe events from the GraphQL runtime.</p>
 
 <p>A tracer must implement <code class="highlighter-rouge">.trace</code>, for example:</p>
 
@@ -81,7 +81,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">tracers: </span><span class="p">[</span><span class="no">MyCustomTracer</span><span class="p">]})</span>
 </code></pre></div></div>
 
-<p>For a full list of events, see the <a href="/api-doc/1.9.15/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> API docs.</p>
+<p>For a full list of events, see the <a href="/api-doc/1.9.16/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> API docs.</p>
 
 <h2 id="activesupportnotifications">ActiveSupport::Notifications</h2>
 
@@ -101,7 +101,7 @@
 
 <p>Leaf fields are <em>not</em> monitored (to avoid high cardinality in the metrics service).</p>
 
-<p>Implementations are based on <a href="/api-doc/1.9.15/GraphQL/Tracing/PlatformTracing" target="_blank" title="API docs for GraphQL::Tracing::PlatformTracing"><code>Tracing::PlatformTracing</code></a>.</p>
+<p>Implementations are based on <a href="/api-doc/1.9.16/GraphQL/Tracing/PlatformTracing" target="_blank" title="API docs for GraphQL::Tracing::PlatformTracing"><code>Tracing::PlatformTracing</code></a>.</p>
 
 <h2 id="appsignal">Appsignal</h2>
 
@@ -155,11 +155,10 @@
 
 <h2 id="skylight">Skylight</h2>
 
-<p>To add <a href="https://www.skylight.io">Skylight</a> instrumentation:</p>
+<p>To add <a href="https://www.skylight.io">Skylight</a> instrumentation, you may either enable the <a href="https://www.skylight.io/support/getting-more-from-skylight#graphql">GraphQL probe</a> or use <a href="/queries/tracing.html#activesupportnotifications">ActiveSupportNotificationsTracing</a>.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">SkylightTracing</span><span class="p">)</span>
-<span class="k">end</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/application.rb</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">skylight</span><span class="p">.</span><span class="nf">probes</span> <span class="o">&lt;&lt;</span> <span class="s2">"graphql"</span>
 </code></pre></div></div>
 
 <div class="monitoring-img-group">
@@ -168,6 +167,8 @@
 </a>
 
 </div>
+
+<p>GraphQL instrumentation for Skylight is available in versions &gt;= 4.2.0.</p>
 
 <h2 id="datadog">Datadog</h2>
 
