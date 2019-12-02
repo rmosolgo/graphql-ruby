@@ -119,28 +119,23 @@ module GraphQL
               # Check if these two scopes have _any_ types in common.
               possible_right_types = query.possible_types(right_scope)
               possible_left_types = query.possible_types(left_scope)
-              possible_right_types.each do |rt|
-                if possible_left_types.include?(rt)
-                  return true
-                end
-              end
-              false
+              !(possible_right_types & possible_left_types).empty?
             end
           end
 
           def merged_max_complexity_for_scopes(query, scoped_children_hashes)
             # Figure out what scopes are possible here.
-            all_scopes = []
+            # Use a hash, but ignore the values; it's just a fast way to work with the keys.
+            all_scopes = {}
             scoped_children_hashes.each do |h|
-              all_scopes.concat(h.keys)
+              all_scopes.merge!(h)
             end
-            all_scopes.uniq!
 
             # If an abstract scope is present, but _all_ of its concrete types
             # are also in the list, remove it from the list of scopes to check,
             # because every possible type is covered by a concrete type.
             # (That is, there are no remainder types to check.)
-            all_scopes.reject! do |scope|
+            all_scopes.reject! do |scope, _|
               scope.kind.abstract? && (
                 query.possible_types(scope).all? { |t| all_scopes.include?(t) }
               )
@@ -154,7 +149,7 @@ module GraphQL
             # and gather them together into an array.
             # Then, treat the set of selection hashes
             # as a set and calculate the complexity for them as a unit
-            all_scopes.each do |scope|
+            all_scopes.each do |scope, _|
               # These will be the selections on `scope`
               children_for_scope = []
               scoped_children_hashes.each do |sc_h|
