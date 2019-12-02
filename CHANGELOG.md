@@ -8,9 +8,32 @@
 
 ### Bug fixes
 
+## 1.9.16 (2 Dec 2019)
+
+### Breaking changes
+
+- `GraphQL::Schema::Resolver#initialize` accepts a new keyword argument, `field:`. If you have overriden this method, you'll have to add that keyword to your argument list (and pass it along to `super`.) #2605
+
+### Deprecations
+
+- `SkylightTracing` is disabled; the Skylight agent contains its own GraphQL support. See Skylight's docs for migration. #2601
+
+### New features
+
+### Bug fixes
+
+- Fix multiplex max_depth calculation #2613
+- Use monotonic time in TimeoutMiddleware #2622
+- Use underscored names in Mutation generator #2617
+- Fix lookahead when added to mutations in their `field(...)` definitions #2605
+- Handle returned lists of errors from Mutations #2567
+- Fix lexer error on block strings containing only newlines #2598
+- Fix mutation generator to reference the new base class #2580
+- Use the right camelization configuration when generating subscription topics #2552
+
 ## 1.9.15 (30 Oct 2019)
 
-## New features
+### New features
 
 - Improve parser performance #2572
 - Add `def prepare` API for input objects #1869
@@ -19,7 +42,7 @@
 - Warn when a field name is a Ruby keyword #2559
 - Improve performance for ActiveRecord connection #2547
 
-## Bug fixes
+### Bug fixes
 
 - Fix errantly generated `def resolve_field` method in `BaseField` #2578
 - Comment out the `null_session` handling in the generated controller, for better compat with Rails API mode #2557
@@ -29,12 +52,12 @@
 
 ## 1.9.14 (14 Oct 2019)
 
-## New features
+### New features
 
 - Add `null_session` CSRF handing in `install` generator #2524
 - Correctly report InputObjects without arguments and Objects without fields as invalid #2539 #2462
 
-## Bug fixes
+### Bug fixes
 
 - Fix argument incompatibility #2541
 - Add a `require` for `Types::ISO8691Date` #2528
