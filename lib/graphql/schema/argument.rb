@@ -121,6 +121,10 @@ module GraphQL
       # Used by the runtime.
       # @api private
       def prepare_value(obj, value)
+        if value.is_a?(GraphQL::Schema::InputObject)
+          value = value.prepare
+        end
+
         if @prepare.nil?
           value
         elsif @prepare.is_a?(String) || @prepare.is_a?(Symbol)
