@@ -461,7 +461,7 @@ module GraphQL
     end
 
     def type_from_ast(ast_node, context:)
-      GraphQL::Schema::TypeExpression.build_type(self.types, ast_node)
+      GraphQL::Schema::TypeExpression.build_type(self, ast_node)
     end
 
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
@@ -1035,8 +1035,8 @@ module GraphQL
       end
 
       def type_from_ast(ast_node, context: nil)
-        type_map = context ? context.warden.types : self.types
-        GraphQL::Schema::TypeExpression.build_type(type_map, ast_node)
+        type_owner = context ? context.warden : self
+        GraphQL::Schema::TypeExpression.build_type(type_owner, ast_node)
       end
 
       def get_field(type_or_name, field_name)
