@@ -85,7 +85,7 @@ module GraphQL
           # we'll visit them when we hit the spreads instead
           return if visitor.visiting_fragment_definition?
           return if visitor.skipping?
-          complexities_on_type = @complexities_on_type_by_query[visitor.query] ||= [ScopedTypeComplexity.new(nil, nil, query)]
+          complexities_on_type = @complexities_on_type_by_query[visitor.query]
           complexities_on_type.pop
         end
 
