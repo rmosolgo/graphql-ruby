@@ -91,14 +91,12 @@ module GraphQL
 
         # @return [Integer]
         def max_possible_complexity
-          val = 0
-          @complexities_on_type_by_query.each do |query, complexities_on_type|
+          @complexities_on_type_by_query.reduce(0) do |total, (query, complexities_on_type)|
             root_complexity = complexities_on_type.last
             # Use this entry point to calculate the total complexity
             total_complexity_for_query = ComplexityMergeFunctions.merged_max_complexity_for_scopes(query, [root_complexity.scoped_children])
-            val += total_complexity_for_query
+            total += total_complexity_for_query
           end
-          val
         end
 
         # These functions use `ScopedTypeComplexity` objects,
