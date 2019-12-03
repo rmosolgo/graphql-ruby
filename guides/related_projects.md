@@ -27,6 +27,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - [`search_object_graphql`](https://github.com/rstankov/SearchObjectGraphQL), a DSL for defining search resolvers for GraphQL.
 - [`action_policy-graphql`](https://github.com/palkan/action_policy-graphql), an integration for using [`action_policy`](https://github.com/palkan/action_policy) as an authorization framework for GraphQL applications.
 - [`graphql_rails`](https://github.com/samesystem/graphql_rails), Rails way GraphQL build tool
+- [`graphql-rails-generators`](https://github.com/ajsharp/graphql-rails-generators), Generate graphql-ruby mutations, types and input types from your ActiveRecord models.
 
 ## Blog Posts
 
