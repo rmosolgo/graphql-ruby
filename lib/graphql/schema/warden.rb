@@ -168,6 +168,8 @@ module GraphQL
           else
             referenced?(type_defn) || visible_abstract_type?(type_defn)
           end
+        end
+
         @type_visibility[type_defn]
       end
 
