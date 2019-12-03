@@ -461,7 +461,7 @@ module GraphQL
     end
 
     def type_from_ast(ast_node, context:)
-      GraphQL::Schema::TypeExpression.build_type(self.types, ast_node)
+      GraphQL::Schema::TypeExpression.build_type(self, ast_node)
     end
 
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
@@ -1030,13 +1030,21 @@ module GraphQL
             own_refs + inherited_refs
           end
         else
-          find_inherited_value(:references_to, EMPTY_HASH).merge(@own_references_to)
+          # `@own_references_to` can be quite large for big schemas,
+          # and generally speaking, we won't inherit any values.
+          # So optimize the most common case -- don't create a duplicate Hash.
+          inherited_value = find_inherited_value(:references_to, EMPTY_HASH)
+          if inherited_value.any?
+            inherited_value.merge(@own_references_to)
+          else
+            @own_references_to
+          end
         end
       end
 
       def type_from_ast(ast_node, context: nil)
-        type_map = context ? context.warden.types : self.types
-        GraphQL::Schema::TypeExpression.build_type(type_map, ast_node)
+        type_owner = context ? context.warden : self
+        GraphQL::Schema::TypeExpression.build_type(type_owner, ast_node)
       end
 
       def get_field(type_or_name, field_name)
