@@ -5,7 +5,7 @@ module GraphQL
     module TypeExpression
       # Fetch a type from a type map by its AST specification.
       # Return `nil` if not found.
-      # @param types [#fetch] A thing for looking up types by name
+      # @param type_owner [#get_type] A thing for looking up types by name
       # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
       # @return [Class, GraphQL::Schema::NonNull, GraphQL::Schema:List]
       def self.build_type(type_owner, ast_node)
@@ -14,11 +14,11 @@ module GraphQL
           type_owner.get_type(ast_node.name)
         when GraphQL::Language::Nodes::NonNullType
           ast_inner_type = ast_node.of_type
-          inner_type = build_type(types, ast_inner_type)
+          inner_type = build_type(type_owner, ast_inner_type)
           wrap_type(inner_type, :to_non_null_type)
         when GraphQL::Language::Nodes::ListType
           ast_inner_type = ast_node.of_type
-          inner_type = build_type(types, ast_inner_type)
+          inner_type = build_type(type_owner, ast_inner_type)
           wrap_type(inner_type, :to_list_type)
         else
           raise "Invariant: unexpected type from ast: #{ast_node.inspect}"

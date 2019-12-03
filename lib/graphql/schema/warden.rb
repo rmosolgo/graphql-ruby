@@ -157,9 +157,8 @@ module GraphQL
 
       def visible_type?(type_defn)
         @type_visibility ||= read_through do |type_defn|
-          return false unless visible?(type_defn)
-          return true if root_type?(type_defn)
-          return true if type_defn.introspection?
+          next false unless visible?(type_defn)
+          next true if root_type?(type_defn) || type_defn.introspection?
 
           if type_defn.kind.union?
             visible_possible_types?(type_defn) && (referenced?(type_defn) || orphan_type?(type_defn))

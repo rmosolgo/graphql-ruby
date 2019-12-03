@@ -2,12 +2,12 @@
 require "spec_helper"
 
 describe GraphQL::Schema::TypeExpression do
-  let(:types) { Dummy::Schema.types }
+  let(:type_owner) { Dummy::Schema }
   let(:ast_node) {
     document = GraphQL.parse("query dostuff($var: #{type_name}) { id } ")
     document.definitions.first.variables.first.type
   }
-  let(:type_expression_result) { GraphQL::Schema::TypeExpression.build_type(types, ast_node) }
+  let(:type_expression_result) { GraphQL::Schema::TypeExpression.build_type(type_owner, ast_node) }
 
   describe "#type" do
     describe "simple types" do
