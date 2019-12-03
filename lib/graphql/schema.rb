@@ -1030,7 +1030,15 @@ module GraphQL
             own_refs + inherited_refs
           end
         else
-          find_inherited_value(:references_to, EMPTY_HASH).merge(@own_references_to)
+          # `@own_references_to` can be quite large for big schemas,
+          # and generally speaking, we won't inherit any values.
+          # So optimize the most common case -- don't create a duplicate Hash.
+          inherited_value = find_inherited_value(:references_to, EMPTY_HASH)
+          if inherited_value.any?
+            inherited_value.merge(@own_references_to)
+          else
+            @own_references_to
+          end
         end
       end
 
