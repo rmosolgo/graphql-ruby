@@ -207,6 +207,7 @@ describe GraphQL::Schema::InputObject do
         query(Query)
 
         if TESTING_INTERPRETER
+          use GraphQL::Analysis::AST
           use GraphQL::Execution::Interpreter
         end
       end

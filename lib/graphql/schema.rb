@@ -765,7 +765,6 @@ module GraphQL
         :execution_strategy_for_operation,
         :validate, :multiplex_analyzers,
         # Configuration
-        :max_complexity=, :max_depth=,
         :metadata, :redefine,
         :id_from_object_proc, :object_from_id_proc,
         :id_from_object=, :object_from_id=,
@@ -1131,11 +1130,15 @@ module GraphQL
         end
       end
 
+      attr_writer :max_complexity
+
       def max_complexity(max_complexity = nil)
         if max_complexity
           @max_complexity = max_complexity
+        elsif defined?(@max_complexity)
+          @max_complexity
         else
-          @max_complexity || find_inherited_value(:max_complexity)
+          find_inherited_value(:max_complexity)
         end
       end
 
@@ -1169,11 +1172,15 @@ module GraphQL
 
       attr_writer :error_bubbling
 
+      attr_writer :max_depth
+
       def max_depth(new_max_depth = nil)
         if new_max_depth
           @max_depth = new_max_depth
+        elsif defined?(@max_depth)
+          @max_depth
         else
-          @max_depth || find_inherited_value(:max_depth)
+          find_inherited_value(:max_depth)
         end
       end
 

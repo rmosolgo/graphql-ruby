@@ -128,7 +128,7 @@ module GraphQL
           end
         else
           result = argument_owner.arguments_class.new(values_hash, context: context, defaults_used: defaults_used)
-          result = result.prepare
+          result.prepare
         end
       end
     end

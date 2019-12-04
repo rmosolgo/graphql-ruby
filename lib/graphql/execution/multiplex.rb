@@ -174,6 +174,15 @@ module GraphQL
         def instrument_and_analyze(multiplex)
           GraphQL::Execution::Instrumentation.apply_instrumenters(multiplex) do
             schema = multiplex.schema
+            if schema.interpreter? && schema.analysis_engine != GraphQL::Analysis::AST
+              raise <<-ERR
+Can't use `GraphQL::Execution::Interpreter` without `GraphQL::Analysis::AST`, please add this plugin to your schema:
+
+    use GraphQL::Analysis::AST
+
+For information about the new analysis engine: https://graphql-ruby.org/queries/ast_analysis.html
+ERR
+            end
             multiplex_analyzers = schema.multiplex_analyzers
             if multiplex.max_complexity
               multiplex_analyzers += if schema.using_ast_analysis?
