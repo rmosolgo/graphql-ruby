@@ -23,7 +23,7 @@
 
 ### New features
 
-- `Schema.from_definition` accepts `plugins:` for installing plugins (equivalent to `use ...` in class-based schemas) #2307
+- `Schema.from_definition` accepts `using:` for installing plugins (equivalent to `use ...` in class-based schemas) #2307
 
 ### Bug fixes
 
