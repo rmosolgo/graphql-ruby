@@ -61,13 +61,8 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-<<<<<<< HEAD
   describe "prepare: / loads: / as:" do
     module InputObjectPrepareTest
-=======
-  describe "prepare: / as: (argument)" do
-    module InputObjectPrepareArgumentTest
->>>>>>> Prepare input objects
       class InputObj < GraphQL::Schema::InputObject
         argument :a, Integer, required: true
         argument :b, Integer, required: true, as: :b2
@@ -140,13 +135,8 @@ describe GraphQL::Schema::InputObject do
       { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5, instrumentId: "Instrument/Drum Kit" }) }
       GRAPHQL
 
-<<<<<<< HEAD
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
       expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") }.inspect, "Drum Kit"]
-=======
-      res = InputObjectPrepareArgumentTest::Schema.execute(query_str, context: { multiply_by: 3 })
-      expected_obj = { a: 1, b2: 2, c: 9, d2: 12, e2: 30 }.inspect
->>>>>>> Prepare input objects
       assert_equal expected_obj, res["data"]["inputs"]
     end
 
@@ -181,33 +171,31 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-  describe "loading application object(s)" do
-    module InputObjectLoadsTest
-      class BaseArgument < GraphQL::Schema::Argument
-        def authorized?(obj, val, ctx)
-          if contains_spinal_tap?(val)
-            false
-          else
-            true
-          end
-        end
+  describe "prepare (entire input object)" do
+    module InputObjectPrepareObjectTest
+      class InputObj < GraphQL::Schema::InputObject
+        argument :min, Integer, required: true
+        argument :max, Integer, required: false
 
-        def contains_spinal_tap?(val)
-          if val.is_a?(Array)
-            val.any? { |v| contains_spinal_tap?(v) }
-          else
-            val.is_a?(Jazz::Models::Ensemble) && val.name == "Spinal Tap"
-          end
+        def prepare
+          min..max
         end
       end
 
-<<<<<<< HEAD
-=======
+      class Query < GraphQL::Schema::Object
+        field :inputs, String, null: false do
+          argument :input, InputObj, required: true
+        end
+
+        def inputs(input:)
+          input.inspect
+        end
+      end
+
       class Schema < GraphQL::Schema
         query(Query)
 
         if TESTING_INTERPRETER
-          use GraphQL::Analysis::AST
           use GraphQL::Execution::Interpreter
         end
       end
@@ -234,9 +222,27 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
+
   describe "loading application object(s)" do
     module InputObjectLoadsTest
->>>>>>> initial debug
+      class BaseArgument < GraphQL::Schema::Argument
+        def authorized?(obj, val, ctx)
+          if contains_spinal_tap?(val)
+            false
+          else
+            true
+          end
+        end
+
+        def contains_spinal_tap?(val)
+          if val.is_a?(Array)
+            val.any? { |v| contains_spinal_tap?(v) }
+          else
+            val.is_a?(Jazz::Models::Ensemble) && val.name == "Spinal Tap"
+          end
+        end
+      end
+
       class SingleLoadInputObj < GraphQL::Schema::InputObject
         argument_class BaseArgument
         argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
@@ -266,10 +272,6 @@ describe GraphQL::Schema::InputObject do
 
       class Schema < GraphQL::Schema
         query(Query)
-        if TESTING_INTERPRETER
-          use GraphQL::Execution::Interpreter
-          use GraphQL::Analysis::AST
-        end
 
         def self.object_from_id(id, ctx)
           Jazz::GloballyIdentifiableType.find(id)
@@ -277,6 +279,11 @@ describe GraphQL::Schema::InputObject do
 
         def self.resolve_type(type, obj, ctx)
           type
+        end
+
+        if TESTING_INTERPRETER
+          use GraphQL::Analysis::AST
+          use GraphQL::Execution::Interpreter
         end
       end
     end

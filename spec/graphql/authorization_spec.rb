@@ -24,7 +24,6 @@ describe GraphQL::Authorization do
       end
     end
 
-<<<<<<< HEAD
     class BaseInputObjectArgument < BaseArgument
       def authorized?(parent_object, value, context)
         super && parent_object != :hide3
@@ -35,8 +34,6 @@ describe GraphQL::Authorization do
       argument_class BaseInputObjectArgument
     end
 
-=======
->>>>>>> Revert "Authorize arguments of input objects, too"
     class BaseField < GraphQL::Schema::Field
       def initialize(*args, edge_class: nil, **kwargs, &block)
         @edge_class = edge_class
