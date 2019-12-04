@@ -8,6 +8,28 @@
 
 ### Bug fixes
 
+## 1.10.0.pre2 (4 Dec 2019)
+
+### Breaking changes
+
+- Class-based schemas using the interpreter _must_ add `use GraphQL::Analysis::AST` to their schema (and update their custom analyzers, see https://graphql-ruby.org/queries/ast_analysis.html) #2363
+- Class-based schemas using the new interpreter will now use _definition classes_ at runtime. #2363 (Previously, `.to_graphql` methods were used to generate singletons which were used at runtime.) This means:
+  - Methods that used to receive types at runtime will now receive classes instead of those singletons.
+  - `.name` will now call `Class#name`, which will give the class name. Use `.graphql_name` to get the name of a GraphQL type. (Fields, arguments and directives have `.graphql_name` too, so you can use it everywhere.)
+  - Some methods that return hashes are slow because they merge hashes according to class inheritance, for example `MySchema.types` and `MyObjectType.fields`. Instead:
+    - If you only need one item out of the Hash, use `.get_type(type_name)` or `.get_field(field_name)` instead. Those methods find a match without performing Hash merges.
+    - If you need the whole Hash, get a cached value from `context.warden` (an instance of `GraphQL::Schema::Warden`) at runtime. Those values reflect the types and fields which are permitted for the current query, and they're cached for life of the query. Check the API docs to see methods on the `warden`.
+- ActiveSupport::Notifications events are correctly named in event.library format #2562
+
+### New features
+
+- `Schema.from_definition` accepts `plugins:` for installing plugins (equivalent to `use ...` in class-based schemas) #2307
+
+### Bug fixes
+
+- Big numbers (ie, greater than Ruby's `Infinity`) no longer :boom: when being reserialized #2320
+- Fix `hasNextPage`/`hasPrevious` page when max_page_size limits the items returned #2608
+
 ## 1.10.0.pre1 (10 Oct 2019)
 
 ### Breaking changes
