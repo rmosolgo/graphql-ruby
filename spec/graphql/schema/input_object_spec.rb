@@ -223,7 +223,6 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-
   describe "loading application object(s)" do
     module InputObjectLoadsTest
       class BaseArgument < GraphQL::Schema::Argument
