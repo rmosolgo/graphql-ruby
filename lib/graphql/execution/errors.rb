@@ -19,34 +19,36 @@ module GraphQL
     class Errors
       def self.use(schema)
         schema_class = schema.is_a?(Class) ? schema : schema.target.class
-        schema.tracer(self.new(schema_class))
+        schema_class.error_handler = self.new(schema_class)
       end
 
       def initialize(schema)
         @schema = schema
       end
 
-      def trace(event, data)
-        case event
-        when "execute_field", "execute_field_lazy"
-          with_error_handling(data) { yield }
-        else
+      class NullErrorHandler
+        def self.with_error_handling(query)
           yield
         end
       end
 
-      private
-
-      def with_error_handling(trace_data)
+      # Call the given block with the schema's configured error handlers.
+      #
+      # If the block returns a lazy value, it's not wrapped with error handling. That area will have to be wrapped itself.
+      #
+      # @param query [GraphQL::Query]
+      # @return [Object] Either the result of the given block, or some object to replace the result, in case of error handling.
+      def with_error_handling(query)
         yield
       rescue StandardError => err
         rescues = @schema.rescues
         _err_class, handler = rescues.find { |err_class, handler| err.is_a?(err_class) }
         if handler
-          obj = trace_data[:object]
-          args = trace_data[:arguments]
-          ctx = trace_data[:query].context
-          field = trace_data[:field]
+          ctx = query.context
+          runtime_info = ctx.namespace(:interpreter) || {}
+          obj = runtime_info[:current_object]
+          args = runtime_info[:current_arguments]
+          field = runtime_info[:current_field]
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object
           end
