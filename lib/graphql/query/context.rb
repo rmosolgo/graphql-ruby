@@ -155,6 +155,7 @@ module GraphQL
         @path = []
         @value = nil
         @context = self # for SharedMethods
+        @scoped_context = {}
       end
 
       # @api private
@@ -162,6 +163,9 @@ module GraphQL
 
       # @api private
       attr_writer :value
+
+      # @api private
+      attr_accessor :scoped_context
 
       def_delegators :@provided_values, :[], :[]=, :to_h, :to_hash, :key?, :fetch, :dig
       def_delegators :@query, :trace, :interpreter?
@@ -193,6 +197,14 @@ module GraphQL
       def received_null_child
         @invalid_null = true
         @value = nil
+      end
+
+      def scoped_merge!(hash)
+        @scoped_context = @scoped_context.merge(hash)
+      end
+
+      def scoped_get(key)
+        @scoped_context[key]
       end
 
       class FieldResolutionContext

@@ -289,4 +289,192 @@ TABLE
       assert_equal expected_values_with_nil, res["data"]["find"]["inspectContext"]
     end
   end
+
+  describe "scoped context" do
+    class LazyBlock
+      def initialize
+        @get_value = Proc.new
+      end
+
+      def value
+        @get_value.call
+      end
+    end
+
+    class ContextQuery < GraphQL::Schema::Object
+      field :get_scoped_context, String, null: true do
+        argument :key, String, required: true
+        argument :lazy, Boolean, required: false, default_value: false
+      end
+
+      def get_scoped_context(key:, lazy:)
+        result = LazyBlock.new {
+          context.scoped_get(key)
+        }
+        return result if lazy
+        result.value
+      end
+
+      field :set_scoped_context, ContextQuery, null: false do
+        argument :key, String, required: true
+        argument :value, String, required: true
+        argument :lazy, Boolean, required: false, default_value: false
+      end
+
+      def set_scoped_context(key:, value:, lazy:)
+        if lazy
+          LazyBlock.new {
+            context.scoped_merge!(key => value)
+            LazyBlock.new {
+              self
+            }
+          }
+        else
+          context.scoped_merge!(key => value)
+          self
+        end
+      end
+    end
+
+    class ContextSchema < GraphQL::Schema
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+      query(ContextQuery)
+      lazy_resolve(LazyBlock, :value)
+    end
+
+    it "can be set and does not leak to sibling fields" do
+      query_str = %|
+        {
+          before: getScopedContext(key: "a")
+          firstSetOuter: setScopedContext(key: "a", value: "1") {
+            before: getScopedContext(key: "a")
+            setInner: setScopedContext(key: "a", value: "2") {
+              only: getScopedContext(key: "a")
+            }
+            after: getScopedContext(key: "a")
+          }
+          secondSetOuter: setScopedContext(key: "a", value: "3") {
+            before: getScopedContext(key: "a")
+            setInner: setScopedContext(key: "a", value: "4") {
+              only: getScopedContext(key: "a")
+            }
+            after: getScopedContext(key: "a")
+          }
+          after: getScopedContext(key: "a")
+        }
+      |
+
+      expected = {
+        'before' => nil,
+        'firstSetOuter' => {
+          'before' => '1',
+          'setInner' => {
+            'only' => '2',
+          },
+          'after' => '1',
+        },
+        'secondSetOuter' => {
+          'before' => '3',
+          'setInner' => {
+            'only' => '4',
+          },
+          'after' => '3',
+        },
+        'after' => nil,
+      }
+      result = ContextSchema.execute(query_str).to_h['data']
+      assert_equal(expected, result)
+    end
+
+    it "can be set and does not leak to sibling fields when all resolvers are lazy values" do
+      query_str = %|
+        {
+          before: getScopedContext(key: "a", lazy: true)
+          setOuter: setScopedContext(key: "a", value: "1", lazy: true) {
+            before: getScopedContext(key: "a", lazy: true)
+            setInner: setScopedContext(key: "a", value: "2", lazy: true) {
+              only: getScopedContext(key: "a", lazy: true)
+            }
+            after: getScopedContext(key: "a", lazy: true)
+          }
+          after: getScopedContext(key: "a", lazy: true)
+        }
+      |
+      expected = {
+        'before' => nil,
+        'setOuter' => {
+          'before' => '1',
+          'setInner' => {
+            'only' => '2',
+          },
+          'after' => '1',
+        },
+        'after' => nil,
+      }
+
+      result = ContextSchema.execute(query_str).to_h['data']
+      assert_equal(expected, result)
+    end
+
+    it "can be set and does not leak to sibling fields when all get resolvers are lazy values" do
+      query_str = %|
+        {
+          before: getScopedContext(key: "a", lazy: true)
+          setOuter: setScopedContext(key: "a", value: "1") {
+            before: getScopedContext(key: "a", lazy: true)
+            setInner: setScopedContext(key: "a", value: "2") {
+              only: getScopedContext(key: "a", lazy: true)
+            }
+            after: getScopedContext(key: "a", lazy: true)
+          }
+          after: getScopedContext(key: "a", lazy: true)
+        }
+      |
+      expected = {
+        'before' => nil,
+        'setOuter' => {
+          'before' => '1',
+          'setInner' => {
+            'only' => '2',
+          },
+          'after' => '1',
+        },
+        'after' => nil,
+      }
+
+      result = ContextSchema.execute(query_str).to_h['data']
+      assert_equal(expected, result)
+    end
+
+    it "can be set and does not leak to sibling fields when all set resolvers are lazy values" do
+      query_str = %|
+        {
+          before: getScopedContext(key: "a")
+          setOuter: setScopedContext(key: "a", value: "1", lazy: true) {
+            before: getScopedContext(key: "a")
+            setInner: setScopedContext(key: "a", value: "2", lazy: true) {
+              only: getScopedContext(key: "a")
+            }
+            after: getScopedContext(key: "a")
+          }
+          after: getScopedContext(key: "a")
+        }
+      |
+      expected = {
+        'before' => nil,
+        'setOuter' => {
+          'before' => '1',
+          'setInner' => {
+            'only' => '2',
+          },
+          'after' => '1',
+        },
+        'after' => nil,
+      }
+
+      result = ContextSchema.execute(query_str).to_h['data']
+      assert_equal(expected, result)
+    end
+  end
 end
