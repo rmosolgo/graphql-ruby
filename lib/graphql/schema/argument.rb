@@ -2,6 +2,10 @@
 module GraphQL
   class Schema
     class Argument
+      if !String.method_defined?(:-@)
+        using GraphQL::StringDedupBackport
+      end
+
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
@@ -43,8 +47,7 @@ module GraphQL
       # @param method_access [Boolean] If false, don't build method access on legacy {Query::Arguments} instances.
       def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, &definition_block)
         arg_name ||= name
-        name_str = camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s
-        @name = name_str.freeze
+        @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
         @description = desc || description
         @null = !required
