@@ -2,7 +2,7 @@
 
 module GraphQL
   module Execution
-    # A tracer that wraps query execution with error handling.
+    # A plugin that wraps query execution with error handling.
     # Supports class-based schemas and the new {Interpreter} runtime only.
     #
     # @example Handling ActiveRecord::NotFound
@@ -27,7 +27,7 @@ module GraphQL
       end
 
       class NullErrorHandler
-        def self.with_error_handling(query)
+        def self.with_error_handling(_ctx)
           yield
         end
       end
@@ -36,15 +36,14 @@ module GraphQL
       #
       # If the block returns a lazy value, it's not wrapped with error handling. That area will have to be wrapped itself.
       #
-      # @param query [GraphQL::Query]
+      # @param ctx [GraphQL::Query::Context]
       # @return [Object] Either the result of the given block, or some object to replace the result, in case of error handling.
-      def with_error_handling(query)
+      def with_error_handling(ctx)
         yield
       rescue StandardError => err
         rescues = @schema.rescues
         _err_class, handler = rescues.find { |err_class, handler| err.is_a?(err_class) }
         if handler
-          ctx = query.context
           runtime_info = ctx.namespace(:interpreter) || {}
           obj = runtime_info[:current_object]
           args = runtime_info[:current_arguments]

@@ -35,7 +35,7 @@ module GraphQL
               if validation_result.valid?
                 if value_was_provided
                   # Add the variable if a value was provided
-                  memo[variable_name] = ctx.query.with_error_handling do
+                  memo[variable_name] = schema.error_handler.with_error_handling(context) do
                     variable_type.coerce_input(provided_value, ctx)
                   end
                 elsif default_value != nil
