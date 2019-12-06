@@ -95,7 +95,7 @@ module GraphQL
             root_complexity = complexities_on_type.last
             # Use this entry point to calculate the total complexity
             total_complexity_for_query = ComplexityMergeFunctions.merged_max_complexity_for_scopes(query, [root_complexity.scoped_children])
-            total += total_complexity_for_query
+            total + total_complexity_for_query
           end
         end
 
