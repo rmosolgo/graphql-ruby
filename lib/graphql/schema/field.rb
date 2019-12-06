@@ -250,13 +250,11 @@ module GraphQL
         @ast_node = ast_node
         @method_conflict_warning = method_conflict_warning
 
-        # Override the default from HasArguments
-        @own_arguments = {}
         arguments.each do |name, arg|
           if arg.is_a?(Hash)
             argument(name: name, **arg)
           else
-            @own_arguments[name] = arg
+            own_arguments[name] = arg
           end
         end
 
