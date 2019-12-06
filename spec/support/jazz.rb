@@ -307,7 +307,7 @@ module Jazz
     field :is_flat, Boolean, null: false, method: :flat
   end
 
-  class HideEnsemble < GraphQL::Schema::TypeMembership
+  class PerformingActVisibility < GraphQL::Schema::TypeMembership
     def initialize(*args, visibility: nil, **kwargs)
       @visibility = visibility
       super(*args, **kwargs)
@@ -321,7 +321,7 @@ module Jazz
   end
 
   class PerformingAct < GraphQL::Schema::Union
-    type_membership_class HideEnsemble
+    type_membership_class PerformingActVisibility
     possible_types Musician
     possible_types Ensemble, visibility: :hide_ensemble
 
