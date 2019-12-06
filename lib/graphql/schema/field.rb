@@ -16,6 +16,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
       extend GraphQL::Schema::FindInheritedValue
+      include GraphQL::Schema::FindInheritedValue::EmptyObjects
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
@@ -186,7 +187,7 @@ module GraphQL
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, arguments: {}, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: [], extensions: EMPTY_ARRAY, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, arguments: EMPTY_HASH, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -202,8 +203,9 @@ module GraphQL
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve and class-based field such as mutation class, please remove `field:`, `function:` or `resolve:`"
         end
         @original_name = name
-        @underscored_name = -Member::BuildType.underscore(name.to_s)
-        @name = -(camelize ? Member::BuildType.camelize(name.to_s) : name.to_s)
+        name_s = -name.to_s
+        @underscored_name = -Member::BuildType.underscore(name_s)
+        @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
         @description = description
         if field.is_a?(GraphQL::Schema::Field)
           raise ArgumentError, "Instead of passing a field as `field:`, use `add_field(field)` to add an already-defined field."
@@ -250,13 +252,11 @@ module GraphQL
         @ast_node = ast_node
         @method_conflict_warning = method_conflict_warning
 
-        # Override the default from HasArguments
-        @own_arguments = {}
         arguments.each do |name, arg|
           if arg.is_a?(Hash)
             argument(name: name, **arg)
           else
-            @own_arguments[name] = arg
+            own_arguments[name] = arg
           end
         end
 
@@ -689,7 +689,7 @@ module GraphQL
       # Written iteratively to avoid big stack traces.
       # @return [Object] Whatever the
       def with_extensions(obj, args, ctx)
-        if @extensions.empty?
+        if @extensions.nil?
           yield(obj, args)
         else
           # Save these so that the originals can be re-given to `after_resolve` handlers.
