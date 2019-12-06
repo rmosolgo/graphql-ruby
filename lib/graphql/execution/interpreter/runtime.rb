@@ -11,7 +11,7 @@ module GraphQL
         # @return [GraphQL::Query]
         attr_reader :query
 
-        # @return [Class]
+        # @return [Class<GraphQL::Schema>]
         attr_reader :schema
 
         # @return [GraphQL::Query::Context]
@@ -43,18 +43,21 @@ module GraphQL
         # might be stored up in lazies.
         # @return [void]
         def run_eager
+
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
           legacy_root_type = schema.root_type_for_operation(root_op_type)
           root_type = legacy_root_type.metadata[:type_class] || raise("Invariant: type must be class-based: #{legacy_root_type}")
+          path = []
+          @interpreter_context[:current_object] = query.root_value
+          @interpreter_context[:current_path] = path
           object_proxy = root_type.authorized_new(query.root_value, context)
           object_proxy = schema.sync_lazy(object_proxy)
           if object_proxy.nil?
             # Root .authorized? returned false.
-            write_in_response([], nil)
+            write_in_response(path, nil)
             nil
           else
-            path = []
             evaluate_selections(path, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
             nil
           end
@@ -116,6 +119,8 @@ module GraphQL
         end
 
         def evaluate_selections(path, owner_object, owner_type, selections, root_operation_type: nil)
+          @interpreter_context[:current_object] = owner_object
+          @interpreter_context[:current_path] = path
           selections_by_name = {}
           gather_selections(owner_object, owner_type, selections, selections_by_name)
           selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
@@ -195,6 +200,8 @@ module GraphQL
               end
             end
 
+            @interpreter_context[:current_arguments] = kwarg_arguments
+
             # Optimize for the case that field is selected only once
             if field_ast_nodes.nil? || field_ast_nodes.size == 1
               next_selections = ast_node.selections
@@ -206,8 +213,10 @@ module GraphQL
             field_result = resolve_with_directives(object, ast_node) do
               # Actually call the field resolver and capture the result
               app_result = begin
-                query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, query: query, object: object, arguments: kwarg_arguments}) do
-                  field_defn.resolve(object, kwarg_arguments, context)
+                query.with_error_handling do
+                  query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, query: query, object: object, arguments: kwarg_arguments}) do
+                    field_defn.resolve(object, kwarg_arguments, context)
+                  end
                 end
               rescue GraphQL::ExecutionError => err
                 err
@@ -394,17 +403,23 @@ module GraphQL
         # @param eager [Boolean] Set to `true` for mutation root fields only
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, owner:, field:, path:, owner_object:, arguments:, eager: false)
+          @interpreter_context[:current_object] = owner_object
+          @interpreter_context[:current_arguments] = arguments
           @interpreter_context[:current_path] = path
           @interpreter_context[:current_field] = field
           if schema.lazy?(lazy_obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
               @interpreter_context[:current_path] = path
               @interpreter_context[:current_field] = field
+              @interpreter_context[:current_object] = owner_object
+              @interpreter_context[:current_arguments] = arguments
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = begin
-                query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
-                  schema.sync_lazy(lazy_obj)
+                query.with_error_handling do
+                  query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
+                    schema.sync_lazy(lazy_obj)
+                  end
                 end
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
                   yield(err)
@@ -500,7 +515,11 @@ module GraphQL
             args = arguments(nil, arg_type, ast_value)
             # We're not tracking defaults_used, but for our purposes
             # we compare the value to the default value.
-            return true, arg_type.new(ruby_kwargs: args, context: context, defaults_used: nil)
+
+            input_obj = query.with_error_handling do
+              arg_type.new(ruby_kwargs: args, context: context, defaults_used: nil)
+            end
+            return true, input_obj
           else
             flat_value = flatten_ast_value(ast_value)
             return true, arg_type.coerce_input(flat_value, context)

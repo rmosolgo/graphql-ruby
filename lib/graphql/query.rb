@@ -300,6 +300,13 @@ module GraphQL
       with_prepared_ast { @subscription }
     end
 
+    # @api private
+    def with_error_handling
+      schema.error_handler.with_error_handling(context) do
+        yield
+      end
+    end
+
     private
 
     def find_operation(operations, operation_name)

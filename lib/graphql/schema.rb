@@ -597,6 +597,7 @@ module GraphQL
     alias :_schema_class :class
     def_delegators :_schema_class, :visible?, :accessible?, :authorized?, :unauthorized_object, :unauthorized_field, :inaccessible_fields
     def_delegators :_schema_class, :directive
+    def_delegators :_schema_class, :error_handler
 
     # A function to call when {#execute} receives an invalid query string
     #
@@ -1025,6 +1026,13 @@ module GraphQL
 
       def type_error(type_err, ctx)
         DefaultTypeError.call(type_err, ctx)
+      end
+
+      attr_writer :error_handler
+
+      # @return [GraphQL::Execution::Errors, Class<GraphQL::Execution::Errors::NullErrorHandler>]
+      def error_handler
+        @error_handler ||= GraphQL::Execution::Errors::NullErrorHandler
       end
 
       def lazy_resolve(lazy_class, value_method)
