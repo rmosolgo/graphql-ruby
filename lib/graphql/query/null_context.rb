@@ -21,8 +21,12 @@ module GraphQL
         )
       end
 
+      def [](key); end
+
       class << self
         extend Forwardable
+
+        def [](key); end
 
         def instance
           @instance = self.new
