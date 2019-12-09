@@ -167,15 +167,27 @@ module GraphQL
       # @api private
       attr_accessor :scoped_context
 
-      def_delegators :@provided_values, :[], :[]=, :to_h, :to_hash, :key?, :fetch, :dig
+      def_delegators :@provided_values, :[]=
+      def_delegators :to_h, :fetch, :dig
       def_delegators :@query, :trace, :interpreter?
-
-      # @!method [](key)
-      #   Lookup `key` from the hash passed to {Schema#execute} as `context:`
 
       # @!method []=(key, value)
       #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
 
+      # Lookup `key` from the hash passed to {Schema#execute} as `context:`
+      def [](key)
+        return @scoped_context[key] if @scoped_context.key?(key)
+        @provided_values[key]
+      end
+
+      def to_h
+        @provided_values.merge(@scoped_context)
+      end
+      alias :to_hash :to_h
+
+      def key?(key)
+        @scoped_context.key?(key) || @provided_values.key?(key)
+      end
 
       # @return [GraphQL::Schema::Warden]
       def warden
@@ -201,10 +213,6 @@ module GraphQL
 
       def scoped_merge!(hash)
         @scoped_context = @scoped_context.merge(hash)
-      end
-
-      def scoped_get(key)
-        @scoped_context[key]
       end
 
       class FieldResolutionContext

@@ -309,7 +309,7 @@ TABLE
 
       def get_scoped_context(key:, lazy:)
         result = LazyBlock.new {
-          context.scoped_get(key)
+          context[key]
         }
         return result if lazy
         result.value
@@ -475,6 +475,36 @@ TABLE
 
       result = ContextSchema.execute(query_str).to_h['data']
       assert_equal(expected, result)
+    end
+
+    it "always retrieves a scoped context value if set" do
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
+      expected_key = :a
+      expected_value = :test
+
+      assert_equal(nil, context[expected_key])
+      assert_equal({}, context.to_h)
+      refute(context.key?(expected_key))
+      assert_raises(KeyError) { context.fetch(expected_key) }
+      assert_nil(context.fetch(expected_key, nil))
+      assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+
+      context.scoped_merge!(expected_key => nil)
+      context[expected_key] = expected_value
+
+      assert_nil(context[expected_key])
+      assert_equal({ expected_key => nil }, context.to_h)
+      assert(context.key?(expected_key))
+      assert_nil(context.fetch(expected_key))
+      assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+
+      context.scoped_context = {}
+
+      assert_equal(expected_value, context[expected_key])
+      assert_equal({ expected_key => expected_value}, context.to_h)
+      assert(context.key?(expected_key))
+      assert_equal(expected_value, context.fetch(expected_key))
+      assert_equal(expected_value, context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
     end
   end
 end
