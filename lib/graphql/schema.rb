@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 require "graphql/schema/base_64_encoder"
 require "graphql/schema/catchall_middleware"
-require "graphql/schema/context"
 require "graphql/schema/default_parse_error"
 require "graphql/schema/default_type_error"
 require "graphql/schema/find_inherited_value"
