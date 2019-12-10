@@ -10,8 +10,9 @@ module Base64Bp
   module_function
 
   def urlsafe_encode64(bin, padding:)
-    str = strict_encode64(bin).tr("+/", "-_")
-    str = str.delete("=") unless padding
+    str = strict_encode64(bin)
+    str.tr!("+/", "-_")
+    str.delete!("=") unless padding
     str
   end
 
