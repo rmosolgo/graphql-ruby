@@ -506,5 +506,16 @@ TABLE
       assert_equal(expected_value, context.fetch(expected_key))
       assert_equal(expected_value, context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
     end
+
+    it "sets a value using #scoped_set!" do
+      expected_key = :a
+      expected_value = :test
+
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
+      assert_nil(context[expected_key])
+
+      context.scoped_set!(expected_key, expected_value)
+      assert_equal(expected_value, context[expected_key])
+    end
   end
 end

@@ -215,6 +215,11 @@ module GraphQL
         @scoped_context = @scoped_context.merge(hash)
       end
 
+      def scoped_set!(key, value)
+        scoped_merge!(key => value)
+        nil
+      end
+
       class FieldResolutionContext
         include SharedMethods
         include Tracing::Traceable
