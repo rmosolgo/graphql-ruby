@@ -16,8 +16,7 @@ module GraphQL
       end
 
       def relation_count(relation)
-        # Must perform query (hence #to_a) to count results https://jira.mongodb.org/browse/MONGOID-2325
-        relation.to_a.count
+        relation.count
       end
 
       def limit_nodes(sliced_nodes, limit)
