@@ -73,12 +73,14 @@ module GraphQL
       end
 
       class << self
-        def implements(*new_interfaces)
+        def implements(*new_interfaces, **options)
           new_interfaces.each do |int|
             if int.is_a?(Module)
               unless int.include?(GraphQL::Schema::Interface)
                 raise "#{int} cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
               end
+
+              type_memberships << int.type_membership_class.new(self, int, options)
 
               # Include the methods here,
               # `.fields` will use the inheritance chain
@@ -86,15 +88,18 @@ module GraphQL
               include(int)
             end
           end
-          own_interfaces.concat(new_interfaces)
         end
 
-        def interfaces
-          own_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces : [])
+        def interfaces(context)
+          visible_interfaces = []
+          type_memberships.each do |type_membership|
+            visible_interfaces << type_membership.object_type if type_membership.visble?(context)
+          end
+          visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context) : [])
         end
 
-        def own_interfaces
-          @own_interfaces ||= []
+        def type_memberships
+          @type_memberships ||= []
         end
 
         # Include legacy-style interfaces, too

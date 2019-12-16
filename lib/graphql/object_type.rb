@@ -91,15 +91,20 @@ module GraphQL
     # This declaration will be validated when the schema is defined.
     # @param interfaces [Array<GraphQL::Interface>] add a new interface that this type implements
     # @param inherits [Boolean] If true, copy the interfaces' field definitions to this type
-    def implements(interfaces, inherit: false)
+    # @param options [Hash] Visibility options to be passed to the type membership class definition
+    def implements(interfaces, inherit: false, **options)
       if !interfaces.is_a?(Array)
         raise ArgumentError, "`implements(interfaces)` must be an array, not #{interfaces.class} (#{interfaces})"
       end
 
-      @clean_interfaces = nil
+      type_memberships = interfaces.map do |i|
+        i.type_membership_class.new(self, i, options)
+      end
+
+      @clean_type_memberships = nil
       @clean_inherited_fields = nil
-      dirty_ifaces = inherit ? @dirty_inherited_interfaces : @dirty_interfaces
-      dirty_ifaces.concat(interfaces)
+      dirty_tmemberships = inherit ? @dirty_inherited_type_memberships : @dirty_type_memberships
+      dirty_tmemberships.concat(type_memberships)
     end
 
     def resolve_type_proc
@@ -108,7 +113,7 @@ module GraphQL
 
     protected
 
-    attr_reader :dirty_interfaces, :dirty_inherited_interfaces
+    attr_reader :dirty_type_memberships, :dirty_inherited_type_memberships
 
     private
 
@@ -122,7 +127,7 @@ module GraphQL
     end
 
     def load_interfaces
-      @clean_interfaces ||= begin
+      @clean_type_memberships ||= begin
         ensure_defined
         clean_ifaces = normalize_interfaces(@dirty_interfaces)
         clean_inherited_ifaces = normalize_interfaces(@dirty_inherited_interfaces)
