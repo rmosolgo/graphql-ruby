@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
+require 'set'
+
 module GraphQL
   class Schema
     # Restrict access to a {GraphQL::Schema} with a user-defined filter.
@@ -44,6 +47,7 @@ module GraphQL
         @query = @schema.query
         @mutation = @schema.mutation
         @subscription = @schema.subscription
+        @context = context
         @visibility_cache = read_through { |m| filter.call(m, context) }
       end
 
@@ -74,6 +78,17 @@ module GraphQL
         @visible_types[type_name]
       end
 
+      # @return [Array<GraphQL::BaseType>] Visible and reachable types in the schema
+      def reachable_types
+        @reachable_types ||= reachable_type_set.to_a
+      end
+
+      # @return Boolean True if the type is visible and reachable in the schema
+      def reachable_type?(type_name)
+        type = get_type(type_name)
+        type && reachable_type_set.include?(type)
+      end
+
       # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`, if it exists
       def get_field(parent_type, field_name)
 
@@ -93,15 +108,9 @@ module GraphQL
 
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
-        @visible_possible_types ||= if @schema.is_a?(Class)
-          all_possible_types = @schema.possible_types
-          read_through { |type_defn|
-            pt = all_possible_types[type_defn.graphql_name] || []
-            pt.select { |t| visible_type?(t) }
-          }
-        else
-          read_through { |type_defn| @schema.possible_types(type_defn).select { |t| visible_type?(t) } }
-        end
+        @visible_possible_types ||= read_through { |type_defn|
+          @schema.possible_types(type_defn, @context).select { |t| visible_type?(t) }
+        }
         @visible_possible_types[type_defn]
       end
 
@@ -208,6 +217,67 @@ module GraphQL
 
       def read_through
         Hash.new { |h, k| h[k] = yield(k) }
+      end
+
+      def reachable_type_set
+        return @reachable_type_set if defined?(@reachable_type_set)
+
+        @reachable_type_set = Set.new
+
+        unvisited_types = []
+        ['query', 'mutation', 'subscription'].each do |op_name|
+          root_type = root_type_for_operation(op_name)
+          unvisited_types << root_type if root_type
+        end
+        unvisited_types.concat(@schema.introspection_system.types.values)
+        @schema.orphan_types.each do |orphan_type|
+          if get_type(orphan_type.graphql_name)
+            unvisited_types << orphan_type
+          end
+        end
+
+        until unvisited_types.empty?
+          type = unvisited_types.pop
+          if @reachable_type_set.add?(type)
+            if type.kind.input_object?
+              # recurse into visible arguments
+              arguments(type).each do |argument|
+                argument_type = argument.type.unwrap
+                unvisited_types << argument_type
+              end
+            elsif type.kind.union?
+              # recurse into visible possible types
+              possible_types(type).each do |possible_type|
+                unvisited_types << possible_type
+              end
+            elsif type.kind.fields?
+              if type.kind.interface?
+                # recurse into visible possible types
+                possible_types(type).each do |possible_type|
+                  unvisited_types << possible_type
+                end
+              elsif type.kind.object?
+                # recurse into visible implemented interfaces
+                interfaces(type).each do |interface|
+                  unvisited_types << interface
+                end
+              end
+
+              # recurse into visible fields
+              fields(type).each do |field|
+                field_type = field.type.unwrap
+                unvisited_types << field_type
+                # recurse into visible arguments
+                arguments(field).each do |argument|
+                  argument_type = argument.type.unwrap
+                  unvisited_types << argument_type
+                end
+              end
+            end
+          end
+        end
+
+        @reachable_type_set
       end
     end
   end

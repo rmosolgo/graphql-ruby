@@ -56,6 +56,21 @@
 - Resolver `loads:` assign the value to argument `@loads` #2364
 - Only integers are accepted for `Int` type #2404
 
+## 1.9.17 (17 Dec 2019)
+
+### New features
+
+- Scoped context for propagating values to child fields #2634
+- Add `type_membership_class` with possible_type visibility #2391
+
+### Bug fixes
+
+- Don't return unreachable types in introspection response #2596
+- Wrap more of execution with error handling #2632
+- Fix InputObject `.prepare` for the interpreter #2624
+- Fix Ruby keyword list to support Ruby 2.7 #2640
+- Fix performance of urlsafe_encode64 backport #2643
+
 ## 1.9.16 (2 Dec 2019)
 
 ### Breaking changes

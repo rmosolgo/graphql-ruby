@@ -15,6 +15,7 @@ module GraphQL
       end
 
       def __type(name:)
+        return unless context.warden.reachable_type?(name)
         type = context.warden.get_type(name)
 
         if type && context.interpreter? && !type.is_a?(Module)

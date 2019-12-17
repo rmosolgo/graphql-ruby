@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module GraphQL
   module Introspection
     class SchemaType < Introspection::BaseObject
@@ -14,7 +15,7 @@ module GraphQL
       field :directives, [GraphQL::Schema::LateBoundType.new("__Directive")], "A list of all directives supported by this server.", null: false
 
       def types
-        @context.warden.types.values
+        @context.warden.reachable_types.sort_by(&:graphql_name)
       end
 
       def query_type

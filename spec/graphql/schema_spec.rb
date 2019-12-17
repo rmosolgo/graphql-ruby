@@ -154,7 +154,12 @@ describe GraphQL::Schema do
   end
 
   describe "merged, inherited caches" do
-    METHODS_TO_CACHE = [:types, :possible_types, :union_memberships, :references_to]
+    METHODS_TO_CACHE = {
+      types: 1,
+      union_memberships: 1,
+      references_to: 1,
+      possible_types: 5, # The number of types with fields accessed in the query
+    }
 
     let(:schema) do
       Class.new(Dummy::Schema) do
@@ -163,7 +168,7 @@ describe GraphQL::Schema do
           @callers = Hash.new { |h, k| h[k] = [] }
         end
 
-        METHODS_TO_CACHE.each do |method_name|
+        METHODS_TO_CACHE.each do |method_name, allowed_calls|
           define_singleton_method(method_name) do |*args, &block|
             if @calls
               call_count = @calls[method_name] += 1
@@ -171,8 +176,8 @@ describe GraphQL::Schema do
             else
               call_count = 0
             end
-            if call_count > 1
-              raise "Called #{method_name} more than once, previous caller: #{@callers[method_name].first}"
+            if call_count > allowed_calls
+              raise "Called #{method_name} more than #{allowed_calls} times, previous caller: \n#{@callers[method_name].first.join("\n")}"
             end
             super(*args, &block)
           end
@@ -180,7 +185,7 @@ describe GraphQL::Schema do
       end
     end
 
-    it "caches #{METHODS_TO_CACHE} at runtime" do
+    it "caches #{METHODS_TO_CACHE.keys} at runtime" do
       query_str = "
         query getFlavor($cheeseId: Int!) {
           brie: cheese(id: 1)   { ...cheeseFields, taste: flavor },

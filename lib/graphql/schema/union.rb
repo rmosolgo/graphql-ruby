@@ -5,13 +5,19 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
 
       class << self
-        def possible_types(*types)
+        def possible_types(*types, context: GraphQL::Query::NullContext, **options)
           if types.any?
-            @possible_types = types
+            types.each do |t|
+              type_memberships << type_membership_class.new(self, t, options)
+            end
           else
-            all_possible_types = @possible_types || []
-            all_possible_types += super if defined?(super)
-            all_possible_types.uniq
+            visible_types = []
+            type_memberships.each do |type_membership|
+              if type_membership.visible?(context)
+                visible_types << type_membership.object_type
+              end
+            end
+            visible_types
           end
         end
 
@@ -19,8 +25,8 @@ module GraphQL
           type_defn = GraphQL::UnionType.new
           type_defn.name = graphql_name
           type_defn.description = description
-          type_defn.possible_types = possible_types
           type_defn.ast_node = ast_node
+          type_defn.type_memberships = type_memberships
           if respond_to?(:resolve_type)
             type_defn.resolve_type = method(:resolve_type)
           end
@@ -28,8 +34,20 @@ module GraphQL
           type_defn
         end
 
+        def type_membership_class(membership_class = nil)
+          if membership_class
+            @type_membership_class = membership_class
+          else
+            @type_membership_class || find_inherited_value(:type_membership_class, GraphQL::Schema::TypeMembership)
+          end
+        end
+
         def kind
           GraphQL::TypeKinds::UNION
+        end
+
+        def type_memberships
+          @type_memberships ||= []
         end
       end
     end

@@ -38,7 +38,9 @@ module GraphQL
                   memo[variable_name] = if provided_value.nil?
                     nil
                   else
-                    variable_type.coerce_input(provided_value, ctx)
+                    schema.error_handler.with_error_handling(context) do
+                      variable_type.coerce_input(provided_value, ctx)
+                    end
                   end
                 elsif default_value != nil
                   # Add the variable if it wasn't provided but it has a default value (including `null`)

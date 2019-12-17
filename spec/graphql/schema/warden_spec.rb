@@ -158,6 +158,8 @@ module MaskHelpers
       description "Find an emic unit by its name"
       argument :name, String, required: true
     end
+
+    field :manners, [MannerType], null: false
   end
 
   class MutationType < BaseObject

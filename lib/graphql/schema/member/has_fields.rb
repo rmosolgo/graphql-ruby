@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require 'irb/ruby-token'
 
 module GraphQL
   class Schema
@@ -43,9 +42,7 @@ module GraphQL
         # A list of Ruby keywords.
         #
         # @api private
-        RUBY_KEYWORDS = RubyToken::TokenDefinitions.select { |definition| definition[1] == RubyToken::TkId }
-                                                   .map { |definition| definition[2] }
-                                                   .compact
+        RUBY_KEYWORDS = [:class, :module, :def, :undef, :begin, :rescue, :ensure, :end, :if, :unless, :then, :elsif, :else, :case, :when, :while, :until, :for, :break, :next, :redo, :retry, :in, :do, :return, :yield, :super, :self, :nil, :true, :false, :and, :or, :not, :alias, :defined?, :BEGIN, :END, :__LINE__, :__FILE__]
 
         # A list of GraphQL-Ruby keywords.
         #

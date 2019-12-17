@@ -41,6 +41,7 @@ require "graphql/schema/directive/include"
 require "graphql/schema/directive/skip"
 require "graphql/schema/directive/feature"
 require "graphql/schema/directive/transform"
+require "graphql/schema/type_membership"
 
 require "graphql/schema/resolver"
 require "graphql/schema/mutation"
@@ -466,10 +467,11 @@ module GraphQL
 
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @param type_defn [GraphQL::InterfaceType, GraphQL::UnionType] the type whose members you want to retrieve
+    # @param context [GraphQL::Query::Context] The context for the current query
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
-    def possible_types(type_defn)
+    def possible_types(type_defn, context = GraphQL::Query::NullContext)
       @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
-      @possible_types.possible_types(type_defn)
+      @possible_types.possible_types(type_defn, context)
     end
 
     # @see [GraphQL::Schema::Warden] Resticted access to root types
@@ -615,6 +617,7 @@ module GraphQL
     alias :_schema_class :class
     def_delegators :_schema_class, :unauthorized_object, :unauthorized_field, :inaccessible_fields
     def_delegators :_schema_class, :directive
+    def_delegators :_schema_class, :error_handler
 
 
     # Given this schema member, find the class-based definition object
@@ -987,11 +990,20 @@ module GraphQL
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
-      def possible_types(type = nil)
+      def possible_types(type = nil, context = GraphQL::Query::NullContext)
         if type
-          own_possible_types[type.graphql_name] ||
-            find_inherited_value(:possible_types, EMPTY_HASH)[type.graphql_name] ||
-            EMPTY_ARRAY
+          # TODO duck-typing `.possible_types` would probably be nicer here
+          if type.kind.union?
+            type.possible_types(context: context)
+          else
+            own_possible_types[type.graphql_name] ||
+              introspection_system.possible_types[type.graphql_name] ||
+              (
+                superclass.respond_to?(:possible_types) ?
+                  superclass.possible_types(type, context) :
+                  EMPTY_ARRAY
+              )
+          end
         else
           find_inherited_value(:possible_types, EMPTY_HASH)
             .merge(own_possible_types)
@@ -1347,6 +1359,12 @@ module GraphQL
       def parse_error(parse_err, ctx)
         ctx.errors.push(parse_err)
       end
+      attr_writer :error_handler
+
+      # @return [GraphQL::Execution::Errors, Class<GraphQL::Execution::Errors::NullErrorHandler>]
+      def error_handler
+        @error_handler ||= GraphQL::Execution::Errors::NullErrorHandler
+      end
 
       def lazy_resolve(lazy_class, value_method)
         lazy_methods.set(lazy_class, value_method)
@@ -1641,18 +1659,16 @@ module GraphQL
           if owner.kind.union?
             # It's a union with possible_types
             # Replace the item by class name
-            new_possible_types = owner.possible_types.map { |t|
-              if t.is_a?(String) && (t == type.name)
+            owner.type_memberships.each { |tm|
+              possible_type = tm.object_type
+              if possible_type.is_a?(String) && (possible_type == type.name)
                 # This is a match of Ruby class names, not graphql names,
                 # since strings are used to refer to constants.
-                type
-              elsif t.is_a?(LateBoundType) && t.graphql_name == type.graphql_name
-                type
-              else
-                t
+                tm.object_type = type
+              elsif possible_type.is_a?(LateBoundType) && possible_type.graphql_name == type.graphql_name
+                tm.object_type = type
               end
             }
-            owner.possible_types(*new_possible_types)
             own_possible_types[owner.graphql_name] = owner.possible_types
           elsif type.kind.interface? && owner.kind.object?
             new_interfaces = owner.interfaces.map do |t|

@@ -247,7 +247,7 @@ describe GraphQL::Schema::Validation do
     }
 
     it "requires an array of ObjectTypes for possible_types" do
-      assert_error_includes non_array_union, "must be an Array of GraphQL::ObjectType, not a #{integer_class_name}"
+      assert_error_includes non_array_union, "must contain GraphQL::ObjectType, not #{integer_class_name}"
 
       assert_error_includes non_object_type_union, "must contain GraphQL::ObjectType, not GraphQL::InterfaceType"
     end

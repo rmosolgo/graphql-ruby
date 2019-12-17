@@ -52,6 +52,14 @@ describe GraphQL::Schema::IntrospectionSystem do
       ensembles_field = query_type["fields"].find { |f| f["name"] == "ensembles" }
       assert_equal [], ensembles_field["args"]
     end
+
+    it "doesn't include invisible union types based on context" do
+      context = { hide_ensemble: true }
+      res = Jazz::Schema.execute('{ __type(name: "PerformingAct") { possibleTypes { name } } }', context: context)
+
+      assert_equal 1, res["data"]["__type"]["possibleTypes"].length
+      assert_equal "MUSICIAN", res["data"]["__type"]["possibleTypes"].first["name"]
+    end
   end
 
   describe "copying the built-ins" do

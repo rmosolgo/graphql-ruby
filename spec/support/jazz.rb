@@ -307,8 +307,23 @@ module Jazz
     field :is_flat, Boolean, null: false, method: :flat
   end
 
+  class PerformingActVisibility < GraphQL::Schema::TypeMembership
+    def initialize(*args, visibility: nil, **kwargs)
+      @visibility = visibility
+      super(*args, **kwargs)
+    end
+
+    def visible?(ctx)
+      return true if @visibility.nil?
+
+      !ctx[@visibility]
+    end
+  end
+
   class PerformingAct < GraphQL::Schema::Union
-    possible_types Musician, Ensemble
+    type_membership_class PerformingActVisibility
+    possible_types Musician
+    possible_types Ensemble, visibility: :hide_ensemble
 
     def self.resolve_type(object, context)
       GraphQL::Execution::Lazy.new do
