@@ -8,6 +8,14 @@
 
 ### Bug fixes
 
+## 1.10.0.pre3 (17 Dec 2019)
+
+### Bug fixes
+
+- Fix Ruby keyword list to support Ruby 2.7 #2640
+- Reduce memory of class-based schema #2636
+- Improve runtime performance of interpreter #2630
+
 ## 1.10.0.pre2 (4 Dec 2019)
 
 ### Breaking changes
