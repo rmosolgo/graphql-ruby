@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Directive
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Directive";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (D)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span>
+     &raquo; 
+    <span class="title">Directive</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Directive
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Directive</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd><span class='object_link'><a href="Define/InstanceDefinable.html" title="GraphQL::Define::InstanceDefinable (module)">GraphQL::Define::InstanceDefinable</a></span></dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/directive.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Directives are server-defined hooks for modifying execution.</p>
+
+<p>Two directives are included out-of-the-box:
+- <code>@skip(if: ...)</code> Skips the tagged field if the value of <code>if</code> is true
+- <code>@include(if: ...)</code> Includes the tagged field <em>only</em> if <code>if</code> is true</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="LOCATIONS-constant" class="">LOCATIONS =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbracket'>[</span>
+  <span class='const'>QUERY</span> <span class='op'>=</span>                  <span class='symbol'>:QUERY</span><span class='comma'>,</span>
+  <span class='const'>MUTATION</span> <span class='op'>=</span>               <span class='symbol'>:MUTATION</span><span class='comma'>,</span>
+  <span class='const'>SUBSCRIPTION</span> <span class='op'>=</span>           <span class='symbol'>:SUBSCRIPTION</span><span class='comma'>,</span>
+  <span class='const'>FIELD</span> <span class='op'>=</span>                  <span class='symbol'>:FIELD</span><span class='comma'>,</span>
+  <span class='const'>FRAGMENT_DEFINITION</span> <span class='op'>=</span>    <span class='symbol'>:FRAGMENT_DEFINITION</span><span class='comma'>,</span>
+  <span class='const'>FRAGMENT_SPREAD</span> <span class='op'>=</span>        <span class='symbol'>:FRAGMENT_SPREAD</span><span class='comma'>,</span>
+  <span class='const'>INLINE_FRAGMENT</span> <span class='op'>=</span>        <span class='symbol'>:INLINE_FRAGMENT</span><span class='comma'>,</span>
+  <span class='const'>SCHEMA</span> <span class='op'>=</span>                 <span class='symbol'>:SCHEMA</span><span class='comma'>,</span>
+  <span class='const'>SCALAR</span> <span class='op'>=</span>                 <span class='symbol'>:SCALAR</span><span class='comma'>,</span>
+  <span class='const'>OBJECT</span> <span class='op'>=</span>                 <span class='symbol'>:OBJECT</span><span class='comma'>,</span>
+  <span class='const'>FIELD_DEFINITION</span> <span class='op'>=</span>       <span class='symbol'>:FIELD_DEFINITION</span><span class='comma'>,</span>
+  <span class='const'>ARGUMENT_DEFINITION</span> <span class='op'>=</span>    <span class='symbol'>:ARGUMENT_DEFINITION</span><span class='comma'>,</span>
+  <span class='const'>INTERFACE</span> <span class='op'>=</span>              <span class='symbol'>:INTERFACE</span><span class='comma'>,</span>
+  <span class='const'>UNION</span> <span class='op'>=</span>                  <span class='symbol'>:UNION</span><span class='comma'>,</span>
+  <span class='const'>ENUM</span> <span class='op'>=</span>                   <span class='symbol'>:ENUM</span><span class='comma'>,</span>
+  <span class='const'>ENUM_VALUE</span> <span class='op'>=</span>             <span class='symbol'>:ENUM_VALUE</span><span class='comma'>,</span>
+  <span class='const'>INPUT_OBJECT</span> <span class='op'>=</span>           <span class='symbol'>:INPUT_OBJECT</span><span class='comma'>,</span>
+  <span class='const'>INPUT_FIELD_DEFINITION</span> <span class='op'>=</span> <span class='symbol'>:INPUT_FIELD_DEFINITION</span><span class='comma'>,</span>
+<span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="DEFAULT_DEPRECATION_REASON-constant" class="">DEFAULT_DEPRECATION_REASON =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>No longer supported</span><span class='tstring_end'>&#39;</span></span></pre></dd>
+      
+        <dt id="LOCATION_DESCRIPTIONS-constant" class="">LOCATION_DESCRIPTIONS =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span>
+  <span class='label'>QUERY:</span>                    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to a query operation.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>MUTATION:</span>                 <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to a mutation operation.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>SUBSCRIPTION:</span>             <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to a subscription operation.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>FIELD:</span>                    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to a field.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>FRAGMENT_DEFINITION:</span>      <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to a fragment definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>FRAGMENT_SPREAD:</span>          <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to a fragment spread.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>INLINE_FRAGMENT:</span>          <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to an inline fragment.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>SCHEMA:</span>                   <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to a schema definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>SCALAR:</span>                   <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to a scalar definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>OBJECT:</span>                   <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to an object type definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>FIELD_DEFINITION:</span>         <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to a field definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>ARGUMENT_DEFINITION:</span>      <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to an argument definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>INTERFACE:</span>                <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to an interface definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>UNION:</span>                    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to a union definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>ENUM:</span>                     <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to an enum definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>ENUM_VALUE:</span>               <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to an enum value definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>INPUT_OBJECT:</span>             <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to an input object type definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='label'>INPUT_FIELD_DEFINITION:</span>   <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Location adjacent to an input object field definition.</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+<span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="SkipDirective-constant" class="">SkipDirective =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Schema/Directive.html" title="GraphQL::Schema::Directive (class)">Directive</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Schema/Directive/Skip.html" title="GraphQL::Schema::Directive::Skip (class)">Skip</a></span></span><span class='period'>.</span><span class='id identifier rubyid_graphql_definition'><span class='object_link'><a href="Schema/Member/CachedGraphQLDefinition.html#graphql_definition-instance_method" title="GraphQL::Schema::Member::CachedGraphQLDefinition#graphql_definition (method)">graphql_definition</a></span></span></pre></dd>
+      
+        <dt id="IncludeDirective-constant" class="">IncludeDirective =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Schema/Directive.html" title="GraphQL::Schema::Directive (class)">Directive</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Schema/Directive/Include.html" title="GraphQL::Schema::Directive::Include (class)">Include</a></span></span><span class='period'>.</span><span class='id identifier rubyid_graphql_definition'><span class='object_link'><a href="Schema/Member/CachedGraphQLDefinition.html#graphql_definition-instance_method" title="GraphQL::Schema::Member::CachedGraphQLDefinition#graphql_definition (method)">graphql_definition</a></span></span></pre></dd>
+      
+        <dt id="DeprecatedDirective-constant" class="">DeprecatedDirective =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Directive</span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>deprecated</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Marks an element of a GraphQL schema as no longer supported.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_locations'>locations</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Directive</span><span class='op'>::</span><span class='const'>FIELD_DEFINITION</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Directive</span><span class='op'>::</span><span class='const'>ENUM_VALUE</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_reason_description'>reason_description</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Explains why this element was deprecated, usually also including a </span><span class='tstring_end'>&quot;</span></span>\
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>suggestion for how to access supported similar data. Formatted </span><span class='tstring_end'>&quot;</span></span>\
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>in [Markdown](https://daringfireball.net/projects/markdown/).</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='id identifier rubyid_argument'>argument</span> <span class='symbol'>:reason</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../GraphQL.html#STRING_TYPE-constant" title="GraphQL::STRING_TYPE (constant)">STRING_TYPE</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_reason_description'>reason_description</span><span class='comma'>,</span> <span class='label'>default_value:</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Directive</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#DEFAULT_DEPRECATION_REASON-constant" title="GraphQL::Directive::DEFAULT_DEPRECATION_REASON (constant)">DEFAULT_DEPRECATION_REASON</a></span></span>
+  <span class='id identifier rubyid_default_directive'>default_directive</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#arguments-instance_method" title="#arguments (instance method)">#<strong>arguments</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute arguments.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#arguments_class-instance_method" title="#arguments_class (instance method)">#<strong>arguments_class</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute arguments_class.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#ast_node-instance_method" title="#ast_node (instance method)">#<strong>ast_node</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute ast_node.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_directive=-instance_method" title="#default_directive= (instance method)">#<strong>default_directive</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+      <span class="note title writeonly">writeonly</span>
+    
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#description-instance_method" title="#description (instance method)">#<strong>description</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute description.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#locations-instance_method" title="#locations (instance method)">#<strong>locations</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute locations.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#name-instance_method" title="#name (instance method)">#<strong>name</strong>  &#x21d2; Object </a>
+    
+
+    
+      (also: #graphql_name)
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute name.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_directive%3F-instance_method" title="#default_directive? (instance method)">#<strong>default_directive?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Is this directive supplied by default? (eg <code>@skip</code>).</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>  &#x21d2; Directive </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Directive.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#inspect-instance_method" title="#inspect (instance method)">#<strong>inspect</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_field%3F-instance_method" title="#on_field? (instance method)">#<strong>on_field?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_fragment%3F-instance_method" title="#on_fragment? (instance method)">#<strong>on_fragment?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_operation%3F-instance_method" title="#on_operation? (instance method)">#<strong>on_operation?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_s-instance_method" title="#to_s (instance method)">#<strong>to_s</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Define/InstanceDefinable.html" title="GraphQL::Define::InstanceDefinable (module)">GraphQL::Define::InstanceDefinable</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">#define</a></span>, <span class='object_link'><a href="Define/InstanceDefinable.html#initialize_copy-instance_method" title="GraphQL::Define::InstanceDefinable#initialize_copy (method)">#initialize_copy</a></span>, <span class='object_link'><a href="Define/InstanceDefinable.html#metadata-instance_method" title="GraphQL::Define::InstanceDefinable#metadata (method)">#metadata</a></span>, <span class='object_link'><a href="Define/InstanceDefinable.html#redefine-instance_method" title="GraphQL::Define::InstanceDefinable#redefine (method)">#redefine</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Directive (class)">Directive</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Directive</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+70
+71
+72
+73</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 70</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+  <span class='ivar'>@arguments</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@default_directive</span> <span class='op'>=</span> <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="arguments=-instance_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="arguments-instance_method">
+  
+    #<strong>arguments</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute arguments</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_arguments'>arguments</span>
+  <span class='ivar'>@arguments</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="arguments_class=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="arguments_class-instance_method">
+  
+    #<strong>arguments_class</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute arguments_class</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_arguments_class'>arguments_class</span>
+  <span class='ivar'>@arguments_class</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="ast_node=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="ast_node-instance_method">
+  
+    #<strong>ast_node</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute ast_node</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+14
+15
+16</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 14</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_ast_node'>ast_node</span>
+  <span class='ivar'>@ast_node</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="default_directive=-instance_method">
+  
+    #<strong>default_directive=</strong>(value)  &#x21d2; <tt>Object</tt>  <span class="extras">(writeonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+16
+17
+18</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 16</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_default_directive='>default_directive=</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='ivar'>@default_directive</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="description=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="description-instance_method">
+  
+    #<strong>description</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute description</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_description'>description</span>
+  <span class='ivar'>@description</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="locations=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="locations-instance_method">
+  
+    #<strong>locations</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute locations</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_locations'>locations</span>
+  <span class='ivar'>@locations</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="name=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="name-instance_method">
+  
+    #<strong>name</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='graphql_name-instance_method'>graphql_name</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute name</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
+  <span class='ivar'>@name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="default_directive?-instance_method">
+  
+    #<strong>default_directive?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Is this directive supplied by default? (eg <code>@skip</code>)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Is this directive supplied by default? (eg <code>@skip</code>)</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+92
+93
+94</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 92</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_default_directive?'>default_directive?</span>
+  <span class='ivar'>@default_directive</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="inspect-instance_method">
+  
+    #<strong>inspect</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+96
+97
+98</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 96</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_inspect'>inspect</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>#&lt;GraphQL::Directive </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&gt;</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_field?-instance_method">
+  
+    #<strong>on_field?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+79
+80
+81</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 79</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_field?'>on_field?</span>
+  <span class='id identifier rubyid_locations'>locations</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='const'>FIELD</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_fragment?-instance_method">
+  
+    #<strong>on_fragment?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+83
+84
+85</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 83</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_fragment?'>on_fragment?</span>
+  <span class='id identifier rubyid_locations'>locations</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='const'>FRAGMENT_SPREAD</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_locations'>locations</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='const'>INLINE_FRAGMENT</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_operation?-instance_method">
+  
+    #<strong>on_operation?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+87
+88
+89</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 87</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_operation?'>on_operation?</span>
+  <span class='id identifier rubyid_locations'>locations</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='const'>QUERY</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_locations'>locations</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='const'>MUTATION</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_locations'>locations</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='const'>SUBSCRIPTION</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_s-instance_method">
+  
+    #<strong>to_s</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+75
+76
+77</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/directive.rb', line 75</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;GraphQL::Directive </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&gt;</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Dec 17 09:43:34 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.20 (ruby-2.6.2).
+</div>
+
+    </div>
+  </body>
+</html>
