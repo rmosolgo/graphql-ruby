@@ -23,10 +23,16 @@ module GraphQL
         @include_built_in_scalars = include_built_in_scalars
         @include_built_in_directives = include_built_in_directives
 
+        filter = GraphQL::Filter.new(only: only, except: except)
+        if @schema.respond_to?(:visible?)
+          filter = filter.merge(only: @schema.method(:visible?))
+        end
+
+        schema_context = GraphQL::Query::Context.new(query: nil, object: nil, schema: schema, values: context)
         @warden = GraphQL::Schema::Warden.new(
-          GraphQL::Filter.new(only: only, except: except),
+          filter,
           schema: @schema,
-          context: context,
+          context: schema_context,
         )
       end
 
@@ -250,7 +256,7 @@ module GraphQL
         definitions = []
         definitions << build_schema_node if include_schema_node?
         definitions += build_directive_nodes(warden.directives)
-        definitions += build_type_definition_nodes(warden.types)
+        definitions += build_type_definition_nodes(warden.reachable_types)
         definitions
       end
 
