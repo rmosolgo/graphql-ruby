@@ -5,6 +5,7 @@
 ### Deprecations
 
 ### New features
+- Add AppOptics tracing
 
 ### Bug fixes
 
