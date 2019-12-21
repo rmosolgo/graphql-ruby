@@ -8,7 +8,7 @@ module GraphQL
         def possible_types(*types, context: GraphQL::Query::NullContext, **options)
           if types.any?
             types.each do |t|
-              type_memberships << type_membership_class.new(self, t, options)
+              type_memberships << type_membership_class.new(self, t, **options)
             end
           else
             visible_types = []

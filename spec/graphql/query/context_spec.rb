@@ -292,8 +292,8 @@ TABLE
 
   describe "scoped context" do
     class LazyBlock
-      def initialize
-        @get_value = Proc.new
+      def initialize(&block)
+        @get_value = block
       end
 
       def value
