@@ -28,9 +28,9 @@ module GraphQL
         end
 
         obj_field = if base_field
-          base_field.redefine(kwargs, &block)
+          base_field.redefine(**kwargs, &block)
         else
-          GraphQL::Field.define(kwargs, &block)
+          GraphQL::Field.define(**kwargs, &block)
         end
 
 

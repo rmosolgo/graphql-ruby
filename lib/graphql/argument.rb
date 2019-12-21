@@ -134,9 +134,9 @@ module GraphQL
       end
 
       if type_or_argument.is_a?(GraphQL::Argument)
-        type_or_argument.redefine(kwargs, &block)
+        type_or_argument.redefine(**kwargs, &block)
       else
-        GraphQL::Argument.define(kwargs, &block)
+        GraphQL::Argument.define(**kwargs, &block)
       end
     end
 
