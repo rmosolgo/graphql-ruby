@@ -8,6 +8,16 @@
 
 ### Bug fixes
 
+## 1.9.15 (22 Dec 2019)
+
+## Bug fixes
+
+- Fix argument underscoring #2611
+
+### Breaking changes
+
+- Arguments with integers were being incorrectly deserialized #2611
+
 ## 1.9.14 (14 Oct 2019)
 
 ## New features

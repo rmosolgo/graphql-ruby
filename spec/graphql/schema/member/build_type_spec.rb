@@ -60,4 +60,16 @@ describe GraphQL::Schema::Member::BuildType do
       assert_equal "T", GraphQL::Schema::Member::BuildType.to_type_name(list_req_t)
     end
   end
+
+  describe ".underscore" do
+    it "converts things" do
+      assert_equal "url_decoder", GraphQL::Schema::Member::BuildType.underscore("URLDecoder")
+      assert_equal "some_thing", GraphQL::Schema::Member::BuildType.underscore("someThing")
+      assert_equal "some_thing_after", GraphQL::Schema::Member::BuildType.underscore("someThingAfter")
+      assert_equal "some_thing_1", GraphQL::Schema::Member::BuildType.underscore("someThing1")
+      assert_equal "some_thing_123", GraphQL::Schema::Member::BuildType.underscore("someThing123")
+      assert_equal "123_some_thing", GraphQL::Schema::Member::BuildType.underscore("123SomeThing")
+      assert_equal "some_thing_123_after", GraphQL::Schema::Member::BuildType.underscore("someThing123After")
+    end
+  end
 end

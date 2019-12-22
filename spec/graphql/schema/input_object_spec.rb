@@ -133,7 +133,7 @@ describe GraphQL::Schema::InputObject do
       GRAPHQL
 
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
-      expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") }.inspect, "Drum Kit"]
+      expected_obj = [{ a: 1, b_2: 2, c: 9, d_2: 4, e_2: 5, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") }.inspect, "Drum Kit"]
       assert_equal expected_obj, res["data"]["inputs"]
     end
 

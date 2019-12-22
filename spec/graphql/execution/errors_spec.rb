@@ -33,37 +33,37 @@ describe "GraphQL::Execution::Errors" do
     end
 
     class Query < GraphQL::Schema::Object
-      field :f1, Int, null: true do
-        argument :a1, Int, required: false
+      field :f_1, Int, null: true do
+        argument :a_1, Int, required: false
       end
 
-      def f1(a1: nil)
-        raise ErrorA, "f1 broke"
+      def f_1(a_1: nil)
+        raise ErrorA, "f_1 broke"
       end
 
-      field :f2, Int, null: true
-      def f2
-        -> { raise ErrorA, "f2 broke" }
+      field :f_2, Int, null: true
+      def f_2
+        -> { raise ErrorA, "f_2 broke" }
       end
 
-      field :f3, Int, null: true
+      field :f_3, Int, null: true
 
-      def f3
+      def f_3
         raise ErrorB
       end
 
-      field :f4, Int, null: false
-      def f4
+      field :f_4, Int, null: false
+      def f_4
         raise ErrorC.new(value: 20)
       end
 
-      field :f5, Int, null: true
-      def f5
+      field :f_5, Int, null: true
+      def f_5
         raise ErrorASubclass, "raised subclass"
       end
 
-      field :f6, Int, null: true
-      def f6
+      field :f_6, Int, null: true
+      def f_6
         -> { raise ErrorB }
       end
     end
@@ -77,14 +77,14 @@ describe "GraphQL::Execution::Errors" do
       ctx = { errors: [] }
       res = ErrorsTestSchema.execute "{ f1(a1: 1) }", context: ctx, root_value: :abc
       assert_equal({ "data" => { "f1" => nil } }, res)
-      assert_equal ["f1 broke (ErrorsTestSchema::Query.f1, :abc, {:a1=>1})"], ctx[:errors]
+      assert_equal ["f_1 broke (ErrorsTestSchema::Query.f1, :abc, {:a_1=>1})"], ctx[:errors]
     end
 
     it "rescues errors from lazy code" do
       ctx = { errors: [] }
       res = ErrorsTestSchema.execute("{ f2 }", context: ctx)
       assert_equal({ "data" => { "f2" => nil } }, res)
-      assert_equal ["f2 broke (ErrorsTestSchema::Query.f2, nil, {})"], ctx[:errors]
+      assert_equal ["f_2 broke (ErrorsTestSchema::Query.f2, nil, {})"], ctx[:errors]
     end
 
     it "rescues errors from lazy code with handlers that re-raise" do

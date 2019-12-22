@@ -161,6 +161,8 @@ module GraphQL
           string
             .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
             .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+            .gsub(/([A-Za-z]+)([0-9]+)/,'\1_\2')  # some1 -> some_1
+            .gsub(/([0-9]+)([A-Za-z]+)/,'\1_\2')  # 1thing -> 1_thing
             .downcase
         end
       end

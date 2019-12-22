@@ -255,52 +255,52 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver10 < BaseResolver
-      argument :int1, Integer, required: true
-      argument :int2, Integer, required: true, as: :integer_2
+      argument :int_1, Integer, required: true
+      argument :int_2, Integer, required: true, as: :integer_2
       type Integer, null: true
-      def authorized?(int1:, integer_2:)
-        if int1 + integer_2 > context[:max_int]
+      def authorized?(int_1:, integer_2:)
+        if int_1 + integer_2 > context[:max_int]
           raise GraphQL::ExecutionError, "Inputs too big"
-        elsif context[:min_int] && (int1 + integer_2 < context[:min_int])
+        elsif context[:min_int] && (int_1 + integer_2 < context[:min_int])
           false
         else
           true
         end
       end
 
-      def resolve(int1:, integer_2:)
-        int1 + integer_2
+      def resolve(int_1:, integer_2:)
+        int_1 + integer_2
       end
     end
 
     class PrepResolver11 < PrepResolver10
-      def authorized?(int1:, integer_2:)
-        LazyBlock.new { super(int1: int1 * 2, integer_2: integer_2) }
+      def authorized?(int_1:, integer_2:)
+        LazyBlock.new { super(int_1: int_1 * 2, integer_2: integer_2) }
       end
     end
 
     class PrepResolver12 < GraphQL::Schema::Mutation
-      argument :int1, Integer, required: true
-      argument :int2, Integer, required: true
+      argument :int_1, Integer, required: true
+      argument :int_2, Integer, required: true
       field :error_messages, [String], null: true
       field :value, Integer, null: true
-      def authorized?(int1:, int2:)
-        if int1 + int2 > context[:max_int]
-          return false, { error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"] }
+      def authorized?(int_1:, int_2:)
+        if int_1 + int_2 > context[:max_int]
+          return false, { error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int_1 + int_2})"] }
         else
           true
         end
       end
 
-      def resolve(int1:, int2:)
-        { value: int1 + int2 }
+      def resolve(int_1:, int_2:)
+        { value: int_1 + int_2 }
       end
     end
 
     class PrepResolver13 < PrepResolver12
-      def authorized?(int1:, int2:)
+      def authorized?(int_1:, int_2:)
         # Increment the numbers so we can be sure they're passing through here
-        LazyBlock.new { super(int1: int1 + 1, int2: int2 + 1) }
+        LazyBlock.new { super(int_1: int_1 + 1, int_2: int_2 + 1) }
       end
     end
 

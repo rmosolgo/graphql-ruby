@@ -273,14 +273,14 @@ describe GraphQL::Authorization do
 
       field :hidden, Integer, null: false
       field :unauthorized, Integer, null: true, method: :itself
-      field :int2, Integer, null: true do
+      field :int_2, Integer, null: true do
         argument :int, Integer, required: false
         argument :hidden, Integer, required: false
         argument :inaccessible, Integer, required: false
         argument :unauthorized, Integer, required: false
       end
 
-      def int2(**args)
+      def int_2(**args)
         args[:unauthorized] || 1
       end
 
@@ -600,8 +600,8 @@ describe GraphQL::Authorization do
       GRAPHQL
       query_field_names = res["data"]["query"]["fields"].map { |f| f["name"] }
       refute_includes query_field_names, "int"
-      int2_arg_names = res["data"]["query"]["fields"].find { |f| f["name"] == "int2" }["args"].map { |a| a["name"] }
-      assert_equal ["int", "inaccessible", "unauthorized"], int2_arg_names
+      int_2_arg_names = res["data"]["query"]["fields"].find { |f| f["name"] == "int2" }["args"].map { |a| a["name"] }
+      assert_equal ["int", "inaccessible", "unauthorized"], int_2_arg_names
 
       assert_nil res["data"]["hiddenObject"]
       assert_nil res["data"]["hiddenInterface"]
