@@ -58,7 +58,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-## Monitoring 
+## Monitoring
 
 Several monitoring platforms are supported out-of-the box by GraphQL-Ruby (see platforms below).
 
