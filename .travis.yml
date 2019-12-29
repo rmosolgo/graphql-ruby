@@ -1,8 +1,6 @@
 ---
 language: ruby
 
-sudo: false
-
 cache:
   - bundler
   - yarn
@@ -57,6 +55,16 @@ matrix:
     gemfile: gemfiles/rails_5.1.gemfile
   - rvm: 2.6.2
     gemfile: gemfiles/rails_5.2.gemfile
+  - rvm: 2.6.2
+    gemfile: gemfiles/rails_6.0.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_5.0.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_5.1.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_5.2.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_6.0.gemfile
   - rvm: ruby-head
     gemfile: gemfiles/rails_master.gemfile
   - rvm: 2.6.2
