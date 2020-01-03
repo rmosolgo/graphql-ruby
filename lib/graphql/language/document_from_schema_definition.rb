@@ -28,7 +28,7 @@ module GraphQL
           filter = filter.merge(only: @schema.method(:visible?))
         end
 
-        schema_context = GraphQL::Query::Context.new(query: nil, object: nil, schema: schema, values: context)
+        schema_context = schema.context_class.new(query: nil, object: nil, schema: schema, values: context)
         @warden = GraphQL::Schema::Warden.new(
           filter,
           schema: @schema,
