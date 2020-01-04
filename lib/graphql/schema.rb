@@ -99,6 +99,8 @@ module GraphQL
       mutation: ->(schema, t) { schema.mutation = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
       subscription: ->(schema, t) { schema.subscription = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
       disable_introspection_entry_points: ->(schema) { schema.disable_introspection_entry_points = true },
+      disable_schema_introspection_entry_point: ->(schema) { schema.disable_schema_introspection_entry_point = true },
+      disable_type_introspection_entry_point: ->(schema) { schema.disable_type_introspection_entry_point = true },
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m } },
       directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
@@ -154,6 +156,12 @@ module GraphQL
     # [Boolean] True if this object disables the introspection entry point fields
     attr_accessor :disable_introspection_entry_points
 
+    # [Boolean] True if this object disables the __schema introspection entry point field
+    attr_accessor :disable_schema_introspection_entry_point
+
+    # [Boolean] True if this object disables the __type introspection entry point field
+    attr_accessor :disable_type_introspection_entry_point
+
     class << self
       attr_writer :default_execution_strategy
     end
@@ -203,6 +211,8 @@ module GraphQL
       @interpreter = false
       @error_bubbling = false
       @disable_introspection_entry_points = false
+      @disable_schema_introspection_entry_point = false
+      @disable_type_introspection_entry_point = false
     end
 
     # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
@@ -736,6 +746,8 @@ module GraphQL
         :get_field, :root_types, :references_to, :type_from_ast,
         :possible_types,
         :disable_introspection_entry_points=
+        :disable_schema_introspection_entry_point=
+        :disable_type_introspection_entry_point=
 
       def graphql_definition
         @graphql_definition ||= to_graphql
@@ -761,6 +773,8 @@ module GraphQL
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
         schema_defn.disable_introspection_entry_points = disable_introspection_entry_points?
+        schema_defn.disable_schema_introspection_entry_point = disable_schema_introspection_entry_point?
+        schema_defn.disable_type_introspection_entry_point = disable_type_introspection_entry_point?
 
         prepped_dirs = {}
         directives.each { |k, v| prepped_dirs[k] = v.graphql_definition}
@@ -916,11 +930,35 @@ module GraphQL
         @disable_introspection_entry_points = true
       end
 
+      def disable_schema_introspection_entry_point
+        @disable_schema_introspection_entry_point = true
+      end
+
+      def disable_type_introspection_entry_point
+        @disable_type_introspection_entry_point = true
+      end
+
       def disable_introspection_entry_points?
         if instance_variable_defined?(:@disable_introspection_entry_points)
           @disable_introspection_entry_points
         else
           find_inherited_value(:disable_introspection_entry_points?, false)
+        end
+      end
+
+      def disable_schema_introspection_entry_point?
+        if instance_variable_defined?(:@disable_schema_introspection_entry_point)
+          @disable_schema_introspection_entry_point
+        else
+          find_inherited_value(:disable_schema_introspection_entry_point?, false)
+        end
+      end
+
+      def disable_type_introspection_entry_point?
+        if instance_variable_defined?(:@disable_type_introspection_entry_point)
+          @disable_type_introspection_entry_point
+        else
+          find_inherited_value(:disable_type_introspection_entry_point?, false)
         end
       end
 
