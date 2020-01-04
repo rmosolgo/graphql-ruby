@@ -197,3 +197,12 @@ class MySchema < GraphQL::Schema
   disable_introspection_entry_points if Rails.env.production?
 end
 ```
+
+Where `disable_introspection_entry_points` will disable both the `__schema` and `__type` introspection entry points, you can also individually disable the introspection entry points using the `disable_schema_introspection_entry_point` and `disable_type_introspection_entry_point` shorthand methods:
+
+```ruby
+class MySchema < GraphQL::Schema
+  disable_schema_introspection_entry_point
+  disable_type_introspection_entry_point
+end
+```
