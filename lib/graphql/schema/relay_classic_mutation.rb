@@ -61,7 +61,7 @@ module GraphQL
         end
 
         return_value = if input_kwargs.any?
-          super(input_kwargs)
+          super(**input_kwargs)
         else
           super()
         end
