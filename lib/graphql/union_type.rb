@@ -24,8 +24,15 @@ module GraphQL
   #  }
   #
   class UnionType < GraphQL::BaseType
+    # Rubocop was unhappy about the syntax when this was a proc literal
+    class AcceptPossibleTypesDefinition
+      def self.call(target, possible_types, options = {})
+        target.add_possible_types(possible_types, **options)
+      end
+    end
+
     accepts_definitions :resolve_type, :type_membership_class,
-      possible_types: ->(target, possible_types, options = {}) { target.add_possible_types(possible_types, **options) }
+      possible_types: AcceptPossibleTypesDefinition
     ensure_defined :possible_types, :resolve_type, :resolve_type_proc, :type_membership_class
 
     attr_accessor :resolve_type_proc
