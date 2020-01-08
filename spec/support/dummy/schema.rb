@@ -497,7 +497,7 @@ module Dummy
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 
     def self.resolve_type(type, obj, ctx)
-      Schema.types[obj.class.name.split("::").last]
+      -> { Schema.types[obj.class.name.split("::").last] }
     end
 
     # This is used to confirm that the hook is called:

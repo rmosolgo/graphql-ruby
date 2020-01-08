@@ -61,6 +61,15 @@ module GraphQL
           platform_trace(platform_key, key, data) do
             yield
           end
+        when "resolve_type", "resolve_type_lazy"
+          cache = platform_key_cache(data.fetch(:context))
+          type = data.fetch(:type)
+          platform_key = cache.fetch(type) do
+            cache[type] = platform_resolve_type_key(type)
+          end
+          platform_trace(platform_key, key, data) do
+            yield
+          end
         else
           # it's a custom key
           yield

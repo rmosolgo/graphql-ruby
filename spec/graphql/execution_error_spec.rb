@@ -96,6 +96,26 @@ describe GraphQL::ExecutionError do
           },
           "errors"=>[
             {
+              "message"=>"missing dairy",
+              "locations"=>[{"line"=>25, "column"=>5}],
+              "path"=>["dairyErrors", 1]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>31, "column"=>9}],
+              "path"=>["dairy", "milks", 0, "executionError"]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>41, "column"=>5}],
+              "path"=>["executionError"]
+            },
+            {
+              "message"=>"Could not fetch latest value",
+              "locations"=>[{"line"=>42, "column"=>5}],
+              "path"=>["valueWithExecutionError"]
+            },
+            {
               "message"=>"No cheeses are made from Yak milk!",
               "locations"=>[{"line"=>5, "column"=>7}],
               "path"=>["cheese", "error1"]
@@ -111,29 +131,9 @@ describe GraphQL::ExecutionError do
               "path"=>["allDairy", 3, "executionError"]
             },
             {
-              "message"=>"missing dairy",
-              "locations"=>[{"line"=>25, "column"=>5}],
-              "path"=>["dairyErrors", 1]
-            },
-            {
-              "message"=>"There was an execution error",
-              "locations"=>[{"line"=>31, "column"=>9}],
-              "path"=>["dairy", "milks", 0, "executionError"]
-            },
-            {
               "message"=>"There was an execution error",
               "locations"=>[{"line"=>36, "column"=>13}],
               "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
-            },
-            {
-              "message"=>"There was an execution error",
-              "locations"=>[{"line"=>41, "column"=>5}],
-              "path"=>["executionError"]
-            },
-            {
-              "message"=>"Could not fetch latest value",
-              "locations"=>[{"line"=>42, "column"=>5}],
-              "path"=>["valueWithExecutionError"]
             },
           ]
         }

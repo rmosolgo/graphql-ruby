@@ -40,6 +40,10 @@ module GraphQL
         "#{type.graphql_name}.authorized"
       end
 
+      def platform_resolve_type_key(type)
+        "#{type.graphql_name}.resolve_type"
+      end
+
       private
 
       def instrument_execution(platform_key, key, data, &block)

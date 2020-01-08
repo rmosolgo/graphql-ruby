@@ -293,7 +293,7 @@ module GraphQL
             write_in_response(path, r)
             r
           when "UNION", "INTERFACE"
-            resolved_type_or_lazy = query.resolve_type(type, value)
+            resolved_type_or_lazy = resolve_type(type, value)
             after_lazy(resolved_type_or_lazy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
               possible_types = query.possible_types(type)
 
@@ -643,6 +643,23 @@ module GraphQL
             end
           end
           res && res[:__dead]
+        end
+
+        def resolve_type(type, value)
+          trace_payload = { context: context, type: type, object: value }
+          resolved_type = query.trace("resolve_type", trace_payload) do
+            query.resolve_type(type, value)
+          end
+
+          if schema.lazy?(resolved_type)
+            GraphQL::Execution::Lazy.new do
+              query.trace("resolve_type_lazy", trace_payload) do
+                schema.sync_lazy(resolved_type)
+              end
+            end
+          else
+            resolved_type
+          end
         end
       end
     end
