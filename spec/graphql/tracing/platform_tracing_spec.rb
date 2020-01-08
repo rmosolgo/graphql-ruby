@@ -20,6 +20,10 @@ describe GraphQL::Tracing::PlatformTracing do
       "#{type.graphql_name[0]}.#{field.graphql_name[0]}"
     end
 
+    def platform_authorized_key(type)
+      "#{type.graphql_name}.authorized"
+    end
+
     def platform_trace(platform_key, key, data)
       TRACE << platform_key
       yield
@@ -49,8 +53,11 @@ describe GraphQL::Tracing::PlatformTracing do
           "v",
           "aq",
           "eq",
+          "Query.authorized",
           "Q.c", # notice that the flavor is skipped
+          "Cheese.authorized",
           "eql",
+          "Cheese.authorized", # This is the lazy part, calling the proc
         ]
 
       assert_equal expected_trace, CustomPlatformTracer::TRACE
@@ -78,7 +85,9 @@ describe GraphQL::Tracing::PlatformTracing do
           "v",
           "aq",
           "eq",
+          "Query.authorized",
           "Q.t",
+          "TracingScalar.authorized",
           "T.t",
           "eql",
         ]
@@ -107,7 +116,9 @@ describe GraphQL::Tracing::PlatformTracing do
           "v",
           "aq",
           "eq",
+          "Query.authorized",
           "Q.t",
+          "TracingScalar.authorized",
           "T.t",
           "T.t",
           "eql",

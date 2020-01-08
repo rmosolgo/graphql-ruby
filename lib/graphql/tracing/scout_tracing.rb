@@ -30,6 +30,10 @@ module GraphQL
       def platform_field_key(type, field)
         "#{type.graphql_name}.#{field.graphql_name}"
       end
+
+      def platform_authorized_key(type)
+        "#{type.graphql_name}.authorized"
+      end
     end
   end
 end

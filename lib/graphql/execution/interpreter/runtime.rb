@@ -294,7 +294,7 @@ module GraphQL
             r
           when "UNION", "INTERFACE"
             resolved_type_or_lazy = query.resolve_type(type, value)
-            after_lazy(resolved_type_or_lazy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |resolved_type|
+            after_lazy(resolved_type_or_lazy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
               possible_types = query.possible_types(type)
 
               if !possible_types.include?(resolved_type)
@@ -313,7 +313,7 @@ module GraphQL
             rescue GraphQL::ExecutionError => err
               err
             end
-            after_lazy(object_proxy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_object|
+            after_lazy(object_proxy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |inner_object|
               continue_value = continue_value(path, inner_object, field, is_non_null, ast_node)
               if HALT != continue_value
                 response_hash = {}
@@ -390,8 +390,9 @@ module GraphQL
         # @param path [Array<String>]
         # @param field [GraphQL::Schema::Field]
         # @param eager [Boolean] Set to `true` for mutation root fields only
+        # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
-        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false)
+        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false, trace: true)
           @interpreter_context[:current_object] = owner_object
           @interpreter_context[:current_arguments] = arguments
           @interpreter_context[:current_path] = path
@@ -407,7 +408,11 @@ module GraphQL
               # but don't wrap the continuation below
               inner_obj = begin
                 query.with_error_handling do
-                  query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
+                  if trace
+                    query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
+                      schema.sync_lazy(lazy_obj)
+                    end
+                  else
                     schema.sync_lazy(lazy_obj)
                   end
                 end

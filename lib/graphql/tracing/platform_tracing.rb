@@ -21,7 +21,6 @@ module GraphQL
       def trace(key, data)
         case key
         when "lex", "parse", "validate", "analyze_query", "analyze_multiplex", "execute_query", "execute_query_lazy", "execute_multiplex"
-          data.fetch(:query).context.namespace(self.class)[:platform_key_cache] = {} if key == "execute_query"
           platform_key = @platform_keys.fetch(key)
           platform_trace(platform_key, key, data) do
             yield
@@ -33,9 +32,9 @@ module GraphQL
             trace_field = true # implemented with instrumenter
           else
             field = data[:field]
-            platform_key_cache = data.fetch(:query).context.namespace(self.class).fetch(:platform_key_cache)
-            platform_key = platform_key_cache.fetch(field) do
-              platform_key_cache[field] = platform_field_key(data[:owner], field)
+            cache = platform_key_cache(data.fetch(:query).context)
+            platform_key = cache.fetch(field) do
+              cache[field] = platform_field_key(data[:owner], field)
             end
 
             return_type = field.type.unwrap
@@ -51,6 +50,15 @@ module GraphQL
               yield
             end
           else
+            yield
+          end
+        when "authorized", "authorized_lazy"
+          cache = platform_key_cache(data.fetch(:context))
+          type = data.fetch(:type)
+          platform_key = cache.fetch(type) do
+            cache[type] = platform_authorized_key(type)
+          end
+          platform_trace(platform_key, key, data) do
             yield
           end
         else
@@ -87,6 +95,10 @@ module GraphQL
 
       private
       attr_reader :options
+
+      def platform_key_cache(ctx)
+        ctx.namespace(self.class)[:platform_key_cache] ||= {}
+      end
     end
   end
 end
