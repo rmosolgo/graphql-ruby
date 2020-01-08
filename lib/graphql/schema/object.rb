@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "graphql/query/null_context"
+
 module GraphQL
   class Schema
     class Object < GraphQL::Schema::Member
@@ -87,20 +89,20 @@ module GraphQL
               # to find inherited fields
               include(int)
             end
-          end
-        end
-
-        def interfaces(context)
-          visible_interfaces = []
-          type_memberships.each do |type_membership|
-            visible_interfaces << type_membership.object_type if type_membership.visble?(context)
-          end
-          visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context) : [])
+          end 
         end
 
         def type_memberships
           @type_memberships ||= []
         end
+
+        def interfaces(context: GraphQL::Query::NullContext)
+          visible_interfaces = []
+          self.type_memberships.each do |type_membership|
+            visible_interfaces << type_membership.object_type if type_membership.visible?(context)
+          end
+          visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context: context) : [])
+        end 
 
         # Include legacy-style interfaces, too
         def fields
@@ -118,11 +120,11 @@ module GraphQL
         end
 
         # @return [GraphQL::ObjectType]
-        def to_graphql
+        def to_graphql(context: GraphQL::Query::NullContext)
           obj_type = GraphQL::ObjectType.new
           obj_type.name = graphql_name
           obj_type.description = description
-          obj_type.interfaces = interfaces
+          obj_type.interfaces = interfaces(context: context)
           obj_type.introspection = introspection
           obj_type.mutation = mutation
           fields.each do |field_name, field_inst|

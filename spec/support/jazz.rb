@@ -172,6 +172,27 @@ module Jazz
     field :name, String, null: false
   end
 
+  class PrivateMembership < GraphQL::Schema::TypeMembership
+    def initialize(*args, visibility: nil, **kwargs)
+      @visibility = visibility
+      super(*args, **kwargs)
+    end
+
+    def visible?(ctx)
+      return true if @visibility.nil?
+
+      @visibility[:private] && ctx[:private]
+    end
+  end
+
+  module PrivateNameEntity
+    include BaseInterface
+    
+    type_membership_class PrivateMembership
+
+    field :private_name, String, null: false
+  end
+
   # test field inheritance
   class ObjectWithUpcasedName < BaseObject
     # Test extra arguments:
@@ -193,6 +214,7 @@ module Jazz
     # This method should override inherited one
     field :name, "String", null: false, resolver_method: :overridden_name
     implements GloballyIdentifiableType, NamedEntity, HasMusicians
+    implements PrivateNameEntity, visibility: { private: true }
     description "A group of musicians playing together"
     config :config, :configged
     field :formed_at, String, null: true, hash_key: "formedAtDate"

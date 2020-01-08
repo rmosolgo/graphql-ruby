@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "spec_helper"
-
 describe GraphQL::Schema::Object do
   describe "class attributes" do
     let(:object_class) { Jazz::Ensemble }
@@ -8,7 +7,7 @@ describe GraphQL::Schema::Object do
     it "tells type data" do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
-      assert_equal 6, object_class.fields.size
+      assert_equal 7, object_class.fields.size
       assert_equal 3, object_class.interfaces.size
       # Compatibility methods are delegated to the underlying BaseType
       assert object_class.respond_to?(:connection_type)
@@ -27,7 +26,7 @@ describe GraphQL::Schema::Object do
       end
 
       # one more than the parent class
-      assert_equal 7, new_object_class.fields.size
+      assert_equal 8, new_object_class.fields.size
       # inherited interfaces are present
       assert_equal 3, new_object_class.interfaces.size
       # The new field is present
@@ -46,6 +45,12 @@ describe GraphQL::Schema::Object do
       assert_equal "NewSubclass", new_subclass_1.graphql_name
       assert_equal "NewSubclass", new_subclass_2.graphql_name
       assert_equal object_class.description, new_subclass_2.description
+    end
+
+    it "implements visibility constrained interface when context is private" do
+      found_interfaces = object_class.interfaces(context: { private: true })
+      assert_equal 4, found_interfaces.count
+      assert found_interfaces.any? { |int| int.graphql_name == 'PrivateNameEntity' }
     end
 
     it "should take Ruby name (without Type suffix) as default graphql name" do
@@ -226,7 +231,7 @@ describe GraphQL::Schema::Object do
     it "returns a matching GraphQL::ObjectType" do
       assert_equal "Ensemble", obj_type.name
       assert_equal "A group of musicians playing together", obj_type.description
-      assert_equal 6, obj_type.all_fields.size
+      assert_equal 7, obj_type.all_fields.size
 
       name_field = obj_type.all_fields[2]
       assert_equal "name", name_field.name

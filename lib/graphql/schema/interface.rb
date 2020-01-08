@@ -13,16 +13,6 @@ module GraphQL
         include GraphQL::Schema::Member::RelayShortcuts
         include GraphQL::Schema::Member::Scoped
 
-        class << self
-          def type_membership_class(membership_class = nil)
-            if membership_class
-              @type_membership_class = membership_class
-            else
-              @type_membership_class || find_inherited_value(:type_membership_class, GraphQL::Schema::TypeMembership)
-            end
-          end
-        end
-
         # Methods defined in this block will be:
         # - Added as class methods to this interface
         # - Added as class methods to all child interfaces
@@ -50,6 +40,14 @@ module GraphQL
           false
         end
 
+        def type_membership_class(membership_class = nil)
+          if membership_class
+            @type_membership_class = membership_class
+          else
+            @type_membership_class || find_inherited_value(:type_membership_class, GraphQL::Schema::TypeMembership)
+          end
+        end
+
         # Here's the tricky part. Make sure behavior keeps making its way down the inheritance chain.
         def included(child_class)
           if !child_class.is_a?(Class)
@@ -59,7 +57,8 @@ module GraphQL
             # We need this before we can call `own_interfaces`
             child_class.extend(Schema::Interface::DefinitionMethods)
 
-            child_class.type_memberships << self
+            child_class.type_membership_class(self.type_membership_class)
+            child_class.own_interfaces << self
             child_class.interfaces.reverse_each do |interface_defn|
               child_class.extend(interface_defn::DefinitionMethods)
             end
