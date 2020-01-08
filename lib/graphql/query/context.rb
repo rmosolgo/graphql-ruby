@@ -143,9 +143,9 @@ module GraphQL
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
-      def initialize(query:, values: , object:)
+      def initialize(query:, schema: query.schema, values:, object:)
         @query = query
-        @schema = query.schema
+        @schema = schema
         @provided_values = values || {}
         @object = object
         # Namespaced storage, where user-provided values are in `nil` namespace:
@@ -334,6 +334,3 @@ module GraphQL
     end
   end
 end
-
-
-GraphQL::Schema::Context = GraphQL::Query::Context

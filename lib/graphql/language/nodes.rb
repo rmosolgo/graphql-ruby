@@ -25,7 +25,7 @@ module GraphQL
         # Initialize a node by extracting its position,
         # then calling the class's `initialize_node` method.
         # @param options [Hash] Initial attributes for this node
-        def initialize(options={})
+        def initialize(options = {})
           if options.key?(:position_source)
             position_source = options.delete(:position_source)
             @line = position_source.line
@@ -34,7 +34,7 @@ module GraphQL
 
           @filename = options.delete(:filename)
 
-          initialize_node(options)
+          initialize_node(**options)
         end
 
         # Value equality

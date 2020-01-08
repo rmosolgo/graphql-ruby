@@ -5,7 +5,7 @@ search: true
 section: Pagination
 title: Custom Connections
 desc: Building & using cursor-based connections in GraphQL-Ruby
-index: 2
+index: 3
 ---
 
 GraphQL-Ruby ships with built-in connection support for ActiveRecord, Sequel, Mongoid, and Ruby Arrays. You can read more in the {% internal_link "Using Connections", "/pagination/using_connections" %} guide.

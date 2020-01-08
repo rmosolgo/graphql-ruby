@@ -599,6 +599,15 @@ describe GraphQL::Authorization do
       visible_landscape_features = res["data"]["landscapeFeatures"]["enumValues"].map { |v| v["name"] }
       assert_equal ["MOUNTAIN", "STREAM", "FIELD"], visible_landscape_features
     end
+
+    it "works when printing the SDL" do
+      full_sdl = AuthTest::Schema.to_definition
+      restricted_sdl = AuthTest::Schema.to_definition(context: { hide: true, hidden_mutation: true, hidden_relay: true })
+      assert_includes full_sdl, 'Hidden'
+      assert_includes full_sdl, 'hidden'
+      refute_includes restricted_sdl, 'Hidden'
+      refute_includes restricted_sdl, 'hidden'
+    end
   end
 
   if !TESTING_INTERPRETER

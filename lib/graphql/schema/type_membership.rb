@@ -19,7 +19,7 @@ module GraphQL
       # @param abstract_type [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
       # @param object_type [Class<GraphQL::Schema::Object>]
       # @param options [Hash] Any options passed to `.possible_types` or `.implements`
-      def initialize(abstract_type, object_type, options)
+      def initialize(abstract_type, object_type, **options)
         @abstract_type = abstract_type
         @object_type = object_type
         @options = options

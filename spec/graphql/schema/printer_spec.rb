@@ -613,6 +613,7 @@ SCHEMA
 
       schema = Class.new(GraphQL::Schema) do
         query query_type
+        use GraphQL::Execution::Interpreter
       end
 
       expected = "type Query {\n  foobar: Int!\n}"
@@ -622,19 +623,20 @@ SCHEMA
 
   it "applies an `only` filter" do
     expected = <<SCHEMA
-enum Choice {
-  BAR
-  FOO
+"""
+A blog post
+"""
+type Post {
+  body: String!
+  id: ID!
+  title: String!
 }
 
-type Subscription {
-}
-
-input Varied {
-  bool: Boolean
-  enum: Choice = FOO
-  float: Float
-  int: Int
+"""
+The query root of this schema
+"""
+type Query {
+  post: Post
 }
 SCHEMA
 
@@ -653,7 +655,7 @@ SCHEMA
       end
     }
 
-    context = { names: ["Varied", "Choice", "Subscription"] }
+    context = { names: ["Query", "Post"] }
     assert_equal expected.chomp, schema.to_definition(context: context, only: only_filter)
   end
 
@@ -664,11 +666,6 @@ type Audio {
   duration: Int!
   id: ID!
   name: String!
-}
-
-enum Choice {
-  BAR
-  FOO
 }
 
 """
@@ -829,41 +826,16 @@ SCHEMA
 
   describe "#print_directive" do
     it "prints the deprecation reason in a single line escaped string including line breaks" do
-      expected = <<SCHEMA
+      expected = <<SCHEMA.chomp
 enum Choice {
   BAR
   BAZ @deprecated(reason: "Use \\\"BAR\\\" instead.\\n\\nIt's the replacement for this value.\\n")
   FOO
   WOZ @deprecated
 }
-
-type Subscription {
-}
-
-input Varied {
-  bool: Boolean
-  enum: Choice = FOO
-  float: Float
-  int: Int
-}
 SCHEMA
 
-      only_filter = ->(member, ctx) {
-        case member
-        when GraphQL::ScalarType
-          true
-        when GraphQL::BaseType
-          ctx[:names].include?(member.name)
-        when GraphQL::Argument
-          member.name != "id"
-        else
-          true
-        end
-      }
-
-      context = { names: ["Varied", "Choice", "Subscription"] }
-
-      assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema, context: context, only: only_filter).print_schema
+      assert_includes GraphQL::Schema::Printer.new(schema).print_schema, expected
     end
   end
 
@@ -874,6 +846,7 @@ SCHEMA
       end
 
       query(OddlyNamedQuery)
+      use GraphQL::Execution::Interpreter
     end
 
 

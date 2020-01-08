@@ -95,7 +95,7 @@ module GraphQL
       operation_name = query_data.fetch(:operation_name)
       # Re-evaluate the saved query
       result = @schema.execute(
-        {
+        **{
           query: query_string,
           context: context,
           subscription_topic: event.topic,

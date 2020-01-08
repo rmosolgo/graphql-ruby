@@ -76,7 +76,7 @@ module GraphQL
             context.schema.after_lazy(load_arguments_val) do |loaded_args|
               # Then call `authorized?`, which may raise or may return a lazy object
               authorized_val = if loaded_args.any?
-                authorized?(loaded_args)
+                authorized?(**loaded_args)
               else
                 authorized?
               end

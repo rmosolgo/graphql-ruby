@@ -730,9 +730,12 @@ module GraphQL
     end
 
     # Return the GraphQL::Language::Document IDL AST for the schema
+    # @param context [Hash]
+    # @param only [<#call(member, ctx)>]
+    # @param except [<#call(member, ctx)>]
     # @return [GraphQL::Language::Document]
-    def to_document
-      GraphQL::Language::DocumentFromSchemaDefinition.new(self).document
+    def to_document(only: nil, except: nil, context: {})
+      GraphQL::Language::DocumentFromSchemaDefinition.new(self, only: only, except: except, context: context).document
     end
 
     # Return the Hash response of {Introspection::INTROSPECTION_QUERY}.

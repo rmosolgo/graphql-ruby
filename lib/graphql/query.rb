@@ -140,7 +140,6 @@ module GraphQL
       @executed = false
 
       # TODO add a general way to define schema-level filters
-      # TODO also add this to schema dumps
       if @schema.respond_to?(:visible?)
         merge_filters(only: @schema.method(:visible?))
       end

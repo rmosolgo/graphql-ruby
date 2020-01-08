@@ -11,7 +11,7 @@ module GraphQL
         field = GraphQL::Types::Relay::NodeField.graphql_definition
 
         if kwargs.any? || block
-          field = field.redefine(kwargs, &block)
+          field = field.redefine(**kwargs, &block)
         end
 
         field
@@ -21,7 +21,7 @@ module GraphQL
         field = GraphQL::Types::Relay::NodesField.graphql_definition
 
         if kwargs.any? || block
-          field = field.redefine(kwargs, &block)
+          field = field.redefine(**kwargs, &block)
         end
 
         field
