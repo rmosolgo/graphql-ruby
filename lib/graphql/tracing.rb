@@ -43,11 +43,11 @@ module GraphQL
   # execute_query | `{ query: GraphQL::Query }`
   # execute_query_lazy | `{ query: GraphQL::Query?, multiplex: GraphQL::Execution::Multiplex? }`
   # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext?, owner: Class?, field: GraphQL::Schema::Field?, query: GraphQL::Query?, path: Array<String, Integer>?}`
-  # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext?, owner: Class?, field: GraphQL::Schema::Field?, query: GraphqL::Query?, path: Array<String, Integer>?}`
-  # authorized | `{ context: GrpahQL::Query::Context, type: Class, object: Object }`
-  # authorized_lazy | `{ context: GrpahQL::Query::Context, type: Class, object: Object }`
-  # resolve_type | `{ context: GrpahQL::Query::Context, type: Class, object: Object }`
-  # resolve_type_lazy | `{ context: GrpahQL::Query::Context, type: Class, object: Object }`
+  # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext?, owner: Class?, field: GraphQL::Schema::Field?, query: GraphQL::Query?, path: Array<String, Integer>?}`
+  # authorized | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`
+  # authorized_lazy | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`
+  # resolve_type | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`
+  # resolve_type_lazy | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`
   #
   # Note that `execute_field` and `execute_field_lazy` receive different data in different settings:
   #

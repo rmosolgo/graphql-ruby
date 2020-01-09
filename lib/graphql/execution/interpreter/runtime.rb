@@ -50,7 +50,7 @@ module GraphQL
           path = []
           @interpreter_context[:current_object] = query.root_value
           @interpreter_context[:current_path] = path
-          object_proxy = root_type.authorized_new(query.root_value, context)
+          object_proxy = authorized_new(root_type, query.root_value, context, path)
           object_proxy = schema.sync_lazy(object_proxy)
           if object_proxy.nil?
             # Root .authorized? returned false.
@@ -165,7 +165,7 @@ module GraphQL
             object = owner_object
 
             if is_introspection
-              object = field_defn.owner.authorized_new(object, context)
+              object = authorized_new(field_defn.owner, object, context, next_path)
             end
 
             begin
@@ -293,7 +293,7 @@ module GraphQL
             write_in_response(path, r)
             r
           when "UNION", "INTERFACE"
-            resolved_type_or_lazy = resolve_type(type, value)
+            resolved_type_or_lazy = resolve_type(type, value, path)
             after_lazy(resolved_type_or_lazy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
               possible_types = query.possible_types(type)
 
@@ -309,7 +309,7 @@ module GraphQL
             end
           when "OBJECT"
             object_proxy = begin
-              type.authorized_new(value, context)
+              authorized_new(type, value, context, path)
             rescue GraphQL::ExecutionError => err
               err
             end
@@ -645,8 +645,8 @@ module GraphQL
           res && res[:__dead]
         end
 
-        def resolve_type(type, value)
-          trace_payload = { context: context, type: type, object: value }
+        def resolve_type(type, value, path)
+          trace_payload = { context: context, type: type, object: value, path: path }
           resolved_type = query.trace("resolve_type", trace_payload) do
             query.resolve_type(type, value)
           end
@@ -659,6 +659,24 @@ module GraphQL
             end
           else
             resolved_type
+          end
+        end
+
+        def authorized_new(type, value, context, path)
+          trace_payload = { context: context, type: type, object: value, path: path }
+
+          auth_val = context.query.trace("authorized", trace_payload) do
+            type.authorized_new(value, context)
+          end
+
+          if context.schema.lazy?(auth_val)
+            GraphQL::Execution::Lazy.new do
+              context.query.trace("authorized_lazy", trace_payload) do
+                context.schema.sync_lazy(auth_val)
+              end
+            end
+          else
+            auth_val
           end
         end
       end
