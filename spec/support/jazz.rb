@@ -191,6 +191,10 @@ module Jazz
     type_membership_class PrivateMembership
 
     field :private_name, String, null: false
+
+    def private_name
+      "private name"
+    end
   end
 
   # test field inheritance

@@ -61,6 +61,26 @@ module MaskHelpers
     field :graphemes, "[MaskHelpers::GraphemeType]", null: false
   end
 
+  class PrivateMembership < GraphQL::Schema::TypeMembership
+    def initialize(*args, visibility: nil, **kwargs)
+      @visibility = visibility
+      super(*args, **kwargs)
+    end
+
+    def visibile?(ctx)
+      return true if @visibility.nil?
+
+      @visibility[:private] && ctx[:private]
+    end
+  end
+
+#  class SecretMeaningType
+#    include BaseInterface
+#    type_membership_class PrivateMembership
+#
+#    field :secret_meaning, String, null: false
+#  end
+
   module LanguageMemberType
     include BaseInterface
     metadata :hidden_abstract_type, true
@@ -71,6 +91,7 @@ module MaskHelpers
   class GraphemeType < BaseObject
     description "A building block of spelling in a given language"
     implements LanguageMemberType
+ #   implements SecretMeaningType, visibility: { private: true }
 
     field :name, String, null: false
     field :glyph, String, null: false

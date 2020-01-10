@@ -124,6 +124,7 @@ module GraphQL
           obj_type = GraphQL::ObjectType.new
           obj_type.name = graphql_name
           obj_type.description = description
+          binding.pry if self.graphql_name == 'Ensemble'
           obj_type.interfaces = interfaces(context: context)
           obj_type.introspection = introspection
           obj_type.mutation = mutation

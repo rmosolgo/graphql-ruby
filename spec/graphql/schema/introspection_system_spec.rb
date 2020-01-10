@@ -60,6 +60,23 @@ describe GraphQL::Schema::IntrospectionSystem do
       assert_equal 1, res["data"]["__type"]["possibleTypes"].length
       assert_equal "MUSICIAN", res["data"]["__type"]["possibleTypes"].first["name"]
     end
+
+    it "doesn't include invisible interfaces based on context" do
+      context = { private: false }
+      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
+
+      binding.pry
+      refute_equal "private name", res["data"]["ensembles"][0]["privateName"]
+    end
+
+    focus
+    it "includes hidden interfaces based on the context" do
+      context = { private: true }
+      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
+
+      binding.pry
+      assert_equal "private name", res["data"]["ensembles"][0]["privateName"]
+    end
   end
 
   describe "#disable_introspection_entry_points" do
