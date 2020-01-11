@@ -88,3 +88,8 @@ matrix:
       - psql -c 'create database graphql_ruby_test;' -U postgres
   - rvm: 2.6.2
     gemfile: Gemfile
+
+jobs:
+  allow_failures:
+    - rvm: ruby-head
+      gemfile: gemfiles/rails_master.gemfile
