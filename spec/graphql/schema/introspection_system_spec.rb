@@ -61,6 +61,7 @@ describe GraphQL::Schema::IntrospectionSystem do
       assert_equal "MUSICIAN", res["data"]["__type"]["possibleTypes"].first["name"]
     end
 
+    focus
     it "doesn't include invisible interfaces based on context" do
       context = { private: false }
       res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)

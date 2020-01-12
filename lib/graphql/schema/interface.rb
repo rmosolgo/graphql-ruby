@@ -94,7 +94,6 @@ module GraphQL
         end
 
         def to_graphql
-          binding.pry
           type_defn = GraphQL::InterfaceType.new
           type_defn.name = graphql_name
           type_defn.description = description

@@ -24,7 +24,6 @@ module GraphQL
         when GraphQL::UnionType
           type_defn.possible_types(ctx)
         when GraphQL::InterfaceType
-          binding.pry
           interface_implementers(ctx, type_defn)
         when GraphQL::BaseType
           [type_defn]
@@ -36,7 +35,7 @@ module GraphQL
       def interface_implementers(ctx, type_defn)
         @interface_implementers[ctx] ||= begin
           Hash.new do |hash, key|
-            hash[key] = @object_types.select { |type| type.interfaces.include?(key) }.sort_by(&:name)
+            hash[key] = @object_types.select { |type| type.interfaces(ctx).include?(key) }.sort_by(&:name)
           end
         end
 
