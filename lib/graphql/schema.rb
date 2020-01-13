@@ -745,8 +745,8 @@ module GraphQL
         :union_memberships,
         :get_field, :root_types, :references_to, :type_from_ast,
         :possible_types,
-        :disable_introspection_entry_points=
-        :disable_schema_introspection_entry_point=
+        :disable_introspection_entry_points=,
+        :disable_schema_introspection_entry_point=,
         :disable_type_introspection_entry_point=
 
       def graphql_definition
