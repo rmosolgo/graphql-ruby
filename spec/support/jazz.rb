@@ -850,4 +850,23 @@ module Jazz
 
     disable_introspection_entry_points
   end
+
+  class SchemaWithoutSchemaIntrospection < GraphQL::Schema
+    query(Query)
+
+    disable_schema_introspection_entry_point
+  end
+
+  class SchemaWithoutTypeIntrospection < GraphQL::Schema
+    query(Query)
+
+    disable_type_introspection_entry_point
+  end
+
+  class SchemaWithoutSchemaOrTypeIntrospection < GraphQL::Schema
+    query(Query)
+
+    disable_schema_introspection_entry_point
+    disable_type_introspection_entry_point
+  end
 end
