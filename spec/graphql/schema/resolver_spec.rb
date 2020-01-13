@@ -4,8 +4,8 @@ require "spec_helper"
 describe GraphQL::Schema::Resolver do
   module ResolverTest
     class LazyBlock
-      def initialize
-        @get_value = Proc.new
+      def initialize(&block)
+        @get_value = block
       end
 
       def value
