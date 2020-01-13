@@ -9,8 +9,14 @@ module GraphQL
     class Directive < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasArguments
       class << self
+        # Return a name based on the class name,
+        # but downcase the first letter.
         def default_graphql_name
-          super.downcase
+          @default_graphql_name ||= begin
+            camelized_name = super
+            camelized_name[0] = camelized_name[0].downcase
+            camelized_name
+          end
         end
 
         def locations(*new_locations)
