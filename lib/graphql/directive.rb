@@ -95,6 +95,10 @@ module GraphQL
     def inspect
       "#<GraphQL::Directive #{name}>"
     end
+
+    def type_class
+      metadata[:type_class]
+    end
   end
 end
 
