@@ -101,6 +101,10 @@ module GraphQL
       nil
     end
 
+    def interface_type_memberships=(interface_type_memberships)
+      @interface_type_memberships = interface_type_memberships
+    end
+
     protected
 
     attr_reader :interface_type_memberships, :inherited_interface_type_memberships

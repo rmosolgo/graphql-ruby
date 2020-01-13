@@ -22,7 +22,7 @@ module GraphQL
 
         # The interface is visible if any of its possible types are visible
         def visible?(context)
-          context.schema.possible_types(self).each do |type|
+          context.schema.possible_types(self, context).each do |type|
             if context.schema.visible?(type, context)
               return true
             end

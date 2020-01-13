@@ -61,22 +61,18 @@ describe GraphQL::Schema::IntrospectionSystem do
       assert_equal "MUSICIAN", res["data"]["__type"]["possibleTypes"].first["name"]
     end
 
-    focus
     it "doesn't include invisible interfaces based on context" do
       context = { private: false }
       res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
 
-      binding.pry
-      refute_equal "private name", res["data"]["ensembles"][0]["privateName"]
+      assert res["data"]["__type"]["interfaces"].none? { |i| i["name"] == "PRIVATENAMEENTITY" }
     end
 
-    focus
     it "includes hidden interfaces based on the context" do
       context = { private: true }
       res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
 
-      binding.pry
-      assert_equal "private name", res["data"]["ensembles"][0]["privateName"]
+      assert res["data"]["__type"]["interfaces"].any? { |i| i["name"] == "PRIVATENAMEENTITY" }
     end
   end
 

@@ -122,7 +122,7 @@ module GraphQL
 
       # @return [Array<GraphQL::InterfaceType>] Visible interfaces implemented by `obj_type`
       def interfaces(obj_type)
-        @visible_interfaces ||= read_through { |t| t.interfaces.select { |i| visible?(i) } }
+        @visible_interfaces ||= read_through { |t| t.interfaces(@context).select { |i| visible?(i) } }
         @visible_interfaces[obj_type]
       end
 
