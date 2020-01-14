@@ -262,7 +262,7 @@ module GraphQL
             defn[:arguments] = directive_args
           end
 
-          directive = directive = GraphQL::Directive.define(**defn)
+          directive = GraphQL::Directive.define(**defn)
           directive.ast_node = directive_definition
 
           directive
