@@ -276,11 +276,11 @@ describe GraphQL::Execution::Execute do
         assert_equal expected_traces, exec_traces.map { |t| t[:key] }
 
         if TESTING_INTERPRETER
-          authorized_1, field_1_eager, field_2_eager,
+          _authorized_1, field_1_eager, field_2_eager,
             query_eager, lazy_loader,
             # field 3 is eager-resolved _during_ field 1's lazy resolve
-            field_1_lazy, authorized_2, field_3_eager,
-            field_2_lazy, authorized_3, field_4_eager,
+            field_1_lazy, _authorized_2, field_3_eager,
+            field_2_lazy, _authorized_3, field_4_eager,
             # field 3 didn't finish above, it's resolved in the next round
             field_3_lazy, field_4_lazy,
             query_lazy, multiplex = exec_traces
