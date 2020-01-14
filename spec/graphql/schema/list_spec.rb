@@ -98,6 +98,9 @@ describe GraphQL::Schema::List do
       end
 
       query(Query)
+
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
     end
 
     it "checks non-null lists of enums" do

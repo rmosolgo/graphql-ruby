@@ -36,18 +36,29 @@ module GraphQL
       end
 
       def coerce_input(value, ctx)
-        Array(value).map { |item| item.nil? ? item : of_type.coerce_input(item, ctx) }
+        ensure_array(value).map { |item| item.nil? ? item : of_type.coerce_input(item, ctx) }
       end
 
       def validate_non_null_input(value, ctx)
         result = GraphQL::Query::InputValidationResult.new
-        Array(value).each_with_index do |item, index|
+        ensure_array(value).each_with_index do |item, index|
           item_result = of_type.validate_input(item, ctx)
           if !item_result.valid?
             result.merge_result!(index, item_result)
           end
         end
         result
+      end
+
+      private
+
+      def ensure_array(value)
+        # `Array({ a: 1 })` makes `[[:a, 1]]`, so do it manually
+        if value.is_a?(Array)
+          value
+        else
+          [value]
+        end
       end
     end
   end
