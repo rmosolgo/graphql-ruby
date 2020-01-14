@@ -200,6 +200,7 @@ module GraphQL
           builder = self
           type_def = nil
           typed_resolve_fn = ->(field, obj, args, ctx) { default_resolve.call(type_def, field, obj, args, ctx) }
+
           Class.new(GraphQL::Schema::Object) do
             type_def = self
             graphql_name(object_type_definition.name)
