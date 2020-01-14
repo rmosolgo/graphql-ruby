@@ -154,7 +154,8 @@ module GraphQL
             defn_proxy = DefinedObjectProxy.new(self)
             # Apply definition from `define(...)` kwargs
             defn.define_keywords.each do |keyword, value|
-              if value.is_a?(Hash)
+              # Don't splat string hashes, which blows up on Rubies before 2.7
+              if value.is_a?(Hash) && value.each_key.all? { |k| k.is_a?(Symbol) }
                 defn_proxy.public_send(keyword, **value)
               else
                 defn_proxy.public_send(keyword, value)
