@@ -203,8 +203,8 @@ module MaskHelpers
     run_query(str, except: mask, root_value: Data, variables: variables)
   end
 
-  def self.run_query(str, options = {})
-    Schema.execute(str, options.merge(root_value: Data))
+  def self.run_query(str, **kwargs)
+    Schema.execute(str, **kwargs.merge(root_value: Data))
   end
 end
 

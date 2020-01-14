@@ -154,7 +154,11 @@ module GraphQL
             defn_proxy = DefinedObjectProxy.new(self)
             # Apply definition from `define(...)` kwargs
             defn.define_keywords.each do |keyword, value|
-              defn_proxy.public_send(keyword, value)
+              if value.is_a?(Hash)
+                defn_proxy.public_send(keyword, **value)
+              else
+                defn_proxy.public_send(keyword, value)
+              end
             end
             # and/or apply definition from `define { ... }` block
             if defn.define_proc
