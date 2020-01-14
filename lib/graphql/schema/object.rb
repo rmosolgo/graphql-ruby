@@ -57,13 +57,9 @@ module GraphQL
                 else
                   nil
                 end
-              # rescue GraphQL::ExecutionError => err
-              #   err
               end
             end
           end
-        # rescue GraphQL::ExecutionError => err
-        #   err
         end
       end
 

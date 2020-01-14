@@ -49,6 +49,14 @@ module GraphQL
       def platform_field_key(type, field)
         "GraphQL/#{type.graphql_name}/#{field.graphql_name}"
       end
+
+      def platform_authorized_key(type)
+        "GraphQL/Authorize/#{type.graphql_name}"
+      end
+
+      def platform_resolve_type_key(type)
+        "GraphQL/ResolveType/#{type.graphql_name}"
+      end
     end
   end
 end

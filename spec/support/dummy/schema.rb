@@ -88,6 +88,10 @@ module Dummy
     implements AnimalProduct
     implements LocalProduct
 
+    def self.authorized?(obj, ctx)
+      -> { true }
+    end
+
     field :id, Int, "Unique identifier", null: false
     field :flavor, String, "Kind of Cheese", null: false
     field :origin, String, "Place the cheese comes from", null: false
@@ -493,7 +497,7 @@ module Dummy
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 
     def self.resolve_type(type, obj, ctx)
-      Schema.types[obj.class.name.split("::").last]
+      -> { Schema.types[obj.class.name.split("::").last] }
     end
 
     # This is used to confirm that the hook is called:
@@ -510,6 +514,7 @@ module Dummy
     use GraphQL::Execution::Interpreter
     use GraphQL::Analysis::AST
     use GraphQL::Execution::Errors
+    lazy_resolve(Proc, :call)
   end
 
   class AdminSchema < GraphQL::Schema

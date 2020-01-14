@@ -26,6 +26,7 @@ module GraphQL
     #     enum_value_class CustomEnumValue
     #   end
     class EnumValue < GraphQL::Schema::Member
+      include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode

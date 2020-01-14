@@ -17,6 +17,10 @@ module GraphQL
         "execute_query_lazy" => "execute_query_lazy.graphql",
         "execute_field" => "execute_field.graphql",
         "execute_field_lazy" => "execute_field_lazy.graphql",
+        "authorized" => "authorized.graphql",
+        "authorized_lazy" => "authorized_lazy.graphql",
+        "resolve_type" => "resolve_type.graphql",
+        "resolve_type_lazy" => "resolve_type.graphql",
       }
 
       def self.trace(key, metadata)
