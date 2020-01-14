@@ -282,7 +282,7 @@ module GraphQL
       query = GraphQL::Query.new(self, document: doc, context: context)
       validator_opts = { schema: self }
       rules && (validator_opts[:rules] = rules)
-      validator = GraphQL::StaticValidation::Validator.new(validator_opts)
+      validator = GraphQL::StaticValidation::Validator.new(**validator_opts)
       res = validator.validate(query)
       res[:errors]
     end
@@ -753,7 +753,7 @@ module GraphQL
         @graphql_definition ||= to_graphql
       end
 
-      def use(plugin, options = {})
+      def use(plugin, **options)
         own_plugins << [plugin, options]
       end
 
