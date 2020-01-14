@@ -179,8 +179,8 @@ describe GraphQL::Schema::Subscription do
     use InMemorySubscriptions
   end
 
-  def exec_query(*args)
-    SubscriptionFieldSchema.execute(*args)
+  def exec_query(*args, **kwargs)
+    SubscriptionFieldSchema.execute(*args, **kwargs)
   end
 
   def in_memory_subscription_count

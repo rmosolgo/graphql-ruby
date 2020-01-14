@@ -27,7 +27,7 @@ describe GraphQL::Relay::Mutation do
   end
 
   it "supports null values" do
-    result = star_wars_query(query_string, "clientMutationId" => "1234", "shipName" => nil)
+    result = star_wars_query(query_string, { "clientMutationId" => "1234", "shipName" => nil })
 
     expected = {"data" => {
       "introduceShip" => {
@@ -45,7 +45,7 @@ describe GraphQL::Relay::Mutation do
   end
 
   it "supports lazy resolution" do
-    result = star_wars_query(query_string, "clientMutationId" => "1234", "shipName" => "Slave II")
+    result = star_wars_query(query_string, { "clientMutationId" => "1234", "shipName" => "Slave II" })
     assert_equal "Slave II", result["data"]["introduceShip"]["shipEdge"]["node"]["name"]
   end
 
@@ -80,7 +80,7 @@ describe GraphQL::Relay::Mutation do
   end
 
   it "returns the result & clientMutationId" do
-    result = star_wars_query(query_string, "clientMutationId" => "1234")
+    result = star_wars_query(query_string, { "clientMutationId" => "1234" })
     expected = {"data" => {
       "introduceShip" => {
         "clientMutationId" => "1234",
@@ -280,7 +280,7 @@ describe GraphQL::Relay::Mutation do
 
   describe "handling errors" do
     it "supports returning an error in resolve" do
-      result = star_wars_query(query_string, "clientMutationId" => "5678", "shipName" => "Millennium Falcon")
+      result = star_wars_query(query_string, { "clientMutationId" => "5678", "shipName" => "Millennium Falcon" })
 
       expected = {
         "data" => {
@@ -299,7 +299,7 @@ describe GraphQL::Relay::Mutation do
     end
 
     it "supports raising an error in a lazy callback" do
-      result = star_wars_query(query_string, "clientMutationId" => "5678", "shipName" => "Ebon Hawk")
+      result = star_wars_query(query_string, { "clientMutationId" => "5678", "shipName" => "Ebon Hawk" })
 
       expected = {
         "data" => {
@@ -318,7 +318,7 @@ describe GraphQL::Relay::Mutation do
     end
 
     it "supports raising an error in the resolve function" do
-      result = star_wars_query(query_string, "clientMutationId" => "5678", "shipName" => "Leviathan")
+      result = star_wars_query(query_string, { "clientMutationId" => "5678", "shipName" => "Leviathan" })
 
       expected = {
         "data" => {

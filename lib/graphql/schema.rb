@@ -282,7 +282,7 @@ module GraphQL
       query = GraphQL::Query.new(self, document: doc, context: context)
       validator_opts = { schema: self }
       rules && (validator_opts[:rules] = rules)
-      validator = GraphQL::StaticValidation::Validator.new(validator_opts)
+      validator = GraphQL::StaticValidation::Validator.new(**validator_opts)
       res = validator.validate(query)
       res[:errors]
     end
@@ -838,13 +838,13 @@ module GraphQL
         GraphQL::StaticValidation::Validator.new(schema: self)
       end
 
-      def use(plugin, options = {})
-        if options.any?
-          plugin.use(self, options)
+      def use(plugin, **kwargs)
+        if kwargs.any?
+          plugin.use(self, **kwargs)
         else
           plugin.use(self)
         end
-        own_plugins << [plugin, options]
+        own_plugins << [plugin, kwargs]
       end
 
       def plugins

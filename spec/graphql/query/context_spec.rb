@@ -241,7 +241,7 @@ TABLE
     let(:splat) { ->(**context) { context } }
 
     it "runs successfully" do
-      assert_equal({a: { b: 1 }}, splat.call(context))
+      assert_equal({a: { b: 1 }}, splat.call(**context))
     end
   end
 

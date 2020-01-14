@@ -32,10 +32,10 @@ module GraphQL
       end
 
       # Lookup a function from the dictionary and call it if it's found.
-      def method_missing(name, *args, &block)
+      def method_missing(name, *args, **kwargs, &block)
         definition = @dictionary[name]
         if definition
-          definition.call(@target, *args, &block)
+          definition.call(@target, *args, **kwargs, &block)
         else
           msg = "#{@target.class.name} can't define '#{name}'"
           raise NoDefinitionError, msg, caller

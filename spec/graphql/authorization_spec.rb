@@ -448,8 +448,8 @@ describe GraphQL::Authorization do
     end
   end
 
-  def auth_execute(*args)
-    AuthTest::Schema.execute(*args)
+  def auth_execute(*args, **kwargs)
+    AuthTest::Schema.execute(*args, **kwargs)
   end
 
   describe "applying the visible? method" do
