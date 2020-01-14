@@ -118,14 +118,20 @@ module GraphQL
               }]
             )
           when "FIELD"
-            GraphQL::Field.define(
+            defns = {
               name: type["name"],
               type: type_resolver.call(type["type"]),
               description: type["description"],
-              arguments: Hash[type["args"].map { |arg|
+            }
+
+            # Avoid passing an empty hash, which warns on Ruby 2.7
+            if type["args"].any?
+              defns[:arguments] = Hash[type["args"].map { |arg|
                 [arg["name"], define_type(arg.merge("kind" => "ARGUMENT"), type_resolver)]
               }]
-            )
+            end
+
+            GraphQL::Field.define(**defns)
           when "ARGUMENT"
             kwargs = {}
             if type["defaultValue"]

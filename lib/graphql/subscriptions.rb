@@ -20,7 +20,7 @@ module GraphQL
     def self.use(defn, options = {})
       schema = defn.target
       options[:schema] = schema
-      schema.subscriptions = self.new(options)
+      schema.subscriptions = self.new(**options)
       instrumentation = Subscriptions::Instrumentation.new(schema: schema)
       defn.instrument(:field, instrumentation)
       defn.instrument(:query, instrumentation)

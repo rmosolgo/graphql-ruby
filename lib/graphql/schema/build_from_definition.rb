@@ -183,12 +183,16 @@ module GraphQL
         def build_object_type(object_type_definition, type_resolver, default_resolve:)
           type_def = nil
           typed_resolve_fn = ->(field, obj, args, ctx) { default_resolve.call(type_def, field, obj, args, ctx) }
-          type_def = GraphQL::ObjectType.define(
+          defns = {
             name: object_type_definition.name,
             description: object_type_definition.description,
-            fields: Hash[build_fields(object_type_definition.fields, type_resolver, default_resolve: typed_resolve_fn)],
             interfaces: object_type_definition.interfaces.map{ |interface_name| type_resolver.call(interface_name) },
-          )
+          }
+          obj_fields = Hash[build_fields(object_type_definition.fields, type_resolver, default_resolve: typed_resolve_fn)]
+          if obj_fields.any?
+            defns[:fields] = obj_fields
+          end
+          type_def = GraphQL::ObjectType.define(**defns)
           type_def.ast_node = object_type_definition
           type_def
         end
@@ -246,13 +250,19 @@ module GraphQL
         end
 
         def build_directive(directive_definition, type_resolver)
-          directive = GraphQL::Directive.define(
+          directive_args = Hash[build_directive_arguments(directive_definition, type_resolver)]
+
+          defn = {
             name: directive_definition.name,
             description: directive_definition.description,
-            arguments: Hash[build_directive_arguments(directive_definition, type_resolver)],
             locations: directive_definition.locations.map { |location| location.name.to_sym },
-          )
+          }
 
+          if directive_args.any?
+            defn[:arguments] = directive_args
+          end
+
+          directive = directive = GraphQL::Directive.define(**defn)
           directive.ast_node = directive_definition
 
           directive
@@ -317,14 +327,21 @@ module GraphQL
               [argument.name, arg]
             end]
 
-            field = GraphQL::Field.define(
+            field = nil
+
+            defns = {
               name: field_definition.name,
               description: field_definition.description,
               type: type_resolver.call(field_definition.type),
-              arguments: field_arguments,
               resolve: ->(obj, args, ctx) { default_resolve.call(field, obj, args, ctx) },
               deprecation_reason: build_deprecation_reason(field_definition.directives),
-            )
+            }
+
+            if field_arguments.any?
+              defns[:arguments] = field_arguments
+            end
+
+            field = GraphQL::Field.define(**defns)
 
             field.ast_node = field_definition
 
