@@ -69,10 +69,14 @@ describe GraphQL::Schema::List do
   end
 
   describe "validation" do
-    class ListEnumValidationSchema < GraphQL::Schema
+    class ListValidationSchema < GraphQL::Schema
       class Item < GraphQL::Schema::Enum
         value "A"
         value "B"
+      end
+
+      class ItemInput < GraphQL::Schema::InputObject
+        argument :item, Item, required: true
       end
 
       class Query < GraphQL::Schema::Object
@@ -83,20 +87,40 @@ describe GraphQL::Schema::List do
         def echo(items:)
           items
         end
+
+        field :echoes, [Item], null: false do
+          argument :items, [ItemInput], required: true
+        end
+
+        def echoes(items:)
+          items.map { |i| i[:item] }
+        end
       end
 
       query(Query)
     end
 
     it "checks non-null lists of enums" do
-      res = ListEnumValidationSchema.execute "{ echo(items: [A, B, \"C\"]) }"
+      res = ListValidationSchema.execute "{ echo(items: [A, B, \"C\"]) }"
       expected_error = "Argument 'items' on Field 'echo' has an invalid value ([A, B, \"C\"]). Expected type '[Item!]!'."
       assert_equal [expected_error], res["errors"].map { |e| e["message"] }
     end
 
     it "works with #valid_input?" do
-      assert ListEnumValidationSchema::Item.to_list_type.valid_isolated_input?(["A", "B"])
-      refute ListEnumValidationSchema::Item.to_list_type.valid_isolated_input?(["A", "B", "C"])
+      assert ListValidationSchema::Item.to_list_type.valid_isolated_input?(["A", "B"])
+      refute ListValidationSchema::Item.to_list_type.valid_isolated_input?(["A", "B", "C"])
+    end
+
+    it "coerces single-item lists of input objects" do
+      results = {
+        "default value" => ListValidationSchema.execute("query($items: [ItemInput!] = {item: A}) { echoes(items: $items) }"),
+        "literal value" => ListValidationSchema.execute("{ echoes(items: { item: A }) }"),
+        "variable value" => ListValidationSchema.execute("query($items: [ItemInput!]!) { echoes(items: $items) }", variables: { items: { item: "A" } }),
+      }
+
+      results.each do |r_desc, r|
+        assert_equal({"data" => { "echoes" => ["A"]}}, r, "It works for #{r_desc}")
+      end
     end
   end
 end
