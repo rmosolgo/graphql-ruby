@@ -32,10 +32,16 @@ module GraphQL
       end
 
       # Lookup a function from the dictionary and call it if it's found.
-      def method_missing(name, *args, &block)
+      def method_missing(name, *args, **kwargs, &block)
         definition = @dictionary[name]
         if definition
-          definition.call(@target, *args, &block)
+          # Avoid passing `kwargs` when it's not used.
+          # Ruby 2.7 does fine here, but older Rubies receive too many arguments.
+          if kwargs.any?
+            definition.call(@target, *args, **kwargs, &block)
+          else
+            definition.call(@target, *args, &block)
+          end
         else
           msg = "#{@target.class.name} can't define '#{name}'"
           raise NoDefinitionError, msg, caller

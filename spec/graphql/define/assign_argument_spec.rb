@@ -49,10 +49,10 @@ describe GraphQL::Define::AssignArgument do
     assert_equal GraphQL::STRING_TYPE, arg.type
   end
 
-  def define_argument(*args)
+  def define_argument(*args, **kwargs)
     type = GraphQL::ObjectType.define do
       field :a, types.String do
-        argument(*args)
+        argument(*args, **kwargs)
       end
     end
 

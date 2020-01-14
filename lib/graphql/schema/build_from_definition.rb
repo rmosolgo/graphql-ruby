@@ -129,7 +129,11 @@ module GraphQL
             end
 
             using.each do |plugin, options|
-              use(plugin, options)
+              if options
+                use(plugin, **options)
+              else
+                use(plugin)
+              end
             end
           end
         end

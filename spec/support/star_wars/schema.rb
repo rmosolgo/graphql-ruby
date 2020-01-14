@@ -305,8 +305,8 @@ module StarWars
 
   LazyNodesWrapper = Struct.new(:relation)
   class LazyNodesRelationConnection < GraphQL::Relay::RelationConnection
-    def initialize(wrapper, *args)
-      super(wrapper.relation, *args)
+    def initialize(wrapper, *args, **kwargs)
+      super(wrapper.relation, *args, **kwargs)
     end
 
     def edge_nodes
