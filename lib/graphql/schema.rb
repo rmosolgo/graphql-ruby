@@ -1295,11 +1295,11 @@ module GraphQL
       end
 
       def visible?(member, ctx)
-        member.visible?(ctx)
+        member.type_class.visible?(ctx)
       end
 
       def accessible?(member, ctx)
-        member.accessible?(ctx)
+        member.type_class.accessible?(ctx)
       end
 
       # This hook is called when a client tries to access one or more
