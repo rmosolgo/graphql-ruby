@@ -79,6 +79,10 @@ describe GraphQL::Schema::List do
         argument :item, Item, required: true
       end
 
+      class NilItemsInput < GraphQL::Schema::InputObject
+        argument :items, [Item], required: false
+      end
+
       class Query < GraphQL::Schema::Object
         field :echo, [Item], null: false do
           argument :items, [Item], required: true
@@ -94,6 +98,14 @@ describe GraphQL::Schema::List do
 
         def echoes(items:)
           items.map { |i| i[:item] }
+        end
+
+        field :nil_echoes, [Item, null: true], null: true do
+          argument :items, [NilItemsInput], required: false
+        end
+
+        def nil_echoes(items:)
+          items.first[:items]
         end
       end
 
@@ -124,6 +136,11 @@ describe GraphQL::Schema::List do
       results.each do |r_desc, r|
         assert_equal({"data" => { "echoes" => ["A"]}}, r, "It works for #{r_desc}")
       end
+    end
+
+    it "doesn't coerce nil into a list" do
+      nil_result = ListValidationSchema.execute("query($items: [NilItemsInput!]) { nilEchoes(items: $items) }", variables: { items: { items: nil } })
+      assert_equal({"data" => { "nilEchoes" => nil}}, nil_result, "It works for nil")\
     end
   end
 end

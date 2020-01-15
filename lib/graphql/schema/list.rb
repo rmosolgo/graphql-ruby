@@ -36,7 +36,11 @@ module GraphQL
       end
 
       def coerce_input(value, ctx)
-        ensure_array(value).map { |item| item.nil? ? item : of_type.coerce_input(item, ctx) }
+        if value.nil?
+          nil
+        else
+          ensure_array(value).map { |item| item.nil? ? item : of_type.coerce_input(item, ctx) }
+        end
       end
 
       def validate_non_null_input(value, ctx)
