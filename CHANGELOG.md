@@ -8,6 +8,20 @@
 
 ### Bug fixes
 
+## 1.9.18 (15 Jan 2019)
+
+### New features
+
+- Support disabling `__type` or `__schema` individually #2657
+- Support Ruby 2.7, and turn on CI for it :tada: #2665
+
+### Bug fixes
+
+- Fix Ruby 2.7 warnings #2653 #2669
+- Properly build camelized names for directive classes #2666
+- Use schema-defined context class for SDL generation #2656
+- Apply visibility checks when generating SDL #2637
+
 ## 1.9.17 (17 Dec 2019)
 
 ### New features
