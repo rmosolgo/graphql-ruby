@@ -8,6 +8,17 @@
 
 ### Bug fixes
 
+## 1.10.0.pre4 (15 Jan 2020)
+
+### New features
+
+- Add tracing events for `.authorized?` and `.resolve_type` calls #2660
+
+### Bug fixes
+
+- Properly coerce a single, non-null item into a single-item list when given as input to a list type #2667 #2668
+- Fix warnings on Ruby 2.7
+
 ## 1.10.0.pre3 (17 Dec 2019)
 
 ### Bug fixes
@@ -64,7 +75,7 @@
 - Resolver `loads:` assign the value to argument `@loads` #2364
 - Only integers are accepted for `Int` type #2404
 
-## 1.9.18 (15 Jan 2019)
+## 1.9.18 (15 Jan 2020)
 
 ### New features
 
