@@ -70,15 +70,15 @@ module GraphQL
     # This fields doesnt have instrumenation applied
     # @see [Schema#get_field] Get field with instrumentation
     # @return [GraphQL::Field] The field definition for `field_name` (may be inherited from interfaces)
-    def get_field(field_name)
-      fields[field_name] || interface_fields[field_name]
+    def get_field(field_name, ctx = GraphQL::Query::NullContext)
+      fields[field_name] || interface_fields(ctx)[field_name]
     end
 
     # These fields don't have instrumenation applied
     # @see [Schema#get_fields] Get fields with instrumentation
     # @return [Array<GraphQL::Field>] All fields, including ones inherited from interfaces
-    def all_fields
-      interface_fields.merge(self.fields).values
+    def all_fields(ctx = GraphQL::Query::NullContext)
+      interface_fields(ctx).merge(self.fields).values
     end
 
     # Declare that this object implements this interface.

@@ -105,12 +105,12 @@ module GraphQL
         end 
 
         # Include legacy-style interfaces, too
-        def fields
+        def fields(context: GraphQL::Query::NullContext)
           all_fields = super
-          interfaces.each do |int|
+          interfaces(context: context).each do |int|
             if int.is_a?(GraphQL::InterfaceType)
               int_f = {}
-              int.fields.each do |name, legacy_field|
+              int.fields(context).each do |name, legacy_field|
                 int_f[name] = field_class.from_options(name, field: legacy_field)
               end
               all_fields = int_f.merge(all_fields)
@@ -120,7 +120,7 @@ module GraphQL
         end
 
         # @return [GraphQL::ObjectType]
-        def to_graphql(context: GraphQL::Query::NullContext)
+        def to_graphql
           obj_type = GraphQL::ObjectType.new
           obj_type.name = graphql_name
           obj_type.description = description

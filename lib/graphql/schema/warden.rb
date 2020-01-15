@@ -103,6 +103,7 @@ module GraphQL
       # @param type_defn [GraphQL::ObjectType, GraphQL::InterfaceType]
       # @return [Array<GraphQL::Field>] Fields on `type_defn`
       def fields(type_defn)
+        binding.pry if type_defn.name == "Ensemble"
         @visible_fields ||= read_through { |t| @schema.get_fields(t).each_value.select { |f| visible_field?(f) } }
         @visible_fields[type_defn]
       end
@@ -147,6 +148,7 @@ module GraphQL
       end
 
       def visible_field?(field_defn)
+        binding.pry if field_defn.name == "privateName"
         visible?(field_defn) && visible_type?(field_defn.type.unwrap)
       end
 
