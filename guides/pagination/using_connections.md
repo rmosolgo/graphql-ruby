@@ -10,6 +10,8 @@ index: 2
 
 GraphQL-Ruby ships with a few implementations of the {% internal_link "connection pattern", "pagination/connection_concepts" %} that you can use out of the box. They support Ruby Arrays, Mongoid, Sequel, and ActiveRecord.
 
+Additionally, connections allow you to limit the number of items returned with [`max_page_size`](#max-page-size).
+
 ## Adding the Plugin
 
 GraphQL-Ruby 1.10.0 includes a new plugin for connections. It's more flexible and easier to customize. If it's not already added to your schema with `use ...`, add it:
@@ -21,7 +23,7 @@ class MySchema < GraphQL::Schema
   use GraphQL::Pagination::Connections
 ```
 
-## Make connection fields
+## Make Connection Fields
 
 Use `.connection_type` to generate a connection type for paginating over objects of a given type:
 
@@ -38,7 +40,7 @@ field :items, Types::ItemConnectionPage, null: false, connection: true
 
 The field will be given some arguments by default: `first`, `last`, `after`, and `before`.
 
-## Return collections
+## Return Collections
 
 With connection fields, you can return collection objects from fields or resolvers:
 
@@ -50,4 +52,53 @@ end
 
 The collection object (Array, Mongoid relation, Sequel dataset, ActiveRecord relation) will be automatically paginated with the provided arguments. Cursors will be generated based on the offset of nodes in the collection.
 
-## Make custom connections
+## Make Custom Connections
+
+If you want to paginate something that _isn't_ supported out-of-the-box, you can implement your own pagination wrapper and hook it up to GraphQL-Ruby. Read more in {% internal_link "Custom Connections", "/pagination/custom_connections" %}.
+
+## Special Cases
+
+Sometimes, you have _one collection_ that needs special handling, unlike other instances of its class. For cases like this, you can manually apply the connection wrapper in the resolver. For example:
+
+```ruby
+def items
+  # Get the ActiveRecord relation to paginate
+  relation = object.items
+  # Apply a custom wrapper
+  Connections::ItemsConnection.new(relation)
+end
+```
+
+This way, you can handle this _particular_ `relation` with custom code.
+
+## Max Page Size
+
+You can apply `max_page_size` to limit the number of items returned, regardless of what the client requests.
+
+- __For the whole schema__, you can add it to your schema definition:
+
+  ```ruby
+  class MyAppSchema < GraphQL::Schema
+    max_page_size 50
+  end
+  ```
+
+  At runtime, that value will be applied to _every_ connection, unless an override is provided as described below.
+
+- __For a given field__, add it to the field definition with a keyword:
+
+  ```ruby
+  field :items, Item.connection_type, null: false,
+    max_page_size: 25
+  ```
+
+- __Dynamically__, you can add `max_page_size:` when you apply custom connection wrappers:
+
+  ```ruby
+  def items
+    relation = object.items
+    Connections::ItemsConnection.new(relation, max_page_size: 10)
+  end
+  ```
+
+To _remove_ a `max_page_size` setting, you can pass `nil`. That will allow unbounded collections to be returned to clients.

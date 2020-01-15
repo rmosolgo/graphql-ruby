@@ -12,9 +12,11 @@ GraphQL-Ruby ships with built-in connection support for ActiveRecord, Sequel, Mo
 
 When you want to serve a connection based on your _own_ data object, you can create a custom connection. The implementation will have several components:
 
-- The __application object__ -- the list of items that you want to paginate in GraphQL (eg, an `SearchEngine::Result` instance)
+- The __application object__ -- the list of items that you want to paginate in GraphQL
 - The __connection wrapper__ which wraps the application object and implements methods used by GraphQL
 - The __connection type__, a GraphQL object type which implements the connection contract
+
+For this example, we'll imagine that your application communicates with an external search engine, and expresses all search results with a `SearchEngine::Result` class. (There isn't _really_ any class like this; it's an arbitrary example of an application-specific collection of items.)
 
 ## Application Object
 
@@ -26,13 +28,14 @@ Your application probably has other list objects that you want to paginate via G
 
 ## Connection Wrapper
 
-A connection wrapper is an adapter between a plain-Ruby list object (like an Array) and a GraphQL connection type. The connection wrapper implements methods which the GraphQL connection type requires, and it implements those methods based on the underlying list object.
+A connection wrapper is an adapter between a plain-Ruby list object (like an Array, Relation, or something application-specific, like `SearchEngine::Result`) and a GraphQL connection type. The connection wrapper implements methods which the GraphQL connection type requires, and it implements those methods based on the underlying list object.
 
 You can extend {{ "GraphQL::Pagination::Connection" | api_doc }} to get started on a custom connection wrapper, for example:
 
 ```ruby
 # app/graphql/connections/search_results_connection.rb
 class Connections::SearchResultsConnection < GraphQL::Pagination::Connection
+  # implementation here ...
 end
 ```
 
@@ -50,7 +53,7 @@ How to implement these methods (efficiently!) depends on your backend and how yo
 - {{ "GraphQL::Pagination::SequelDatasetConnection" | api_doc }}
 - {{ "GraphQL::Pagination::MongoidRelationConnection" | api_doc }}
 
-#### Using a custom connection
+### Using a Custom Connection
 
 To integrate your custom connection wrapper with GraphQL, you have two options:
 
@@ -66,11 +69,11 @@ class MySchema < GraphQL::Schema
   # Add the connection plugin
   use GraphQL::Pagination::Connections
   # Hook up a custom wrapper
-  connections.add(MyApp::SearchResults, Connections::SearchResultsConnection)
+  connections.add(SearchEngine::Result, Connections::SearchResultsConnection)
 end
 ```
 
-Now, any time a field returns an instance of `MyApp::SearchResults`, it will be wrapped with `Connections::SearchResultsConnection`
+Now, any time a field returns an instance of `SearchEngine::Result`, it will be wrapped with `Connections::SearchResultsConnection`
 
 Alternatively, you can apply a connection wrapper on a case-by-case basis by applying it during the resolver (method or {{ "GraphQL::Schema::Resolver" | api_doc }}):
 
@@ -80,7 +83,7 @@ field :search, Types::SearchResult.connection_type, null: false do
 end
 
 def search(query:)
-  search = MyApp::Search.new(query: query, viewer: context[:current_user])
+  search = SearchEngine::Search.new(query: query, viewer: context[:current_user])
   results = search.results
   # Apply the connection wrapper and return it
   Connections::SearchResultsConnection.new(results)
