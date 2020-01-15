@@ -1,118 +1,19 @@
 # frozen_string_literal: true
 module GraphQL
   module Define
-    # This module provides the `.define { ... }` API for
-    # {GraphQL::BaseType}, {GraphQL::Field} and others.
-    #
-    # Calling `.accepts_definitions(...)` creates:
-    #
-    # - a keyword to the `.define` method
-    # - a helper method in the `.define { ... }` block
-    #
-    # The `.define { ... }` block will be called lazily. To be sure it has been
-    # called, use the private method `#ensure_defined`. That will call the
-    # definition block if it hasn't been called already.
-    #
-    # The goals are:
-    #
-    # - Minimal overhead in consuming classes
-    # - Independence between consuming classes
-    # - Extendable by third-party libraries without monkey-patching or other nastiness
-    #
-    # @example Make a class definable
-    #   class Car
-    #     include GraphQL::Define::InstanceDefinable
-    #     attr_accessor :make, :model, :doors
-    #     accepts_definitions(
-    #       # These attrs will be defined with plain setters, `{attr}=`
-    #       :make, :model,
-    #       # This attr has a custom definition which applies the config to the target
-    #       doors: ->(car, doors_count) { doors_count.times { car.doors << Door.new } }
-    #     )
-    #     ensure_defined(:make, :model, :doors)
-    #
-    #     def initialize
-    #       @doors = []
-    #     end
-    #   end
-    #
-    #   class Door; end;
-    #
-    #   # Create an instance with `.define`:
-    #   subaru_baja = Car.define do
-    #     make "Subaru"
-    #     model "Baja"
-    #     doors 4
-    #   end
-    #
-    #   # The custom proc was applied:
-    #   subaru_baja.doors #=> [<Door>, <Door>, <Door>, <Door>]
-    #
-    # @example Extending the definition of a class
-    #   # Add some definitions:
-    #   Car.accepts_definitions(all_wheel_drive: GraphQL::Define.assign_metadata_key(:all_wheel_drive))
-    #
-    #   # Use it in a definition
-    #   subaru_baja = Car.define do
-    #     # ...
-    #     all_wheel_drive true
-    #   end
-    #
-    #   # Access it from metadata
-    #   subaru_baja.metadata[:all_wheel_drive] # => true
-    #
-    # @example Extending the definition of a class via a plugin
-    #   # A plugin is any object that responds to `.use(definition)`
-    #   module SubaruCar
-    #     extend self
-    #
-    #     def use(defn)
-    #       # `defn` has the same methods as within `.define { ... }` block
-    #       defn.make "Subaru"
-    #       defn.doors 4
-    #     end
-    #   end
-    #
-    #   # Use the plugin within a `.define { ... }` block
-    #   subaru_baja = Car.define do
-    #     use SubaruCar
-    #     model 'Baja'
-    #   end
-    #
-    #   subaru_baja.make # => "Subaru"
-    #   subaru_baja.doors # => [<Door>, <Door>, <Door>, <Door>]
-    #
-    # @example Making a copy with an extended definition
-    #   # Create an instance with `.define`:
-    #   subaru_baja = Car.define do
-    #     make "Subaru"
-    #     model "Baja"
-    #     doors 4
-    #   end
-    #
-    #   # Then extend it with `#redefine`
-    #   two_door_baja = subaru_baja.redefine do
-    #     doors 2
-    #   end
+    # @api deprecated
     module InstanceDefinable
       def self.included(base)
         base.extend(ClassMethods)
         base.ensure_defined(:metadata)
       end
 
-      # `metadata` can store arbitrary key-values with an object.
-      #
-      # @return [Hash<Object, Object>] Hash for user-defined storage
+      # @api deprecated
       def metadata
         @metadata ||= {}
       end
 
-      # Mutate this instance using functions from its {.definition}s.
-      # Keywords or helpers in the block correspond to keys given to `accepts_definitions`.
-      #
-      # Note that the block is not called right away -- instead, it's deferred until
-      # one of the defined fields is needed.
-      # @return [void]
+      # @api deprecated
       def define(**kwargs, &block)
         # make sure the previous definition_proc was executed:
         ensure_defined
@@ -121,9 +22,7 @@ module GraphQL
         nil
       end
 
-      # Shallow-copy this object, then apply new definitions to the copy.
-      # @see {#define} for arguments
-      # @return [InstanceDefinable] A new instance, with any extended definitions
+      # @api deprecated
       def redefine(**kwargs, &block)
         ensure_defined
         new_inst = self.dup

@@ -10,7 +10,7 @@ module GraphQL
     # - Take care to reload context when re-delivering the subscription. (see {Query#subscription_update?})
     #
     # @example Adding ActionCableSubscriptions to your schema
-    #   MySchema = GraphQL::Schema.define do
+    #   class MySchema < GraphQL::Schema
     #     # ...
     #     use GraphQL::Subscriptions::ActionCableSubscriptions
     #   end

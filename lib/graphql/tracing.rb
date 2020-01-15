@@ -18,12 +18,12 @@ module GraphQL
   # __Warning:__ Installing/uninstalling tracers is not thread-safe. Do it during application boot only.
   #
   # @example Sending custom events
-  #   GraphQL::Tracing.trace("my_custom_event", { ... }) do
+  #   query.trace("my_custom_event", { ... }) do
   #     # do stuff ...
   #   end
   #
   # @example Adding a tracer to a schema
-  #  MySchema = GraphQL::Schema.define do
+  #  class MySchema < GraphQL::Schema
   #    tracer MyTracer # <= responds to .trace(key, data, &block)
   #  end
   #
