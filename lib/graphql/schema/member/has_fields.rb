@@ -15,7 +15,7 @@ module GraphQL
         end
 
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
-        def fields(context: GraphQL::Query::NullContext)
+        def fields
           # Local overrides take precedence over inherited fields
           all_fields = {}
           ancestors.reverse_each do |ancestor|

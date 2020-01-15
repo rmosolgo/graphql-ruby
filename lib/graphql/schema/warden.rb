@@ -104,7 +104,7 @@ module GraphQL
       # @return [Array<GraphQL::Field>] Fields on `type_defn`
       def fields(type_defn)
         binding.pry if type_defn.name == "Ensemble"
-        @visible_fields ||= read_through { |t| @schema.get_fields(t).each_value.select { |f| visible_field?(f) } }
+        @visible_fields ||= read_through { |t| @schema.get_fields(t).each_value.select { |f| visible_field?(f, t) } }
         @visible_fields[type_defn]
       end
 
@@ -147,9 +147,27 @@ module GraphQL
         @unions[obj_type]
       end
 
-      def visible_field?(field_defn)
-        binding.pry if field_defn.name == "privateName"
+      def visible_field?(field_defn, type_defn = nil)
+        return false if type_defn && !field_on_visible_interface?(field_defn, type_defn)
         visible?(field_defn) && visible_type?(field_defn.type.unwrap)
+      end
+
+      # Returns true when the field is on a visible interface
+      # returns true if the field is not on an interface
+      # returns false if the field is on a hidden interface
+      def field_on_visible_interface?(field_defn, type_defn)
+        # This needs to be fixed, it was encountering a type that couldn't be converted to graphql
+        begin
+          owner_type = field_defn.metadata[:type_class].owner.to_graphql
+        rescue => e
+          return true
+        end
+
+        # We don't care about interfaces that are included in other interfaces
+        # This could be a later addition
+        return true unless owner_type.kind.interface? && !type_defn.kind.interface?
+
+        interfaces(type_defn).include?(owner_type)
       end
 
       def visible_type?(type_defn)
