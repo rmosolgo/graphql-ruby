@@ -68,10 +68,12 @@ Implementations are based on {{ "Tracing::PlatformTracing" | api_doc }}.
 
 ## AppOptics
 [AppOptics](https://appoptics.com/) instrumentation will be automatic starting 
-with appoptics_apm-4.12.0.gem. For earlier gem versions please add appoptics_apm 
+with appoptics_apm-4.11.0.gem. For earlier gem versions please add appoptics_apm 
 tracing as follows:
 
 ```ruby
+require 'appoptics_apm'
+
 class MySchema < GraphQL::Schema
   use(GraphQL::Tracing::AppOpticsTracing)
 end
