@@ -5,6 +5,7 @@ require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
 if defined?(ActionCable)
   require "graphql/subscriptions/action_cable_subscriptions"
+  require "graphql/subscriptions/action_cable_relay_subscriptions"
 end
 require "graphql/subscriptions/subscription_root"
 
