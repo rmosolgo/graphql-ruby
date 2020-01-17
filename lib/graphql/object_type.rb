@@ -56,6 +56,7 @@ module GraphQL
       @interface_type_memberships = []
       @inherited_interface_type_memberships = []
       @dirty_inherited_fields = {}
+      @clean_inherited_fields = nil
       implements(new_interfaces, inherit: true)
     end
 
@@ -89,10 +90,18 @@ module GraphQL
       if !interfaces.is_a?(Array)
         raise ArgumentError, "`implements(interfaces)` must be an array, not #{interfaces.class} (#{interfaces})"
       end
+      @clean_inherited_fields = nil
 
       type_memberships = inherit ? @inherited_interface_type_memberships : @interface_type_memberships
       type_memberships_from_interfaces = interfaces.map do |iface|
-        iface.type_membership_class.new(iface, self, options)
+        # this needs to be fixed
+        # For some reason, ifaces were being read as procs
+        # This was coming from interfaces being built by definition
+        if iface.respond_to?(:type_membership_class)
+          iface.type_membership_class.new(iface, self, options)
+        else
+          GraphQL::Schema::TypeMembership.new(iface, self, options)
+        end
       end
       type_memberships.concat(type_memberships_from_interfaces)
     end
@@ -115,20 +124,12 @@ module GraphQL
       ifaces.map { |i_type| GraphQL::BaseType.resolve_related_type(i_type) }
     end
 
-    def interface_fields(ctx = GraphQL::Query::NullContext)
-      load_interfaces(ctx)
+    def interface_fields
+      load_interfaces unless @clean_inherited_fields
       @clean_inherited_fields
     end
 
-    def load_interfaces(ctx)
-      if ctx == GraphQL::Query::NullContext
-        @cached_interfaces ||= interfaces_for_context(ctx)
-      else
-        interfaces_for_context(ctx)
-      end
-    end
-
-    def interfaces_for_context(ctx)
+    def load_interfaces(ctx = GraphQL::Query::NullContext)
       ensure_defined
       clean_ifaces = []
       clean_inherited_ifaces = []

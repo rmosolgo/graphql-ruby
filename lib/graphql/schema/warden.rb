@@ -103,7 +103,6 @@ module GraphQL
       # @param type_defn [GraphQL::ObjectType, GraphQL::InterfaceType]
       # @return [Array<GraphQL::Field>] Fields on `type_defn`
       def fields(type_defn)
-        binding.pry if type_defn.name == "Ensemble"
         @visible_fields ||= read_through { |t| @schema.get_fields(t).each_value.select { |f| visible_field?(f, t) } }
         @visible_fields[type_defn]
       end
@@ -159,7 +158,7 @@ module GraphQL
         # This needs to be fixed, it was encountering a type that couldn't be converted to graphql
         begin
           owner_type = field_defn.metadata[:type_class].owner.to_graphql
-        rescue => e
+        rescue
           return true
         end
 

@@ -98,6 +98,7 @@ module GraphQL
           type_defn.name = graphql_name
           type_defn.description = description
           type_defn.orphan_types = orphan_types
+          type_defn.type_membership_class = self.type_membership_class
           fields.each do |field_name, field_inst|
             field_defn = field_inst.graphql_definition
             type_defn.fields[field_defn.name] = field_defn
