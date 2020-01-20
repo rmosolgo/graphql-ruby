@@ -8,67 +8,46 @@
 
 ### Bug fixes
 
-## 1.10.0.pre4 (15 Jan 2020)
+## 1.10.0 (20 Jan 2020)
 
-### New features
+### Breaking Changes
 
-- Add tracing events for `.authorized?` and `.resolve_type` calls #2660
-
-### Bug fixes
-
-- Properly coerce a single, non-null item into a single-item list when given as input to a list type #2667 #2668
-- Fix warnings on Ruby 2.7
-
-## 1.10.0.pre3 (17 Dec 2019)
-
-### Bug fixes
-
-- Fix Ruby keyword list to support Ruby 2.7 #2640
-- Reduce memory of class-based schema #2636
-- Improve runtime performance of interpreter #2630
-
-## 1.10.0.pre2 (4 Dec 2019)
-
-### Breaking changes
-
-- Class-based schemas using the interpreter _must_ add `use GraphQL::Analysis::AST` to their schema (and update their custom analyzers, see https://graphql-ruby.org/queries/ast_analysis.html) #2363
 - Class-based schemas using the new interpreter will now use _definition classes_ at runtime. #2363 (Previously, `.to_graphql` methods were used to generate singletons which were used at runtime.) This means:
   - Methods that used to receive types at runtime will now receive classes instead of those singletons.
   - `.name` will now call `Class#name`, which will give the class name. Use `.graphql_name` to get the name of a GraphQL type. (Fields, arguments and directives have `.graphql_name` too, so you can use it everywhere.)
   - Some methods that return hashes are slow because they merge hashes according to class inheritance, for example `MySchema.types` and `MyObjectType.fields`. Instead:
     - If you only need one item out of the Hash, use `.get_type(type_name)` or `.get_field(field_name)` instead. Those methods find a match without performing Hash merges.
     - If you need the whole Hash, get a cached value from `context.warden` (an instance of `GraphQL::Schema::Warden`) at runtime. Those values reflect the types and fields which are permitted for the current query, and they're cached for life of the query. Check the API docs to see methods on the `warden`.
+- Class-based schemas using the interpreter _must_ add `use GraphQL::Analysis::AST` to their schema (and update their custom analyzers, see https://graphql-ruby.org/queries/ast_analysis.html) #2363
 - ActiveSupport::Notifications events are correctly named in event.library format #2562
-
-### New features
-
-- `Schema.from_definition` accepts `using:` for installing plugins (equivalent to `use ...` in class-based schemas) #2307
-
-### Bug fixes
-
-- Big numbers (ie, greater than Ruby's `Infinity`) no longer :boom: when being reserialized #2320
-- Fix `hasNextPage`/`hasPrevious` page when max_page_size limits the items returned #2608
-
-## 1.10.0.pre1 (10 Oct 2019)
-
-### Breaking changes
-
 - Field and Argument `#authorized?` methods now accept _three_ arguments (instead of 2). They now accept `(obj, args, ctx)`, where `args` is the arguments (for a field) or the argument value (for an argument). #2536
 - Double-null `!!` is disallowed by the parser #2397
 - (Non-interpreter only) The return value of subscription fields is passed along to execute the subscription. Return `nil` to get the previous behavior. #2536
 - `Schema.from_definition` builds a _class-based schema_ from the definition string #2178
 - Only integers are accepted for `Int` type #2404
 
-### New features
+### Deprecations
 
+- `.define` is deprecated; class-based schema definitions should be used instead. If you're having trouble or you can't find information about an upgrade path, please open an issue on GitHub!
+
+### New Features
+
+- Add tracing events for `.authorized?` and `.resolve_type` calls #2660
+- `Schema.from_definition` accepts `using:` for installing plugins (equivalent to `use ...` in class-based schemas) #2307
 - Add `$` to variable names in error messages #2531
 - Add invalid value to argument error message #2531
 - Input object arguments with `loads:` get the loaded object in their `authorized?` hook, as `arg` in `authorized?(obj, args, ctx)`. #2536
 - `GraphQL::Pagination` auto-pagination system #2143
 - `Schema.from_definition` builds a _class-based schema_ from the definition string #2178
 
-### Bug fixes
+### Bug Fixes
 
+- Fix warnings on Ruby 2.7 #2668
+- Fix Ruby keyword list to support Ruby 2.7 #2640
+- Reduce memory of class-based schema #2636
+- Improve runtime performance of interpreter #2630
+- Big numbers (ie, greater than Ruby's `Infinity`) no longer :boom: when being reserialized #2320
+- Fix `hasNextPage`/`hasPrevious` page when max_page_size limits the items returned #2608
 - Return parse errors for empty documents and empty argument lists #2344
 - Properly serialize `defaultValue` of input objects containing enum values #2439
 - Don't crash when a query contains `!!`. #2397
