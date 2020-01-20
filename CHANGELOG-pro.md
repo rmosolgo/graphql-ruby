@@ -8,6 +8,21 @@
 
 ### Bug Fix
 
+## 1.12.0 (20 Jan 2020)
+
+### Deprecations
+
+- `GraphQL::Pro::Monitoring` is deprecated; see Tracing for a replacement: https://graphql-ruby.org/queries/tracing.html
+- `GraphQL::Pro::Repository` is deprecated; see OperationStore for a replacement: https://graphql-ruby.org/operation_store/overview.html
+
+### New Features
+
+- New stable connection support based on GraphQL-Ruby 1.10's new pagination implementation. New classes provide better handling of `NULL` values in order-by columns and they can be applied on a field-by-field basis(`GraphQL::Pro::SqliteStableRelationConnection`, `GraphQL::Pro::MySQLStableRelationConnection`, `GraphQL::Pro::PostgresStableRelationConnection`).
+
+### Bug Fix
+
+- Add the Access query analyzer to class-based schemas
+
 ## 1.11.0 (10 Oct 2019)
 
 ### New Features
