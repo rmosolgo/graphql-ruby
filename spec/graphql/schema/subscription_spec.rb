@@ -224,9 +224,21 @@ describe GraphQL::Schema::Subscription do
         }
       }
       GRAPHQL
-
       assert_equal ["dhh", "matz", "_why"], res["data"]["usersJoined"]["users"].map { |u| u["handle"] }
       assert_equal 1, in_memory_subscription_count
+
+      # It works a second time
+      res = exec_query <<-GRAPHQL
+      subscription {
+        usersJoined {
+          users {
+            handle
+          }
+        }
+      }
+      GRAPHQL
+      assert_equal ["dhh", "matz", "_why"], res["data"]["usersJoined"]["users"].map { |u| u["handle"] }
+      assert_equal 2, in_memory_subscription_count
     end
 
     it "rejects the subscription if #subscribe raises an error" do

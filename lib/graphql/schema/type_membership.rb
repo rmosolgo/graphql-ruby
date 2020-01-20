@@ -8,7 +8,7 @@ module GraphQL
     # TODO: Not yet implemented for interfaces.
     class TypeMembership
       # @return [Class<GraphQL::Schema::Object>]
-      attr_reader :object_type
+      attr_accessor :object_type
 
       # @return [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
       attr_reader :abstract_type

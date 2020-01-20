@@ -79,13 +79,13 @@ describe GraphQL::Query::Variables do
           fat_content: 0.99,
         }.merge(default_values)
 
-        assert_equal(expected_input_1, variables["dairy_product_1"].to_h)
+        assert_equal(expected_input_1.sort.to_h, variables["dairy_product_1"].sort.to_h)
 
         expected_input_2 = {
           source: :donkey,
           fat_content: 0.89,
         }.merge(default_values)
-        assert_equal(expected_input_2, variables["dairy_product_2"].to_h)
+        assert_equal(expected_input_2.sort.to_h, variables["dairy_product_2"].sort.to_h)
       end
     end
 
@@ -106,7 +106,7 @@ describe GraphQL::Query::Variables do
         let(:provided_variables) { { "product" => [] } }
 
         it "validates invalid input objects" do
-          expected = "Variable product of type DairyProductInput was provided invalid value"
+          expected = "Variable $product of type DairyProductInput was provided invalid value"
           assert_equal expected, variables.errors.first.message
         end
       end
@@ -126,7 +126,7 @@ describe GraphQL::Query::Variables do
         let(:provided_variables) { { "time" => "a" } }
 
         it "validates invalid input objects" do
-          expected = "Variable time of type Time was provided invalid value"
+          expected = "Variable $time of type Time was provided invalid value"
           assert_equal expected, variables.errors.first.message
         end
       end

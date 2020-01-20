@@ -1,35 +1,6 @@
 # frozen_string_literal: true
 module GraphQL
-  # A reusable container for field logic, including arguments, resolve, return type, and documentation.
-  #
-  # Class-level values defined with the DSL will be inherited,
-  # so {GraphQL::Function}s can extend one another.
-  #
-  # It's OK to override the instance methods here in order to customize behavior of instances.
-  #
-  # @example A reusable GraphQL::Function attached as a field
-  #   class FindRecord < GraphQL::Function
-  #     attr_reader :type
-  #
-  #     def initialize(model:, type:)
-  #       @model = model
-  #       @type = type
-  #     end
-  #
-  #     argument :id, GraphQL::ID_TYPE
-  #
-  #     def call(obj, args, ctx)
-  #        @model.find(args.id)
-  #     end
-  #   end
-  #
-  #   QueryType = GraphQL::ObjectType.define do
-  #     name "Query"
-  #     field :post, function: FindRecord.new(model: Post, type: PostType)
-  #     field :comment, function: FindRecord.new(model: Comment, type: CommentType)
-  #   end
-  #
-  # @see {GraphQL::Schema::Resolver} for a replacement for `GraphQL::Function`
+  # @api deprecated
   class Function
     # @return [Hash<String => GraphQL::Argument>] Arguments, keyed by name
     def arguments

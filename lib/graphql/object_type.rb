@@ -1,26 +1,6 @@
 # frozen_string_literal: true
 module GraphQL
-  # This type exposes fields on an object.
-  #
-  # @example defining a type for your IMDB clone
-  #   MovieType = GraphQL::ObjectType.define do
-  #     name "Movie"
-  #     description "A full-length film or a short film"
-  #     interfaces [ProductionInterface, DurationInterface]
-  #
-  #     field :runtimeMinutes, !types.Int, property: :runtime_minutes
-  #     field :director, PersonType
-  #     field :cast, CastType
-  #     field :starring, types[PersonType] do
-  #       argument :limit, types.Int
-  #       resolve ->(object, args, ctx) {
-  #         stars = object.cast.stars
-  #         args[:limit] && stars = stars.limit(args[:limit])
-  #         stars
-  #       }
-  #      end
-  #   end
-  #
+  # @api deprecated
   class ObjectType < GraphQL::BaseType
     accepts_definitions :interfaces, :fields, :mutation, :relay_node_type, field: GraphQL::Define::AssignObjectField
     accepts_definitions implements: ->(type, *interfaces, inherit: false) { type.implements(interfaces, inherit: inherit) }

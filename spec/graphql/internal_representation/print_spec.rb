@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::InternalRepresentation::Print do
+if !TESTING_INTERPRETER
+describe GraphQL::InternalRepresentation::Print do # rubocop:disable Layout/IndentationWidth
   describe "printing queries" do
     let(:query_str) { <<-GRAPHQL
     {
@@ -20,7 +21,7 @@ describe GraphQL::InternalRepresentation::Print do
     GRAPHQL
   }
     it "prints the rewritten query" do
-      query_plan = GraphQL::InternalRepresentation::Print.print(Dummy::Schema, query_str)
+      query_plan = GraphQL::InternalRepresentation::Print.print(Dummy::Schema.graphql_definition, query_str)
       expected_plan = <<-GRAPHQL
 query {
   ... on Query {
@@ -38,4 +39,5 @@ query {
       assert_equal expected_plan, query_plan
     end
   end
+end
 end

@@ -53,7 +53,7 @@ describe GraphQL::InputObjectType do
           b: Int!
         }
       |) }
-      let(:input_type) { schema.types['ExampleInputObject'] }
+      let(:input_type) { schema.types['ExampleInputObject'].graphql_definition }
 
       it "returns an invalid result when value is null for non-null argument" do
         invalid_input = MinimumInputObject.new({"a" => "Test", "b" => nil})
@@ -259,7 +259,7 @@ describe GraphQL::InputObjectType do
         example: ExampleInputObject = {b: 42, d: true}
       }
     |) }
-    let(:input_type) { schema.types['ExampleInputObject'] }
+    let(:input_type) { schema.types['ExampleInputObject'].graphql_definition }
 
     it "null values are returned in coerced input" do
       input = MinimumInputObject.new({"a" => "Test", "b" => nil,"c" => "Test"})
@@ -301,7 +301,7 @@ describe GraphQL::InputObjectType do
     end
 
     it "merges defaults of nested input objects" do
-      result = schema.types['SecondLevelInputObject'].coerce_isolated_input({})
+      result = schema.types['SecondLevelInputObject'].graphql_definition.coerce_isolated_input({})
       assert_equal 42, result['example']['b']
       assert_equal "Default", result['example']['c']
       assert_equal true, result['example']['d']
@@ -334,21 +334,6 @@ describe GraphQL::InputObjectType do
         cow_value = result["data"]["cow"]["flavor"]
         assert_equal("Manchego", sheep_value)
         assert_equal("Brie", cow_value)
-      end
-    end
-
-    describe "scalar inputs" do
-      let(:query_string) {%|
-        {
-          cheese(id: 1.4) {
-            flavor
-          }
-        }
-      |}
-
-      it "converts them to the correct type" do
-        cheese_name = result["data"]["cheese"]["flavor"]
-        assert_equal("Brie", cheese_name)
       end
     end
   end

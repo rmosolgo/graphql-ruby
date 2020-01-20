@@ -18,12 +18,12 @@ module GraphQL
   # __Warning:__ Installing/uninstalling tracers is not thread-safe. Do it during application boot only.
   #
   # @example Sending custom events
-  #   GraphQL::Tracing.trace("my_custom_event", { ... }) do
+  #   query.trace("my_custom_event", { ... }) do
   #     # do stuff ...
   #   end
   #
   # @example Adding a tracer to a schema
-  #  MySchema = GraphQL::Schema.define do
+  #  class MySchema < GraphQL::Schema
   #    tracer MyTracer # <= responds to .trace(key, data, &block)
   #  end
   #
@@ -43,7 +43,11 @@ module GraphQL
   # execute_query | `{ query: GraphQL::Query }`
   # execute_query_lazy | `{ query: GraphQL::Query?, multiplex: GraphQL::Execution::Multiplex? }`
   # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext?, owner: Class?, field: GraphQL::Schema::Field?, query: GraphQL::Query?, path: Array<String, Integer>?}`
-  # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext?, owner: Class?, field: GraphQL::Schema::Field?, query: GraphqL::Query?, path: Array<String, Integer>?}`
+  # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext?, owner: Class?, field: GraphQL::Schema::Field?, query: GraphQL::Query?, path: Array<String, Integer>?}`
+  # authorized | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`
+  # authorized_lazy | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`
+  # resolve_type | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`
+  # resolve_type_lazy | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`
   #
   # Note that `execute_field` and `execute_field_lazy` receive different data in different settings:
   #

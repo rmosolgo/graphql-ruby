@@ -25,6 +25,7 @@ module GraphQL
           type_defn = GraphQL::UnionType.new
           type_defn.name = graphql_name
           type_defn.description = description
+          type_defn.ast_node = ast_node
           type_defn.type_memberships = type_memberships
           if respond_to?(:resolve_type)
             type_defn.resolve_type = method(:resolve_type)
@@ -44,8 +45,6 @@ module GraphQL
         def kind
           GraphQL::TypeKinds::UNION
         end
-
-        private
 
         def type_memberships
           @type_memberships ||= []

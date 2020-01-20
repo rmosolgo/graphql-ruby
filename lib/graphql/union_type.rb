@@ -1,28 +1,6 @@
 # frozen_string_literal: true
 module GraphQL
-  # A Union is is a collection of object types which may appear in the same place.
-  #
-  # The members of a union are declared with `possible_types`.
-  #
-  # @example A union of object types
-  #   MediaUnion = GraphQL::UnionType.define do
-  #     name "Media"
-  #     description "Media objects which you can enjoy"
-  #     possible_types [AudioType, ImageType, VideoType]
-  #   end
-  #
-  # A union itself has no fields; only its members have fields.
-  # So, when you query, you must use fragment spreads to access fields.
-  #
-  # @example Querying for fields on union members
-  #  {
-  #    searchMedia(name: "Jens Lekman") {
-  #      ... on Audio { name, duration }
-  #      ... on Image { name, height, width }
-  #      ... on Video { name, length, quality }
-  #    }
-  #  }
-  #
+  # @api deprecated
   class UnionType < GraphQL::BaseType
     # Rubocop was unhappy about the syntax when this was a proc literal
     class AcceptPossibleTypesDefinition
@@ -96,7 +74,7 @@ module GraphQL
     # @return [GraphQL::ObjectType, nil] The type named `type_name` if it exists and is a member of this {UnionType}, (else `nil`)
     def get_possible_type(type_name, ctx)
       type = ctx.query.get_type(type_name)
-      type if type && ctx.query.schema.possible_types(self, ctx).include?(type)
+      type if type && ctx.query.warden.possible_types(self).include?(type)
     end
 
     # Check if a type is a possible type of this {UnionType}

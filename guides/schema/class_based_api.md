@@ -278,9 +278,9 @@ Here is a working plan for rolling out this feature:
     - ☐ ~~Custom `Schema#execute` method~~ not necessary
   - ☑ Migrate all of GitHub's GraphQL schema to this new API
 - graphql 1.9:
-  - ☐ Update all GraphQL-Ruby docs to reflect this new API
+  - ☑ Update all GraphQL-Ruby docs to reflect this new API
 - graphql 1.10:
-  - ☐ Begin sunsetting `.define`: isolate it in its own module
+  - ☑ Begin sunsetting `.define`
 - graphql 2.0:
   - ☐ Remove `.define`
 

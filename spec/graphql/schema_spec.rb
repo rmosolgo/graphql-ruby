@@ -105,6 +105,11 @@ describe GraphQL::Schema do
       schema.mutation_execution_strategy(mutation_execution_strategy)
       subscription_execution_strategy = Object.new
       schema.subscription_execution_strategy(subscription_execution_strategy)
+      # Assert these _before_ `use(Interpreter)` below
+      assert_equal query_execution_strategy, schema.query_execution_strategy
+      assert_equal mutation_execution_strategy, schema.mutation_execution_strategy
+      assert_equal subscription_execution_strategy, schema.subscription_execution_strategy
+
       context_class = Class.new
       schema.context_class(context_class)
       schema.max_complexity(10)
@@ -123,14 +128,12 @@ describe GraphQL::Schema do
       schema.tracer(GraphQL::Tracing::NewRelicTracing)
       schema.middleware(Proc.new {})
 
-      assert_equal query.graphql_definition, schema.query
-      assert_equal mutation.graphql_definition, schema.mutation
-      assert_equal subscription.graphql_definition, schema.subscription
+      assert_equal query, schema.query
+      assert_equal mutation, schema.mutation
+      assert_equal subscription, schema.subscription
       assert_equal introspection, schema.introspection
       assert_equal cursor_encoder, schema.cursor_encoder
-      assert_equal query_execution_strategy, schema.query_execution_strategy
-      assert_equal mutation_execution_strategy, schema.mutation_execution_strategy
-      assert_equal subscription_execution_strategy, schema.subscription_execution_strategy
+
       assert_equal context_class, schema.context_class
       assert_equal 10, schema.max_complexity
       assert_equal 20, schema.max_depth
@@ -143,8 +146,76 @@ describe GraphQL::Schema do
       assert_equal [GraphQL::Backtrace, GraphQL::Execution::Interpreter], schema.plugins.map(&:first)
       assert_equal [GraphQL::Relay::EdgesInstrumentation, GraphQL::Relay::ConnectionInstrumentation], schema.instrumenters[:field]
       assert_equal [GraphQL::ExecutionError, StandardError], schema.rescues.keys.sort_by(&:name)
-      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Tracing::NewRelicTracing], schema.tracers
-      assert_equal 3, schema.middleware.steps.size
+      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
+      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer, GraphQL::Tracing::NewRelicTracing], schema.tracers
+      # This doesn't include `RescueMiddleware`, since interpreter handles that separately.
+      assert_equal 2, schema.middleware.steps.size
+    end
+  end
+
+  describe "merged, inherited caches" do
+    METHODS_TO_CACHE = {
+      types: 1,
+      union_memberships: 1,
+      references_to: 1,
+      possible_types: 5, # The number of types with fields accessed in the query
+    }
+
+    let(:schema) do
+      Class.new(Dummy::Schema) do
+        def self.reset_calls
+          @calls = Hash.new(0)
+          @callers = Hash.new { |h, k| h[k] = [] }
+        end
+
+        METHODS_TO_CACHE.each do |method_name, allowed_calls|
+          define_singleton_method(method_name) do |*args, &block|
+            if @calls
+              call_count = @calls[method_name] += 1
+              @callers[method_name] << caller
+            else
+              call_count = 0
+            end
+            if call_count > allowed_calls
+              raise "Called #{method_name} more than #{allowed_calls} times, previous caller: \n#{@callers[method_name].first.join("\n")}"
+            end
+            super(*args, &block)
+          end
+        end
+      end
+    end
+
+    it "caches #{METHODS_TO_CACHE.keys} at runtime" do
+      query_str = "
+        query getFlavor($cheeseId: Int!) {
+          brie: cheese(id: 1)   { ...cheeseFields, taste: flavor },
+          cheese(id: $cheeseId)  {
+            __typename,
+            id,
+            ...cheeseFields,
+            ... edibleFields,
+            ... on Cheese { cheeseKind: flavor },
+          }
+          fromSource(source: COW) { id }
+          fromSheep: fromSource(source: SHEEP) { id }
+          firstSheep: searchDairy(product: [{source: SHEEP}]) {
+            __typename,
+            ... dairyFields,
+            ... milkFields
+          }
+          favoriteEdible { __typename, fatContent }
+        }
+        fragment cheeseFields on Cheese { flavor }
+        fragment edibleFields on Edible { fatContent }
+        fragment milkFields on Milk { source }
+        fragment dairyFields on AnimalProduct {
+           ... on Cheese { flavor }
+           ... on Milk   { source }
+        }
+      "
+      schema.reset_calls
+      res = schema.execute(query_str,  variables: { cheeseId: 2 })
+      assert_equal "Brie", res["data"]["brie"]["flavor"]
     end
   end
 
@@ -179,6 +250,17 @@ describe GraphQL::Schema do
 
       assert_equal "Subscription", res["data"]["__schema"]["subscriptionType"]["name"]
       assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Subscription"
+    end
+  end
+
+  describe ".possible_types" do
+    it "returns a single item for objects" do
+      assert_equal [Dummy::Cheese], Dummy::Schema.possible_types(Dummy::Cheese)
+    end
+
+    it "returns empty for abstract types without any possible types" do
+      unknown_union = Class.new(GraphQL::Schema::Union) { graphql_name("Unknown") }
+      assert_equal [], Dummy::Schema.possible_types(unknown_union)
     end
   end
 end

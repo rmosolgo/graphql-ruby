@@ -17,7 +17,7 @@ describe GraphQL::Introspection::SchemaType do
   it "exposes the schema" do
     expected = { "data" => {
       "__schema" => {
-        "types" => schema.types.values.sort_by(&:graphql_name).map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} },
+        "types" => schema.types.values.sort_by(&:graphql_name).map { |t| t.graphql_name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.graphql_name} },
         "queryType"=>{
           "fields"=>[
             {"name"=>"allAnimal"},
@@ -53,7 +53,7 @@ describe GraphQL::Introspection::SchemaType do
         },
       }
     }}
-    assert_equal(expected, result)
+    assert_equal(expected, result.to_h)
   end
 
   describe "when the schema has types that are only reachable through hidden types" do

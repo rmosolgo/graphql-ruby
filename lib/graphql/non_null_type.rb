@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 module GraphQL
-  class DoubleNonNullTypeError < GraphQL::Error
-  end
-
   # A non-null type modifies another type.
   #
   # Non-null types can be created with `!` (`InnerType!`)
@@ -37,13 +34,6 @@ module GraphQL
 
     attr_reader :of_type
     def initialize(of_type:)
-      if of_type.is_a?(GraphQL::NonNullType)
-        raise(
-          DoubleNonNullTypeError,
-          "You tried to add a non-null constraint twice (!! instead of !)"
-        )
-      end
-
       super()
       @of_type = of_type
     end

@@ -31,10 +31,10 @@ describe GraphQL::NonNullType do
 
     describe "when type_error is configured to raise an error" do
       it "crashes query execution" do
-        raise_schema = Dummy::Schema.redefine {
-          type_error ->(type_err, ctx) {
+        raise_schema = Class.new(Dummy::Schema) {
+          def self.type_error(type_err, ctx)
             raise type_err
-          }
+          end
         }
         query_string = %|{ cow { name cantBeNullButIs } }|
         err = assert_raises(GraphQL::InvalidNullError) { raise_schema.execute(query_string) }

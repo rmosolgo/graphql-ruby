@@ -12,29 +12,7 @@ module StarTrek
     'IRW Praetus',
   ]
 
-  MONGOID_CONFIG = {
-    clients: {
-      default: {
-        database: 'graphql_ruby_test',
-        hosts: ['localhost:27017']
-      }
-    },
-    sessions: {
-      default: {
-        database: 'graphql_ruby_test',
-        hosts: ['localhost:27017']
-      }
-    }
-  }.freeze
-
-  def db_name
-    MONGOID_CONFIG[:clients][:default][:database]
-  end
-  module_function :db_name
-
   # Set up "Bases" in MongoDB
-  Mongoid.load_configuration(MONGOID_CONFIG)
-
   class Base
     include Mongoid::Document
     field :name, type: String

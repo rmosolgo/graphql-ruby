@@ -13,8 +13,10 @@ module GraphQL
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasArguments
+      include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
       extend GraphQL::Schema::FindInheritedValue
+      include GraphQL::Schema::FindInheritedValue::EmptyObjects
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
@@ -35,9 +37,9 @@ module GraphQL
       attr_reader :resolver_method
 
       # @return [Class] The type that this field belongs to
-      attr_reader :owner
+      attr_accessor :owner
 
-      # @return [Symobol] the original name of the field, passed in by the user
+      # @return [Symbol] the original name of the field, passed in by the user
       attr_reader :original_name
 
       # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one
@@ -51,7 +53,7 @@ module GraphQL
       attr_reader :trace
 
       # @return [String, nil]
-      attr_reader :subscription_scope
+      attr_accessor :subscription_scope
 
       # Create a field instance from a list of arguments, keyword arguments, and a block.
       #
@@ -152,6 +154,14 @@ module GraphQL
         end
       end
 
+      # @return Boolean
+      attr_reader :relay_node_field
+
+      # @return [Boolean] Should we warn if this field's name conflicts with a built-in method?
+      def method_conflict_warning?
+        @method_conflict_warning
+      end
+
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param type [Class, GraphQL::BaseType, Array] The return type of this field
       # @param owner [Class] The type that this field belongs to
@@ -175,7 +185,9 @@ module GraphQL
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       # @param extensions [Array<Class, Hash<Class => Object>>] Named extensions to apply to this field (see also {#extension})
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, extras: [], extensions: [], resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, arguments: {}, &definition_block)
+      # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
+      # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: [], extensions: EMPTY_ARRAY, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, arguments: EMPTY_HASH, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -191,8 +203,9 @@ module GraphQL
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve and class-based field such as mutation class, please remove `field:`, `function:` or `resolve:`"
         end
         @original_name = name
-        @underscored_name = -Member::BuildType.underscore(name.to_s)
-        @name = -(camelize ? Member::BuildType.camelize(name.to_s) : name.to_s)
+        name_s = -name.to_s
+        @underscored_name = -Member::BuildType.underscore(name_s)
+        @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
         @description = description
         if field.is_a?(GraphQL::Schema::Field)
           raise ArgumentError, "Instead of passing a field as `field:`, use `add_field(field)` to add an already-defined field."
@@ -236,14 +249,14 @@ module GraphQL
         @trace = trace
         @relay_node_field = relay_node_field
         @relay_nodes_field = relay_nodes_field
+        @ast_node = ast_node
+        @method_conflict_warning = method_conflict_warning
 
-        # Override the default from HasArguments
-        @own_arguments = {}
         arguments.each do |name, arg|
           if arg.is_a?(Hash)
             argument(name: name, **arg)
           else
-            @own_arguments[name] = arg
+            own_arguments[name] = arg
           end
         end
 
@@ -347,7 +360,7 @@ module GraphQL
         end
       end
 
-      def complexity(new_complexity)
+      def complexity(new_complexity = nil)
         case new_complexity
         when Proc
           if new_complexity.parameters.size != 3
@@ -360,6 +373,8 @@ module GraphQL
           end
         when Numeric
           @complexity = new_complexity
+        when nil
+          @complexity
         else
           raise("Invalid complexity: #{new_complexity.inspect} on #{@name}")
         end
@@ -416,6 +431,7 @@ module GraphQL
         field_defn.introspection = @introspection
         field_defn.complexity = @complexity
         field_defn.subscription_scope = @subscription_scope
+        field_defn.ast_node = ast_node
 
         arguments.each do |name, defn|
           arg_graphql = defn.to_graphql
@@ -433,14 +449,25 @@ module GraphQL
 
         # Ok, `self` isn't a class, but this is for consistency with the classes
         field_defn.metadata[:type_class] = self
-
+        field_defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(field_defn)
         field_defn
       end
 
+      attr_writer :type
+
       def type
-        @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
-      rescue
-        raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: #{$!.message}", $!.backtrace
+        @type ||= if @function
+          Member::BuildType.parse_type(@function.type, null: false)
+        elsif @field
+          Member::BuildType.parse_type(@field.type, null: false)
+        else
+          Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+        end
+      rescue GraphQL::Schema::InvalidDocumentError => err
+        # Let this propagate up
+        raise err
+      rescue StandardError => err
+        raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: (#{err.class}) #{err.message}", err.backtrace
       end
 
       def visible?(context)
@@ -459,14 +486,14 @@ module GraphQL
         end
       end
 
-      def authorized?(object, context)
+      def authorized?(object, args, context)
         if @resolver_class
           # The resolver will check itself during `resolve()`
           @resolver_class.authorized?(object, context)
         else
           # Faster than `.any?`
           arguments.each_value do |arg|
-            if !arg.authorized?(object, context)
+            if args.key?(arg.keyword) && !arg.authorized?(object, args[arg.keyword], context)
               return false
             end
           end
@@ -485,21 +512,22 @@ module GraphQL
           # Some legacy fields can have `nil` here, not exactly sure why.
           # @see https://github.com/rmosolgo/graphql-ruby/issues/1990 before removing
           inner_obj = after_obj && after_obj.object
-          if authorized?(inner_obj, query_ctx)
-            ruby_args = to_ruby_args(after_obj, args, ctx)
-            # Then if it passed, resolve the field
-            if @resolve_proc
-              # Might be nil, still want to call the func in that case
-              with_extensions(inner_obj, ruby_args, query_ctx) do |extended_obj, extended_args|
-                # Pass the GraphQL args here for compatibility:
-                @resolve_proc.call(extended_obj, args, ctx)
+          ctx.schema.after_lazy(to_ruby_args(after_obj, args, ctx)) do |ruby_args|
+            if authorized?(inner_obj, ruby_args, query_ctx)
+              # Then if it passed, resolve the field
+              if @resolve_proc
+                # Might be nil, still want to call the func in that case
+                with_extensions(inner_obj, ruby_args, query_ctx) do |extended_obj, extended_args|
+                  # Pass the GraphQL args here for compatibility:
+                  @resolve_proc.call(extended_obj, args, ctx)
+                end
+              else
+                public_send_field(after_obj, ruby_args, ctx)
               end
             else
-              public_send_field(after_obj, ruby_args, ctx)
+              err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
+              query_ctx.schema.unauthorized_field(err)
             end
-          else
-            err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
-            query_ctx.schema.unauthorized_field(err)
           end
         end
       end
@@ -516,7 +544,7 @@ module GraphQL
         begin
           # Unwrap the GraphQL object to get the application object.
           application_object = object.object
-          if self.authorized?(application_object, ctx)
+          if self.authorized?(application_object, args, ctx)
             # Apply field extensions
             with_extensions(object, args, ctx) do |extended_obj, extended_args|
               field_receiver = if @resolver_class
@@ -594,7 +622,7 @@ module GraphQL
 
       # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
       def fetch_extra(extra_name, ctx)
-        if extra_name != :path && respond_to?(extra_name)
+        if extra_name != :path && extra_name != :ast_node && respond_to?(extra_name)
           self.public_send(extra_name)
         elsif ctx.respond_to?(extra_name)
           ctx.public_send(extra_name)
@@ -661,7 +689,7 @@ module GraphQL
       # Written iteratively to avoid big stack traces.
       # @return [Object] Whatever the
       def with_extensions(obj, args, ctx)
-        if @extensions.empty?
+        if @extensions.nil?
           yield(obj, args)
         else
           # Save these so that the originals can be re-given to `after_resolve` handlers.

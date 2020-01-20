@@ -183,7 +183,7 @@ describe "GraphQL::Execution::Errors" do
           context: context,
         )
         # The message appears in extensions here:
-        assert_equal ["ErrorD on nil at boot"], res["errors"].map { |e| e["extensions"]["problems"][0]["explanation"] }
+        assert_equal ["ErrorD on nil at Query.inputField()"], res["errors"].map { |e| e["message"] }
       end
     end
   end

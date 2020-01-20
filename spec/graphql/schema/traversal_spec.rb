@@ -128,7 +128,7 @@ describe GraphQL::Schema::Traversal do
 
   describe "when a field is only accessible through an interface" do
     it "is found through Schema.define(types:)" do
-      assert_equal Dummy::Honey.graphql_definition, Dummy::Schema.types["Honey"]
+      assert_equal Dummy::Honey, Dummy::Schema.types["Honey"]
     end
   end
 

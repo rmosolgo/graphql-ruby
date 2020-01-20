@@ -2,13 +2,13 @@
 require "spec_helper"
 
 describe "GraphQL::Introspection::INTROSPECTION_QUERY" do
-  let(:schema)  { Class.new(Dummy::Schema) }
+  let(:schema)  {
+    Class.new(Dummy::Schema) do
+      max_depth(15)
+    end
+  }
   let(:query_string) { GraphQL::Introspection::INTROSPECTION_QUERY }
   let(:result) { schema.execute(query_string) }
-
-  before do
-    schema.max_depth = 15
-  end
 
   it "runs" do
     assert(result["data"])

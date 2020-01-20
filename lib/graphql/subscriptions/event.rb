@@ -49,7 +49,7 @@ module GraphQL
           raise ArgumentError, "Unexpected arguments: #{arguments}, must be Hash or GraphQL::Arguments"
         end
 
-        sorted_h = normalized_args.to_h.sort.to_h
+        sorted_h = stringify_args(field, normalized_args.to_h)
         Serialize.dump_recursive([scope, name, sorted_h])
       end
 
@@ -71,18 +71,21 @@ module GraphQL
                 arg_defn = get_arg_definition(arg_owner, normalized_arg_name)
               end
 
-              next_args[normalized_arg_name] = stringify_args(arg_defn[1].type, v)
+              next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
             end
-            next_args
+            # Make sure they're deeply sorted
+            next_args.sort.to_h
           when Array
             args.map { |a| stringify_args(arg_owner, a) }
+          when GraphQL::Schema::InputObject
+            stringify_args(arg_owner, args.to_h)
           else
             args
           end
         end
 
         def get_arg_definition(arg_owner, arg_name)
-          arg_owner.arguments.find { |k, v| k == arg_name || v.keyword.to_s == arg_name }
+          arg_owner.arguments[arg_name] || arg_owner.arguments.each_value.find { |v| v.keyword.to_s == arg_name }
         end
       end
     end

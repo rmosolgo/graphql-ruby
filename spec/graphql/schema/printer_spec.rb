@@ -19,7 +19,7 @@ Use "BAR" instead.
 
 It's the replacement for this value.
 REASON
-      value "WOZ", deprecation_reason: GraphQL::Directive::DEFAULT_DEPRECATION_REASON
+      value "WOZ", deprecation_reason: GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON
     end
 
     sub_input_type = GraphQL::InputObjectType.define do
@@ -613,6 +613,7 @@ SCHEMA
 
       schema = Class.new(GraphQL::Schema) do
         query query_type
+        use GraphQL::Execution::Interpreter
       end
 
       expected = "type Query {\n  foobar: Int!\n}"
@@ -845,6 +846,7 @@ SCHEMA
       end
 
       query(OddlyNamedQuery)
+      use GraphQL::Execution::Interpreter
     end
 
 

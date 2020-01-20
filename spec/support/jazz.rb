@@ -340,6 +340,10 @@ module Jazz
     field :falsey, Boolean, null: false
   end
 
+  class CamelizedBooleanInput <  GraphQL::Schema::InputObject
+    argument :camelized_boolean, Boolean, required: true
+  end
+
   # Another new-style definition, with method overrides
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
@@ -380,6 +384,14 @@ module Jazz
       upcase.inspect
     end
 
+    field :input_object_camelization, String, null: false do
+      argument :input, CamelizedBooleanInput, required: true
+    end
+
+    def input_object_camelization(input:)
+      input.to_h.inspect
+    end
+
     def ensembles
       # Filter out the unauthorized one to avoid an error later
       Models.data["Ensemble"].select { |e| e.name != "Spinal Tap" }
@@ -413,7 +425,7 @@ module Jazz
         input.key?(:string_value).to_s,
         # ~~Access by legacy key~~ # not anymore
         input[:string_value],
-        input.ensemble,
+        input.ensemble || "No ensemble",
         input.key?(:ensemble).to_s,
       ]
     end
@@ -742,7 +754,7 @@ module Jazz
 
   class MetadataPlugin
     def self.use(schema_defn, value:)
-      schema_defn.target.metadata[:plugin_key] = value
+      schema_defn.metadata[:plugin_key] = value
     end
   end
 
@@ -830,7 +842,6 @@ module Jazz
     mutation(Mutation)
     context_class CustomContext
     introspection(Introspection)
-    use MetadataPlugin, value: "xyz"
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
       ctx.schema.types[class_name] || raise("No type for #{obj.inspect}")
@@ -839,16 +850,24 @@ module Jazz
     def self.object_from_id(id, ctx)
       GloballyIdentifiableType.find(id)
     end
+
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
     end
+
+    use MetadataPlugin, value: "xyz"
   end
 
   class SchemaWithoutIntrospection < GraphQL::Schema
     query(Query)
 
     disable_introspection_entry_points
+
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+    end
   end
 
   class SchemaWithoutSchemaIntrospection < GraphQL::Schema
