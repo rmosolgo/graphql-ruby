@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.12.1 (20 Jan 2020)
+
+### Bug Fix
+
+- Fix OperationStore on class-based schemas with query instrumenters that use the query string
+
 ## 1.12.0 (20 Jan 2020)
 
 ### Deprecations
