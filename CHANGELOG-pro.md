@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.12.2 (22 Jan 2020)
+
+### Bug Fix
+
+- Improve backwards compat with OperationStore (Improve adding `.tracer`, use `.graphql_name` when indexing)
+
 ## 1.12.1 (20 Jan 2020)
 
 ### Bug Fix
