@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/Pagination/Connection" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Pagination::Connection &lt; Object
+A Connection wraps a list of items and provides cursor-based
+pagination over it. 
+Connections were introduced by Facebook’s <code class="highlighter-rouge">Relay</code> front-end
+framework, but proved to be generally useful for GraphQL APIs. When
+in doubt, use connections to serve lists (like Arrays,
+ActiveRecord::Relations) via GraphQL. 
+Unlike the previous connection implementation, these default to
+bidirectional pagination. 
+Pagination arguments and context may be provided at initialization
+or assigned later (see Schema::Field::ConnectionExtension). 
+Direct Known Subclasses:
+ArrayConnection, RelationConnection
+Class methods:
+edge_class
+Instance methods:
+after, before, cursor_for, decode, edge_nodes, edges, end_cursor,
+has_next_page, has_previous_page, initialize,
+limit_pagination_argument, nodes, page_info, start_cursor</p>
+
+
+  </body>
+</html>

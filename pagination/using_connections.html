@@ -1,0 +1,171 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Using Connections</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.10.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#pagination-guides">Pagination</a>
+  &raquo; Using Connections
+</p>
+
+
+<h1 class="guide-header">Using Connections</h1>
+<div class="guide-container">
+  <p>GraphQL-Ruby ships with a few implementations of the <a href="/pagination/connection_concepts">connection pattern</a> that you can use out of the box. They support Ruby Arrays, Mongoid, Sequel, and ActiveRecord.</p>
+
+<p>Additionally, connections allow you to limit the number of items returned with <a href="#max-page-size"><code class="highlighter-rouge">max_page_size</code></a>.</p>
+
+<h2 id="adding-the-plugin">Adding the Plugin</h2>
+
+<p>GraphQL-Ruby 1.10.0 includes a new plugin for connections. It’s more flexible and easier to customize. If it’s not already added to your schema with <code class="highlighter-rouge">use ...</code>, add it:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Add the plugin for connection pagination</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pagination</span><span class="o">::</span><span class="no">Connections</span>
+</code></pre></div></div>
+
+<h2 id="make-connection-fields">Make Connection Fields</h2>
+
+<p>Use <code class="highlighter-rouge">.connection_type</code> to generate a connection type for paginating over objects of a given type:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">ItemType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+</code></pre></div></div>
+
+<p>The generated return type will be called <code class="highlighter-rouge">ItemConnection</code>. Since it ends in <code class="highlighter-rouge">*Connection</code>, the <code class="highlighter-rouge">field(...)</code> will automatically be configured with <code class="highlighter-rouge">connection: true</code>. If the connection type’s name doesn’t end in <code class="highlighter-rouge">Connection</code>, you have to add that configuration yourself:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># here's a custom type whose name doesn't end in "Connection", so `connection: true` is required:</span>
+<span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">ItemConnectionPage</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">connection: </span><span class="kp">true</span>
+</code></pre></div></div>
+
+<p>The field will be given some arguments by default: <code class="highlighter-rouge">first</code>, <code class="highlighter-rouge">last</code>, <code class="highlighter-rouge">after</code>, and <code class="highlighter-rouge">before</code>.</p>
+
+<h2 id="return-collections">Return Collections</h2>
+
+<p>With connection fields, you can return collection objects from fields or resolvers:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">items</span>
+  <span class="n">object</span><span class="p">.</span><span class="nf">items</span> <span class="c1"># =&gt; eg, returns an ActiveRecord Relation</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The collection object (Array, Mongoid relation, Sequel dataset, ActiveRecord relation) will be automatically paginated with the provided arguments. Cursors will be generated based on the offset of nodes in the collection.</p>
+
+<h2 id="make-custom-connections">Make Custom Connections</h2>
+
+<p>If you want to paginate something that <em>isn’t</em> supported out-of-the-box, you can implement your own pagination wrapper and hook it up to GraphQL-Ruby. Read more in <a href="/pagination/custom_connections">Custom Connections</a>.</p>
+
+<h2 id="special-cases">Special Cases</h2>
+
+<p>Sometimes, you have <em>one collection</em> that needs special handling, unlike other instances of its class. For cases like this, you can manually apply the connection wrapper in the resolver. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">items</span>
+  <span class="c1"># Get the ActiveRecord relation to paginate</span>
+  <span class="n">relation</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">items</span>
+  <span class="c1"># Apply a custom wrapper</span>
+  <span class="no">Connections</span><span class="o">::</span><span class="no">ItemsConnection</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">relation</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This way, you can handle this <em>particular</em> <code class="highlighter-rouge">relation</code> with custom code.</p>
+
+<h2 id="max-page-size">Max Page Size</h2>
+
+<p>You can apply <code class="highlighter-rouge">max_page_size</code> to limit the number of items returned, regardless of what the client requests.</p>
+
+<ul>
+  <li>
+    <p><strong>For the whole schema</strong>, you can add it to your schema definition:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">max_page_size</span> <span class="mi">50</span>
+<span class="k">end</span>
+</code></pre></div>    </div>
+
+    <p>At runtime, that value will be applied to <em>every</em> connection, unless an override is provided as described below.</p>
+  </li>
+  <li>
+    <p><strong>For a given field</strong>, add it to the field definition with a keyword:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="no">Item</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+  <span class="ss">max_page_size: </span><span class="mi">25</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><strong>Dynamically</strong>, you can add <code class="highlighter-rouge">max_page_size:</code> when you apply custom connection wrappers:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">items</span>
+  <span class="n">relation</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">items</span>
+  <span class="no">Connections</span><span class="o">::</span><span class="no">ItemsConnection</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">relation</span><span class="p">,</span> <span class="ss">max_page_size: </span><span class="mi">10</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>To <em>remove</em> a <code class="highlighter-rouge">max_page_size</code> setting, you can pass <code class="highlighter-rouge">nil</code>. That will allow unbounded collections to be returned to clients.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/pagination/using_connections.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Using Connections">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

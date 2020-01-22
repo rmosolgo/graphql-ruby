@@ -1,0 +1,203 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Connection Concepts</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.10.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#pagination-guides">Pagination</a>
+  &raquo; Connection Concepts
+</p>
+
+
+<h1 class="guide-header">Connection Concepts</h1>
+<div class="guide-container">
+  <p><strong>Connections</strong> are a pagination solution which started with <a href="https://facebook.github.io/relay">Relay JS</a>, but now it’s used for almost any GraphQL API.</p>
+
+<p>Connections are composed of a few kinds of objects:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">Connection</code> types are generics that expose pagination-related metadata and access to the items</li>
+  <li><code class="highlighter-rouge">Edge</code> types are also generics. They represent the relationship between the parent and child (eg, a <code class="highlighter-rouge">PostEdge</code> represents the link from <code class="highlighter-rouge">Blog</code> to <code class="highlighter-rouge">Post</code>).</li>
+  <li><em>nodes</em> are actual list items. In a <code class="highlighter-rouge">PostsConnection</code>, each node is a <code class="highlighter-rouge">Post</code>.</li>
+</ul>
+
+<p>Connections have some advantages over offset-based pagination:</p>
+
+<ul>
+  <li>First-class support for relationship metadata</li>
+  <li>Cursor implementations can support efficient, stable pagination</li>
+</ul>
+
+<h2 id="connections-edges-and-nodes">Connections, Edges and Nodes</h2>
+
+<p>Connection pagination has three core objects: connections, edges, and nodes.</p>
+
+<h3 id="nodes">Nodes</h3>
+
+<p>Nodes are items in a list. A <code class="highlighter-rouge">node</code> is usually an object in your schema. For example, a <code class="highlighter-rouge">node</code> in a <code class="highlighter-rouge">posts</code> connection is a <code class="highlighter-rouge">Post</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="n">posts</span><span class="p">(</span><span class="ss">first: </span><span class="mi">5</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">edges</span> <span class="p">{</span>
+      <span class="n">node</span> <span class="p">{</span>
+        <span class="c1"># This is a `Post` object:</span>
+        <span class="n">title</span>
+        <span class="n">body</span>
+        <span class="n">publishedAt</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="connections">Connections</h3>
+
+<p>Connections are objects that <em>represent</em> a one-to-many relation. They contain <em>metadata</em> about the list of items and <em>access to the items</em>.</p>
+
+<p>Connections are often generated from object types. Their list items, called <em>nodes</em>, are members of that object type. Connections can also be generated from union types and interface types.</p>
+
+<h5 id="connection-metadata">Connection metadata</h5>
+
+<p>Connections can tell you about the list in general. For example, if you <a href="/type_definitions/extensions#customizing-connections">add a total count field</a>, they can tell you the count:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="n">posts</span> <span class="p">{</span>
+    <span class="c1"># This is a PostsConnection</span>
+    <span class="n">totalCount</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h5 id="connection-items">Connection items</h5>
+
+<p>The list items in a connection are called <em>nodes</em>. They can generally be accessed two ways:</p>
+
+<ul>
+  <li>via edges: <code class="highlighter-rouge">posts { edges { node { ... } } }</code></li>
+  <li>via nodes: <code class="highlighter-rouge">posts { nodes { ... } }</code></li>
+</ul>
+
+<p>The differences is that <code class="highlighter-rouge">edges { node { ... } }</code> has more room for relationship metadata. For example, when listing the members of a team, you might include <em>when</em> someone joined the team as edge metadata:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">team</span> <span class="p">{</span>
+  <span class="n">members</span><span class="p">(</span><span class="ss">first: </span><span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">edges</span> <span class="p">{</span>
+      <span class="c1"># when did this person join the team?</span>
+      <span class="n">joinedAt</span>
+      <span class="c1"># information about the person:</span>
+      <span class="n">node</span> <span class="p">{</span>
+        <span class="nb">name</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Alternatively, <code class="highlighter-rouge">nodes</code> provides easier access to the items, but can’t expose relationship metadata:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">team</span> <span class="p">{</span>
+  <span class="n">members</span><span class="p">(</span><span class="ss">first: </span><span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">nodes</span> <span class="p">{</span>
+      <span class="c1"># shows the team members' names</span>
+      <span class="nb">name</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>There’s no way to show <code class="highlighter-rouge">joinedAt</code> above without using <code class="highlighter-rouge">edges { ... }</code>.</p>
+
+<h3 id="edges">Edges</h3>
+
+<p>Edges are <em>like</em> join tables in that they can expose relationship metadata between a parent object and its children.</p>
+
+<p>For example, let’s say that someone may be the member of <em>several</em> teams. You would make a join table in the database (eg, <code class="highlighter-rouge">team_memberships</code>) which connect people to each of the teams they’re on. This join table could also include information about <em>how</em> that person is related to the team: when they joined, what role they have, etc.</p>
+
+<p>Edges can reveal this information about the relationship, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">team</span> <span class="p">{</span>
+  <span class="c1"># this is the team name</span>
+  <span class="nb">name</span>
+
+  <span class="n">members</span><span class="p">(</span><span class="ss">first: </span><span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">edges</span> <span class="p">{</span>
+      <span class="c1"># this is a team membership</span>
+      <span class="n">joinedAt</span>
+      <span class="n">role</span>
+
+      <span class="n">node</span> <span class="p">{</span>
+        <span class="c1"># this is the person on the team</span>
+        <span class="nb">name</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>So, edges really help when the <em>relationship</em> between two objects has special data associated with it. If you use a join table, that’s a clue that you might use a custom edge to model the relationship.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/pagination/connection_concepts.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Connection Concepts">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

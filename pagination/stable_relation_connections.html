@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Stable Relation Connections</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.10.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#pagination-guides">Pagination</a>
+  &raquo; Stable Relation Connections
+</p>
+
+
+  <div class="pro-header">
+    <p>
+      <strong>⚡️ Pro Feature ⚡️</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro">GraphQL-Pro</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Stable Relation Connections</h1>
+<div class="guide-container">
+  <p><code class="highlighter-rouge">GraphQL::Pro</code> includes a mechanism for serving <em>stable</em> connections for <code class="highlighter-rouge">ActiveRecord::Relation</code>s based on column values. If objects are created or destroyed during pagination, the list of items won’t be disrupted.</p>
+
+<p>These connection implementations are database-specific so that they can build proper queries with regard to <code class="highlighter-rouge">NULL</code> handling. (Postgres treats nulls as <em>larger</em> than other values while MySQL and SQLite treat them as <em>smaller</em> than other values.)</p>
+
+<p><strong>Note:</strong> In GraphQL 1.12.x, the <a href="/pro/cursors">previous stable connection implementation</a> is still enabled by default. See <a href="/pro/cursors#opting-out">Opting Out</a> to disable that feature, then enable this new one.</p>
+
+<h2 id="whats-the-difference">What’s the difference?</h2>
+
+<p>The default <a href="/api-doc/1.10.0/GraphQL/Pagination/ActiveRecordRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::ActiveRecordRelationConnection"><code>GraphQL::Pagination::ActiveRecordRelationConnection</code></a> (which turns an <code class="highlighter-rouge">ActiveRecord::Relation</code> into a GraphQL-ready connection) uses <em>offset</em> as a cursor. This naive approach is sufficient for many cases, but it’s subject to a specific set of bugs.</p>
+
+<p>Let’s say you’re looking at the second page of 10 items (<code class="highlighter-rouge">LIMIT 10 OFFSET 10</code>). During that time, one of the items on page 1 is deleted. When you navigate to page 3 (<code class="highlighter-rouge">LIMIT 10 OFFSET 20</code>), you’ll actually <em>miss</em> one item. The entire list shifted “up” one position when a previous item was deleted.</p>
+
+<p>To solve this bug, we should use a <em>value</em> to page through items (instead of <em>offset</em>). For example, if items are ordered by <code class="highlighter-rouge">id</code>, use the <code class="highlighter-rouge">id</code> for pagination:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">LIMIT</span> <span class="mi">10</span>                      <span class="c1">-- page 1</span>
+<span class="k">WHERE</span> <span class="n">id</span> <span class="o">&gt;</span> <span class="p">:</span><span class="n">last_id</span> <span class="k">LIMIT</span> <span class="mi">10</span>  <span class="c1">-- page 2</span>
+</code></pre></div></div>
+
+<p>This way, even when items are added or removed, pagination will continue without interruption.</p>
+
+<p>For more information about this issue, see <a href="https://coderwall.com/p/lkcaag/pagination-you-re-probably-doing-it-wrong">“Pagination: You’re (Probably) Doing It Wrong”</a>.</p>
+
+<h2 id="installation">Installation</h2>
+
+<p>You can use a stable connection for <em>all</em> <code class="highlighter-rouge">ActiveRecord::Relation</code>s by installing it at the schema level:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Add the connection plugin</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pagination</span><span class="o">::</span><span class="no">Connections</span>
+
+  <span class="c1"># Hook up the stable connection that matches your database</span>
+  <span class="n">connections</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PostgresStableRelationConnection</span><span class="p">,</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span><span class="p">)</span>
+  <span class="c1"># Or...</span>
+  <span class="c1"># connections.add(GraphQL::Pro::MySQLStableRelationConnection, ActiveRecord::Relation)</span>
+  <span class="c1"># connections.add(GraphQL::Pro::SqliteStableRelationConnection, ActiveRecord::Relation)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Alternatively, you can apply the stable connection wrapper on a <em>field-by-field</em> basis. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">ItemType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+<span class="k">def</span> <span class="nf">items</span>
+  <span class="c1"># Build an ActiveRecord::Relation</span>
+  <span class="n">relation</span> <span class="o">=</span> <span class="no">Item</span><span class="p">.</span><span class="nf">all</span>
+  <span class="c1"># And wrap it with a connection implementation, then return the connection</span>
+  <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">MySQLStableRelationConnection</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">relation</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>That way, you can adopt stable cursors bit-by-bit. (See below for <a href="#backwards-compatibility">backwards compatibility</a> notes.)</p>
+
+<p>Similarly, if you enable stable connections for the whole schema, you can wrap <em>specific</em> relations with <code class="highlighter-rouge">GraphQL::Pagination::ActiveRecordRelationConnection</code> when you want to use index-based cursors. (This is handy for relations whose ordering is too complicated for cursor generation.)</p>
+
+<h2 id="implementation-notes">Implementation Notes</h2>
+
+<p>Keep these points in mind when using value-based cursors:</p>
+
+<ul>
+  <li>For a given <code class="highlighter-rouge">ActiveRecord::Relation</code>, only columns of that specific model can be used in pagination. (This is because column names are turned into <code class="highlighter-rouge">WHERE</code> conditions.)</li>
+  <li>The connection may add an additional <code class="highlighter-rouge">primary_key</code> ordering to ensure that the cursor value is unique. This behavior is inspired by <code class="highlighter-rouge">Relation#reverse_order</code> which also assumes that <code class="highlighter-rouge">primary_key</code> is the default sort.</li>
+  <li>The connection will add fields to the relation’s <code class="highlighter-rouge">SELECT</code> clause, so that cursors can be reliably constructed from the database results.</li>
+</ul>
+
+<h2 id="grouped-relations">Grouped Relations</h2>
+
+<p>When using a grouped <code class="highlighter-rouge">ActiveRecord::Relation</code>, include a unique ID in your sort to ensure that each row in the result has a unique cursor. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Bad: If two results have the same `max(price)`,</span>
+<span class="c1"># they will be identical from a pagination perspective:</span>
+<span class="no">Products</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"max(price) as price"</span><span class="p">).</span><span class="nf">group</span><span class="p">(</span><span class="s2">"category_id"</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s2">"price"</span><span class="p">)</span>
+
+<span class="c1"># Good: `category_id` is used to disambiguate any results with the same price:</span>
+<span class="no">Products</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"max(price) as price"</span><span class="p">).</span><span class="nf">group</span><span class="p">(</span><span class="s2">"category_id"</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s2">"price, category_id"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>For ungrouped relations, this issue is handled automatically by adding the model’s <code class="highlighter-rouge">primary_key</code> to the order values.</p>
+
+<p>If you provide an unordered, grouped relation, <code class="highlighter-rouge">GraphQL::Pro::RelationConnection::InvalidRelationError</code> will be raised because an unordered relation <em>cannot</em> be paginated in a stable way.</p>
+
+<h2 id="backwards-compatibility">Backwards Compatibility</h2>
+
+<p><code class="highlighter-rouge">GraphQL::Pro</code>’s stable relation connection is backwards-compatible. If it receives an offset-based cursor, it uses that cursor for the next resolution, then returns value-based cursors in the next result.</p>
+
+<h2 id="activerecord-versions">ActiveRecord Versions</h2>
+
+<p>Stable relation connections support ActiveRecord <code class="highlighter-rouge">&gt;= 4.1.0</code>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/pagination/stable_relation_connections.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Stable Relation Connections">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

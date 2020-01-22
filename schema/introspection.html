@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.17/">API</a>
+          <a href="/api-doc/1.10.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -172,42 +172,42 @@
     <tr>
       <td><code class="highlighter-rouge">SchemaType</code></td>
       <td><code class="highlighter-rouge">__Schema</code></td>
-      <td><a href="/api-doc/1.9.17/GraphQL/Introspection/SchemaType" target="_blank" title="API docs for GraphQL::Introspection::SchemaType"><code>GraphQL::Introspection::SchemaType</code></a></td>
+      <td><a href="/api-doc/1.10.0/GraphQL/Introspection/SchemaType" target="_blank" title="API docs for GraphQL::Introspection::SchemaType"><code>GraphQL::Introspection::SchemaType</code></a></td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">TypeType</code></td>
       <td><code class="highlighter-rouge">__Type</code></td>
-      <td><a href="/api-doc/1.9.17/GraphQL/Introspection/TypeType" target="_blank" title="API docs for GraphQL::Introspection::TypeType"><code>GraphQL::Introspection::TypeType</code></a></td>
+      <td><a href="/api-doc/1.10.0/GraphQL/Introspection/TypeType" target="_blank" title="API docs for GraphQL::Introspection::TypeType"><code>GraphQL::Introspection::TypeType</code></a></td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">DirectiveType</code></td>
       <td><code class="highlighter-rouge">__Directive</code></td>
-      <td><a href="/api-doc/1.9.17/GraphQL/Introspection/DirectiveType" target="_blank" title="API docs for GraphQL::Introspection::DirectiveType"><code>GraphQL::Introspection::DirectiveType</code></a></td>
+      <td><a href="/api-doc/1.10.0/GraphQL/Introspection/DirectiveType" target="_blank" title="API docs for GraphQL::Introspection::DirectiveType"><code>GraphQL::Introspection::DirectiveType</code></a></td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">DirectiveLocationType</code></td>
       <td><code class="highlighter-rouge">__DirectiveLocation</code></td>
-      <td><a href="/api-doc/1.9.17/GraphQL/Introspection/DirectiveLocationEnum" target="_blank" title="API docs for GraphQL::Introspection::DirectiveLocationEnum"><code>GraphQL::Introspection::DirectiveLocationEnum</code></a></td>
+      <td><a href="/api-doc/1.10.0/GraphQL/Introspection/DirectiveLocationEnum" target="_blank" title="API docs for GraphQL::Introspection::DirectiveLocationEnum"><code>GraphQL::Introspection::DirectiveLocationEnum</code></a></td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">EnumValueType</code></td>
       <td><code class="highlighter-rouge">__EnumValue</code></td>
-      <td><a href="/api-doc/1.9.17/GraphQL/Introspection/EnumValueType" target="_blank" title="API docs for GraphQL::Introspection::EnumValueType"><code>GraphQL::Introspection::EnumValueType</code></a></td>
+      <td><a href="/api-doc/1.10.0/GraphQL/Introspection/EnumValueType" target="_blank" title="API docs for GraphQL::Introspection::EnumValueType"><code>GraphQL::Introspection::EnumValueType</code></a></td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">FieldType</code></td>
       <td><code class="highlighter-rouge">__Field</code></td>
-      <td><a href="/api-doc/1.9.17/GraphQL/Introspection/FieldType" target="_blank" title="API docs for GraphQL::Introspection::FieldType"><code>GraphQL::Introspection::FieldType</code></a></td>
+      <td><a href="/api-doc/1.10.0/GraphQL/Introspection/FieldType" target="_blank" title="API docs for GraphQL::Introspection::FieldType"><code>GraphQL::Introspection::FieldType</code></a></td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">InputValueType</code></td>
       <td><code class="highlighter-rouge">__InputValue</code></td>
-      <td><a href="/api-doc/1.9.17/GraphQL/Introspection/InputValueType" target="_blank" title="API docs for GraphQL::Introspection::InputValueType"><code>GraphQL::Introspection::InputValueType</code></a></td>
+      <td><a href="/api-doc/1.10.0/GraphQL/Introspection/InputValueType" target="_blank" title="API docs for GraphQL::Introspection::InputValueType"><code>GraphQL::Introspection::InputValueType</code></a></td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">TypeKindType</code></td>
       <td><code class="highlighter-rouge">__TypeKind</code></td>
-      <td><a href="/api-doc/1.9.17/GraphQL/Introspection/TypeKindEnum" target="_blank" title="API docs for GraphQL::Introspection::TypeKindEnum"><code>GraphQL::Introspection::TypeKindEnum</code></a></td>
+      <td><a href="/api-doc/1.10.0/GraphQL/Introspection/TypeKindEnum" target="_blank" title="API docs for GraphQL::Introspection::TypeKindEnum"><code>GraphQL::Introspection::TypeKindEnum</code></a></td>
     </tr>
   </tbody>
 </table>
@@ -275,6 +275,14 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">disable_introspection_entry_points</span> <span class="k">if</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">.</span><span class="nf">production?</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Where <code class="highlighter-rouge">disable_introspection_entry_points</code> will disable both the <code class="highlighter-rouge">__schema</code> and <code class="highlighter-rouge">__type</code> introspection entry points, you can also individually disable the introspection entry points using the <code class="highlighter-rouge">disable_schema_introspection_entry_point</code> and <code class="highlighter-rouge">disable_type_introspection_entry_point</code> shorthand methods:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">disable_schema_introspection_entry_point</span>
+  <span class="n">disable_type_introspection_entry_point</span>
 <span class="k">end</span>
 </code></pre></div></div>
 

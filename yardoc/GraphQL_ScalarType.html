@@ -1,63 +1,14 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.17/GraphQL/ScalarType" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/ScalarType" />
   </head>
   <body>
-    <p>Class: GraphQL::ScalarType &lt; GraphQL::BaseType</p>
-<h1 id="graphqlscalartype">GraphQL::ScalarType</h1>
-<p>Scalars are plain values. They are leaf nodes in a GraphQL query
-tree.</p>
-<h2 id="built-in-scalars">Built-in Scalars</h2>
-<p><code class="highlighter-rouge">GraphQL</code> comes with standard built-in scalars: 
-|Constant | <code class="highlighter-rouge">.define</code> helper| | | |
-|<code class="highlighter-rouge">GraphQL::STRING_TYPE</code> | <code class="highlighter-rouge">types.String</code>| |<code class="highlighter-rouge">GraphQL::INT_TYPE</code> |
-<code class="highlighter-rouge">types.Int</code>| |<code class="highlighter-rouge">GraphQL::FLOAT_TYPE</code> | <code class="highlighter-rouge">types.Float</code>|
-|<code class="highlighter-rouge">GraphQL::ID_TYPE</code> | <code class="highlighter-rouge">types.ID</code>| |<code class="highlighter-rouge">GraphQL::BOOLEAN_TYPE</code> |
-<code class="highlighter-rouge">types.Boolean</code>| 
-(<code class="highlighter-rouge">types</code> is an instance of <code class="highlighter-rouge">GraphQL::Definition::TypeDefiner</code>;
-<code class="highlighter-rouge">.String</code>, <code class="highlighter-rouge">.Float</code>, etc are methods which return built-in scalars.)</p>
-<h2 id="custom-scalars">Custom Scalars</h2>
-<p>You can define custom scalars for your GraphQL server. It requires
-some special functions:</p>
-<ul>
-  <li><code class="highlighter-rouge">coerce_input</code> is used to prepare incoming values for GraphQL
-execution. (Incoming values come from variables or literal values in
-the query string.) - <code class="highlighter-rouge">coerce_result</code> is used to turn Ruby values
-<em>back</em> into serializable values for query responses. 
-You can customize the error message for invalid input values by
-raising a <code class="highlighter-rouge">GraphQL::CoercionError</code> within <code class="highlighter-rouge">coerce_input</code>: 
-This will result in the message of the <code class="highlighter-rouge">GraphQL::CoercionError</code>
-being used in the error response: 
-Examples:
-    <h1 id="defining-a-type-for-time">defining a type for Time</h1>
-    <p>TimeType = GraphQL::ScalarType.define do
-name “Time”
-description “Time since epoch in seconds”
-coerce_input -&gt;(value, ctx) { Time.at(Float(value)) }
-coerce_result -&gt;(value, ctx) { value.to_f }
-end</p>
-    <h1 id="raising-a-custom-error-message">raising a custom error message</h1>
-    <p>TimeType = GraphQL::ScalarType.define do
-name “Time”
-description “Time since epoch in seconds”
-coerce_input -&gt;(value, ctx) do
-begin
-Time.at(Float(value))
-rescue ArgumentError
-raise GraphQL::CoercionError, “cannot coerce <code class="highlighter-rouge">#{value.inspect}</code> to Float”
-end
-end
-coerce_result -&gt;(value, ctx) { value.to_f }
-end</p>
-    <h1 id="custom-error-response">custom error response</h1>
-    <p>{“message”=&gt;”cannot coerce <code class="highlighter-rouge">"2"</code> to Float”, “locations”=&gt;[{“line”=&gt;3, “column”=&gt;9}], “fields”=&gt;[“arg”]}
+    <p>Class: GraphQL::ScalarType &lt; GraphQL::BaseType
 Instance methods:
 coerce=, coerce_input=, coerce_non_null_input, coerce_result,
 coerce_result=, ensure_two_arg, initialize, kind,
 raw_coercion_input, validate_non_null_input</p>
-  </li>
-</ul>
 
 
   </body>

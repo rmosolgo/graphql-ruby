@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.17/GraphQL/Schema/EnumValue" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/Schema/EnumValue" />
   </head>
   <body>
     <p>Class: GraphQL::Schema::EnumValue &lt; GraphQL::Schema::Member
@@ -26,8 +26,10 @@ class BaseEnum &lt; GraphQL::Schema::Enum</p>
 <p>enum_value_class CustomEnumValue
 end
 Includes:
+GraphQL::Schema::Member::HasAstNode,
 GraphQL::Schema::Member::HasPath,
-GraphQL::Schema::Member::AcceptsDefinition
+GraphQL::Schema::Member::AcceptsDefinition,
+GraphQL::Schema::Member::CachedGraphQLDefinition
 Instance methods:
 accessible?, authorized?, description, initialize, to_graphql,
 value, visible?</p>

@@ -1,45 +1,16 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.17/GraphQL/Function" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/Function" />
   </head>
   <body>
     <p>Class: GraphQL::Function &lt; Object
-A reusable container for field logic, including arguments, resolve,
-return type, and documentation. 
-Class-level values defined with the DSL will be inherited, so
-{GraphQL::Function}s can extend one another. 
-It’s OK to override the instance methods here in order to customize
-behavior of instances. 
-Examples:</p>
-<h1 id="a-reusable-graphqlfunction-attached-as-a-field">A reusable GraphQL::Function attached as a field</h1>
-<p>class FindRecord &lt; GraphQL::Function
-attr_reader :type
-def initialize(model:, type:)
-@model = model
-@type = type
-end
-argument :id, GraphQL::ID_TYPE
-def call(obj, args, ctx)
-@model.find(args.id)
-end
-end
-QueryType = GraphQL::ObjectType.define do
-name “Query”
-field :post, function: FindRecord.new(model: Post, type: PostType)
-field :comment, function: FindRecord.new(model: Comment, type: CommentType)
-end
-See Also:</p>
-<ul>
-  <li>{GraphQL::Schema::Resolver} - for a replacement for
-<code class="highlighter-rouge">GraphQL::Function</code>
 Class methods:
 argument, arguments, build_field, complexity, deprecation_reason,
 description, inherited_value, own_arguments, parent_function?, type,
 types
 Instance methods:
-arguments, call, complexity, deprecation_reason, description, type</li>
-</ul>
+arguments, call, complexity, deprecation_reason, description, type</p>
 
 
   </body>

@@ -1,45 +1,17 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.17/GraphQL/Argument" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/Argument" />
   </head>
   <body>
     <p>Class: GraphQL::Argument &lt; Object
-Used for defined arguments (Field, InputObjectType) 
-#name must be a String. 
-Examples:</p>
-<h1 id="defining-an-argument-for-a-field">defining an argument for a field</h1>
-<p>GraphQL::Field.define do</p>
-<h1>…</h1>
-<p>argument :favoriteFood, types.String, “Favorite thing to eat”, default_value: “pizza”
-end</p>
-<h1 id="defining-an-argument-for-an-inputobjecttype">defining an argument for an {InputObjectType}</h1>
-<p>GraphQL::InputObjectType.define do
-argument :newName, !types.String
-end</p>
-<h1 id="defining-an-argument-with-a-prepare-function">defining an argument with a <code class="highlighter-rouge">prepare</code> function</h1>
-<p>GraphQL::Field.define do
-argument :userId, types.ID, prepare: -&gt;(userId) do
-User.find_by(id: userId)
-end
-end</p>
-<h1 id="returning-an-executionerror-from-a-prepare-function">returning an {ExecutionError} from a <code class="highlighter-rouge">prepare</code> function</h1>
-<p>GraphQL::Field.define do
-argument :date do
-type !types.String
-prepare -&gt;(date) do
-return GraphQL::ExecutionError.new(“Invalid date format”) unless DateValidator.valid?(date)
-Time.zone.parse(date)
-end
-end
-end
 Includes:
 GraphQL::Define::InstanceDefinable
 Class methods:
 deep_stringify, from_dsl
 Instance methods:
 default_value?, expose_as, initialize, initialize_copy, keyword,
-method_access?, prepare, prepare=, type, type=</p>
+method_access?, prepare, prepare=, type, type=, type_class</p>
 
 
   </body>

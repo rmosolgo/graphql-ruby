@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.17/">API</a>
+          <a href="/api-doc/1.10.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -217,6 +217,28 @@ rake bench:validate        <span class="c"># Benchmark validation of several que
 <p>You will need Ragel to build the lexer (see above).</p>
 
 <p>If you start <strong>guard</strong> (<code class="highlighter-rouge">bundle exec guard</code>), the <code class="highlighter-rouge">.rb</code> files will be rebuilt whenever the definition files are modified.</p>
+
+<h4 id="install-ragel-and-colm-on-a-mac">Install Ragel and Colm on a Mac</h4>
+
+<p>GraphQL Ruby requires Ragel 7.0.0.9 which is not available on Homebrew. To install it, you might have to download it from source.</p>
+
+<p>This is not meant to be a step by step guide and will likely not work as the documentation ages.</p>
+
+<p>Download colm from http://www.colm.net/files/colm/colm-0.13.0.4.tar.gz
+Download ragel from http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># In colm directory</span>
+<span class="nb">cat </span>README <span class="c"># for install instructions</span>
+<span class="c"># The author who added this documentation succeeded with these steps</span>
+./configure
+./make
+./make <span class="nb">install</span>
+
+<span class="c"># After installing colm, in ragel directory</span>
+./configure
+./make
+./make <span class="nb">install</span>
+</code></pre></div></div>
 
 <h3 id="website">Website</h3>
 

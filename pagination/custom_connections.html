@@ -1,0 +1,208 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Custom Connections</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.10.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#pagination-guides">Pagination</a>
+  &raquo; Custom Connections
+</p>
+
+
+<h1 class="guide-header">Custom Connections</h1>
+<div class="guide-container">
+  <p>GraphQL-Ruby ships with built-in connection support for ActiveRecord, Sequel, Mongoid, and Ruby Arrays. You can read more in the <a href="/pagination/using_connections">Using Connections</a> guide.</p>
+
+<p>When you want to serve a connection based on your <em>own</em> data object, you can create a custom connection. The implementation will have several components:</p>
+
+<ul>
+  <li>The <strong>application object</strong> – the list of items that you want to paginate in GraphQL</li>
+  <li>The <strong>connection wrapper</strong> which wraps the application object and implements methods used by GraphQL</li>
+  <li>The <strong>connection type</strong>, a GraphQL object type which implements the connection contract</li>
+</ul>
+
+<p>For this example, we’ll imagine that your application communicates with an external search engine, and expresses all search results with a <code class="highlighter-rouge">SearchEngine::Result</code> class. (There isn’t <em>really</em> any class like this; it’s an arbitrary example of an application-specific collection of items.)</p>
+
+<h2 id="application-object">Application Object</h2>
+
+<p>In Ruby, <em>everything</em> is an object, and that includes <em>lists of objects</em>. For example, we think of an Array as a <em>list</em> of objects, but Arrays are also objects in their own right.</p>
+
+<p>Some list objects have very fancy implementations. Think of an <code class="highlighter-rouge">ActiveRecord::Relation</code>: it gathers up the parts of a SQL query, and at the right moment, it dispatches a call to your database to fetch the objects in the list. An <code class="highlighter-rouge">ActiveRecord::Relation</code> is also a list object.</p>
+
+<p>Your application probably has other list objects that you want to paginate via GraphQL connections. For example, you might show a user some search results, or a list of files from a fileserver. Those lists are modeled with <em>list objects</em>, and those list objects can be wrapped with connection wrappers.</p>
+
+<h2 id="connection-wrapper">Connection Wrapper</h2>
+
+<p>A connection wrapper is an adapter between a plain-Ruby list object (like an Array, Relation, or something application-specific, like <code class="highlighter-rouge">SearchEngine::Result</code>) and a GraphQL connection type. The connection wrapper implements methods which the GraphQL connection type requires, and it implements those methods based on the underlying list object.</p>
+
+<p>You can extend <a href="/api-doc/1.10.0/GraphQL/Pagination/Connection" target="_blank" title="API docs for GraphQL::Pagination::Connection"><code>GraphQL::Pagination::Connection</code></a> to get started on a custom connection wrapper, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/connections/search_results_connection.rb</span>
+<span class="k">class</span> <span class="nc">Connections</span><span class="o">::</span><span class="no">SearchResultsConnection</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pagination</span><span class="o">::</span><span class="no">Connection</span>
+  <span class="c1"># implementation here ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The methods you must implement are:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">#nodes</code>, which returns a paginated slice of <code class="highlighter-rouge">@items</code> based on the given arguments</li>
+  <li><code class="highlighter-rouge">#has_next_page</code>, which returns <code class="highlighter-rouge">true</code> if there are items after the ones in <code class="highlighter-rouge">#nodes</code></li>
+  <li><code class="highlighter-rouge">#has_previous_page</code>, which returns <code class="highlighter-rouge">true</code> if there are items before the ones in <code class="highlighter-rouge">#nodes</code></li>
+  <li><code class="highlighter-rouge">#cursor_for(item)</code>, which returns a String to serve as the cursor for <code class="highlighter-rouge">item</code></li>
+</ul>
+
+<p>How to implement these methods (efficiently!) depends on your backend and how you communicate with it. For inspiration, you can see the built-in connections:</p>
+
+<ul>
+  <li><a href="/api-doc/1.10.0/GraphQL/Pagination/ArrayConnection" target="_blank" title="API docs for GraphQL::Pagination::ArrayConnection"><code>GraphQL::Pagination::ArrayConnection</code></a></li>
+  <li><a href="/api-doc/1.10.0/GraphQL/Pagination/ActiveRecordRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::ActiveRecordRelationConnection"><code>GraphQL::Pagination::ActiveRecordRelationConnection</code></a></li>
+  <li><a href="/api-doc/1.10.0/GraphQL/Pagination/SequelDatasetConnection" target="_blank" title="API docs for GraphQL::Pagination::SequelDatasetConnection"><code>GraphQL::Pagination::SequelDatasetConnection</code></a></li>
+  <li><a href="/api-doc/1.10.0/GraphQL/Pagination/MongoidRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::MongoidRelationConnection"><code>GraphQL::Pagination::MongoidRelationConnection</code></a></li>
+</ul>
+
+<h3 id="using-a-custom-connection">Using a Custom Connection</h3>
+
+<p>To integrate your custom connection wrapper with GraphQL, you have two options:</p>
+
+<ul>
+  <li>Map the wrapper to a list object at the <em>schema level</em>, so that those list objects are <em>always</em> automatically wrapped by your wrapper; OR</li>
+  <li>Use the wrapper manually in resolve methods, to override any automatic mapping</li>
+</ul>
+
+<p>The first case is very convenient, and the second case makes it possible to customize connections for specific situations.</p>
+
+<p>To <strong>map the wrapper to a class of objects</strong>, add it to your schema:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Add the connection plugin</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pagination</span><span class="o">::</span><span class="no">Connections</span>
+  <span class="c1"># Hook up a custom wrapper</span>
+  <span class="n">connections</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="no">SearchEngine</span><span class="o">::</span><span class="no">Result</span><span class="p">,</span> <span class="no">Connections</span><span class="o">::</span><span class="no">SearchResultsConnection</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, any time a field returns an instance of <code class="highlighter-rouge">SearchEngine::Result</code>, it will be wrapped with <code class="highlighter-rouge">Connections::SearchResultsConnection</code></p>
+
+<p>Alternatively, you can apply a connection wrapper on a case-by-case basis by applying it during the resolver (method or <a href="/api-doc/1.10.0/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>):</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">SearchResult</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:query</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">query</span><span class="p">:)</span>
+  <span class="n">search</span> <span class="o">=</span> <span class="no">SearchEngine</span><span class="o">::</span><span class="no">Search</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">query: </span><span class="n">query</span><span class="p">,</span> <span class="ss">viewer: </span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">])</span>
+  <span class="n">results</span> <span class="o">=</span> <span class="n">search</span><span class="p">.</span><span class="nf">results</span>
+  <span class="c1"># Apply the connection wrapper and return it</span>
+  <span class="no">Connections</span><span class="o">::</span><span class="no">SearchResultsConnection</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>GraphQL-Ruby will use the provided connection wrapper in that case. You can use this fine-grained approach to handle special cases or implement performance optimizations.</p>
+
+<h2 id="connection-type">Connection Type</h2>
+
+<p>Connection types are GraphQL object types which comply to the <a href="https://relay.dev/graphql/connections.htm">Relay connection specification</a>. GraphQL-Ruby ships with some tools to help you create those object types:</p>
+
+<ul>
+  <li><a href="/api-doc/1.10.0/GraphQL/Types/Relay/BaseConnection" target="_blank" title="API docs for GraphQL::Types::Relay::BaseConnection"><code>GraphQL::Types::Relay::BaseConnection</code></a> and <a href="/api-doc/1.10.0/GraphQL/Types/Relay/BaseEdge" target="_blank" title="API docs for GraphQL::Types::Relay::BaseEdge"><code>GraphQL::Types::Relay::BaseEdge</code></a> are example implementations of the spec. They don’t inherit from your application’s base object class though, so you might not be able to use them out of the box.</li>
+  <li>Type classes respond to <code class="highlighter-rouge">.connection_type</code> which returns a generated connection type based on that class. By default, it inherits from the provided <code class="highlighter-rouge">GraphQL::Types::Relay::BaseConnection</code>, but you can override that by setting <code class="highlighter-rouge">connection_type_class(Types::MyBaseConnectionObject)</code> in your base classes.</li>
+</ul>
+
+<p>For example, you could implement a base connection class:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseConnectionObject</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># implement based on `GraphQL::Types::Relay::BaseConnection`, etc</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then hook it up to your base classes:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="c1"># ...</span>
+  <span class="n">connection_type_class</span><span class="p">(</span><span class="no">Types</span><span class="o">::</span><span class="no">BaseConnectionObject</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseUnion</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Union</span>
+  <span class="n">connection_type_class</span><span class="p">(</span><span class="no">Types</span><span class="o">::</span><span class="no">BaseConnectionObject</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">module</span> <span class="nn">Types::BaseInterface</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
+
+  <span class="n">connection_type_class</span><span class="p">(</span><span class="no">Types</span><span class="o">::</span><span class="no">BaseConnectionObject</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, when defining fields, you could use <code class="highlighter-rouge">.connection_type</code> to use your connection class hierarchy:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+</code></pre></div></div>
+
+<p>(Those fields get <code class="highlighter-rouge">connection: true</code> by default, because the generated connection type’s name ends in <code class="highlighter-rouge">*Connection</code>.)</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/pagination/custom_connections.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Custom Connections">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

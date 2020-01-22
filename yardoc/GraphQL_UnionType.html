@@ -1,30 +1,10 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.17/GraphQL/UnionType" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/UnionType" />
   </head>
   <body>
     <p>Class: GraphQL::UnionType &lt; GraphQL::BaseType
-A Union is is a collection of object types which may appear in the
-same place. 
-The members of a union are declared with <code class="highlighter-rouge">possible_types</code>. 
-A union itself has no fields; only its members have fields. So, when
-you query, you must use fragment spreads to access fields. 
-Examples:</p>
-<h1 id="a-union-of-object-types">A union of object types</h1>
-<p>MediaUnion = GraphQL::UnionType.define do
-name “Media”
-description “Media objects which you can enjoy”
-possible_types [AudioType, ImageType, VideoType]
-end</p>
-<h1 id="querying-for-fields-on-union-members">Querying for fields on union members</h1>
-<p>{
-searchMedia(name: “Jens Lekman”) {
-… on Audio { name, duration }
-… on Image { name, height, width }
-… on Video { name, length, quality }
-}
-}
 Instance methods:
 add_possible_types, get_possible_type, include?, initialize,
 initialize_copy, kind, possible_type?, possible_types,

@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.17/">API</a>
+          <a href="/api-doc/1.10.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -73,10 +73,10 @@
 <p>Pass <code class="highlighter-rouge">pusher:</code> to get Subscription updates over Pusher:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Require the helper function</span>
-<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"graphql-ruby-client/subscriptions/createHandler"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/createHandler</span><span class="dl">"</span><span class="p">)</span>
 
 <span class="c1">// Prepare a Pusher client</span>
-<span class="kd">var</span> <span class="nx">Pusher</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"pusher-js"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">Pusher</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">pusher-js</span><span class="dl">"</span><span class="p">)</span>
 <span class="kd">var</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="nx">appKey</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
 
 <span class="c1">// Create a fetchOperation, see below for more details</span>
@@ -107,11 +107,11 @@
 <p>Pass <code class="highlighter-rouge">ably:</code> to get Subscription updates over Ably:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Require the helper function</span>
-<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"graphql-ruby-client/subscriptions/createHandler"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/createHandler</span><span class="dl">"</span><span class="p">)</span>
 
 <span class="c1">// Load Ably and create a client</span>
-<span class="kd">const</span> <span class="nx">Ably</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"ably"</span><span class="p">)</span>
-<span class="kd">const</span> <span class="nx">ablyClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Ably</span><span class="p">.</span><span class="nx">Realtime</span><span class="p">({</span> <span class="na">key</span><span class="p">:</span> <span class="s2">"your-app-key"</span> <span class="p">})</span>
+<span class="kd">const</span> <span class="nx">Ably</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">ably</span><span class="dl">"</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">ablyClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Ably</span><span class="p">.</span><span class="nx">Realtime</span><span class="p">({</span> <span class="na">key</span><span class="p">:</span> <span class="dl">"</span><span class="s2">your-app-key</span><span class="dl">"</span> <span class="p">})</span>
 
 <span class="c1">// create a fetchOperation, see below for more details</span>
 <span class="kd">function</span> <span class="nx">fetchOperation</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,</span> <span class="nx">cacheConfig</span><span class="p">)</span> <span class="p">{</span>
@@ -135,9 +135,9 @@
 <p>For example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Require the helper function</span>
-<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"graphql-ruby-client/subscriptions/createHandler"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/createHandler</span><span class="dl">"</span><span class="p">)</span>
 <span class="c1">// Optionally, load your OperationStoreClient</span>
-<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 
 <span class="c1">// Create a Relay Modern-compatible handler</span>
 <span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createHandler</span><span class="p">({</span>
@@ -172,7 +172,7 @@
     <span class="nx">variables</span><span class="p">,</span>
     <span class="na">operationName</span><span class="p">:</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
   <span class="p">}</span>
-  <span class="kd">const</span> <span class="nx">useStoredOperations</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="s2">"production"</span>
+  <span class="kd">const</span> <span class="nx">useStoredOperations</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">production</span><span class="dl">"</span>
   <span class="k">if</span> <span class="p">(</span><span class="nx">useStoredOperations</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1">// In production, use the stored operation</span>
     <span class="nx">bodyValues</span><span class="p">.</span><span class="nx">operationId</span> <span class="o">=</span> <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
@@ -180,14 +180,14 @@
     <span class="c1">// In development, use the query text</span>
     <span class="nx">bodyValues</span><span class="p">.</span><span class="nx">query</span> <span class="o">=</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">text</span>
   <span class="p">}</span>
-  <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="s1">'http://localhost:3000/graphql'</span><span class="p">,</span> <span class="p">{</span>
-    <span class="na">method</span><span class="p">:</span> <span class="s1">'POST'</span><span class="p">,</span>
+  <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="dl">'</span><span class="s1">http://localhost:3000/graphql</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+    <span class="na">method</span><span class="p">:</span> <span class="dl">'</span><span class="s1">POST</span><span class="dl">'</span><span class="p">,</span>
     <span class="na">opts</span><span class="p">:</span> <span class="p">{</span>
-      <span class="na">credentials</span><span class="p">:</span> <span class="s1">'include'</span><span class="p">,</span>
+      <span class="na">credentials</span><span class="p">:</span> <span class="dl">'</span><span class="s1">include</span><span class="dl">'</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="na">headers</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s1">'Accept'</span><span class="p">:</span> <span class="s1">'application/json'</span><span class="p">,</span>
-      <span class="s1">'Content-Type'</span><span class="p">:</span> <span class="s1">'application/json'</span>
+      <span class="dl">'</span><span class="s1">Accept</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">application/json</span><span class="dl">'</span><span class="p">,</span>
+      <span class="dl">'</span><span class="s1">Content-Type</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">application/json</span><span class="dl">'</span>
     <span class="p">},</span>
     <span class="na">body</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">bodyValues</span><span class="p">),</span>
   <span class="p">})</span>

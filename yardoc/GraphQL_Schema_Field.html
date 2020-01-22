@@ -1,14 +1,16 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.17/GraphQL/Schema/Field" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/Schema/Field" />
   </head>
   <body>
     <p>Class: GraphQL::Schema::Field &lt; Object
 Direct Known Subclasses:
 Types::Relay::BaseField
 Includes:
+GraphQL::Schema::FindInheritedValue::EmptyObjects,
 GraphQL::Schema::Member::HasPath,
+GraphQL::Schema::Member::HasAstNode,
 GraphQL::Schema::Member::HasArguments,
 GraphQL::Schema::Member::AcceptsDefinition,
 GraphQL::Schema::Member::CachedGraphQLDefinition
@@ -18,10 +20,10 @@ Class methods:
 connection_extension, from_options
 Instance methods:
 accessible?, authorized?, complexity, connection?, extension,
-extensions, extras, fetch_extra, initialize, public_send_field,
-resolve, resolve_field, resolve_field_method, resolver,
-run_extensions_before_resolve, scoped?, to_graphql, to_ruby_args,
-type, visible?, with_extensions</p>
+extensions, extras, fetch_extra, initialize,
+method_conflict_warning?, public_send_field, resolve, resolve_field,
+resolve_field_method, resolver, run_extensions_before_resolve,
+scoped?, to_graphql, to_ruby_args, visible?, with_extensions</p>
 
 
   </body>

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.17/GraphQL/Tracing" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/Tracing" />
   </head>
   <body>
     <p>Module: GraphQL::Tracing
@@ -21,8 +21,16 @@ context: GraphQL::Query::Context::FieldResolutionContext?, owner:
 Class?, field: GraphQL::Schema::Field?, query: GraphQL::Query?,
 path: Array&lt;String, Integer&gt;?}</code> execute_field_lazy | <code class="highlighter-rouge">{ context:
 GraphQL::Query::Context::FieldResolutionContext?, owner: Class?,
-field: GraphQL::Schema::Field?, query: GraphqL::Query?, path:
-Array&lt;String, Integer&gt;?}</code> 
+field: GraphQL::Schema::Field?, query: GraphQL::Query?, path:
+Array&lt;String, Integer&gt;?}</code> authorized | <code class="highlighter-rouge">{ context:
+GraphQL::Query::Context, type: Class, object: Object, path:
+Array&lt;String, Integer&gt; }</code> authorized_lazy | <code class="highlighter-rouge">{ context:
+GraphQL::Query::Context, type: Class, object: Object, path:
+Array&lt;String, Integer&gt; }</code> resolve_type | <code class="highlighter-rouge">{ context:
+GraphQL::Query::Context, type: Class, object: Object, path:
+Array&lt;String, Integer&gt; }</code> resolve_type_lazy | <code class="highlighter-rouge">{ context:
+GraphQL::Query::Context, type: Class, object: Object, path:
+Array&lt;String, Integer&gt; }</code> 
 Note that <code class="highlighter-rouge">execute_field</code> and <code class="highlighter-rouge">execute_field_lazy</code> receive different
 data in different settings:</p>
 <ul>
@@ -30,11 +38,11 @@ data in different settings:</p>
 query:</code> - Otherwise, they receive <code class="highlighter-rouge">...</code> 
 Examples:
     <h1 id="sending-custom-events">Sending custom events</h1>
-    <p>GraphQL::Tracing.trace(“my_custom_event”, { … }) do</p>
+    <p>query.trace(“my_custom_event”, { … }) do</p>
     <h1 id="do-stuff-">do stuff …</h1>
     <p>end</p>
     <h1 id="adding-a-tracer-to-a-schema">Adding a tracer to a schema</h1>
-    <p>MySchema = GraphQL::Schema.define do
+    <p>class MySchema &lt; GraphQL::Schema
 tracer MyTracer # &lt;= responds to .trace(key, data, &amp;block)
 end</p>
     <h1 id="adding-a-tracer-to-a-single-query">Adding a tracer to a single query</h1>

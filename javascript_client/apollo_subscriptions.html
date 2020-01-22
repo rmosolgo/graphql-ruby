@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.17/">API</a>
+          <a href="/api-doc/1.10.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -80,22 +80,22 @@
 <p>For example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load Apollo stuff</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-client'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link-http'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-cache-inmemory'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-client</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link-http</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-cache-inmemory</span><span class="dl">'</span><span class="p">;</span>
 
 <span class="c1">// Load PusherLink from graphql-ruby-client</span>
-<span class="k">import</span> <span class="nx">PusherLink</span> <span class="k">from</span> <span class="s1">'graphql-ruby-client/subscriptions/PusherLink'</span><span class="p">;</span>
+<span class="k">import</span> <span class="nx">PusherLink</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/PusherLink</span><span class="dl">'</span><span class="p">;</span>
 
 <span class="c1">// Load Pusher and create a client</span>
-<span class="k">import</span> <span class="nx">Pusher</span> <span class="k">from</span> <span class="s2">"pusher-js"</span>
-<span class="kd">var</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="s2">"your-app-key"</span><span class="p">,</span> <span class="p">{</span> <span class="na">cluster</span><span class="p">:</span> <span class="s2">"us2"</span> <span class="p">})</span>
+<span class="k">import</span> <span class="nx">Pusher</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pusher-js</span><span class="dl">"</span>
+<span class="kd">var</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="dl">"</span><span class="s2">your-app-key</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span> <span class="na">cluster</span><span class="p">:</span> <span class="dl">"</span><span class="s2">us2</span><span class="dl">"</span> <span class="p">})</span>
 
 <span class="c1">// Make the HTTP link which actually sends the queries</span>
 <span class="kd">const</span> <span class="nx">httpLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HttpLink</span><span class="p">({</span>
-  <span class="na">uri</span><span class="p">:</span> <span class="s1">'/graphql'</span><span class="p">,</span>
-  <span class="na">credentials</span><span class="p">:</span> <span class="s1">'include'</span>
+  <span class="na">uri</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">credentials</span><span class="p">:</span> <span class="dl">'</span><span class="s1">include</span><span class="dl">'</span>
 <span class="p">});</span>
 
 <span class="c1">// Make the Pusher link which will pick up on subscriptions</span>
@@ -122,18 +122,18 @@
 <p>For example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load Apollo stuff</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-client'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link-http'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-cache-inmemory'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-client</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link-http</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-cache-inmemory</span><span class="dl">'</span><span class="p">;</span>
 <span class="c1">// Load Ably and create a client</span>
-<span class="kd">const</span> <span class="nx">Ably</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"ably"</span><span class="p">)</span>
-<span class="kd">const</span> <span class="nx">ablyClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Ably</span><span class="p">.</span><span class="nx">Realtime</span><span class="p">({</span> <span class="na">key</span><span class="p">:</span> <span class="s2">"your-app-key"</span> <span class="p">})</span>
+<span class="kd">const</span> <span class="nx">Ably</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">ably</span><span class="dl">"</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">ablyClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Ably</span><span class="p">.</span><span class="nx">Realtime</span><span class="p">({</span> <span class="na">key</span><span class="p">:</span> <span class="dl">"</span><span class="s2">your-app-key</span><span class="dl">"</span> <span class="p">})</span>
 
 <span class="c1">// Make the HTTP link which actually sends the queries</span>
 <span class="kd">const</span> <span class="nx">httpLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HttpLink</span><span class="p">({</span>
-  <span class="na">uri</span><span class="p">:</span> <span class="s1">'/graphql'</span><span class="p">,</span>
-  <span class="na">credentials</span><span class="p">:</span> <span class="s1">'include'</span>
+  <span class="na">uri</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">credentials</span><span class="p">:</span> <span class="dl">'</span><span class="s1">include</span><span class="dl">'</span>
 <span class="p">});</span>
 
 <span class="c1">// Make the Ably link which will pick up on subscriptions</span>
@@ -170,23 +170,23 @@
 
 <p>For example:</p>
 
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-client'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link-http'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-cache-inmemory'</span><span class="p">;</span>
-<span class="k">import</span> <span class="nx">ActionCable</span> <span class="k">from</span> <span class="s1">'actioncable'</span><span class="p">;</span>
-<span class="k">import</span> <span class="nx">ActionCableLink</span> <span class="k">from</span> <span class="s1">'graphql-ruby-client/subscriptions/ActionCableLink'</span><span class="p">;</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-client</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link-http</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-cache-inmemory</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="nx">ActionCable</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">actioncable</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="nx">ActionCableLink</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/ActionCableLink</span><span class="dl">'</span><span class="p">;</span>
 
 <span class="kd">const</span> <span class="nx">cable</span> <span class="o">=</span> <span class="nx">ActionCable</span><span class="p">.</span><span class="nx">createConsumer</span><span class="p">()</span>
 
 <span class="kd">const</span> <span class="nx">httpLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HttpLink</span><span class="p">({</span>
-  <span class="na">uri</span><span class="p">:</span> <span class="s1">'/graphql'</span><span class="p">,</span>
-  <span class="na">credentials</span><span class="p">:</span> <span class="s1">'include'</span>
+  <span class="na">uri</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">credentials</span><span class="p">:</span> <span class="dl">'</span><span class="s1">include</span><span class="dl">'</span>
 <span class="p">});</span>
 
 <span class="kd">const</span> <span class="nx">hasSubscriptionOperation</span> <span class="o">=</span> <span class="p">({</span> <span class="na">query</span><span class="p">:</span> <span class="p">{</span> <span class="nx">definitions</span> <span class="p">}</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
   <span class="k">return</span> <span class="nx">definitions</span><span class="p">.</span><span class="nx">some</span><span class="p">(</span>
-    <span class="p">({</span> <span class="nx">kind</span><span class="p">,</span> <span class="nx">operation</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="nx">kind</span> <span class="o">===</span> <span class="s1">'OperationDefinition'</span> <span class="o">&amp;&amp;</span> <span class="nx">operation</span> <span class="o">===</span> <span class="s1">'subscription'</span>
+    <span class="p">({</span> <span class="nx">kind</span><span class="p">,</span> <span class="nx">operation</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="nx">kind</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">OperationDefinition</span><span class="dl">'</span> <span class="o">&amp;&amp;</span> <span class="nx">operation</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">subscription</span><span class="dl">'</span>
   <span class="p">)</span>
 <span class="p">}</span>
 
@@ -215,15 +215,15 @@
 <p>Pass <code class="highlighter-rouge">{pusher: pusherClient}</code> to use Pusher:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load Pusher and create a client</span>
-<span class="kd">var</span> <span class="nx">Pusher</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"pusher-js"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">Pusher</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">pusher-js</span><span class="dl">"</span><span class="p">)</span>
 <span class="kd">var</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="nx">appKey</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
 
 <span class="c1">// Add subscriptions to the network interface with the `pusher:` options</span>
-<span class="kd">var</span> <span class="nx">addGraphQLSubscriptions</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"graphql-ruby-client/subscriptions/addGraphQLSubscriptions"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">addGraphQLSubscriptions</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/addGraphQLSubscriptions</span><span class="dl">"</span><span class="p">)</span>
 <span class="nx">addGraphQLSubscriptions</span><span class="p">(</span><span class="nx">myNetworkInterface</span><span class="p">,</span> <span class="p">{</span><span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">})</span>
 
 <span class="c1">// Optionally, add persisted query support:</span>
-<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 <span class="nx">RailsNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
 </code></pre></div></div>
 
@@ -234,28 +234,28 @@
 <p>For example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load ActionCable and create a consumer</span>
-<span class="kd">var</span> <span class="nx">ActionCable</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'actioncable'</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">ActionCable</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">actioncable</span><span class="dl">'</span><span class="p">)</span>
 <span class="kd">var</span> <span class="nx">cable</span> <span class="o">=</span> <span class="nx">ActionCable</span><span class="p">.</span><span class="nx">createConsumer</span><span class="p">()</span>
 <span class="nb">window</span><span class="p">.</span><span class="nx">cable</span> <span class="o">=</span> <span class="nx">cable</span>
 
 <span class="c1">// Load ApolloClient and create a network interface</span>
-<span class="kd">var</span> <span class="nx">apollo</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'apollo-client'</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">apollo</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">apollo-client</span><span class="dl">'</span><span class="p">)</span>
 <span class="kd">var</span> <span class="nx">RailsNetworkInterface</span> <span class="o">=</span> <span class="nx">apollo</span><span class="p">.</span><span class="nx">createNetworkInterface</span><span class="p">({</span>
- <span class="na">uri</span><span class="p">:</span> <span class="s1">'/graphql'</span><span class="p">,</span>
+ <span class="na">uri</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span>
  <span class="na">opts</span><span class="p">:</span> <span class="p">{</span>
-   <span class="na">credentials</span><span class="p">:</span> <span class="s1">'include'</span><span class="p">,</span>
+   <span class="na">credentials</span><span class="p">:</span> <span class="dl">'</span><span class="s1">include</span><span class="dl">'</span><span class="p">,</span>
  <span class="p">},</span>
  <span class="na">headers</span><span class="p">:</span> <span class="p">{</span>
-   <span class="s1">'X-CSRF-Token'</span><span class="p">:</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"meta[name=csrf-token]"</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s2">"content"</span><span class="p">),</span>
+   <span class="dl">'</span><span class="s1">X-CSRF-Token</span><span class="dl">'</span><span class="p">:</span> <span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">meta[name=csrf-token]</span><span class="dl">"</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="dl">"</span><span class="s2">content</span><span class="dl">"</span><span class="p">),</span>
  <span class="p">}</span>
 <span class="p">});</span>
 
 <span class="c1">// Add subscriptions to the network interface</span>
-<span class="kd">var</span> <span class="nx">addGraphQLSubscriptions</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"graphql-ruby-client/subscriptions/addGraphQLSubscriptions"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">addGraphQLSubscriptions</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/addGraphQLSubscriptions</span><span class="dl">"</span><span class="p">)</span>
 <span class="nx">addGraphQLSubscriptions</span><span class="p">(</span><span class="nx">RailsNetworkInterface</span><span class="p">,</span> <span class="p">{</span><span class="na">cable</span><span class="p">:</span> <span class="nx">cable</span><span class="p">})</span>
 
 <span class="c1">// Optionally, add persisted query support:</span>
-<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 <span class="nx">RailsNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
 </code></pre></div></div>
 

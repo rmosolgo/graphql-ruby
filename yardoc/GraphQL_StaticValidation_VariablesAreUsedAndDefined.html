@@ -1,13 +1,13 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.17/GraphQL/StaticValidation/VariablesAreUsedAndDefined" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/StaticValidation/VariablesAreUsedAndDefined" />
   </head>
   <body>
     <p>Module: GraphQL::StaticValidation::VariablesAreUsedAndDefined
 The problem is</p>
 <ul>
-  <li>Variable usage must be determined at the OperationDefinition
+  <li>Variable $usage must be determined at the OperationDefinition
 level</li>
   <li>You can’t tell how fragments use variables until you visit
 FragmentDefinitions (which may be at the end of the document)

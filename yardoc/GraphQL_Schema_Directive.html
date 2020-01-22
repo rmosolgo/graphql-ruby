@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.9.17/GraphQL/Schema/Directive" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/Schema/Directive" />
   </head>
   <body>
     <p>Class: GraphQL::Schema::Directive &lt; GraphQL::Schema::Member
@@ -12,11 +12,12 @@ runs queries.</p>
 skipped altogether, as if it were absent - resolve: Wraps field
 resolution (so it should call <code class="highlighter-rouge">yield</code> to continue) 
 Direct Known Subclasses:
-Feature, Include, Skip, Transform
+Deprecated, Feature, Include, Skip, Transform
 Extended by:
 GraphQL::Schema::Member::HasArguments
 Class methods:
-default_directive, default_graphql_name, include?, locations,
+default_directive, default_directive?, default_graphql_name,
+include?, locations, on_field?, on_fragment?, on_operation?,
 resolve, to_graphql</li>
 </ul>
 

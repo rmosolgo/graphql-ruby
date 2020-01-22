@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.0/GraphQL/Pagination/Connections" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Pagination::Connections &lt; Object
+A schema-level connection wrapper manager. 
+Attach as a plugin. 
+Examples:</p>
+<h1 id="using-new-default-connections">Using new default connections</h1>
+<p>class MySchema &lt; GraphQL::Schema
+use GraphQL::Pagination::Connections
+end</p>
+<h1 id="adding-a-custom-wrapper">Adding a custom wrapper</h1>
+<p>class MySchema &lt; GraphQL::Schema
+use GraphQL::Pagination::Connections
+connections.add(MyApp::SearchResults, MyApp::SearchResultsConnection)
+end</p>
+<h1 id="removing-default-connection-support-for-arrays-they-can-still-be-manually-wrapped">Removing default connection support for arrays (they can still be manually wrapped)</h1>
+<p>class MySchema &lt; GraphQL::Schema
+use GraphQL::Pagination::Connections
+connections.delete(Array)
+end
+See Also:</p>
+<ul>
+  <li>{Schema.connections}
+Class methods:
+use
+Instance methods:
+add, add_default, delete, initialize, wrap</li>
+</ul>
+
+
+  </body>
+</html>

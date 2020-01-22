@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.9.17/">API</a>
+          <a href="/api-doc/1.10.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -56,7 +56,11 @@
 
 <h1 class="guide-header">Stable Cursors for ActiveRecord</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">GraphQL::Pro</code> includes a mechanism for serving <em>stable</em> cursors for <code class="highlighter-rouge">ActiveRecord::Relation</code>s based on column values. If objects are created or destroyed during pagination, the list of items won’t be disrupted.</p>
+  <p><strong>Note:</strong> See the new <a href="/pagination/stable_relation_connections">stable relation connection</a> guide for a more robust and flexible implementation of this feature.</p>
+
+<hr />
+
+<p><code class="highlighter-rouge">GraphQL::Pro</code> includes a mechanism for serving <em>stable</em> cursors for <code class="highlighter-rouge">ActiveRecord::Relation</code>s based on column values. If objects are created or destroyed during pagination, the list of items won’t be disrupted.</p>
 
 <p>A new <code class="highlighter-rouge">RelationConnection</code> is applied by default. It is backwards-compatible with existing offset-based cursors. See <a href="#opting-out">“Opting Out”</a> below if you wish to continue using offset-based pagination.</p>
 
