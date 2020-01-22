@@ -7,6 +7,9 @@ module GraphQL
     desc "Get the checksum of a graphql-pro version and compare it to published versions on GitHub and graphql-ruby.org"
     task "graphql:pro:validate", [:gem_version] do |t, args|
       version = args[:gem_version]
+      if version.nil?
+        raise ArgumentError, "A specific version is required, eg `rake graphql:pro:validate[1.12.0]`"
+      end
       check = "\e[32m✓\e[0m"
       ex = "\e[31m✘\e[0m"
       puts "Validating graphql-pro v#{version}"
