@@ -190,6 +190,10 @@ module GraphQL
           arguments.each do |name, argument_defn|
             arg_key = argument_defn.keyword
             has_value = false
+
+            # handle nested nil values
+            return nil if value.nil?
+
             # Accept either string or symbol
             field_value = if value.key?(name)
               has_value = true
