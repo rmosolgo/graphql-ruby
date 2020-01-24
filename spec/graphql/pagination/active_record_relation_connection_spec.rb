@@ -62,7 +62,7 @@ if testing_rails?
       assert_equal true, results["data"]["items"]["pageInfo"]["hasNextPage"]
       assert_equal false, results["data"]["items"]["pageInfo"]["hasPreviousPage"]
       assert_equal 1, log.split("\n").size, "It runs only one query"
-      assert_equal 1, log.scan("COUNT(*)").size, "It's a count query"
+      assert_equal 1, log.scan("COUNT(").size, "It's a count query (#{log.inspect})"
 
       log = with_active_record_log do
         results = schema.execute("{
@@ -77,7 +77,7 @@ if testing_rails?
       assert_equal true, results["data"]["items"]["pageInfo"]["hasPreviousPage"]
       assert_equal false, results["data"]["items"]["pageInfo"]["hasNextPage"]
       assert_equal 1, log.split("\n").size, "It runs only one query"
-      assert_equal 1, log.scan("COUNT(*)").size, "It's a count query"
+      assert_equal 1, log.scan("COUNT(").size, "It's a count query"
 
       log = with_active_record_log do
         results = schema.execute("{
