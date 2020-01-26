@@ -146,7 +146,6 @@ module GraphQL
                 raise "Invariant: no field for #{owner_type}.#{field_name}"
               end
             end
-
             return_type = field_defn.type
 
             next_path = path.dup
@@ -222,7 +221,11 @@ module GraphQL
               end
               after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, field_defn, return_type.non_null?, ast_node)
-                if HALT != continue_value
+                if RawValue === continue_value
+                  # Write raw value directly to the response without resolving nested objects
+                  write_in_response(next_path, continue_value.resolve)
+                  continue_value.object
+                elsif HALT != continue_value
                   continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments)
                 end
               end
