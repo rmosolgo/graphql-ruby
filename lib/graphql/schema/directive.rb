@@ -60,7 +60,12 @@ module GraphQL
         end
 
         # If false, this part of the query won't be evaluated
-        def include?(_object, _arguments, _context)
+        def include?(_object, arguments, context)
+          static_include?(arguments, context)
+        end
+
+        # Determines whether {Execution::Lookahead} considers the field to be selected
+        def static_include?(_arguments, _context)
           true
         end
 

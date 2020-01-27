@@ -203,8 +203,22 @@ module GraphQL
         end
       end
 
+      def skipped_by_directive?(ast_selection)
+        ast_selection.directives.each do |directive|
+          dir_defn = @query.schema.directives.fetch(directive.name)
+          directive_class = dir_defn.type_class
+          if directive_class
+            dir_args = GraphQL::Execution::Lookahead::ArgumentHelpers.arguments(@query, dir_defn, directive)
+            return true unless directive_class.static_include?(dir_args, @query.context)
+          end
+        end
+        false
+      end
+
       def find_selections(subselections_by_type, selections_on_type, selected_type, ast_selections, arguments)
         ast_selections.each do |ast_selection|
+          next if skipped_by_directive?(ast_selection)
+
           case ast_selection
           when GraphQL::Language::Nodes::Field
             response_key = ast_selection.alias || ast_selection.name
@@ -242,6 +256,7 @@ module GraphQL
       # If a selection on `node` matches `field_name` (which is backed by `field_defn`)
       # and matches the `arguments:` constraints, then add that node to `matches`
       def find_selected_nodes(node, field_name, field_defn, arguments:, matches:)
+        return if skipped_by_directive?(node)
         case node
         when GraphQL::Language::Nodes::Field
           if node.name == field_name
