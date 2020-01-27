@@ -1817,6 +1817,11 @@ module GraphQL
               add_type(t, owner: type, late_types: late_types)
             end
           end
+          if type.kind.interface?
+            type.orphan_types.each do |t|
+              add_type(t, owner: type, late_types: late_types)
+            end
+          end
           if type.kind.object?
             own_possible_types[type.graphql_name] = [type]
             type.interfaces.each do |i|
