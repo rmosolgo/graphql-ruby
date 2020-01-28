@@ -491,6 +491,10 @@ module Jazz
       "#{arg_with_default.class.name} -> #{arg_with_default.to_h}"
     end
 
+    field :default_value_test_2, String, null: false, resolver_method: :default_value_test do
+      argument :arg_with_default, InspectableInput, required: false, default_value: {}
+    end
+
     field :complex_hash_key, String, null: false, hash_key: :'foo bar/fizz-buzz'
   end
 

@@ -191,12 +191,18 @@ module GraphQL
       end
 
       class AssignAttribute
+        extend GraphQL::Ruby2Keywords
+
         def initialize(attr_name)
           @attr_assign_method = :"#{attr_name}="
         end
 
-        def call(defn, value)
-          defn.public_send(@attr_assign_method, value)
+        # Even though we're just using the first value here,
+        # We have to add a splat here to use `ruby2_keywords`,
+        # so that it will accept a `[{}]` input from the caller.
+        ruby2_keywords
+        def call(defn, *value)
+          defn.public_send(@attr_assign_method, value.first)
         end
       end
     end
