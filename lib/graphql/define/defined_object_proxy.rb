@@ -34,7 +34,8 @@ module GraphQL
       end
 
       # Lookup a function from the dictionary and call it if it's found.
-      ruby2_keywords def method_missing(name, *args, &block)
+      ruby2_keywords
+      def method_missing(name, *args, &block)
         definition = @dictionary[name]
         if definition
           definition.call(@target, *args, &block)
