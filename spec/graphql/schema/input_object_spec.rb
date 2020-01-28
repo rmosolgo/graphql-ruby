@@ -368,7 +368,7 @@ describe GraphQL::Schema::InputObject do
         }
       }
       "
-      assert_equal "{a: A, b: B}", res["data"]["__type"]["fields"].first["args"].first["defaultValue"]
+      assert_equal "{a:\"A\",b:\"B\"}", res["data"]["__type"]["fields"].first["args"].first["defaultValue"]
     end
   end
 
