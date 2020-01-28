@@ -326,8 +326,6 @@ describe GraphQL::Schema::InputObject do
       res = Jazz::Schema.execute("{ defaultValueTest }")
       assert_equal "Jazz::InspectableInput -> {:string_value=>\"S\"}", res["data"]["defaultValueTest"]
     end
-<<<<<<< HEAD
-=======
 
     it "works with empty objects" do
       res = Jazz::Schema.execute("{ defaultValueTest2 }")
@@ -372,7 +370,6 @@ describe GraphQL::Schema::InputObject do
       "
       assert_equal "{a: A, b: B}", res["data"]["__type"]["fields"].first["args"].first["defaultValue"]
     end
->>>>>>> 5d7e20a1e... Fix argument default_value: {} on Ruby 2.7
   end
 
   describe 'hash conversion behavior' do
