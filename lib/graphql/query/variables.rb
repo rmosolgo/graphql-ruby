@@ -29,7 +29,6 @@ module GraphQL
             default_value = ast_variable.default_value
             provided_value = @provided_variables[variable_name]
             value_was_provided =  @provided_variables.key?(variable_name)
-
             begin
               validation_result = variable_type.validate_input(provided_value, ctx)
               if validation_result.valid?

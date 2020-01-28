@@ -354,6 +354,20 @@ describe GraphQL::Schema::InputObject do
       assert_equal expected_info, res["data"]["inspectInput"]
     end
 
+    it "works with given nil values for nested inputs" do
+      query_str = <<-GRAPHQL
+      query($input: InspectableInput!){
+        inspectInput(input: $input)
+      }
+      GRAPHQL
+      input = {
+        "nestedInput" => nil,
+        "stringValue" => "xyz"
+      }
+      res = Jazz::Schema.execute(query_str, variables: { input: input }, context: { message: "hi" })
+      assert res["data"]["inspectInput"]
+    end
+
     it "uses empty object when no variable value is given" do
       query_str = <<-GRAPHQL
       query($input: InspectableInput){
