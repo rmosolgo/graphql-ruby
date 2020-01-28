@@ -391,6 +391,11 @@ describe GraphQL::Schema::InputObject do
       assert_equal "Jazz::InspectableInput -> {:string_value=>\"S\"}", res["data"]["defaultValueTest"]
     end
 
+    it "works with empty objects" do
+      res = Jazz::Schema.execute("{ defaultValueTest2 }")
+      assert_equal "Jazz::InspectableInput -> {}", res["data"]["defaultValueTest2"]
+    end
+
     it "introspects in GraphQL language with enums" do
       class InputDefaultSchema < GraphQL::Schema
         class Letter < GraphQL::Schema::Enum
