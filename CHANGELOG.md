@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+## 1.10.1 (28 Jan 2020)
+
+### Bug fixes
+
+- Include Interface-level `orphan_types` when building a schema #2705
+- Properly re-enter selections in complexity analyzer #2595
+- Fix input objects with null values #2690
+- Fix default values of `{}` in `.define`-based schemas #2703
+- Fix field extension presence check #2689
+- Make new relation connections more efficient #2697
+- Don't include fields `@skip(if: true)` or `@include(if: false)` in lookahead #2700
+
 ## 1.10.0 (20 Jan 2020)
 
 ### Breaking Changes
