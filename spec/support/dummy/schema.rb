@@ -165,9 +165,13 @@ module Dummy
     possible_types Milk
   end
 
+  class Aspartame < BaseObject; end
+
   module Sweetener
     include BaseInterface
     field :sweetness, Integer, null: true
+
+    orphan_types Aspartame
   end
 
   # No actual data; This type is an "orphan", only accessible through Interfaces
@@ -176,6 +180,14 @@ module Dummy
     field :flower_type, String, "What flower this honey came from", null: true
     implements Edible
     implements AnimalProduct
+    implements Sweetener
+  end
+
+  # No actual data; Same as "Honey", but only accessible through an interface's orphans
+  class Aspartame < BaseObject
+    description "Sugar substitute with an off-flavor aftertaste"
+    field :manufacturer, String, "What manufacturer this aspartame came from", null: true
+    implements Edible
     implements Sweetener
   end
 

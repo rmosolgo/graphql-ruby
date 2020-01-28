@@ -6,7 +6,7 @@ describe GraphQL::InterfaceType do
   let(:dummy_query_context) { OpenStruct.new(schema: Dummy::Schema) }
 
   it "has possible types" do
-    expected_defns = [Dummy::Cheese, Dummy::Milk, Dummy::Honey]
+    expected_defns = [Dummy::Cheese, Dummy::Milk, Dummy::Honey, Dummy::Aspartame]
     assert_equal(expected_defns, Dummy::Schema.possible_types(interface))
   end
 
