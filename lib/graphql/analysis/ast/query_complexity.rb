@@ -107,8 +107,7 @@ module GraphQL
           module_function
           # When looking at two selection scopes, figure out whether the selections on
           # `right_scope` should be applied when analyzing `left_scope`.
-          # This is like the `isSubtypeOf` check from the GraphQL specification.
-          # TODO dedup with runtime checks? This is implemented somewhere.
+          # This is like the `Typecast.subtype?`, except it's using query-specific type filtering.
           def applies_to?(query, left_scope, right_scope)
             if left_scope == right_scope
               # This can happen when several branches are being analyzed together
