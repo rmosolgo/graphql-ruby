@@ -51,7 +51,7 @@ module GraphQL
 
       # @return [Hash<Symbol, Object>]
       def arguments
-        @arguments ||= @field && ArgumentHelpers.arguments(@query, nil, @field, ast_nodes.first)
+        @arguments ||= @field && ArgumentHelpers.arguments(@query, @field, ast_nodes.first)
       end
 
       # True if this node has a selection on `field_name`.
@@ -203,8 +203,22 @@ module GraphQL
         end
       end
 
+      def skipped_by_directive?(ast_selection)
+        ast_selection.directives.each do |directive|
+          dir_defn = @query.schema.directives.fetch(directive.name)
+          directive_class = dir_defn.type_class
+          if directive_class
+            dir_args = GraphQL::Execution::Lookahead::ArgumentHelpers.arguments(@query, dir_defn, directive)
+            return true unless directive_class.static_include?(dir_args, @query.context)
+          end
+        end
+        false
+      end
+
       def find_selections(subselections_by_type, selections_on_type, selected_type, ast_selections, arguments)
         ast_selections.each do |ast_selection|
+          next if skipped_by_directive?(ast_selection)
+
           case ast_selection
           when GraphQL::Language::Nodes::Field
             response_key = ast_selection.alias || ast_selection.name
@@ -242,6 +256,7 @@ module GraphQL
       # If a selection on `node` matches `field_name` (which is backed by `field_defn`)
       # and matches the `arguments:` constraints, then add that node to `matches`
       def find_selected_nodes(node, field_name, field_defn, arguments:, matches:)
+        return if skipped_by_directive?(node)
         case node
         when GraphQL::Language::Nodes::Field
           if node.name == field_name
@@ -263,7 +278,7 @@ module GraphQL
       end
 
       def arguments_match?(arguments, field_defn, field_node)
-        query_kwargs = ArgumentHelpers.arguments(@query, nil, field_defn, field_node)
+        query_kwargs = ArgumentHelpers.arguments(@query, field_defn, field_node)
         arguments.all? do |arg_name, arg_value|
           arg_name = normalize_keyword(arg_name)
           # Make sure the constraint is present with a matching value
@@ -275,20 +290,15 @@ module GraphQL
       module ArgumentHelpers
         module_function
 
-        def arguments(query, graphql_object, arg_owner, ast_node)
+        def arguments(query, arg_owner, ast_node)
           kwarg_arguments = {}
           arg_defns = arg_owner.arguments
           ast_node.arguments.each do |arg|
             arg_defn = arg_defns[arg.name] || raise("Invariant: missing argument definition for #{arg.name.inspect} in #{arg_defns.keys} from #{arg_owner}")
             # Need to distinguish between client-provided `nil`
             # and nothing-at-all
-            is_present, value = arg_to_value(query, graphql_object, arg_defn.type, arg.value)
+            is_present, value = arg_to_value(query, arg_defn.type, arg.value)
             if is_present
-              # This doesn't apply to directives, which are legacy
-              # Can remove this when Skip and Include use classes or something.
-              if graphql_object
-                value = arg_defn.prepare_value(graphql_object, value)
-              end
               kwarg_arguments[arg_defn.keyword] = value
             end
           end
@@ -305,7 +315,7 @@ module GraphQL
         # @param arg_type [Class, GraphQL::Schema::NonNull, GraphQL::Schema::List]
         # @param ast_value [GraphQL::Language::Nodes::VariableIdentifier, String, Integer, Float, Boolean]
         # @return [Array(is_present, value)]
-        def arg_to_value(query, graphql_object, arg_type, ast_value)
+        def arg_to_value(query, arg_type, ast_value)
           if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
             # If it's not here, it will get added later
             if query.variables.key?(ast_value.name)
@@ -316,13 +326,13 @@ module GraphQL
           elsif ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
             return true, nil
           elsif arg_type.is_a?(GraphQL::Schema::NonNull)
-            arg_to_value(query, graphql_object, arg_type.of_type, ast_value)
+            arg_to_value(query, arg_type.of_type, ast_value)
           elsif arg_type.is_a?(GraphQL::Schema::List)
             # Treat a single value like a list
             arg_value = Array(ast_value)
             list = []
             arg_value.map do |inner_v|
-              _present, value = arg_to_value(query, graphql_object, arg_type.of_type, inner_v)
+              _present, value = arg_to_value(query, arg_type.of_type, inner_v)
               list << value
             end
             return true, list

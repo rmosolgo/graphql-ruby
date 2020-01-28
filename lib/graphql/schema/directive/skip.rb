@@ -16,7 +16,7 @@ module GraphQL
 
         default_directive true
 
-        def self.include?(obj, args, ctx)
+        def self.static_include?(args, ctx)
           !args[:if]
         end
       end
