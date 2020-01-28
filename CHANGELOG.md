@@ -8,7 +8,13 @@
 
 ### Bug fixes
 
-## 1.9.18 (15 Jan 2019)
+## 1.9.19 (28 Jan 2020)
+
+### Bug Fixes
+
+- Fix argument default value of `{}` with Ruby 2.7 argument handling #2704
+
+## 1.9.18 (15 Jan 2020)
 
 ### New features
 
