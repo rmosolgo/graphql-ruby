@@ -591,4 +591,41 @@ describe GraphQL::Schema::InputObject do
       end
     end
   end
+
+  describe "nested objects inside lists" do
+    class NestedInputObjectSchema < GraphQL::Schema
+      class ItemInput < GraphQL::Schema::InputObject
+        argument :str, String, required: true
+      end
+
+      class NestedStuff < GraphQL::Schema::RelayClassicMutation
+        argument :items, [ItemInput], required: true
+        field :str, String, null: false
+        def resolve(items:)
+          {
+            str: items.map { |i| i.class.name }.join(", ")
+          }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :nested_stuff, mutation: NestedStuff
+      end
+
+      mutation(Mutation)
+      use GraphQL::Analysis::AST
+      use GraphQL::Execution::Interpreter
+    end
+
+    it "properly wraps them in instances" do
+      res = NestedInputObjectSchema.execute "
+        mutation($input: NestedStuffInput!) {
+          nestedStuff(input: $input) {
+            str
+          }
+        }
+      ", variables: { input: { "items" => [{ "str" => "1"}, { "str" => "2"}]}}
+      assert_equal "NestedInputObjectSchema::ItemInput, NestedInputObjectSchema::ItemInput", res["data"]["nestedStuff"]["str"]
+    end
+  end
 end

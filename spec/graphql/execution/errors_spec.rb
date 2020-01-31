@@ -179,11 +179,11 @@ describe "GraphQL::Execution::Errors" do
         context = { authorized: false }
         res = ErrorsTestSchema.execute(
           "query($values: ValuesInput!) { inputField(values: $values) } ",
-          variables: { values: { value: 2 } },
+          variables: { values: { "value" => 2 } },
           context: context,
         )
         # The message appears in extensions here:
-        assert_equal ["ErrorD on nil at Query.inputField()"], res["errors"].map { |e| e["message"] }
+        assert_equal ["ErrorD on nil at boot"], res["errors"].map { |e| e["extensions"]["problems"][0]["explanation"] }
       end
     end
   end

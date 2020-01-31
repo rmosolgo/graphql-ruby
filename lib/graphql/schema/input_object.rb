@@ -215,7 +215,8 @@ module GraphQL
             end
           end
 
-          input_values
+          input_obj_instance = self.new(ruby_kwargs: input_values, context: ctx, defaults_used: nil)
+          input_obj_instance.prepare
         end
 
         # It's funny to think of a _result_ of an input object.
