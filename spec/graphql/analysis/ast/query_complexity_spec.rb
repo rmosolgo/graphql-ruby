@@ -106,7 +106,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
               origin
             }
 
-            # 1 for honey
+            # 1 for honey, aspartame
             ... on Sweetener {
               sweetness
             }
@@ -164,7 +164,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
             # 1 for everybody
             ... on Edible { origin }
 
-            # 1 for honey
+            # 1 for honey, aspartame
             ... on Sweetener { sweetness }
           }
         }
