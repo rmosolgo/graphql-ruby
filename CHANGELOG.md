@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.10.2 (31 Jan 2020)
+
+### Bug fixes
+
+- Properly wrap nested input objects in instances #2710
+
 ## 1.10.1 (28 Jan 2020)
 
 ### Bug fixes
