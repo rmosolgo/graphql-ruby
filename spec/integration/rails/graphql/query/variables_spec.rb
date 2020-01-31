@@ -79,13 +79,13 @@ describe GraphQL::Query::Variables do
           fat_content: 0.99,
         }.merge(default_values)
 
-        assert_equal(expected_input_1.sort.to_h, variables["dairy_product_1"].sort.to_h)
+        assert_equal(expected_input_1.sort.to_h, variables["dairy_product_1"].to_h.sort.to_h)
 
         expected_input_2 = {
           source: :donkey,
           fat_content: 0.89,
         }.merge(default_values)
-        assert_equal(expected_input_2.sort.to_h, variables["dairy_product_2"].sort.to_h)
+        assert_equal(expected_input_2.sort.to_h, variables["dairy_product_2"].to_h.sort.to_h)
       end
     end
 

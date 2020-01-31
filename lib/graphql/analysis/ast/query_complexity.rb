@@ -132,10 +132,19 @@ module GraphQL
             # are also in the list, remove it from the list of scopes to check,
             # because every possible type is covered by a concrete type.
             # (That is, there are no remainder types to check.)
-            all_scopes.reject! do |scope, _|
-              scope.kind.abstract? && (
-                query.possible_types(scope).all? { |t| all_scopes.include?(t) }
-              )
+            #
+            # TODO redocument
+            prev_keys = all_scopes.keys
+            prev_keys.each do |scope|
+              if scope.kind.abstract?
+                missing_concrete_types = query.possible_types(scope).select { |t| !all_scopes.key?(t) }
+                # This concrete type is possible _only_ as a member of the abstract type.
+                # So, attribute to it the complexity which belongs to the abstract type.
+                missing_concrete_types.each do |concrete_scope|
+                  all_scopes[concrete_scope] = all_scopes[scope]
+                end
+                all_scopes.delete(scope)
+              end
             end
 
             # This will hold `{ type => int }` pairs, one for each possible branch

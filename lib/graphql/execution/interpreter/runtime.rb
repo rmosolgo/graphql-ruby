@@ -518,7 +518,7 @@ module GraphQL
               if ast_value.nil?
                 return false, nil
               else
-                args = ast_value
+                return true, ast_value
               end
             else
               # For these, `prepare` is applied during `#initialize`.
