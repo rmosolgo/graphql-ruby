@@ -42,7 +42,6 @@ module GraphQL
           end
           schema_definition = schema_defns.first
           types = {}
-          types.merge!(GraphQL::Schema::BUILT_IN_TYPES)
           directives = {}
           type_resolver = ->(type) { resolve_type(types, type)  }
 
@@ -66,6 +65,14 @@ module GraphQL
               types[definition.name] = build_input_object_type(definition, type_resolver)
             when GraphQL::Language::Nodes::DirectiveDefinition
               directives[definition.name] = build_directive(definition, type_resolver)
+            end
+          end
+
+          types = GraphQL::Schema::BUILT_IN_TYPES.merge(types) do |key, built_in_type, existing_type|
+            if existing_type.is_a?(GraphQL::Schema::LateBoundType)
+              built_in_type
+            else
+              existing_type
             end
           end
 
