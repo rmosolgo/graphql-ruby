@@ -82,8 +82,11 @@ module GraphQL
             end
 
             if has_value
-              coerced_value = arg_defn.type.coerce_input(value, context)
-              prepared_value = arg_defn.prepare_value(parent_object, coerced_value)
+              coerced_value = nil
+              prepared_value = context.schema.error_handler.with_error_handling(context) do
+                coerced_value = arg_defn.type.coerce_input(value, context)
+                arg_defn.prepare_value(parent_object, coerced_value)
+              end
               kwarg_arguments[arg_defn.keyword] = prepared_value
             end
           end
