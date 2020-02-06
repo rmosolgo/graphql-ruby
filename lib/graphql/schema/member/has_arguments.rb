@@ -63,6 +63,40 @@ module GraphQL
           self.class.argument_class(new_arg_class)
         end
 
+        # @param values [Hash<String, Object>]
+        # @param context [GraphQL::Query::Context]
+        # @return Hash<Symbol, Object>
+        def coerce_arguments(parent_object, values, context)
+          kwarg_arguments = {}
+          # Cache this hash to avoid re-merging it
+          arg_defns = self.arguments
+
+          arg_defns.each do |arg_name, arg_defn|
+            arg_key = arg_defn.keyword
+            has_value = false
+            if values.key?(arg_name)
+              has_value = true
+              value = values[arg_name]
+            elsif values.key?(arg_key)
+              has_value = true
+              value = values[arg_key]
+            elsif arg_defn.default_value?
+              has_value = true
+              value = arg_defn.default_value
+            end
+
+            if has_value
+              coerced_value = nil
+              prepared_value = context.schema.error_handler.with_error_handling(context) do
+                coerced_value = arg_defn.type.coerce_input(value, context)
+                arg_defn.prepare_value(parent_object, coerced_value, context: context)
+              end
+              kwarg_arguments[arg_defn.keyword] = prepared_value
+            end
+          end
+          kwarg_arguments
+        end
+
         module ArgumentClassAccessor
           def argument_class(new_arg_class = nil)
             if new_arg_class

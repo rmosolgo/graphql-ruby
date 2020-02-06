@@ -34,7 +34,9 @@ module GraphQL
             end
           end
 
-          if @ruby_style_hash.key?(ruby_kwargs_key) && arg_defn.prepare
+          # Weirdly, procs are applied during coercion, but not methods.
+          # Probably because these methods require a `self`.
+          if @ruby_style_hash.key?(ruby_kwargs_key) && (arg_defn.prepare.is_a?(Symbol) || context.nil?  || !context.interpreter?)
             @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
           end
         end
@@ -188,32 +190,8 @@ module GraphQL
           if value.nil?
             return nil
           end
-          input_values = {}
 
-          arguments.each do |name, argument_defn|
-            arg_key = argument_defn.keyword
-            has_value = false
-
-            # Accept either string or symbol
-            field_value = if value.key?(name)
-              has_value = true
-              value[name]
-            elsif value.key?(arg_key)
-              has_value = true
-              value[arg_key]
-            elsif argument_defn.default_value?
-              has_value = true
-              argument_defn.default_value
-            else
-              nil
-            end
-            # Only continue if some value was found for this argument
-            if has_value
-              coerced_value = argument_defn.type.coerce_input(field_value, ctx)
-              prepared_value = argument_defn.prepare_value(nil, coerced_value, context: ctx)
-              input_values[arg_key] = prepared_value
-            end
-          end
+          input_values = coerce_arguments(nil, value, ctx)
 
           input_obj_instance = self.new(ruby_kwargs: input_values, context: ctx, defaults_used: nil)
           input_obj_instance.prepare
