@@ -149,8 +149,16 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 },
                                                    variables: { input: input})
       assert_nil(res["data"])
-      assert_equal("boom!", res["errors"][0]["message"])
-      assert_equal([{ "line" => 1, "column" => 33 }], res["errors"][0]["locations"])
+
+      if TESTING_INTERPRETER
+        assert_equal("boom!", res["errors"][0]["message"])
+        assert_equal([{ "line" => 1, "column" => 33 }], res["errors"][0]["locations"])
+      else
+        assert_equal("Variable $input of type InputObj! was provided invalid value", res["errors"][0]["message"])
+        assert_equal([{ "line" => 1, "column" => 13 }], res["errors"][0]["locations"])
+        assert_equal("boom!", res["errors"][0]["extensions"]["problems"][0]["explanation"])
+        assert_equal(input, res["errors"][0]["extensions"]["value"])
+      end
     end
 
     it "loads input object arguments" do

@@ -72,10 +72,14 @@ module GraphQL
           arg_defns = self.arguments
 
           arg_defns.each do |arg_name, arg_defn|
+            arg_key = arg_defn.keyword
             has_value = false
             if values.key?(arg_name)
               has_value = true
               value = values[arg_name]
+            elsif values.key?(arg_key)
+              has_value = true
+              value = values[arg_key]
             elsif arg_defn.default_value?
               has_value = true
               value = arg_defn.default_value
@@ -85,7 +89,7 @@ module GraphQL
               coerced_value = nil
               prepared_value = context.schema.error_handler.with_error_handling(context) do
                 coerced_value = arg_defn.type.coerce_input(value, context)
-                arg_defn.prepare_value(parent_object, coerced_value)
+                arg_defn.prepare_value(parent_object, coerced_value, context: context)
               end
               kwarg_arguments[arg_defn.keyword] = prepared_value
             end

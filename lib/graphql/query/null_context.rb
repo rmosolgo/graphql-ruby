@@ -23,6 +23,10 @@ module GraphQL
 
       def [](key); end
 
+      def interpreter?
+        false
+      end
+
       class << self
         extend Forwardable
 
@@ -32,7 +36,7 @@ module GraphQL
           @instance = self.new
         end
 
-        def_delegators :instance, :query, :schema, :warden
+        def_delegators :instance, :query, :schema, :warden, :interpreter?
       end
     end
   end

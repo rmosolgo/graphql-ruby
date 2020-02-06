@@ -34,7 +34,7 @@ module GraphQL
               if validation_result.valid?
                 if value_was_provided
                   # Add the variable if a value was provided
-                  memo[variable_name] = if ctx.query.interpreter?
+                  memo[variable_name] = if ctx.interpreter?
                     provided_value
                   elsif provided_value.nil?
                     nil
@@ -44,7 +44,7 @@ module GraphQL
                     end
                   end
                 elsif default_value != nil
-                  memo[variable_name] = if ctx.query.interpreter?
+                  memo[variable_name] = if ctx.interpreter?
                     default_value
                   else
                     # Add the variable if it wasn't provided but it has a default value (including `null`)
