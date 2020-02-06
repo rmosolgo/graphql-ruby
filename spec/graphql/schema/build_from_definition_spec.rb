@@ -548,6 +548,24 @@ type WorldTwo {
       assert_schema_and_compare_output(schema.chop)
     end
 
+    it 'supports redefining built-in scalars' do
+      schema = <<-SCHEMA
+schema {
+  query: Root
+}
+
+scalar ID
+
+type Root {
+  builtInScalar: ID
+}
+      SCHEMA
+
+      built_schema = assert_schema_and_compare_output(schema.chop)
+      id_scalar = built_schema.types["ID"]
+      assert_equal true, id_scalar.valid_isolated_input?("123")
+    end
+
     it 'supports custom scalar' do
       schema = <<-SCHEMA
 schema {

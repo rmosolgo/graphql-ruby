@@ -42,7 +42,6 @@ module GraphQL
           end
           schema_definition = schema_defns.first
           types = {}
-          types.merge!(GraphQL::Schema::BUILT_IN_TYPES)
           directives = {}
           type_resolver = ->(type) { resolve_type(types, type)  }
 
@@ -66,6 +65,21 @@ module GraphQL
               types[definition.name] = build_input_object_type(definition, type_resolver)
             when GraphQL::Language::Nodes::DirectiveDefinition
               directives[definition.name] = build_directive(definition, type_resolver)
+            end
+          end
+
+          # At this point, if types named by the built in types are _late-bound_ types,
+          # that means they were referenced in the schema but not defined in the schema.
+          # That's supported for built-in types. (Eg, you can use `String` without defining it.)
+          # In that case, insert the concrete type definition now.
+          #
+          # However, if the type in `types` is a _concrete_ type definition, that means that
+          # the document contained an explicit definition of the scalar type.
+          # Don't override it in this case.
+          GraphQL::Schema::BUILT_IN_TYPES.each do |scalar_name, built_in_scalar|
+            existing_type = types[scalar_name]
+            if existing_type.is_a?(GraphQL::Schema::LateBoundType)
+              types[scalar_name] = built_in_scalar
             end
           end
 
