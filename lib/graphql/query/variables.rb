@@ -32,9 +32,11 @@ module GraphQL
             begin
               validation_result = variable_type.validate_input(provided_value, ctx)
               if validation_result.valid?
-                if value_was_provided
+                memo[variable_name] = if value_was_provided
                   # Add the variable if a value was provided
-                  memo[variable_name] = if provided_value.nil?
+                  if ctx.query.interpreter?
+                    provided_value
+                  elsif provided_value.nil?
                     nil
                   else
                     schema.error_handler.with_error_handling(context) do
@@ -42,8 +44,12 @@ module GraphQL
                     end
                   end
                 elsif default_value != nil
-                  # Add the variable if it wasn't provided but it has a default value (including `null`)
-                  memo[variable_name] = GraphQL::Query::LiteralInput.coerce(variable_type, default_value, self)
+                  if ctx.query.interpreter?
+                    default_value
+                  else
+                    # Add the variable if it wasn't provided but it has a default value (including `null`)
+                    GraphQL::Query::LiteralInput.coerce(variable_type, default_value, self)
+                  end
                 end
               end
             rescue GraphQL::CoercionError, GraphQL::ExecutionError => ex

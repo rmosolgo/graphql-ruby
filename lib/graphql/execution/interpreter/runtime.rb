@@ -435,133 +435,38 @@ module GraphQL
           end
         end
 
-        def each_argument_pair(ast_args_or_hash)
-          case ast_args_or_hash
-          when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject, GraphQL::Language::Nodes::Directive
-            ast_args_or_hash.arguments.each do |arg|
-              yield(arg.name, arg.value)
-            end
+        NO_VALUE_GIVEN = Object.new
+
+        def prepare_args_hash(ast_arg_or_hash_or_value)
+          case ast_arg_or_hash_or_value
           when Hash
-            ast_args_or_hash.each do |key, value|
-              normalized_name = GraphQL::Schema::Member::BuildType.camelize(key.to_s)
-              yield(normalized_name, value)
+            ast_arg_or_hash_or_value
+          when Array
+            ast_arg_or_hash_or_value.map { |v| prepare_args_hash(v) }
+          when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject, GraphQL::Language::Nodes::Directive
+            args_hash = {}
+            ast_arg_or_hash_or_value.arguments.each do |arg|
+              v = prepare_args_hash(arg.value)
+              if v != NO_VALUE_GIVEN
+                args_hash[arg.name] = v
+              end
+            end
+            args_hash
+          when GraphQL::Language::Nodes::VariableIdentifier
+            if query.variables.key?(ast_arg_or_hash_or_value.name)
+              variable_value = query.variables[ast_arg_or_hash_or_value.name]
+              prepare_args_hash(variable_value)
+            else
+              NO_VALUE_GIVEN
             end
           else
-            raise "Invariant, unexpected #{ast_args_or_hash.inspect}"
+            ast_arg_or_hash_or_value
           end
         end
 
         def arguments(graphql_object, arg_owner, ast_node_or_hash)
-          kwarg_arguments = {}
-          arg_defns = arg_owner.arguments
-          each_argument_pair(ast_node_or_hash) do |arg_name, arg_value|
-            arg_defn = arg_defns[arg_name]
-            # Need to distinguish between client-provided `nil`
-            # and nothing-at-all
-            is_present, value = arg_to_value(graphql_object, arg_defn.type, arg_value, already_arguments: false)
-            if is_present
-              # This doesn't apply to directives, which are legacy
-              # Can remove this when Skip and Include use classes or something.
-              if graphql_object
-                value = arg_defn.prepare_value(graphql_object, value)
-              end
-              kwarg_arguments[arg_defn.keyword] = value
-            end
-          end
-          arg_defns.each do |name, arg_defn|
-            if arg_defn.default_value? && !kwarg_arguments.key?(arg_defn.keyword)
-              _is_present, value = arg_to_value(graphql_object, arg_defn.type, arg_defn.default_value, already_arguments: false)
-              kwarg_arguments[arg_defn.keyword] = value
-            end
-          end
-          kwarg_arguments
-        end
-
-        # TODO CAN THIS USE `.coerce_input` ???
-
-        # Get a Ruby-ready value from a client query.
-        # @param graphql_object [Object] The owner of the field whose argument this is
-        # @param arg_type [Class, GraphQL::Schema::NonNull, GraphQL::Schema::List]
-        # @param ast_value [GraphQL::Language::Nodes::VariableIdentifier, String, Integer, Float, Boolean]
-        # @param already_arguments [Boolean] if true, don't re-coerce these with `arguments(...)`
-        # @return [Array(is_present, value)]
-        def arg_to_value(graphql_object, arg_type, ast_value, already_arguments:)
-          if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-            # If it's not here, it will get added later
-            if query.variables.key?(ast_value.name)
-              variable_value = query.variables[ast_value.name]
-              arg_to_value(graphql_object, arg_type, variable_value, already_arguments: true)
-            else
-              return false, nil
-            end
-          elsif ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
-            return true, nil
-          elsif arg_type.is_a?(GraphQL::Schema::NonNull)
-            arg_to_value(graphql_object, arg_type.of_type, ast_value, already_arguments: already_arguments)
-          elsif arg_type.is_a?(GraphQL::Schema::List)
-            if ast_value.nil?
-              return true, nil
-            else
-              # Treat a single value like a list
-              arg_value = Array(ast_value)
-              list = []
-              arg_value.map do |inner_v|
-                _present, value = arg_to_value(graphql_object, arg_type.of_type, inner_v, already_arguments: already_arguments)
-                list << value
-              end
-              return true, list
-            end
-          elsif arg_type.is_a?(Class) && arg_type < GraphQL::Schema::InputObject
-            if already_arguments
-              # This came from a variable, already prepared.
-              # But replace `nil` with `{}` like we would for `arg_type`
-              if ast_value.nil?
-                return false, nil
-              else
-                return true, ast_value
-              end
-            else
-              # For these, `prepare` is applied during `#initialize`.
-              # Pass `nil` so it will be skipped in `#arguments`.
-              # What a mess.
-              args = arguments(nil, arg_type, ast_value)
-            end
-
-            input_obj = query.with_error_handling do
-              # We're not tracking defaults_used, but for our purposes
-              # we compare the value to the default value.
-              arg_type.new(ruby_kwargs: args, context: context, defaults_used: nil)
-            end
-            return true, input_obj
-          else
-            flat_value = if already_arguments
-              # It was coerced by variable handling
-              ast_value
-            else
-              v = flatten_ast_value(ast_value)
-              arg_type.coerce_input(v, context)
-            end
-            return true, flat_value
-          end
-        end
-
-        def flatten_ast_value(v)
-          case v
-          when GraphQL::Language::Nodes::Enum
-            v.name
-          when GraphQL::Language::Nodes::InputObject
-            h = {}
-            v.arguments.each do |arg|
-              h[arg.name] = flatten_ast_value(arg.value)
-            end
-            h
-          when Array
-            v.map { |v2| flatten_ast_value(v2) }
-          when GraphQL::Language::Nodes::VariableIdentifier
-            flatten_ast_value(query.variables[v.name])
-          else
-            v
-          end
+          args_hash = prepare_args_hash(ast_node_or_hash)
+          arg_owner.coerce_arguments(graphql_object, args_hash, context)
         end
 
         def write_invalid_null_in_response(path, invalid_null_error)

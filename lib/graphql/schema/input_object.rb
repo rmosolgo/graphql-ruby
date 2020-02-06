@@ -34,7 +34,9 @@ module GraphQL
             end
           end
 
-          if @ruby_style_hash.key?(ruby_kwargs_key) && arg_defn.prepare
+          # Weirdly, procs are applied during coercion, but not methods.
+          # Probably because these methods require a `self`.
+          if @ruby_style_hash.key?(ruby_kwargs_key) && arg_defn.prepare.is_a?(Symbol)
             @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
           end
         end
