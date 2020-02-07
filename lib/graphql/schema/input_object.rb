@@ -5,6 +5,7 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
       extend Forwardable
       extend GraphQL::Schema::Member::HasArguments
+      extend GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader
       extend GraphQL::Schema::Member::ValidatesInput
 
       include GraphQL::Dig
@@ -25,12 +26,12 @@ module GraphQL
           ruby_kwargs_key = arg_defn.keyword
           loads = arg_defn.loads
 
-          if @ruby_style_hash.key?(ruby_kwargs_key) && loads && !arg_defn.from_resolver?
+          if @ruby_style_hash.key?(ruby_kwargs_key) && loads && !arg_defn.from_resolver? && !context.interpreter?
             value = @ruby_style_hash[ruby_kwargs_key]
             @ruby_style_hash[ruby_kwargs_key] = if arg_defn.type.list?
-              value.map { |val| load_application_object(arg_defn, loads, val) }
+              value.map { |val| load_application_object(arg_defn, loads, val, context) }
             else
-              load_application_object(arg_defn, loads, value)
+              load_application_object(arg_defn, loads, value, context)
             end
           end
 

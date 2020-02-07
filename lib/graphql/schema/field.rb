@@ -648,6 +648,17 @@ module GraphQL
           # Apply any `prepare` methods. Not great code organization, can this go somewhere better?
           arguments.each do |name, arg_defn|
             ruby_kwargs_key = arg_defn.keyword
+
+            loads = arg_defn.loads
+            if ruby_kwargs.key?(ruby_kwargs_key) && loads && !arg_defn.from_resolver?
+              value = ruby_kwargs[ruby_kwargs_key]
+              ruby_kwargs[ruby_kwargs_key] = if arg_defn.type.list?
+                value.map { |val| load_application_object(arg_defn, loads, val, field_ctx.query.context) }
+              else
+                load_application_object(arg_defn, loads, value, field_ctx.query.context)
+              end
+            end
+
             if ruby_kwargs.key?(ruby_kwargs_key) && arg_defn.prepare
               ruby_kwargs[ruby_kwargs_key] = arg_defn.prepare_value(obj, ruby_kwargs[ruby_kwargs_key])
             end

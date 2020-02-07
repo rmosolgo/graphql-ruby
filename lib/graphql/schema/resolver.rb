@@ -285,7 +285,7 @@ module GraphQL
               argument = @arguments_by_keyword[:#{arg_defn.keyword}]
               lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
               context.schema.after_lazy(values) do |values2|
-                GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, lookup_as_type, value) })
+                GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, lookup_as_type, value, context) })
               end
             end
             RUBY
@@ -294,7 +294,7 @@ module GraphQL
             def load_#{arg_defn.keyword}(value)
               argument = @arguments_by_keyword[:#{arg_defn.keyword}]
               lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
-              load_application_object(argument, lookup_as_type, value)
+              load_application_object(argument, lookup_as_type, value, context)
             end
             RUBY
           else
