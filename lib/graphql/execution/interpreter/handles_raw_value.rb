@@ -16,7 +16,7 @@ module GraphQL
 
       # Allows to return "raw" value from the resolver
       module HandlesRawValue
-        def raw_value(obj = nil)
+        def raw_value(obj)
           RawValue.new(obj)
         end
       end
