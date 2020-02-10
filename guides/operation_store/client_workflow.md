@@ -5,7 +5,7 @@ search: true
 section: GraphQL Pro - OperationStore
 title: Client Workflow
 desc: Add clients to the system, then sync their operations with the database.
-index: 2
+index: 4
 pro: true
 ---
 

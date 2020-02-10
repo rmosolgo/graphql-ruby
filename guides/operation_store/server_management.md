@@ -5,7 +5,7 @@ search: true
 section: GraphQL Pro - OperationStore
 title: Server Management
 desc: Tips for administering persisted queries with OperationStore
-index: 3
+index: 5
 pro: true
 ---
 

@@ -8,6 +8,18 @@
 
 ### Bug Fix
 
+## 1.13.0 (10 Feb 2020)
+
+### New Features
+
+- OperationStore supports a `redis:` backend
+- OperationStore supports an arbitrary `backend_class:` for persistence operations
+
+### Bug Fix
+
+- Use a loop when clearing Redis subscription state to avoid large stack traces #2701
+- Handle empty subscription keys when publishing updates #2061
+
 ## 1.12.2 (22 Jan 2020)
 
 ### Bug Fix
