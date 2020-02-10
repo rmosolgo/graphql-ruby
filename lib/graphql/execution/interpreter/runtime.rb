@@ -224,7 +224,6 @@ module GraphQL
                 if RawValue === continue_value
                   # Write raw value directly to the response without resolving nested objects
                   write_in_response(next_path, continue_value.object)
-                  continue_value.object
                 elsif HALT != continue_value
                   continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments)
                 end
