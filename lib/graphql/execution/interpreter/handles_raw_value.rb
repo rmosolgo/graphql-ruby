@@ -5,13 +5,13 @@ module GraphQL
     class Interpreter
       # Wrapper for raw values
       class RawValue
-        attr_reader :object
-
         def initialize(obj = nil)
           @object = obj
         end
 
-        alias_method :resolve, :object
+        def resolve
+          @object
+        end
       end
 
       # Allows to return "raw" value from the resolver
