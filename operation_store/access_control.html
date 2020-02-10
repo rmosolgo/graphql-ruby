@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.10.0/">API</a>
+          <a href="/api-doc/1.10.2/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -56,12 +56,7 @@
 
 <h1 class="guide-header">Access Control</h1>
 <div class="guide-container">
-  <p>There are two considerations for incoming <code class="highlighter-rouge">sync</code> requests:</p>
-
-<ul>
-  <li><strong>Authentication</strong>: is this request coming from a legitimate source?</li>
-  <li><strong>Authorization</strong>: does this source have permission to save these queries?</li>
-</ul>
+  <p>The <code class="highlighter-rouge">OperationStore</code> has a built-in mechanism for authenticating incoming <code class="highlighter-rouge">sync</code> requests. This way, you can be sure that all registered queries came from legitimate sources.</p>
 
 <h2 id="authentication">Authentication</h2>
 
@@ -82,43 +77,6 @@
 </code></pre></div></div>
 
 <p><a href="/javascript_client/sync">graphql-ruby-client</a> adds this header to outgoing requests by using the provided <code class="highlighter-rouge">--client</code> and <code class="highlighter-rouge">--secret</code> values.</p>
-
-<h2 id="authorization">Authorization</h2>
-
-<p>Incoming operations are validated. If you’re using <code class="highlighter-rouge">GraphQL::Pro</code>’s <a href="/pro/authorization#visibility-authorization">visibility authorization</a>, you must determine whether the current client can <em>see</em> the types and fields which are used in the operation.</p>
-
-<p>You can implement authorization for incoming queries with the <code class="highlighter-rouge">authorize(..., operation_store:)</code> option, which accepts a <a href="/pro/authorization#custom-authorization-strategy">auth strategy class</a>, for example:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">authorize</span><span class="p">(</span><span class="ss">:pundit</span><span class="p">,</span> <span class="ss">operation_store: </span><span class="no">OperationStoreStrategy</span><span class="p">)</span>
-<span class="c1"># Or:</span>
-<span class="n">authorize</span><span class="p">(</span><span class="no">MyAuthStrategy</span><span class="p">,</span> <span class="ss">operation_store: </span><span class="no">OperationStoreStrategy</span><span class="p">)</span>
-</code></pre></div></div>
-
-<p>This strategy class is used <em>only</em> for incoming persisted operations. The strategy class may use <code class="highlighter-rouge">ctx[:current_client_name]</code>, which is added by the OperationStore.</p>
-
-<p>Here’s an example strategy class which allows <code class="highlighter-rouge">"stafftools"</code> apps to use <code class="highlighter-rouge">view: :admin</code> fields, but hides those fields from everyone else:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">OperationStoreStrategy</span>
-  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
-    <span class="vi">@client_name</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_client_name</span><span class="p">]</span>
-  <span class="k">end</span>
-
-  <span class="c1"># Only stafftools apps can save queries with `:admin` fields</span>
-  <span class="c1"># Anyone can save queries with `:public` fields.</span>
-  <span class="k">def</span> <span class="nf">allowed?</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="n">_obj</span><span class="p">)</span>
-    <span class="k">case</span> <span class="n">gate</span><span class="p">.</span><span class="nf">role</span>
-    <span class="k">when</span> <span class="ss">:admin</span>
-      <span class="vi">@client_name</span> <span class="o">==</span> <span class="s2">"stafftools"</span>
-    <span class="k">when</span> <span class="ss">:public</span>
-      <span class="kp">true</span>
-    <span class="k">else</span>
-      <span class="k">raise</span> <span class="s2">"Unexpected auth role: </span><span class="si">#{</span><span class="n">gate</span><span class="p">.</span><span class="nf">role</span><span class="si">}</span><span class="s2">"</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p>If you don’t specify a strategy, the default is to fail all <code class="highlighter-rouge">view:</code> checks. This way, private fields are <em>not</em> disclosed via OperationStore requests.</p>
 
 </div>
 <p class="guide-footer">
