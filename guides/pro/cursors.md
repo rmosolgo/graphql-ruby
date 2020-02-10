@@ -69,7 +69,7 @@ If you're also switching to {% internal_link "encrypted cursors","/pro/encoders"
 ```ruby
 # Define an encrypted encoder for use with cursors:
 EncryptedCursorEncoder = MyEncoder = GraphQL::Pro::Encoder.define do
-  key("f411f30495fe688cb349d...")
+  key("f411f30...")
 end
 
 # Make a versioned encoder combining new & old

@@ -26,13 +26,13 @@ Encoders can be created with `Encoder.define { ... }`:
 
 ```ruby
 MyEncoder = GraphQL::Pro::Encoder.define do
-  key("f411f30495fe688cb349d...")
+  key("f411f30...")
   # optional:
   tag("81ce51c307")
 end
 ```
 
-- `key` is the encryption key for this encoder. You can generate one with: `require "securerandom"; SecureRandom.random_bytes(64)`
+- `key` is the encryption key for this encoder. You can generate one with: `require "securerandom"; SecureRandom.bytes(16)`
 - `tag`, if provided, is used as authentication data or for disambiguating versioned encoders
 
 ## Encrypting Cursors
