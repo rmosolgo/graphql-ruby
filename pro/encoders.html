@@ -76,14 +76,14 @@
 <p>Encoders can be created with <code class="highlighter-rouge">Encoder.define { ... }</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MyEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">key</span><span class="p">(</span><span class="s2">"f411f30495fe688cb349d..."</span><span class="p">)</span>
+  <span class="n">key</span><span class="p">(</span><span class="s2">"f411f30..."</span><span class="p">)</span>
   <span class="c1"># optional:</span>
   <span class="n">tag</span><span class="p">(</span><span class="s2">"81ce51c307"</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <ul>
-  <li><code class="highlighter-rouge">key</code> is the encryption key for this encoder. You can generate one with: <code class="highlighter-rouge">require "securerandom"; SecureRandom.random_bytes(64)</code></li>
+  <li><code class="highlighter-rouge">key</code> is the encryption key for this encoder. You can generate one with: <code class="highlighter-rouge">require "securerandom"; SecureRandom.bytes(16)</code></li>
   <li><code class="highlighter-rouge">tag</code>, if provided, is used as authentication data or for disambiguating versioned encoders</li>
 </ul>
 
