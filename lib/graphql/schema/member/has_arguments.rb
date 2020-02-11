@@ -101,8 +101,10 @@ module GraphQL
           def argument_class(new_arg_class = nil)
             if new_arg_class
               @argument_class = new_arg_class
+            elsif defined?(@argument_class) && @argument_class
+              @argument_class
             else
-              @argument_class || (superclass.respond_to?(:argument_class) ? superclass.argument_class : GraphQL::Schema::Argument)
+              superclass.respond_to?(:argument_class) ? superclass.argument_class : GraphQL::Schema::Argument
             end
           end
         end

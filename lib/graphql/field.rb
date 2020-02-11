@@ -154,7 +154,7 @@ module GraphQL
     end
 
     def name=(new_name)
-      old_name = @name
+      old_name = defined?(@name) ? @name : nil
       @name = new_name
 
       if old_name != new_name && @resolve_proc.is_a?(Field::Resolve::NameResolve)

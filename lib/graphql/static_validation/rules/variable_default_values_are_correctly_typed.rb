@@ -27,7 +27,6 @@ module GraphQL
 
               if !valid
                 error_message ||= "Default value for $#{node.name} doesn't match type #{type.to_type_signature}"
-                VariableDefaultValuesAreCorrectlyTypedError
                 add_error(GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTypedError.new(
                   error_message,
                   nodes: node,

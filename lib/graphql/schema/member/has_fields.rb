@@ -70,7 +70,7 @@ module GraphQL
         def field_class(new_field_class = nil)
           if new_field_class
             @field_class = new_field_class
-          elsif @field_class
+          elsif defined?(@field_class) && @field_class
             @field_class
           elsif self.is_a?(Class)
             superclass.respond_to?(:field_class) ? superclass.field_class : GraphQL::Schema::Field

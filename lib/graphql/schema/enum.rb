@@ -63,8 +63,11 @@ module GraphQL
         def enum_value_class(new_enum_value_class = nil)
           if new_enum_value_class
             @enum_value_class = new_enum_value_class
+          elsif defined?(@enum_value_class) && @enum_value_class
+            @enum_value_class
+          else
+            superclass <= GraphQL::Schema::Enum ? superclass.enum_value_class : nil
           end
-          @enum_value_class || (superclass <= GraphQL::Schema::Enum ? superclass.enum_value_class : nil)
         end
 
         def kind

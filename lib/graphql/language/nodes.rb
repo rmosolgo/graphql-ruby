@@ -65,9 +65,8 @@ module GraphQL
           @query_string = nil
         end
 
-        # @return [Symbol] the method to call on {Language::Visitor} for this node
-        def visit_method
-          raise GraphQL::RequiredImplementationMissingError, "#{self.class.name}#visit_method shold return a symbol"
+        def children_method_name
+          self.class.children_method_name
         end
 
         def position
@@ -147,9 +146,10 @@ module GraphQL
                 :on_#{name_underscored}
               end
 
-              def children_method_name
-                :#{name_underscored}s
+              class << self
+                attr_accessor :children_method_name
               end
+              self.children_method_name = :#{name_underscored}s
             RUBY
           end
 
@@ -161,7 +161,7 @@ module GraphQL
           # - Add a persistent update method to add a child
           # - Generate a `#children` method
           def children_methods(children_of_type)
-            if @children_methods
+            if defined?(@children_methods)
               raise "Can't re-call .children_methods for #{self} (already have: #{@children_methods})"
             else
               @children_methods = children_of_type
@@ -204,7 +204,11 @@ module GraphQL
             end
 
             if defined?(@scalar_methods)
-              generate_initialize_node
+              if !method_defined?(:initialize_node)
+                generate_initialize_node
+              else
+                # This method was defined manually
+              end
             else
               raise "Can't generate_initialize_node because scalar_methods wasn't called; call it before children_methods"
             end
@@ -214,7 +218,7 @@ module GraphQL
           # - Add reader methods
           # - Add a `#scalars` method
           def scalar_methods(*method_names)
-            if @scalar_methods
+            if defined?(@scalar_methods)
               raise "Can't re-call .scalar_methods for #{self} (already have: #{@scalar_methods})"
             else
               @scalar_methods = method_names
@@ -373,19 +377,11 @@ module GraphQL
         end
 
         # Override this because default is `:fields`
-        def children_method_name
-          :selections
-        end
+        self.children_method_name = :selections
       end
 
       # A reusable fragment, defined at document-level.
       class FragmentDefinition < AbstractNode
-        scalar_methods :name, :type
-        children_methods({
-          selections: GraphQL::Language::Nodes::Field,
-          directives: GraphQL::Language::Nodes::Directive,
-        })
-
         # @!attribute name
         #   @return [String] the identifier for this fragment, which may be applied with `...#{name}`
 
@@ -398,9 +394,13 @@ module GraphQL
           @selections = selections
         end
 
-        def children_method_name
-          :definitions
-        end
+        scalar_methods :name, :type
+        children_methods({
+          selections: GraphQL::Language::Nodes::Field,
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+
+        self.children_method_name = :definitions
       end
 
       # Application of a named fragment in a selection
@@ -408,9 +408,7 @@ module GraphQL
         scalar_methods :name
         children_methods(directives: GraphQL::Language::Nodes::Directive)
 
-        def children_method_name
-          :selections
-        end
+        self.children_method_name = :selections
 
         # @!attribute name
         #   @return [String] The identifier of the fragment to apply, corresponds with {FragmentDefinition#name}
@@ -424,9 +422,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
         })
 
-        def children_method_name
-          :selections
-        end
+        self.children_method_name = :selections
 
         # @!attribute type
         #   @return [String, nil] Name of the type this fragment applies to, or `nil` if this fragment applies to any type
@@ -449,9 +445,7 @@ module GraphQL
           end
         end
 
-        def children_method_name
-          :value
-        end
+        self.children_method_name = :value
 
         private
 
@@ -519,9 +513,7 @@ module GraphQL
         # @!attribute name
         #   @return [String, nil] The name for this operation, or `nil` if unnamed
 
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       # A type name, used for variable definitions
@@ -538,9 +530,7 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class SchemaExtension < AbstractNode
@@ -548,9 +538,7 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class ScalarTypeDefinition < AbstractNode
@@ -560,9 +548,7 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class ScalarTypeExtension < AbstractNode
@@ -570,9 +556,7 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class InputValueDefinition < AbstractNode
@@ -582,9 +566,7 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
-        def children_method_name
-          :fields
-        end
+        self.children_method_name = :fields
       end
 
       class FieldDefinition < AbstractNode
@@ -595,9 +577,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           arguments: GraphQL::Language::Nodes::InputValueDefinition,
         })
-        def children_method_name
-          :fields
-        end
+        self.children_method_name = :fields
 
         # this is so that `children_method_name` of `InputValueDefinition` works properly
         # with `#replace_child`
@@ -618,9 +598,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class ObjectTypeExtension < AbstractNode
@@ -629,9 +607,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class InterfaceTypeDefinition < AbstractNode
@@ -642,9 +618,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class InterfaceTypeExtension < AbstractNode
@@ -653,9 +627,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class UnionTypeDefinition < AbstractNode
@@ -665,9 +637,7 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class UnionTypeExtension < AbstractNode
@@ -676,9 +646,7 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class EnumValueDefinition < AbstractNode
@@ -688,9 +656,7 @@ module GraphQL
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
         })
-        def children_method_name
-          :values
-        end
+        self.children_method_name = :values
       end
 
       class EnumTypeDefinition < AbstractNode
@@ -701,9 +667,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           values: GraphQL::Language::Nodes::EnumValueDefinition,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class EnumTypeExtension < AbstractNode
@@ -712,9 +676,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           values: GraphQL::Language::Nodes::EnumValueDefinition,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class InputObjectTypeDefinition < AbstractNode
@@ -725,9 +687,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::InputValueDefinition,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
 
       class InputObjectTypeExtension < AbstractNode
@@ -736,9 +696,7 @@ module GraphQL
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::InputValueDefinition,
         })
-        def children_method_name
-          :definitions
-        end
+        self.children_method_name = :definitions
       end
     end
   end
