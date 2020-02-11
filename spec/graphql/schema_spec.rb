@@ -242,11 +242,8 @@ describe GraphQL::Schema do
         res = query.result
         assert res.key?("data")
 
-        # NOTE: these both pass currently
         assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
         assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
-
-        # TODO: these all fail currently
         assert_equal true, query.context[:no_op_tracer_ran]
         assert_equal true, query.context[:no_op_analyzer_ran_initialize]
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
@@ -254,7 +251,7 @@ describe GraphQL::Schema do
       end
     end
 
-    describe "when called on class re-definitions" do
+    describe "when called on schema subclasses" do
       let(:schema) do
         schema = Class.new(GraphQL::Schema) do
           query query_type
@@ -262,14 +259,10 @@ describe GraphQL::Schema do
           use GraphQL::Execution::Interpreter
         end
 
-        # NOTE/question: `.redefine` returns an instance of a modified schema, which if returned instead of the schema class
-        # will make the below test pass. Is there a way to append plugins to a class definition without having to
-        # use the schema instance returned by `.redefine`?
-        schema.redefine do
+        # return a subclass
+        Class.new(schema) do
           use PluginWithInstrumentationTracingAndAnalyzer
         end
-
-        schema
       end
 
       let(:query) { GraphQL::Query.new(schema, "query { foobar }") }
@@ -278,7 +271,6 @@ describe GraphQL::Schema do
         res = query.result
         assert res.key?("data")
 
-        # TODO: these all fail currently
         assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
         assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
         assert_equal true, query.context[:no_op_tracer_ran]
