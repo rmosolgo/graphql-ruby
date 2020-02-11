@@ -270,7 +270,7 @@ describe GraphQL::Schema do
 
     describe "when called on class definitions" do
       let(:schema) do
-        schema = Class.new(GraphQL::Schema) do
+        Class.new(GraphQL::Schema) do
           query query_type
           use GraphQL::Analysis::AST
           use GraphQL::Execution::Interpreter
