@@ -67,6 +67,34 @@ describe GraphQL::Tracing::PlatformTracing do
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
 
+    it "traces during Query#result" do
+      query_str = "{ cheese(id: 1) { flavor } }"
+      expected_trace = [
+        # This is from the extra validation
+        "v",
+        # Interestingly, lex and parse are _before_ execute multiplex in this case
+        "l",
+        "p",
+        "em",
+        "am",
+        "v",
+        "aq",
+        "eq",
+        "Query.authorized",
+        "Q.c", # notice that the flavor is skipped
+        "Cheese.authorized",
+        "eql",
+        "Cheese.authorized", # This is the lazy part, calling the proc
+      ]
+
+      query = GraphQL::Query.new(schema, query_str)
+      # First, validate
+      schema.validate(query.query_string)
+      # Then execute
+      query.result
+      assert_equal expected_trace, CustomPlatformTracer::TRACE
+    end
+
     it "traces resolve_type calls" do
       schema.execute(" { favoriteEdible { __typename } }")
       expected_trace = [
