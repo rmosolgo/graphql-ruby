@@ -26,7 +26,7 @@ module GraphQL
         end
 
         def overridden_graphql_name
-          @graphql_name
+          defined?(@graphql_name) ? @graphql_name : nil
         end
 
         # Just a convenience method to point out that people should use graphql_name instead
@@ -46,8 +46,10 @@ module GraphQL
         def description(new_description = nil)
           if new_description
             @description = new_description
-          else
+          elsif defined?(@description)
             @description
+          else
+            nil
           end
         end
 
@@ -68,8 +70,10 @@ module GraphQL
         def introspection(new_introspection = nil)
           if !new_introspection.nil?
             @introspection = new_introspection
-          else
+          elsif defined?(@introspection)
             @introspection
+          else
+            false
           end
         end
 
@@ -82,8 +86,11 @@ module GraphQL
         def mutation(mutation_class = nil)
           if mutation_class
             @mutation = mutation_class
+          elsif defined?(@mutation)
+            @mutation
+          else
+            nil
           end
-          @mutation
         end
 
         # @return [GraphQL::BaseType] Convert this type to a legacy-style object.

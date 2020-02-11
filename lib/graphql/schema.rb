@@ -787,7 +787,7 @@ module GraphQL
       def_delegators :graphql_definition,
         # Execution
         :execution_strategy_for_operation,
-        :validate, :multiplex_analyzers,
+        :validate,
         # Configuration
         :metadata, :redefine,
         :id_from_object_proc, :object_from_id_proc,

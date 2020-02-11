@@ -967,14 +967,14 @@ Racc_debug_parser = false
 
 module_eval(<<'.,.,', 'parser.y', 4)
   def _reduce_2(val, _values, result)
-     return make_node(:Document, definitions: val[0])
+     result = make_node(:Document, definitions: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 7)
   def _reduce_3(val, _values, result)
-     return [val[0]]
+     result = [val[0]]
     result
   end
 .,.,
@@ -998,7 +998,7 @@ module_eval(<<'.,.,', 'parser.y', 8)
 
 module_eval(<<'.,.,', 'parser.y', 21)
   def _reduce_10(val, _values, result)
-            return  make_node(
+            result = make_node(
           :OperationDefinition, {
             operation_type: val[0],
             name:           val[1],
@@ -1015,7 +1015,7 @@ module_eval(<<'.,.,', 'parser.y', 21)
 
 module_eval(<<'.,.,', 'parser.y', 33)
   def _reduce_11(val, _values, result)
-            return make_node(
+            result = make_node(
           :OperationDefinition, {
             operation_type: "query",
             selections: val[1],
@@ -1029,7 +1029,7 @@ module_eval(<<'.,.,', 'parser.y', 33)
 
 module_eval(<<'.,.,', 'parser.y', 42)
   def _reduce_12(val, _values, result)
-            return make_node(
+            result = make_node(
           :OperationDefinition, {
             operation_type: "query",
             selections: [],
@@ -1049,7 +1049,7 @@ module_eval(<<'.,.,', 'parser.y', 42)
 
 module_eval(<<'.,.,', 'parser.y', 57)
   def _reduce_16(val, _values, result)
-     return nil 
+     result = nil 
     result
   end
 .,.,
@@ -1058,21 +1058,21 @@ module_eval(<<'.,.,', 'parser.y', 57)
 
 module_eval(<<'.,.,', 'parser.y', 61)
   def _reduce_18(val, _values, result)
-     return EMPTY_ARRAY 
+     result = EMPTY_ARRAY 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 62)
   def _reduce_19(val, _values, result)
-     return val[1] 
+     result = val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 65)
   def _reduce_20(val, _values, result)
-     return [val[0]] 
+     result = [val[0]] 
     result
   end
 .,.,
@@ -1086,7 +1086,7 @@ module_eval(<<'.,.,', 'parser.y', 66)
 
 module_eval(<<'.,.,', 'parser.y', 70)
   def _reduce_22(val, _values, result)
-            return make_node(:VariableDefinition, {
+            result = make_node(:VariableDefinition, {
           name: val[1],
           type: val[3],
           default_value: val[4],
@@ -1099,70 +1099,70 @@ module_eval(<<'.,.,', 'parser.y', 70)
 
 module_eval(<<'.,.,', 'parser.y', 79)
   def _reduce_23(val, _values, result)
-     return val[0] 
+     result = val[0] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 80)
   def _reduce_24(val, _values, result)
-     return make_node(:NonNullType, of_type: val[0]) 
+     result = make_node(:NonNullType, of_type: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 83)
   def _reduce_25(val, _values, result)
-     return make_node(:TypeName, name: val[0])
+     result = make_node(:TypeName, name: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 84)
   def _reduce_26(val, _values, result)
-     return make_node(:ListType, of_type: val[1]) 
+     result = make_node(:ListType, of_type: val[1]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 87)
   def _reduce_27(val, _values, result)
-     return nil 
+     result = nil 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 88)
   def _reduce_28(val, _values, result)
-     return val[1] 
+     result = val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 91)
   def _reduce_29(val, _values, result)
-     return val[1] 
+     result = val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 94)
   def _reduce_30(val, _values, result)
-     return EMPTY_ARRAY 
+     result = EMPTY_ARRAY 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 95)
   def _reduce_31(val, _values, result)
-     return val[0] 
+     result = val[0] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 98)
   def _reduce_32(val, _values, result)
-     return [result] 
+     result = [result] 
     result
   end
 .,.,
@@ -1182,7 +1182,7 @@ module_eval(<<'.,.,', 'parser.y', 99)
 
 module_eval(<<'.,.,', 'parser.y', 108)
   def _reduce_37(val, _values, result)
-                return make_node(
+                result = make_node(
               :Field, {
                 name:         val[0],
                 arguments:    val[1],
@@ -1198,7 +1198,7 @@ module_eval(<<'.,.,', 'parser.y', 108)
 
 module_eval(<<'.,.,', 'parser.y', 119)
   def _reduce_38(val, _values, result)
-                return make_node(
+                result = make_node(
               :Field, {
                 alias:        val[0],
                 name:         val[2],
@@ -1259,42 +1259,42 @@ module_eval(<<'.,.,', 'parser.y', 119)
 
 module_eval(<<'.,.,', 'parser.y', 162)
   def _reduce_61(val, _values, result)
-     return make_node(:EnumValueDefinition, name: val[1], directives: val[2], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1]) 
+     result = make_node(:EnumValueDefinition, name: val[1], directives: val[2], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 165)
   def _reduce_62(val, _values, result)
-     return [val[0]] 
+     result = [val[0]] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 166)
   def _reduce_63(val, _values, result)
-     return val[0] << val[1] 
+     result = val[0] << val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 169)
   def _reduce_64(val, _values, result)
-     return EMPTY_ARRAY 
+     result = EMPTY_ARRAY 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 170)
   def _reduce_65(val, _values, result)
-     return val[1] 
+     result = val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 173)
   def _reduce_66(val, _values, result)
-     return [val[0]] 
+     result = [val[0]] 
     result
   end
 .,.,
@@ -1308,42 +1308,42 @@ module_eval(<<'.,.,', 'parser.y', 174)
 
 module_eval(<<'.,.,', 'parser.y', 177)
   def _reduce_68(val, _values, result)
-     return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])
+     result = make_node(:Argument, name: val[0], value: val[2], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 180)
   def _reduce_69(val, _values, result)
-     return val[0].to_f 
+     result = val[0].to_f 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 181)
   def _reduce_70(val, _values, result)
-     return val[0].to_i 
+     result = val[0].to_i 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 182)
   def _reduce_71(val, _values, result)
-     return val[0].to_s 
+     result = val[0].to_s 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 183)
   def _reduce_72(val, _values, result)
-     return true 
+     result = true 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 184)
   def _reduce_73(val, _values, result)
-     return false 
+     result = false 
     result
   end
 .,.,
@@ -1364,35 +1364,35 @@ module_eval(<<'.,.,', 'parser.y', 184)
 
 module_eval(<<'.,.,', 'parser.y', 195)
   def _reduce_81(val, _values, result)
-     return make_node(:NullValue, name: val[0], position_source: val[0]) 
+     result = make_node(:NullValue, name: val[0], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 196)
   def _reduce_82(val, _values, result)
-     return make_node(:VariableIdentifier, name: val[1], position_source: val[0]) 
+     result = make_node(:VariableIdentifier, name: val[1], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 199)
   def _reduce_83(val, _values, result)
-     return EMPTY_ARRAY 
+     result = EMPTY_ARRAY 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 200)
   def _reduce_84(val, _values, result)
-     return val[1] 
+     result = val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 203)
   def _reduce_85(val, _values, result)
-     return [val[0]] 
+     result = [val[0]] 
     result
   end
 .,.,
@@ -1406,21 +1406,21 @@ module_eval(<<'.,.,', 'parser.y', 204)
 
 module_eval(<<'.,.,', 'parser.y', 207)
   def _reduce_87(val, _values, result)
-     return make_node(:InputObject, arguments: [], position_source: val[0])
+     result = make_node(:InputObject, arguments: [], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 208)
   def _reduce_88(val, _values, result)
-     return make_node(:InputObject, arguments: val[1], position_source: val[0])
+     result = make_node(:InputObject, arguments: val[1], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 211)
   def _reduce_89(val, _values, result)
-     return [val[0]] 
+     result = [val[0]] 
     result
   end
 .,.,
@@ -1434,28 +1434,28 @@ module_eval(<<'.,.,', 'parser.y', 212)
 
 module_eval(<<'.,.,', 'parser.y', 215)
   def _reduce_91(val, _values, result)
-     return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])
+     result = make_node(:Argument, name: val[0], value: val[2], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 219)
   def _reduce_92(val, _values, result)
-     return make_node(:InputObject, arguments: [], position_source: val[0])
+     result = make_node(:InputObject, arguments: [], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 220)
   def _reduce_93(val, _values, result)
-     return make_node(:InputObject, arguments: val[1], position_source: val[0])
+     result = make_node(:InputObject, arguments: val[1], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 223)
   def _reduce_94(val, _values, result)
-     return [val[0]] 
+     result = [val[0]] 
     result
   end
 .,.,
@@ -1469,21 +1469,21 @@ module_eval(<<'.,.,', 'parser.y', 224)
 
 module_eval(<<'.,.,', 'parser.y', 227)
   def _reduce_96(val, _values, result)
-     return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])
+     result = make_node(:Argument, name: val[0], value: val[2], position_source: val[0])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 229)
   def _reduce_97(val, _values, result)
-     return make_node(:Enum, name: val[0], position_source: val[0]) 
+     result = make_node(:Enum, name: val[0], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 232)
   def _reduce_98(val, _values, result)
-     return  EMPTY_ARRAY 
+     result = EMPTY_ARRAY 
     result
   end
 .,.,
@@ -1492,7 +1492,7 @@ module_eval(<<'.,.,', 'parser.y', 232)
 
 module_eval(<<'.,.,', 'parser.y', 236)
   def _reduce_100(val, _values, result)
-     return [val[0]] 
+     result = [val[0]] 
     result
   end
 .,.,
@@ -1506,21 +1506,21 @@ module_eval(<<'.,.,', 'parser.y', 237)
 
 module_eval(<<'.,.,', 'parser.y', 239)
   def _reduce_102(val, _values, result)
-     return make_node(:Directive, name: val[1], arguments: val[2], position_source: val[0]) 
+     result = make_node(:Directive, name: val[1], arguments: val[2], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 242)
   def _reduce_103(val, _values, result)
-     return make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) 
+     result = make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 246)
   def _reduce_104(val, _values, result)
-            return make_node(:InlineFragment, {
+            result = make_node(:InlineFragment, {
           type: val[2],
           directives: val[3],
           selections: val[4],
@@ -1533,7 +1533,7 @@ module_eval(<<'.,.,', 'parser.y', 246)
 
 module_eval(<<'.,.,', 'parser.y', 254)
   def _reduce_105(val, _values, result)
-            return make_node(:InlineFragment, {
+            result = make_node(:InlineFragment, {
           type: nil,
           directives: val[1],
           selections: val[2],
@@ -1546,7 +1546,7 @@ module_eval(<<'.,.,', 'parser.y', 254)
 
 module_eval(<<'.,.,', 'parser.y', 264)
   def _reduce_106(val, _values, result)
-          return make_node(:FragmentDefinition, {
+          result = make_node(:FragmentDefinition, {
           name:       val[1],
           type:       val[3],
           directives: val[4],
@@ -1561,7 +1561,7 @@ module_eval(<<'.,.,', 'parser.y', 264)
 
 module_eval(<<'.,.,', 'parser.y', 275)
   def _reduce_107(val, _values, result)
-     return nil 
+     result = nil 
     result
   end
 .,.,
@@ -1576,7 +1576,7 @@ module_eval(<<'.,.,', 'parser.y', 275)
 
 module_eval(<<'.,.,', 'parser.y', 284)
   def _reduce_112(val, _values, result)
-     return make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0].line, directives: val[1], **val[3]) 
+     result = make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0].line, directives: val[1], **val[3]) 
     result
   end
 .,.,
@@ -1585,14 +1585,14 @@ module_eval(<<'.,.,', 'parser.y', 284)
 
 module_eval(<<'.,.,', 'parser.y', 288)
   def _reduce_114(val, _values, result)
-     return val[0].merge(val[1]) 
+     result = val[0].merge(val[1]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 291)
   def _reduce_115(val, _values, result)
-     return { val[0].to_s.to_sym => val[2] } 
+     result = { val[0].to_s.to_sym => val[2] } 
     result
   end
 .,.,
@@ -1615,14 +1615,14 @@ module_eval(<<'.,.,', 'parser.y', 291)
 
 module_eval(<<'.,.,', 'parser.y', 306)
   def _reduce_124(val, _values, result)
-     return make_node(:SchemaExtension, position_source: val[0], directives: val[2], **val[4]) 
+     result = make_node(:SchemaExtension, position_source: val[0], directives: val[2], **val[4]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 307)
   def _reduce_125(val, _values, result)
-     return make_node(:SchemaExtension, position_source: val[0], directives: val[2]) 
+     result = make_node(:SchemaExtension, position_source: val[0], directives: val[2]) 
     result
   end
 .,.,
@@ -1641,91 +1641,91 @@ module_eval(<<'.,.,', 'parser.y', 307)
 
 module_eval(<<'.,.,', 'parser.y', 317)
   def _reduce_132(val, _values, result)
-     return make_node(:ScalarTypeExtension, name: val[2], directives: val[3], position_source: val[0]) 
+     result = make_node(:ScalarTypeExtension, name: val[2], directives: val[3], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 321)
   def _reduce_133(val, _values, result)
-     return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[5], position_source: val[0]) 
+     result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[5], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 322)
   def _reduce_134(val, _values, result)
-     return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) 
+     result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 323)
   def _reduce_135(val, _values, result)
-     return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) 
+     result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 324)
   def _reduce_136(val, _values, result)
-     return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) 
+     result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 327)
   def _reduce_137(val, _values, result)
-     return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) 
+     result = make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 328)
   def _reduce_138(val, _values, result)
-     return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) 
+     result = make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 331)
   def _reduce_139(val, _values, result)
-     return make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: val[5], position_source: val[0]) 
+     result = make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: val[5], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 332)
   def _reduce_140(val, _values, result)
-     return make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: [], position_source: val[0]) 
+     result = make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: [], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 335)
   def _reduce_141(val, _values, result)
-     return make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: val[5], position_source: val[0]) 
+     result = make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: val[5], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 336)
   def _reduce_142(val, _values, result)
-     return make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: [], position_source: val[0]) 
+     result = make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: [], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 339)
   def _reduce_143(val, _values, result)
-     return make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) 
+     result = make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 340)
   def _reduce_144(val, _values, result)
-     return make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) 
+     result = make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) 
     result
   end
 .,.,
@@ -1738,7 +1738,7 @@ module_eval(<<'.,.,', 'parser.y', 340)
 
 module_eval(<<'.,.,', 'parser.y', 350)
   def _reduce_148(val, _values, result)
-            return make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+            result = make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1746,7 +1746,7 @@ module_eval(<<'.,.,', 'parser.y', 350)
 
 module_eval(<<'.,.,', 'parser.y', 355)
   def _reduce_149(val, _values, result)
-            return make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+            result = make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1754,7 +1754,7 @@ module_eval(<<'.,.,', 'parser.y', 355)
 
 module_eval(<<'.,.,', 'parser.y', 359)
   def _reduce_150(val, _values, result)
-     return EMPTY_ARRAY 
+     result = EMPTY_ARRAY 
     result
   end
 .,.,
@@ -1763,28 +1763,28 @@ module_eval(<<'.,.,', 'parser.y', 359)
 
 module_eval(<<'.,.,', 'parser.y', 363)
   def _reduce_152(val, _values, result)
-     return val[2] 
+     result = val[2] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 364)
   def _reduce_153(val, _values, result)
-     return val[1] 
+     result = val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 365)
   def _reduce_154(val, _values, result)
-     return val[1] 
+     result = val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 368)
   def _reduce_155(val, _values, result)
-     return [make_node(:TypeName, name: val[0], position_source: val[0])] 
+     result = [make_node(:TypeName, name: val[0], position_source: val[0])] 
     result
   end
 .,.,
@@ -1798,7 +1798,7 @@ module_eval(<<'.,.,', 'parser.y', 369)
 
 module_eval(<<'.,.,', 'parser.y', 372)
   def _reduce_157(val, _values, result)
-     return [make_node(:TypeName, name: val[0], position_source: val[0])] 
+     result = [make_node(:TypeName, name: val[0], position_source: val[0])] 
     result
   end
 .,.,
@@ -1812,7 +1812,7 @@ module_eval(<<'.,.,', 'parser.y', 373)
 
 module_eval(<<'.,.,', 'parser.y', 377)
   def _reduce_159(val, _values, result)
-            return make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+            result = make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1820,7 +1820,7 @@ module_eval(<<'.,.,', 'parser.y', 377)
 
 module_eval(<<'.,.,', 'parser.y', 381)
   def _reduce_160(val, _values, result)
-     return [val[0]] 
+     result = [val[0]] 
     result
   end
 .,.,
@@ -1834,21 +1834,21 @@ module_eval(<<'.,.,', 'parser.y', 382)
 
 module_eval(<<'.,.,', 'parser.y', 385)
   def _reduce_162(val, _values, result)
-     return EMPTY_ARRAY 
+     result = EMPTY_ARRAY 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 386)
   def _reduce_163(val, _values, result)
-     return val[1] 
+     result = val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 390)
   def _reduce_164(val, _values, result)
-            return make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+            result = make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1856,14 +1856,14 @@ module_eval(<<'.,.,', 'parser.y', 390)
 
 module_eval(<<'.,.,', 'parser.y', 394)
   def _reduce_165(val, _values, result)
-     return EMPTY_ARRAY 
+     result = EMPTY_ARRAY 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 395)
   def _reduce_166(val, _values, result)
-     return [val[0]] 
+     result = [val[0]] 
     result
   end
 .,.,
@@ -1877,7 +1877,7 @@ module_eval(<<'.,.,', 'parser.y', 396)
 
 module_eval(<<'.,.,', 'parser.y', 400)
   def _reduce_168(val, _values, result)
-            return make_node(:InterfaceTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+            result = make_node(:InterfaceTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1885,7 +1885,7 @@ module_eval(<<'.,.,', 'parser.y', 400)
 
 module_eval(<<'.,.,', 'parser.y', 404)
   def _reduce_169(val, _values, result)
-     return [make_node(:TypeName, name: val[0], position_source: val[0])]
+     result = [make_node(:TypeName, name: val[0], position_source: val[0])]
     result
   end
 .,.,
@@ -1899,7 +1899,7 @@ module_eval(<<'.,.,', 'parser.y', 405)
 
 module_eval(<<'.,.,', 'parser.y', 409)
   def _reduce_171(val, _values, result)
-            return make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+            result = make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1907,7 +1907,7 @@ module_eval(<<'.,.,', 'parser.y', 409)
 
 module_eval(<<'.,.,', 'parser.y', 414)
   def _reduce_172(val, _values, result)
-             return make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+             result = make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1915,7 +1915,7 @@ module_eval(<<'.,.,', 'parser.y', 414)
 
 module_eval(<<'.,.,', 'parser.y', 419)
   def _reduce_173(val, _values, result)
-            return make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+            result = make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1923,7 +1923,7 @@ module_eval(<<'.,.,', 'parser.y', 419)
 
 module_eval(<<'.,.,', 'parser.y', 424)
   def _reduce_174(val, _values, result)
-            return make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+            result = make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       
     result
   end
@@ -1931,7 +1931,7 @@ module_eval(<<'.,.,', 'parser.y', 424)
 
 module_eval(<<'.,.,', 'parser.y', 428)
   def _reduce_175(val, _values, result)
-     return [make_node(:DirectiveLocation, name: val[0].to_s, position_source: val[0])] 
+     result = [make_node(:DirectiveLocation, name: val[0].to_s, position_source: val[0])] 
     result
   end
 .,.,

@@ -8,8 +8,11 @@ module GraphQL
         def ast_node(new_ast_node = nil)
           if new_ast_node
             @ast_node = new_ast_node
+          elsif defined?(@ast_node)
+            @ast_node
+          else
+            nil
           end
-          @ast_node
         end
       end
     end

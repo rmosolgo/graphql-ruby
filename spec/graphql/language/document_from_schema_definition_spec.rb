@@ -91,11 +91,12 @@ type Query {
         query(Query)
         directive(Locale)
       end
-      focus
+
       it "dumps them into the string" do
         assert_equal schema_idl, DirectiveSchema.to_definition
       end
     end
+
     describe "when printing and schema respects root name conventions" do
       let(:schema_idl) { <<-GRAPHQL
         type Query {
