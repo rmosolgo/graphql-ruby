@@ -45,7 +45,6 @@ module GraphQL
       INPUT_FIELD_DEFINITION = :INPUT_FIELD_DEFINITION,
     ]
 
-    DEFAULT_DEPRECATION_REASON = 'No longer supported'
     LOCATION_DESCRIPTIONS = {
       QUERY:                    'Location adjacent to a query operation.',
       MUTATION:                 'Location adjacent to a mutation operation.',
@@ -95,6 +94,10 @@ module GraphQL
 
     def inspect
       "#<GraphQL::Directive #{name}>"
+    end
+
+    def type_class
+      metadata[:type_class]
     end
   end
 end

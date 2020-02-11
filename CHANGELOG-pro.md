@@ -8,6 +8,45 @@
 
 ### Bug Fix
 
+## 1.13.0 (10 Feb 2020)
+
+### New Features
+
+- OperationStore supports a `redis:` backend
+- OperationStore supports an arbitrary `backend_class:` for persistence operations
+
+### Bug Fix
+
+- Use a loop when clearing Redis subscription state to avoid large stack traces #2701
+- Handle empty subscription keys when publishing updates #2061
+
+## 1.12.2 (22 Jan 2020)
+
+### Bug Fix
+
+- Improve backwards compat with OperationStore (Improve adding `.tracer`, use `.graphql_name` when indexing)
+
+## 1.12.1 (20 Jan 2020)
+
+### Bug Fix
+
+- Fix OperationStore on class-based schemas with query instrumenters that use the query string
+
+## 1.12.0 (20 Jan 2020)
+
+### Deprecations
+
+- `GraphQL::Pro::Monitoring` is deprecated; see Tracing for a replacement: https://graphql-ruby.org/queries/tracing.html
+- `GraphQL::Pro::Repository` is deprecated; see OperationStore for a replacement: https://graphql-ruby.org/operation_store/overview.html
+
+### New Features
+
+- New stable connection support based on GraphQL-Ruby 1.10's new pagination implementation. New classes provide better handling of `NULL` values in order-by columns and they can be applied on a field-by-field basis(`GraphQL::Pro::SqliteStableRelationConnection`, `GraphQL::Pro::MySQLStableRelationConnection`, `GraphQL::Pro::PostgresStableRelationConnection`).
+
+### Bug Fix
+
+- Add the Access query analyzer to class-based schemas
+
 ## 1.11.0 (10 Oct 2019)
 
 ### New Features

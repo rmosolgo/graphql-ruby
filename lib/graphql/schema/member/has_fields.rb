@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require 'irb/ruby-token'
 
 module GraphQL
   class Schema
@@ -8,11 +7,11 @@ module GraphQL
       module HasFields
         # Add a field to this object or interface with the given definition
         # @see {GraphQL::Schema::Field#initialize} for method signature
-        # @return [void]
+        # @return [GraphQL::Schema::Field]
         def field(*args, **kwargs, &block)
           field_defn = field_class.from_options(*args, owner: self, **kwargs, &block)
           add_field(field_defn)
-          nil
+          field_defn
         end
 
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
@@ -43,9 +42,7 @@ module GraphQL
         # A list of Ruby keywords.
         #
         # @api private
-        RUBY_KEYWORDS = RubyToken::TokenDefinitions.select { |definition| definition[1] == RubyToken::TkId }
-                                                   .map { |definition| definition[2] }
-                                                   .compact
+        RUBY_KEYWORDS = [:class, :module, :def, :undef, :begin, :rescue, :ensure, :end, :if, :unless, :then, :elsif, :else, :case, :when, :while, :until, :for, :break, :next, :redo, :retry, :in, :do, :return, :yield, :super, :self, :nil, :true, :false, :and, :or, :not, :alias, :defined?, :BEGIN, :END, :__LINE__, :__FILE__]
 
         # A list of GraphQL-Ruby keywords.
         #
@@ -62,8 +59,8 @@ module GraphQL
         # @param field_defn [GraphQL::Schema::Field]
         # @return [void]
         def add_field(field_defn)
-          if CONFLICT_FIELD_NAMES.include?(field_defn.original_name) && field_defn.original_name == field_defn.resolver_method
-            warn "#{self.graphql_name}'s `field :#{field_defn.original_name}` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.original_name}` and `def resolve_#{field_defn.original_name}`)"
+          if CONFLICT_FIELD_NAMES.include?(field_defn.resolver_method) && field_defn.original_name == field_defn.resolver_method && field_defn.method_conflict_warning?
+            warn "#{self.graphql_name}'s `field :#{field_defn.name}` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.resolver_method}` and `def resolve_#{field_defn.resolver_method}`). Or use `method_conflict_warning: false` to suppress this warning."
           end
           own_fields[field_defn.name] = field_defn
           nil

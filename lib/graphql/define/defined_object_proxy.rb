@@ -1,10 +1,12 @@
 # frozen_string_literal: true
+
 module GraphQL
   module Define
     # This object delegates most methods to a dictionary of functions, {@dictionary}.
     # {@target} is passed to the specified function, along with any arguments and block.
     # This allows a method-based DSL without adding methods to the defined class.
     class DefinedObjectProxy
+      extend GraphQL::Ruby2Keywords
       # The object which will be defined by definition functions
       attr_reader :target
 
@@ -32,6 +34,7 @@ module GraphQL
       end
 
       # Lookup a function from the dictionary and call it if it's found.
+      ruby2_keywords
       def method_missing(name, *args, &block)
         definition = @dictionary[name]
         if definition

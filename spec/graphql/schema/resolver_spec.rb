@@ -4,8 +4,8 @@ require "spec_helper"
 describe GraphQL::Schema::Resolver do
   module ResolverTest
     class LazyBlock
-      def initialize
-        @get_value = Proc.new
+      def initialize(&block)
+        @get_value = block
       end
 
       def value
@@ -20,7 +20,7 @@ describe GraphQL::Schema::Resolver do
       argument :value, Integer, required: false
       type [Integer, null: true], null: false
 
-      def initialize(object:, context:)
+      def initialize(object:, context:, field:)
         super
         if defined?(@value)
           raise "The instance should start fresh"
@@ -38,7 +38,7 @@ describe GraphQL::Schema::Resolver do
       argument :extra_value, Integer, required: true
 
       def resolve(extra_value:, **_rest)
-        value = super(_rest)
+        value = super(**_rest)
         value << extra_value
         value
       end
@@ -420,9 +420,10 @@ describe GraphQL::Schema::Resolver do
       orphan_types IntegerWrapper
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
 
-      def object_from_id(id, ctx)
+      def self.object_from_id(id, ctx)
         if id == "invalid"
           nil
         else
@@ -432,8 +433,8 @@ describe GraphQL::Schema::Resolver do
     end
   end
 
-  def exec_query(*args)
-    ResolverTest::Schema.execute(*args)
+  def exec_query(*args, **kwargs)
+    ResolverTest::Schema.execute(*args, **kwargs)
   end
 
   describe ".path" do
@@ -447,7 +448,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     it "works on instances" do
-      r = ResolverTest::Resolver1.new(object: nil, context: nil)
+      r = ResolverTest::Resolver1.new(object: nil, context: nil, field: nil)
       assert_equal "Resolver1", r.path
     end
   end

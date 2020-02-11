@@ -33,7 +33,7 @@ module GraphQL
       end
 
       def self.build(onlies)
-        case onlies
+        case onlies.size
         when 0
           nil
         when 1

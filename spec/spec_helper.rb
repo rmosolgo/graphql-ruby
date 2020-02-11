@@ -9,7 +9,6 @@ ENV["BACKTRACE"] = "1"
 # Set this env var to use Interpreter for fixture schemas.
 # Eventually, interpreter will be the default.
 TESTING_INTERPRETER = ENV["TESTING_INTERPRETER"]
-TESTING_RESCUE_FROM = !TESTING_INTERPRETER
 
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
@@ -55,21 +54,31 @@ NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
   raise "this should never be called"
 }
 
-# Load dependencies
-['Mongoid', 'Rails'].each do |integration|
-  begin
-    Object.const_get(integration)
-    Dir["#{File.dirname(__FILE__)}/integration/#{integration.downcase}/**/*.rb"].each do |f|
-      require f
-    end
-  rescue NameError
-    # ignore
-  end
+def testing_rails?
+  defined?(::Rails)
+end
+
+def testing_mongoid?
+  defined?(::Mongoid)
 end
 
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
   require f
+end
+
+# Load dependencies
+['Mongoid', 'Rails'].each do |integration|
+  begin
+    Object.const_get(integration)
+    Dir["#{File.dirname(__FILE__)}/integration/#{integration.downcase}/**/*.rb"].each do |f|
+      if f.end_with?("spec_helper.rb") || ENV["TEST"].nil?
+        require f
+      end
+    end
+  rescue NameError
+    # ignore
+  end
 end
 
 def star_trek_query(string, variables={}, context: {})

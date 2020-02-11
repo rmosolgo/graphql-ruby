@@ -115,6 +115,7 @@ describe GraphQL::Schema::InputObject do
         mutation(Mutation)
         if TESTING_INTERPRETER
           use GraphQL::Execution::Interpreter
+          use GraphQL::Analysis::AST
         end
 
         def self.object_from_id(id, ctx)
@@ -124,6 +125,8 @@ describe GraphQL::Schema::InputObject do
         def self.resolve_type(type, obj, ctx)
           type
         end
+
+        orphan_types [Jazz::InstrumentType]
       end
     end
 
@@ -146,10 +149,16 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 },
                                                    variables: { input: input})
       assert_nil(res["data"])
-      assert_equal("Variable input of type InputObj! was provided invalid value", res["errors"][0]["message"])
-      assert_equal([{ "line" => 1, "column" => 13 }], res["errors"][0]["locations"])
-      assert_equal("boom!", res["errors"][0]["extensions"]["problems"][0]["explanation"])
-      assert_equal(input, res["errors"][0]["extensions"]["value"])
+
+      if TESTING_INTERPRETER
+        assert_equal("boom!", res["errors"][0]["message"])
+        assert_equal([{ "line" => 1, "column" => 33 }], res["errors"][0]["locations"])
+      else
+        assert_equal("Variable $input of type InputObj! was provided invalid value", res["errors"][0]["message"])
+        assert_equal([{ "line" => 1, "column" => 13 }], res["errors"][0]["locations"])
+        assert_equal("boom!", res["errors"][0]["extensions"]["problems"][0]["explanation"])
+        assert_equal(input, res["errors"][0]["extensions"]["value"])
+      end
     end
 
     it "loads input object arguments" do
@@ -191,6 +200,11 @@ describe GraphQL::Schema::InputObject do
 
       class Schema < GraphQL::Schema
         query(Query)
+
+        if TESTING_INTERPRETER
+          use GraphQL::Execution::Interpreter
+          use GraphQL::Analysis::AST
+        end
       end
     end
 
@@ -212,24 +226,44 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareObjectTest::Schema.execute(query_str, variables: { input: { min: 5, max: 10 } })
       expected_obj = (5..10).inspect
       assert_equal expected_obj, res["data"]["inputs"]
-    end    
+    end
   end
 
   describe "loading application object(s)" do
     module InputObjectLoadsTest
+      class BaseArgument < GraphQL::Schema::Argument
+        def authorized?(obj, val, ctx)
+          if contains_spinal_tap?(val)
+            false
+          else
+            true
+          end
+        end
+
+        def contains_spinal_tap?(val)
+          if val.is_a?(Array)
+            val.any? { |v| contains_spinal_tap?(v) }
+          else
+            val.is_a?(Jazz::Models::Ensemble) && val.name == "Spinal Tap"
+          end
+        end
+      end
+
       class SingleLoadInputObj < GraphQL::Schema::InputObject
+        argument_class BaseArgument
         argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
       end
 
       class MultiLoadInputObj < GraphQL::Schema::InputObject
+        argument_class BaseArgument
         argument :instrument_ids, [ID], required: true, loads: Jazz::InstrumentType
       end
 
       class Query < GraphQL::Schema::Object
-        field :single_load_input, Jazz::InstrumentType, null: false do
+        field :single_load_input, Jazz::InstrumentType, null: true do
           argument :input, SingleLoadInputObj, required: true
         end
-        field :multi_load_input, [Jazz::InstrumentType], null: false do
+        field :multi_load_input, [Jazz::InstrumentType], null: true do
           argument :input, MultiLoadInputObj, required: true
         end
 
@@ -244,9 +278,6 @@ describe GraphQL::Schema::InputObject do
 
       class Schema < GraphQL::Schema
         query(Query)
-        if TESTING_INTERPRETER
-          use GraphQL::Execution::Interpreter
-        end
 
         def self.object_from_id(id, ctx)
           Jazz::GloballyIdentifiableType.find(id)
@@ -254,6 +285,11 @@ describe GraphQL::Schema::InputObject do
 
         def self.resolve_type(type, obj, ctx)
           type
+        end
+
+        if TESTING_INTERPRETER
+          use GraphQL::Analysis::AST
+          use GraphQL::Execution::Interpreter
         end
       end
     end
@@ -287,6 +323,14 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectLoadsTest::Schema.execute(multi_query_str, variables: { ids: ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"]})
       assert_equal ["Ensemble/Robert Glasper Experiment", "Ensemble/Bela Fleck and the Flecktones"], res["data"]["multiLoadInput"].map { |e| e["id"] }
     end
+
+    it "authorizes based on loaded objects" do
+      res = InputObjectLoadsTest::Schema.execute(single_query_str, variables: { id: "Ensemble/Spinal Tap" })
+      assert_nil res["data"]["singleLoadInput"]
+
+      res2 = InputObjectLoadsTest::Schema.execute(multi_query_str, variables: { ids: ["Ensemble/Robert Glasper Experiment", "Ensemble/Spinal Tap"]})
+      assert_nil res2["data"]["multiLoadInput"]
+    end
   end
 
   describe "in queries" do
@@ -315,12 +359,100 @@ describe GraphQL::Schema::InputObject do
       ]
       assert_equal expected_info, res["data"]["inspectInput"]
     end
+
+    it "works with given nil values for nested inputs" do
+      query_str = <<-GRAPHQL
+      query($input: InspectableInput!){
+        inspectInput(input: $input)
+      }
+      GRAPHQL
+      input = {
+        "nestedInput" => nil,
+        "stringValue" => "xyz"
+      }
+      res = Jazz::Schema.execute(query_str, variables: { input: input }, context: { message: "hi" })
+      assert res["data"]["inspectInput"]
+    end
+
+    it "uses empty object when no variable value is given" do
+      query_str = <<-GRAPHQL
+      query($input: InspectableInput){
+        inspectInput(input: {
+          nestedInput: $input,
+          stringValue: "xyz"
+        })
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str, variables: { input: nil }, context: { message: "hi" })
+      expected_info = [
+        "Jazz::InspectableInput",
+        "hi, xyz, -, (-)",
+        "xyz",
+        "xyz",
+        "true",
+        "xyz",
+        "No ensemble",
+        "false"
+      ]
+
+      assert_equal expected_info, res["data"]["inspectInput"]
+    end
+
+    it "handles camelized booleans" do
+      res = Jazz::Schema.execute("query($input: CamelizedBooleanInput!){ inputObjectCamelization(input: $input) }", variables: { input: { camelizedBoolean: false } })
+      assert_equal "{:camelized_boolean=>false}", res["data"]["inputObjectCamelization"]
+    end
   end
 
   describe "when used with default_value" do
     it "comes as an instance" do
       res = Jazz::Schema.execute("{ defaultValueTest }")
       assert_equal "Jazz::InspectableInput -> {:string_value=>\"S\"}", res["data"]["defaultValueTest"]
+    end
+
+    it "works with empty objects" do
+      res = Jazz::Schema.execute("{ defaultValueTest2 }")
+      assert_equal "Jazz::InspectableInput -> {}", res["data"]["defaultValueTest2"]
+    end
+
+    it "introspects in GraphQL language with enums" do
+      class InputDefaultSchema < GraphQL::Schema
+        class Letter < GraphQL::Schema::Enum
+          value "A"
+          value "B"
+        end
+
+        class InputObj < GraphQL::Schema::InputObject
+          argument :a, Letter, required: false
+          argument :b, Letter, required: false
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :i, Int, null: true do
+            argument :arg, InputObj, required: false, default_value: { a: "A", b: "B" }
+          end
+        end
+
+        query(Query)
+        use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
+      end
+
+      res = InputDefaultSchema.execute "
+      {
+        __type(name: \"Query\") {
+          fields {
+            name
+            args {
+              name
+              defaultValue
+            }
+          }
+        }
+      }
+      "
+      assert_equal "{a: A, b: B}", res["data"]["__type"]["fields"].first["args"].first["defaultValue"]
     end
   end
 
@@ -349,7 +481,7 @@ describe GraphQL::Schema::InputObject do
 
       @input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
-        context: OpenStruct.new(schema: Jazz::Schema),
+        context: OpenStruct.new(warden: Jazz::Schema, schema: Jazz::Schema),
         defaults_used: Set.new
       )
     end
@@ -463,6 +595,43 @@ describe GraphQL::Schema::InputObject do
       assert_output "", "" do
         input_object.graphql_definition
       end
+    end
+  end
+
+  describe "nested objects inside lists" do
+    class NestedInputObjectSchema < GraphQL::Schema
+      class ItemInput < GraphQL::Schema::InputObject
+        argument :str, String, required: true
+      end
+
+      class NestedStuff < GraphQL::Schema::RelayClassicMutation
+        argument :items, [ItemInput], required: true
+        field :str, String, null: false
+        def resolve(items:)
+          {
+            str: items.map { |i| i.class.name }.join(", ")
+          }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :nested_stuff, mutation: NestedStuff
+      end
+
+      mutation(Mutation)
+      use GraphQL::Analysis::AST
+      use GraphQL::Execution::Interpreter
+    end
+
+    it "properly wraps them in instances" do
+      res = NestedInputObjectSchema.execute "
+        mutation($input: NestedStuffInput!) {
+          nestedStuff(input: $input) {
+            str
+          }
+        }
+      ", variables: { input: { "items" => [{ "str" => "1"}, { "str" => "2"}]}}
+      assert_equal "NestedInputObjectSchema::ItemInput, NestedInputObjectSchema::ItemInput", res["data"]["nestedStuff"]["str"]
     end
   end
 end

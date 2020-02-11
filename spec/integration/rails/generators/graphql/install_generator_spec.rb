@@ -44,6 +44,13 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
+
+  # Opt in to the new runtime (default in future graphql-ruby versions)
+  use GraphQL::Execution::Interpreter
+  use GraphQL::Analysis::AST
+
+  # Add built-in connections for pagination
+  use GraphQL::Pagination::Connections
 end
 RUBY
     assert_file "app/graphql/dummy_schema.rb", expected_schema
@@ -235,9 +242,16 @@ RUBY
 
   EXPECTED_RELAY_BATCH_SCHEMA = <<-RUBY
 class DummySchema < GraphQL::Schema
-
   mutation(Types::MutationType)
   query(Types::QueryType)
+
+  # Opt in to the new runtime (default in future graphql-ruby versions)
+  use GraphQL::Execution::Interpreter
+  use GraphQL::Analysis::AST
+
+  # Add built-in connections for pagination
+  use GraphQL::Pagination::Connections
+
   # Relay Object Identification:
 
   # Return a string UUID for `object`

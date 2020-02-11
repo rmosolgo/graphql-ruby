@@ -135,7 +135,7 @@ module GraphQL
 
         TYPE_IS_VALID_INPUT_TYPE = ->(type) {
           outer_type = type.type
-          inner_type = outer_type.is_a?(GraphQL::BaseType) ? outer_type.unwrap : nil
+          inner_type = outer_type.respond_to?(:unwrap) ? outer_type.unwrap : nil
 
           case inner_type
           when GraphQL::ScalarType, GraphQL::InputObjectType, GraphQL::EnumType
@@ -154,7 +154,7 @@ module GraphQL
         }
 
         SCHEMA_CAN_FETCH_IDS = ->(schema) {
-          has_node_field = schema.query && schema.query.all_fields.any?(&:relay_node_field)
+          has_node_field = schema.query && schema.query.fields.each_value.any?(&:relay_node_field)
           if has_node_field && schema.object_from_id_proc.nil?
             "schema contains `node(id:...)` field, so you must define a `object_from_id -> (id, ctx) { ... }` function"
           else

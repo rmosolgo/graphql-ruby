@@ -54,7 +54,6 @@ module GraphQL
         )
 
         @document = @document_from_schema.document
-
         @schema = schema
       end
 
@@ -99,7 +98,7 @@ module GraphQL
         if directive.name == "deprecated"
           reason = directive.arguments.find { |arg| arg.name == "reason" }
 
-          if reason.value == GraphQL::Directive::DEFAULT_DEPRECATION_REASON
+          if reason.value == GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON
             "@deprecated"
           else
             "@deprecated(reason: #{reason.value.to_s.inspect})"

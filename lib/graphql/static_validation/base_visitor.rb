@@ -71,7 +71,7 @@ module GraphQL
       module ContextMethods
         def on_operation_definition(node, parent)
           object_type = @schema.root_type_for_operation(node.operation_type)
-          @object_types.push(object_type)
+          push_type(object_type)
           @path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
           super
           @object_types.pop
@@ -98,9 +98,9 @@ module GraphQL
           @field_definitions.push(field_definition)
           if !field_definition.nil?
             next_object_type = field_definition.type.unwrap
-            @object_types.push(next_object_type)
+            push_type(next_object_type)
           else
-            @object_types.push(nil)
+            push_type(nil)
           end
           @path.push(node.alias || node.name)
           super
@@ -120,7 +120,7 @@ module GraphQL
           argument_defn = if (arg = @argument_definitions.last)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
-              arg_type.input_fields[node.name]
+              arg_type.arguments[node.name]
             else
               nil
             end
@@ -187,14 +187,18 @@ module GraphQL
 
         def on_fragment_with_type(node)
           object_type = if node.type
-            @schema.types.fetch(node.type.name, nil)
+            @schema.get_type(node.type.name)
           else
             @object_types.last
           end
-          @object_types.push(object_type)
+          push_type(object_type)
           yield(node)
           @object_types.pop
           @path.pop
+        end
+
+        def push_type(t)
+          @object_types.push(t)
         end
       end
 

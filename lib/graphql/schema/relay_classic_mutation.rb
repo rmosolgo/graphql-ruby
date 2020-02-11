@@ -33,9 +33,13 @@ module GraphQL
         # But when using the interpreter, no instrumenters are applied.
         if context.interpreter?
           input = inputs[:input].to_kwargs
+
+          new_extras = field ? field.extras : []
+          all_extras = self.class.extras + new_extras
+
           # Transfer these from the top-level hash to the
           # shortcutted `input:` object
-          self.class.extras.each do |ext|
+          all_extras.each do |ext|
             # It's possible that the `extra` was not passed along by this point,
             # don't re-add it if it wasn't given here.
             if inputs.key?(ext)
@@ -57,7 +61,7 @@ module GraphQL
         end
 
         return_value = if input_kwargs.any?
-          super(input_kwargs)
+          super(**input_kwargs)
         else
           super()
         end

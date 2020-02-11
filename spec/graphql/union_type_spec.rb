@@ -2,9 +2,9 @@
 require "spec_helper"
 
 describe GraphQL::UnionType do
-  let(:type_1) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT)}
-  let(:type_2) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT)}
-  let(:type_3) { OpenStruct.new(kind: GraphQL::TypeKinds::SCALAR)}
+  let(:type_1) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT, type: 1)}
+  let(:type_2) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT, type: 2)}
+  let(:type_3) { OpenStruct.new(kind: GraphQL::TypeKinds::SCALAR, type: 3)}
   let(:union) {
     types = [type_1, type_2]
     GraphQL::UnionType.define {
@@ -14,11 +14,36 @@ describe GraphQL::UnionType do
     }
   }
 
+  let(:filtered_union) {
+    defs = self
+    GraphQL::UnionType.define {
+      name("FilteredUnion")
+      type_membership_class(FilterType2)
+
+      possible_types([defs.type_2], visibility: { private: true })
+      possible_types([defs.type_3])
+    }
+  }
+
+  class FilterType2 < GraphQL::Schema::TypeMembership
+    def initialize(*args, visibility: nil, **kwargs)
+      @visibility = visibility
+      super(*args, **kwargs)
+    end
+
+    def visible?(ctx)
+      return true if @visibility.nil?
+
+      @visibility[:private] && ctx[:private]
+    end
+  end
+
+
   it "has a name" do
     assert_equal("MyUnion", union.name)
   end
 
-  it '#include? returns true if type in in possible_types' do
+  it '#include? returns true if type in possible_types' do
     assert union.include?(type_1)
   end
 
@@ -31,11 +56,19 @@ describe GraphQL::UnionType do
     union.resolve_type = ->(value, ctx) {
       "This is not the types you are looking for"
     }
-    fake_ctx = OpenStruct.new(query: GraphQL::Query.new(Dummy::Schema, ""))
+    fake_ctx = OpenStruct.new(query: GraphQL::Query.new(GraphQL::Schema.new, ""))
 
     assert_raises(RuntimeError) {
       union.resolve_type(test_str, fake_ctx)
     }
+  end
+
+  it '#possible_types returns only filtered types if context is present' do
+    assert_equal [type_3], filtered_union.possible_types(private: false)
+  end
+
+  it '#possible_types returns all possible types provided in a private context' do
+    assert_equal [type_2, type_3], filtered_union.possible_types(private: true)
   end
 
   describe "#resolve_type" do
@@ -153,59 +186,12 @@ describe GraphQL::UnionType do
     it "copies possible types without affecting the original" do
       union.possible_types # load the internal cache
       union_2 = union.dup
-      union_2.possible_types << type_3
+      assert_equal 2, union.possible_types.size
+      assert_equal 2, union_2.possible_types.size
+
+      union_2.possible_types = union_2.possible_types + [type_3]
       assert_equal 2, union.possible_types.size
       assert_equal 3, union_2.possible_types.size
-    end
-  end
-
-  describe "#get_possible_type" do
-    let(:query_string) {%|
-      {
-        __type(name: "Beverage") {
-          name
-        }
-      }
-    |}
-
-    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
-    let(:union) { Dummy::Beverage.graphql_definition }
-
-    it "returns the type definition if the type exists and is a possible type of the union" do
-      assert union.get_possible_type("Milk", query.context)
-    end
-
-    it "returns nil if the type is not found in the schema" do
-      assert_nil union.get_possible_type("Foo", query.context)
-    end
-
-    it "returns nil if the type is not a possible type of the union" do
-      assert_nil union.get_possible_type("Cheese", query.context)
-    end
-  end
-
-  describe "#possible_type?" do
-    let(:query_string) {%|
-      {
-        __type(name: "Beverage") {
-          name
-        }
-      }
-    |}
-
-    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
-    let(:union) { Dummy::Beverage.graphql_definition }
-
-    it "returns true if the type exists and is a possible type of the union" do
-      assert union.possible_type?("Milk", query.context)
-    end
-
-    it "returns false if the type is not found in the schema" do
-      refute union.possible_type?("Foo", query.context)
-    end
-
-    it "returns false if the type is not a possible type of the union" do
-      refute union.possible_type?("Cheese", query.context)
     end
   end
 end

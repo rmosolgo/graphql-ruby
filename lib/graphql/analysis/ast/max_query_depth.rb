@@ -4,10 +4,14 @@ module GraphQL
     module AST
       class MaxQueryDepth < QueryDepth
         def result
-          return unless query.max_depth
+          configured_max_depth = if query
+            query.max_depth
+          else
+            multiplex.schema.max_depth
+          end
 
-          if @max_depth > query.max_depth
-            GraphQL::AnalysisError.new("Query has depth of #{@max_depth}, which exceeds max depth of #{query.max_depth}")
+          if configured_max_depth && @max_depth > configured_max_depth
+            GraphQL::AnalysisError.new("Query has depth of #{@max_depth}, which exceeds max depth of #{configured_max_depth}")
           else
             nil
           end

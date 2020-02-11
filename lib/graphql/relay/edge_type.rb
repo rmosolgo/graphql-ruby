@@ -2,6 +2,7 @@
 module GraphQL
   module Relay
     module EdgeType
+      # @api deprecated
       def self.create_type(wrapped_type, name: nil, &block)
         GraphQL::ObjectType.define do
           type_name = wrapped_type.is_a?(GraphQL::BaseType) ? wrapped_type.name : wrapped_type.graphql_name

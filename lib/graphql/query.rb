@@ -78,12 +78,18 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil, warden: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
+
+      # Use the `.graphql_definition` here which will return legacy types instead of classes
+      if schema.is_a?(Class) && !schema.interpreter?
+        schema = schema.graphql_definition
+      end
       @schema = schema
       @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
+      @warden = warden
       @subscription_topic = subscription_topic
       @root_value = root_value
       @fragments = nil
@@ -134,7 +140,6 @@ module GraphQL
       @executed = false
 
       # TODO add a general way to define schema-level filters
-      # TODO also add this to schema dumps
       if @schema.respond_to?(:visible?)
         merge_filters(only: @schema.method(:visible?))
       end
@@ -157,7 +162,7 @@ module GraphQL
       @lookahead ||= begin
         ast_node = selected_operation
         root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
-        root_type = root_type.metadata[:type_class] || raise("Invariant: `lookahead` only works with class-based types")
+        root_type = root_type.type_class || raise("Invariant: `lookahead` only works with class-based types")
         GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
       end
     end
@@ -300,6 +305,13 @@ module GraphQL
       with_prepared_ast { @subscription }
     end
 
+    # @api private
+    def with_error_handling
+      schema.error_handler.with_error_handling(context) do
+        yield
+      end
+    end
+
     private
 
     def find_operation(operations, operation_name)
@@ -314,8 +326,7 @@ module GraphQL
 
     def prepare_ast
       @prepared_ast = true
-      @warden = GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
-
+      @warden ||= GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
         if query_string

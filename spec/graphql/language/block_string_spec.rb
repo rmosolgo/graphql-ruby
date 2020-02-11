@@ -59,6 +59,11 @@ describe GraphQL::Language::BlockString do
           "Hello,     \n  World!   \n\nYours,     \n  GraphQL.  ",
 
         ],
+        [
+          # Doesn't crash when the string is only a newline
+          "\n",
+          ""
+        ]
       ]
 
       examples.each_with_index do |(before, after), idx|

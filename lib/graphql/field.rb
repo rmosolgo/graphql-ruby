@@ -2,123 +2,7 @@
 require "graphql/field/resolve"
 
 module GraphQL
-  # {Field}s belong to {ObjectType}s and {InterfaceType}s.
-  #
-  # They're usually created with the `field` helper. If you create it by hand, make sure {#name} is a String.
-  #
-  # A field must have a return type, but if you want to defer the return type calculation until later,
-  # you can pass a proc for the return type. That proc will be called when the schema is defined.
-  #
-  # @example Lazy type resolution
-  #   # If the field's type isn't defined yet, you can pass a proc
-  #   field :city, -> { TypeForModelName.find("City") }
-  #
-  # For complex field definition, you can pass a block to the `field` helper, eg `field :name do ... end`.
-  # This block is equivalent to calling `GraphQL::Field.define { ... }`.
-  #
-  # @example Defining a field with a block
-  #   field :city, CityType do
-  #     # field definition continues inside the block
-  #   end
-  #
-  # ## Resolve
-  #
-  # Fields have `resolve` functions to determine their values at query-time.
-  # The default implementation is to call a method on the object based on the field name.
-  #
-  # @example Create a field which calls a method with the same name.
-  #   GraphQL::ObjectType.define do
-  #     field :name, types.String, "The name of this thing "
-  #   end
-  #
-  # You can specify a custom proc with the `resolve` helper.
-  #
-  # There are some shortcuts for common `resolve` implementations:
-  #   - Provide `property:` to call a method with a different name than the field name
-  #   - Provide `hash_key:` to resolve the field by doing a key lookup, eg `obj[:my_hash_key]`
-  #
-  # @example Create a field that calls a different method on the object
-  #   GraphQL::ObjectType.define do
-  #     # use the `property` keyword:
-  #     field :firstName, types.String, property: :first_name
-  #   end
-  #
-  # @example Create a field looks up with `[hash_key]`
-  #   GraphQL::ObjectType.define do
-  #     # use the `hash_key` keyword:
-  #     field :firstName, types.String, hash_key: :first_name
-  #   end
-  #
-  # ## Arguments
-  #
-  # Fields can take inputs; they're called arguments. You can define them with the `argument` helper.
-  #
-  # @example Create a field with an argument
-  #   field :students, types[StudentType] do
-  #     argument :grade, types.Int
-  #     resolve ->(obj, args, ctx) {
-  #       Student.where(grade: args[:grade])
-  #     }
-  #   end
-  #
-  # They can have default values which will be provided to `resolve` if the query doesn't include a value.
-  #
-  # @example Argument with a default value
-  #   field :events, types[EventType] do
-  #     # by default, don't include past events
-  #     argument :includePast, types.Boolean, default_value: false
-  #     resolve ->(obj, args, ctx) {
-  #       args[:includePast] # => false if no value was provided in the query
-  #       # ...
-  #     }
-  #   end
-  #
-  # Only certain types maybe used for inputs:
-  #
-  # - Scalars
-  # - Enums
-  # - Input Objects
-  # - Lists of those types
-  #
-  # Input types may also be non-null -- in that case, the query will fail
-  # if the input is not present.
-  #
-  # ## Complexity
-  #
-  # Fields can have _complexity_ values which describe the computation cost of resolving the field.
-  # You can provide the complexity as a constant with `complexity:` or as a proc, with the `complexity` helper.
-  #
-  # @example Custom complexity values
-  #   # Complexity can be a number or a proc.
-  #
-  #   # Complexity can be defined with a keyword:
-  #   field :expensive_calculation, !types.Int, complexity: 10
-  #
-  #   # Or inside the block:
-  #   field :expensive_calculation_2, !types.Int do
-  #     complexity ->(ctx, args, child_complexity) { ctx[:current_user].staff? ? 0 : 10 }
-  #   end
-  #
-  # @example Calculating the complexity of a list field
-  #   field :items, types[ItemType] do
-  #     argument :limit, !types.Int
-  #     # Multiply the child complexity by the possible items on the list
-  #     complexity ->(ctx, args, child_complexity) { child_complexity * args[:limit] }
-  #   end
-  #
-  # @example Creating a field, then assigning it to a type
-  #   name_field = GraphQL::Field.define do
-  #     name("Name")
-  #     type(!types.String)
-  #     description("The name of this thing")
-  #     resolve ->(object, arguments, context) { object.name }
-  #   end
-  #
-  #   NamedType = GraphQL::ObjectType.define do
-  #     # The second argument may be a GraphQL::Field
-  #     field :name, name_field
-  #   end
-  #
+  # @api deprecated
   class Field
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :description, :deprecation_reason,
@@ -195,6 +79,10 @@ module GraphQL
     attr_accessor :trace
 
     attr_accessor :ast_node
+
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_definition :itself
 
     # @return [Boolean]
     def connection?
@@ -313,6 +201,10 @@ module GraphQL
       GraphQL::Execution::Lazy.new {
         lazy_resolve(obj, args, ctx)
       }
+    end
+
+    def type_class
+      metadata[:type_class]
     end
 
     private

@@ -186,58 +186,50 @@ describe GraphQL::Query::Executor do
       end
     end
 
-    if TESTING_RESCUE_FROM
-      describe "if the schema has a rescue handler" do
-        before do
-          # HACK: reach to the underlying instance to perform a side-effect
-          schema.graphql_definition.rescue_from(RuntimeError) { "Error was handled!" }
+    describe "if the schema has a rescue handler" do
+      let(:schema) {
+        Class.new(Dummy::Schema) do
+          use GraphQL::Execution::Errors
+          rescue_from(RuntimeError) { raise GraphQL::ExecutionError, "Error was handled!" }
         end
+      }
 
-        after do
-          # remove the handler from the middleware:
-          schema.remove_handler(RuntimeError)
-        end
-
-        it "adds to the errors key" do
-          expected = {
-              "data" => {"error" => nil},
-              "errors"=>[
-                  {
-                      "message"=>"Error was handled!",
-                      "locations" => [{"line"=>1, "column"=>17}],
-                      "path"=>["error"]
-                  }
-              ]
-          }
-          assert_equal(expected, result)
-        end
-      end
-
-      describe "if the schema has a rescue handler with an instance of GraphQL::ExecutionError as an argument" do
-        before do
-          # HACK: reach to the underlying instance to perform a side-effect
-          schema.graphql_definition.rescue_from(RuntimeError) { GraphQL::ExecutionError.new("Error was handled!", extensions: { code: "DUMMY_ERROR" }) }
-        end
-
-        after do
-          # remove the handler from the middleware:
-          schema.remove_handler(RuntimeError)
-        end
-
-        it "adds to the errors key" do
-          expected = {
+      it "adds to the errors key" do
+        expected = {
             "data" => {"error" => nil},
             "errors"=>[
               {
                 "message"=>"Error was handled!",
                 "locations" => [{"line"=>1, "column"=>17}],
                 "path"=>["error"],
-                "extensions"=>{"code" => "DUMMY_ERROR"}
               }
             ]
-          }
-          assert_equal(expected, result)
+        }
+        assert_equal(expected, result)
+      end
+    end
+
+    describe "if the schema has a rescue handler with an instance of GraphQL::ExecutionError as an argument" do
+      let(:schema) {
+        Class.new(Dummy::Schema) do
+          use GraphQL::Execution::Errors
+          rescue_from(RuntimeError) { GraphQL::ExecutionError.new("Error was handled!", extensions: { code: "DUMMY_ERROR" }) }
         end
+      }
+
+      it "adds to the errors key" do
+        expected = {
+          "data" => {"error" => nil},
+          "errors"=>[
+            {
+              "message"=>"Error was handled!",
+              "locations" => [{"line"=>1, "column"=>17}],
+              "path"=>["error"],
+              "extensions"=>{ "code" => "DUMMY_ERROR"}
+            }
+          ]
+        }
+        assert_equal(expected, result)
       end
     end
   end
@@ -282,7 +274,7 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value",
+              "message" => "Variable $input of type ReplaceValuesInput! was provided invalid value",
               "locations" => [{ "line" => 1, "column" => 13 }],
               "extensions" => {
                 "value" => nil,
@@ -302,7 +294,7 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value for values (Expected value to not be null)",
+              "message" => "Variable $input of type ReplaceValuesInput! was provided invalid value for values (Expected value to not be null)",
               "locations" => [{ "line" => 1, "column" => 13 }],
               "extensions" => {
                 "value" => {},
@@ -322,19 +314,19 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type [DairyProductInput] was provided invalid value for 0.foo (Field is not defined on DairyProductInput), 0.source (Expected value to not be null)",
+              "message" => "Variable $input of type [DairyProductInput] was provided invalid value for 0.foo (Argument is not defined on DairyProductInput), 0.source (Expected value to not be null)",
               "locations" => [{ "line" => 1, "column" => 10 }],
               "extensions" => {
                 "value" => [{ "foo" => "bar" }],
                 "problems" => [
-                  { "path" => [0, "foo"], "explanation" => "Field is not defined on DairyProductInput" },
+                  { "path" => [0, "foo"], "explanation" => "Argument is not defined on DairyProductInput" },
                   { "path" => [0, "source"], "explanation" => "Expected value to not be null" }
                 ]
               }
             }
           ]
         }
-        assert_equal(expected, result)
+        assert_equal(expected, result.to_h)
       end
     end
   end

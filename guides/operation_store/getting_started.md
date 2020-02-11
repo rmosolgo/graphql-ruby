@@ -22,61 +22,14 @@ To use `GraphQL::Pro::OperationStore` with your app, follow these steps:
 
 `OperationStore` requires two gems in your application environment:
 
-- `ActiveRecord` to access tables in your database. (Using another ORM or backend? Please {% open_an_issue "Backend support request for OperationStore" %} to request support!)
+- {% internal_link "ActiveRecord", "/operation_store/active_record_backend" %} or {% internal_link "Redis", "/operation_store/redis_backend" %} for persistence. (Using another ORM or backend? Please {% open_an_issue "Backend support request for OperationStore" %} to request support!)
 - `Rack`: to serve the Dashboard and Sync API. (In Rails, this is provided by `config/routes.rb`.)
 
 These are bundled with Rails by default.
 
 #### Prepare the Database
 
-`GraphQL::Pro::OperationStore` requires some database tables. You can add these with a migration:
-
-```bash
-$ rails generate migration SetupOperationStore
-```
-
-Then open the migration file and add:
-
-```ruby
-# ...
-# implement the change method with:
-def change
-  create_table :graphql_clients, primary_key: :id do |t|
-    t.column :name, :string, null: false
-    t.column :secret, :string, null: false
-    t.timestamps
-  end
-  add_index :graphql_clients, :name, unique: true
-  add_index :graphql_clients, :secret, unique: true
-
-  create_table :graphql_client_operations, primary_key: :id do |t|
-    t.references :graphql_client, null: false
-    t.references :graphql_operation, null: false
-    t.column :alias, :string, null: false
-    t.timestamps
-  end
-  add_index :graphql_client_operations, [:graphql_client_id, :alias], unique: true, name: "graphql_client_operations_pairs"
-
-  create_table :graphql_operations, primary_key: :id do |t|
-    t.column :digest, :string, null: false
-    t.column :body, :text, null: false
-    t.column :name, :string, null: false
-    t.timestamps
-  end
-  add_index :graphql_operations, :digest, unique: true
-
-  create_table :graphql_index_entries, primary_key: :id do |t|
-    t.column :name, :string, null: false
-  end
-  add_index :graphql_index_entries, :name, unique: true
-
-  create_table :graphql_index_references, primary_key: :id do |t|
-    t.references :graphql_index_entry, null: false
-    t.references :graphql_operation, null: false
-  end
-  add_index :graphql_index_references, [:graphql_index_entry_id, :graphql_operation_id], unique: true, name: "graphql_index_reference_pairs"
-end
-```
+If you're going to store data with ActiveRecord, {% internal_link "migrate the database", "/operation_store/active_record_backend" %} to prepare tables for it.
 
 #### Add `OperationStore`
 
@@ -88,6 +41,11 @@ class MySchema < GraphQL::Schema
   use GraphQL::Pro::OperationStore
 end
 ```
+
+By default, it uses `ActiveRecord`. It also accepts:
+
+- `redis:`, for using a {% internal_link "Redis backend", "/operation_store/redis_backend" %}; OR
+- `backend_class:`, for implementing custom persistence.
 
 #### Add Routes
 

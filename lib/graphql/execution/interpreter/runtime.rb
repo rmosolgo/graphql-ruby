@@ -11,7 +11,7 @@ module GraphQL
         # @return [GraphQL::Query]
         attr_reader :query
 
-        # @return [Class]
+        # @return [Class<GraphQL::Schema>]
         attr_reader :schema
 
         # @return [GraphQL::Query::Context]
@@ -43,19 +43,21 @@ module GraphQL
         # might be stored up in lazies.
         # @return [void]
         def run_eager
+
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
-          legacy_root_type = schema.root_type_for_operation(root_op_type)
-          root_type = legacy_root_type.metadata[:type_class] || raise("Invariant: type must be class-based: #{legacy_root_type}")
-          object_proxy = root_type.authorized_new(query.root_value, context)
+          root_type = schema.root_type_for_operation(root_op_type)
+          path = []
+          @interpreter_context[:current_object] = query.root_value
+          @interpreter_context[:current_path] = path
+          object_proxy = authorized_new(root_type, query.root_value, context, path)
           object_proxy = schema.sync_lazy(object_proxy)
           if object_proxy.nil?
             # Root .authorized? returned false.
-            write_in_response([], nil)
+            write_in_response(path, nil)
             nil
           else
-            path = []
-            evaluate_selections(path, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
+            evaluate_selections(path, context.scoped_context, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
             nil
           end
         end
@@ -86,11 +88,10 @@ module GraphQL
               end
             when GraphQL::Language::Nodes::InlineFragment
               if node.type
-                type_defn = schema.types[node.type.name]
-                type_defn = type_defn.metadata[:type_class]
+                type_defn = schema.get_type(node.type.name)
                 # Faster than .map{}.include?()
                 query.warden.possible_types(type_defn).each do |t|
-                  if t.metadata[:type_class] == owner_type
+                  if t == owner_type
                     gather_selections(owner_object, owner_type, node.selections, selections_by_name)
                     break
                   end
@@ -101,10 +102,10 @@ module GraphQL
               end
             when GraphQL::Language::Nodes::FragmentSpread
               fragment_def = query.fragments[node.name]
-              type_defn = schema.types[fragment_def.type.name]
-              type_defn = type_defn.metadata[:type_class]
-              schema.possible_types(type_defn).each do |t|
-                if t.metadata[:type_class] == owner_type
+              type_defn = schema.get_type(fragment_def.type.name)
+              possible_types = query.warden.possible_types(type_defn)
+              possible_types.each do |t|
+                if t == owner_type
                   gather_selections(owner_object, owner_type, fragment_def.selections, selections_by_name)
                   break
                 end
@@ -115,7 +116,9 @@ module GraphQL
           end
         end
 
-        def evaluate_selections(path, owner_object, owner_type, selections, root_operation_type: nil)
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, selections, root_operation_type: nil)
+          @interpreter_context[:current_object] = owner_object
+          @interpreter_context[:current_path] = path
           selections_by_name = {}
           gather_selections(owner_object, owner_type, selections, selections_by_name)
           selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
@@ -133,18 +136,18 @@ module GraphQL
             field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name)
             is_introspection = false
             if field_defn.nil?
-              field_defn = if owner_type == schema.query.metadata[:type_class] && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
+              field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
                 is_introspection = true
-                entry_point_field.metadata[:type_class]
+                entry_point_field
               elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
                 is_introspection = true
-                dynamic_field.metadata[:type_class]
+                dynamic_field
               else
                 raise "Invariant: no field for #{owner_type}.#{field_name}"
               end
             end
 
-            return_type = resolve_if_late_bound_type(field_defn.type)
+            return_type = field_defn.type
 
             next_path = path.dup
             next_path << result_name
@@ -158,10 +161,11 @@ module GraphQL
             @interpreter_context[:current_path] = next_path
             @interpreter_context[:current_field] = field_defn
 
+            context.scoped_context = scoped_context
             object = owner_object
 
             if is_introspection
-              object = field_defn.owner.authorized_new(object, context)
+              object = authorized_new(field_defn.owner, object, context, next_path)
             end
 
             begin
@@ -195,6 +199,8 @@ module GraphQL
               end
             end
 
+            @interpreter_context[:current_arguments] = kwarg_arguments
+
             # Optimize for the case that field is selected only once
             if field_ast_nodes.nil? || field_ast_nodes.size == 1
               next_selections = ast_node.selections
@@ -206,13 +212,15 @@ module GraphQL
             field_result = resolve_with_directives(object, ast_node) do
               # Actually call the field resolver and capture the result
               app_result = begin
-                query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, query: query, object: object, arguments: kwarg_arguments}) do
-                  field_defn.resolve(object, kwarg_arguments, context)
+                query.with_error_handling do
+                  query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, query: query, object: object, arguments: kwarg_arguments}) do
+                    field_defn.resolve(object, kwarg_arguments, context)
+                  end
                 end
               rescue GraphQL::ExecutionError => err
                 err
               end
-              after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, owner_object: object, arguments: kwarg_arguments) do |inner_result|
+              after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, field_defn, return_type.non_null?, ast_node)
                 if HALT != continue_value
                   continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments)
@@ -285,8 +293,8 @@ module GraphQL
             write_in_response(path, r)
             r
           when "UNION", "INTERFACE"
-            resolved_type_or_lazy = query.resolve_type(type, value)
-            after_lazy(resolved_type_or_lazy, owner: type, path: path, field: field, owner_object: owner_object, arguments: arguments) do |resolved_type|
+            resolved_type_or_lazy = resolve_type(type, value, path)
+            after_lazy(resolved_type_or_lazy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
               possible_types = query.possible_types(type)
 
               if !possible_types.include?(resolved_type)
@@ -296,22 +304,21 @@ module GraphQL
                 write_in_response(path, nil)
                 nil
               else
-                resolved_type = resolved_type.metadata[:type_class]
                 continue_field(path, value, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments)
               end
             end
           when "OBJECT"
             object_proxy = begin
-              type.authorized_new(value, context)
+              authorized_new(type, value, context, path)
             rescue GraphQL::ExecutionError => err
               err
             end
-            after_lazy(object_proxy, owner: type, path: path, field: field, owner_object: owner_object, arguments: arguments) do |inner_object|
+            after_lazy(object_proxy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |inner_object|
               continue_value = continue_value(path, inner_object, field, is_non_null, ast_node)
               if HALT != continue_value
                 response_hash = {}
                 write_in_response(path, response_hash)
-                evaluate_selections(path, continue_value, type, next_selections)
+                evaluate_selections(path, context.scoped_context, continue_value, type, next_selections)
                 response_hash
               end
             end
@@ -320,6 +327,7 @@ module GraphQL
             write_in_response(path, response_list)
             inner_type = type.of_type
             idx = 0
+            scoped_context = context.scoped_context
             value.each do |inner_value|
               next_path = path.dup
               next_path << idx
@@ -327,7 +335,7 @@ module GraphQL
               idx += 1
               set_type_at_path(next_path, inner_type)
               # This will update `response_list` with the lazy
-              after_lazy(inner_value, owner: inner_type, path: next_path, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
+              after_lazy(inner_value, owner: inner_type, path: next_path, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
                 # reset `is_non_null` here and below, because the inner type will have its own nullability constraint
                 continue_value = continue_value(next_path, inner_inner_value, field, false, ast_node)
                 if HALT != continue_value
@@ -338,8 +346,6 @@ module GraphQL
             response_list
           when "NON_NULL"
             inner_type = type.of_type
-            # For fields like `__schema: __Schema!`
-            inner_type = resolve_if_late_bound_type(inner_type)
             # Don't `set_type_at_path` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
             continue_field(path, value, field, inner_type, ast_node, next_selections, true, owner_object, arguments)
@@ -359,7 +365,7 @@ module GraphQL
           else
             dir_defn = schema.directives.fetch(dir_node.name)
             if !dir_defn.is_a?(Class)
-              dir_defn = dir_defn.metadata[:type_class] || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
+              dir_defn = dir_defn.type_class || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
             end
             dir_args = arguments(nil, dir_defn, dir_node)
             dir_defn.resolve(object, dir_args, context) do
@@ -371,7 +377,7 @@ module GraphQL
         # Check {Schema::Directive.include?} for each directive that's present
         def directives_include?(node, graphql_object, parent_type)
           node.directives.each do |dir_node|
-            dir_defn = schema.directives.fetch(dir_node.name).metadata[:type_class] || raise("Only class-based directives are supported (not #{dir_node.name.inspect})")
+            dir_defn = schema.directives.fetch(dir_node.name).type_class || raise("Only class-based directives are supported (not #{dir_node.name.inspect})")
             args = arguments(graphql_object, dir_defn, dir_node)
             if !dir_defn.include?(graphql_object, args, context)
               return false
@@ -380,36 +386,40 @@ module GraphQL
           true
         end
 
-        def resolve_if_late_bound_type(type)
-          if type.is_a?(GraphQL::Schema::LateBoundType)
-            query.warden.get_type(type.name).metadata[:type_class]
-          else
-            type
-          end
-        end
-
         # @param obj [Object] Some user-returned value that may want to be batched
         # @param path [Array<String>]
         # @param field [GraphQL::Schema::Field]
         # @param eager [Boolean] Set to `true` for mutation root fields only
+        # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
-        def after_lazy(lazy_obj, owner:, field:, path:, owner_object:, arguments:, eager: false)
+        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false, trace: true)
+          @interpreter_context[:current_object] = owner_object
+          @interpreter_context[:current_arguments] = arguments
           @interpreter_context[:current_path] = path
           @interpreter_context[:current_field] = field
           if schema.lazy?(lazy_obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
               @interpreter_context[:current_path] = path
               @interpreter_context[:current_field] = field
+              @interpreter_context[:current_object] = owner_object
+              @interpreter_context[:current_arguments] = arguments
+              context.scoped_context = scoped_context
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = begin
-                query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
-                  schema.sync_lazy(lazy_obj)
+                query.with_error_handling do
+                  if trace
+                    query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
+                      schema.sync_lazy(lazy_obj)
+                    end
+                  else
+                    schema.sync_lazy(lazy_obj)
+                  end
                 end
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
                   yield(err)
               end
-              after_lazy(inner_obj, owner: owner, field: field, path: path, owner_object: owner_object, arguments: arguments, eager: eager) do |really_inner_obj|
+              after_lazy(inner_obj, owner: owner, field: field, path: path, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager) do |really_inner_obj|
                 yield(really_inner_obj)
               end
             end
@@ -425,105 +435,48 @@ module GraphQL
           end
         end
 
-        def each_argument_pair(ast_args_or_hash)
-          case ast_args_or_hash
-          when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject, GraphQL::Language::Nodes::Directive
-            ast_args_or_hash.arguments.each do |arg|
-              yield(arg.name, arg.value)
-            end
+        NO_VALUE_GIVEN = Object.new
+
+        def prepare_args_hash(ast_arg_or_hash_or_value)
+          case ast_arg_or_hash_or_value
           when Hash
-            ast_args_or_hash.each do |key, value|
-              normalized_name = GraphQL::Schema::Member::BuildType.camelize(key.to_s)
-              yield(normalized_name, value)
+            args_hash = {}
+            ast_arg_or_hash_or_value.each do |k, v|
+              args_hash[k] = prepare_args_hash(v)
             end
+            args_hash
+          when Array
+            ast_arg_or_hash_or_value.map { |v| prepare_args_hash(v) }
+          when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject, GraphQL::Language::Nodes::Directive
+            args_hash = {}
+            ast_arg_or_hash_or_value.arguments.each do |arg|
+              v = prepare_args_hash(arg.value)
+              if v != NO_VALUE_GIVEN
+                args_hash[arg.name] = v
+              end
+            end
+            args_hash
+          when GraphQL::Language::Nodes::VariableIdentifier
+            if query.variables.key?(ast_arg_or_hash_or_value.name)
+              variable_value = query.variables[ast_arg_or_hash_or_value.name]
+              prepare_args_hash(variable_value)
+            else
+              NO_VALUE_GIVEN
+            end
+          when GraphQL::Language::Nodes::Enum
+            ast_arg_or_hash_or_value.name
+          when GraphQL::Language::Nodes::NullValue
+            nil
           else
-            raise "Invariant, unexpected #{ast_args_or_hash.inspect}"
+            ast_arg_or_hash_or_value
           end
         end
 
         def arguments(graphql_object, arg_owner, ast_node_or_hash)
-          kwarg_arguments = {}
-          arg_defns = arg_owner.arguments
-          each_argument_pair(ast_node_or_hash) do |arg_name, arg_value|
-            arg_defn = arg_defns[arg_name]
-            # Need to distinguish between client-provided `nil`
-            # and nothing-at-all
-            is_present, value = arg_to_value(graphql_object, arg_defn.type, arg_value)
-            if is_present
-              # This doesn't apply to directives, which are legacy
-              # Can remove this when Skip and Include use classes or something.
-              if graphql_object
-                value = arg_defn.prepare_value(graphql_object, value)
-              end
-              kwarg_arguments[arg_defn.keyword] = value
-            end
-          end
-          arg_defns.each do |name, arg_defn|
-            if arg_defn.default_value? && !kwarg_arguments.key?(arg_defn.keyword)
-              _is_present, value = arg_to_value(graphql_object, arg_defn.type, arg_defn.default_value)
-              kwarg_arguments[arg_defn.keyword] = value
-            end
-          end
-          kwarg_arguments
-        end
-
-        # Get a Ruby-ready value from a client query.
-        # @param graphql_object [Object] The owner of the field whose argument this is
-        # @param arg_type [Class, GraphQL::Schema::NonNull, GraphQL::Schema::List]
-        # @param ast_value [GraphQL::Language::Nodes::VariableIdentifier, String, Integer, Float, Boolean]
-        # @return [Array(is_present, value)]
-        def arg_to_value(graphql_object, arg_type, ast_value)
-          if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-            # If it's not here, it will get added later
-            if query.variables.key?(ast_value.name)
-              return true, query.variables[ast_value.name]
-            else
-              return false, nil
-            end
-          elsif ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
-            return true, nil
-          elsif arg_type.is_a?(GraphQL::Schema::NonNull)
-            arg_to_value(graphql_object, arg_type.of_type, ast_value)
-          elsif arg_type.is_a?(GraphQL::Schema::List)
-            # Treat a single value like a list
-            arg_value = Array(ast_value)
-            list = []
-            arg_value.map do |inner_v|
-              _present, value = arg_to_value(graphql_object, arg_type.of_type, inner_v)
-              list << value
-            end
-            return true, list
-          elsif arg_type.is_a?(Class) && arg_type < GraphQL::Schema::InputObject
-            # For these, `prepare` is applied during `#initialize`.
-            # Pass `nil` so it will be skipped in `#arguments`.
-            # What a mess.
-            args = arguments(nil, arg_type, ast_value)
-            # We're not tracking defaults_used, but for our purposes
-            # we compare the value to the default value.
-            return true, arg_type.new(ruby_kwargs: args, context: context, defaults_used: nil)
-          else
-            flat_value = flatten_ast_value(ast_value)
-            return true, arg_type.coerce_input(flat_value, context)
-          end
-        end
-
-        def flatten_ast_value(v)
-          case v
-          when GraphQL::Language::Nodes::Enum
-            v.name
-          when GraphQL::Language::Nodes::InputObject
-            h = {}
-            v.arguments.each do |arg|
-              h[arg.name] = flatten_ast_value(arg.value)
-            end
-            h
-          when Array
-            v.map { |v2| flatten_ast_value(v2) }
-          when GraphQL::Language::Nodes::VariableIdentifier
-            flatten_ast_value(query.variables[v.name])
-          else
-            v
-          end
+          # First, normalize all AST or Ruby values to a plain Ruby hash
+          args_hash = prepare_args_hash(ast_node_or_hash)
+          # Then call into the schema to coerce those incoming values
+          arg_owner.coerce_arguments(graphql_object, args_hash, context)
         end
 
         def write_invalid_null_in_response(path, invalid_null_error)
@@ -605,6 +558,41 @@ module GraphQL
             end
           end
           res && res[:__dead]
+        end
+
+        def resolve_type(type, value, path)
+          trace_payload = { context: context, type: type, object: value, path: path }
+          resolved_type = query.trace("resolve_type", trace_payload) do
+            query.resolve_type(type, value)
+          end
+
+          if schema.lazy?(resolved_type)
+            GraphQL::Execution::Lazy.new do
+              query.trace("resolve_type_lazy", trace_payload) do
+                schema.sync_lazy(resolved_type)
+              end
+            end
+          else
+            resolved_type
+          end
+        end
+
+        def authorized_new(type, value, context, path)
+          trace_payload = { context: context, type: type, object: value, path: path }
+
+          auth_val = context.query.trace("authorized", trace_payload) do
+            type.authorized_new(value, context)
+          end
+
+          if context.schema.lazy?(auth_val)
+            GraphQL::Execution::Lazy.new do
+              context.query.trace("authorized_lazy", trace_payload) do
+                context.schema.sync_lazy(auth_val)
+              end
+            end
+          else
+            auth_val
+          end
         end
       end
     end

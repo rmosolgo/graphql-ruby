@@ -14,6 +14,12 @@ module GraphQL
       #
       # @api private
       class ResolveMap
+        module NullScalarCoerce
+          def self.call(val, _ctx)
+            val
+          end
+        end
+
         def initialize(user_resolve_hash)
           @resolve_hash = Hash.new do |h, k|
             # For each type name, provide a new hash if one wasn't given:
@@ -21,7 +27,7 @@ module GraphQL
               if k2 == "coerce_input" || k2 == "coerce_result"
                 # This isn't an object field, it's a scalar coerce function.
                 # Use a passthrough
-                Builder::NullScalarCoerce
+                NullScalarCoerce
               else
                 # For each field, provide a resolver that will
                 # make runtime checks & replace itself
@@ -53,16 +59,16 @@ module GraphQL
         end
 
         def call(type, field, obj, args, ctx)
-          resolver = @resolve_hash[type.name][field.name]
+          resolver = @resolve_hash[type.graphql_name][field.graphql_name]
           resolver.call(obj, args, ctx)
         end
 
         def coerce_input(type, value, ctx)
-          @resolve_hash[type.name]["coerce_input"].call(value, ctx)
+          @resolve_hash[type.graphql_name]["coerce_input"].call(value, ctx)
         end
 
         def coerce_result(type, value, ctx)
-          @resolve_hash[type.name]["coerce_result"].call(value, ctx)
+          @resolve_hash[type.graphql_name]["coerce_result"].call(value, ctx)
         end
       end
     end

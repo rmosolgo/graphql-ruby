@@ -1,8 +1,6 @@
 ---
 language: ruby
 
-sudo: false
-
 cache:
   - bundler
   - yarn
@@ -25,11 +23,7 @@ matrix:
     services:
       - xvfb
     addons:
-      apt:
-        sources:
-          - google-chrome
-        packages:
-          - google-chrome-stable
+      chrome: stable
     before_install:
       - export CHROMEDRIVER_VERSION=`curl -s http://chromedriver.storage.googleapis.com/LATEST_RELEASE`
       - curl -L -O "http://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
@@ -58,6 +52,18 @@ matrix:
   - rvm: 2.6.2
     gemfile: gemfiles/rails_5.2.gemfile
   - rvm: 2.6.2
+    gemfile: gemfiles/rails_6.0.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_5.0.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_5.1.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_5.2.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_6.0.gemfile
+  - rvm: ruby-head
+    gemfile: gemfiles/rails_master.gemfile
+  - rvm: 2.6.2
     gemfile: gemfiles/mongoid_7.gemfile
     services:
       - mongodb
@@ -78,3 +84,8 @@ matrix:
       - psql -c 'create database graphql_ruby_test;' -U postgres
   - rvm: 2.6.2
     gemfile: Gemfile
+
+jobs:
+  allow_failures:
+    - rvm: ruby-head
+      gemfile: gemfiles/rails_master.gemfile

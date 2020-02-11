@@ -25,6 +25,22 @@ describe GraphQL::Schema::Scalar do
       assert_equal "B♭", res["data"]["find"]["favoriteKey"]
     end
 
+    if TESTING_INTERPRETER
+      it "handles infinity values" do
+        query_str = <<-GRAPHQL
+        {
+          find(id: 9999e9999) {
+            __typename
+          }
+        }
+        GRAPHQL
+
+        res = Jazz::Schema.execute(query_str)
+        expected_errors = ["Argument 'id' on Field 'find' has an invalid value. Expected type 'ID!'."]
+        assert_equal expected_errors, res["errors"].map { |e| e["message"] }
+      end
+    end
+
     it "can be input" do
       query_str = <<-GRAPHQL
       {

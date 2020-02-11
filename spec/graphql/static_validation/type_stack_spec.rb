@@ -15,7 +15,7 @@ describe GraphQL::StaticValidation::TypeStack do
     type_stack = GraphQL::StaticValidation::TypeStack.new(Dummy::Schema, visitor)
     checks = []
     visitor[GraphQL::Language::Nodes::Field].enter << ->(node, parent) {
-      checks << type_stack.object_types.map {|t| t.name || t.kind.name }
+      checks << type_stack.object_types.map {|t| t.graphql_name || t.kind.name }
     }
     visitor.visit
 

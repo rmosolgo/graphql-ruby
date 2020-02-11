@@ -12,6 +12,7 @@ describe "GraphQL::Execution::Errors" do
         super
       end
     end
+    class ErrorD < RuntimeError; end
 
     class ErrorASubclass < ErrorA; end
 
@@ -30,6 +31,35 @@ describe "GraphQL::Execution::Errors" do
 
     rescue_from(ErrorC) do |err, *|
       err.value
+    end
+
+    rescue_from(ErrorD) do |err, obj, args, ctx, field|
+      raise GraphQL::ExecutionError, "ErrorD on #{obj.inspect} at #{field ? "#{field.path}(#{args})" : "boot"}"
+    end
+
+    class Thing < GraphQL::Schema::Object
+      def self.authorized?(obj, ctx)
+        if ctx[:authorized] == false
+          raise ErrorD
+        end
+      end
+
+      field :string, String, null: false
+      def string
+        "a string"
+      end
+    end
+
+    class ValuesInput < GraphQL::Schema::InputObject
+      argument :value, Int, required: true, loads: Thing
+
+      def object_from_id(type, value, ctx)
+        if value == 1
+          :thing
+        else
+          raise ErrorD
+        end
+      end
     end
 
     class Query < GraphQL::Schema::Object
@@ -65,6 +95,15 @@ describe "GraphQL::Execution::Errors" do
       field :f6, Int, null: true
       def f6
         -> { raise ErrorB }
+      end
+
+      field :thing, Thing, null: true
+      def thing
+        :thing
+      end
+
+      field :input_field, Int, null: true do
+        argument :values, ValuesInput, required: true, method_access: false
       end
     end
 
@@ -117,6 +156,35 @@ describe "GraphQL::Execution::Errors" do
       res = ErrorsTestSchema.execute("{ f5 }", context: context)
       assert_equal({ "data" => { "f5" => nil } }, res)
       assert_equal ["raised subclass (ErrorsTestSchema::Query.f5, nil, {})"], context[:errors]
+    end
+
+    describe "errors raised in authorized hooks" do
+      it "rescues them" do
+        context = { authorized: false }
+        res = ErrorsTestSchema.execute(" { thing { string } } ", context: context)
+        assert_equal ["ErrorD on nil at Query.thing({})"], res["errors"].map { |e| e["message"] }
+      end
+    end
+
+    describe "errors raised in input_object loads" do
+      it "rescues them from literal values" do
+        context = { authorized: false }
+        res = ErrorsTestSchema.execute(" { inputField(values: { value: 2 }) } ", root_value: :root, context: context)
+        # It would be better to have the arguments here, but since this error was raised during _creation_ of keywords,
+        # so the runtime arguments aren't available now.
+        assert_equal ["ErrorD on :root at Query.inputField()"], res["errors"].map { |e| e["message"] }
+      end
+
+      it "rescues them from variable values" do
+        context = { authorized: false }
+        res = ErrorsTestSchema.execute(
+          "query($values: ValuesInput!) { inputField(values: $values) } ",
+          variables: { values: { "value" => 2 } },
+          context: context,
+        )
+
+        assert_equal ["ErrorD on nil at Query.inputField()"], res["errors"].map { |e| e["message"] }
+      end
     end
   end
 end

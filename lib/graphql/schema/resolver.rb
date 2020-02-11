@@ -29,9 +29,11 @@ module GraphQL
 
       # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
       # @param context [GraphQL::Query::Context]
-      def initialize(object:, context:)
+      # @param field [GraphQL::Schema::Field]
+      def initialize(object:, context:, field:)
         @object = object
         @context = context
+        @field = field
         # Since this hash is constantly rebuilt, cache it for this call
         @arguments_by_keyword = {}
         self.class.arguments.each do |name, arg|
@@ -45,6 +47,9 @@ module GraphQL
 
       # @return [GraphQL::Query::Context]
       attr_reader :context
+
+      # @return [GraphQL::Schema::Field]
+      attr_reader :field
 
       # This method is _actually_ called by the runtime,
       # it does some preparation and then eventually calls
@@ -71,7 +76,7 @@ module GraphQL
             context.schema.after_lazy(load_arguments_val) do |loaded_args|
               # Then call `authorized?`, which may raise or may return a lazy object
               authorized_val = if loaded_args.any?
-                authorized?(loaded_args)
+                authorized?(**loaded_args)
               else
                 authorized?
               end
@@ -130,20 +135,8 @@ module GraphQL
       def authorized?(**inputs)
         self.class.arguments.each_value do |argument|
           arg_keyword = argument.keyword
-          if inputs.key?(arg_keyword) && !(value = inputs[arg_keyword]).nil? && (value != argument.default_value)
-            loads_type = @arguments_loads_as_type[arg_keyword]
-            # If this argument resulted in an object being loaded,
-            # then authorize this loaded object with its own policy.
-            #
-            # But if this argument was "just" a plain argument, like
-            # a boolean, then authorize it based on the mutation.
-            authorization_value = if loads_type
-              value
-            else
-              self
-            end
-
-            arg_auth, err = argument.authorized?(authorization_value, context)
+          if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
+            arg_auth, err = argument.authorized?(self, arg_value, context)
             if !arg_auth
               return arg_auth, err
             else

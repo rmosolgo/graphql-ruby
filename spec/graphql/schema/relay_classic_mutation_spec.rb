@@ -95,6 +95,32 @@ describe GraphQL::Schema::RelayClassicMutation do
       assert_equal 5, res["data"]["hasExtras"]["int"]
     end
 
+    it "supports field extras" do
+      res = Jazz::Schema.execute <<-GRAPHQL
+      mutation {
+        hasFieldExtras(input: {}) {
+          lookaheadClass
+          int
+        }
+      }
+      GRAPHQL
+
+      assert_equal "GraphQL::Execution::Lookahead", res["data"]["hasFieldExtras"]["lookaheadClass"]
+      assert_nil res["data"]["hasFieldExtras"]["int"]
+
+      # Also test with given args
+      res = Jazz::Schema.execute <<-GRAPHQL
+      mutation {
+        hasFieldExtras(input: {int: 5}) {
+          lookaheadClass
+          int
+        }
+      }
+      GRAPHQL
+      assert_equal "GraphQL::Execution::Lookahead", res["data"]["hasFieldExtras"]["lookaheadClass"]
+      assert_equal 5, res["data"]["hasFieldExtras"]["int"]
+    end
+
     it "can strip out extras" do
       ctx = {}
       res = Jazz::Schema.execute <<-GRAPHQL, context: ctx
@@ -179,7 +205,9 @@ describe GraphQL::Schema::RelayClassicMutation do
       <<-GRAPHQL
         mutation($id: ID!, $newName: String!) {
           renameEnsemble(input: {ensembleId: $id, newName: $newName}) {
+            __typename
             ensemble {
+              __typename
               name
             }
           }

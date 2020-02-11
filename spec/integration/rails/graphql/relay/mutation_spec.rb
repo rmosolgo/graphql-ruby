@@ -27,7 +27,7 @@ describe GraphQL::Relay::Mutation do
   end
 
   it "supports null values" do
-    result = star_wars_query(query_string, "clientMutationId" => "1234", "shipName" => nil)
+    result = star_wars_query(query_string, { "clientMutationId" => "1234", "shipName" => nil })
 
     expected = {"data" => {
       "introduceShip" => {
@@ -45,7 +45,7 @@ describe GraphQL::Relay::Mutation do
   end
 
   it "supports lazy resolution" do
-    result = star_wars_query(query_string, "clientMutationId" => "1234", "shipName" => "Slave II")
+    result = star_wars_query(query_string, { "clientMutationId" => "1234", "shipName" => "Slave II" })
     assert_equal "Slave II", result["data"]["introduceShip"]["shipEdge"]["node"]["name"]
   end
 
@@ -80,7 +80,7 @@ describe GraphQL::Relay::Mutation do
   end
 
   it "returns the result & clientMutationId" do
-    result = star_wars_query(query_string, "clientMutationId" => "1234")
+    result = star_wars_query(query_string, { "clientMutationId" => "1234" })
     expected = {"data" => {
       "introduceShip" => {
         "clientMutationId" => "1234",
@@ -280,7 +280,7 @@ describe GraphQL::Relay::Mutation do
 
   describe "handling errors" do
     it "supports returning an error in resolve" do
-      result = star_wars_query(query_string, "clientMutationId" => "5678", "shipName" => "Millennium Falcon")
+      result = star_wars_query(query_string, { "clientMutationId" => "5678", "shipName" => "Millennium Falcon" })
 
       expected = {
         "data" => {
@@ -299,7 +299,7 @@ describe GraphQL::Relay::Mutation do
     end
 
     it "supports raising an error in a lazy callback" do
-      result = star_wars_query(query_string, "clientMutationId" => "5678", "shipName" => "Ebon Hawk")
+      result = star_wars_query(query_string, { "clientMutationId" => "5678", "shipName" => "Ebon Hawk" })
 
       expected = {
         "data" => {
@@ -318,7 +318,7 @@ describe GraphQL::Relay::Mutation do
     end
 
     it "supports raising an error in the resolve function" do
-      result = star_wars_query(query_string, "clientMutationId" => "5678", "shipName" => "Leviathan")
+      result = star_wars_query(query_string, { "clientMutationId" => "5678", "shipName" => "Leviathan" })
 
       expected = {
         "data" => {
@@ -334,54 +334,6 @@ describe GraphQL::Relay::Mutation do
       }
 
       assert_equal(expected, result)
-    end
-  end
-
-  describe 'supports new input object definition with old mutation definition' do
-    let(:some_attribute_type) do
-      Class.new(GraphQL::Schema::InputObject) do
-        graphql_name 'SomeAttribute'
-        argument :something, String, required: false
-      end
-    end
-
-    let(:do_something_mutation) do
-      some_attribute = some_attribute_type
-
-      GraphQL::Relay::Mutation.define do
-        name 'DoSomethingMutation'
-        input_field :someAttributes, types[some_attribute.graphql_definition]
-
-        return_field :anything, types.String
-
-        resolve ->(_obj, inputs, _ctx) {
-          {
-            anything: inputs.to_h['someAttributes'][0].class.to_s
-          }
-        }
-      end
-    end
-
-    let(:mutation_type) do
-      do_something = do_something_mutation
-
-      Class.new(GraphQL::Schema::Object) do
-        graphql_name 'Mutation'
-        field :doSomething, field: do_something.field
-      end
-    end
-
-    let(:schema) do
-      mutation = mutation_type
-
-      Class.new(GraphQL::Schema) do
-        mutation mutation
-      end
-    end
-
-    it 'converts to hash the whole input' do
-      result = schema.execute('mutation { doSomething(input: {someAttributes: [{something: "string"}]}) { anything } }')
-      assert_equal 'Hash', result['data']['doSomething']['anything']
     end
   end
 end

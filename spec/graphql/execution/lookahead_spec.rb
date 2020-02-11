@@ -82,6 +82,7 @@ describe GraphQL::Execution::Lookahead do
       instrument :query, LookaheadInstrumenter
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
     end
   end
@@ -385,6 +386,29 @@ describe GraphQL::Execution::Lookahead do
       # This is an implementation detail, but I want to make sure the test is set up right
       assert_instance_of GraphQL::Execution::Lookahead::NullLookahead, null_lookahead
       assert_equal [], null_lookahead.selections
+    end
+
+    it "excludes fields skipped by directives" do
+      document = GraphQL.parse <<-GRAPHQL
+        query($skipName: Boolean!, $includeGenus: Boolean!){
+          findBirdSpecies(byName: "Cardinal") {
+            id
+            name @skip(if: $skipName)
+            genus @include(if: $includeGenus)
+          }
+        }
+      GRAPHQL
+      query = GraphQL::Query.new(LookaheadTest::Schema, document: document,
+        variables: { skipName: false, includeGenus: true })
+      lookahead = query.lookahead.selection("findBirdSpecies")
+      assert_equal [:id, :name, :genus], lookahead.selections.map(&:name)
+      assert_equal true, lookahead.selects?(:name)
+
+      query = GraphQL::Query.new(LookaheadTest::Schema, document: document,
+        variables: { skipName: true, includeGenus: false })
+      lookahead = query.lookahead.selection("findBirdSpecies")
+      assert_equal [:id], lookahead.selections.map(&:name)
+      assert_equal false, lookahead.selects?(:name)
     end
   end
 end

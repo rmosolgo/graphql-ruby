@@ -318,7 +318,7 @@ describe GraphQL::Schema::Field do
   end
 
   describe "generated default" do
-    class TestSchema < GraphQL::Schema
+    class GeneratedDefaultTestSchema < GraphQL::Schema
       class BaseField < GraphQL::Schema::Field
         def resolve_field(obj, args, ctx)
           resolve(obj, args, ctx)
@@ -345,7 +345,7 @@ describe GraphQL::Schema::Field do
     end
 
     it "works" do
-      res = TestSchema.execute("{ company(id: \"1\") { id } }")
+      res = GeneratedDefaultTestSchema.execute("{ company(id: \"1\") { id } }")
       assert_equal "1", res["data"]["company"]["id"]
     end
   end

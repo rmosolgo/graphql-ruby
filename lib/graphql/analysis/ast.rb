@@ -12,9 +12,8 @@ module GraphQL
     module AST
       module_function
 
-      def use(schema_defn)
-        schema = schema_defn.target
-        schema.analysis_engine = GraphQL::Analysis::AST
+      def use(schema_class)
+        schema_class.analysis_engine = GraphQL::Analysis::AST
       end
 
       # Analyze a multiplex, and all queries within.
@@ -23,7 +22,7 @@ module GraphQL
       #
       # @param multiplex [GraphQL::Execution::Multiplex]
       # @param analyzers [Array<GraphQL::Analysis::AST::Analyzer>]
-      # @return [void]
+      # @return [Array<Any>] Results from multiplex analyzers
       def analyze_multiplex(multiplex, analyzers)
         multiplex_analyzers = analyzers.map { |analyzer| analyzer.new(multiplex) }
 
@@ -46,8 +45,8 @@ module GraphQL
           multiplex.queries.each_with_index do |query, idx|
             query.analysis_errors = multiplex_errors + analysis_errors(query_results[idx])
           end
+          multiplex_results
         end
-        nil
       end
 
       # @param query [GraphQL::Query]
@@ -60,16 +59,18 @@ module GraphQL
             .select { |analyzer| analyzer.analyze? }
 
           analyzers_to_run = query_analyzers + multiplex_analyzers
-          return [] unless analyzers_to_run.any?
+          if analyzers_to_run.any?
+            visitor = GraphQL::Analysis::AST::Visitor.new(
+              query: query,
+              analyzers: analyzers_to_run
+            )
 
-          visitor = GraphQL::Analysis::AST::Visitor.new(
-            query: query,
-            analyzers: analyzers_to_run
-          )
+            visitor.visit
 
-          visitor.visit
-
-          query_analyzers.map(&:result)
+            query_analyzers.map(&:result)
+          else
+            []
+          end
         end
       end
 

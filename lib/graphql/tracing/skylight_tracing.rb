@@ -18,6 +18,7 @@ module GraphQL
       #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
       #   It can also be specified per-query with `context[:set_skylight_endpoint_name]`.
       def initialize(options = {})
+        warn("GraphQL::Tracing::SkylightTracing is deprecated, please enable Skylight's GraphQL probe instead: https://www.skylight.io/support/getting-more-from-skylight#graphql.")
         @set_endpoint_name = options.fetch(:set_endpoint_name, false)
         super
       end
@@ -55,6 +56,14 @@ module GraphQL
 
       def platform_field_key(type, field)
         "graphql.#{type.graphql_name}.#{field.graphql_name}"
+      end
+
+      def platform_authorized_key(type)
+        "graphql.authorized.#{type.graphql_name}"
+      end
+
+      def platform_resolve_type_key(type)
+        "graphql.resolve_type.#{type.graphql_name}"
       end
     end
   end

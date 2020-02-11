@@ -1,63 +1,6 @@
 # frozen_string_literal: true
 module GraphQL
-  # # GraphQL::ScalarType
-  #
-  # Scalars are plain values. They are leaf nodes in a GraphQL query tree.
-  #
-  # ## Built-in Scalars
-  #
-  # `GraphQL` comes with standard built-in scalars:
-  #
-  # |Constant | `.define` helper|
-  # |-------|--------|
-  # |`GraphQL::STRING_TYPE` | `types.String`|
-  # |`GraphQL::INT_TYPE` | `types.Int`|
-  # |`GraphQL::FLOAT_TYPE` | `types.Float`|
-  # |`GraphQL::ID_TYPE` | `types.ID`|
-  # |`GraphQL::BOOLEAN_TYPE` | `types.Boolean`|
-  #
-  # (`types` is an instance of `GraphQL::Definition::TypeDefiner`; `.String`, `.Float`, etc are methods which return built-in scalars.)
-  #
-  # ## Custom Scalars
-  #
-  # You can define custom scalars for your GraphQL server. It requires some special functions:
-  #
-  # - `coerce_input` is used to prepare incoming values for GraphQL execution. (Incoming values come from variables or literal values in the query string.)
-  # - `coerce_result` is used to turn Ruby values _back_ into serializable values for query responses.
-  #
-  # @example defining a type for Time
-  #   TimeType = GraphQL::ScalarType.define do
-  #     name "Time"
-  #     description "Time since epoch in seconds"
-  #
-  #     coerce_input ->(value, ctx) { Time.at(Float(value)) }
-  #     coerce_result ->(value, ctx) { value.to_f }
-  #   end
-  #
-  #
-  # You can customize the error message for invalid input values by raising a `GraphQL::CoercionError` within `coerce_input`:
-  #
-  # @example raising a custom error message
-  #   TimeType = GraphQL::ScalarType.define do
-  #     name "Time"
-  #     description "Time since epoch in seconds"
-  #
-  #     coerce_input ->(value, ctx) do
-  #       begin
-  #         Time.at(Float(value))
-  #       rescue ArgumentError
-  #         raise GraphQL::CoercionError, "cannot coerce `#{value.inspect}` to Float"
-  #       end
-  #     end
-  #
-  #     coerce_result ->(value, ctx) { value.to_f }
-  #   end
-  #
-  # This will result in the message of the `GraphQL::CoercionError` being used in the error response:
-  #
-  # @example custom error response
-  #   {"message"=>"cannot coerce `"2"` to Float", "locations"=>[{"line"=>3, "column"=>9}], "fields"=>["arg"]}
-  #
+  # @api deprecated
   class ScalarType < GraphQL::BaseType
     accepts_definitions :coerce, :coerce_input, :coerce_result
     ensure_defined :coerce_non_null_input, :coerce_result

@@ -50,12 +50,12 @@ module GraphQL
         if child_types.none? { |c| parent_types.include?(c) }
           name = node.respond_to?(:name) ? " #{node.name}" : ""
           add_error(GraphQL::StaticValidation::FragmentSpreadsArePossibleError.new(
-            "Fragment#{name} on #{child_type.name} can't be spread inside #{parent_type.name}",
+            "Fragment#{name} on #{child_type.graphql_name} can't be spread inside #{parent_type.graphql_name}",
             nodes: node,
             path: path,
             fragment_name: name.empty? ? "unknown" : name,
-            type: child_type.name,
-            parent: parent_type.name
+            type: child_type.graphql_name,
+            parent: parent_type.graphql_name
           ))
         end
       end

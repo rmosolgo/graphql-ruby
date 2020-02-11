@@ -307,8 +307,23 @@ module Jazz
     field :is_flat, Boolean, null: false, method: :flat
   end
 
+  class PerformingActVisibility < GraphQL::Schema::TypeMembership
+    def initialize(*args, visibility: nil, **kwargs)
+      @visibility = visibility
+      super(*args, **kwargs)
+    end
+
+    def visible?(ctx)
+      return true if @visibility.nil?
+
+      !ctx[@visibility]
+    end
+  end
+
   class PerformingAct < GraphQL::Schema::Union
-    possible_types Musician, Ensemble
+    type_membership_class PerformingActVisibility
+    possible_types Musician
+    possible_types Ensemble, visibility: :hide_ensemble
 
     def self.resolve_type(object, context)
       GraphQL::Execution::Lazy.new do
@@ -323,6 +338,10 @@ module Jazz
 
   class HashKeyTest < BaseObject
     field :falsey, Boolean, null: false
+  end
+
+  class CamelizedBooleanInput <  GraphQL::Schema::InputObject
+    argument :camelized_boolean, Boolean, required: true
   end
 
   # Another new-style definition, with method overrides
@@ -365,6 +384,14 @@ module Jazz
       upcase.inspect
     end
 
+    field :input_object_camelization, String, null: false do
+      argument :input, CamelizedBooleanInput, required: true
+    end
+
+    def input_object_camelization(input:)
+      input.to_h.inspect
+    end
+
     def ensembles
       # Filter out the unauthorized one to avoid an error later
       Models.data["Ensemble"].select { |e| e.name != "Spinal Tap" }
@@ -398,7 +425,7 @@ module Jazz
         input.key?(:string_value).to_s,
         # ~~Access by legacy key~~ # not anymore
         input[:string_value],
-        input.ensemble,
+        input.ensemble || "No ensemble",
         input.key?(:ensemble).to_s,
       ]
     end
@@ -462,6 +489,10 @@ module Jazz
 
     def default_value_test(arg_with_default:)
       "#{arg_with_default.class.name} -> #{arg_with_default.to_h}"
+    end
+
+    field :default_value_test_2, String, null: false, resolver_method: :default_value_test do
+      argument :arg_with_default, InspectableInput, required: false, default_value: {}
     end
 
     field :complex_hash_key, String, null: false, hash_key: :'foo bar/fizz-buzz'
@@ -530,6 +561,23 @@ module Jazz
       {
         int: int,
         node_class: ast_node.class.name,
+      }
+    end
+  end
+
+  class HasFieldExtras < GraphQL::Schema::RelayClassicMutation
+    null true
+    description "Test field with extras in RelayClassicMutation"
+
+    argument :int, Integer, required: false
+
+    field :lookahead_class, String, null: false
+    field :int, Integer, null: true
+
+    def resolve(int: nil, lookahead:)
+      {
+        int: int,
+        lookahead_class: lookahead.class.name,
       }
     end
   end
@@ -651,6 +699,23 @@ module Jazz
     end
   end
 
+  class DummyOutput < GraphQL::Schema::Object
+    graphql_name "DummyOutput"
+
+    field :name, String, null: true
+  end
+
+  class ReturnsMultipleErrors < GraphQL::Schema::Mutation
+    field :dummy_field, DummyOutput, null: false
+
+    def resolve
+      [
+        GraphQL::ExecutionError.new("First error"),
+        GraphQL::ExecutionError.new("Second error")
+      ]
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
@@ -666,8 +731,10 @@ module Jazz
     field :upvote_ensembles_as_bands, mutation: UpvoteEnsemblesAsBands
     field :upvote_ensembles_ids, mutation: UpvoteEnsemblesIds
     field :rename_ensemble_as_band, mutation: RenameEnsembleAsBand
+    field :returns_multiple_errors, mutation: ReturnsMultipleErrors, null: false
     field :has_extras, mutation: HasExtras
     field :has_extras_stripped, mutation: HasExtrasStripped
+    field :has_field_extras, mutation: HasFieldExtras, extras: [:lookahead]
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
@@ -691,7 +758,7 @@ module Jazz
 
   class MetadataPlugin
     def self.use(schema_defn, value:)
-      schema_defn.target.metadata[:plugin_key] = value
+      schema_defn.metadata[:plugin_key] = value
     end
   end
 
@@ -779,7 +846,6 @@ module Jazz
     mutation(Mutation)
     context_class CustomContext
     introspection(Introspection)
-    use MetadataPlugin, value: "xyz"
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
       ctx.schema.types[class_name] || raise("No type for #{obj.inspect}")
@@ -788,15 +854,42 @@ module Jazz
     def self.object_from_id(id, ctx)
       GloballyIdentifiableType.find(id)
     end
+
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
     end
+
+    use MetadataPlugin, value: "xyz"
   end
 
   class SchemaWithoutIntrospection < GraphQL::Schema
     query(Query)
 
     disable_introspection_entry_points
+
+    if TESTING_INTERPRETER
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+    end
+  end
+
+  class SchemaWithoutSchemaIntrospection < GraphQL::Schema
+    query(Query)
+
+    disable_schema_introspection_entry_point
+  end
+
+  class SchemaWithoutTypeIntrospection < GraphQL::Schema
+    query(Query)
+
+    disable_type_introspection_entry_point
+  end
+
+  class SchemaWithoutSchemaOrTypeIntrospection < GraphQL::Schema
+    query(Query)
+
+    disable_schema_introspection_entry_point
+    disable_type_introspection_entry_point
   end
 end

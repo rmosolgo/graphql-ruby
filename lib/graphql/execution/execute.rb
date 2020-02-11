@@ -20,7 +20,7 @@ module GraphQL
 
       def execute(ast_operation, root_type, query)
         result = resolve_root_selection(query)
-        lazy_resolve_root_selection(result, {query: query})
+        lazy_resolve_root_selection(result, **{query: query})
         GraphQL::Execution::Flatten.call(query.context)
       end
 

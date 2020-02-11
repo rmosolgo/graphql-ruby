@@ -9,7 +9,7 @@ index: 0
 pro: true
 ---
 
-`GraphQL::Pro::OperationStore` uses `ActiveRecord` and `Rack` to maintain a normalized, deduplicated database of _persisted queries_ for your GraphQL system.
+`GraphQL::Pro::OperationStore` uses `Rack` and a storage backend ({% internal_link "ActiveRecord", "/operation_store/active_record_backend" %} or {% internal_link "Redis", "/operation_store/active_record_backend" %}) to maintain a normalized, deduplicated database of _persisted queries_ for your GraphQL system.
 
 In this guide, you'll find:
 

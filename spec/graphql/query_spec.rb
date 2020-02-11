@@ -239,7 +239,7 @@ describe GraphQL::Query do
       end
 
       let(:schema) {
-        Dummy::Schema.redefine {
+        Class.new(Dummy::Schema) {
           instrument(:query, Instrumenter)
         }
       }
@@ -261,7 +261,7 @@ describe GraphQL::Query do
       end
 
       let(:schema) {
-        Dummy::Schema.redefine {
+        Class.new(Dummy::Schema) {
           instrument(:query, ExtensionsInstrumenter)
         }
       }
@@ -388,7 +388,8 @@ describe GraphQL::Query do
     |}
 
     it "has a default value" do
-      default_source = schema.query.fields["searchDairy"].arguments["product"].default_value[0]["source"]
+      default_value = schema.query.fields["searchDairy"].arguments["product"].default_value
+      default_source = default_value[0][:source]
       assert_equal("SHEEP", default_source)
     end
 
@@ -424,14 +425,6 @@ describe GraphQL::Query do
       }
     |}
 
-    describe "when they can be coerced" do
-      let(:query_variables) { {"cheeseId" => 2.0} }
-
-      it "coerces them on the way in" do
-        assert("Gouda", result["data"]["cheese"]["flavor"])
-      end
-    end
-
     describe "when they can't be coerced" do
       let(:query_variables) { {"cheeseId" => "2"} }
 
@@ -439,7 +432,7 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable $cheeseId of type Int! was provided invalid value",
               "locations"=>[{ "line" => 2, "column" => 23 }],
               "extensions" => {
                 "value" => "2",
@@ -459,7 +452,7 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable $cheeseId of type Int! was provided invalid value",
               "locations" => [{"line" => 2, "column" => 23}],
               "extensions" => {
                 "value" => nil,
@@ -479,7 +472,7 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable $cheeseId of type Int! was provided invalid value",
               "locations" => [{"line" => 2, "column" => 23}],
               "extensions" => {
                 "value" => nil,
@@ -697,8 +690,8 @@ describe GraphQL::Query do
 
       schema.execute(query)
 
-      assert(expected_args.first.key?('id'))
-      assert_nil(expected_args.first['id'])
+      assert(expected_args.first.key?(:id))
+      assert_nil(expected_args.first[:id])
     end
 
     it 'sets argument to nil when nil is passed via variable' do
@@ -709,9 +702,8 @@ describe GraphQL::Query do
       GRAPHQL
 
       schema.execute(query, variables: { 'id' => nil })
-
-      assert(expected_args.first.key?('id'))
-      assert([nil], expected_args.first['id'])
+      assert(expected_args.first.key?(:id))
+      assert_equal(nil, expected_args.first[:id])
     end
 
     it 'sets argument to [nil] when [null] is passed' do
@@ -723,8 +715,8 @@ describe GraphQL::Query do
 
       schema.execute(query)
 
-      assert(expected_args.first.key?('id'))
-      assert_equal([nil], expected_args.first['id'])
+      assert(expected_args.first.key?(:id))
+      assert_equal([nil], expected_args.first[:id])
     end
 
     it 'sets argument to [nil] when [nil] is passed via variable' do
@@ -736,37 +728,48 @@ describe GraphQL::Query do
 
       schema.execute(query, variables: { 'id' => [nil] })
 
-      assert(expected_args.first.key?('id'))
-      assert_equal([nil], expected_args.first['id'])
+      assert(expected_args.first.key?(:id))
+      assert_equal([nil], expected_args.first[:id])
     end
   end
 
-  describe '#internal_representation' do
-    it "includes all definition roots" do
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.operation_definitions["getFlavor"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["cheeseFields"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["edibleFields"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["milkFields"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["dairyFields"]
-    end
-  end
+  if !TESTING_INTERPRETER
+    describe '#internal_representation' do
+      let(:schema) {
+        Class.new(Dummy::Schema) do
+          query_execution_strategy(GraphQL::Execution::Execute)
+          self.interpreter = false
+          self.analysis_engine = GraphQL::Analysis
+        end
+      }
+      it "includes all definition roots" do
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.operation_definitions["getFlavor"]
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["cheeseFields"]
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["edibleFields"]
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["milkFields"]
+        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["dairyFields"]
+      end
 
-  describe '#irep_selection' do
-    it "returns the irep for the selected operation" do
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.irep_selection
-      assert_equal 'getFlavor', query.irep_selection.name
-    end
+      describe '#irep_selection' do
+        it "returns the irep for the selected operation" do
+          assert_kind_of GraphQL::InternalRepresentation::Node, query.irep_selection
+          assert_equal 'getFlavor', query.irep_selection.name
+        end
 
-    it "returns nil when there is no selected operation" do
-      query = GraphQL::Query.new(schema, '# Only a comment')
-      assert_nil query.irep_selection
+        it "returns nil when there is no selected operation" do
+          query = GraphQL::Query.new(schema, '# Only a comment')
+          assert_nil query.irep_selection
+        end
+      end
     end
   end
 
   describe "query_execution_strategy" do
     let(:custom_execution_schema) {
-      schema.redefine do
+      Class.new(schema) do
+        self.interpreter = false
         query_execution_strategy DummyStrategy
+        mutation_execution_strategy GraphQL::Execution::Execute
         instrument(:multiplex, DummyMultiplexInstrumenter)
       end
     }
@@ -810,5 +813,11 @@ describe GraphQL::Query do
       msg = "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
       assert_equal msg, err.message
     end
+  end
+
+  it "Accepts a passed-in warden" do
+    warden = GraphQL::Schema::Warden.new(->(t, ctx) { false }, schema: Jazz::Schema, context: nil)
+    res = Jazz::Schema.execute("{ __typename } ", warden: warden)
+    assert_equal ["Field '__typename' doesn't exist on type 'Query'"], res["errors"].map { |e| e["message"] }
   end
 end

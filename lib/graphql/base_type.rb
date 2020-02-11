@@ -43,6 +43,10 @@ module GraphQL
     # @see {GraphQL::SchemaMember}
     alias :graphql_definition :itself
 
+    def type_class
+      metadata[:type_class]
+    end
+
     def name=(name)
       GraphQL::NameValidator.validate!(name)
       @name = name
