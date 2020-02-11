@@ -123,5 +123,3 @@ module TestTracing
     end
   end
 end
-
-
