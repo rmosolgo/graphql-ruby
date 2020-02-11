@@ -243,9 +243,32 @@ describe GraphQL::Query do
           instrument(:query, Instrumenter)
         }
       }
+
       it "can access #result" do
+        Instrumenter::ERROR_LOG.clear
         result
         assert_equal [nil], Instrumenter::ERROR_LOG
+      end
+
+      it "can access result from an unhandled error" do
+        Instrumenter::ERROR_LOG.clear
+        query = GraphQL::Query.new(schema, "{ error }")
+        assert_raises RuntimeError do
+          query.result
+        end
+        assert_equal [nil], Instrumenter::ERROR_LOG
+      end
+
+      it "can access result from an handled error" do
+        Instrumenter::ERROR_LOG.clear
+        query = GraphQL::Query.new(schema, "{ executionError }")
+        query.result
+        expected_err = {
+          "message" => "There was an execution error",
+          "locations" => [{"line"=>1, "column"=>3}],
+          "path" => ["executionError"]
+        }
+        assert_equal [[expected_err]], Instrumenter::ERROR_LOG
       end
     end
 
