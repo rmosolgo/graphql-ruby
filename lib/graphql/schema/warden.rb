@@ -230,6 +230,16 @@ module GraphQL
           unvisited_types << root_type if root_type
         end
         unvisited_types.concat(@schema.introspection_system.types.values)
+
+        directives.each do |dir_class|
+          dir_class.arguments.values.each do |arg_defn|
+            arg_t = arg_defn.type.unwrap
+            if get_type(arg_t.graphql_name)
+              unvisited_types << arg_t
+            end
+          end
+        end
+
         @schema.orphan_types.each do |orphan_type|
           if get_type(orphan_type.graphql_name)
             unvisited_types << orphan_type
