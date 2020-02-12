@@ -85,7 +85,7 @@ The new runtime works with class-based schemas only. Several features are no lon
 
 - `rescue_from`
 
-  This was built on middleware, which is not supported anymore. Stay tuned for a replacement.
+  This was built on middleware, which is not supported anymore. For a replacement, see {% internal_link "Error Handling", "/errors/error_handling" %}.
 
 - `.graphql_definition` and `def to_graphql`
 
