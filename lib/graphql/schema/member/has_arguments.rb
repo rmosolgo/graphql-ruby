@@ -86,9 +86,24 @@ module GraphQL
             end
 
             if has_value
-              coerced_value = nil
+              loads = arg_defn.loads
+              loaded_value = nil
+              if loads && !arg_defn.from_resolver?
+                loaded_value = if arg_defn.type.list?
+                  value.map { |val| load_application_object(arg_defn, loads, val, context) }
+                else
+                  load_application_object(arg_defn, loads, value, context)
+                end
+              end
+
               prepared_value = context.schema.error_handler.with_error_handling(context) do
-                coerced_value = arg_defn.type.coerce_input(value, context)
+
+                coerced_value = if loaded_value
+                  loaded_value
+                else
+                  arg_defn.type.coerce_input(value, context)
+                end
+
                 arg_defn.prepare_value(parent_object, coerced_value, context: context)
               end
               kwarg_arguments[arg_defn.keyword] = prepared_value
@@ -121,7 +136,7 @@ module GraphQL
             context.schema.object_from_id(id, context)
           end
 
-          def load_application_object(argument, lookup_as_type, id)
+          def load_application_object(argument, lookup_as_type, id, context)
             # See if any object can be found for this ID
             loaded_application_object = object_from_id(lookup_as_type, id, context)
             context.schema.after_lazy(loaded_application_object) do |application_object|

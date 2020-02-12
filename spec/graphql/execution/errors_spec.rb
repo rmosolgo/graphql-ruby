@@ -53,7 +53,7 @@ describe "GraphQL::Execution::Errors" do
     class ValuesInput < GraphQL::Schema::InputObject
       argument :value, Int, required: true, loads: Thing
 
-      def object_from_id(type, value, ctx)
+      def self.object_from_id(type, value, ctx)
         if value == 1
           :thing
         else
