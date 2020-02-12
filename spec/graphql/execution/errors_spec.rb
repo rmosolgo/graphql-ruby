@@ -3,14 +3,6 @@ require "spec_helper"
 
 describe "GraphQL::Execution::Errors" do
   class ErrorsTestSchema < GraphQL::Schema
-    def self.object_from_id(id, ctx)
-      if id == 1
-        :thing
-      else
-        raise ErrorD
-      end
-    end
-
     class ErrorA < RuntimeError; end
     class ErrorB < RuntimeError; end
     class ErrorC < RuntimeError
@@ -61,7 +53,7 @@ describe "GraphQL::Execution::Errors" do
     class ValuesInput < GraphQL::Schema::InputObject
       argument :value, Int, required: true, loads: Thing
 
-      def object_from_id(type, value, ctx)
+      def self.object_from_id(type, value, ctx)
         if value == 1
           :thing
         else

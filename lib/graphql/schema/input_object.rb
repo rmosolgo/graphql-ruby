@@ -24,21 +24,25 @@ module GraphQL
         self.class.arguments.each do |name, arg_defn|
           @arguments_by_keyword[arg_defn.keyword] = arg_defn
           ruby_kwargs_key = arg_defn.keyword
-          loads = arg_defn.loads
 
-          if @ruby_style_hash.key?(ruby_kwargs_key) && loads && !arg_defn.from_resolver? && !context.interpreter?
-            value = @ruby_style_hash[ruby_kwargs_key]
-            @ruby_style_hash[ruby_kwargs_key] = if arg_defn.type.list?
-              value.map { |val| load_application_object(arg_defn, loads, val, context) }
-            else
-              load_application_object(arg_defn, loads, value, context)
+          if @ruby_style_hash.key?(ruby_kwargs_key)
+            loads = arg_defn.loads
+            # Resolvers do this loading themselves;
+            # With the interpreter, it's done during `coerce_arguments`
+            if loads && !arg_defn.from_resolver? && !context.interpreter?
+              value = @ruby_style_hash[ruby_kwargs_key]
+              @ruby_style_hash[ruby_kwargs_key] = if arg_defn.type.list?
+                value.map { |val| load_application_object(arg_defn, loads, val, context) }
+              else
+                load_application_object(arg_defn, loads, value, context)
+              end
             end
-          end
 
-          # Weirdly, procs are applied during coercion, but not methods.
-          # Probably because these methods require a `self`.
-          if @ruby_style_hash.key?(ruby_kwargs_key) && (arg_defn.prepare.is_a?(Symbol) || context.nil?  || !context.interpreter?)
-            @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
+            # Weirdly, procs are applied during coercion, but not methods.
+            # Probably because these methods require a `self`.
+            if arg_defn.prepare.is_a?(Symbol) || context.nil? || !context.interpreter?
+              @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
+            end
           end
         end
       end
