@@ -219,6 +219,110 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "`use` works with plugins that attach instrumentation, tracers, query analyzers" do
+    class NoOpTracer
+      def trace(_key, data)
+        if (query = data[:query])
+          query.context[:no_op_tracer_ran] = true
+        end
+        yield
+      end
+    end
+
+    class NoOpInstrumentation
+      def before_query(query)
+        query.context[:no_op_instrumentation_ran_before_query] = true
+      end
+
+      def after_query(query)
+        query.context[:no_op_instrumentation_ran_after_query] = true
+      end
+    end
+
+    class NoOpAnalyzer < GraphQL::Analysis::AST::Analyzer
+      def initialize(query_or_multiplex)
+        query_or_multiplex.context[:no_op_analyzer_ran_initialize] = true
+        super
+      end
+
+      def on_leave_field(_node, _parent, visitor)
+        visitor.query.context[:no_op_analyzer_ran_on_leave_field] = true
+      end
+
+      def result
+        query.context[:no_op_analyzer_ran_result] = true
+      end
+    end
+
+    module PluginWithInstrumentationTracingAndAnalyzer
+      def self.use(schema_defn)
+        schema_defn.instrument :query, NoOpInstrumentation.new
+        schema_defn.tracer NoOpTracer.new
+        schema_defn.query_analyzer NoOpAnalyzer
+      end
+    end
+
+    query_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name 'Query'
+      field :foobar, Integer, null: false
+      def foobar; 1337; end
+    end
+
+    describe "when called on class definitions" do
+      let(:schema) do
+        Class.new(GraphQL::Schema) do
+          query query_type
+          use GraphQL::Analysis::AST
+          use GraphQL::Execution::Interpreter
+          use PluginWithInstrumentationTracingAndAnalyzer
+        end
+      end
+
+      let(:query) { GraphQL::Query.new(schema, "query { foobar }") }
+
+      it "attaches plugins correctly, runs all of their callbacks" do
+        res = query.result
+        assert res.key?("data")
+
+        assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
+        assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
+        assert_equal true, query.context[:no_op_tracer_ran]
+        assert_equal true, query.context[:no_op_analyzer_ran_initialize]
+        assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
+        assert_equal true, query.context[:no_op_analyzer_ran_result]
+      end
+    end
+
+    describe "when called on schema subclasses" do
+      let(:schema) do
+        schema = Class.new(GraphQL::Schema) do
+          query query_type
+          use GraphQL::Analysis::AST
+          use GraphQL::Execution::Interpreter
+        end
+
+        # return a subclass
+        Class.new(schema) do
+          use PluginWithInstrumentationTracingAndAnalyzer
+        end
+      end
+
+      let(:query) { GraphQL::Query.new(schema, "query { foobar }") }
+
+      it "attaches plugins correctly, runs all of their callbacks" do
+        res = query.result
+        assert res.key?("data")
+
+        assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
+        assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
+        assert_equal true, query.context[:no_op_tracer_ran]
+        assert_equal true, query.context[:no_op_analyzer_ran_initialize]
+        assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
+        assert_equal true, query.context[:no_op_analyzer_ran_result]
+      end
+    end
+  end
+
   describe "when mixing define and class-based" do
     module MixedSchema
       class Query < GraphQL::Schema::Object
