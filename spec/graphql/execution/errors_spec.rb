@@ -105,10 +105,26 @@ describe "GraphQL::Execution::Errors" do
       field :input_field, Int, null: true do
         argument :values, ValuesInput, required: true, method_access: false
       end
+
+      field :non_nullable_array, [String], null: false
+      def non_nullable_array
+        [nil]
+      end
     end
 
     query(Query)
     lazy_resolve(Proc, :call)
+  end
+
+  class ErrorsTestSchemaWithoutInterpreter < GraphQL::Schema
+    class Query < GraphQL::Schema::Object
+      field :non_nullable_array, [String], null: false
+      def non_nullable_array
+        [nil]
+      end
+    end
+
+    query(Query)
   end
 
   describe "rescue_from handling" do
@@ -184,6 +200,24 @@ describe "GraphQL::Execution::Errors" do
         )
 
         assert_equal ["ErrorD on nil at Query.inputField()"], res["errors"].map { |e| e["message"] }
+      end
+    end
+
+    describe "errors raised in non_nullable_array loads" do
+      it "outputs the appropriate error message when using non-interpreter schema" do
+        res = ErrorsTestSchemaWithoutInterpreter.execute("{ nonNullableArray }")
+        expected_error = {
+          "message" => "Cannot return null for non-nullable field Query.nonNullableArray"
+        }
+        assert_equal({ "data" => nil, "errors" => [expected_error] }, res)
+      end
+
+      it "outputs the appropriate error message when using interpreter schema" do
+        res = ErrorsTestSchema.execute("{ nonNullableArray }")
+        expected_error = {
+          "message" => "Cannot return null for non-nullable field Query.nonNullableArray"
+        }
+        assert_equal({ "data" => nil, "errors" => [expected_error] }, res)
       end
     end
   end

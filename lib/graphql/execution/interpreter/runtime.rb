@@ -336,8 +336,7 @@ module GraphQL
               set_type_at_path(next_path, inner_type)
               # This will update `response_list` with the lazy
               after_lazy(inner_value, owner: inner_type, path: next_path, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
-                # reset `is_non_null` here and below, because the inner type will have its own nullability constraint
-                continue_value = continue_value(next_path, inner_inner_value, field, false, ast_node)
+                continue_value = continue_value(next_path, inner_inner_value, field, inner_type.non_null?, ast_node)
                 if HALT != continue_value
                   continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections, false, owner_object, arguments)
                 end
