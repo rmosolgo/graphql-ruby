@@ -3,7 +3,7 @@ require "spec_helper"
 
 class InMemoryBackend
   class Subscriptions < GraphQL::Subscriptions
-    attr_reader :deliveries, :pushes, :extra
+    attr_reader :deliveries, :pushes, :extra, :subscriptions, :queries
 
     def initialize(schema:, extra:)
       super
@@ -31,20 +31,28 @@ class InMemoryBackend
 
     def read_subscription(channel)
       query = @queries[channel]
-      {
-        query_string: query.query_string,
-        operation_name: query.operation_name,
-        variables: query.provided_variables,
-        context: { me: query.context[:me] },
-        transport: :socket,
-      }
+      if query
+        {
+          query_string: query.query_string,
+          operation_name: query.operation_name,
+          variables: query.provided_variables,
+          context: { me: query.context[:me] },
+          transport: :socket,
+        }
+      else
+        nil
+      end
     end
 
     def delete_subscription(channel)
-      query = @queries.delete(channel)
-      if query
-        @subscriptions.each do |key, contexts|
-          contexts.delete(query.context)
+      @queries.delete(channel)
+      @subscriptions.keys.each do |key|
+        contexts = @subscriptions[key]
+        contexts.reject! do |ctx|
+          ctx[:socket] == channel
+        end
+        if contexts.size == 0
+          @subscriptions.delete(key)
         end
       end
     end
@@ -68,10 +76,6 @@ class InMemoryBackend
 
     def size
       @subscriptions.size
-    end
-
-    def subscriptions
-      @subscriptions
     end
   end
   # Just a random stateful object for tracking what happens:
@@ -229,6 +233,7 @@ describe GraphQL::Subscriptions do
       let(:schema) { in_memory_backend_class::Schema }
       let(:implementation) { schema.subscriptions }
       let(:deliveries) { implementation.deliveries }
+      let(:active_subscriptions) { implementation.subscriptions }
       describe "pushing updates" do
         it "sends updated data" do
           query_str = <<-GRAPHQL
@@ -350,6 +355,26 @@ describe GraphQL::Subscriptions do
           assert_equal 1, delivery["errors"].length
         end
 
+        it "unsubscribes when `read_subscription` returns nil" do
+          query_str = <<-GRAPHQL
+            subscription ($id: ID!){
+              payload(id: $id) { str, int }
+            }
+          GRAPHQL
+
+          schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
+          assert_equal 1, implementation.size
+          channel = implementation.subscriptions.values.first.first[:socket]
+          # Mess with the private storage so that `read_subscription` will be nil
+          implementation.queries.delete(channel)
+          assert_equal 1, implementation.size
+          assert_nil implementation.read_subscription(channel)
+
+          # The trigger should clean up the lingering subscription:
+          schema.subscriptions.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
+          assert_equal 0, implementation.size
+        end
+
         it "coerces args" do
           query_str = <<-GRAPHQL
         subscription($type: PayloadType) {
@@ -453,9 +478,7 @@ describe GraphQL::Subscriptions do
             assert_equal nil, res["data"]
             assert_equal "unauthorized", res["errors"][0]["message"]
 
-            # this is to make sure nothing actually got subscribed.. but I don't have any idea better than checking its instance variable
-            subscriptions = schema.subscriptions.instance_variable_get(:@subscriptions)
-            assert_equal 0, subscriptions.size
+            assert_equal 0, active_subscriptions.size
           end
 
           it "lets unhandled errors crash" do
