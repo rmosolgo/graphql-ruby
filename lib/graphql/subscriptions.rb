@@ -88,6 +88,10 @@ module GraphQL
     def execute(subscription_id, event, object)
       # Lookup the saved data for this subscription
       query_data = read_subscription(subscription_id)
+      if query_data.nil?
+        # Jump down to the `delete_subscription` call
+        raise GraphQL::Schema::Subscription::UnsubscribedError
+      end
       # Fetch the required keys from the saved data
       query_string = query_data.fetch(:query_string)
       variables = query_data.fetch(:variables)
@@ -95,14 +99,12 @@ module GraphQL
       operation_name = query_data.fetch(:operation_name)
       # Re-evaluate the saved query
       result = @schema.execute(
-        **{
-          query: query_string,
-          context: context,
-          subscription_topic: event.topic,
-          operation_name: operation_name,
-          variables: variables,
-          root_value: object,
-        }
+        query: query_string,
+        context: context,
+        subscription_topic: event.topic,
+        operation_name: operation_name,
+        variables: variables,
+        root_value: object,
       )
       deliver(subscription_id, result)
     rescue GraphQL::Schema::Subscription::NoUpdateError

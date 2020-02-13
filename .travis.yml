@@ -15,6 +15,9 @@ rvm:
   - 2.3.8
 
 matrix:
+  allow_failures:
+    - rvm: ruby-head
+      gemfile: gemfiles/rails_master.gemfile
   include:
   - env:
       - DISPLAY=':99.0'
@@ -39,6 +42,8 @@ matrix:
       - TESTING_INTERPRETER=yes
     rvm: 2.4.3
     gemfile: gemfiles/rails_5.2.gemfile
+  - rvm: ruby-head
+    gemfile: gemfiles/rails_master.gemfile
   - rvm: 2.3.8
     gemfile: gemfiles/rails_3.2.gemfile
   - rvm: 2.3.8
@@ -84,8 +89,3 @@ matrix:
       - psql -c 'create database graphql_ruby_test;' -U postgres
   - rvm: 2.6.2
     gemfile: Gemfile
-
-jobs:
-  allow_failures:
-    - rvm: ruby-head
-      gemfile: gemfiles/rails_master.gemfile
