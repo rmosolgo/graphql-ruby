@@ -3,6 +3,7 @@ require "graphql/execution/interpreter/execution_errors"
 require "graphql/execution/interpreter/hash_response"
 require "graphql/execution/interpreter/runtime"
 require "graphql/execution/interpreter/resolve"
+require "graphql/execution/interpreter/handles_raw_value"
 
 module GraphQL
   module Execution
@@ -22,6 +23,8 @@ module GraphQL
         schema_class.query_execution_strategy(GraphQL::Execution::Interpreter)
         schema_class.mutation_execution_strategy(GraphQL::Execution::Interpreter)
         schema_class.subscription_execution_strategy(GraphQL::Execution::Interpreter)
+
+        GraphQL::Schema::Object.include(HandlesRawValue)
       end
 
       def self.begin_multiplex(multiplex)
