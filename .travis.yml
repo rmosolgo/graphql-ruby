@@ -5,7 +5,8 @@ cache:
   - bundler
   - yarn
 
-node_js: "10"
+node_js:
+  - lts/*
 
 env:
   global:
