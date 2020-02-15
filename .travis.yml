@@ -6,7 +6,7 @@ cache:
   - yarn
 
 node_js:
-  - lts/*
+  - 10
 
 env:
   global:
