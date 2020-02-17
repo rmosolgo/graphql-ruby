@@ -35,7 +35,7 @@ end
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
-default_tasks = [:test, :rubocop, "js:all"]
+default_tasks = [:test, :rubocop]
 if ENV["SYSTEM_TESTS"]
   task(default: ["test:system"] + default_tasks)
 else
@@ -128,13 +128,6 @@ namespace :js do
   task :install do
     Dir.chdir(client_dir) do
       system("yarn install")
-    end
-  end
-
-  desc "Publish the package to NPM"
-  task :publish do
-    Dir.chdir(client_dir) do
-      system("npm publish")
     end
   end
 

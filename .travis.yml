@@ -5,9 +5,6 @@ cache:
   - bundler
   - yarn
 
-node_js:
-  - 10
-
 env:
   global:
     - CODECLIMATE_REPO_TOKEN=f5b27b2e25d3f4e199bb2566fb4fd4507144a004c71d4aa33a32c2df5f940333
@@ -20,6 +17,10 @@ matrix:
     - rvm: ruby-head
       gemfile: gemfiles/rails_master.gemfile
   include:
+  - before_install:
+      - nvm install node
+    script:
+      - bundle exec rake js:all
   - env:
       - DISPLAY=':99.0'
       - TESTING_INTERPRETER=yes
