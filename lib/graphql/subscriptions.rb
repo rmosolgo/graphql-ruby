@@ -228,7 +228,10 @@ module GraphQL
         # match query arguments.
         arg_owner.arguments.each do |name, arg_defn|
           if arg_defn.default_value? && !normalized_args.key?(arg_defn.name)
-            normalized_args[arg_defn.name] = arg_defn.default_value
+            default_value = arg_defn.default_value
+            # We don't have an underlying "object" here, so it can't call methods.
+            # This is broken.
+            normalized_args[arg_defn.name] = arg_defn.prepare_value(nil, default_value, context: GraphQL::Query::NullContext)
           end
         end
 

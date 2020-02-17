@@ -38,12 +38,13 @@ module GraphQL
           elsif (events = context.namespace(:subscriptions)[:events])
             # This is the first execution, so gather an Event
             # for the backend to register:
-            events << Subscriptions::Event.new(
+            event = Subscriptions::Event.new(
               name: field.name,
               arguments: arguments,
               context: context,
               field: field,
             )
+            events << event
             value
           elsif context.query.subscription_topic == Subscriptions::Event.serialize(
               field.name,
