@@ -942,8 +942,24 @@ module GraphQL
           find_inherited_value(:types, EMPTY_HASH)[type_name]
       end
 
+      # @api private
+      attr_writer :connections
+
       # @return [GraphQL::Pagination::Connections] if installed
-      attr_accessor :connections
+      def connections
+        if defined?(@connections)
+          @connections
+        else
+          inherited_connections = find_inherited_value(:connections, nil)
+          # This schema is part of an inheritance chain which is using new connections,
+          # make a new instance, so we don't pollute the upstream one.
+          if inherited_connections
+            @connections = Pagination::Connections.new(schema: self)
+          else
+            nil
+          end
+        end
+      end
 
       def new_connections?
         !!connections

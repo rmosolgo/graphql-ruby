@@ -20,8 +20,11 @@ module ConnectionAssertions
   ]
 
   def self.build_schema(get_items:, connection_class:, total_count_connection_class:)
-    Class.new(GraphQL::Schema) do
+    base_schema = Class.new(GraphQL::Schema) do
       use GraphQL::Pagination::Connections
+    end
+
+    Class.new(base_schema) do
       use GraphQL::Execution::Interpreter
 
       default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
