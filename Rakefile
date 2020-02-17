@@ -131,5 +131,11 @@ namespace :js do
     end
   end
 
-  task all: [:install, :test]
+  desc "Compile TypeScript to JavaScript"
+  task :build do
+    Dir.chdir(client_dir) do
+      system("yarn tsc")
+    end
+  end
+  task all: [:install, :build, :test]
 end
