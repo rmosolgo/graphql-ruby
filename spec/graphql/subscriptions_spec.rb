@@ -109,7 +109,11 @@ class ClassBasedInMemoryBackend < InMemoryBackend
 
   class StreamInput < GraphQL::Schema::InputObject
     argument :user_id, ID, required: true, camelize: false
-    argument :payload_type, PayloadType, required: false, default_value: "ONE"
+    argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: :downcase
+
+    def downcase(value)
+      value ? value.downcase : value
+    end
   end
 
   class Subscription < GraphQL::Schema::Object
@@ -377,9 +381,9 @@ describe GraphQL::Subscriptions do
 
         it "coerces args" do
           query_str = <<-GRAPHQL
-        subscription($type: PayloadType) {
-          e1: event(stream: { user_id: "3", payloadType: $type }) { int }
-        }
+            subscription($type: PayloadType) {
+              e1: event(stream: { user_id: "3", payloadType: $type }) { int }
+            }
           GRAPHQL
 
           # Subscribe with explicit `TYPE`
@@ -415,9 +419,9 @@ describe GraphQL::Subscriptions do
 
         it "allows context-scoped subscriptions" do
           query_str = <<-GRAPHQL
-        subscription($type: PayloadType) {
-          myEvent(payloadType: $type) { int }
-        }
+            subscription($type: PayloadType) {
+              myEvent(payloadType: $type) { int }
+            }
           GRAPHQL
 
           # Subscriptions for user 1
@@ -440,9 +444,9 @@ describe GraphQL::Subscriptions do
         if defined?(GlobalID)
           it "allows complex object subscription scopes" do
             query_str = <<-GRAPHQL
-          subscription($type: PayloadType) {
-            myEvent(payloadType: $type) { int }
-          }
+              subscription($type: PayloadType) {
+                myEvent(payloadType: $type) { int }
+              }
             GRAPHQL
 
             # Global ID Backed User
@@ -466,6 +470,46 @@ describe GraphQL::Subscriptions do
             # Delivered to Array of GlobalIDUser and ToParamUser
             assert_equal [4], deliveries["4"].map { |d| d["data"]["myEvent"]["int"] }
           end
+        end
+
+        focus
+        it "doesn't apply prepare: when building the topic string" do
+          query_str = <<-GRAPHQL
+            subscription($type: PayloadType = TWO) {
+              e1: event(stream: { user_id: "3", payloadType: $type }) { int }
+            }
+          GRAPHQL
+
+          query_str_2 = <<-GRAPHQL
+            subscription {
+              event(stream: { user_id: "4", payloadType: ONE}) { int }
+            }
+          GRAPHQL
+          # Value from variable
+          schema.execute(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+          # Default value for variable
+          schema.execute(query_str, context: { socket: "1" }, root_value: root_object)
+          # Query string literal value
+          schema.execute(query_str_2, context: { socket: "1" }, root_value: root_object)
+
+
+          # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
+          expected_keys = if schema == ClassBasedInMemoryBackend::Schema
+            [
+              ":event:stream:payloadType:one:user_id:3",
+              ":event:stream:payloadType:one:user_id:4",
+              ":event:stream:payloadType:two:user_id:3",
+            ]
+
+          else
+            [
+              ":event:stream:payloadType:ONE:user_id:3",
+              ":event:stream:payloadType:ONE:user_id:4",
+              ":event:stream:payloadType:TWO:user_id:3",
+            ]
+
+          end
+          assert_equal expected_keys, active_subscriptions.keys.sort
         end
 
         describe "errors" do
