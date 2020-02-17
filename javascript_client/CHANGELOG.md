@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.7.0 (17 Feb 2020)
+
+- Rewrite in TypeScript
+
 ## 1.6.8 (18 Sept 2019)
 
 - Properly send `Content-Type: application/json` when posting persisted operations
