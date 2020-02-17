@@ -3,7 +3,7 @@ Find the `graphql-ruby-client` docs on the [GraphQL-Ruby website](https://graphq
 ## License
 
 `graphql-ruby-client` is available under the LGPLv3 license;
-[graphql-pro ](https://graphql.pro) customers are granted a special commercial license.
+[graphql-pro](https://graphql.pro) customers are granted a special commercial license.
 
 ## Development
 
@@ -13,4 +13,5 @@ Find the `graphql-ruby-client` docs on the [GraphQL-Ruby website](https://graphq
 - Stand-alone:
   - Install dependencies `yarn install`
   - Run the tests `yarn run test`
+- Run the TypeScript compiler: `yarn tsc -w`
 - Install for local development with `npm link .`

@@ -1,23 +1,34 @@
 {
   "name": "graphql-ruby-client",
-  "version": "1.6.8",
+  "version": "1.7.3",
   "description": "JavaScript client for graphql-ruby",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": "https://github.com/rmosolgo/graphql-ruby-client",
   "author": "Robert Mosolgo",
   "license": "LGPL-3.0",
-  "bin": "./cli.js",
+  "bin": "./dist/cli.js",
   "devDependencies": {
-    "jest": "^24.8.0",
-    "nock": "^10.0.6"
+    "@types/ably": "^1.0.0",
+    "@types/actioncable": "^5.2.3",
+    "@types/glob": "^7.1.1",
+    "@types/jest": "^25.1.2",
+    "@types/minimist": "^1.2.0",
+    "@types/node": "^13.7.1",
+    "@types/pusher-js": "^4.2.2",
+    "jest": "^25.0.0",
+    "nock": "^11.0.0",
+    "ts-jest": "^25.2.0"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "tsc"
   },
   "dependencies": {
     "apollo-link": "^1.2.12",
     "glob": "^7.1.4",
     "graphql": "^14.3.1",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "typescript": "^3.7.5"
   }
 }
