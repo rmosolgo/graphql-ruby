@@ -30,16 +30,17 @@ module GraphQL
 
       def self.use(schema_defn)
         if schema_defn.is_a?(Class)
-          schema_defn.connections = self.new
+          schema_defn.connections = self.new(schema: schema_defn)
         else
           # Unwrap a `.define` object
           schema_defn = schema_defn.target
-          schema_defn.connections = self.new
+          schema_defn.connections = self.new(schema: schema_defn)
           schema_defn.class.connections = schema_defn.connections
         end
       end
 
-      def initialize
+      def initialize(schema:)
+        @schema = schema
         @wrappers = {}
         add_default
       end
@@ -52,12 +53,23 @@ module GraphQL
         @wrappers.delete(nodes_class)
       end
 
+      def all_wrappers
+        all_wrappers = {}
+        @schema.ancestors.reverse_each do |schema_class|
+          if schema_class.respond_to?(:connections) && (c = schema_class.connections)
+            all_wrappers.merge!(c.wrappers)
+          end
+        end
+        all_wrappers
+      end
+
       # Used by the runtime to wrap values in connection wrappers.
       # @api Private
-      def wrap(field, object, arguments, context)
+      def wrap(field, object, arguments, context, wrappers: all_wrappers)
         impl = nil
+
         object.class.ancestors.each { |cls|
-          impl = @wrappers[cls]
+          impl = wrappers[cls]
           break if impl
         }
 
@@ -75,6 +87,10 @@ module GraphQL
           before: arguments[:before],
         )
       end
+
+      protected
+
+      attr_reader :wrappers
 
       private
 
