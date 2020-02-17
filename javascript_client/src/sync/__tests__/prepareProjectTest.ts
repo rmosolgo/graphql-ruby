@@ -1,6 +1,5 @@
 import prepareProject from "../prepareProject"
 
-console.log("starting prepare project test", prepareProject)
 describe("merging a project", () => {
   it("builds out separate operations", () => {
     var filenames = [
