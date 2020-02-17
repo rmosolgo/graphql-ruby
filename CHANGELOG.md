@@ -8,6 +8,25 @@
 
 ### Bug fixes
 
+## 1.10.3 (17 Feb 2020)
+
+### New features
+
+- Support `loads:` with plain field arguments #2720
+- Support `raw_value(...)` to halt execution with a certain value #2699
+- `.read_subscription` can return `nil` to bypass executing a subscription #2741
+
+### Bug fixes
+
+- Connection wrappers are properly inherited #2750
+- `prepare(...)` is properly applied to default values in subscription fields #2748
+- Code tidying for RSpec warnings #2741
+- Include new analysis module when generating a schema #2734
+- Include directive argument types in printed schemas #2733
+- Use `module_parent_name` in Rails #2713
+- Fix overriding default scalars in build_from_definition #2722
+- Fix some non-null errors in lists #2651
+
 ## 1.10.2 (31 Jan 2020)
 
 ### Bug fixes
