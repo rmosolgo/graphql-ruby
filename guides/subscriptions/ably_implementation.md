@@ -158,6 +158,7 @@ Read more here: ["Using CORS"](https://www.html5rocks.com/en/tutorials/cors/).
 Your server needs to receive webhooks from Ably when clients disconnect. This keeps your local subscription database in sync with Ably.
 
 ### Server
+
 *Note: if you're setting up in a development environment you should follow the [Developing with webhooks](#Developing-with-webhooks) section first*
 
 Mount the Rack app for handling webhooks from Ably. For example, on Rails:
@@ -176,6 +177,7 @@ end
 ```
 
 ### Ably
+
 1. Go to the Ably dashboard
 2. Click on your application.
 3. Select the "Reactor" tab
@@ -186,6 +188,23 @@ end
 8. Under "Source" select "Channel Lifecycle"
 9. Under "Sign with key" select the API Key prefix that matches the prefix of the ABLY_API_KEY you provided.
 10. Click "Create"
+
+## Authorization
+
+You can use Ably's [token authentication](https://www.ably.io/documentation/realtime/authentication#token-authentication) by implementing an endpoint in your app, for example:
+
+```ruby
+class AblyController < ActionController::Base
+  def auth
+    render status: 201, json: ably_rest_client.auth.create_token_request(
+      capability: { '*' => ['presence', 'subscribe'] },
+      client_id: 'graphql-subscriber',
+    )
+  end
+end
+```
+
+[Ably's tutorial](https://www.ably.io/tutorials/webhook-chuck-norris#tutorial-step-4) also demonstrates some of the setup for this.
 
 ## Serializing Context
 
