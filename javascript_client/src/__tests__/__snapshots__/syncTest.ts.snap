@@ -1,0 +1,557 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`sync operations Input files Merges fragments and operations across files 1`] = `
+Array [
+  Object {
+    "alias": "5f0da489cf508a7c65ff5fa144e50545",
+    "body": "fragment Frag1 on Query {
+  moreStuff
+}
+
+query GetStuff {
+  ...Frag1
+}
+",
+    "name": "GetStuff",
+  },
+  Object {
+    "alias": "c944b08d15eb94cf93dd124b7d664b62",
+    "body": "fragment Frag1 on Query {
+  moreStuff
+}
+
+fragment Frag2 on Query {
+  ...Frag3
+}
+
+fragment Frag3 on Query {
+  evenMoreStuff
+}
+
+query GetStuff2 {
+  stuff
+  ...Frag1
+  ...Frag2
+}
+",
+    "name": "GetStuff2",
+  },
+  Object {
+    "alias": "fc215a466a3ea309fe493e8f7cb206f2",
+    "body": "fragment Frag2 on Query {
+  ...Frag3
+}
+
+fragment Frag3 on Query {
+  evenMoreStuff
+}
+
+fragment Frag4 on Query {
+  evenMoreStuff {
+    stuffInside
+  }
+}
+
+query GetStuff3 {
+  stuff {
+    withStuffInside
+  }
+  ...Frag2
+  ...Frag4
+}
+",
+    "name": "GetStuff3",
+  },
+  Object {
+    "alias": "919af8f80d8848a9b9b6176e457f8e45",
+    "body": "query GetStuffIsolated {
+  ...FragIsolated
+  things {
+    existHere
+  }
+}
+
+fragment FragIsolated on Query {
+  evenMoreStuff {
+    stuffInside
+  }
+}
+",
+    "name": "GetStuffIsolated",
+  },
+  Object {
+    "alias": "d5dfe825034aeda06e2639935d8b107d",
+    "body": "query GetStuffIsolated2 {
+  things {
+    existHere
+  }
+}
+",
+    "name": "GetStuffIsolated2",
+  },
+]
+`;
+
+exports[`sync operations Input files Uses mode: file to process each file separately 1`] = `
+Array [
+  Object {
+    "alias": "26c44bfe42872860da112b6177355bfa",
+    "body": "fragment Frag1 on Query {
+  moreStuff
+}
+",
+    "name": "",
+  },
+  Object {
+    "alias": "7de9e7bf1d6ea1f527de07a25983086c",
+    "body": "fragment Frag2 on Query {
+  ...Frag3
+}
+",
+    "name": "",
+  },
+  Object {
+    "alias": "8bc9b9922a7fbb66f4ac6c58d5d5c357",
+    "body": "fragment Frag3 on Query {
+  evenMoreStuff
+}
+",
+    "name": "",
+  },
+  Object {
+    "alias": "bfc521a5ade5ff6f17bdf9352c86c850",
+    "body": "fragment Frag4 on Query {
+  evenMoreStuff {
+    stuffInside
+  }
+}
+",
+    "name": "",
+  },
+  Object {
+    "alias": "0a6add7303775e2487f2c2235ecb1c80",
+    "body": "query GetStuff {
+  ...Frag1
+}
+",
+    "name": "GetStuff",
+  },
+  Object {
+    "alias": "2f26b770ded2a04279bc4bf824ca54ac",
+    "body": "query GetStuff2 {
+  stuff
+  ...Frag1
+  ...Frag2
+}
+",
+    "name": "GetStuff2",
+  },
+  Object {
+    "alias": "1b8da77aabef67ee54df7e5acfd75893",
+    "body": "query GetStuff3 {
+  stuff {
+    withStuffInside
+  }
+  ...Frag2
+  ...Frag4
+}
+",
+    "name": "GetStuff3",
+  },
+  Object {
+    "alias": "919af8f80d8848a9b9b6176e457f8e45",
+    "body": "query GetStuffIsolated {
+  ...FragIsolated
+  things {
+    existHere
+  }
+}
+
+fragment FragIsolated on Query {
+  evenMoreStuff {
+    stuffInside
+  }
+}
+",
+    "name": "GetStuffIsolated",
+  },
+  Object {
+    "alias": "d5dfe825034aeda06e2639935d8b107d",
+    "body": "query GetStuffIsolated2 {
+  things {
+    existHere
+  }
+}
+",
+    "name": "GetStuffIsolated2",
+  },
+]
+`;
+
+exports[`sync operations Logging Can be quieted with quiet: true 1`] = `Array []`;
+
+exports[`sync operations Logging Logs progress 1`] = `
+Array [
+  Array [
+    "Syncing 5 operations to [1mbogus[0m...",
+  ],
+  Array [
+    "Generating client module in [1msrc/OperationStoreClient.js[0m...",
+  ],
+  Array [
+    "[32m✓ Done![0m",
+  ],
+]
+`;
+
+exports[`sync operations Printing the result prints failure and sends the message to the promise 1`] = `
+Array [
+  Array [
+    "Syncing 5 operations to [1mhttp://example.com/stored_operations/sync[0m...",
+  ],
+  Array [
+    "  [2m0 added[0m",
+  ],
+  Array [
+    "  [2m0 not modified[0m",
+  ],
+  Array [
+    "  [31m1 failed[0m",
+  ],
+]
+`;
+
+exports[`sync operations Printing the result prints failure and sends the message to the promise 2`] = `
+Array [
+  Array [
+    "Sync failed, errors:",
+  ],
+  Array [
+    "  GetStuff:",
+  ],
+  Array [
+    "    [31m✘[0m something",
+  ],
+]
+`;
+
+exports[`sync operations Printing the result prints success 1`] = `
+Array [
+  Array [
+    "Syncing 5 operations to [1mhttp://example.com/stored_operations/sync[0m...",
+  ],
+]
+`;
+
+exports[`sync operations Printing the result prints success 2`] = `
+Array [
+  Array [
+    "  [32m1 added[0m",
+  ],
+  Array [
+    "  [0m2 not modified[0m",
+  ],
+  Array [
+    "  [2m0 failed[0m",
+  ],
+  Array [
+    "Generating client module in [1msrc/OperationStoreClient.js[0m...",
+  ],
+  Array [
+    "[32m✓ Done![0m",
+  ],
+]
+`;
+
+exports[`sync operations Printing the result prints success 3`] = `Array []`;
+
+exports[`sync operations Relay support Uses Relay generated .js files 1`] = `
+Array [
+  Object {
+    "alias": "353e010cb78d082b29cb63ee7e9027b3",
+    "body": "query AppFeedQuery {
+  feed(type: NEW, limit: 5) {
+    ...Feed
+  }
+}
+
+fragment Feed on Entry {
+  repository {
+    owner {
+      login
+    }
+    name
+  }
+  ...FeedEntry
+}
+
+fragment FeedEntry on Entry {
+  repository {
+    owner {
+      login
+    }
+    name
+    stargazers_count
+  }
+  postedBy {
+    login
+  }
+}
+",
+    "name": "AppFeedQuery",
+  },
+]
+`;
+
+exports[`sync operations Relay support Uses relay --persist-output JSON files 1`] = `
+Array [
+  Object {
+    "alias": "aba626ea9bdf465954e89e5590eb2c1a",
+    "body": "mutation RemoveTodoMutation(
+  $input: RemoveTodoInput!
+) {
+  removeTodo(input: $input) {
+    deletedTodoId
+    user {
+      completedCount
+      totalCount
+      id
+    }
+  }
+}
+",
+  },
+  Object {
+    "alias": "67c2bc8aa3185a209d6651b4feb63c04",
+    "body": "query appQuery(
+  $userId: String
+) {
+  user(id: $userId) {
+    ...TodoApp_user
+    id
+  }
+}
+
+fragment TodoApp_user on User {
+  id
+  userId
+  totalCount
+  ...TodoListFooter_user
+  ...TodoList_user
+}
+
+fragment TodoListFooter_user on User {
+  id
+  userId
+  completedCount
+  todos(first: 2147483647) {
+    edges {
+      node {
+        id
+        complete
+        __typename
+      }
+      cursor
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+  totalCount
+}
+
+fragment TodoList_user on User {
+  todos(first: 2147483647) {
+    edges {
+      node {
+        id
+        complete
+        ...Todo_todo
+        __typename
+      }
+      cursor
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+  id
+  userId
+  totalCount
+  completedCount
+  ...Todo_user
+}
+
+fragment Todo_todo on Todo {
+  complete
+  id
+  text
+}
+
+fragment Todo_user on User {
+  id
+  userId
+  totalCount
+  completedCount
+}
+",
+  },
+  Object {
+    "alias": "db9904c31d91416f21d45fe3d153884c",
+    "body": "mutation MarkAllTodosMutation(
+  $input: MarkAllTodosInput!
+) {
+  markAllTodos(input: $input) {
+    changedTodos {
+      id
+      complete
+    }
+    user {
+      id
+      completedCount
+    }
+  }
+}
+",
+  },
+  Object {
+    "alias": "2eb8c9941fdb3117fdbc08d15fab62d0",
+    "body": "mutation AddTodoMutation(
+  $input: AddTodoInput!
+) {
+  addTodo(input: $input) {
+    todoEdge {
+      __typename
+      cursor
+      node {
+        complete
+        id
+        text
+      }
+    }
+    user {
+      id
+      totalCount
+    }
+  }
+}
+",
+  },
+  Object {
+    "alias": "d970fd7dbf118794415dec7324d463e3",
+    "body": "mutation RenameTodoMutation(
+  $input: RenameTodoInput!
+) {
+  renameTodo(input: $input) {
+    todo {
+      id
+      text
+    }
+  }
+}
+",
+  },
+  Object {
+    "alias": "a49217db31a8be3f4107763b957d5fca",
+    "body": "mutation RemoveCompletedTodosMutation(
+  $input: RemoveCompletedTodosInput!
+) {
+  removeCompletedTodos(input: $input) {
+    deletedTodoIds
+    user {
+      completedCount
+      totalCount
+      id
+    }
+  }
+}
+",
+  },
+  Object {
+    "alias": "d7dda774dcfa32fe0d9661e01cac9a4a",
+    "body": "mutation ChangeTodoStatusMutation(
+  $input: ChangeTodoStatusInput!
+) {
+  changeTodoStatus(input: $input) {
+    todo {
+      id
+      complete
+    }
+    user {
+      id
+      completedCount
+    }
+  }
+}
+",
+  },
+]
+`;
+
+exports[`sync operations custom file processing options Adds .graphql to the glob if needed 1`] = `
+Array [
+  Object {
+    "alias": "f7f65309043352183e905e1396e51078",
+    "body": "query GetStuff {
+  stuff
+}
+",
+    "name": "GetStuff",
+  },
+]
+`;
+
+exports[`sync operations custom file processing options Adds .graphql to the glob if needed 2`] = `
+Array [
+  Object {
+    "alias": "f7f65309043352183e905e1396e51078",
+    "body": "query GetStuff {
+  stuff
+}
+",
+    "name": "GetStuff",
+  },
+]
+`;
+
+exports[`sync operations custom file processing options Uses a custom hash function if provided 1`] = `
+Array [
+  Object {
+    "alias": "GETSTUFF",
+    "body": "query GetStuff {
+  stuff
+}
+",
+    "name": "GetStuff",
+  },
+]
+`;
+
+exports[`sync operations verbose Adds debug output 1`] = `
+Array [
+  Array [
+    "[Sync] glob: ",
+    "./src/__tests__/documents**/*.graphql*",
+  ],
+  Array [
+    "[Sync] 1 files:",
+  ],
+  Array [
+    "[Sync]   - ./src/__tests__/documents/doc1.graphql",
+  ],
+  Array [
+    "Syncing 1 operations to [1mbogus[0m...",
+  ],
+  Array [
+    "Verbose!",
+  ],
+  Array [
+    "Generating client module in [1msrc/OperationStoreClient.js[0m...",
+  ],
+  Array [
+    "[32m✓ Done![0m",
+  ],
+]
+`;

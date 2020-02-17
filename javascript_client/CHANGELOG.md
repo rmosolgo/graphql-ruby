@@ -1,5 +1,17 @@
 # graphql-ruby-client
 
+## 1.7.3 (17 Feb 2020)
+
+- Fix CLI for TypeScript
+
+## 1.7.2 (17 Feb 2020)
+
+- Convert outfile generators to TypeScript and include them in published package
+
+## 1.7.1 (17 Feb 2020)
+
+- Fix `bin` configuration in package.json
+
 ## 1.7.0 (17 Feb 2020)
 
 - Rewrite in TypeScript

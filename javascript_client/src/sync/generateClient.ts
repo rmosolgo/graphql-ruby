@@ -4,8 +4,8 @@ import prepareIsolatedFiles from './prepareIsolatedFiles'
 import prepareProject from "./prepareProject"
 import md5 from "./md5"
 
-var generateJs = require("./outfileGenerators/js")
-var generateJson = require("./outfileGenerators/json")
+import generateJs from "./outfileGenerators/js"
+import generateJson from "./outfileGenerators/json"
 
 var JS_TYPE = "js";
 var JSON_TYPE = "json";
@@ -120,13 +120,14 @@ function generateClientCode(clientName: string, operations: ClientOperation[], t
   }).join(",")
   keyValuePairs += "\n}"
 
-  var generateOutfile = generators[type || JS_TYPE];
+  var outfileType = type || JS_TYPE
+  var generateOutfile = generators[outfileType];
 
   if (!generateOutfile) {
-    throw new Error("Unknown generator type " + type + " encountered for generating the outFile");
+    throw new Error("Unknown generator type " + outfileType + " encountered for generating the outFile");
   }
 
-  return generateOutfile(type, clientName, keyValuePairs);
+  return generateOutfile(outfileType, clientName, keyValuePairs);
 }
 
 export {

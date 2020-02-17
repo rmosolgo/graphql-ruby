@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import parseArgs from "minimist"
+import sync from "./sync/index"
+console.log(sync)
 var argv = parseArgs(process.argv.slice(2))
 
 if (argv.help || argv.h) {
@@ -38,7 +40,6 @@ optional arguments:
   if (commandName !== "sync") {
     console.log("Only `graphql-ruby-client sync` is supported")
   } else {
-    var sync = require("./sync")
     var result = sync({
       path: argv.path,
       relayPersistedOutput: argv["relay-persisted-output"],
@@ -53,9 +54,9 @@ optional arguments:
       verbose: argv.hasOwnProperty("verbose"),
     })
 
-    result.then(function(_res: void) {
+    result.then(function() {
       process.exit(0)
-    }).catch(function(_err: void) {
+    }).catch(function() {
       // The error is logged by the function
       process.exit(1)
     })
