@@ -116,6 +116,12 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     end
   end
 
+  class EventSubscription < GraphQL::Schema::Subscription
+    argument :user_id, ID, required: true
+    argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: ->(e, ctx) { e ? e.downcase : e }
+    field :payload, Payload, null: true
+  end
+
   class Subscription < GraphQL::Schema::Object
     if TESTING_INTERPRETER
       extend GraphQL::Subscriptions::SubscriptionRoot
@@ -132,6 +138,8 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     field :event, Payload, null: true do
       argument :stream, StreamInput, required: false
     end
+
+    field :event_subscription, subscription: EventSubscription
 
     field :my_event, Payload, null: true, subscription_scope: :me do
       argument :payload_type, PayloadType, required: false
@@ -166,6 +174,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   type Subscription {
     payload(id: ID!): Payload!
     event(stream: StreamInput): Payload
+    eventSubscription(userId: ID, payloadType: PayloadType): EventSubscriptionPayload
     myEvent(payloadType: PayloadType): Payload
     failedEvent(id: ID!): Payload!
   }
@@ -173,6 +182,10 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   type Payload {
     str: String!
     int: Int!
+  }
+
+  type EventSubscriptionPayload {
+    payload: Payload
   }
 
   input StreamInput {
@@ -203,6 +216,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
         end
       },
       "event" => ->(o,a,c) { nil },
+      "eventSubscription" => ->(o,a,c) { nil },
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
   }
@@ -472,44 +486,80 @@ describe GraphQL::Subscriptions do
           end
         end
 
-        focus
-        it "doesn't apply prepare: when building the topic string" do
-          query_str = <<-GRAPHQL
-            subscription($type: PayloadType = TWO) {
-              e1: event(stream: { user_id: "3", payloadType: $type }) { int }
-            }
-          GRAPHQL
+        describe "building topic string when `prepare:` is given" do
+          it "doesn't apply with a Subscription class" do
+            query_str = <<-GRAPHQL
+              subscription($type: PayloadType = TWO) {
+                eventSubscription(userId: "3", payloadType: $type) { payload { int } }
+              }
+            GRAPHQL
 
-          query_str_2 = <<-GRAPHQL
-            subscription {
-              event(stream: { user_id: "4", payloadType: ONE}) { int }
-            }
-          GRAPHQL
-          # Value from variable
-          schema.execute(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
-          # Default value for variable
-          schema.execute(query_str, context: { socket: "1" }, root_value: root_object)
-          # Query string literal value
-          schema.execute(query_str_2, context: { socket: "1" }, root_value: root_object)
+            query_str_2 = <<-GRAPHQL
+              subscription {
+                eventSubscription(userId: "4", payloadType: ONE) { payload { int } }
+              }
+            GRAPHQL
+            # Value from variable
+            schema.execute(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+            # Default value for variable
+            schema.execute(query_str, context: { socket: "1" }, root_value: root_object)
+            # Query string literal value
+            schema.execute(query_str_2, context: { socket: "1" }, root_value: root_object)
 
-
-          # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
-          expected_keys = if schema == ClassBasedInMemoryBackend::Schema
-            [
-              ":event:stream:payloadType:one:user_id:3",
-              ":event:stream:payloadType:one:user_id:4",
-              ":event:stream:payloadType:two:user_id:3",
-            ]
-
-          else
-            [
-              ":event:stream:payloadType:ONE:user_id:3",
-              ":event:stream:payloadType:ONE:user_id:4",
-              ":event:stream:payloadType:TWO:user_id:3",
-            ]
-
+            # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
+            expected_keys = if schema == ClassBasedInMemoryBackend::Schema && TESTING_INTERPRETER
+              # Unfortunately, on the non-interpreter runtime, `prepare:` was _not_ applied here.
+              [
+                ":eventSubscription:payloadType:one:userId:3",
+                ":eventSubscription:payloadType:one:userId:4",
+                ":eventSubscription:payloadType:two:userId:3",
+              ]
+            else
+              [
+                ":eventSubscription:payloadType:ONE:userId:3",
+                ":eventSubscription:payloadType:ONE:userId:4",
+                ":eventSubscription:payloadType:TWO:userId:3",
+              ]
+            end
+            assert_equal expected_keys, active_subscriptions.keys.sort
           end
-          assert_equal expected_keys, active_subscriptions.keys.sort
+
+          it "doesn't apply for plain fields" do
+            query_str = <<-GRAPHQL
+              subscription($type: PayloadType = TWO) {
+                e1: event(stream: { user_id: "3", payloadType: $type }) { int }
+              }
+            GRAPHQL
+
+            query_str_2 = <<-GRAPHQL
+              subscription {
+                event(stream: { user_id: "4", payloadType: ONE}) { int }
+              }
+            GRAPHQL
+            # Value from variable
+            schema.execute(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+            # Default value for variable
+            schema.execute(query_str, context: { socket: "1" }, root_value: root_object)
+            # Query string literal value
+            schema.execute(query_str_2, context: { socket: "1" }, root_value: root_object)
+
+
+            # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
+            expected_keys = if schema == ClassBasedInMemoryBackend::Schema
+              [
+                ":event:stream:payloadType:one:user_id:3",
+                ":event:stream:payloadType:one:user_id:4",
+                ":event:stream:payloadType:two:user_id:3",
+              ]
+            else
+              [
+                ":event:stream:payloadType:ONE:user_id:3",
+                ":event:stream:payloadType:ONE:user_id:4",
+                ":event:stream:payloadType:TWO:user_id:3",
+              ]
+            end
+            assert_equal expected_keys, active_subscriptions.keys.sort
+          end
         end
 
         describe "errors" do
