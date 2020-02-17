@@ -109,11 +109,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
 
   class StreamInput < GraphQL::Schema::InputObject
     argument :user_id, ID, required: true, camelize: false
-    argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: :downcase
-
-    def downcase(value)
-      value ? value.downcase : value
-    end
+    argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: ->(e, ctx) { e ? e.downcase : e }
   end
 
   class EventSubscription < GraphQL::Schema::Subscription
@@ -174,7 +170,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   type Subscription {
     payload(id: ID!): Payload!
     event(stream: StreamInput): Payload
-    eventSubscription(userId: ID, payloadType: PayloadType): EventSubscriptionPayload
+    eventSubscription(userId: ID, payloadType: PayloadType = ONE): EventSubscriptionPayload
     myEvent(payloadType: PayloadType): Payload
     failedEvent(id: ID!): Payload!
   }
@@ -409,14 +405,23 @@ describe GraphQL::Subscriptions do
           # Subscribe with explicit null
           schema.execute(query_str, context: { socket: "4" }, variables: { "type" => nil }, root_value: root_object)
 
+          # The class-based schema has a "prepare" behavior, so it expects these downcased values in `.trigger`
+          if schema == ClassBasedInMemoryBackend::Schema
+            one = "one"
+            two = "two"
+          else
+            one = "ONE"
+            two = "TWO"
+          end
+
           # Trigger the subscription with coerceable args, different orders:
-          schema.subscriptions.trigger("event", { "stream" => {"user_id" => 3, "payloadType" => "ONE"} }, OpenStruct.new(str: "", int: 1))
-          schema.subscriptions.trigger("event", { "stream" => {"payloadType" => "ONE", "user_id" => "3"} }, OpenStruct.new(str: "", int: 2))
+          schema.subscriptions.trigger("event", { "stream" => {"user_id" => 3, "payloadType" => one} }, OpenStruct.new(str: "", int: 1))
+          schema.subscriptions.trigger("event", { "stream" => {"payloadType" => one, "user_id" => "3"} }, OpenStruct.new(str: "", int: 2))
           # This is a non-trigger
-          schema.subscriptions.trigger("event", { "stream" => {"user_id" => "3", "payloadType" => "TWO"} }, OpenStruct.new(str: "", int: 3))
+          schema.subscriptions.trigger("event", { "stream" => {"user_id" => "3", "payloadType" => two} }, OpenStruct.new(str: "", int: 3))
           # These get default value of ONE (underscored / symbols are ok)
           schema.subscriptions.trigger("event", { stream: { user_id: "3"} }, OpenStruct.new(str: "", int: 4))
-          # Trigger with null updates subscriptionss to null
+          # Trigger with null updates subscriptions to null
           schema.subscriptions.trigger("event", { "stream" => {"user_id" => 3, "payloadType" => nil} }, OpenStruct.new(str: "", int: 5))
 
           assert_equal [1,2,4], deliveries["1"].map { |d| d["data"]["e1"]["int"] }
@@ -499,29 +504,49 @@ describe GraphQL::Subscriptions do
                 eventSubscription(userId: "4", payloadType: ONE) { payload { int } }
               }
             GRAPHQL
+
+            query_str_3 = <<-GRAPHQL
+              subscription {
+                eventSubscription(userId: "4") { payload { int } }
+              }
+            GRAPHQL
             # Value from variable
             schema.execute(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
             # Default value for variable
             schema.execute(query_str, context: { socket: "1" }, root_value: root_object)
             # Query string literal value
             schema.execute(query_str_2, context: { socket: "1" }, root_value: root_object)
+            # Schema default value
+            schema.execute(query_str_3, context: { socket: "1" }, root_value: root_object)
 
             # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
-            expected_keys = if schema == ClassBasedInMemoryBackend::Schema && TESTING_INTERPRETER
-              # Unfortunately, on the non-interpreter runtime, `prepare:` was _not_ applied here.
-              [
-                ":eventSubscription:payloadType:one:userId:3",
-                ":eventSubscription:payloadType:one:userId:4",
-                ":eventSubscription:payloadType:two:userId:3",
-              ]
+            expected_sub_count = if schema == ClassBasedInMemoryBackend::Schema
+              if TESTING_INTERPRETER
+                {
+                  ":eventSubscription:payloadType:one:userId:3" => 1,
+                  ":eventSubscription:payloadType:one:userId:4" => 2,
+                  ":eventSubscription:payloadType:two:userId:3" => 1,
+                }
+              else
+                # Unfortunately, on the non-interpreter runtime, `prepare:` was _not_ applied here,
+                {
+                  ":eventSubscription:payloadType:ONE:userId:3" => 1,
+                  ":eventSubscription:payloadType:ONE:userId:4" => 2,
+                  ":eventSubscription:payloadType:TWO:userId:3" => 1,
+                }
+              end
             else
-              [
-                ":eventSubscription:payloadType:ONE:userId:3",
-                ":eventSubscription:payloadType:ONE:userId:4",
-                ":eventSubscription:payloadType:TWO:userId:3",
-              ]
+              {
+                ":eventSubscription:payloadType:ONE:userId:3" => 1,
+                ":eventSubscription:payloadType:ONE:userId:4" => 2,
+                ":eventSubscription:payloadType:TWO:userId:3" => 1,
+              }
             end
-            assert_equal expected_keys, active_subscriptions.keys.sort
+            count_by_topic = Hash.new(0)
+            active_subscriptions.each do |k, v|
+              count_by_topic[k] += v.size
+            end
+            assert_equal expected_sub_count, count_by_topic
           end
 
           it "doesn't apply for plain fields" do
@@ -536,29 +561,41 @@ describe GraphQL::Subscriptions do
                 event(stream: { user_id: "4", payloadType: ONE}) { int }
               }
             GRAPHQL
+
+            query_str_3 = <<-GRAPHQL
+              subscription {
+                event(stream: { user_id: "4" }) { int }
+              }
+            GRAPHQL
             # Value from variable
             schema.execute(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
             # Default value for variable
             schema.execute(query_str, context: { socket: "1" }, root_value: root_object)
             # Query string literal value
             schema.execute(query_str_2, context: { socket: "1" }, root_value: root_object)
+            # Schema default value
+            schema.execute(query_str_3, context: { socket: "1" }, root_value: root_object)
 
 
             # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
-            expected_keys = if schema == ClassBasedInMemoryBackend::Schema
-              [
-                ":event:stream:payloadType:one:user_id:3",
-                ":event:stream:payloadType:one:user_id:4",
-                ":event:stream:payloadType:two:user_id:3",
-              ]
+            expected_sub_count = if schema == ClassBasedInMemoryBackend::Schema
+              {
+                ":event:stream:payloadType:one:user_id:3" => 1,
+                ":event:stream:payloadType:two:user_id:3" => 1,
+                ":event:stream:payloadType:one:user_id:4" => 2,
+              }
             else
-              [
-                ":event:stream:payloadType:ONE:user_id:3",
-                ":event:stream:payloadType:ONE:user_id:4",
-                ":event:stream:payloadType:TWO:user_id:3",
-              ]
+              {
+                ":event:stream:payloadType:ONE:user_id:3" => 1,
+                ":event:stream:payloadType:TWO:user_id:3" => 1,
+                ":event:stream:payloadType:ONE:user_id:4" => 2,
+              }
             end
-            assert_equal expected_keys, active_subscriptions.keys.sort
+            count_by_topic = Hash.new(0)
+            active_subscriptions.each do |k, v|
+              count_by_topic[k] += v.size
+            end
+            assert_equal expected_sub_count, count_by_topic
           end
         end
 
@@ -592,9 +629,9 @@ describe GraphQL::Subscriptions do
 
         it "sends query errors to the subscriptions" do
           query_str = <<-GRAPHQL
-        subscription($type: PayloadType) {
-          myEvent(payloadType: $type) { str }
-        }
+            subscription($type: PayloadType) {
+              myEvent(payloadType: $type) { str }
+            }
           GRAPHQL
 
           schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
