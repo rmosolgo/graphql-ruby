@@ -2,6 +2,7 @@ import glob from "glob"
 import prepareRelay from "./prepareRelay"
 import prepareIsolatedFiles from './prepareIsolatedFiles'
 import prepareProject from "./prepareProject"
+import md5 from "./md5"
 
 var generateJs = require("./outfileGenerators/js")
 var generateJson = require("./outfileGenerators/json")
@@ -15,13 +16,13 @@ var generators = {
 };
 
 interface GenerateClientCodeOptions {
-  path: string // A glob to recursively search for `.graphql` files (Default is `./`)
-  mode: string //  If `"file"`, treat each file separately. If `"project"`, concatenate all files and extract each operation. If `"relay"`, treat it as relay-compiler output
-  addTypename: boolean //  Indicates if the "__typename" field are automatically added to your queries
-  clientType: string // The type of the generated code (i.e., json, js)
+  path?: string // A glob to recursively search for `.graphql` files (Default is `./`)
+  mode?: string //  If `"file"`, treat each file separately. If `"project"`, concatenate all files and extract each operation. If `"relay"`, treat it as relay-compiler output
+  addTypename?: boolean //  Indicates if the "__typename" field are automatically added to your queries
+  clientType?: string // The type of the generated code (i.e., json, js)
   client: string // the Client ID that these operations belong to
-  hash: Function // A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
-  verbose: boolean // If true, print debug output
+  hash?: Function // A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
+  verbose?: boolean // If true, print debug output
 }
 
 interface OperationStoreClient {
@@ -52,11 +53,16 @@ interface ClientOperation {
  * Parse files in the specified path and generate an alias for each operation.
 */
 function gatherOperations(options: GenerateClientCodeOptions) {
-  var graphqlGlob = options.path
-  var hashFunc = options.hash
-  var filesMode = options.mode
-  var addTypename = options.addTypename
-  var verbose = options.verbose
+  var graphqlGlob = options.path || "./"
+  // Check for file ext already, add it if missing
+  var containsFileExt = graphqlGlob.indexOf(".graphql") > -1 || graphqlGlob.indexOf(".gql") > -1
+  if (!containsFileExt) {
+    graphqlGlob = graphqlGlob + "**/*.graphql*"
+  }
+  var hashFunc = options.hash || md5
+  var filesMode = options.mode || (graphqlGlob.indexOf("__generated__") > -1 ? "relay" : "project")
+  var addTypename = !!options.addTypename
+  var verbose = !!options.verbose
 
   var operations: ClientOperation[] = []
 
@@ -91,7 +97,7 @@ function gatherOperations(options: GenerateClientCodeOptions) {
  * @param {String} type - the outfile's type
  * @return {String} generated outfile code
 */
-function generateClientCode(clientName: string, operations: ClientOperation[], type: string): string {
+function generateClientCode(clientName: string, operations: ClientOperation[], type?: string): string {
   if (!clientName) {
     throw new Error("Client name is required to generate a persisted alias lookup map");
   }
@@ -114,7 +120,7 @@ function generateClientCode(clientName: string, operations: ClientOperation[], t
   }).join(",")
   keyValuePairs += "\n}"
 
-  var generateOutfile = generators[type];
+  var generateOutfile = generators[type || JS_TYPE];
 
   if (!generateOutfile) {
     throw new Error("Unknown generator type " + type + " encountered for generating the outFile");

@@ -1,8 +1,7 @@
 import sendPayload from "./sendPayload"
-import { generateClientCode, gatherOperations, ClientOperation, JS_TYPE } from "./generateClient"
+import { generateClientCode, gatherOperations, ClientOperation } from "./generateClient"
 import Logger from "./logger"
 import fs from "fs"
-import md5 from "./md5"
 
 interface SyncOptions {
   path?: string,
@@ -54,16 +53,11 @@ function sync(options: SyncOptions) {
     logger.log("Authenticating with HMAC")
   }
 
-  var graphqlGlob = options.path || "./"
-  // Check for file ext already, add it if missing
-  var containsFileExt = graphqlGlob.indexOf(".graphql") > -1 || graphqlGlob.indexOf(".gql") > -1
-  if (!containsFileExt) {
-    graphqlGlob = graphqlGlob + "**/*.graphql*"
-  }
-  var hashFunc = options.hash || md5
+  var graphqlGlob = options.path
+  var hashFunc = options.hash
   var sendFunc = options.send || sendPayload
-  var gatherMode = options.mode || (graphqlGlob.indexOf("__generated__") > -1 ? "relay" : "project")
-  var clientType = options.outfileType || JS_TYPE
+  var gatherMode = options.mode
+  var clientType = options.outfileType
   if (options.relayPersistedOutput) {
     // relay-compiler has already generated an artifact for us
     var payload: { operations: ClientOperation[] } = { operations: [] }

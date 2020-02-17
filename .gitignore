@@ -23,4 +23,4 @@ yarn.lock
 OperationStoreClient.js
 spec/integration/tmp
 .vscode/
-javascript_client/build/
+javascript_client/dist/
