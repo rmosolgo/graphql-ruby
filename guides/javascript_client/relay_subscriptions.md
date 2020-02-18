@@ -30,8 +30,8 @@ Subscriptions with {% internal_link "Pusher", "/subscriptions/pusher_implementat
 Pass `pusher:` to get Subscription updates over Pusher:
 
 ```js
-// Require the helper function
-var createHandler = require("graphql-ruby-client/subscriptions/createHandler")
+// Load the helper function
+import { createRelaySubscriptionHandler } from "graphql-ruby-client"
 
 // Prepare a Pusher client
 var Pusher = require("pusher-js")
@@ -53,6 +53,7 @@ var network = Network.create(fetchQuery, subscriptionHandler)
 ```
 
 ## Ably
+
 Subscriptions with {% internal_link "Ably", "/subscriptions/ably_implementation" %} require two things:
 
 - A client from the [`ably-js` library](https://github.com/ably/ably-js)
@@ -63,8 +64,8 @@ Subscriptions with {% internal_link "Ably", "/subscriptions/ably_implementation"
 Pass `ably:` to get Subscription updates over Ably:
 
 ```js
-// Require the helper function
-var createHandler = require("graphql-ruby-client/subscriptions/createHandler")
+// Load the helper function
+import { createRelaySubscriptionHandler } from "graphql-ruby-client"
 
 // Load Ably and create a client
 const Ably = require("ably")
@@ -93,12 +94,12 @@ For example:
 
 ```js
 // Require the helper function
-var createHandler = require("graphql-ruby-client/subscriptions/createHandler")
+import { createRelaySubscriptionHandler } from "graphql-ruby-client")
 // Optionally, load your OperationStoreClient
 var OperationStoreClient = require("./OperationStoreClient")
 
 // Create a Relay Modern-compatible handler
-var subscriptionHandler = createHandler({
+var subscriptionHandler = createRelaySubscriptionHandler({
   cable: cable,
   operations: OperationStoreClient,
 })
@@ -159,7 +160,7 @@ const fetchQuery = (operation, variables, cacheConfig, uploadables) => {
 }
 
 // Subscriptions uses the same `fetchOperation` function for initial subscription requests
-const subscriptionHandler = createHandler({pusher: pusherClient, fetchOperation: fetchOperation})
+const subscriptionHandler = createRelaySubscriptionHandler({pusher: pusherClient, fetchOperation: fetchOperation})
 // Combine them into a `Network`
 const network = Network.create(fetchQuery, subscriptionHandler)
 ```
