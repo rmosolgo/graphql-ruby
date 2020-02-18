@@ -1,5 +1,10 @@
 # graphql-ruby-client
 
+## 1.7.4 (18 Feb 2020)
+
+- Move all exports to top level
+- Fix sync body handling: wait for all chunks, improve verbose output
+
 ## 1.7.3 (17 Feb 2020)
 
 - Fix CLI for TypeScript
