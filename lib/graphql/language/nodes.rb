@@ -488,6 +488,8 @@ module GraphQL
 
         # @!attribute name
         #   @return [String] The identifier for this variable, _without_ `$`
+
+        self.children_method_name = :variables
       end
 
       # A query, mutation or subscription.
