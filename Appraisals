@@ -61,6 +61,20 @@ appraise 'rails_5.2_postgresql' do
   gem 'sequel'
 end
 
+appraise 'rails_6.0' do
+  gem 'rails', '~> 6.0.0', require: 'rails/all'
+  gem 'sqlite3', "~> 1.4", platform: :ruby
+  gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
+  gem 'sequel'
+end
+
+appraise 'rails_master' do
+  gem 'rails', github: 'rails/rails', require: 'rails/all'
+  gem 'sqlite3', "~> 1.4", platform: :ruby
+  gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
+  gem 'sequel'
+end
+
 appraise 'mongoid_7' do
   gem 'mongoid', '~> 7.0.1'
 end

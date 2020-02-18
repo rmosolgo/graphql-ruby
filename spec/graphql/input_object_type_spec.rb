@@ -21,5 +21,31 @@ describe GraphQL::InputObjectType do
         assert_equal default_test_input_value[:foo], 'a'
       end
     end
+
+    describe "when it's an empty object" do
+      it "is passed in" do
+        input_obj = GraphQL::InputObjectType.define do
+          name "InputObj"
+          argument :s, types.String
+        end
+
+        query = GraphQL::ObjectType.define do
+          name "Query"
+          field(:f, types.String) do
+            argument(:arg, input_obj, default_value: {})
+            resolve ->(obj, args, ctx) {
+              args[:arg].to_h.inspect
+            }
+          end
+        end
+
+        schema = GraphQL::Schema.define do
+          query(query)
+        end
+
+        res = schema.execute("{ f } ")
+        assert_equal "{}", res["data"]["f"]
+      end
+    end
   end
 end

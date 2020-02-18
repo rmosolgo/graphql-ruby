@@ -4,8 +4,8 @@ require "spec_helper"
 describe GraphQL::Schema::Resolver do
   module ResolverTest
     class LazyBlock
-      def initialize
-        @get_value = Proc.new
+      def initialize(&block)
+        @get_value = block
       end
 
       def value
@@ -20,7 +20,7 @@ describe GraphQL::Schema::Resolver do
       argument :value, Integer, required: false
       type [Integer, null: true], null: false
 
-      def initialize(object:, context:)
+      def initialize(object:, context:, field:)
         super
         if defined?(@value)
           raise "The instance should start fresh"
@@ -38,7 +38,7 @@ describe GraphQL::Schema::Resolver do
       argument :extra_value, Integer, required: true
 
       def resolve(extra_value:, **_rest)
-        value = super(_rest)
+        value = super(**_rest)
         value << extra_value
         value
       end
@@ -81,6 +81,23 @@ describe GraphQL::Schema::Resolver do
     end
 
     class Resolver8 < Resolver7
+    end
+
+    class GreetingExtension < GraphQL::Schema::FieldExtension
+      def resolve(object:, arguments:, **rest)
+        name = yield(object, arguments)
+        "#{options[:greeting]}, #{name}!"
+      end
+    end
+
+    class ResolverWithExtension < BaseResolver
+      type String, null: false
+
+      extension GreetingExtension, greeting: "Hi"
+
+      def resolve
+        "Robert"
+      end
     end
 
     class PrepResolver1 < BaseResolver
@@ -376,6 +393,7 @@ describe GraphQL::Schema::Resolver do
       field :resolver_6, resolver: Resolver6
       field :resolver_7, resolver: Resolver7
       field :resolver_8, resolver: Resolver8
+      field :resolver_with_extension, resolver: ResolverWithExtension
       field :resolver_with_path, resolver: ResolverWithPath
 
       field :prep_resolver_1, resolver: PrepResolver1
@@ -402,9 +420,10 @@ describe GraphQL::Schema::Resolver do
       orphan_types IntegerWrapper
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
 
-      def object_from_id(id, ctx)
+      def self.object_from_id(id, ctx)
         if id == "invalid"
           nil
         else
@@ -414,8 +433,8 @@ describe GraphQL::Schema::Resolver do
     end
   end
 
-  def exec_query(*args)
-    ResolverTest::Schema.execute(*args)
+  def exec_query(*args, **kwargs)
+    ResolverTest::Schema.execute(*args, **kwargs)
   end
 
   describe ".path" do
@@ -429,7 +448,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     it "works on instances" do
-      r = ResolverTest::Resolver1.new(object: nil, context: nil)
+      r = ResolverTest::Resolver1.new(object: nil, context: nil, field: nil)
       assert_equal "Resolver1", r.path
     end
   end
@@ -737,6 +756,22 @@ describe GraphQL::Schema::Resolver do
 
         assert res["errors"]
         assert_equal 'No object found for `labelId: "invalid"`', res["errors"][0]["message"]
+      end
+    end
+
+    describe "extensions" do
+      it "returns extension whe no arguments passed" do
+        assert 1, ResolverTest::ResolverWithExtension.extensions.count
+      end
+
+      it "configures extensions for field" do
+        assert_kind_of ResolverTest::GreetingExtension,
+                       ResolverTest::Query.fields["resolverWithExtension"].extensions.first
+      end
+
+      it "uses extension to build response" do
+        res = exec_query " { resolverWithExtension } "
+        assert_equal "Hi, Robert!", res["data"]["resolverWithExtension"]
       end
     end
   end

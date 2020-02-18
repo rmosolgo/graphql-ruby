@@ -3,7 +3,9 @@ require "spec_helper"
 
 describe GraphQL::Types::Relay::BaseEdge do
   module NonNullableDummy
-    class NonNullableNode < GraphQL::Schema::Object; end
+    class NonNullableNode < GraphQL::Schema::Object
+      field :some_field, String, null: true
+    end
 
     class NonNullableNodeEdgeType < GraphQL::Types::Relay::BaseEdge
       node_type(NonNullableNode, null: false)

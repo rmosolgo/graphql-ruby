@@ -2,8 +2,8 @@
 require "spec_helper"
 
 describe GraphQL::Execution::Multiplex do
-  def multiplex(*a)
-    LazyHelpers::LazySchema.multiplex(*a)
+  def multiplex(*a, **kw)
+    LazyHelpers::LazySchema.multiplex(*a, **kw)
   end
 
   let(:q1) { <<-GRAPHQL
@@ -51,6 +51,32 @@ describe GraphQL::Execution::Multiplex do
 
       res = multiplex(queries)
       assert_equal expected_data, res
+    end
+
+    it "returns responses in the same order as their respective requests" do
+      queries = 2000.times.map do |index|
+        case index % 3
+        when 0
+          {query: q1}
+        when 1
+          {query: q2}
+        when 2
+          {query: q3}
+        end
+      end
+
+      responses = multiplex(queries)
+
+      responses.each.with_index do |response, index|
+        case index % 3
+        when 0
+          assert_equal "Q1", response.query.operation_name
+        when 1
+          assert_equal "Q2", response.query.operation_name
+        when 2
+          assert_equal "Q3", response.query.operation_name
+        end
+      end
     end
   end
 

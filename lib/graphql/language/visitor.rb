@@ -7,7 +7,7 @@ module GraphQL
     #   class NameCounter < GraphQL::Language::Visitor
     #     def initialize(document, field_name)
     #       super(document)
-    #       @field_name
+    #       @field_name = field_name
     #       @count = 0
     #     end
     #
@@ -16,7 +16,7 @@ module GraphQL
     #     def on_field(node, parent)
     #       # if this field matches our search, increment the counter
     #       if node.name == @field_name
-    #         @count = 0
+    #         @count += 1
     #       end
     #       # Continue visiting subfields:
     #       super
@@ -96,8 +96,8 @@ module GraphQL
         else
           # Run hooks if there are any
           new_node = node
-          begin_hooks_ok = @visitors.empty? || begin_visit(new_node, parent)
-          if begin_hooks_ok
+          no_hooks = !@visitors.key?(node.class)
+          if no_hooks || begin_visit(new_node, parent)
             node.children.each do |child_node|
               new_child_and_node = on_node_with_modifications(child_node, new_node)
               # Reassign `node` in case the child hook makes a modification
@@ -106,7 +106,7 @@ module GraphQL
               end
             end
           end
-          @visitors.any? && end_visit(new_node, parent)
+          end_visit(new_node, parent) unless no_hooks
 
           if new_node.equal?(node)
             nil
@@ -211,7 +211,10 @@ module GraphQL
 
       # If one of the visitors returns SKIP, stop visiting this node
       def self.apply_hooks(hooks, node, parent)
-        hooks.reduce(true) { |memo, proc| memo && (proc.call(node, parent) != SKIP) }
+        hooks.each do |proc|
+          return false if proc.call(node, parent) == SKIP
+        end
+        true
       end
 
       # Collect `enter` and `leave` hooks for classes in {GraphQL::Language::Nodes}

@@ -106,6 +106,13 @@ describe GraphQL::Schema::Mutation do
       assert_equal errors_class, response["data"]["addInstrument"]["ee"]
       assert_equal 7, response["data"]["addInstrument"]["entries"].size
     end
+
+    it "accepts a list of errors as a valid result" do
+      query_str = "mutation { returnsMultipleErrors { dummyField { name } } }"
+
+      response = Jazz::Schema.execute(query_str)
+      assert_equal 2, response["errors"].length, "It should return two errors"
+    end
   end
 
   describe ".null" do

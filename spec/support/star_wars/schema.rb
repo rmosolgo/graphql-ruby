@@ -4,7 +4,7 @@ module StarWars
   # https://github.com/graphql/graphql-relay-js/blob/master/src/__tests__/starWarsSchema.js
 
   class Ship < GraphQL::Schema::Object
-    implements GraphQL::Relay::Node.interface
+    implements GraphQL::Types::Relay::Node
     global_id_field :id
     field :name, String, null: true
     # Test cyclical connection types:
@@ -13,7 +13,7 @@ module StarWars
 
   class BaseType < GraphQL::Schema::Object
     graphql_name "Base"
-    implements GraphQL::Relay::Node.interface
+    implements GraphQL::Types::Relay::Node
     global_id_field :id
     field :name, String, null: false
     def name
@@ -117,7 +117,7 @@ module StarWars
   end
 
   class Faction < GraphQL::Schema::Object
-    implements GraphQL::Relay::Node.interface
+    implements GraphQL::Types::Relay::Node
 
     field :id, ID, null: false
     def id
@@ -305,8 +305,8 @@ module StarWars
 
   LazyNodesWrapper = Struct.new(:relation)
   class LazyNodesRelationConnection < GraphQL::Relay::RelationConnection
-    def initialize(wrapper, *args)
-      super(wrapper.relation, *args)
+    def initialize(wrapper, *args, **kwargs)
+      super(wrapper.relation, *args, **kwargs)
     end
 
     def edge_nodes
@@ -430,6 +430,7 @@ module StarWars
 
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
     end
 
     def self.resolve_type(type, object, ctx)

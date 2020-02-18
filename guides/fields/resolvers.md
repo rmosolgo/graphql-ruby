@@ -51,13 +51,13 @@ def self.items_field(name, override_options)
     argument :order_by, Types::ItemOrder, required: false
     argument :category, Types::ItemCategory, required: false
     # Allow an override block to add more arguments
-    yield if block_given?
+    yield self if block_given?
   end
 end
 
 # Then use the generator to create a field:
-items_field(:recommended_items) do
-  argument :similar_to_product_id, ID, required: false
+items_field(:recommended_items) do |field|
+  field.argument :similar_to_product_id, ID, required: false
 end
 # Implement the field
 def recommended_items
@@ -147,3 +147,79 @@ end
 ```
 
 Since the `Resolver` lifecycle is managed by the GraphQL runtime, the best way to test it is to execute GraphQL queries and check the results.
+
+### Nesting resolvers of the same type
+
+You may run into cyclical loading issues when using a resolver within the definition of the type the resolver returns e.g.
+
+```ruby
+# app/graphql/types/query_type.rb
+
+module Types
+  class QueryType < Types::BaseObject
+    field :tasks, resolver: Resolvers::TasksResolver
+  end
+end
+
+# app/graphql/types/task_type.rb
+
+module Types
+  class TaskType < Types::BaseObject
+    field :title, String, null: false
+    field :tasks, resolver: Resolvers::TasksResolver
+  end
+end
+
+# app/graphql/resolvers/tasks_resolver.rb
+
+module Resolvers
+  class TasksResolver < GraphQL::Schema::Resolver
+    type [Types::TaskType], null: false
+
+    def resolve
+      []
+    end
+  end
+end
+```
+
+The above can produce the following error: `Failed to build return type for Task.tasks from nil: Unexpected type input:  (NilClass)`. 
+
+A simple solution is to express the type as a string in the resolver:
+
+```ruby
+module Resolvers
+  class TasksResolver < GraphQL::Schema::Resolver
+    type "[Types::TaskType]", null: false
+
+    def resolve
+      []
+    end
+  end
+end
+```
+
+In doing so, you can defer the loading of the type class until the nested resolver has already been loaded.
+
+# Extensions
+
+In cases when you want your resolvers to add some extensions to the field they resolve, you can use `extension` method, which accepts extension class and options. Multiple extensions can be configured for a single resolver.
+
+```ruby
+class GreetingExtension < GraphQL::Schema::FieldExtension
+  def resolve(object:, arguments:, **rest)
+    name = yield(object, arguments)
+    "#{options[:greeting]}, #{name}!"
+  end
+end
+
+class ResolverWithExtension < BaseResolver
+  type String, null: false
+
+  extension GreetingExtension, greeting: "Hi"
+
+  def resolve
+    "Robert"
+  end
+end
+```

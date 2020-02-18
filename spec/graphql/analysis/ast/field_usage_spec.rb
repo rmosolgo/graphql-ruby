@@ -48,4 +48,47 @@ describe GraphQL::Analysis::AST::FieldUsage do
       assert_equal ['Cheese.fatContent'], result[:used_deprecated_fields]
     end
   end
+
+  describe "query with deprecated fields in a fragment" do
+    let(:query_string) {%|
+      query {
+        cheese(id: 1) {
+         id
+         ...CheeseSelections
+        }
+      }
+      fragment CheeseSelections on Cheese {
+        fatContent
+      }
+    |}
+
+    it "keeps track of fields used in the fragment" do
+      assert_equal ['Cheese.id', 'Cheese.fatContent', 'Query.cheese'], result[:used_fields]
+    end
+
+    it "keeps track of deprecated fields used in the fragment" do
+      assert_equal ['Cheese.fatContent'], result[:used_deprecated_fields]
+    end
+  end
+
+  describe "query with deprecated fields in an inline fragment" do
+    let(:query_string) {%|
+      query {
+        cheese(id: 1) {
+         id
+         ... on Cheese {
+           fatContent
+         }
+        }
+      }
+    |}
+
+    it "keeps track of fields used in the fragment" do
+      assert_equal ['Cheese.id', 'Cheese.fatContent', 'Query.cheese'], result[:used_fields]
+    end
+
+    it "keeps track of deprecated fields used in the fragment" do
+      assert_equal ['Cheese.fatContent'], result[:used_deprecated_fields]
+    end
+  end
 end

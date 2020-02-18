@@ -20,12 +20,12 @@ module GraphQL
         end
       end
 
-      def possible_types(type_defn)
+      def possible_types(type_defn, ctx)
         case type_defn
         when Module
-          possible_types(type_defn.graphql_definition)
+          possible_types(type_defn.graphql_definition, ctx)
         when GraphQL::UnionType
-          type_defn.possible_types
+          type_defn.possible_types(ctx)
         when GraphQL::InterfaceType
           @interface_implementers[type_defn]
         when GraphQL::BaseType

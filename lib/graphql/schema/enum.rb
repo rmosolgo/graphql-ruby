@@ -21,11 +21,9 @@ module GraphQL
   class Schema
     class Enum < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::AcceptsDefinition
+      extend GraphQL::Schema::Member::ValidatesInput
 
       class << self
-        extend Forwardable
-        def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result, :coerce_input, :coerce_result
-
         # Define a value for this enum
         # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`
         # @param description [String], the GraphQL description for this value, present in documentation
@@ -53,6 +51,7 @@ module GraphQL
           enum_type.name = graphql_name
           enum_type.description = description
           enum_type.introspection = introspection
+          enum_type.ast_node = ast_node
           values.each do |name, val|
             enum_type.add_value(val.to_graphql)
           end
@@ -64,12 +63,53 @@ module GraphQL
         def enum_value_class(new_enum_value_class = nil)
           if new_enum_value_class
             @enum_value_class = new_enum_value_class
+          elsif defined?(@enum_value_class) && @enum_value_class
+            @enum_value_class
+          else
+            superclass <= GraphQL::Schema::Enum ? superclass.enum_value_class : nil
           end
-          @enum_value_class || (superclass <= GraphQL::Schema::Enum ? superclass.enum_value_class : nil)
         end
 
         def kind
           GraphQL::TypeKinds::ENUM
+        end
+
+        def validate_non_null_input(value_name, ctx)
+          result = GraphQL::Query::InputValidationResult.new
+
+          allowed_values = ctx.warden.enum_values(self)
+          matching_value = allowed_values.find { |v| v.graphql_name == value_name }
+
+          if matching_value.nil?
+            result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:graphql_name).join(', ')}")
+          end
+
+          result
+        end
+
+        def coerce_result(value, ctx)
+          warden = ctx.warden
+          all_values = warden ? warden.enum_values(self) : values.each_value
+          enum_value = all_values.find { |val| val.value == value }
+          if enum_value
+            enum_value.graphql_name
+          else
+            raise(GraphQL::EnumType::UnresolvedValueError, "Can't resolve enum #{graphql_name} for #{value.inspect}")
+          end
+        end
+
+        def coerce_input(value_name, ctx)
+          all_values = ctx.warden ? ctx.warden.enum_values(self) : values.each_value
+
+          if v = all_values.find { |val| val.graphql_name == value_name }
+            v.value
+          elsif v = all_values.find { |val| val.value == value_name }
+            # this is for matching default values, which are "inputs", but they're
+            # the Ruby value, not the GraphQL string.
+            v.value
+          else
+            nil
+          end
         end
 
         private

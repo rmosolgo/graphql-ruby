@@ -91,7 +91,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`object_from_id`__ is used by Relay's `node(id: ID!): Node` field. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if the should be hidden from the current user).
+__`object_from_id`__ is used by Relay's `node(id: ID!): Node` field. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
 
 ```ruby
 class MySchema < GraphQL::Schema

@@ -34,7 +34,8 @@ describe GraphQL::Schema::Subscription do
     end
 
     class TootWasTooted < BaseSubscription
-      argument :handle, String, required: true, loads: User, as: :user
+      argument :handle, String, required: true, loads: User, as: :user, camelize: false
+
       field :toot, Toot, null: false
       field :user, User, null: false
       # Can't subscribe to private users
@@ -178,8 +179,8 @@ describe GraphQL::Schema::Subscription do
     use InMemorySubscriptions
   end
 
-  def exec_query(*args)
-    SubscriptionFieldSchema.execute(*args)
+  def exec_query(*args, **kwargs)
+    SubscriptionFieldSchema.execute(*args, **kwargs)
   end
 
   def in_memory_subscription_count
@@ -223,9 +224,21 @@ describe GraphQL::Schema::Subscription do
         }
       }
       GRAPHQL
-
       assert_equal ["dhh", "matz", "_why"], res["data"]["usersJoined"]["users"].map { |u| u["handle"] }
       assert_equal 1, in_memory_subscription_count
+
+      # It works a second time
+      res = exec_query <<-GRAPHQL
+      subscription {
+        usersJoined {
+          users {
+            handle
+          }
+        }
+      }
+      GRAPHQL
+      assert_equal ["dhh", "matz", "_why"], res["data"]["usersJoined"]["users"].map { |u| u["handle"] }
+      assert_equal 2, in_memory_subscription_count
     end
 
     it "rejects the subscription if #subscribe raises an error" do
@@ -445,13 +458,23 @@ describe GraphQL::Schema::Subscription do
     end
   end
 
+  describe "applying `loads:`" do
+    it "includes `as:` in the event topic" do
+      assert_equal [], SubscriptionFieldSchema::InMemorySubscriptions::EVENT_REGISTRY.keys
+      matz = SubscriptionFieldSchema::USERS["matz"]
+      obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: matz)
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
+      assert_equal [":tootWasTooted:user:matz"], SubscriptionFieldSchema::InMemorySubscriptions::EVENT_REGISTRY.keys
+    end
+  end
+
   describe "`subscription_scope` method" do
     it "provdes a subscription scope that is recognized in the schema" do
       scoped_subscription = SubscriptionFieldSchema::get_field("Subscription", "directTootWasTooted")
-  
+
       assert_equal :viewer, scoped_subscription.subscription_scope
     end
-  
+
     it "provides a subscription scope that is used in execution" do
       res = exec_query <<-GRAPHQL, context: { viewer: :me }
         subscription {

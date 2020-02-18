@@ -34,7 +34,7 @@ module GraphQL
       end
 
       NullResolveType = ->(type, obj, ctx) {
-        raise(NotImplementedError, "This schema was loaded from string, so it can't resolve types for objects")
+        raise(GraphQL::RequiredImplementationMissingError, "This schema was loaded from string, so it can't resolve types for objects")
       }
 
       NullScalarCoerce = ->(val, _ctx) { val }
@@ -45,13 +45,19 @@ module GraphQL
         def resolve_type(types, type)
           case kind = type.fetch("kind")
           when "ENUM", "INTERFACE", "INPUT_OBJECT", "OBJECT", "SCALAR", "UNION"
-            types.fetch(type.fetch("name"))
+            type_name = type.fetch("name")
+            type = types[type_name] || Schema::BUILT_IN_TYPES[type_name]
+            if type.nil?
+              raise "Type not found: #{type_name.inspect} among #{types.keys.sort}"
+            else
+              type.graphql_definition
+            end
           when "LIST"
             ListType.new(of_type: resolve_type(types, type.fetch("ofType")))
           when "NON_NULL"
             NonNullType.new(of_type: resolve_type(types, type.fetch("ofType")))
           else
-            fail NotImplementedError, "#{kind} not implemented"
+            fail GraphQL::RequiredImplementationMissingError, "#{kind} not implemented"
           end
         end
 
@@ -118,14 +124,20 @@ module GraphQL
               }]
             )
           when "FIELD"
-            GraphQL::Field.define(
+            defns = {
               name: type["name"],
               type: type_resolver.call(type["type"]),
               description: type["description"],
-              arguments: Hash[type["args"].map { |arg|
+            }
+
+            # Avoid passing an empty hash, which warns on Ruby 2.7
+            if type["args"].any?
+              defns[:arguments] = Hash[type["args"].map { |arg|
                 [arg["name"], define_type(arg.merge("kind" => "ARGUMENT"), type_resolver)]
               }]
-            )
+            end
+
+            GraphQL::Field.define(**defns)
           when "ARGUMENT"
             kwargs = {}
             if type["defaultValue"]
@@ -171,7 +183,7 @@ module GraphQL
               }
             )
           else
-            fail NotImplementedError, "#{type["kind"]} not implemented"
+            fail GraphQL::RequiredImplementationMissingError, "#{type["kind"]} not implemented"
           end
         end
       end

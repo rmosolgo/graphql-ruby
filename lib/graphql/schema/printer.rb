@@ -54,13 +54,14 @@ module GraphQL
         )
 
         @document = @document_from_schema.document
-
         @schema = schema
       end
 
       # Return the GraphQL schema string for the introspection type system
       def self.print_introspection_schema
-        query_root = ObjectType.define(name: "Root")
+        query_root = ObjectType.define(name: "Root") do
+          field :throwaway_field, types.String
+        end
         schema = GraphQL::Schema.define(query: query_root)
 
         introspection_schema_ast = GraphQL::Language::DocumentFromSchemaDefinition.new(
@@ -97,7 +98,7 @@ module GraphQL
         if directive.name == "deprecated"
           reason = directive.arguments.find { |arg| arg.name == "reason" }
 
-          if reason.value == GraphQL::Directive::DEFAULT_DEPRECATION_REASON
+          if reason.value == GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON
             "@deprecated"
           else
             "@deprecated(reason: #{reason.value.to_s.inspect})"

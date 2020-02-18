@@ -25,6 +25,10 @@ module GraphQL
         # @param nodes [Object] A collection of nodes (eg, Array, AR::Relation)
         # @return [subclass of BaseConnection] a connection Class for wrapping `nodes`
         def connection_for_nodes(nodes)
+          # If it's a new-style connection object, it's already ready to go
+          if nodes.is_a?(GraphQL::Pagination::Connection)
+            return nodes
+          end
           # Check for class _names_ because classes can be redefined in Rails development
           nodes.class.ancestors.each do |ancestor|
             conn_impl = CONNECTION_IMPLEMENTATIONS[ancestor.name]
@@ -139,7 +143,7 @@ module GraphQL
 
       # An opaque operation which returns a connection-specific cursor.
       def cursor_from_node(object)
-        raise NotImplementedError, "must return a cursor for this object/connection pair"
+        raise GraphQL::RequiredImplementationMissingError, "must return a cursor for this object/connection pair"
       end
 
       def inspect
@@ -161,11 +165,11 @@ module GraphQL
       end
 
       def paged_nodes
-        raise NotImplementedError, "must return nodes for this connection after paging"
+        raise GraphQL::RequiredImplementationMissingError, "must return nodes for this connection after paging"
       end
 
       def sliced_nodes
-        raise NotImplementedError, "must return  all nodes for this connection after chopping off first and last"
+        raise GraphQL::RequiredImplementationMissingError, "must return  all nodes for this connection after chopping off first and last"
       end
     end
   end

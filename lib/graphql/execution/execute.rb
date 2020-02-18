@@ -20,7 +20,7 @@ module GraphQL
 
       def execute(ast_operation, root_type, query)
         result = resolve_root_selection(query)
-        lazy_resolve_root_selection(result, {query: query})
+        lazy_resolve_root_selection(result, **{query: query})
         GraphQL::Execution::Flatten.call(query.context)
       end
 
@@ -197,7 +197,7 @@ module GraphQL
             raw_value.path = field_ctx.path
             query.context.errors.push(raw_value)
           when Array
-            if !field_type.list?
+            if field_type.non_null?
               # List type errors are handled above, this is for the case of fields returning an array of errors
               list_errors = raw_value.each_with_index.select { |value, _| value.is_a?(GraphQL::ExecutionError) }
               if list_errors.any?

@@ -18,12 +18,12 @@ module GraphQL
           case name
           when SKIP
             args = query.arguments_for(directive_ast_node, directive_defn)
-            if args['if'] == true
+            if args[:if] == true
               return false
             end
           when INCLUDE
             args = query.arguments_for(directive_ast_node, directive_defn)
-            if args['if'] == false
+            if args[:if] == false
               return false
             end
           else

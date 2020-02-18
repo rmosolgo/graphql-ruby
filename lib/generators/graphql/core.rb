@@ -25,6 +25,7 @@ module Graphql
 
       def create_mutation_root_type
         create_dir("#{options[:directory]}/mutations")
+        template("base_mutation.erb", "#{options[:directory]}/mutations/base_mutation.rb", { skip: true })
         template("mutation_type.erb", "#{options[:directory]}/types/mutation_type.rb", { skip: true })
         insert_root_type('mutation', 'MutationType')
       end
@@ -47,9 +48,17 @@ module Graphql
           if options[:schema]
             options[:schema]
           else
-            require File.expand_path("config/application", destination_root)
-            "#{Rails.application.class.parent_name}Schema"
+            "#{parent_name}Schema"
           end
+        end
+      end
+
+      def parent_name
+        require File.expand_path("config/application", destination_root)
+        if Rails.application.class.respond_to?(:module_parent_name)
+          Rails.application.class.module_parent_name
+        else
+          Rails.application.class.parent_name
         end
       end
     end

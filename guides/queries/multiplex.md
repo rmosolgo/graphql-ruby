@@ -47,7 +47,7 @@ Then, pass them to `Schema#multiplex`:
 results = MySchema.multiplex(queries)
 ```
 
-`results` will contain the result for each query in `queries`.
+`results` will contain the result for each query in `queries`. __NOTE:__ The results will always be in the same order that their respective requests were sent in.
 
 ## Apollo Query Batching
 
@@ -78,11 +78,9 @@ def execute
     )
   end
 
-  render json: result
+  render json: result, root: false
 end
 ```
-
-If Apollo Client has issues recognizing the result of `render json: result`, replace it with `render body: result.to_json, content_type: 'application/json'`.
 
 ## Validation and Error Handling
 

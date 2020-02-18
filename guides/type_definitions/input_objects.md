@@ -103,3 +103,30 @@ You can also add or override methods on input object classes to customize them. 
 - `@context`: The current {{ "GraphQL::Query::Context" | api_doc }}
 
 Any extra methods you define on the class can be used for field resolution, as demonstrated above.
+
+## Converting to Other Ruby Objects
+
+Your input objects can be automatically converted to other Ruby types before they're passed to your application code. This is an easy way to use `Range`'s in your schema:
+
+```ruby
+class Types::DateRangeInput < Types::BaseInputObject
+  description "Range of dates"
+  argument :min, Types::Date, "Minimum value of the range", required: true
+  argument :max, Types::Date, "Maximum value of the range", required: true
+
+  def prepare
+    min..max
+  end
+end
+
+class Types::CalendarType < Types::BaseObject
+  field :appointments, [Types::Appointment], "Appointments on your calendar", null: false do
+    argument :during, Types::DateRangeInput, "Only show appointments within this range", required: true
+  end
+
+  def appointments(during:)
+    # during will be an instance of Range
+    object.appointments.select { |appointment| during.cover?(appointment.date) }
+  end
+end
+```

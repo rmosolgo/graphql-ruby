@@ -10,7 +10,7 @@ module GraphQL
       MAX = (2**31) - 1
 
       def self.coerce_input(value, _ctx)
-        value.is_a?(Numeric) ? value.to_i : nil
+        value.is_a?(Integer) ? value : nil
       end
 
       def self.coerce_result(value, ctx)

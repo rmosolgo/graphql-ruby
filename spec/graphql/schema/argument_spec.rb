@@ -10,7 +10,7 @@ describe GraphQL::Schema::Argument do
         argument :arg_with_block, String, required: false do
           description "test"
         end
-
+        argument :required_with_default_arg, Int, required: true, default_value: 1
         argument :aliased_arg, String, required: false, as: :renamed
         argument :prepared_arg, Int, required: false, prepare: :multiply
         argument :prepared_by_proc_arg, Int, required: false, prepare: ->(val, context) { context[:multiply_by] * val }
@@ -19,6 +19,7 @@ describe GraphQL::Schema::Argument do
         end
 
         argument :keys, [String], required: false, method_access: false
+        argument :instrument_id, ID, required: false, loads: Jazz::InstrumentType
 
         class Multiply
           def call(val, context)
@@ -30,7 +31,11 @@ describe GraphQL::Schema::Argument do
       end
 
       def field(**args)
-        args.inspect
+        # sort the fields so that they match the output of the new interpreter
+        sorted_keys = args.keys.sort
+        sorted_args = {}
+        sorted_keys.each  {|k| sorted_args[k] = args[k] }
+        sorted_args.inspect
       end
 
       def multiply(val)
@@ -42,13 +47,20 @@ describe GraphQL::Schema::Argument do
       query(Query)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
+
+      def self.object_from_id(id, ctx)
+        Jazz::GloballyIdentifiableType.find(id)
+      end
+
+      orphan_types [Jazz::InstrumentType]
     end
   end
 
   describe "#keys" do
     it "is not overwritten by the 'keys' argument" do
-      expected_keys = ["aliasedArg", "arg", "argWithBlock", "explodingPreparedArg", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg"]
+      expected_keys = ["aliasedArg", "arg", "argWithBlock", "explodingPreparedArg", "instrumentId", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
       assert_equal expected_keys, SchemaArgumentTest::Query.fields["field"].arguments.keys.sort
     end
   end
@@ -103,7 +115,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str)
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:renamed=>"x"}', res["data"]["field"]
+      assert_equal '{:renamed=>"x", :required_with_default_arg=>1}', res["data"]["field"]
     end
   end
 
@@ -115,7 +127,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:prepared_arg=>15}', res["data"]["field"]
+      assert_equal '{:prepared_arg=>15, :required_with_default_arg=>1}', res["data"]["field"]
     end
 
     it "calls the method on the provided Proc" do
@@ -125,7 +137,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:prepared_by_proc_arg=>15}', res["data"]["field"]
+      assert_equal '{:prepared_by_proc_arg=>15, :required_with_default_arg=>1}', res["data"]["field"]
     end
 
     it "calls the method on the provided callable object" do
@@ -135,7 +147,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:prepared_by_callable_arg=>15}', res["data"]["field"]
+      assert_equal '{:prepared_by_callable_arg=>15, :required_with_default_arg=>1}', res["data"]["field"]
     end
 
     it "handles exceptions raised by prepare" do
@@ -144,9 +156,49 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
-      assert_equal({ 'f1' => '{:arg=>"echo"}', 'f2' => nil }, res['data'])
+      assert_equal({ 'f1' => '{:arg=>"echo", :required_with_default_arg=>1}', 'f2' => nil }, res['data'])
       assert_equal(res['errors'][0]['message'], 'boom!')
       assert_equal(res['errors'][0]['path'], ['f2'])
+    end
+  end
+
+  describe "default_value:" do
+    it 'uses default_value: with no input' do
+      query_str = <<-GRAPHQL
+      { field }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str)
+      assert_equal '{:required_with_default_arg=>1}', res["data"]["field"]
+    end
+
+    it 'uses provided input value' do
+      query_str = <<-GRAPHQL
+      { field(requiredWithDefaultArg: 2) }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str)
+      assert_equal '{:required_with_default_arg=>2}', res["data"]["field"]
+    end
+
+    it 'respects non-null type' do
+      query_str = <<-GRAPHQL
+      { field(requiredWithDefaultArg: null) }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str)
+      assert_equal "Argument 'requiredWithDefaultArg' on Field 'field' has an invalid value (null). Expected type 'Int!'.", res['errors'][0]['message']
+    end
+  end
+
+  describe 'loads' do
+    it "loads input object arguments" do
+      query_str = <<-GRAPHQL
+      query { field(instrumentId: "Instrument/Drum Kit") }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str)
+      assert_equal "{:instrument=>#{Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION").inspect}, :required_with_default_arg=>1}", res["data"]["field"]
     end
   end
 end

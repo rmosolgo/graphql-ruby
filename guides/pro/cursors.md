@@ -9,6 +9,10 @@ index: 5
 pro: true
 ---
 
+__Note:__ See the new {% internal_link "stable relation connection", "/pagination/stable_relation_connections" %} guide for a more robust and flexible implementation of this feature.
+
+-----
+
 `GraphQL::Pro` includes a mechanism for serving _stable_ cursors for `ActiveRecord::Relation`s based on column values. If objects are created or destroyed during pagination, the list of items won't be disrupted.
 
 A new `RelationConnection` is applied by default. It is backwards-compatible with existing offset-based cursors. See ["Opting Out"](#opting-out) below if you wish to continue using offset-based pagination.
@@ -65,7 +69,7 @@ If you're also switching to {% internal_link "encrypted cursors","/pro/encoders"
 ```ruby
 # Define an encrypted encoder for use with cursors:
 EncryptedCursorEncoder = MyEncoder = GraphQL::Pro::Encoder.define do
-  key("f411f30495fe688cb349d...")
+  key("f411f30...")
 end
 
 # Make a versioned encoder combining new & old

@@ -1,5 +1,33 @@
 # graphql-ruby-client
 
+## 1.7.3 (17 Feb 2020)
+
+- Fix CLI for TypeScript
+
+## 1.7.2 (17 Feb 2020)
+
+- Convert outfile generators to TypeScript and include them in published package
+
+## 1.7.1 (17 Feb 2020)
+
+- Fix `bin` configuration in package.json
+
+## 1.7.0 (17 Feb 2020)
+
+- Rewrite in TypeScript
+
+## 1.6.8 (18 Sept 2019)
+
+- Properly send `Content-Type: application/json` when posting persisted operations
+
+## 1.6.7 (18 Sept 2019)
+
+- Add post data to `--verbose` output of `sync`
+
+## 1.6.6 (6 Aug 2019)
+
+- Add `--relay-persisted-output` for working with Relay Compiler's new `--persist-output` option #2415
+
 ## 1.6.5 (17 July 2019)
 
 - Update dependencies #2335

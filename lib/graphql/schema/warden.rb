@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
+require 'set'
+
 module GraphQL
   class Schema
     # Restrict access to a {GraphQL::Schema} with a user-defined filter.
@@ -39,19 +42,32 @@ module GraphQL
       # @param schema [GraphQL::Schema]
       # @param deep_check [Boolean]
       def initialize(filter, context:, schema:)
-        @schema = schema
+        @schema = schema.interpreter? ? schema : schema.graphql_definition
+        # Cache these to avoid repeated hits to the inheritance chain when one isn't present
+        @query = @schema.query
+        @mutation = @schema.mutation
+        @subscription = @schema.subscription
+        @context = context
         @visibility_cache = read_through { |m| filter.call(m, context) }
       end
 
       # @return [Array<GraphQL::BaseType>] Visible types in the schema
       def types
-        @types ||= @schema.types.each_value.select { |t| visible_type?(t) }
+        @types ||= begin
+          vis_types = {}
+          @schema.types.each do |n, t|
+            if visible_type?(t)
+              vis_types[n] = t
+            end
+          end
+          vis_types
+        end
       end
 
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
       def get_type(type_name)
         @visible_types ||= read_through do |name|
-          type_defn = @schema.types.fetch(name, nil)
+          type_defn = @schema.get_type(name)
           if type_defn && visible_type?(type_defn)
             type_defn
           else
@@ -60,6 +76,17 @@ module GraphQL
         end
 
         @visible_types[type_name]
+      end
+
+      # @return [Array<GraphQL::BaseType>] Visible and reachable types in the schema
+      def reachable_types
+        @reachable_types ||= reachable_type_set.to_a
+      end
+
+      # @return Boolean True if the type is visible and reachable in the schema
+      def reachable_type?(type_name)
+        type = get_type(type_name)
+        type && reachable_type_set.include?(type)
       end
 
       # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`, if it exists
@@ -81,7 +108,9 @@ module GraphQL
 
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
-        @visible_possible_types ||= read_through { |type_defn| @schema.possible_types(type_defn).select { |t| visible_type?(t) } }
+        @visible_possible_types ||= read_through { |type_defn|
+          @schema.possible_types(type_defn, @context).select { |t| visible_type?(t) }
+        }
         @visible_possible_types[type_defn]
       end
 
@@ -136,27 +165,36 @@ module GraphQL
       end
 
       def visible_type?(type_defn)
-        return false unless visible?(type_defn)
-        return true if root_type?(type_defn)
-        return true if type_defn.introspection?
+        @type_visibility ||= read_through do |type_defn|
+          next false unless visible?(type_defn)
+          next true if root_type?(type_defn) || type_defn.introspection?
 
-        if type_defn.kind.union?
-          visible_possible_types?(type_defn) && (referenced?(type_defn) || orphan_type?(type_defn))
-        elsif type_defn.kind.interface?
-          visible_possible_types?(type_defn)
-        else
-          referenced?(type_defn) || visible_abstract_type?(type_defn)
+          if type_defn.kind.union?
+            visible_possible_types?(type_defn) && (referenced?(type_defn) || orphan_type?(type_defn))
+          elsif type_defn.kind.interface?
+            visible_possible_types?(type_defn)
+          else
+            referenced?(type_defn) || visible_abstract_type?(type_defn)
+          end
         end
+
+        @type_visibility[type_defn]
       end
 
       def root_type?(type_defn)
-        @schema.root_types.include?(type_defn)
+        @query == type_defn ||
+          @mutation == type_defn ||
+          @subscription == type_defn
       end
 
       def referenced?(type_defn)
-        members = @schema.references_to(type_defn.unwrap.name)
+        @references_to ||= @schema.references_to
+        graphql_name = type_defn.unwrap.graphql_name
+        members = @references_to[graphql_name] || NO_REFERENCES
         members.any? { |m| visible?(m) }
       end
+
+      NO_REFERENCES = [].freeze
 
       def orphan_type?(type_defn)
         @schema.orphan_types.include?(type_defn)
@@ -170,7 +208,7 @@ module GraphQL
       end
 
       def visible_possible_types?(type_defn)
-        @schema.possible_types(type_defn).any? { |t| visible_type?(t) }
+        possible_types(type_defn).any? { |t| visible_type?(t) }
       end
 
       def visible?(member)
@@ -179,6 +217,77 @@ module GraphQL
 
       def read_through
         Hash.new { |h, k| h[k] = yield(k) }
+      end
+
+      def reachable_type_set
+        return @reachable_type_set if defined?(@reachable_type_set)
+
+        @reachable_type_set = Set.new
+
+        unvisited_types = []
+        ['query', 'mutation', 'subscription'].each do |op_name|
+          root_type = root_type_for_operation(op_name)
+          unvisited_types << root_type if root_type
+        end
+        unvisited_types.concat(@schema.introspection_system.types.values)
+
+        directives.each do |dir_class|
+          dir_class.arguments.values.each do |arg_defn|
+            arg_t = arg_defn.type.unwrap
+            if get_type(arg_t.graphql_name)
+              unvisited_types << arg_t
+            end
+          end
+        end
+
+        @schema.orphan_types.each do |orphan_type|
+          if get_type(orphan_type.graphql_name)
+            unvisited_types << orphan_type
+          end
+        end
+
+        until unvisited_types.empty?
+          type = unvisited_types.pop
+          if @reachable_type_set.add?(type)
+            if type.kind.input_object?
+              # recurse into visible arguments
+              arguments(type).each do |argument|
+                argument_type = argument.type.unwrap
+                unvisited_types << argument_type
+              end
+            elsif type.kind.union?
+              # recurse into visible possible types
+              possible_types(type).each do |possible_type|
+                unvisited_types << possible_type
+              end
+            elsif type.kind.fields?
+              if type.kind.interface?
+                # recurse into visible possible types
+                possible_types(type).each do |possible_type|
+                  unvisited_types << possible_type
+                end
+              elsif type.kind.object?
+                # recurse into visible implemented interfaces
+                interfaces(type).each do |interface|
+                  unvisited_types << interface
+                end
+              end
+
+              # recurse into visible fields
+              fields(type).each do |field|
+                field_type = field.type.unwrap
+                unvisited_types << field_type
+                # recurse into visible arguments
+                arguments(field).each do |argument|
+                  argument_type = argument.type.unwrap
+                  unvisited_types << argument_type
+                end
+              end
+            end
+          end
+        end
+
+        @reachable_type_set
       end
     end
   end

@@ -237,6 +237,15 @@ describe GraphQL::Language::Visitor do
           super
         end
       end
+
+      def on_variable_definition(node, parent)
+        if node.type.name == 'A'
+          new_type = GraphQL::Language::Nodes::TypeName.new(name: 'RenamedA')
+          super(node.merge(type: new_type), parent)
+        else
+          super
+        end
+      end
     end
 
     def get_result(query_str)
@@ -248,7 +257,7 @@ describe GraphQL::Language::Visitor do
 
     it "returns a new AST with modifications applied" do
       query = <<-GRAPHQL.chop
-query {
+query($a: A, $b: B) {
   a(a1: 1) {
     b(b2: 2) {
       c(c3: 3)
@@ -260,7 +269,7 @@ query {
       document, new_document = get_result(query)
       refute_equal document, new_document
       expected_result = <<-GRAPHQL.chop
-query {
+query($a: RenamedA, $b: B) {
   a(a1: 1) {
     b(b2: 2) {
       renamedC(c3: 3)

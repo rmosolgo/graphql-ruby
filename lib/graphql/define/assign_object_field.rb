@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Define
-    # Turn field configs into a {GraphQL::Field} and attach it to a {GraphQL::ObjectType} or {GraphQL::InterfaceType}
+    # @api deprecated
     module AssignObjectField
       def self.call(owner_type, name, type_or_field = nil, desc = nil, function: nil, field: nil, relay_mutation_function: nil, **kwargs, &block)
         name_s = name.to_s
@@ -28,9 +28,9 @@ module GraphQL
         end
 
         obj_field = if base_field
-          base_field.redefine(kwargs, &block)
+          base_field.redefine(**kwargs, &block)
         else
-          GraphQL::Field.define(kwargs, &block)
+          GraphQL::Field.define(**kwargs, &block)
         end
 
 

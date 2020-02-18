@@ -113,7 +113,7 @@ Some late-bound types couldn't be resolved:
           # Find the starting points, then visit them
           visit_roots = [member.query, member.mutation, member.subscription]
           if @introspection
-            introspection_types = schema.introspection_system.object_types
+            introspection_types = schema.introspection_system.types.values
             visit_roots.concat(introspection_types)
             if member.query
               member.introspection_system.entry_points.each do |introspection_field|

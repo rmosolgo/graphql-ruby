@@ -10,10 +10,10 @@ module GraphQL
             nil
           else
             arg_ret_type = arg_defn.type.unwrap
-            if !arg_ret_type.is_a?(GraphQL::InputObjectType)
-              nil
-            else
+            if arg_ret_type.kind.input_object?
               arg_ret_type
+            else
+              nil
             end
           end
         when GraphQL::Language::Nodes::Directive
@@ -45,12 +45,15 @@ module GraphQL
       private
 
       def parent_name(parent, type_defn)
-        if parent.is_a?(GraphQL::Language::Nodes::Field)
+        case parent
+        when GraphQL::Language::Nodes::Field
           parent.alias || parent.name
-        elsif parent.is_a?(GraphQL::Language::Nodes::InputObject)
-          type_defn.name
-        else
+        when GraphQL::Language::Nodes::InputObject
+          type_defn.graphql_name
+        when GraphQL::Language::Nodes::Argument, GraphQL::Language::Nodes::Directive
           parent.name
+        else
+          raise "Invariant: Unexpected parent #{parent.inspect} (#{parent.class})"
         end
       end
 

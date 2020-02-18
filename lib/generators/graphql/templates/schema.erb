@@ -1,4 +1,12 @@
 class <%= schema_name %> < GraphQL::Schema
+  query(Types::QueryType)
+
+  # Opt in to the new runtime (default in future graphql-ruby versions)
+  use GraphQL::Execution::Interpreter
+  use GraphQL::Analysis::AST
+
+  # Add built-in connections for pagination
+  use GraphQL::Pagination::Connections
 <% if options[:relay] %>
   # Relay Object Identification:
 
@@ -24,7 +32,7 @@ class <%= schema_name %> < GraphQL::Schema
   def self.resolve_type(type, obj, ctx)
     # TODO: Implement this function
     # to return the correct type for `obj`
-    raise(NotImplementedError)
+    raise(GraphQL::RequiredImplementationMissingError)
   end
 <% end %><% if options[:batch] %>
   # GraphQL::Batch setup:

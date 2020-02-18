@@ -66,17 +66,6 @@ class BasicFieldAnalyzer < GraphQL::Analysis::AST::Analyzer
     end
   end
 
-  # We want to visit fragment spreads as soon as we hit them
-  # instead of visiting the definitions. The visitor provides helper
-  # methods to achieve that.
-  def on_enter_fragment_spread(node, parent, visitor)
-    visitor.enter_fragment_spread_inline(node)
-  end
-
-  def on_leave_fragment_definition(node, parent, visitor)
-    visitor.leave_fragment_spread_inline(node)
-  end
-
   def result
     @fields
   end
@@ -135,3 +124,11 @@ end
 ```
 
 **Make sure you pass the class and not an instance of your analyzer. The new analysis engine will take care of instantiating your analyzers with the query**.
+
+## Analyzing Multiplexes
+
+Analyzers are initialized with the _unit of analysis_, available as `subject`.
+
+When analyzers are hooked up to multiplexes, `query` is `nil`, but `multiplex` returns the subject of analysis. You can use `visitor.query` inside visit methods to reference the query that owns the current AST node.
+
+Note that some built-in analyzers (eg `AST::MaxQueryDepth`) support multiplexes even though `Query` is in their name.

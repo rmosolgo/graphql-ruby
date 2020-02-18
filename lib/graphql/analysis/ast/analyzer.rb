@@ -5,10 +5,21 @@ module GraphQL
       # Query analyzer for query ASTs. Query analyzers respond to visitor style methods
       # but are prefixed by `enter` and `leave`.
       #
-      # @param [GraphQL::Query] The query to analyze
+      # When an analyzer is initialized with a Multiplex, you can always get the current query from
+      # `visitor.query` in the visit methods.
+      #
+      # @param [GraphQL::Query, GraphQL::Execution::Multiplex] The query or multiplex to analyze
       class Analyzer
-        def initialize(query)
-          @query = query
+        def initialize(subject)
+          @subject = subject
+
+          if subject.is_a?(GraphQL::Query)
+            @query = subject
+            @multiplex = nil
+          else
+            @multiplex = subject
+            @query = nil
+          end
         end
 
         # Analyzer hook to decide at analysis time whether a query should
@@ -22,18 +33,21 @@ module GraphQL
         # in a query error.
         # @return [Any] The analyzer result
         def result
-          raise NotImplementedError
+          raise GraphQL::RequiredImplementationMissingError
         end
 
-        # Don't use make_visit_method because it breaks `super`
-        def self.build_visitor_hooks(member_name)
-          class_eval(<<-EOS, __FILE__, __LINE__ + 1)
-            def on_enter_#{member_name}(node, parent, visitor)
-            end
+        class << self
+          private
 
-            def on_leave_#{member_name}(node, parent, visitor)
-            end
-          EOS
+          def build_visitor_hooks(member_name)
+            class_eval(<<-EOS, __FILE__, __LINE__ + 1)
+              def on_enter_#{member_name}(node, parent, visitor)
+              end
+
+              def on_leave_#{member_name}(node, parent, visitor)
+              end
+            EOS
+          end
         end
 
         build_visitor_hooks :argument
@@ -55,7 +69,15 @@ module GraphQL
 
         protected
 
+        # @return [GraphQL::Query, GraphQL::Execution::Multiplex] Whatever this analyzer is analyzing
+        attr_reader :subject
+
+        # @return [GraphQL::Query, nil] `nil` if this analyzer is visiting a multiplex
+        #  (When this is `nil`, use `visitor.query` inside visit methods to get the current query)
         attr_reader :query
+
+        # @return [GraphQL::Execution::Multiplex, nil] `nil` if this analyzer is visiting a query
+        attr_reader :multiplex
       end
     end
   end

@@ -93,8 +93,8 @@ module GraphQL
 
         return if fragment1.nil? || fragment2.nil?
 
-        fragment_type1 = context.schema.types[fragment1.type.name]
-        fragment_type2 = context.schema.types[fragment2.type.name]
+        fragment_type1 = context.warden.get_type(fragment1.type.name)
+        fragment_type2 = context.warden.get_type(fragment2.type.name)
 
         return if fragment_type1.nil? || fragment_type2.nil?
 
@@ -146,7 +146,7 @@ module GraphQL
         fragment = context.fragments[fragment_name]
         return if fragment.nil?
 
-        fragment_type = context.schema.types[fragment.type.name]
+        fragment_type = context.warden.get_type(fragment.type.name)
         return if fragment_type.nil?
 
         fragment_fields, fragment_spreads = fields_and_fragments_from_selection(fragment, owner_type: fragment_type, parents: [*fragment_spread.parents, fragment_type])
@@ -316,7 +316,7 @@ module GraphQL
             definition = context.schema.get_field(owner_type, node.name)
             fields << Field.new(node, definition, owner_type, parents)
           when GraphQL::Language::Nodes::InlineFragment
-            fragment_type = node.type ? context.schema.types[node.type.name] : owner_type
+            fragment_type = node.type ? context.warden.get_type(node.type.name) : owner_type
             find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: owner_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
           when GraphQL::Language::Nodes::FragmentSpread
             fragment_spreads << FragmentSpread.new(node.name, parents)
@@ -330,20 +330,27 @@ module GraphQL
         # Check for incompatible / non-identical arguments on this node:
         [field1, field2].map do |n|
           if n.arguments.any?
-            n.arguments.reduce({}) do |memo, a|
+            serialized_args = {}
+            n.arguments.each do |a|
               arg_value = a.value
-              memo[a.name] = case arg_value
-              when GraphQL::Language::Nodes::AbstractNode
-                arg_value.to_query_string
-              else
-                GraphQL::Language.serialize(arg_value)
-              end
-              memo
+              serialized_args[a.name] = serialize_arg(arg_value)
             end
+            serialized_args
           else
             NO_ARGS
           end
         end.uniq
+      end
+
+      def serialize_arg(arg_value)
+        case arg_value
+        when GraphQL::Language::Nodes::AbstractNode
+          arg_value.to_query_string
+        when Array
+          "[#{arg_value.map { |a| serialize_arg(a) }.join(", ")}]"
+        else
+          GraphQL::Language.serialize(arg_value)
+        end
       end
 
       def compared_fragments_key(frag1, frag2, exclusive)

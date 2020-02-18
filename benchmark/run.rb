@@ -117,9 +117,8 @@ module GraphQLBenchmark
 
     class Schema < GraphQL::Schema
       query QueryType
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-      end
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL

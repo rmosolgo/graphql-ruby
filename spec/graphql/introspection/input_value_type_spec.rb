@@ -35,7 +35,7 @@ describe GraphQL::Introspection::InputValueType do
              "description" => "How much fat it has"},
             {"name"=>"organic", "type"=>{"kind"=>"SCALAR",  "name" => "Boolean"}, "defaultValue"=>"false",
              "description" => nil},
-            {"name"=>"order_by", "type"=>{"kind"=>"INPUT_OBJECT", "name"=>"ResourceOrderType"}, "defaultValue"=>"{direction:\"ASC\"}",
+            {"name"=>"order_by", "type"=>{"kind"=>"INPUT_OBJECT", "name"=>"ResourceOrderType"}, "defaultValue"=>"{direction: \"ASC\"}",
              "description" => nil},
           ]
         }

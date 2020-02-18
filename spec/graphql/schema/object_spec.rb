@@ -55,7 +55,7 @@ describe GraphQL::Schema::Object do
 
     it "raise on anonymous class without declared graphql name" do
       anonymous_class = Class.new(GraphQL::Schema::Object)
-      assert_raises NotImplementedError do
+      assert_raises GraphQL::RequiredImplementationMissingError do
         anonymous_class.graphql_name
       end
     end
@@ -105,7 +105,8 @@ describe GraphQL::Schema::Object do
     end
   end
 
-  describe "using GraphQL::Function" do
+  if !TESTING_INTERPRETER
+  describe "using GraphQL::Function" do # rubocop:disable Layout/IndentationWidth
     new_test_func_payload = Class.new(GraphQL::Schema::Object) do
       graphql_name "TestFuncPayload"
       field :name, String, null: false
@@ -174,6 +175,7 @@ describe GraphQL::Schema::Object do
       res = schema.execute(query_str)
       assert_equal "graphql", res["data"]["testConn"]["edges"][0]["node"]["name"]
     end
+  end
   end
 
   describe "wrapping a Hash" do
@@ -315,11 +317,21 @@ describe GraphQL::Schema::Object do
 
   describe "when fields conflict with built-ins" do
     it "warns when no override" do
-      expected_warning = "X's `field :method` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_method` and `def resolve_method`)\n"
+      expected_warning = "X's `field :method` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_method` and `def resolve_method`). Or use `method_conflict_warning: false` to suppress this warning.\n"
       assert_output "", expected_warning do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
           field :method, String, null: true
+        end
+      end
+    end
+
+    it "warns when override matches field name" do
+      expected_warning = "X's `field :object` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_object` and `def resolve_object`). Or use `method_conflict_warning: false` to suppress this warning.\n"
+      assert_output "", expected_warning do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :object, String, null: true, resolver_method: :object
         end
       end
     end
@@ -329,6 +341,35 @@ describe GraphQL::Schema::Object do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
           field :method, String, null: true, resolver_method: :resolve_method
+        end
+      end
+    end
+
+    it "doesn't warn with a suppression" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :method, String, null: true, method_conflict_warning: false
+        end
+      end
+    end
+
+    it "doesn't warn when parsing a schema" do
+      assert_output "", "" do
+        schema = GraphQL::Schema.from_definition <<-GRAPHQL
+        type Query {
+          method: String
+        }
+        GRAPHQL
+        assert_equal ["method"], schema.query.fields.keys
+      end
+    end
+
+    it "doesn't warn when passing object through using resolver_method" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :thing, String, null: true, resolver_method: :object
         end
       end
     end

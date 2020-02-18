@@ -26,8 +26,10 @@ module GraphQL
         def field_class(new_class = nil)
           if new_class
             @field_class = new_class
+          elsif defined?(@field_class) && @field_class
+            @field_class
           else
-            @field_class || find_inherited_value(:field_class, GraphQL::Schema::Field)
+            find_inherited_value(:field_class, GraphQL::Schema::Field)
           end
         end
 

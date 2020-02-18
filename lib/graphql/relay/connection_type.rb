@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Relay
+    # @api deprecated
     module ConnectionType
       class << self
         # @return [Boolean] If true, connection types get a `nodes` shortcut field
@@ -12,7 +13,7 @@ module GraphQL
       self.default_nodes_field = false
       self.bidirectional_pagination = false
 
-      # Create a connection which exposes edges of this type
+      # @api deprecated
       def self.create_type(wrapped_type, edge_type: nil, edge_class: GraphQL::Relay::Edge, nodes_field: ConnectionType.default_nodes_field, &block)
         custom_edge_class = edge_class
 

@@ -1,5 +1,6 @@
 require:
   - ./cop/none_without_block_cop
+  - ./cop/no_focus_cop
 
 AllCops:
   DisabledByDefault: true

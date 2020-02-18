@@ -11,6 +11,7 @@ module GraphQL
       def self.construct_arguments_class(argument_owner)
         argument_definitions = argument_owner.arguments
         argument_owner.arguments_class = Class.new(self) do
+          self.argument_owner = argument_owner
           self.argument_definitions = argument_definitions
 
           argument_definitions.each do |_arg_name, arg_definition|
@@ -87,6 +88,10 @@ module GraphQL
 
       def_delegators :to_h, :keys, :values, :each, :any?
 
+      def prepare
+        self
+      end
+
       # Access each key, value and type for the arguments in this set.
       # @yield [argument_value] The {ArgumentValue} for each argument
       # @yieldparam argument_value [ArgumentValue]
@@ -97,7 +102,7 @@ module GraphQL
       end
 
       class << self
-        attr_accessor :argument_definitions
+        attr_accessor :argument_definitions, :argument_owner
       end
 
       NoArguments = Class.new(self) do
@@ -117,6 +122,8 @@ module GraphQL
 
         ruby_kwargs
       end
+
+      alias :to_hash :to_kwargs
 
       private
 
@@ -150,7 +157,8 @@ module GraphQL
             wrap_value(value, arg_defn_type.of_type, context)
           when GraphQL::InputObjectType
             if value.is_a?(Hash)
-              arg_defn_type.arguments_class.new(value, context: context, defaults_used: Set.new)
+              result = arg_defn_type.arguments_class.new(value, context: context, defaults_used: Set.new)
+              result.prepare
             else
               value
             end

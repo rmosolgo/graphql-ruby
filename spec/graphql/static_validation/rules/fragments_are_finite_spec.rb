@@ -73,10 +73,9 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
       fragment frag1 on Cheese { ...frag1 }
     |}
 
-    it "detects the loop" do
-      assert_equal 2, errors.length
-      assert_equal("Fragment frag1 contains an infinite loop", errors[0]["message"])
-      assert_equal("Fragment name \"frag1\" must be unique", errors[1]["message"])
+    it "detects the uniqueness problem" do
+      assert_equal 1, errors.length
+      assert_equal("Fragment name \"frag1\" must be unique", errors[0]["message"])
     end
   end
 

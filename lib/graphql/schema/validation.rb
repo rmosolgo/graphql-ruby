@@ -77,6 +77,18 @@ module GraphQL
           }
         end
 
+        def self.count_at_least(item_name, minimum_count, get_items_proc)
+          ->(type) {
+            items = get_items_proc.call(type)
+
+            if items.size < minimum_count
+              "#{type.name} must define at least #{minimum_count} #{item_name}. #{items.size} defined."
+            else
+              nil
+            end
+          }
+        end
+
         def self.assert_named_items_are_valid(item_name, get_items_proc)
           ->(type) {
             items = get_items_proc.call(type)
@@ -92,7 +104,9 @@ module GraphQL
           }
         end
 
+        HAS_AT_LEAST_ONE_FIELD = Rules.count_at_least("field", 1, ->(type) { type.all_fields })
         FIELDS_ARE_VALID = Rules.assert_named_items_are_valid("field", ->(type) { type.all_fields })
+        HAS_AT_LEAST_ONE_ARGUMENT = Rules.count_at_least("argument", 1, ->(type) { type.arguments })
 
         HAS_ONE_OR_MORE_POSSIBLE_TYPES = ->(type) {
           type.possible_types.length >= 1 ? nil : "must have at least one possible type"
@@ -104,10 +118,6 @@ module GraphQL
         ARGUMENTS_ARE_VALID =  Rules.assert_named_items_are_valid("argument", ->(type) { type.arguments.values })
 
         DEFAULT_VALUE_IS_VALID_FOR_TYPE = ->(type) {
-          if !type.default_value.nil? && type.type.is_a?(NonNullType)
-            return %Q(Variable #{type.name} of type "#{type.type}" is required and will not use the default value. Perhaps you meant to use type "#{type.type.of_type}".)
-          end
-
           if !type.default_value.nil?
             coerced_value = begin
               type.type.coerce_isolated_result(type.default_value)
@@ -125,7 +135,7 @@ module GraphQL
 
         TYPE_IS_VALID_INPUT_TYPE = ->(type) {
           outer_type = type.type
-          inner_type = outer_type.is_a?(GraphQL::BaseType) ? outer_type.unwrap : nil
+          inner_type = outer_type.respond_to?(:unwrap) ? outer_type.unwrap : nil
 
           case inner_type
           when GraphQL::ScalarType, GraphQL::InputObjectType, GraphQL::EnumType
@@ -144,7 +154,7 @@ module GraphQL
         }
 
         SCHEMA_CAN_FETCH_IDS = ->(schema) {
-          has_node_field = schema.query && schema.query.all_fields.any?(&:relay_node_field)
+          has_node_field = schema.query && schema.query.fields.each_value.any?(&:relay_node_field)
           if has_node_field && schema.object_from_id_proc.nil?
             "schema contains `node(id:...)` field, so you must define a `object_from_id -> (id, ctx) { ... }` function"
           else
@@ -264,11 +274,13 @@ module GraphQL
           Rules::DESCRIPTION_IS_STRING_OR_NIL,
         ],
         GraphQL::ObjectType => [
+          Rules::HAS_AT_LEAST_ONE_FIELD,
           Rules.assert_property_list_of(:interfaces, GraphQL::InterfaceType),
           Rules::FIELDS_ARE_VALID,
           Rules::INTERFACES_ARE_IMPLEMENTED,
         ],
         GraphQL::InputObjectType => [
+          Rules::HAS_AT_LEAST_ONE_ARGUMENT,
           Rules::ARGUMENTS_ARE_STRING_TO_ARGUMENT,
           Rules::ARGUMENTS_ARE_VALID,
         ],

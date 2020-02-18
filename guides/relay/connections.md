@@ -271,7 +271,7 @@ module URLSafeBase64Encoder
   end
 end
 
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   # ...
   cursor_encoder(URLSafeBase64Encoder)
 end
