@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.10.2/">API</a>
+          <a href="/api-doc/1.10.3/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -202,6 +202,7 @@ appendonly <span class="nb">yes</span>
 <p>Your server needs to receive webhooks from Ably when clients disconnect. This keeps your local subscription database in sync with Ably.</p>
 
 <h3 id="server">Server</h3>
+
 <p><em>Note: if you’re setting up in a development environment you should follow the <a href="#Developing-with-webhooks">Developing with webhooks</a> section first</em></p>
 
 <p>Mount the Rack app for handling webhooks from Ably. For example, on Rails:</p>
@@ -219,6 +220,7 @@ appendonly <span class="nb">yes</span>
 </code></pre></div></div>
 
 <h3 id="ably">Ably</h3>
+
 <ol>
   <li>Go to the Ably dashboard</li>
   <li>Click on your application.</li>
@@ -232,11 +234,27 @@ appendonly <span class="nb">yes</span>
   <li>Click “Create”</li>
 </ol>
 
+<h2 id="authorization">Authorization</h2>
+
+<p>You can use Ably’s <a href="https://www.ably.io/documentation/realtime/authentication#token-authentication">token authentication</a> by implementing an endpoint in your app, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AblyController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">def</span> <span class="nf">auth</span>
+    <span class="n">render</span> <span class="ss">status: </span><span class="mi">201</span><span class="p">,</span> <span class="ss">json: </span><span class="n">ably_rest_client</span><span class="p">.</span><span class="nf">auth</span><span class="p">.</span><span class="nf">create_token_request</span><span class="p">(</span>
+      <span class="ss">capability: </span><span class="p">{</span> <span class="s1">'*'</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'presence'</span><span class="p">,</span> <span class="s1">'subscribe'</span><span class="p">]</span> <span class="p">},</span>
+      <span class="ss">client_id: </span><span class="s1">'graphql-subscriber'</span><span class="p">,</span>
+    <span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><a href="https://www.ably.io/tutorials/webhook-chuck-norris#tutorial-step-4">Ably’s tutorial</a> also demonstrates some of the setup for this.</p>
+
 <h2 id="serializing-context">Serializing Context</h2>
 
 <p>Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query <code class="highlighter-rouge">context</code>.</p>
 
-<p>By default, this is done with <a href="/api-doc/1.10.2/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="highlighter-rouge">dump</code> and <code class="highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="highlighter-rouge">GraphQL::Pro::Subscriptions</code> and override <code class="highlighter-rouge">#dump_context(ctx)</code> and <code class="highlighter-rouge">#load_context(ctx_string)</code>:</p>
+<p>By default, this is done with <a href="/api-doc/1.10.3/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="highlighter-rouge">dump</code> and <code class="highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="highlighter-rouge">GraphQL::Pro::Subscriptions</code> and override <code class="highlighter-rouge">#dump_context(ctx)</code> and <code class="highlighter-rouge">#load_context(ctx_string)</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomSubscriptions</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">AblySubscriptions</span>
   <span class="k">def</span> <span class="nf">dump_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>

@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.10.2/">API</a>
+          <a href="/api-doc/1.10.3/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -86,7 +86,7 @@
 <span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-cache-inmemory</span><span class="dl">'</span><span class="p">;</span>
 
 <span class="c1">// Load PusherLink from graphql-ruby-client</span>
-<span class="k">import</span> <span class="nx">PusherLink</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/PusherLink</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">PusherLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client</span><span class="dl">'</span><span class="p">;</span>
 
 <span class="c1">// Load Pusher and create a client</span>
 <span class="k">import</span> <span class="nx">Pusher</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pusher-js</span><span class="dl">"</span>
@@ -126,6 +126,8 @@
 <span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-client</span><span class="dl">'</span><span class="p">;</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link-http</span><span class="dl">'</span><span class="p">;</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-cache-inmemory</span><span class="dl">'</span><span class="p">;</span>
+<span class="c1">// Load Ably subscriptions link</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">AblyLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client</span><span class="dl">'</span>
 <span class="c1">// Load Ably and create a client</span>
 <span class="kd">const</span> <span class="nx">Ably</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">ably</span><span class="dl">"</span><span class="p">)</span>
 <span class="kd">const</span> <span class="nx">ablyClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Ably</span><span class="p">.</span><span class="nx">Realtime</span><span class="p">({</span> <span class="na">key</span><span class="p">:</span> <span class="dl">"</span><span class="s2">your-app-key</span><span class="dl">"</span> <span class="p">})</span>
@@ -175,7 +177,7 @@
 <span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link-http</span><span class="dl">'</span><span class="p">;</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-cache-inmemory</span><span class="dl">'</span><span class="p">;</span>
 <span class="k">import</span> <span class="nx">ActionCable</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">actioncable</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="nx">ActionCableLink</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/ActionCableLink</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ActionCableLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client</span><span class="dl">'</span><span class="p">;</span>
 
 <span class="kd">const</span> <span class="nx">cable</span> <span class="o">=</span> <span class="nx">ActionCable</span><span class="p">.</span><span class="nx">createConsumer</span><span class="p">()</span>
 
@@ -219,7 +221,7 @@
 <span class="kd">var</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="nx">appKey</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
 
 <span class="c1">// Add subscriptions to the network interface with the `pusher:` options</span>
-<span class="kd">var</span> <span class="nx">addGraphQLSubscriptions</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/addGraphQLSubscriptions</span><span class="dl">"</span><span class="p">)</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">addGraphQLSubscriptions</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client</span><span class="dl">"</span>
 <span class="nx">addGraphQLSubscriptions</span><span class="p">(</span><span class="nx">myNetworkInterface</span><span class="p">,</span> <span class="p">{</span><span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">})</span>
 
 <span class="c1">// Optionally, add persisted query support:</span>
@@ -251,7 +253,7 @@
 <span class="p">});</span>
 
 <span class="c1">// Add subscriptions to the network interface</span>
-<span class="kd">var</span> <span class="nx">addGraphQLSubscriptions</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/addGraphQLSubscriptions</span><span class="dl">"</span><span class="p">)</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">addGraphQLSubscriptions</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client</span><span class="dl">"</span>
 <span class="nx">addGraphQLSubscriptions</span><span class="p">(</span><span class="nx">RailsNetworkInterface</span><span class="p">,</span> <span class="p">{</span><span class="na">cable</span><span class="p">:</span> <span class="nx">cable</span><span class="p">})</span>
 
 <span class="c1">// Optionally, add persisted query support:</span>

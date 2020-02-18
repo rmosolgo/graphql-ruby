@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.10.2/">API</a>
+          <a href="/api-doc/1.10.3/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -72,8 +72,8 @@
 
 <p>Pass <code class="highlighter-rouge">pusher:</code> to get Subscription updates over Pusher:</p>
 
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Require the helper function</span>
-<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/createHandler</span><span class="dl">"</span><span class="p">)</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load the helper function</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client</span><span class="dl">"</span>
 
 <span class="c1">// Prepare a Pusher client</span>
 <span class="kd">var</span> <span class="nx">Pusher</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">pusher-js</span><span class="dl">"</span><span class="p">)</span>
@@ -95,6 +95,7 @@
 </code></pre></div></div>
 
 <h2 id="ably">Ably</h2>
+
 <p>Subscriptions with <a href="/subscriptions/ably_implementation">Ably</a> require two things:</p>
 
 <ul>
@@ -106,8 +107,8 @@
 
 <p>Pass <code class="highlighter-rouge">ably:</code> to get Subscription updates over Ably:</p>
 
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Require the helper function</span>
-<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/createHandler</span><span class="dl">"</span><span class="p">)</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load the helper function</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client</span><span class="dl">"</span>
 
 <span class="c1">// Load Ably and create a client</span>
 <span class="kd">const</span> <span class="nx">Ably</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">ably</span><span class="dl">"</span><span class="p">)</span>
@@ -135,12 +136,12 @@
 <p>For example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Require the helper function</span>
-<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/createHandler</span><span class="dl">"</span><span class="p">)</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client</span><span class="dl">"</span><span class="p">)</span>
 <span class="c1">// Optionally, load your OperationStoreClient</span>
 <span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 
 <span class="c1">// Create a Relay Modern-compatible handler</span>
-<span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createHandler</span><span class="p">({</span>
+<span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createRelaySubscriptionHandler</span><span class="p">({</span>
   <span class="na">cable</span><span class="p">:</span> <span class="nx">cable</span><span class="p">,</span>
   <span class="na">operations</span><span class="p">:</span> <span class="nx">OperationStoreClient</span><span class="p">,</span>
 <span class="p">})</span>
@@ -201,7 +202,7 @@
 <span class="p">}</span>
 
 <span class="c1">// Subscriptions uses the same `fetchOperation` function for initial subscription requests</span>
-<span class="kd">const</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createHandler</span><span class="p">({</span><span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">,</span> <span class="na">fetchOperation</span><span class="p">:</span> <span class="nx">fetchOperation</span><span class="p">})</span>
+<span class="kd">const</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createRelaySubscriptionHandler</span><span class="p">({</span><span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">,</span> <span class="na">fetchOperation</span><span class="p">:</span> <span class="nx">fetchOperation</span><span class="p">})</span>
 <span class="c1">// Combine them into a `Network`</span>
 <span class="kd">const</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">Network</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">fetchQuery</span><span class="p">,</span> <span class="nx">subscriptionHandler</span><span class="p">)</span>
 </code></pre></div></div>
