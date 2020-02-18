@@ -21,7 +21,7 @@
     "ts-jest": "^25.2.0"
   },
   "scripts": {
-    "test": "jest",
+    "test": "tsc && jest",
     "prepublishOnly": "tsc"
   },
   "dependencies": {

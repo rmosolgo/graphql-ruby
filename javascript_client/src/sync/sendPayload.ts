@@ -69,16 +69,27 @@ function sendPayload(payload: any, options: SendPayloadOptions) {
     // hook up response handler
     const req = httpClient.request(httpOptions, (res) => {
       res.setEncoding('utf8');
-      var status = res.statusCode
-      // 422 gets special treatment because
-      // the body has error messages
-      if (status && status > 299 && status != 422) {
-        reject("  Server responded with " + res.statusCode)
-      }
-      // Print the response from the server
+      // Gather the response from the server
+      var body = ""
       res.on('data', (chunk) => {
-        resolve(chunk)
+        body += chunk
       });
+
+      res.on("end", () => {
+        if (verbose) {
+          console.log("[Sync] Response Headers: ", res.headers)
+          console.log("[Sync] Response Body: ", body)
+        }
+
+        var status = res.statusCode
+        // 422 gets special treatment because
+        // the body has error messages
+        if (status && status > 299 && status != 422) {
+          reject("  Server responded with " + res.statusCode)
+        } else {
+          resolve(body)
+        }
+      })
     });
 
     req.on('error', (e) => {

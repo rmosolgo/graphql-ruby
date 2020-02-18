@@ -40,7 +40,7 @@ import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 
 // Load PusherLink from graphql-ruby-client
-import PusherLink from 'graphql-ruby-client/subscriptions/PusherLink';
+import { PusherLink } from 'graphql-ruby-client';
 
 // Load Pusher and create a client
 import Pusher from "pusher-js"
@@ -81,6 +81,8 @@ import { ApolloLink } from 'apollo-link';
 import { ApolloClient } from 'apollo-client';
 import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
+// Load Ably subscriptions link
+import { AblyLink } from 'graphql-ruby-client'
 // Load Ably and create a client
 const Ably = require("ably")
 const ablyClient = new Ably.Realtime({ key: "your-app-key" })
@@ -127,7 +129,7 @@ import { ApolloClient } from 'apollo-client';
 import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import ActionCable from 'actioncable';
-import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink';
+import { ActionCableLink } from 'graphql-ruby-client';
 
 const cable = ActionCable.createConsumer()
 
@@ -172,7 +174,7 @@ var Pusher = require("pusher-js")
 var pusherClient = new Pusher(appKey, options)
 
 // Add subscriptions to the network interface with the `pusher:` options
-var addGraphQLSubscriptions = require("graphql-ruby-client/subscriptions/addGraphQLSubscriptions")
+import { addGraphQLSubscriptions } from "graphql-ruby-client"
 addGraphQLSubscriptions(myNetworkInterface, {pusher: pusherClient})
 
 // Optionally, add persisted query support:
@@ -205,7 +207,7 @@ var RailsNetworkInterface = apollo.createNetworkInterface({
 });
 
 // Add subscriptions to the network interface
-var addGraphQLSubscriptions = require("graphql-ruby-client/subscriptions/addGraphQLSubscriptions")
+import { addGraphQLSubscriptions } from "graphql-ruby-client"
 addGraphQLSubscriptions(RailsNetworkInterface, {cable: cable})
 
 // Optionally, add persisted query support:
