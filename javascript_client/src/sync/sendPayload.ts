@@ -75,10 +75,19 @@ function sendPayload(payload: any, options: SendPayloadOptions) {
       if (status && status > 299 && status != 422) {
         reject("  Server responded with " + res.statusCode)
       }
-      // Print the response from the server
+
+      // A string to append received chunks to
+      let str = '';
+      
+      // Append to string when a chunk comes in
       res.on('data', (chunk) => {
-        resolve(chunk)
+        str += chunk
       });
+
+      // Print the response from the server when done
+      res.on('end', () => {
+        resolve(str)
+      })
     });
 
     req.on('error', (e) => {
