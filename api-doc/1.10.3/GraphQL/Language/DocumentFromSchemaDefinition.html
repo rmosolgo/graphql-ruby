@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Language::DocumentFromSchemaDefinition
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Language::DocumentFromSchemaDefinition";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (D)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span>
+     &raquo; 
+    <span class="title">DocumentFromSchemaDefinition</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Language::DocumentFromSchemaDefinition
+  
+  
+  <span class="private note title">Private</span>
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Language::DocumentFromSchemaDefinition</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/language/document_from_schema_definition.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This class is part of a private API.</strong>
+  You should avoid using this class if possible, as it may be removed or be changed in the future.
+</p>
+<p><span class='object_link'><a href="" title="GraphQL::Language::DocumentFromSchemaDefinition (class)">DocumentFromSchemaDefinition</a></span> is used to convert a <span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span> object
+To a Document AST node.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_argument_node-instance_method" title="#build_argument_node (instance method)">#<strong>build_argument_node</strong>(argument)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_argument_nodes-instance_method" title="#build_argument_nodes (instance method)">#<strong>build_argument_nodes</strong>(arguments)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_default_value-instance_method" title="#build_default_value (instance method)">#<strong>build_default_value</strong>(default_value, type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_definition_nodes-instance_method" title="#build_definition_nodes (instance method)">#<strong>build_definition_nodes</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_directive_location_node-instance_method" title="#build_directive_location_node (instance method)">#<strong>build_directive_location_node</strong>(location)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_directive_location_nodes-instance_method" title="#build_directive_location_nodes (instance method)">#<strong>build_directive_location_nodes</strong>(locations)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_directive_node-instance_method" title="#build_directive_node (instance method)">#<strong>build_directive_node</strong>(directive)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_directive_nodes-instance_method" title="#build_directive_nodes (instance method)">#<strong>build_directive_nodes</strong>(directives)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_enum_type_node-instance_method" title="#build_enum_type_node (instance method)">#<strong>build_enum_type_node</strong>(enum_type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_enum_value_node-instance_method" title="#build_enum_value_node (instance method)">#<strong>build_enum_value_node</strong>(enum_value)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_field_node-instance_method" title="#build_field_node (instance method)">#<strong>build_field_node</strong>(field)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_field_nodes-instance_method" title="#build_field_nodes (instance method)">#<strong>build_field_nodes</strong>(fields)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_input_object_node-instance_method" title="#build_input_object_node (instance method)">#<strong>build_input_object_node</strong>(input_object)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_interface_type_node-instance_method" title="#build_interface_type_node (instance method)">#<strong>build_interface_type_node</strong>(interface_type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_object_type_node-instance_method" title="#build_object_type_node (instance method)">#<strong>build_object_type_node</strong>(object_type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_scalar_type_node-instance_method" title="#build_scalar_type_node (instance method)">#<strong>build_scalar_type_node</strong>(scalar_type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_schema_node-instance_method" title="#build_schema_node (instance method)">#<strong>build_schema_node</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_type_definition_node-instance_method" title="#build_type_definition_node (instance method)">#<strong>build_type_definition_node</strong>(type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_type_definition_nodes-instance_method" title="#build_type_definition_nodes (instance method)">#<strong>build_type_definition_nodes</strong>(types)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_type_name_node-instance_method" title="#build_type_name_node (instance method)">#<strong>build_type_name_node</strong>(type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_union_type_node-instance_method" title="#build_union_type_node (instance method)">#<strong>build_union_type_node</strong>(union_type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#document-instance_method" title="#document (instance method)">#<strong>document</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(schema, context: nil, only: nil, except: nil, include_introspection_types: false, include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false)  &#x21d2; DocumentFromSchemaDefinition </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of DocumentFromSchemaDefinition.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(schema, context: nil, only: nil, except: nil, include_introspection_types: false, include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Language::DocumentFromSchemaDefinition (class)">DocumentFromSchemaDefinition</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns a new instance of DocumentFromSchemaDefinition.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 16</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span>
+  <span class='id identifier rubyid_schema'>schema</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>only:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>except:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>include_introspection_types:</span> <span class='kw'>false</span><span class='comma'>,</span>
+  <span class='label'>include_built_in_directives:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>include_built_in_scalars:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>always_include_schema:</span> <span class='kw'>false</span>
+<span class='rparen'>)</span>
+  <span class='ivar'>@schema</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span>
+  <span class='ivar'>@always_include_schema</span> <span class='op'>=</span> <span class='id identifier rubyid_always_include_schema'>always_include_schema</span>
+  <span class='ivar'>@include_introspection_types</span> <span class='op'>=</span> <span class='id identifier rubyid_include_introspection_types'>include_introspection_types</span>
+  <span class='ivar'>@include_built_in_scalars</span> <span class='op'>=</span> <span class='id identifier rubyid_include_built_in_scalars'>include_built_in_scalars</span>
+  <span class='ivar'>@include_built_in_directives</span> <span class='op'>=</span> <span class='id identifier rubyid_include_built_in_directives'>include_built_in_directives</span>
+
+  <span class='id identifier rubyid_filter'>filter</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Filter.html" title="GraphQL::Filter (class)">Filter</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Filter.html#initialize-instance_method" title="GraphQL::Filter#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>only:</span> <span class='id identifier rubyid_only'>only</span><span class='comma'>,</span> <span class='label'>except:</span> <span class='id identifier rubyid_except'>except</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:visible?</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_filter'>filter</span> <span class='op'>=</span> <span class='id identifier rubyid_filter'>filter</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='label'>only:</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_method'>method</span><span class='lparen'>(</span><span class='symbol'>:visible?</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_schema_context'>schema_context</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_context_class'>context_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>query:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>object:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>schema:</span> <span class='id identifier rubyid_schema'>schema</span><span class='comma'>,</span> <span class='label'>values:</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='ivar'>@warden</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema/Warden.html" title="GraphQL::Schema::Warden (class)">Warden</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Schema/Warden.html#initialize-instance_method" title="GraphQL::Schema::Warden#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='id identifier rubyid_filter'>filter</span><span class='comma'>,</span>
+    <span class='label'>schema:</span> <span class='ivar'>@schema</span><span class='comma'>,</span>
+    <span class='label'>context:</span> <span class='id identifier rubyid_schema_context'>schema_context</span><span class='comma'>,</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="build_argument_node-instance_method">
+  
+    #<strong>build_argument_node</strong>(argument)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 132</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_argument_node'>build_argument_node</span><span class='lparen'>(</span><span class='id identifier rubyid_argument'>argument</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_argument'>argument</span><span class='period'>.</span><span class='id identifier rubyid_default_value?'>default_value?</span>
+    <span class='id identifier rubyid_default_value'>default_value</span> <span class='op'>=</span> <span class='id identifier rubyid_build_default_value'>build_default_value</span><span class='lparen'>(</span><span class='id identifier rubyid_argument'>argument</span><span class='period'>.</span><span class='id identifier rubyid_default_value'>default_value</span><span class='comma'>,</span> <span class='id identifier rubyid_argument'>argument</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_default_value'>default_value</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_argument_node'>argument_node</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/InputValueDefinition.html" title="GraphQL::Language::Nodes::InputValueDefinition (class)">InputValueDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_argument'>argument</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>description:</span> <span class='id identifier rubyid_argument'>argument</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span>
+    <span class='label'>type:</span> <span class='id identifier rubyid_build_type_name_node'>build_type_name_node</span><span class='lparen'>(</span><span class='id identifier rubyid_argument'>argument</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span><span class='comma'>,</span>
+    <span class='label'>default_value:</span> <span class='id identifier rubyid_default_value'>default_value</span><span class='comma'>,</span>
+  <span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_argument_node'>argument_node</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_argument_nodes-instance_method">
+  
+    #<strong>build_argument_nodes</strong>(arguments)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+239
+240
+241
+242
+243</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 239</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_argument_nodes'>build_argument_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_arguments'>arguments</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_arguments'>arguments</span>
+    <span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_arg'>arg</span><span class='op'>|</span> <span class='id identifier rubyid_build_argument_node'>build_argument_node</span><span class='lparen'>(</span><span class='id identifier rubyid_arg'>arg</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+    <span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:name</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_default_value-instance_method">
+  
+    #<strong>build_default_value</strong>(default_value, type)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 191</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_default_value'>build_default_value</span><span class='lparen'>(</span><span class='id identifier rubyid_default_value'>default_value</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_default_value'>default_value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='kw'>return</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/NullValue.html" title="GraphQL::Language::Nodes::NullValue (class)">NullValue</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>null</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>case</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SCALAR</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_coerce_isolated_result'>coerce_isolated_result</span><span class='lparen'>(</span><span class='id identifier rubyid_default_value'>default_value</span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ENUM</span><span class='tstring_end'>&quot;</span></span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/Enum.html" title="GraphQL::Language::Nodes::Enum (class)">Enum</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>name:</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_coerce_isolated_result'>coerce_isolated_result</span><span class='lparen'>(</span><span class='id identifier rubyid_default_value'>default_value</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>INPUT_OBJECT</span><span class='tstring_end'>&quot;</span></span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/InputObject.html" title="GraphQL::Language::Nodes::InputObject (class)">InputObject</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+      <span class='label'>arguments:</span> <span class='id identifier rubyid_default_value'>default_value</span><span class='period'>.</span><span class='id identifier rubyid_to_h'>to_h</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='op'>|</span>
+        <span class='id identifier rubyid_arg_type'>arg_type</span> <span class='op'>=</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span>
+        <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/Argument.html" title="GraphQL::Language::Nodes::Argument (class)">Argument</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+          <span class='label'>name:</span> <span class='id identifier rubyid_arg_name'>arg_name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='comma'>,</span>
+          <span class='label'>value:</span> <span class='id identifier rubyid_build_default_value'>build_default_value</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_type'>arg_type</span><span class='rparen'>)</span>
+        <span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>NON_NULL</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_build_default_value'>build_default_value</span><span class='lparen'>(</span><span class='id identifier rubyid_default_value'>default_value</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>LIST</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_default_value'>default_value</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_build_default_value'>build_default_value</span><span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../RequiredImplementationMissingError.html" title="GraphQL::RequiredImplementationMissingError (class)">RequiredImplementationMissingError</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unexpected default value type </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_definition_nodes-instance_method">
+  
+    #<strong>build_definition_nodes</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+255
+256
+257
+258
+259
+260
+261</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 255</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_definition_nodes'>build_definition_nodes</span>
+  <span class='id identifier rubyid_definitions'>definitions</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_definitions'>definitions</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_build_schema_node'>build_schema_node</span> <span class='kw'>if</span> <span class='id identifier rubyid_include_schema_node?'>include_schema_node?</span>
+  <span class='id identifier rubyid_definitions'>definitions</span> <span class='op'>+=</span> <span class='id identifier rubyid_build_directive_nodes'>build_directive_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_directives'>directives</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_definitions'>definitions</span> <span class='op'>+=</span> <span class='id identifier rubyid_build_type_definition_nodes'>build_type_definition_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_reachable_types'>reachable_types</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_definitions'>definitions</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_directive_location_node-instance_method">
+  
+    #<strong>build_directive_location_node</strong>(location)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+170
+171
+172
+173
+174</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 170</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_directive_location_node'>build_directive_location_node</span><span class='lparen'>(</span><span class='id identifier rubyid_location'>location</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/DirectiveLocation.html" title="GraphQL::Language::Nodes::DirectiveLocation (class)">DirectiveLocation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_location'>location</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_directive_location_nodes-instance_method">
+  
+    #<strong>build_directive_location_nodes</strong>(locations)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+166
+167
+168</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 166</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_directive_location_nodes'>build_directive_location_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_locations'>locations</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_locations'>locations</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_location'>location</span><span class='op'>|</span> <span class='id identifier rubyid_build_directive_location_node'>build_directive_location_node</span><span class='lparen'>(</span><span class='id identifier rubyid_location'>location</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_directive_node-instance_method">
+  
+    #<strong>build_directive_node</strong>(directive)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+157
+158
+159
+160
+161
+162
+163
+164</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 157</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_directive_node'>build_directive_node</span><span class='lparen'>(</span><span class='id identifier rubyid_directive'>directive</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/DirectiveDefinition.html" title="GraphQL::Language::Nodes::DirectiveDefinition (class)">DirectiveDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_directive'>directive</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>arguments:</span> <span class='id identifier rubyid_build_argument_nodes'>build_argument_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_directive'>directive</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='comma'>,</span>
+    <span class='label'>locations:</span> <span class='id identifier rubyid_build_directive_location_nodes'>build_directive_location_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_directive'>directive</span><span class='period'>.</span><span class='id identifier rubyid_locations'>locations</span><span class='rparen'>)</span><span class='comma'>,</span>
+    <span class='label'>description:</span> <span class='id identifier rubyid_directive'>directive</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_directive_nodes-instance_method">
+  
+    #<strong>build_directive_nodes</strong>(directives)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+245
+246
+247
+248
+249
+250
+251
+252
+253</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 245</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_directive_nodes'>build_directive_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_directives'>directives</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_include_built_in_directives'>include_built_in_directives</span>
+    <span class='id identifier rubyid_directives'>directives</span> <span class='op'>=</span> <span class='id identifier rubyid_directives'>directives</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_directive'>directive</span><span class='op'>|</span> <span class='id identifier rubyid_directive'>directive</span><span class='period'>.</span><span class='id identifier rubyid_default_directive?'>default_directive?</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_directives'>directives</span>
+    <span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_directive'>directive</span><span class='op'>|</span> <span class='id identifier rubyid_build_directive_node'>build_directive_node</span><span class='lparen'>(</span><span class='id identifier rubyid_directive'>directive</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+    <span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:name</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_enum_type_node-instance_method">
+  
+    #<strong>build_enum_type_node</strong>(enum_type)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+99
+100
+101
+102
+103
+104
+105
+106
+107</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 99</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_enum_type_node'>build_enum_type_node</span><span class='lparen'>(</span><span class='id identifier rubyid_enum_type'>enum_type</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/EnumTypeDefinition.html" title="GraphQL::Language::Nodes::EnumTypeDefinition (class)">EnumTypeDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_enum_type'>enum_type</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>values:</span> <span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_enum_values'>enum_values</span><span class='lparen'>(</span><span class='id identifier rubyid_enum_type'>enum_type</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:graphql_name</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_enum_value'>enum_value</span><span class='op'>|</span>
+      <span class='id identifier rubyid_build_enum_value_node'>build_enum_value_node</span><span class='lparen'>(</span><span class='id identifier rubyid_enum_value'>enum_value</span><span class='rparen'>)</span>
+    <span class='kw'>end</span><span class='comma'>,</span>
+    <span class='label'>description:</span> <span class='id identifier rubyid_enum_type'>enum_type</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_enum_value_node-instance_method">
+  
+    #<strong>build_enum_value_node</strong>(enum_value)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 109</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_enum_value_node'>build_enum_value_node</span><span class='lparen'>(</span><span class='id identifier rubyid_enum_value'>enum_value</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_enum_value_node'>enum_value_node</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/EnumValueDefinition.html" title="GraphQL::Language::Nodes::EnumValueDefinition (class)">EnumValueDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_enum_value'>enum_value</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>description:</span> <span class='id identifier rubyid_enum_value'>enum_value</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span>
+  <span class='rparen'>)</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_enum_value'>enum_value</span><span class='period'>.</span><span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span>
+    <span class='id identifier rubyid_enum_value_node'>enum_value_node</span> <span class='op'>=</span> <span class='id identifier rubyid_enum_value_node'>enum_value_node</span><span class='period'>.</span><span class='id identifier rubyid_merge_directive'>merge_directive</span><span class='lparen'>(</span>
+      <span class='label'>name:</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Directive.html" title="GraphQL::Directive (class)">Directive</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Directive.html#DeprecatedDirective-constant" title="GraphQL::Directive::DeprecatedDirective (constant)">DeprecatedDirective</a></span></span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+      <span class='label'>arguments:</span> <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/Argument.html" title="GraphQL::Language::Nodes::Argument (class)">Argument</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>reason</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>value:</span> <span class='id identifier rubyid_enum_value'>enum_value</span><span class='period'>.</span><span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span><span class='rparen'>)</span><span class='rbracket'>]</span>
+    <span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_enum_value_node'>enum_value_node</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_field_node-instance_method">
+  
+    #<strong>build_field_node</strong>(field)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_field_node'>build_field_node</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_field_node'>field_node</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/FieldDefinition.html" title="GraphQL::Language::Nodes::FieldDefinition (class)">FieldDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>arguments:</span> <span class='id identifier rubyid_build_argument_nodes'>build_argument_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='comma'>,</span>
+    <span class='label'>type:</span> <span class='id identifier rubyid_build_type_name_node'>build_type_name_node</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span><span class='comma'>,</span>
+    <span class='label'>description:</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span>
+  <span class='rparen'>)</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span>
+    <span class='id identifier rubyid_field_node'>field_node</span> <span class='op'>=</span> <span class='id identifier rubyid_field_node'>field_node</span><span class='period'>.</span><span class='id identifier rubyid_merge_directive'>merge_directive</span><span class='lparen'>(</span>
+      <span class='label'>name:</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Directive.html" title="GraphQL::Directive (class)">Directive</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Directive.html#DeprecatedDirective-constant" title="GraphQL::Directive::DeprecatedDirective (constant)">DeprecatedDirective</a></span></span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+      <span class='label'>arguments:</span> <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/Argument.html" title="GraphQL::Language::Nodes::Argument (class)">Argument</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>reason</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>value:</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span><span class='rparen'>)</span><span class='rbracket'>]</span>
+    <span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_field_node'>field_node</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_field_nodes-instance_method">
+  
+    #<strong>build_field_nodes</strong>(fields)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+277
+278
+279
+280
+281</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 277</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_field_nodes'>build_field_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_fields'>fields</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_fields'>fields</span>
+    <span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_field'>field</span><span class='op'>|</span> <span class='id identifier rubyid_build_field_node'>build_field_node</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+    <span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:name</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_input_object_node-instance_method">
+  
+    #<strong>build_input_object_node</strong>(input_object)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+149
+150
+151
+152
+153
+154
+155</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 149</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_input_object_node'>build_input_object_node</span><span class='lparen'>(</span><span class='id identifier rubyid_input_object'>input_object</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/InputObjectTypeDefinition.html" title="GraphQL::Language::Nodes::InputObjectTypeDefinition (class)">InputObjectTypeDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_input_object'>input_object</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>fields:</span> <span class='id identifier rubyid_build_argument_nodes'>build_argument_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_input_object'>input_object</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='comma'>,</span>
+    <span class='label'>description:</span> <span class='id identifier rubyid_input_object'>input_object</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_interface_type_node-instance_method">
+  
+    #<strong>build_interface_type_node</strong>(interface_type)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+91
+92
+93
+94
+95
+96
+97</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 91</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_interface_type_node'>build_interface_type_node</span><span class='lparen'>(</span><span class='id identifier rubyid_interface_type'>interface_type</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/InterfaceTypeDefinition.html" title="GraphQL::Language::Nodes::InterfaceTypeDefinition (class)">InterfaceTypeDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_interface_type'>interface_type</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>description:</span> <span class='id identifier rubyid_interface_type'>interface_type</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span>
+    <span class='label'>fields:</span> <span class='id identifier rubyid_build_field_nodes'>build_field_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='lparen'>(</span><span class='id identifier rubyid_interface_type'>interface_type</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_object_type_node-instance_method">
+  
+    #<strong>build_object_type_node</strong>(object_type)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+56
+57
+58
+59
+60
+61
+62
+63</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 56</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_object_type_node'>build_object_type_node</span><span class='lparen'>(</span><span class='id identifier rubyid_object_type'>object_type</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/ObjectTypeDefinition.html" title="GraphQL::Language::Nodes::ObjectTypeDefinition (class)">ObjectTypeDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_object_type'>object_type</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>interfaces:</span> <span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_interfaces'>interfaces</span><span class='lparen'>(</span><span class='id identifier rubyid_object_type'>object_type</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:graphql_name</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_iface'>iface</span><span class='op'>|</span> <span class='id identifier rubyid_build_type_name_node'>build_type_name_node</span><span class='lparen'>(</span><span class='id identifier rubyid_iface'>iface</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='comma'>,</span>
+    <span class='label'>fields:</span> <span class='id identifier rubyid_build_field_nodes'>build_field_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='lparen'>(</span><span class='id identifier rubyid_object_type'>object_type</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='comma'>,</span>
+    <span class='label'>description:</span> <span class='id identifier rubyid_object_type'>object_type</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_scalar_type_node-instance_method">
+  
+    #<strong>build_scalar_type_node</strong>(scalar_type)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+125
+126
+127
+128
+129
+130</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 125</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_scalar_type_node'>build_scalar_type_node</span><span class='lparen'>(</span><span class='id identifier rubyid_scalar_type'>scalar_type</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/ScalarTypeDefinition.html" title="GraphQL::Language::Nodes::ScalarTypeDefinition (class)">ScalarTypeDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_scalar_type'>scalar_type</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>description:</span> <span class='id identifier rubyid_scalar_type'>scalar_type</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_schema_node-instance_method">
+  
+    #<strong>build_schema_node</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_schema_node'>build_schema_node</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/SchemaDefinition.html" title="GraphQL::Language::Nodes::SchemaDefinition (class)">SchemaDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>query:</span> <span class='lparen'>(</span><span class='id identifier rubyid_q'>q</span> <span class='op'>=</span> <span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_root_type_for_operation'>root_type_for_operation</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>query</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_q'>q</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>mutation:</span> <span class='lparen'>(</span><span class='id identifier rubyid_m'>m</span> <span class='op'>=</span> <span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_root_type_for_operation'>root_type_for_operation</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>mutation</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_m'>m</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>subscription:</span> <span class='lparen'>(</span><span class='id identifier rubyid_s'>s</span> <span class='op'>=</span> <span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_root_type_for_operation'>root_type_for_operation</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>subscription</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='comment'># This only supports directives from parsing,
+</span>    <span class='comment'># use a custom printer to add to this list.
+</span>    <span class='label'>directives:</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_ast_node'>ast_node</span> <span class='op'>?</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_ast_node'>ast_node</span><span class='period'>.</span><span class='id identifier rubyid_directives'>directives</span> <span class='op'>:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='comma'>,</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_type_definition_node-instance_method">
+  
+    #<strong>build_type_definition_node</strong>(type)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 220</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_type_definition_node'>build_type_definition_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>OBJECT</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_build_object_type_node'>build_object_type_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UNION</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_build_union_type_node'>build_union_type_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>INTERFACE</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_build_interface_type_node'>build_interface_type_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SCALAR</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_build_scalar_type_node'>build_scalar_type_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ENUM</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_build_enum_type_node'>build_enum_type_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>INPUT_OBJECT</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_build_input_object_node'>build_input_object_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>TypeError</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_type_definition_nodes-instance_method">
+  
+    #<strong>build_type_definition_nodes</strong>(types)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 263</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_type_definition_nodes'>build_type_definition_nodes</span><span class='lparen'>(</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_include_introspection_types'>include_introspection_types</span>
+    <span class='id identifier rubyid_types'>types</span> <span class='op'>=</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_type'>type</span><span class='op'>|</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_introspection?'>introspection?</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_include_built_in_scalars'>include_built_in_scalars</span>
+    <span class='id identifier rubyid_types'>types</span> <span class='op'>=</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_type'>type</span><span class='op'>|</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_scalar?'>scalar?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_default_scalar?'>default_scalar?</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_types'>types</span>
+    <span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_type'>type</span><span class='op'>|</span> <span class='id identifier rubyid_build_type_definition_node'>build_type_definition_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+    <span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:name</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_type_name_node-instance_method">
+  
+    #<strong>build_type_name_node</strong>(type)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 176</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_type_name_node'>build_type_name_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>LIST</span><span class='tstring_end'>&quot;</span></span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/ListType.html" title="GraphQL::Language::Nodes::ListType (class)">ListType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+      <span class='label'>of_type:</span> <span class='id identifier rubyid_build_type_name_node'>build_type_name_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span><span class='rparen'>)</span>
+    <span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>NON_NULL</span><span class='tstring_end'>&quot;</span></span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/NonNullType.html" title="GraphQL::Language::Nodes::NonNullType (class)">NonNullType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+      <span class='label'>of_type:</span> <span class='id identifier rubyid_build_type_name_node'>build_type_name_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span><span class='rparen'>)</span>
+    <span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/TypeName.html" title="GraphQL::Language::Nodes::TypeName (class)">TypeName</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>name:</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_union_type_node-instance_method">
+  
+    #<strong>build_union_type_node</strong>(union_type)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+83
+84
+85
+86
+87
+88
+89</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 83</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_union_type_node'>build_union_type_node</span><span class='lparen'>(</span><span class='id identifier rubyid_union_type'>union_type</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/UnionTypeDefinition.html" title="GraphQL::Language::Nodes::UnionTypeDefinition (class)">UnionTypeDefinition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>name:</span> <span class='id identifier rubyid_union_type'>union_type</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='comma'>,</span>
+    <span class='label'>description:</span> <span class='id identifier rubyid_union_type'>union_type</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span>
+    <span class='label'>types:</span> <span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='lparen'>(</span><span class='id identifier rubyid_union_type'>union_type</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:graphql_name</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_type'>type</span><span class='op'>|</span> <span class='id identifier rubyid_build_type_name_node'>build_type_name_node</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="document-instance_method">
+  
+    #<strong>document</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+39
+40
+41
+42
+43</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/document_from_schema_definition.rb', line 39</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_document'>document</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Nodes/Document.html" title="GraphQL::Language::Nodes::Document (class)">Document</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Nodes/AbstractNode.html#initialize-instance_method" title="GraphQL::Language::Nodes::AbstractNode#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+    <span class='label'>definitions:</span> <span class='id identifier rubyid_build_definition_nodes'>build_definition_nodes</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Wed Feb 19 09:12:53 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.23 (ruby-2.7.0).
+</div>
+
+    </div>
+  </body>
+</html>
