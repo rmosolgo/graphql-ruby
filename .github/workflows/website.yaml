@@ -1,7 +1,7 @@
 name: Publish Website
 on:
-  release:
-    types: [published]
+  push:
+    branches: [master]
 
 jobs:
   build:
@@ -12,11 +12,11 @@ jobs:
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: '2.7'
-      - name: Build and test
+      - name: Install and publish
         with:
           env:
             ALGOLIA_API_KEY: {{ secrets.ALGOLIA_API_KEY }}
         run: |
           gem install bundler
           bundle install --jobs 4 --retry 3
-          bundle exec rake apidocs:gen_version[$GITHUB_REF] site:publish
+          bundle exec rake site:publish
