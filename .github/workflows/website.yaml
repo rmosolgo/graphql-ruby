@@ -30,8 +30,8 @@ jobs:
           bundle exec rake site:build_doc site:update_search_index site:clean_html site:build_html
       - name: Commit changes as last committer
         run: |
-          git config user.name "%(git log --format="%aN" -n 1)"
-          git config user.email "%(git log --format="%aE" -n 1)"
+          git config --global user.name "%(git log --format="%aN" -n 1)"
+          git config --global user.email "%(git log --format="%aE" -n 1)"
           bundle exec rake site:commit_changes
       - name: Deploy to GitHub pages via gh-pages branch
         uses: s0/git-publish-subdir-action@master
