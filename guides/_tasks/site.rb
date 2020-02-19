@@ -5,6 +5,9 @@ namespace :apidocs do
   desc "Fetch a gem version from RubyGems, build the docs"
   task :gen_version, [:version] do |t, args|
     version = args[:version] || raise("A version is required")
+    if version.start_with?("v")
+      version = version[1..-1]
+    end
     Dir.chdir("tmp") do
       if !File.exist?("graphql-#{version}.gem")
         system("gem fetch graphql --version=#{version}")

@@ -1,0 +1,19 @@
+name: Publish Website
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+      - name: Build and test
+        run: |
+          gem install bundler
+          bundle install --jobs 4 --retry 3
+          bundle exec rake apidocs:gen_version[$GITHUB_REF] site:publish
