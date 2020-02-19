@@ -8,14 +8,36 @@ jobs:
     name: Publish
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout master
+        uses: actions/checkout@v2
+      - name: Checkout GitHub pages branch
+        uses: actions/checkout@v2
+        with:
+          path: gh-pages
+          ref: gh-pages
+      - uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: '2.7'
-      - name: Install and publish
-        env:
-          ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
+      - name: Bundle install
         run: |
           gem install bundler
+          bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
-          bundle exec rake site:publish
+      - name: Build HTML, reindex
+        env:
+          ALGOLIA_API_KEY: {{ secrets.ALGOLIA_API_KEY }}
+        run: |
+          bundle exec rake site:build_doc site:update_search_index site:clean_html site:build_html site:commit_changes
+      - name: Deploy to GitHub pages via gh-pages branch
+        uses: s0/git-publish-subdir-action@master
+        env:
+          REPO: self
+          BRANCH: gh-pages
+          FOLDER: gh-pages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
