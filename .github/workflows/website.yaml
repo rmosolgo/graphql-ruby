@@ -31,7 +31,7 @@ jobs:
           bundle install --jobs 4 --retry 3
       - name: Build HTML, reindex
         env:
-          ALGOLIA_API_KEY: {{ secrets.ALGOLIA_API_KEY }}
+          ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
         run: |
           bundle exec rake site:build_doc site:update_search_index site:clean_html site:build_html site:commit_changes
       - name: Deploy to GitHub pages via gh-pages branch
