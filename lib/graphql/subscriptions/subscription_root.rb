@@ -61,6 +61,30 @@ module GraphQL
           end
         end
       end
+
+      class StandAloneExtension < Extension
+        def resolve(context:, object:, arguments:)
+          has_override_implementation = @field.resolver ||
+            object.respond_to?(@field.resolver_method)
+
+          # p [@field.path, has_override_implementation, [
+          #   @field.resolver,
+          #   @field.resolver_method, object.methods.sort - Object.methods,
+          #   object.respond_to?(@field.resolver_method),
+          # ]]
+          if !has_override_implementation
+            # p "halting"
+            if context.query.subscription_update?
+              object.object
+            else
+              context.skip
+            end
+          else
+            # p "yielding"
+            yield(object, arguments)
+          end
+        end
+      end
     end
   end
 end

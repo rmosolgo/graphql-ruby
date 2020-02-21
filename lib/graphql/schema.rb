@@ -999,6 +999,7 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{new_subscription_object.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           else
             @subscription_object = new_subscription_object
+            add_subscription_extension_if_necessary
             add_type_and_traverse(new_subscription_object, root: true)
             nil
           end
@@ -1604,6 +1605,22 @@ module GraphQL
       # @return [Boolean] True if this object should be lazily resolved
       def lazy?(obj)
         !!lazy_method_name(obj)
+      end
+
+      # @api private
+      def add_subscription_extension_if_necessary
+        if interpreter? && !defined?(@subscription_extension_added) && subscription
+          @subscription_extension_added = true
+          if subscription.singleton_class.ancestors.include?(Subscriptions::SubscriptionRoot)
+            # TODO This isn't true yet
+            warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")
+          else
+            p "Adding StandAloneExtension to #{self}"
+            subscription.fields.each do |name, field|
+              field.extension(Subscriptions::SubscriptionRoot::StandAloneExtension)
+            end
+          end
+        end
       end
 
       private

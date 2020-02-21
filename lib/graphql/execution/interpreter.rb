@@ -23,7 +23,7 @@ module GraphQL
         schema_class.query_execution_strategy(GraphQL::Execution::Interpreter)
         schema_class.mutation_execution_strategy(GraphQL::Execution::Interpreter)
         schema_class.subscription_execution_strategy(GraphQL::Execution::Interpreter)
-
+        schema_class.add_subscription_extension_if_necessary
         GraphQL::Schema::Object.include(HandlesRawValue)
       end
 
