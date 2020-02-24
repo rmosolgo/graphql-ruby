@@ -234,7 +234,7 @@ After a client has registered a subscription, the application may trigger subscr
 
 (__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
 
-Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `:no_update`.
+Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `:no_update`.
 
 ```ruby
 class Subscriptions::CommentWasAdded < Subscriptions::BaseSubscription
