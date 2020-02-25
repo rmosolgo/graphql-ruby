@@ -120,7 +120,7 @@
 
 <h2 id="validation-and-error-handling">Validation and Error Handling</h2>
 
-<p>Each query is validated and <a href="/queries/analysis">analyzed</a> independently. The <code class="highlighter-rouge">results</code> array may include a mix of successful results and failed results</p>
+<p>Each query is validated and <a href="/queries/ast_analysis">analyzed</a> independently. The <code class="highlighter-rouge">results</code> array may include a mix of successful results and failed results</p>
 
 <h2 id="multiplex-level-context">Multiplex-Level Context</h2>
 
@@ -141,13 +141,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The API is the same as <a href="/queries/analysis">query analyzers</a>, with some considerations:</p>
-
-<ul>
-  <li><code class="highlighter-rouge">initial_value</code> is called at the start of the <em>multiplex</em> (not query)</li>
-  <li><code class="highlighter-rouge">final</code> is called at the end of the <em>multiplex</em> (not query)</li>
-  <li><code class="highlighter-rouge">call(...)</code> is called for each node in <em>each</em> query, so it will visit every node in the multiplex in sequence.</li>
-</ul>
+<p>The API is the same as <a href="/queries/ast_analysis#analyzing-multiplexes">query analyzers</a>.</p>
 
 <p>Multiplex analyzers may return <a href="/api-doc/1.10.3/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>AnalysisError</code></a> to halt execution of the whole multiplex.</p>
 

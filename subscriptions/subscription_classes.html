@@ -265,7 +265,7 @@
 
 <p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
-<p>Perhaps you don’t want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push to push the new comment to <em>other</em> subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning <code class="highlighter-rouge">:no_update</code>.</p>
+<p>Perhaps you don’t want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to <em>other</em> subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning <code class="highlighter-rouge">:no_update</code>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">CommentWasAdded</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">post_id</span><span class="p">:)</span>

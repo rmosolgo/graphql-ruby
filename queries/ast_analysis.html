@@ -47,16 +47,33 @@
 
 <h1 class="guide-header">Ahead-of-Time AST Analysis</h1>
 <div class="guide-container">
-  <p>GraphQL-Ruby 1.9.0 includes a new way to do Ahead-of-Time analysis for your queries. Eventually, it will become the
-default.</p>
+  <p>You can do ahead-of-time analysis for your queries.</p>
 
-<p>The new analysis runs on query ASTs instead of the GraphQL Ruby internal representation, which means some of the things you used to get for free need to be done in analyzers instead.</p>
+<p>The primitive for analysis is <a href="/api-doc/1.10.3/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a>. Analyzers must inherit from this base class and implement the desired methods for analysis.</p>
 
-<p>The new primitive for analysis is <a href="/api-doc/1.10.3/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a>. New analyzers must inherit from this base class and implement the desired methods for analysis.</p>
+<h3 id="using-analyzers">Using Analyzers</h3>
+
+<p>Query analyzers are added to the schema the same one as before with <code class="highlighter-rouge">query_analyzer</code>. However, to use the new analysis engine, you must opt in by using <code class="highlighter-rouge">use GraphQL::Analysis::AST</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
+  <span class="n">query_analyzer</span> <span class="no">MyQueryAnalyzer</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Pass the <strong>class</strong> (and not an <em>instance</em>) of your analyzer. The analysis engine will take care of instantiating your analyzers with the query.</p>
 
 <h2 id="analyzer-api">Analyzer API</h2>
 
-<p>Analyzers respond to methods similar to AST visitors:</p>
+<p>Analyzers respond to methods similar to AST visitors. They’re named like <code class="highlighter-rouge">on_enter_#{ast_node}</code> and <code class="highlighter-rouge">on_leave_#{ast_node}</code>. Methods are called with three arguments:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">node</code>: The current AST node (being entered or left)</li>
+  <li><code class="highlighter-rouge">parent</code>: The AST node which preceeds this one in the tree</li>
+  <li><code class="highlighter-rouge">visitor</code>: A <a href="/api-doc/1.10.3/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> which is managing this analysis run</li>
+</ul>
+
+<p>For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicCounterAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">query_or_multiplex</span><span class="p">)</span>
@@ -76,15 +93,15 @@ default.</p>
   <span class="k">end</span>
 
   <span class="k">def</span> <span class="nf">result</span>
-    <span class="p">[</span><span class="vi">@fields</span><span class="p">,</span> <span class="vi">@arguments</span><span class="p">]</span>
+    <span class="c1"># Do something with the gathered result.</span>
+    <span class="no">Analytics</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="vi">@fields</span><span class="p">,</span> <span class="vi">@arguments</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <p>In this example, we counted every field and argument, no matter if they were on fragment definitions
-or if they were skipped by directives. In the old API, this used to be handled automatically because
-the internal representation of the query took care of these concerns. With the new API, we can use helper
-methods to help us achieve this:</p>
+or if they were skipped by directives. If we want to detect those contexts, we can use helper
+methods:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicFieldAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">query_or_multiplex</span><span class="p">)</span>
@@ -104,10 +121,12 @@ methods to help us achieve this:</p>
   <span class="k">end</span>
 
   <span class="k">def</span> <span class="nf">result</span>
-    <span class="vi">@fields</span>
+    <span class="no">Analytics</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="vi">@fields</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
+
+<p>See <a href="/api-doc/1.10.3/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> for more information about the <code class="highlighter-rouge">visitor</code> object.</p>
 
 <h3 id="errors">Errors</h3>
 
@@ -134,7 +153,7 @@ methods to help us achieve this:</p>
   <span class="c1"># Use the analyze? method to enable or disable a certain analyzer</span>
   <span class="c1"># at query time.</span>
   <span class="k">def</span> <span class="nf">analyze?</span>
-    <span class="o">!!</span><span class="n">query</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:should_analyze</span><span class="p">]</span>
+    <span class="o">!!</span><span class="n">subject</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:should_analyze</span><span class="p">]</span>
   <span class="k">end</span>
 
   <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
@@ -146,18 +165,6 @@ methods to help us achieve this:</p>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
-
-<h3 id="using-analyzers">Using Analyzers</h3>
-
-<p>The new query analyzers are added to the schema the same one as before with <code class="highlighter-rouge">query_analyzer</code>. However, to use the new analysis engine, you must opt in by using <code class="highlighter-rouge">use GraphQL::Analysis::AST</code>, for example:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
-  <span class="n">query_analyzer</span> <span class="no">MyQueryAnalyzer</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p><strong>Make sure you pass the class and not an instance of your analyzer. The new analysis engine will take care of instantiating your analyzers with the query</strong>.</p>
 
 <h2 id="analyzing-multiplexes">Analyzing Multiplexes</h2>
 
