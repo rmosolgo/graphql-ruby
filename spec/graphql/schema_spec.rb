@@ -367,4 +367,31 @@ describe GraphQL::Schema do
       assert_equal [], Dummy::Schema.possible_types(unknown_union)
     end
   end
+
+  describe "duplicate type names" do
+    it "raises a useful error" do
+      err = assert_raises GraphQL::Schema::DuplicateTypeNamesError do
+        module DuplicateTypeNames
+          class Thing < GraphQL::Schema::Object
+          end
+
+          class Thing2 < GraphQL::Schema::Object
+            graphql_name "Thing"
+          end
+
+          class Query < GraphQL::Schema::Object
+            field :t, Thing, null: false
+            field :t2, Thing2, null: false
+          end
+
+          class Schema < GraphQL::Schema
+            query(Query)
+          end
+        end
+      end
+
+      expected_message = "Multiple definitions for `Thing`. Previously found DuplicateTypeNames::Thing (Class), then found DuplicateTypeNames::Thing2 (Class) at Query.t2"
+      assert_equal expected_message, err.message
+    end
+  end
 end
