@@ -908,6 +908,7 @@ module GraphQL
         schema_defn.cursor_encoder = cursor_encoder
         schema_defn.tracers.concat(tracers)
         schema_defn.query_analyzers.concat(query_analyzers)
+        schema_defn.analysis_engine = analysis_engine
 
         schema_defn.middleware.concat(all_middleware)
         schema_defn.multiplex_analyzers.concat(multiplex_analyzers)
