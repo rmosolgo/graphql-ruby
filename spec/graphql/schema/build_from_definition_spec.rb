@@ -1217,5 +1217,91 @@ SCHEMA
         end
       end
     end
+
+    describe "relay behaviors" do
+      let(:schema_defn) { <<-GRAPHQL
+interface Node {
+  id: ID!
+}
+
+type Query {
+  node(id: ID!): Node
+}
+
+type Thing implements Node {
+  id: ID!
+  name: String!
+  otherThings(after: String, first: Int): ThingConnection!
+}
+
+type ThingConnection {
+  edges: [ThingEdge!]!
+}
+
+type ThingEdge {
+  cursor: String!
+  node: Thing!
+}
+      GRAPHQL
+      }
+      let(:query_string) {'
+        {
+          node(id: "taco") {
+            ... on Thing {
+              name
+              otherThings {
+                edges {
+                  node {
+                    name
+                  }
+                cursor
+                }
+              }
+            }
+          }
+        }
+      '}
+
+      it "doesn't try to add them" do
+        default_resolve = {
+          "Query" => {
+            "node" => ->(obj, args, ctx) {
+              OpenStruct.new(
+                name: "taco-thing",
+                otherThings: OpenStruct.new(
+                  edges: [
+                    OpenStruct.new(cursor: "a", node: OpenStruct.new(name: "other-thing-a")),
+                    OpenStruct.new(cursor: "b", node: OpenStruct.new(name: "other-thing-b")),
+                  ]
+                )
+              )
+            }
+          },
+          "resolve_type" => ->(type, obj, ctx) {
+            ctx.query.get_type("Thing")
+          }
+        }
+        schema = GraphQL::Schema.from_definition(schema_defn, default_resolve: default_resolve)
+        result = schema.execute(query_string)
+
+        expected_data = {
+          "node" => {
+            "name" => "taco-thing",
+            "otherThings" => {
+              "edges" => [
+                {"node" => {"name" => "other-thing-a"}, "cursor" => "a"},
+                {"node" => {"name" => "other-thing-b"}, "cursor" => "b"},
+              ]
+            }
+          }
+        }
+        assert_equal expected_data, result["data"]
+      end
+
+      it "doesn't add arguments that aren't in the IDL" do
+        schema = GraphQL::Schema.from_definition(schema_defn)
+        assert_equal schema_defn.chomp, schema.to_definition
+      end
+    end
   end
 end
