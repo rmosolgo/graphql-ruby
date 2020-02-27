@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/execution/interpreter/arguments_cache"
 require "graphql/execution/interpreter/execution_errors"
 require "graphql/execution/interpreter/hash_response"
 require "graphql/execution/interpreter/runtime"
