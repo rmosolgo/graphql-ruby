@@ -82,6 +82,12 @@ module GraphQL
     include GraphQL::Define::InstanceDefinable
     extend GraphQL::Schema::FindInheritedValue
 
+    class DuplicateTypeNamesError < GraphQL::Error
+      def initialize(type_name:, first_definition:, second_definition:, path:)
+        super("Multiple definitions for `#{type_name}`. Previously found #{first_definition.inspect} (#{first_definition.class}), then found #{second_definition.inspect} (#{second_definition.class}) at #{path.join(".")}")
+      end
+    end
+
     class UnresolvedLateBoundTypeError < GraphQL::Error
       attr_reader :type
       def initialize(type:)
@@ -1686,7 +1692,7 @@ module GraphQL
         end
         late_types = []
         new_types = Array(t)
-        new_types.each { |t| add_type(t, owner: nil, late_types: late_types) }
+        new_types.each { |t| add_type(t, owner: nil, late_types: late_types, path: [t.graphql_name]) }
         missed_late_types = 0
         while (late_type_vals = late_types.shift)
           type_owner, lt = late_type_vals
@@ -1695,13 +1701,13 @@ module GraphQL
             # Reset the counter, since we might succeed next go-round
             missed_late_types = 0
             update_type_owner(type_owner, type)
-            add_type(type, owner: type_owner, late_types: late_types)
+            add_type(type, owner: type_owner, late_types: late_types, path: [type.graphql_name])
           elsif lt.is_a?(LateBoundType)
             if (type = get_type(lt.graphql_name))
               # Reset the counter, since we might succeed next go-round
               missed_late_types = 0
               update_type_owner(type_owner, type)
-              add_type(type, owner: type_owner, late_types: late_types)
+              add_type(type, owner: type_owner, late_types: late_types, path: [type.graphql_name])
             else
               missed_late_types += 1
               # Add it back to the list, maybe we'll be able to resolve it later.
@@ -1776,7 +1782,7 @@ module GraphQL
         end
       end
 
-      def add_type(type, owner:, late_types:)
+      def add_type(type, owner:, late_types:, path:)
         if type.respond_to?(:metadata) && type.metadata.is_a?(Hash)
           type_class = type.metadata[:type_class]
           if type_class.nil?
@@ -1796,46 +1802,52 @@ module GraphQL
 
         if (prev_type = own_types[type.graphql_name])
           if prev_type != type
-            raise ArgumentError, "Conflicting type definitions for `#{type.graphql_name}`: #{prev_type} (#{prev_type.class}), #{type} #{type.class}"
+            raise DuplicateTypeNamesError.new(
+              type_name: type.graphql_name,
+              first_definition: prev_type,
+              second_definition: type,
+              path: path,
+            )
           else
             # This type was already added
           end
         elsif type.is_a?(Class) && type < GraphQL::Schema::Directive
-          type.arguments.each do |_name, arg|
+          type.arguments.each do |name, arg|
             arg_type = arg.type.unwrap
             references_to(arg_type, from: arg)
-            add_type(arg_type, owner: arg, late_types: late_types)
+            add_type(arg_type, owner: arg, late_types: late_types, path: path + [name])
           end
         else
           own_types[type.graphql_name] = type
           if type.kind.fields?
-            type.fields.each do |_name, field|
+            type.fields.each do |name, field|
               field_type = field.type.unwrap
               references_to(field_type, from: field)
-              add_type(field_type, owner: field, late_types: late_types)
-              field.arguments.each do |_name, arg|
+              field_path = path + [name]
+              add_type(field_type, owner: field, late_types: late_types, path: field_path)
+              field.arguments.each do |arg_name, arg|
                 arg_type = arg.type.unwrap
                 references_to(arg_type, from: arg)
-                add_type(arg_type, owner: arg, late_types: late_types)
+                add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg_name])
               end
             end
           end
           if type.kind.input_object?
-            type.arguments.each do |_name, arg|
+            type.arguments.each do |arg_name, arg|
               arg_type = arg.type.unwrap
               references_to(arg_type, from: arg)
-              add_type(arg_type, owner: arg, late_types: late_types)
+              add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg_name])
             end
           end
           if type.kind.union?
             own_possible_types[type.graphql_name] = type.possible_types
             type.possible_types.each do |t|
-              add_type(t, owner: type, late_types: late_types)
+              add_type(t, owner: type, late_types: late_types, path: path + ["possible_types"])
             end
           end
           if type.kind.interface?
             type.orphan_types.each do |t|
-              add_type(t, owner: type, late_types: late_types)
+              add_type(t, owner: type, late_types: late_types, path: path + ["orphan_types"])
             end
           end
           if type.kind.object?
@@ -1843,7 +1855,7 @@ module GraphQL
             type.interfaces.each do |i|
               implementers = own_possible_types[i.graphql_name] ||= []
               implementers << type
-              add_type(i, owner: type, late_types: late_types)
+              add_type(i, owner: type, late_types: late_types, path: path + ["implements"])
             end
           end
         end
