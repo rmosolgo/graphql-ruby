@@ -124,8 +124,6 @@ module GraphQL
         end
       end
 
-      @arguments_cache = ArgumentsCache.build(self)
-
       # Trying to execute a document
       # with no operations returns an empty hash
       @ast_variables = []
@@ -243,10 +241,18 @@ module GraphQL
     end
 
     # Node-level cache for calculating arguments. Used during execution and query analysis.
-    # @api private
-    # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
-    def arguments_for(irep_or_ast_node, definition)
-      @arguments_cache[irep_or_ast_node][definition]
+    # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
+    # @param definition [GraphQL::Schema::Field]
+    # @param parent_object [GraphQL::Schema::Object]
+    # @return Hash{Symbol => Object}
+    def arguments_for(ast_node, definition, parent_object: nil)
+      if interpreter?
+        @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
+        @arguments_cache.fetch(ast_node, definition, parent_object)
+      else
+        @arguments_cache ||= ArgumentsCache.build(self)
+        @arguments_cache[ast_node][definition]
+      end
     end
 
     def validation_pipeline
