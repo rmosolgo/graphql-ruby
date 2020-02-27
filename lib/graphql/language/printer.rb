@@ -93,7 +93,7 @@ module GraphQL
       end
 
       def print_input_object(input_object)
-        "{#{input_object.arguments.map { |a| "#{a.name}: #{print(a.value)}" }.join(", ")}}"
+        "{#{input_object.arguments.map { |a| print_argument(a) }.join(", ")}}"
       end
 
       def print_list_type(list_type)

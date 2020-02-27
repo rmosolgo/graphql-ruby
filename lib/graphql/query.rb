@@ -255,6 +255,15 @@ module GraphQL
       end
     end
 
+    # A version of the given query string, with:
+    # - Variables inlined to the query
+    # - Strings replaced with `<REDACTED>`
+    def sanitized_query_string
+      with_prepared_ast {
+        GraphQL::Language::SanitizedPrinter.new(self).sanitized_query_string
+      }
+    end
+
     def validation_pipeline
       with_prepared_ast { @validation_pipeline }
     end
