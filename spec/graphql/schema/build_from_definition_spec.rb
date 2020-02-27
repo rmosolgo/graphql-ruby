@@ -1220,27 +1220,28 @@ SCHEMA
 
     describe "relay behaviors" do
       let(:schema_defn) { <<-GRAPHQL
-      type Query {
-        node(id: ID!): Node
-      }
+interface Node {
+  id: ID!
+}
 
-      interface Node {
-        id: ID!
-      }
+type Query {
+  node(id: ID!): Node
+}
 
-      type Thing implements Node {
-        name: String!
-        otherThings(first: Int, after: String, last: Int, before: String): ThingConnection!
-      }
+type Thing implements Node {
+  id: ID!
+  name: String!
+  otherThings(after: String, first: Int): ThingConnection!
+}
 
-      type ThingConnection {
-        edges: [ThingEdge!]!
-      }
+type ThingConnection {
+  edges: [ThingEdge!]!
+}
 
-      type ThingEdge {
-        node: Thing!
-        cursor: String!
-      }
+type ThingEdge {
+  cursor: String!
+  node: Thing!
+}
       GRAPHQL
       }
       let(:query_string) {'
@@ -1295,6 +1296,11 @@ SCHEMA
           }
         }
         assert_equal expected_data, result["data"]
+      end
+
+      it "doesn't add arguments that aren't in the IDL" do
+        schema = GraphQL::Schema.from_definition(schema_defn)
+        assert_equal schema_defn.chomp, schema.to_definition
       end
     end
   end
