@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.10.3/GraphQL/Language/SanitizedPrinter" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Language::SanitizedPrinter &lt; GraphQL::Language::Printer
+A custom printer used to print sanitized queries. It inlines
+provided variables within the query for facilitate logging and
+analysis of queries. 
+The printer returns <code class="highlighter-rouge">nil</code> if the query is invalid. 
+Since the GraphQL Ruby AST for a GraphQL query doesnt contain any
+reference on the type of fields or arguments, we have to track the
+current object, field and input type while printing the query. 
+Examples:</p>
+<h1 id="printing-a-scrubbed-string">Printing a scrubbed string</h1>
+<p>printer = QueryPrinter.new(query)
+puts printer.sanitized_query_string
+See Also:</p>
+<ul>
+  <li>{Query#sanitized_query_string}
+Instance methods:
+initialize, print_argument, print_directive, print_field,
+print_fragment_definition, print_inline_fragment, print_list_type,
+print_node, print_operation_definition, print_variable_identifier,
+sanitized_query_string, value_to_ast</li>
+</ul>
+
+
+  </body>
+</html>
