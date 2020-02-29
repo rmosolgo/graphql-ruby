@@ -39,12 +39,12 @@ module GraphQL
       def resolve(**args)
         # Dispatch based on `@mode`, which will raise a `NoMethodError` if we ever
         # have an unexpected `@mode`
-        public_send("resolve_#{@mode}", args)
+        public_send("resolve_#{@mode}", **args)
       end
 
       # Wrap the user-defined `#subscribe` hook
-      def resolve_subscribe(args)
-        ret_val = args.any? ? subscribe(args) : subscribe
+      def resolve_subscribe(**args)
+        ret_val = args.any? ? subscribe(**args) : subscribe
         if ret_val == :no_response
           context.skip
         else
@@ -62,8 +62,8 @@ module GraphQL
       end
 
       # Wrap the user-provided `#update` hook
-      def resolve_update(args)
-        ret_val = args.any? ? update(args) : update
+      def resolve_update(**args)
+        ret_val = args.any? ? update(**args) : update
         if ret_val == :no_update
           raise NoUpdateError
         else

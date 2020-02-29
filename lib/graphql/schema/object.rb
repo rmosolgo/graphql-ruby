@@ -59,13 +59,9 @@ module GraphQL
                 else
                   nil
                 end
-              # rescue GraphQL::ExecutionError => err
-              #   err
               end
             end
           end
-        # rescue GraphQL::ExecutionError => err
-        #   err
         end
       end
 
@@ -76,20 +72,34 @@ module GraphQL
 
       class << self
         def implements(*new_interfaces, **options)
+          new_memberships = []
           new_interfaces.each do |int|
             if int.is_a?(Module)
               unless int.include?(GraphQL::Schema::Interface)
                 raise "#{int} cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
               end
 
-              interface_type_memberships << int.type_membership_class.new(int, self, options)
+              new_memberships << int.type_membership_class.new(int, self, options)
 
               # Include the methods here,
               # `.fields` will use the inheritance chain
               # to find inherited fields
               include(int)
+            elsif int.is_a?(String)
+              new_memberships << int
             end
-          end 
+          end
+
+          # Remove any interfaces which are being replaced (late-bound types are updated in place this way)
+          interface_type_memberships.reject! { |existing_i_m|
+            new_memberships.any? { |new_i_m|
+              new_name = new_i_m.is_a?(String) ? new_i_m : new_i_m.abstract_type.graphql_name
+              old_name = existing_i_m.is_a?(String) ? existing_i_m : existing_i_m.abstract_type.graphql_name
+              new_name == old_name
+            }
+          }
+
+          interface_type_memberships.concat(new_memberships)
         end
 
         def interface_type_memberships
@@ -102,7 +112,7 @@ module GraphQL
             visible_interfaces << type_membership.abstract_type if type_membership.visible?(context)
           end
           visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context: context) : [])
-        end 
+        end
 
         # Include legacy-style interfaces, too
         def fields
@@ -127,6 +137,7 @@ module GraphQL
           obj_type.interface_type_memberships = interface_type_memberships
           obj_type.introspection = introspection
           obj_type.mutation = mutation
+          obj_type.ast_node = ast_node
           fields.each do |field_name, field_inst|
             field_defn = field_inst.to_graphql
             obj_type.fields[field_defn.name] = field_defn

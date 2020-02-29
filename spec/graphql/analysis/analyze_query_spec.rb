@@ -45,7 +45,7 @@ describe GraphQL::Analysis do
     let(:analyzers) { [type_collector, node_counter] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:variables) { {} }
-    let(:query) { GraphQL::Query.new(schema, query_string, variables: variables) }
+    let(:query) { GraphQL::Query.new(schema.graphql_definition, query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -60,7 +60,7 @@ describe GraphQL::Analysis do
       let(:analyzers) { [type_collector, conditional_analyzer] }
 
       describe "when analyze? returns false" do
-        let(:query) { GraphQL::Query.new(schema, query_string, variables: variables, context: { analyze: false }) }
+        let(:query) { GraphQL::Query.new(schema.graphql_definition, query_string, variables: variables, context: { analyze: false }) }
 
         it "does not run the analyzer" do
           # Only type_collector ran
@@ -69,7 +69,7 @@ describe GraphQL::Analysis do
       end
 
       describe "when analyze? returns true" do
-        let(:query) { GraphQL::Query.new(schema, query_string, variables: variables, context: { analyze: true }) }
+        let(:query) { GraphQL::Query.new(schema.graphql_definition, query_string, variables: variables, context: { analyze: true }) }
 
         it "it runs the analyzer" do
           # Both analyzers ran
@@ -126,7 +126,7 @@ describe GraphQL::Analysis do
 
       it "returns an error" do
         error = query.result["errors"].first
-        assert_equal "Variable cheeseId of type Int! was provided invalid value", error["message"]
+        assert_equal "Variable $cheeseId of type Int! was provided invalid value", error["message"]
       end
     end
 
@@ -150,7 +150,7 @@ describe GraphQL::Analysis do
       }
       let(:analyzers) { [connection_counter] }
       let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
-      let(:query) { GraphQL::Query.new(StarWars::Schema, query_string, variables: variables) }
+      let(:query) { GraphQL::Query.new(StarWars::Schema.graphql_definition, query_string, variables: variables) }
       let(:query_string) {%|
         query getBases {
           empire {
@@ -221,7 +221,7 @@ describe GraphQL::Analysis do
       schema = Class.new(Dummy::Schema)
       schema.query_analyzer(id_catcher)
       schema.query_analyzer(flavor_catcher)
-      schema
+      schema.graphql_definition
     end
     let(:result) { schema.execute(query_string) }
     let(:query_string) {%|

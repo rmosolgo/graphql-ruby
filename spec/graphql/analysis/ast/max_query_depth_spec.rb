@@ -29,7 +29,7 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
     # Don't override `schema.max_depth` with `nil`
     options = max_depth ? { max_depth: max_depth } : {}
     GraphQL::Query.new(
-      schema.graphql_definition,
+      schema,
       query_string,
       variables: {},
       **options

@@ -78,12 +78,18 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil, warden: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
+
+      # Use the `.graphql_definition` here which will return legacy types instead of classes
+      if schema.is_a?(Class) && !schema.interpreter?
+        schema = schema.graphql_definition
+      end
       @schema = schema
       @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
+      @warden = warden
       @subscription_topic = subscription_topic
       @root_value = root_value
       @fragments = nil
@@ -117,8 +123,6 @@ module GraphQL
           h2[k2] = @schema.resolve_type(k1, k2, @context)
         end
       end
-
-      @arguments_cache = ArgumentsCache.build(self)
 
       # Trying to execute a document
       # with no operations returns an empty hash
@@ -156,7 +160,7 @@ module GraphQL
       @lookahead ||= begin
         ast_node = selected_operation
         root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
-        root_type = root_type.metadata[:type_class] || raise("Invariant: `lookahead` only works with class-based types")
+        root_type = root_type.type_class || raise("Invariant: `lookahead` only works with class-based types")
         GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
       end
     end
@@ -237,10 +241,28 @@ module GraphQL
     end
 
     # Node-level cache for calculating arguments. Used during execution and query analysis.
-    # @api private
-    # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
-    def arguments_for(irep_or_ast_node, definition)
-      @arguments_cache[irep_or_ast_node][definition]
+    # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
+    # @param definition [GraphQL::Schema::Field]
+    # @param parent_object [GraphQL::Schema::Object]
+    # @return Hash{Symbol => Object}
+    def arguments_for(ast_node, definition, parent_object: nil)
+      if interpreter?
+        @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
+        @arguments_cache.fetch(ast_node, definition, parent_object)
+      else
+        @arguments_cache ||= ArgumentsCache.build(self)
+        @arguments_cache[ast_node][definition]
+      end
+    end
+
+    # A version of the given query string, with:
+    # - Variables inlined to the query
+    # - Strings replaced with `<REDACTED>`
+    # @return [String, nil] Returns nil if the query is invalid.
+    def sanitized_query_string
+      with_prepared_ast {
+        GraphQL::Language::SanitizedPrinter.new(self).sanitized_query_string
+      }
     end
 
     def validation_pipeline
@@ -320,8 +342,7 @@ module GraphQL
 
     def prepare_ast
       @prepared_ast = true
-      @warden = GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
-
+      @warden ||= GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
         if query_string

@@ -14,6 +14,7 @@ vendor/
 _site
 .sass-cache
 .jekyll-metadata
+.jekyll-cache
 gh-pages/
 tmp/*
 __*.db
@@ -24,3 +25,4 @@ spec/integration/tmp
 .vscode/
 *.swp
 *.swo
+javascript_client/dist/

@@ -5,6 +5,9 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
       extend Forwardable
       extend GraphQL::Schema::Member::HasArguments
+      extend GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader
+      extend GraphQL::Schema::Member::ValidatesInput
+
       include GraphQL::Dig
 
       def initialize(values = nil, ruby_kwargs: nil, context:, defaults_used:)
@@ -21,19 +24,25 @@ module GraphQL
         self.class.arguments.each do |name, arg_defn|
           @arguments_by_keyword[arg_defn.keyword] = arg_defn
           ruby_kwargs_key = arg_defn.keyword
-          loads = arg_defn.loads
 
-          if @ruby_style_hash.key?(ruby_kwargs_key) && loads && !arg_defn.from_resolver?
-            value = @ruby_style_hash[ruby_kwargs_key]
-            @ruby_style_hash[ruby_kwargs_key] = if arg_defn.type.list?
-              GraphQL::Execution::Lazy.all(value.map { |val| load_application_object(arg_defn, loads, val) })
-            else
-              load_application_object(arg_defn, loads, value)
+          if @ruby_style_hash.key?(ruby_kwargs_key)
+            loads = arg_defn.loads
+            # Resolvers do this loading themselves;
+            # With the interpreter, it's done during `coerce_arguments`
+            if loads && !arg_defn.from_resolver? && !context.interpreter?
+              value = @ruby_style_hash[ruby_kwargs_key]
+              @ruby_style_hash[ruby_kwargs_key] = if arg_defn.type.list?
+                value.map { |val| load_application_object(arg_defn, loads, val, context) }
+              else
+                load_application_object(arg_defn, loads, value, context)
+              end
             end
-          end
 
-          if @ruby_style_hash.key?(ruby_kwargs_key) && arg_defn.prepare
-            @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
+            # Weirdly, procs are applied during coercion, but not methods.
+            # Probably because these methods require a `self`.
+            if arg_defn.prepare.is_a?(Symbol) || context.nil? || !context.interpreter?
+              @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
+            end
           end
         end
       end
@@ -90,7 +99,7 @@ module GraphQL
       end
 
       def key?(key)
-        @ruby_style_hash.key?(key) || (@arguments && @arguments.key?(key))
+        @ruby_style_hash.key?(key) || (@arguments && @arguments.key?(key)) || false
       end
 
       # A copy of the Ruby-style hash
@@ -117,6 +126,7 @@ module GraphQL
           type_defn.description = description
           type_defn.metadata[:type_class] = self
           type_defn.mutation = mutation
+          type_defn.ast_node = ast_node
           arguments.each do |name, arg|
             type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition
           end
@@ -129,6 +139,89 @@ module GraphQL
 
         def kind
           GraphQL::TypeKinds::INPUT_OBJECT
+        end
+
+        # @api private
+        INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object responding to `to_h` or `to_unsafe_h`."
+
+
+        def validate_non_null_input(input, ctx)
+          result = GraphQL::Query::InputValidationResult.new
+
+          warden = ctx.warden
+
+          if input.is_a?(Array)
+            result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+            return result
+          end
+
+          # We're not actually _using_ the coerced result, we're just
+          # using these methods to make sure that the object will
+          # behave like a hash below, when we call `each` on it.
+          begin
+            input.to_h
+          rescue
+            begin
+              # Handle ActionController::Parameters:
+              input.to_unsafe_h
+            rescue
+              # We're not sure it'll act like a hash, so reject it:
+              result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+              return result
+            end
+          end
+
+          visible_arguments_map = warden.arguments(self).reduce({}) { |m, f| m[f.name] = f; m}
+
+          # Items in the input that are unexpected
+          input.each do |name, value|
+            if visible_arguments_map[name].nil?
+              result.add_problem("Field is not defined on #{self.graphql_name}", [name])
+            end
+          end
+
+          # Items in the input that are expected, but have invalid values
+          visible_arguments_map.map do |name, argument|
+            argument_result = argument.type.validate_input(input[name], ctx)
+            if !argument_result.valid?
+              result.merge_result!(name, argument_result)
+            end
+          end
+
+          result
+        end
+
+        def coerce_input(value, ctx)
+          if value.nil?
+            return nil
+          end
+
+          input_values = coerce_arguments(nil, value, ctx)
+
+          input_obj_instance = self.new(ruby_kwargs: input_values, context: ctx, defaults_used: nil)
+          input_obj_instance.prepare
+        end
+
+        # It's funny to think of a _result_ of an input object.
+        # This is used for rendering the default value in introspection responses.
+        def coerce_result(value, ctx)
+          # Allow the application to provide values as :symbols, and convert them to the strings
+          value = value.reduce({}) { |memo, (k, v)| memo[k.to_s] = v; memo }
+
+          result = {}
+
+          arguments.each do |input_key, input_field_defn|
+            input_value = value[input_key]
+            if value.key?(input_key)
+              result[input_key] = if input_value.nil?
+                nil
+              else
+                input_field_defn.type.coerce_result(input_value, ctx)
+              end
+            end
+          end
+
+          result
         end
       end
     end

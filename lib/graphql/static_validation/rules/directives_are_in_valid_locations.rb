@@ -56,7 +56,7 @@ module GraphQL
             "'@#{directive_defn.graphql_name}' can't be applied to #{location_name} (allowed: #{allowed_location_names.join(", ")})",
             nodes: directive_ast,
             target: location_name,
-            name: directive_defn.name
+            name: directive_defn.graphql_name
           ))
         end
       end

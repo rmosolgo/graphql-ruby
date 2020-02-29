@@ -106,7 +106,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
               origin
             }
 
-            # 1 for honey
+            # 1 for honey, aspartame
             ... on Sweetener {
               sweetness
             }
@@ -164,7 +164,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
             # 1 for everybody
             ... on Edible { origin }
 
-            # 1 for honey
+            # 1 for honey, aspartame
             ... on Sweetener { sweetness }
           }
         }
@@ -200,6 +200,25 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       it "only counts them once" do
         complexity = reduce_result.first
         assert_equal 3, complexity
+      end
+    end
+
+    describe "redundant fields not within a fragment" do
+      let(:query_string) {%|
+      {
+        cheese {
+          id
+        }
+
+        cheese {
+          id
+        }
+      }
+      |}
+
+      it "only counts them once" do
+        complexity = reduce_result.first
+        assert_equal 2, complexity
       end
     end
   end

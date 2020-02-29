@@ -19,6 +19,7 @@ describe GraphQL::Schema::Argument do
         end
 
         argument :keys, [String], required: false, method_access: false
+        argument :instrument_id, ID, required: false, loads: Jazz::InstrumentType
 
         class Multiply
           def call(val, context)
@@ -46,13 +47,20 @@ describe GraphQL::Schema::Argument do
       query(Query)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
       end
+
+      def self.object_from_id(id, ctx)
+        Jazz::GloballyIdentifiableType.find(id)
+      end
+
+      orphan_types [Jazz::InstrumentType]
     end
   end
 
   describe "#keys" do
     it "is not overwritten by the 'keys' argument" do
-      expected_keys = ["aliasedArg", "arg", "argWithBlock", "explodingPreparedArg", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
+      expected_keys = ["aliasedArg", "arg", "argWithBlock", "explodingPreparedArg", "instrumentId", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
       assert_equal expected_keys, SchemaArgumentTest::Query.fields["field"].arguments.keys.sort
     end
   end
@@ -157,7 +165,7 @@ describe GraphQL::Schema::Argument do
   describe "default_value:" do
     it 'uses default_value: with no input' do
       query_str = <<-GRAPHQL
-      { field() }
+      { field }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
@@ -179,8 +187,18 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
-      assert_equal "Argument 'requiredWithDefaultArg' on Field 'field' has an invalid value. Expected type 'Int!'.", res['errors'][0]['message']
+      assert_equal "Argument 'requiredWithDefaultArg' on Field 'field' has an invalid value (null). Expected type 'Int!'.", res['errors'][0]['message']
     end
+  end
 
+  describe 'loads' do
+    it "loads input object arguments" do
+      query_str = <<-GRAPHQL
+      query { field(instrumentId: "Instrument/Drum Kit") }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str)
+      assert_equal "{:instrument=>#{Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION").inspect}, :required_with_default_arg=>1}", res["data"]["field"]
+    end
   end
 end

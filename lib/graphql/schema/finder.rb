@@ -38,7 +38,7 @@ module GraphQL
 
           find_in_directive(directive, path: path)
         else
-          type = schema.types[type_or_directive]
+          type = schema.get_type(type_or_directive)
 
           if type.nil?
             raise MemberNotFoundError, "Could not find type `#{type_or_directive}` in schema."
@@ -66,22 +66,24 @@ module GraphQL
       end
 
       def find_in_type(type, path:)
-        case type
-        when GraphQL::ObjectType
+        case type.kind.name
+        when "OBJECT"
           find_in_fields_type(type, kind: "object", path: path)
-        when GraphQL::InterfaceType
+        when "INTERFACE"
           find_in_fields_type(type, kind: "interface", path: path)
-        when GraphQL::InputObjectType
+        when "INPUT_OBJECT"
           find_in_input_object(type, path: path)
-        when GraphQL::UnionType
+        when "UNION"
           # Error out if path that was provided is too long
           # i.e UnionType.PossibleType.aField
           # Use PossibleType.aField instead.
           if invalid = path.first
             raise MemberNotFoundError, "Cannot select union possible type `#{invalid}`. Select the type directly instead."
           end
-        when GraphQL::EnumType
+        when "ENUM"
           find_in_enum_type(type, path: path)
+        else
+          raise "Unexpected find_in_type: #{type.inspect} (#{path})"
         end
       end
 
@@ -90,7 +92,7 @@ module GraphQL
         field = schema.get_field(type, field_name)
 
         if field.nil?
-          raise MemberNotFoundError, "Could not find field `#{field_name}` on #{kind} type `#{type}`."
+          raise MemberNotFoundError, "Could not find field `#{field_name}` on #{kind} type `#{type.graphql_name}`."
         end
 
         return field if path.empty?
@@ -117,10 +119,10 @@ module GraphQL
 
       def find_in_input_object(input_object, path:)
         field_name = path.shift
-        input_field = input_object.input_fields[field_name]
+        input_field = input_object.arguments[field_name]
 
         if input_field.nil?
-          raise MemberNotFoundError, "Could not find input field `#{field_name}` on input object type `#{input_object}`."
+          raise MemberNotFoundError, "Could not find input field `#{field_name}` on input object type `#{input_object.graphql_name}`."
         end
 
         # Error out if path that was provided is too long
@@ -137,7 +139,7 @@ module GraphQL
         enum_value = enum_type.values[value_name]
 
         if enum_value.nil?
-          raise MemberNotFoundError, "Could not find enum value `#{value_name}` on enum type `#{enum_type}`."
+          raise MemberNotFoundError, "Could not find enum value `#{value_name}` on enum type `#{enum_type.graphql_name}`."
         end
 
         # Error out if path that was provided is too long

@@ -2,10 +2,10 @@ class GraphQL::Language::Parser
 rule
   target: document
 
-  document: definitions_list { return make_node(:Document, definitions: val[0])}
+  document: definitions_list { result = make_node(:Document, definitions: val[0])}
 
   definitions_list:
-      definition                    { return [val[0]]}
+      definition                    { result = [val[0]]}
     | definitions_list definition   { val[0] << val[1] }
 
   definition:
@@ -19,7 +19,7 @@ rule
 
   operation_definition:
       operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set {
-        return  make_node(
+        result = make_node(
           :OperationDefinition, {
             operation_type: val[0],
             name:           val[1],
@@ -31,7 +31,7 @@ rule
         )
       }
     | LCURLY selection_list RCURLY {
-        return make_node(
+        result = make_node(
           :OperationDefinition, {
             operation_type: "query",
             selections: val[1],
@@ -40,7 +40,7 @@ rule
         )
       }
     | LCURLY RCURLY {
-        return make_node(
+        result = make_node(
           :OperationDefinition, {
             operation_type: "query",
             selections: [],
@@ -55,20 +55,20 @@ rule
     | SUBSCRIPTION
 
   operation_name_opt:
-      /* none */ { return nil }
+      /* none */ { result = nil }
     | name
 
   variable_definitions_opt:
-      /* none */                              { return EMPTY_ARRAY }
-    | LPAREN variable_definitions_list RPAREN { return val[1] }
+      /* none */                              { result = EMPTY_ARRAY }
+    | LPAREN variable_definitions_list RPAREN { result = val[1] }
 
   variable_definitions_list:
-      variable_definition                           { return [val[0]] }
+      variable_definition                           { result = [val[0]] }
     | variable_definitions_list variable_definition { val[0] << val[1] }
 
   variable_definition:
       VAR_SIGN name COLON type default_value_opt {
-        return make_node(:VariableDefinition, {
+        result = make_node(:VariableDefinition, {
           name: val[1],
           type: val[3],
           default_value: val[4],
@@ -77,23 +77,26 @@ rule
       }
 
   type:
-      name                   { return make_node(:TypeName, name: val[0])}
-    | type BANG              { return make_node(:NonNullType, of_type: val[0]) }
-    | LBRACKET type RBRACKET { return make_node(:ListType, of_type: val[1]) }
+      nullable_type           { result = val[0] }
+    | nullable_type BANG      { result = make_node(:NonNullType, of_type: val[0]) }
+
+  nullable_type:
+      name                   { result = make_node(:TypeName, name: val[0])}
+    | LBRACKET type RBRACKET { result = make_node(:ListType, of_type: val[1]) }
 
   default_value_opt:
-      /* none */            { return nil }
-    | EQUALS literal_value  { return val[1] }
+      /* none */            { result = nil }
+    | EQUALS literal_value  { result = val[1] }
 
   selection_set:
-      LCURLY selection_list RCURLY { return val[1] }
+      LCURLY selection_list RCURLY { result = val[1] }
 
   selection_set_opt:
-      /* none */    { return EMPTY_ARRAY }
-    | selection_set { return val[0] }
+      /* none */    { result = EMPTY_ARRAY }
+    | selection_set { result = val[0] }
 
   selection_list:
-      selection                 { return [result] }
+      selection                 { result = [result] }
     | selection_list selection  { val[0] << val[1] }
 
   selection:
@@ -103,7 +106,7 @@ rule
 
   field:
       name arguments_opt directives_list_opt selection_set_opt {
-            return make_node(
+            result = make_node(
               :Field, {
                 name:         val[0],
                 arguments:    val[1],
@@ -114,7 +117,7 @@ rule
             )
           }
     | name COLON name arguments_opt directives_list_opt selection_set_opt {
-            return make_node(
+            result = make_node(
               :Field, {
                 alias:        val[0],
                 name:         val[2],
@@ -157,92 +160,91 @@ rule
     | schema_keyword
 
   enum_value_definition:
-    description_opt enum_name directives_list_opt { return make_node(:EnumValueDefinition, name: val[1], directives: val[2], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1]) }
+    description_opt enum_name directives_list_opt { result = make_node(:EnumValueDefinition, name: val[1], directives: val[2], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1]) }
 
   enum_value_definitions:
-      enum_value_definition                        { return [val[0]] }
-    | enum_value_definitions enum_value_definition { return val[0] << val[1] }
+      enum_value_definition                        { result = [val[0]] }
+    | enum_value_definitions enum_value_definition { result = val[0] << val[1] }
 
   arguments_opt:
-      /* none */                    { return EMPTY_ARRAY }
-    | LPAREN RPAREN                 { return EMPTY_ARRAY }
-    | LPAREN arguments_list RPAREN  { return val[1] }
+      /* none */                    { result = EMPTY_ARRAY }
+    | LPAREN arguments_list RPAREN  { result = val[1] }
 
   arguments_list:
-      argument                { return [val[0]] }
+      argument                { result = [val[0]] }
     | arguments_list argument { val[0] << val[1] }
 
   argument:
-      name COLON input_value { return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
+      name COLON input_value { result = make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
 
   literal_value:
-      FLOAT       { return val[0].to_f }
-    | INT         { return val[0].to_i }
-    | STRING      { return val[0].to_s }
-    | TRUE        { return true }
-    | FALSE       { return false }
+      FLOAT       { result = val[0].to_f }
+    | INT         { result = val[0].to_i }
+    | STRING      { result = val[0].to_s }
+    | TRUE        { result = true }
+    | FALSE       { result = false }
     | null_value
     | enum_value
     | list_value
     | object_literal_value
 
   input_value:
-    | literal_value
+    literal_value
     | variable
     | object_value
 
-  null_value: NULL { return make_node(:NullValue, name: val[0], position_source: val[0]) }
-  variable: VAR_SIGN name { return make_node(:VariableIdentifier, name: val[1], position_source: val[0]) }
+  null_value: NULL { result = make_node(:NullValue, name: val[0], position_source: val[0]) }
+  variable: VAR_SIGN name { result = make_node(:VariableIdentifier, name: val[1], position_source: val[0]) }
 
   list_value:
-      LBRACKET RBRACKET                 { return EMPTY_ARRAY }
-    | LBRACKET list_value_list RBRACKET { return val[1] }
+      LBRACKET RBRACKET                 { result = EMPTY_ARRAY }
+    | LBRACKET list_value_list RBRACKET { result = val[1] }
 
   list_value_list:
-      input_value                 { return [val[0]] }
+      input_value                 { result = [val[0]] }
     | list_value_list input_value { val[0] << val[1] }
 
   object_value:
-      LCURLY RCURLY                   { return make_node(:InputObject, arguments: [], position_source: val[0])}
-    | LCURLY object_value_list RCURLY { return make_node(:InputObject, arguments: val[1], position_source: val[0])}
+      LCURLY RCURLY                   { result = make_node(:InputObject, arguments: [], position_source: val[0])}
+    | LCURLY object_value_list RCURLY { result = make_node(:InputObject, arguments: val[1], position_source: val[0])}
 
   object_value_list:
-      object_value_field                    { return [val[0]] }
+      object_value_field                    { result = [val[0]] }
     | object_value_list object_value_field  { val[0] << val[1] }
 
   object_value_field:
-      name COLON input_value { return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
+      name COLON input_value { result = make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
 
   /* like the previous, but with literals only: */
   object_literal_value:
-      LCURLY RCURLY                           { return make_node(:InputObject, arguments: [], position_source: val[0])}
-    | LCURLY object_literal_value_list RCURLY { return make_node(:InputObject, arguments: val[1], position_source: val[0])}
+      LCURLY RCURLY                           { result = make_node(:InputObject, arguments: [], position_source: val[0])}
+    | LCURLY object_literal_value_list RCURLY { result = make_node(:InputObject, arguments: val[1], position_source: val[0])}
 
   object_literal_value_list:
-      object_literal_value_field                            { return [val[0]] }
+      object_literal_value_field                            { result = [val[0]] }
     | object_literal_value_list object_literal_value_field  { val[0] << val[1] }
 
   object_literal_value_field:
-      name COLON literal_value { return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
+      name COLON literal_value { result = make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
 
-  enum_value: enum_name { return make_node(:Enum, name: val[0], position_source: val[0]) }
+  enum_value: enum_name { result = make_node(:Enum, name: val[0], position_source: val[0]) }
 
   directives_list_opt:
-      /* none */      { return  EMPTY_ARRAY }
+      /* none */      { result = EMPTY_ARRAY }
     | directives_list
 
   directives_list:
-      directive                 { return [val[0]] }
+      directive                 { result = [val[0]] }
     | directives_list directive { val[0] << val[1] }
 
-  directive: DIR_SIGN name arguments_opt { return make_node(:Directive, name: val[1], arguments: val[2], position_source: val[0]) }
+  directive: DIR_SIGN name arguments_opt { result = make_node(:Directive, name: val[1], arguments: val[2], position_source: val[0]) }
 
   fragment_spread:
-      ELLIPSIS name_without_on directives_list_opt { return make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) }
+      ELLIPSIS name_without_on directives_list_opt { result = make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) }
 
   inline_fragment:
       ELLIPSIS ON type directives_list_opt selection_set {
-        return make_node(:InlineFragment, {
+        result = make_node(:InlineFragment, {
           type: val[2],
           directives: val[3],
           selections: val[4],
@@ -250,7 +252,7 @@ rule
         })
       }
     | ELLIPSIS directives_list_opt selection_set {
-        return make_node(:InlineFragment, {
+        result = make_node(:InlineFragment, {
           type: nil,
           directives: val[1],
           selections: val[2],
@@ -260,7 +262,7 @@ rule
 
   fragment_definition:
     FRAGMENT fragment_name_opt ON type directives_list_opt selection_set {
-      return make_node(:FragmentDefinition, {
+      result = make_node(:FragmentDefinition, {
           name:       val[1],
           type:       val[3],
           directives: val[4],
@@ -271,7 +273,7 @@ rule
     }
 
   fragment_name_opt:
-      /* none */ { return nil }
+      /* none */ { result = nil }
     | name_without_on
 
   type_system_definition:
@@ -280,14 +282,14 @@ rule
    | directive_definition
 
   schema_definition:
-      SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0].line, directives: val[1], **val[3]) }
+      SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { result = make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0].line, directives: val[1], **val[3]) }
 
   operation_type_definition_list:
       operation_type_definition
-    | operation_type_definition_list operation_type_definition { return val[0].merge(val[1]) }
+    | operation_type_definition_list operation_type_definition { result = val[0].merge(val[1]) }
 
   operation_type_definition:
-      operation_type COLON name { return { val[0].to_s.to_sym => val[2] } }
+      operation_type COLON name { result = { val[0].to_s.to_sym => val[2] } }
 
   type_definition:
       scalar_type_definition
@@ -302,8 +304,8 @@ rule
     | type_extension
 
   schema_extension:
-      EXTEND SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaExtension, position_source: val[0], directives: val[2], **val[4]) }
-    | EXTEND SCHEMA directives_list { return make_node(:SchemaExtension, position_source: val[0], directives: val[2]) }
+      EXTEND SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { result = make_node(:SchemaExtension, position_source: val[0], directives: val[2], **val[4]) }
+    | EXTEND SCHEMA directives_list { result = make_node(:SchemaExtension, position_source: val[0], directives: val[2]) }
 
   type_extension:
       scalar_type_extension
@@ -313,30 +315,30 @@ rule
     | enum_type_extension
     | input_object_type_extension
 
-  scalar_type_extension: EXTEND SCALAR name directives_list { return make_node(:ScalarTypeExtension, name: val[2], directives: val[3], position_source: val[0]) }
+  scalar_type_extension: EXTEND SCALAR name directives_list { result = make_node(:ScalarTypeExtension, name: val[2], directives: val[3], position_source: val[0]) }
 
   object_type_extension:
       /* TODO - This first one shouldn't be necessary but parser is getting confused */
-      EXTEND TYPE name implements LCURLY field_definition_list RCURLY { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[5], position_source: val[0]) }
-    | EXTEND TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) }
-    | EXTEND TYPE name implements_opt directives_list { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
-    | EXTEND TYPE name implements { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
+      EXTEND TYPE name implements LCURLY field_definition_list RCURLY { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[5], position_source: val[0]) }
+    | EXTEND TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) }
+    | EXTEND TYPE name implements_opt directives_list { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
+    | EXTEND TYPE name implements { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
 
   interface_type_extension:
-      EXTEND INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY { return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) }
-    | EXTEND INTERFACE name directives_list { return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
+      EXTEND INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY { result = make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) }
+    | EXTEND INTERFACE name directives_list { result = make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
 
   union_type_extension:
-      EXTEND UNION name directives_list_opt EQUALS union_members { return make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: val[5], position_source: val[0]) }
-    | EXTEND UNION name directives_list { return make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: [], position_source: val[0]) }
+      EXTEND UNION name directives_list_opt EQUALS union_members { result = make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: val[5], position_source: val[0]) }
+    | EXTEND UNION name directives_list { result = make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: [], position_source: val[0]) }
 
   enum_type_extension:
-      EXTEND ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY { return make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: val[5], position_source: val[0]) }
-    | EXTEND ENUM name directives_list { return make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: [], position_source: val[0]) }
+      EXTEND ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY { result = make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: val[5], position_source: val[0]) }
+    | EXTEND ENUM name directives_list { result = make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: [], position_source: val[0]) }
 
   input_object_type_extension:
-      EXTEND INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY { return make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) }
-    | EXTEND INPUT name directives_list { return make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
+      EXTEND INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY { result = make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) }
+    | EXTEND INPUT name directives_list { result = make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
 
   description: STRING
 
@@ -346,85 +348,85 @@ rule
 
   scalar_type_definition:
       description_opt SCALAR name directives_list_opt {
-        return make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   object_type_definition:
       description_opt TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
-        return make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   implements_opt:
-      /* none */ { return EMPTY_ARRAY }
+      /* none */ { result = EMPTY_ARRAY }
     | implements
 
   implements:
-      IMPLEMENTS AMP interfaces_list { return val[2] }
-    | IMPLEMENTS interfaces_list { return val[1] }
-    | IMPLEMENTS legacy_interfaces_list { return val[1] }
+      IMPLEMENTS AMP interfaces_list { result = val[2] }
+    | IMPLEMENTS interfaces_list { result = val[1] }
+    | IMPLEMENTS legacy_interfaces_list { result = val[1] }
 
   interfaces_list:
-      name                     { return [make_node(:TypeName, name: val[0], position_source: val[0])] }
+      name                     { result = [make_node(:TypeName, name: val[0], position_source: val[0])] }
     | interfaces_list AMP name { val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) }
 
   legacy_interfaces_list:
-      name                        { return [make_node(:TypeName, name: val[0], position_source: val[0])] }
+      name                        { result = [make_node(:TypeName, name: val[0], position_source: val[0])] }
     | legacy_interfaces_list name { val[0] << make_node(:TypeName, name: val[1], position_source: val[1]) }
 
   input_value_definition:
       description_opt name COLON type default_value_opt directives_list_opt {
-        return make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   input_value_definition_list:
-      input_value_definition                             { return [val[0]] }
+      input_value_definition                             { result = [val[0]] }
     | input_value_definition_list input_value_definition { val[0] << val[1] }
 
   arguments_definitions_opt:
-      /* none */ { return EMPTY_ARRAY }
-    | LPAREN input_value_definition_list RPAREN { return val[1] }
+      /* none */ { result = EMPTY_ARRAY }
+    | LPAREN input_value_definition_list RPAREN { result = val[1] }
 
   field_definition:
       description_opt name arguments_definitions_opt COLON type directives_list_opt {
-        return make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   field_definition_list:
-    /* none */ { return EMPTY_ARRAY }
-    | field_definition                       { return [val[0]] }
+    /* none */ { result = EMPTY_ARRAY }
+    | field_definition                       { result = [val[0]] }
     | field_definition_list field_definition { val[0] << val[1] }
 
   interface_type_definition:
       description_opt INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY {
-        return make_node(:InterfaceTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:InterfaceTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   union_members:
-      name                    { return [make_node(:TypeName, name: val[0], position_source: val[0])]}
+      name                    { result = [make_node(:TypeName, name: val[0], position_source: val[0])]}
     | union_members PIPE name { val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) }
 
   union_type_definition:
       description_opt UNION name directives_list_opt EQUALS union_members {
-        return make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   enum_type_definition:
       description_opt ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
-         return make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+         result = make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   input_object_type_definition:
       description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
-        return make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   directive_definition:
       description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt ON directive_locations {
-        return make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   directive_locations:
-      name                          { return [make_node(:DirectiveLocation, name: val[0].to_s, position_source: val[0])] }
+      name                          { result = [make_node(:DirectiveLocation, name: val[0].to_s, position_source: val[0])] }
     | directive_locations PIPE name { val[0] << make_node(:DirectiveLocation, name: val[2].to_s, position_source: val[2]) }
 end
 
@@ -452,7 +454,7 @@ def parse_document
     # From the tokens, build an AST
     @tracer.trace("parse", {query_string: @query_string}) do
       if @tokens.empty?
-        make_node(:Document, definitions: [], filename: @filename)
+        raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string)
       else
         do_parse
       end

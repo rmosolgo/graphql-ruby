@@ -84,7 +84,7 @@ end
 
 ## Validation and Error Handling
 
-Each query is validated and {% internal_link "analyzed","/queries/analysis" %} independently. The `results` array may include a mix of successful results and failed results
+Each query is validated and {% internal_link "analyzed","/queries/ast_analysis" %} independently. The `results` array may include a mix of successful results and failed results
 
 ## Multiplex-Level Context
 
@@ -107,11 +107,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-The API is the same as {% internal_link "query analyzers","/queries/analysis" %}, with some considerations:
-
-- `initial_value` is called at the start of the _multiplex_ (not query)
-- `final` is called at the end of the _multiplex_ (not query)
-- `call(...)` is called for each node in _each_ query, so it will visit every node in the multiplex in sequence.
+The API is the same as {% internal_link "query analyzers","/queries/ast_analysis#analyzing-multiplexes" %}.
 
 Multiplex analyzers may return {{ "AnalysisError" | api_doc }} to halt execution of the whole multiplex.
 

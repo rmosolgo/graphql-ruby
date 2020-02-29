@@ -1,5 +1,26 @@
 # graphql-ruby-client
 
+## 1.7.4 (18 Feb 2020)
+
+- Move all exports to top level
+- Fix sync body handling: wait for all chunks, improve verbose output
+
+## 1.7.3 (17 Feb 2020)
+
+- Fix CLI for TypeScript
+
+## 1.7.2 (17 Feb 2020)
+
+- Convert outfile generators to TypeScript and include them in published package
+
+## 1.7.1 (17 Feb 2020)
+
+- Fix `bin` configuration in package.json
+
+## 1.7.0 (17 Feb 2020)
+
+- Rewrite in TypeScript
+
 ## 1.6.8 (18 Sept 2019)
 
 - Properly send `Content-Type: application/json` when posting persisted operations

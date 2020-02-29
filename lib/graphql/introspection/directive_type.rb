@@ -9,7 +9,7 @@ module GraphQL
                   "in ways field arguments will not suffice, such as conditionally including or "\
                   "skipping a field. Directives provide this by describing additional information "\
                     "to the executor."
-      field :name, String, null: false
+      field :name, String, null: false, method: :graphql_name
       field :description, String, null: true
       field :locations, [GraphQL::Schema::LateBoundType.new("__DirectiveLocation")], null: false
       field :args, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: false

@@ -21,7 +21,7 @@ module GraphQL
           # - First, use the value provided at runtime
           # - Then, fall back to the default value from the query string
           # If it's still nil, raise an error if it's required.
-          variable_type = schema.type_from_ast(ast_variable.type)
+          variable_type = schema.type_from_ast(ast_variable.type, context: ctx)
           if variable_type.nil?
             # Pass -- it will get handled by a validator
           else
@@ -29,18 +29,27 @@ module GraphQL
             default_value = ast_variable.default_value
             provided_value = @provided_variables[variable_name]
             value_was_provided =  @provided_variables.key?(variable_name)
-
             begin
               validation_result = variable_type.validate_input(provided_value, ctx)
               if validation_result.valid?
                 if value_was_provided
                   # Add the variable if a value was provided
-                  memo[variable_name] = schema.error_handler.with_error_handling(context) do
-                    variable_type.coerce_input(provided_value, ctx)
+                  memo[variable_name] = if ctx.interpreter?
+                    provided_value
+                  elsif provided_value.nil?
+                    nil
+                  else
+                    schema.error_handler.with_error_handling(context) do
+                      variable_type.coerce_input(provided_value, ctx)
+                    end
                   end
                 elsif default_value != nil
-                  # Add the variable if it wasn't provided but it has a default value (including `null`)
-                  memo[variable_name] = GraphQL::Query::LiteralInput.coerce(variable_type, default_value, self)
+                  memo[variable_name] = if ctx.interpreter?
+                    default_value
+                  else
+                    # Add the variable if it wasn't provided but it has a default value (including `null`)
+                    GraphQL::Query::LiteralInput.coerce(variable_type, default_value, self)
+                  end
                 end
               end
             rescue GraphQL::CoercionError, GraphQL::ExecutionError => ex

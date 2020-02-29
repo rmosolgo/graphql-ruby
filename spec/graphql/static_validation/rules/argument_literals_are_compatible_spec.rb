@@ -29,7 +29,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_equal(6, errors.length)
 
         query_root_error = {
-          "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
+          "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value (\"aasdlkfj\"). Expected type 'Int!'.",
           "locations"=>[{"line"=>3, "column"=>7}],
           "path"=>["query getCheese", "stringCheese", "id"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"id"},
@@ -37,7 +37,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_includes(errors, query_root_error)
 
         directive_error = {
-          "message"=>"Argument 'if' on Directive 'skip' has an invalid value. Expected type 'Boolean!'.",
+          "message"=>"Argument 'if' on Directive 'skip' has an invalid value (\"whatever\"). Expected type 'Boolean!'.",
           "locations"=>[{"line"=>4, "column"=>30}],
           "path"=>["query getCheese", "cheese", "source", "if"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Directive", "argumentName"=>"if"},
@@ -45,7 +45,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_includes(errors, directive_error)
 
         input_object_field_error = {
-          "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
+          "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value (1.1). Expected type 'DairyAnimal!'.",
           "locations"=>[{"line"=>6, "column"=>39}],
           "path"=>["query getCheese", "badSource", "product", 0, "source"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"InputObject", "argumentName"=>"source"},
@@ -53,7 +53,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_includes(errors, input_object_field_error)
 
         fragment_error = {
-          "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
+          "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value (4.5). Expected type '[DairyAnimal!]!'.",
           "locations"=>[{"line"=>13, "column"=>7}],
           "path"=>["fragment cheeseFields", "similarCheese", "source"],
           "extensions"=> {"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"source"}
@@ -66,7 +66,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_equal(9, errors.length)
 
         query_root_error = {
-          "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
+          "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value (\"aasdlkfj\"). Expected type 'Int!'.",
           "locations"=>[{"line"=>3, "column"=>7}],
           "path"=>["query getCheese", "stringCheese", "id"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"id"},
@@ -74,7 +74,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_includes(errors, query_root_error)
 
         directive_error = {
-          "message"=>"Argument 'if' on Directive 'skip' has an invalid value. Expected type 'Boolean!'.",
+          "message"=>"Argument 'if' on Directive 'skip' has an invalid value (\"whatever\"). Expected type 'Boolean!'.",
           "locations"=>[{"line"=>4, "column"=>30}],
           "path"=>["query getCheese", "cheese", "source", "if"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Directive", "argumentName"=>"if"},
@@ -82,7 +82,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_includes(errors, directive_error)
 
         input_object_error = {
-          "message"=>"Argument 'product' on Field 'badSource' has an invalid value. Expected type '[DairyProductInput]'.",
+          "message"=>"Argument 'product' on Field 'badSource' has an invalid value ({source: 1.1}). Expected type '[DairyProductInput]'.",
           "locations"=>[{"line"=>6, "column"=>7}],
           "path"=>["query getCheese", "badSource", "product"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"product"},
@@ -90,7 +90,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_includes(errors, input_object_error)
 
         input_object_field_error = {
-          "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
+          "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value (1.1). Expected type 'DairyAnimal!'.",
           "locations"=>[{"line"=>6, "column"=>39}],
           "path"=>["query getCheese", "badSource", "product", 0, "source"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"InputObject", "argumentName"=>"source"},
@@ -98,7 +98,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_includes(errors, input_object_field_error)
 
         missing_required_field_error = {
-          "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
+          "message"=>"Argument 'product' on Field 'missingSource' has an invalid value ([{fatContent: 1.1}]). Expected type '[DairyProductInput]'.",
           "locations"=>[{"line"=>7, "column"=>7}],
           "path"=>["query getCheese", "missingSource", "product"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"product"}
@@ -106,7 +106,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_includes(errors, missing_required_field_error)
 
         fragment_error = {
-          "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
+          "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value (4.5). Expected type '[DairyAnimal!]!'.",
           "locations"=>[{"line"=>13, "column"=>7}],
           "path"=>["fragment cheeseFields", "similarCheese", "source"],
           "extensions"=> {"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"source"}
@@ -149,7 +149,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
     let(:enum_invalid_for_id_error) do
       {
-        "message" => "Argument 'id' on Field 'cheese' has an invalid value. Expected type 'Int!'.",
+        "message" => "Argument 'id' on Field 'cheese' has an invalid value (I_AM_ENUM_VALUE). Expected type 'Int!'.",
         "locations" => [{ "line" => 2, "column" => 9 }],
         "path"=> ["query", "cheese", "id"],
         "extensions"=> { "code" => "argumentLiteralsIncompatible", "typeName" => "Field", "argumentName" => "id" }
@@ -207,7 +207,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
       it "finds error" do
         assert_equal [{
-          "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type 'Int!'.",
+          "message"=>"Argument 'arg' on Field 'field' has an invalid value (null). Expected type 'Int!'.",
           "locations"=>[{"line"=>3, "column"=>11}],
           "path"=>["query", "field", "arg"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"arg"}
@@ -231,7 +231,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
       it "finds error" do
         assert_equal [{
-          "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type '[Int!]'.",
+          "message"=>"Argument 'arg' on Field 'field' has an invalid value ([null]). Expected type '[Int!]'.",
           "locations"=>[{"line"=>3, "column"=>11}],
           "path"=>["query", "field", "arg"],
           "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"arg"}
@@ -282,13 +282,13 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
           without_error_bubbling(schema) do
             assert_equal 1, errors.length
             refute_includes errors, {
-              "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
+              "message"=>"Argument 'arg' on Field 'field' has an invalid value ({a: null, b: null}). Expected type 'Input'.",
               "locations"=>[{"line"=>3, "column"=>11}],
               "path"=>["query", "field", "arg"],
               "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"arg"}
             }
             assert_includes errors, {
-              "message"=>"Argument 'b' on InputObject 'Input' has an invalid value. Expected type 'Int!'.",
+              "message"=>"Argument 'b' on InputObject 'Input' has an invalid value (null). Expected type 'Int!'.",
               "locations"=>[{"line"=>3, "column"=>22}],
               "path"=>["query", "field", "arg", "b"],
               "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"InputObject", "argumentName"=>"b"}
@@ -299,14 +299,14 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
           with_error_bubbling(schema) do
             assert_equal 2, errors.length
             assert_includes errors, {
-              "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
+              "message"=>"Argument 'arg' on Field 'field' has an invalid value ({a: null, b: null}). Expected type 'Input'.",
               "locations"=>[{"line"=>3, "column"=>11}],
               "path"=>["query", "field", "arg"],
               "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"arg"}
             }
 
             assert_includes errors, {
-              "message"=>"Argument 'b' on InputObject 'Input' has an invalid value. Expected type 'Int!'.",
+              "message"=>"Argument 'b' on InputObject 'Input' has an invalid value (null). Expected type 'Int!'.",
               "locations"=>[{"line"=>3, "column"=>22}],
               "path"=>["query", "field", "arg", "b"],
               "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"InputObject", "argumentName"=>"b"}
@@ -326,7 +326,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
     it "finds invalid argument types" do
       assert_includes(errors, {
-        "message"=>"Argument 'name' on Field '__type' has an invalid value. Expected type 'String!'.",
+        "message"=>"Argument 'name' on Field '__type' has an invalid value (1). Expected type 'String!'.",
         "locations"=>[{"line"=>3, "column"=>9}],
         "path"=>["query", "__type", "name"],
         "extensions"=>{"code"=>"argumentLiteralsIncompatible", "typeName"=>"Field", "argumentName"=>"name"}

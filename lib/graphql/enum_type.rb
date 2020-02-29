@@ -1,76 +1,6 @@
 # frozen_string_literal: true
 module GraphQL
-  # Represents a collection of related values.
-  # By convention, enum names are `SCREAMING_CASE_NAMES`,
-  # but other identifiers are supported too.
-  #
-  # You can use as return types _or_ as inputs.
-  #
-  # By default, enums are passed to `resolve` functions as
-  # the strings that identify them, but you can provide a
-  # custom Ruby value with the `value:` keyword.
-  #
-  # @example An enum of programming languages
-  #   LanguageEnum = GraphQL::EnumType.define do
-  #     name "Language"
-  #     description "Programming language for Web projects"
-  #     value("PYTHON", "A dynamic, function-oriented language")
-  #     value("RUBY", "A very dynamic language aimed at programmer happiness")
-  #     value("JAVASCRIPT", "Accidental lingua franca of the web")
-  #   end
-  #
-  # @example Using an enum as a return type
-  #    field :favoriteLanguage, LanguageEnum, "This person's favorite coding language"
-  #    # ...
-  #    # In a query:
-  #    Schema.execute("{ coder(id: 1) { favoriteLanguage } }")
-  #    # { "data" => { "coder" => { "favoriteLanguage" => "RUBY" } } }
-  #
-  # @example Defining an enum input
-  #    field :coders, types[CoderType] do
-  #      argument :knowing, types[LanguageEnum]
-  #      resolve ->(obj, args, ctx) {
-  #        Coder.where(language: args[:knowing])
-  #      }
-  #    end
-  #
-  # @example Using an enum as input
-  #   {
-  #     # find coders who know Python and Ruby
-  #     coders(knowing: [PYTHON, RUBY]) {
-  #       name
-  #       hourlyRate
-  #     }
-  #   }
-  #
-  # @example Enum whose values are different in Ruby-land
-  #   GraphQL::EnumType.define do
-  #     # ...
-  #     # use the `value:` keyword:
-  #     value("RUBY", "Lisp? Smalltalk?", value: :rb)
-  #   end
-  #
-  #   # Now, resolve functions will receive `:rb` instead of `"RUBY"`
-  #   field :favoriteLanguage, LanguageEnum
-  #   resolve ->(obj, args, ctx) {
-  #     args[:favoriteLanguage] # => :rb
-  #   }
-  #
-  # @example Enum whose values are different in ActiveRecord-land
-  #   class Language < ActiveRecord::Base
-  #     enum language: {
-  #       rb: 0
-  #     }
-  #   end
-  #
-  #   # Now enum type should be defined as
-  #   GraphQL::EnumType.define do
-  #     # ...
-  #     # use the `value:` keyword:
-  #     value("RUBY", "Lisp? Smalltalk?", value: 'rb')
-  #   end
-  #
-
+  # @api deprecated
   class EnumType < GraphQL::BaseType
     accepts_definitions :values, value: GraphQL::Define::AssignEnumValue
     ensure_defined(:values, :validate_non_null_input, :coerce_non_null_input, :coerce_result)
@@ -150,6 +80,10 @@ module GraphQL
 
       def graphql_name
         name
+      end
+
+      def type_class
+        metadata[:type_class]
       end
     end
 

@@ -3,143 +3,141 @@ require "spec_helper"
 
 describe GraphQL::ExecutionError do
   let(:result) { Dummy::Schema.execute(query_string) }
-  if TESTING_RESCUE_FROM
-    describe "when returned from a field" do
-      let(:query_string) {%|
-    {
-      cheese(id: 1) {
-        id
-        error1: similarCheese(source: [YAK]) {
-          ... similarCheeseFields
-        }
-        error2: similarCheese(source: [YAK]) {
-          ... similarCheeseFields
-        }
-        nonError: similarCheese(source: [SHEEP]) {
-          ... similarCheeseFields
-        }
+  describe "when returned from a field" do
+    let(:query_string) {%|
+  {
+    cheese(id: 1) {
+      id
+      error1: similarCheese(source: [YAK]) {
+        ... similarCheeseFields
+      }
+      error2: similarCheese(source: [YAK]) {
+        ... similarCheeseFields
+      }
+      nonError: similarCheese(source: [SHEEP]) {
+        ... similarCheeseFields
+      }
+      flavor
+    }
+    allDairy {
+      ... on Cheese {
         flavor
       }
-      allDairy {
-        ... on Cheese {
-          flavor
-        }
-        ... on Milk {
-          source
-          executionError
-        }
+      ... on Milk {
+        source
+        executionError
       }
-      dairyErrors: allDairy(executionErrorAtIndex: 1) {
-        __typename
-      }
-      dairy {
-        milks {
-          source
-          executionError
-          allDairy {
-            __typename
-            ... on Milk {
-              origin
-              executionError
-            }
+    }
+    dairyErrors: allDairy(executionErrorAtIndex: 1) {
+      __typename
+    }
+    dairy {
+      milks {
+        source
+        executionError
+        allDairy {
+          __typename
+          ... on Milk {
+            origin
+            executionError
           }
         }
       }
-      executionError
-      valueWithExecutionError
     }
+    executionError
+    valueWithExecutionError
+  }
 
-    fragment similarCheeseFields on Cheese {
-      id, flavor
-    }
-      |}
-      it "the error is inserted into the errors key and the rest of the query is fulfilled" do
-        expected_result = {
-          "data"=>{
-            "cheese"=>{
-              "id" => 1,
-              "error1"=> nil,
-              "error2"=> nil,
-              "nonError"=> {
-                "id" => 3,
-                "flavor" => "Manchego",
-              },
-              "flavor" => "Brie",
-              },
-              "allDairy" => [
-                { "flavor" => "Brie" },
-                { "flavor" => "Gouda" },
-                { "flavor" => "Manchego" },
-                { "source" => "COW", "executionError" => nil }
-              ],
-              "dairyErrors" => [
-                { "__typename" => "Cheese" },
-                nil,
-                { "__typename" => "Cheese" },
-                { "__typename" => "Milk" }
-              ],
-              "dairy" => {
-                "milks" => [
-                  {
-                    "source" => "COW",
-                    "executionError" => nil,
-                    "allDairy" => [
-                      { "__typename" => "Cheese" },
-                      { "__typename" => "Cheese" },
-                      { "__typename" => "Cheese" },
-                      { "__typename" => "Milk", "origin" => "Antiquity", "executionError" => nil }
-                    ]
-                  }
-                ]
-              },
-              "executionError" => nil,
-              "valueWithExecutionError" => 0
+  fragment similarCheeseFields on Cheese {
+    id, flavor
+  }
+    |}
+    it "the error is inserted into the errors key and the rest of the query is fulfilled" do
+      expected_result = {
+        "data"=>{
+          "cheese"=>{
+            "id" => 1,
+            "error1"=> nil,
+            "error2"=> nil,
+            "nonError"=> {
+              "id" => 3,
+              "flavor" => "Manchego",
             },
-            "errors"=>[
-              {
-                "message"=>"No cheeses are made from Yak milk!",
-                "locations"=>[{"line"=>5, "column"=>9}],
-                "path"=>["cheese", "error1"]
-              },
-              {
-                "message"=>"No cheeses are made from Yak milk!",
-                "locations"=>[{"line"=>8, "column"=>9}],
-                "path"=>["cheese", "error2"]
-              },
-              {
-                "message"=>"There was an execution error",
-                "locations"=>[{"line"=>22, "column"=>11}],
-                "path"=>["allDairy", 3, "executionError"]
-              },
-              {
-                "message"=>"missing dairy",
-                "locations"=>[{"line"=>25, "column"=>7}],
-                "path"=>["dairyErrors", 1]
-              },
-              {
-                "message"=>"There was an execution error",
-                "locations"=>[{"line"=>31, "column"=>11}],
-                "path"=>["dairy", "milks", 0, "executionError"]
-              },
-              {
-                "message"=>"There was an execution error",
-                "locations"=>[{"line"=>36, "column"=>15}],
-                "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
-              },
-              {
-                "message"=>"There was an execution error",
-                "locations"=>[{"line"=>41, "column"=>7}],
-                "path"=>["executionError"]
-              },
-              {
-                "message"=>"Could not fetch latest value",
-                "locations"=>[{"line"=>42, "column"=>7}],
-                "path"=>["valueWithExecutionError"]
-              },
-            ]
-          }
-        assert_equal(expected_result, result.to_h)
-      end
+            "flavor" => "Brie",
+            },
+            "allDairy" => [
+              { "flavor" => "Brie" },
+              { "flavor" => "Gouda" },
+              { "flavor" => "Manchego" },
+              { "source" => "COW", "executionError" => nil }
+            ],
+            "dairyErrors" => [
+              { "__typename" => "Cheese" },
+              nil,
+              { "__typename" => "Cheese" },
+              { "__typename" => "Milk" }
+            ],
+            "dairy" => {
+              "milks" => [
+                {
+                  "source" => "COW",
+                  "executionError" => nil,
+                  "allDairy" => [
+                    { "__typename" => "Cheese" },
+                    { "__typename" => "Cheese" },
+                    { "__typename" => "Cheese" },
+                    { "__typename" => "Milk", "origin" => "Antiquity", "executionError" => nil }
+                  ]
+                }
+              ]
+            },
+            "executionError" => nil,
+            "valueWithExecutionError" => 0
+          },
+          "errors"=>[
+            {
+              "message"=>"missing dairy",
+              "locations"=>[{"line"=>25, "column"=>5}],
+              "path"=>["dairyErrors", 1]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>31, "column"=>9}],
+              "path"=>["dairy", "milks", 0, "executionError"]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>41, "column"=>5}],
+              "path"=>["executionError"]
+            },
+            {
+              "message"=>"Could not fetch latest value",
+              "locations"=>[{"line"=>42, "column"=>5}],
+              "path"=>["valueWithExecutionError"]
+            },
+            {
+              "message"=>"No cheeses are made from Yak milk!",
+              "locations"=>[{"line"=>5, "column"=>7}],
+              "path"=>["cheese", "error1"]
+            },
+            {
+              "message"=>"No cheeses are made from Yak milk!",
+              "locations"=>[{"line"=>8, "column"=>7}],
+              "path"=>["cheese", "error2"]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>22, "column"=>9}],
+              "path"=>["allDairy", 3, "executionError"]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>36, "column"=>13}],
+              "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
+            },
+          ]
+        }
+      assert_equal(expected_result, result.to_h)
     end
   end
 

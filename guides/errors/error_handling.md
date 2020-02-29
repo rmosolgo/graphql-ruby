@@ -10,7 +10,7 @@ index: 3
 
 You can configure your schema to rescue application errors during field resolution. Errors during batch loading will also be rescued.
 
-__Note:__ This feature is for class-based schemas using the {% internal_link "interpreter runtime", "/queries/interpreter" %} only. For `.define`-based schemas, use [exAspArk/graphql-errors](https://github.com/exaspark/graphql-errors) instead.
+__Note:__ This feature is for class-based schemas using the {% internal_link "interpreter runtime", "/queries/interpreter" %} only.
 
 Thanks to [`@exAspArk`] for the [`graphql-errors`](https://github.com/exAspArk/graphql-errors) gem which inspired this behavior and [`@thiago-sydow`](https://github.com/thiago-sydow) who [suggested](https://github.com/rmosolgo/graphql-ruby/issues/2139#issuecomment-524913594) and implementation like this.
 

@@ -55,7 +55,7 @@ module GraphQL
       module FragmentWithTypeStrategy
         def push(stack, node)
           object_type = if node.type
-            stack.schema.types.fetch(node.type.name, nil)
+            stack.schema.get_type(node.type.name)
           else
             stack.object_types.last
           end
@@ -148,7 +148,7 @@ module GraphQL
           if stack.argument_definitions.last
             arg_type = stack.argument_definitions.last.type.unwrap
             if arg_type.kind.input_object?
-              argument_defn = arg_type.input_fields[node.name]
+              argument_defn = arg_type.arguments[node.name]
             else
               argument_defn = nil
             end

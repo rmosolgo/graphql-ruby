@@ -15,7 +15,7 @@ module GraphQL
           ))
         elsif !type.kind.input?
           add_error(GraphQL::StaticValidation::VariablesAreInputTypesError.new(
-            "#{type.name} isn't a valid input type (on $#{node.name})",
+            "#{type.graphql_name} isn't a valid input type (on $#{node.name})",
             nodes: node,
             name: node.name,
             type: type_name

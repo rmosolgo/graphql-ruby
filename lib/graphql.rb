@@ -7,6 +7,14 @@ require "forwardable"
 require_relative "./graphql/railtie" if defined? Rails::Railtie
 
 module GraphQL
+  # forwards-compat for argument handling
+  module Ruby2Keywords
+    if RUBY_VERSION < "2.7"
+      def ruby2_keywords(*)
+      end
+    end
+  end
+
   class Error < StandardError
   end
 
@@ -84,6 +92,7 @@ require "graphql/tracing"
 require "graphql/execution"
 require "graphql/dig"
 require "graphql/schema"
+require "graphql/query"
 require "graphql/directive"
 require "graphql/execution"
 require "graphql/types"
@@ -107,7 +116,6 @@ require "graphql/invalid_name_error"
 require "graphql/unresolved_type_error"
 require "graphql/integer_encoding_error"
 require "graphql/string_encoding_error"
-require "graphql/query"
 require "graphql/internal_representation"
 require "graphql/static_validation"
 require "graphql/version"
@@ -123,3 +131,4 @@ require "graphql/authorization"
 require "graphql/unauthorized_error"
 require "graphql/unauthorized_field_error"
 require "graphql/load_application_object_failed_error"
+require "graphql/pagination"

@@ -182,6 +182,29 @@ You will need Ragel to build the lexer (see above).
 
 If you start __guard__ (`bundle exec guard`), the `.rb` files will be rebuilt whenever the definition files are modified.
 
+#### Install Ragel and Colm on a Mac
+
+GraphQL Ruby requires Ragel 7.0.0.9 which is not available on Homebrew. To install it, you might have to download it from source.
+
+This is not meant to be a step by step guide and will likely not work as the documentation ages.
+
+Download colm from http://www.colm.net/files/colm/colm-0.13.0.4.tar.gz
+Download ragel from http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz
+
+```sh
+# In colm directory
+cat README # for install instructions
+# The author who added this documentation succeeded with these steps
+./configure
+./make
+./make install
+
+# After installing colm, in ragel directory
+./configure
+./make
+./make install
+```
+
 ### Website
 
 To update the website, update the `.md` files in `guides/`.

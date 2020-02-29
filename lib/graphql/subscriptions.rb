@@ -18,12 +18,17 @@ module GraphQL
 
     # @see {Subscriptions#initialize} for options, concrete implementations may add options.
     def self.use(defn, options = {})
-      schema = defn.target
-      options[:schema] = schema
-      schema.subscriptions = self.new(options)
+      schema = defn.is_a?(Class) ? defn : defn.target
+
+      if schema.subscriptions
+        raise ArgumentError, "Can't reinstall subscriptions. #{schema} is using #{schema.subscriptions}, can't also add #{self}"
+      end
+
       instrumentation = Subscriptions::Instrumentation.new(schema: schema)
-      defn.instrument(:field, instrumentation)
       defn.instrument(:query, instrumentation)
+      defn.instrument(:field, instrumentation)
+      options[:schema] = schema
+      schema.subscriptions = self.new(**options)
       nil
     end
 
@@ -83,6 +88,10 @@ module GraphQL
     def execute(subscription_id, event, object)
       # Lookup the saved data for this subscription
       query_data = read_subscription(subscription_id)
+      if query_data.nil?
+        # Jump down to the `delete_subscription` call
+        raise GraphQL::Schema::Subscription::UnsubscribedError
+      end
       # Fetch the required keys from the saved data
       query_string = query_data.fetch(:query_string)
       variables = query_data.fetch(:variables)
@@ -90,14 +99,12 @@ module GraphQL
       operation_name = query_data.fetch(:operation_name)
       # Re-evaluate the saved query
       result = @schema.execute(
-        **{
-          query: query_string,
-          context: context,
-          subscription_topic: event.topic,
-          operation_name: operation_name,
-          variables: variables,
-          root_value: object,
-        }
+        query: query_string,
+        context: context,
+        subscription_topic: event.topic,
+        operation_name: operation_name,
+        variables: variables,
+        root_value: object,
       )
       deliver(subscription_id, result)
     rescue GraphQL::Schema::Subscription::NoUpdateError
@@ -188,7 +195,11 @@ module GraphQL
     # @return [Any] normalized arguments value
     def normalize_arguments(event_name, arg_owner, args)
       case arg_owner
-      when GraphQL::Field, GraphQL::InputObjectType
+      when GraphQL::Field, GraphQL::InputObjectType, GraphQL::Schema::Field, Class
+        if arg_owner.is_a?(Class) && !arg_owner.kind.input_object?
+          # it's a type, but not an input object
+          return args
+        end
         normalized_args = {}
         missing_arg_names = []
         args.each do |k, v|
@@ -202,16 +213,35 @@ module GraphQL
           end
 
           if arg_defn
-            normalized_args[normalized_arg_name] = normalize_arguments(event_name, arg_defn.type, v)
+            if arg_defn.loads
+              normalized_arg_name = arg_defn.keyword.to_s
+            end
+            normalized = normalize_arguments(event_name, arg_defn.type, v)
+            normalized_args[normalized_arg_name] = normalized
           else
             # Couldn't find a matching argument definition
             missing_arg_names << arg_name
           end
         end
 
+        # Backfill default values so that trigger arguments
+        # match query arguments.
+        arg_owner.arguments.each do |name, arg_defn|
+          if arg_defn.default_value? && !normalized_args.key?(arg_defn.name)
+            default_value = arg_defn.default_value
+            # We don't have an underlying "object" here, so it can't call methods.
+            # This is broken.
+            normalized_args[arg_defn.name] = arg_defn.prepare_value(nil, default_value, context: GraphQL::Query::NullContext)
+          end
+        end
+
         if missing_arg_names.any?
           arg_owner_name = if arg_owner.is_a?(GraphQL::Field)
             "Subscription.#{arg_owner.name}"
+          elsif arg_owner.is_a?(GraphQL::Schema::Field)
+            arg_owner.path
+          elsif arg_owner.is_a?(Class)
+            arg_owner.graphql_name
           else
             arg_owner.to_s
           end
@@ -219,9 +249,9 @@ module GraphQL
         end
 
         normalized_args
-      when GraphQL::ListType
+      when GraphQL::ListType, GraphQL::Schema::List
         args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a) }
-      when GraphQL::NonNullType
+      when GraphQL::NonNullType, GraphQL::Schema::NonNull
         normalize_arguments(event_name, arg_owner.of_type, args)
       else
         args

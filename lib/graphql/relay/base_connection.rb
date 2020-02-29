@@ -25,6 +25,10 @@ module GraphQL
         # @param nodes [Object] A collection of nodes (eg, Array, AR::Relation)
         # @return [subclass of BaseConnection] a connection Class for wrapping `nodes`
         def connection_for_nodes(nodes)
+          # If it's a new-style connection object, it's already ready to go
+          if nodes.is_a?(GraphQL::Pagination::Connection)
+            return nodes
+          end
           # Check for class _names_ because classes can be redefined in Rails development
           nodes.class.ancestors.each do |ancestor|
             conn_impl = CONNECTION_IMPLEMENTATIONS[ancestor.name]

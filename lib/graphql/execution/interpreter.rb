@@ -1,8 +1,10 @@
 # frozen_string_literal: true
+require "graphql/execution/interpreter/arguments_cache"
 require "graphql/execution/interpreter/execution_errors"
 require "graphql/execution/interpreter/hash_response"
 require "graphql/execution/interpreter/runtime"
 require "graphql/execution/interpreter/resolve"
+require "graphql/execution/interpreter/handles_raw_value"
 
 module GraphQL
   module Execution
@@ -17,17 +19,13 @@ module GraphQL
         runtime.final_value
       end
 
-      def self.use(schema_defn)
-        schema_defn.target.interpreter = true
-        # Reach through the legacy objects for the actual class defn
-        schema_class = schema_defn.target.class
-        # This is not good, since both of these are holding state now,
-        # we have to update both :(
-        [schema_class, schema_defn].each do |schema_config|
-          schema_config.query_execution_strategy(GraphQL::Execution::Interpreter)
-          schema_config.mutation_execution_strategy(GraphQL::Execution::Interpreter)
-          schema_config.subscription_execution_strategy(GraphQL::Execution::Interpreter)
-        end
+      def self.use(schema_class)
+        schema_class.interpreter = true
+        schema_class.query_execution_strategy(GraphQL::Execution::Interpreter)
+        schema_class.mutation_execution_strategy(GraphQL::Execution::Interpreter)
+        schema_class.subscription_execution_strategy(GraphQL::Execution::Interpreter)
+
+        GraphQL::Schema::Object.include(HandlesRawValue)
       end
 
       def self.begin_multiplex(multiplex)

@@ -56,7 +56,7 @@ describe GraphQL::UnionType do
     union.resolve_type = ->(value, ctx) {
       "This is not the types you are looking for"
     }
-    fake_ctx = OpenStruct.new(query: GraphQL::Query.new(Dummy::Schema, ""))
+    fake_ctx = OpenStruct.new(query: GraphQL::Query.new(GraphQL::Schema.new, ""))
 
     assert_raises(RuntimeError) {
       union.resolve_type(test_str, fake_ctx)
@@ -192,56 +192,6 @@ describe GraphQL::UnionType do
       union_2.possible_types = union_2.possible_types + [type_3]
       assert_equal 2, union.possible_types.size
       assert_equal 3, union_2.possible_types.size
-    end
-  end
-
-  describe "#get_possible_type" do
-    let(:query_string) {%|
-      {
-        __type(name: "Beverage") {
-          name
-        }
-      }
-    |}
-
-    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
-    let(:union) { Dummy::Beverage.graphql_definition }
-
-    it "returns the type definition if the type exists and is a possible type of the union" do
-      assert union.get_possible_type("Milk", query.context)
-    end
-
-    it "returns nil if the type is not found in the schema" do
-      assert_nil union.get_possible_type("Foo", query.context)
-    end
-
-    it "returns nil if the type is not a possible type of the union" do
-      assert_nil union.get_possible_type("Cheese", query.context)
-    end
-  end
-
-  describe "#possible_type?" do
-    let(:query_string) {%|
-      {
-        __type(name: "Beverage") {
-          name
-        }
-      }
-    |}
-
-    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
-    let(:union) { Dummy::Beverage.graphql_definition }
-
-    it "returns true if the type exists and is a possible type of the union" do
-      assert union.possible_type?("Milk", query.context)
-    end
-
-    it "returns false if the type is not found in the schema" do
-      refute union.possible_type?("Foo", query.context)
-    end
-
-    it "returns false if the type is not a possible type of the union" do
-      refute union.possible_type?("Cheese", query.context)
     end
   end
 end

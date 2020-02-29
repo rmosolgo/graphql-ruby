@@ -8,6 +8,8 @@ desc: Limiting query depth and field selections
 index: 4
 ---
 
+GraphQL-Ruby ships with some validations based on {% internal_link "query analysis", "/queries/ast_analysis" %}. You can customize them as-needed, too.
+
 ## Prevent complex queries
 
 Fields have a "complexity" value which can be configured in their definition. It can be a constant (numeric) value, or a proc. If no `complexity` is defined for a field, it will default to a value of `1`. It can be defined as a keyword _or_ inside the configuration block. For example:
@@ -40,8 +42,8 @@ Then, define your `max_complexity` at the schema-level:
 
 ```ruby
 class MySchema < GraphQL::Schema
- # ...
- max_complexity 100
+  # ...
+  max_complexity 100
 end
 ```
 
@@ -58,13 +60,20 @@ Using `nil` will disable the validation:
 MySchema.execute(query_string, max_complexity: nil)
 ```
 
-To get a feeling for complexity of queries in your system, you can use the `QueryComplexity` query reducer. Hook it up to log out values from each query:
+To get a feeling for complexity of queries in your system, you can extend {{ "GraphQL::Analysis::AST::QueryComplexity" | api_doc }}. Hook it up to log out values from each query:
 
 ```ruby
+class LogQueryComplexityAnalyzer < GraphQL::Analysis::AST::QueryComplexity
+  # Override this method to _do something_ with the calculated complexity value
+  def result
+    complexity = super
+    message = "[GraphQL Query Complexity] #{complexity} | staff? #{query.context[:current_user].staff?}"
+    Rails.logger.info(message)
+  end
+end
 
 class MySchema < GraphQL::Schema
-  log_query_complexity = GraphQL::Analysis::QueryComplexity.new { |query, complexity| Rails.logger.info("[GraphQL Query Complexity] #{complexity}  | staff? #{query.context[:current_user].staff?}")}
-  query_analyzer(log_query_complexity)
+  query_analyzer(LogQueryComplexityAnalyzer)
 end
 ```
 
@@ -90,11 +99,18 @@ You can use `nil` to disable the validation:
 MySchema.execute(query_string, max_depth: nil)
 ```
 
-To get a feeling for depth of queries in your system, you can use the `QueryDepth` query reducer. Hook it up to log out values from each query:
+To get a feeling for depth of queries in your system, you can extend {{ "GraphQL::Analysis::AST::QueryDepth" | api_doc }}. Hook it up to log out values from each query:
 
 ```ruby
+class LogQueryDepth < GraphQL::Analysis::AST::QueryDepth
+  def result
+    query_depth = super
+    message = "[GraphQL Query Depth] #{query_depth} || staff?  #{query.context[:current_user].staff?}"
+    Rails.logger.info(message)
+  end
+end
+
 class MySchema < GraphQL::Schema
-  log_query_depth = GraphQL::Analysis::QueryDepth.new { |query, depth| Rails.logger.info("[GraphQL Query Depth] #{depth} || staff?  #{query.context[:current_user].staff?}")}
-  query_analyzer(log_query_depth)
+  query_analyzer(LogQueryDepth)
 end
 ```

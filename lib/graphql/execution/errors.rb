@@ -18,8 +18,7 @@ module GraphQL
     #
     class Errors
       def self.use(schema)
-        schema_class = schema.is_a?(Class) ? schema : schema.target.class
-        schema_class.error_handler = self.new(schema_class)
+        schema.error_handler = self.new(schema)
       end
 
       def initialize(schema)
@@ -41,7 +40,7 @@ module GraphQL
       def with_error_handling(ctx)
         yield
       rescue StandardError => err
-        rescues = @schema.rescues
+        rescues = ctx.schema.rescues
         _err_class, handler = rescues.find { |err_class, handler| err.is_a?(err_class) }
         if handler
           runtime_info = ctx.namespace(:interpreter) || {}

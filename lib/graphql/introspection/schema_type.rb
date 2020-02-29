@@ -15,12 +15,7 @@ module GraphQL
       field :directives, [GraphQL::Schema::LateBoundType.new("__Directive")], "A list of all directives supported by this server.", null: false
 
       def types
-        types = @context.warden.reachable_types.sort_by(&:graphql_name)
-        if context.interpreter?
-          types.map { |t| t.metadata[:type_class] || raise("Invariant: can't introspect non-class-based type: #{t}") }
-        else
-          types
-        end
+        @context.warden.reachable_types.sort_by(&:graphql_name)
       end
 
       def query_type

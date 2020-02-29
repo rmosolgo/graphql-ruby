@@ -15,6 +15,11 @@ module GraphQL
           @graphql_definition ||= to_graphql
         end
 
+        # This is for a common interface with .define-based types
+        def type_class
+          self
+        end
+
         # Wipe out the cached graphql_definition so that `.to_graphql` will be called again.
         def initialize_copy(original)
           super

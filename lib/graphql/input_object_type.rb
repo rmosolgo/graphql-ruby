@@ -1,28 +1,6 @@
 # frozen_string_literal: true
 module GraphQL
-  # {InputObjectType}s are key-value inputs for fields.
-  #
-  # Input objects have _arguments_ which are identical to {GraphQL::Field} arguments.
-  # They map names to types and support default values.
-  # Their input types can be any input types, including {InputObjectType}s.
-  #
-  # @example An input type with name and number
-  #   PlayerInput = GraphQL::InputObjectType.define do
-  #     name("Player")
-  #     argument :name, !types.String
-  #     argument :number, !types.Int
-  #   end
-  #
-  # In a `resolve` function, you can access the values by making nested lookups on `args`.
-  #
-  # @example Accessing input values in a resolve function
-  #   resolve ->(obj, args, ctx) {
-  #     args[:player][:name]    # => "Tony Gwynn"
-  #     args[:player][:number]  # => 19
-  #     args[:player].to_h      # { "name" => "Tony Gwynn", "number" => 19 }
-  #     # ...
-  #   }
-  #
+  # @api deprecated
   class InputObjectType < GraphQL::BaseType
     accepts_definitions(
       :arguments, :mutation,
@@ -136,7 +114,7 @@ module GraphQL
       # Items in the input that are unexpected
       input.each do |name, value|
         if visible_arguments_map[name].nil?
-          result.add_problem("Field is not defined on #{self.name}", [name])
+          result.add_problem("Field is not defined on #{self.graphql_name}", [name])
         end
       end
 

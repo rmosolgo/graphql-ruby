@@ -58,6 +58,45 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
 
     let(:expected_document) { GraphQL.parse(expected_idl) }
 
+    describe "when schemas have enums" do
+      let(:schema_idl) { <<-GRAPHQL.chomp
+directive @locale(lang: LangEnum!) on FIELD
+
+enum LangEnum {
+  en
+  ru
+}
+
+type Query {
+  i: Int
+}
+      GRAPHQL
+      }
+
+      class DirectiveSchema < GraphQL::Schema
+        class Query < GraphQL::Schema::Object
+          field :i, Int, null: true
+        end
+
+        class Locale < GraphQL::Schema::Directive
+          class LangEnum < GraphQL::Schema::Enum
+            value "en"
+            value "ru"
+          end
+          locations GraphQL::Schema::Directive::FIELD
+
+          argument :lang, LangEnum, required: true
+        end
+
+        query(Query)
+        directive(Locale)
+      end
+
+      it "dumps them into the string" do
+        assert_equal schema_idl, DirectiveSchema.to_definition
+      end
+    end
+
     describe "when printing and schema respects root name conventions" do
       let(:schema_idl) { <<-GRAPHQL
         type Query {

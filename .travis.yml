@@ -1,13 +1,9 @@
 ---
 language: ruby
 
-sudo: false
-
 cache:
   - bundler
   - yarn
-
-node_js: "7"
 
 env:
   global:
@@ -17,7 +13,14 @@ rvm:
   - 2.3.8
 
 matrix:
+  allow_failures:
+    - rvm: ruby-head
+      gemfile: gemfiles/rails_master.gemfile
   include:
+  - before_install:
+      - nvm install node
+    script:
+      - bundle exec rake js:all
   - env:
       - DISPLAY=':99.0'
       - TESTING_INTERPRETER=yes
@@ -25,11 +28,7 @@ matrix:
     services:
       - xvfb
     addons:
-      apt:
-        sources:
-          - google-chrome
-        packages:
-          - google-chrome-stable
+      chrome: stable
     before_install:
       - export CHROMEDRIVER_VERSION=`curl -s http://chromedriver.storage.googleapis.com/LATEST_RELEASE`
       - curl -L -O "http://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
@@ -45,6 +44,8 @@ matrix:
       - TESTING_INTERPRETER=yes
     rvm: 2.4.3
     gemfile: gemfiles/rails_5.2.gemfile
+  - rvm: ruby-head
+    gemfile: gemfiles/rails_master.gemfile
   - rvm: 2.3.8
     gemfile: gemfiles/rails_3.2.gemfile
   - rvm: 2.3.8
@@ -57,6 +58,16 @@ matrix:
     gemfile: gemfiles/rails_5.1.gemfile
   - rvm: 2.6.2
     gemfile: gemfiles/rails_5.2.gemfile
+  - rvm: 2.6.2
+    gemfile: gemfiles/rails_6.0.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_5.0.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_5.1.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_5.2.gemfile
+  - rvm: 2.7.0
+    gemfile: gemfiles/rails_6.0.gemfile
   - rvm: ruby-head
     gemfile: gemfiles/rails_master.gemfile
   - rvm: 2.6.2

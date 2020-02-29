@@ -4,19 +4,6 @@ require "spec_helper"
 describe GraphQL::ObjectType do
   let(:type) { Dummy::Cheese.graphql_definition }
 
-  it "doesn't allow double non-null constraints" do
-    assert_raises(GraphQL::DoubleNonNullTypeError) {
-      DoubleNullObject = GraphQL::ObjectType.define do
-        name "DoubleNull"
-
-        field :id, !!types.Int, "Fails because double !"
-      end
-
-      # Force evaluation
-      DoubleNullObject.name
-    }
-  end
-
   it "doesn't allow invalid name" do
     exception = assert_raises(GraphQL::InvalidNameError) {
       InvalidNameObject = GraphQL::ObjectType.define do

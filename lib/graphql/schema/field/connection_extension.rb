@@ -28,6 +28,18 @@ module GraphQL
             nil
           elsif value.nil?
             nil
+          elsif value.is_a?(GraphQL::Pagination::Connection)
+            # update the connection with some things that may not have been provided
+            value.context ||= context
+            value.first_value ||= arguments[:first]
+            value.after_value ||= arguments[:after]
+            value.last_value ||= arguments[:last]
+            value.before_value ||= arguments[:before]
+            value.max_page_size ||= field.max_page_size
+            value
+          elsif context.schema.new_connections?
+            wrappers = context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
+            context.schema.connections.wrap(field, value, arguments, context, wrappers: wrappers)
           else
             if object.is_a?(GraphQL::Schema::Object)
               object = object.object
@@ -43,7 +55,6 @@ module GraphQL
             )
           end
         end
-
       end
     end
   end

@@ -44,6 +44,11 @@ describe GraphQL::Execution::Interpreter do
       def null_union_field_test
         1
       end
+
+      field :always_cached_value, Integer, null: false
+      def always_cached_value
+        raise "should never be called"
+      end
     end
 
     class Card < GraphQL::Schema::Object
@@ -129,6 +134,12 @@ describe GraphQL::Execution::Interpreter do
 
       def expansion(sym:)
         EXPANSIONS.find { |e| e.sym == sym }
+      end
+
+      field :expansion_raw, Expansion, null: false
+
+      def expansion_raw
+        raw_value(sym: "RAW", name: "Raw expansion", always_cached_value: 42)
       end
 
       field :expansions, [Expansion], null: false
@@ -351,10 +362,8 @@ describe GraphQL::Execution::Interpreter do
       Dummy::Schema.graphql_definition
       if TESTING_INTERPRETER
         assert_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
-        assert_equal GraphQL::Execution::Interpreter, Dummy::Schema.query_execution_strategy
       else
         refute_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
-        refute_equal GraphQL::Execution::Interpreter, Dummy::Schema.query_execution_strategy
       end
     end
   end
@@ -480,6 +489,23 @@ describe GraphQL::Execution::Interpreter do
 
       res = InterpreterTest::Schema.execute('{ nodes(ids: ["abc", "xyz"]) { id } }')
       assert_equal ["abc", "xyz"], res["data"]["nodes"].map { |n| n["id"] }
+    end
+  end
+
+  describe "returning raw values" do
+    it "returns raw value" do
+      query_str = <<-GRAPHQL
+      {
+        expansionRaw {
+          name
+          sym
+          alwaysCachedValue
+        }
+      }
+      GRAPHQL
+
+      res = InterpreterTest::Schema.execute(query_str)
+      assert_equal({ sym: "RAW", name: "Raw expansion", always_cached_value: 42 }, res["data"]["expansionRaw"])
     end
   end
 end

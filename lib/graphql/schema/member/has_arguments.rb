@@ -63,12 +63,63 @@ module GraphQL
           self.class.argument_class(new_arg_class)
         end
 
+        # @param values [Hash<String, Object>]
+        # @param context [GraphQL::Query::Context]
+        # @return Hash<Symbol, Object>
+        def coerce_arguments(parent_object, values, context)
+          kwarg_arguments = {}
+          # Cache this hash to avoid re-merging it
+          arg_defns = self.arguments
+
+          arg_defns.each do |arg_name, arg_defn|
+            arg_key = arg_defn.keyword
+            has_value = false
+            if values.key?(arg_name)
+              has_value = true
+              value = values[arg_name]
+            elsif values.key?(arg_key)
+              has_value = true
+              value = values[arg_key]
+            elsif arg_defn.default_value?
+              has_value = true
+              value = arg_defn.default_value
+            end
+
+            if has_value
+              loads = arg_defn.loads
+              loaded_value = nil
+              if loads && !arg_defn.from_resolver?
+                loaded_value = if arg_defn.type.list?
+                  value.map { |val| load_application_object(arg_defn, loads, val, context) }
+                else
+                  load_application_object(arg_defn, loads, value, context)
+                end
+              end
+
+              prepared_value = context.schema.error_handler.with_error_handling(context) do
+
+                coerced_value = if loaded_value
+                  loaded_value
+                else
+                  arg_defn.type.coerce_input(value, context)
+                end
+
+                arg_defn.prepare_value(parent_object, coerced_value, context: context)
+              end
+              kwarg_arguments[arg_defn.keyword] = prepared_value
+            end
+          end
+          kwarg_arguments
+        end
+
         module ArgumentClassAccessor
           def argument_class(new_arg_class = nil)
             if new_arg_class
               @argument_class = new_arg_class
+            elsif defined?(@argument_class) && @argument_class
+              @argument_class
             else
-              @argument_class || (superclass.respond_to?(:argument_class) ? superclass.argument_class : GraphQL::Schema::Argument)
+              superclass.respond_to?(:argument_class) ? superclass.argument_class : GraphQL::Schema::Argument
             end
           end
         end
@@ -85,7 +136,7 @@ module GraphQL
             context.schema.object_from_id(id, context)
           end
 
-          def load_application_object(argument, lookup_as_type, id)
+          def load_application_object(argument, lookup_as_type, id, context)
             # See if any object can be found for this ID
             loaded_application_object = object_from_id(lookup_as_type, id, context)
             context.schema.after_lazy(loaded_application_object) do |application_object|
@@ -97,7 +148,7 @@ module GraphQL
               # (Don't want to allow arbitrary access to objects this way)
               resolved_application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
               context.schema.after_lazy(resolved_application_object_type) do |application_object_type|
-                possible_object_types = context.schema.possible_types(lookup_as_type)
+                possible_object_types = context.warden.possible_types(lookup_as_type)
                 if !possible_object_types.include?(application_object_type)
                   err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
                   load_application_object_failed(err)
@@ -105,7 +156,7 @@ module GraphQL
                   # This object was loaded successfully
                   # and resolved to the right type,
                   # now apply the `.authorized?` class method if there is one
-                  if (class_based_type = application_object_type.metadata[:type_class])
+                  if (class_based_type = application_object_type.type_class)
                     context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
                       if authed
                         application_object
