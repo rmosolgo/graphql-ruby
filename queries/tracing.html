@@ -103,6 +103,25 @@
 
 <p>Implementations are based on <a href="/api-doc/1.10.3/GraphQL/Tracing/PlatformTracing" target="_blank" title="API docs for GraphQL::Tracing::PlatformTracing"><code>Tracing::PlatformTracing</code></a>.</p>
 
+<h2 id="appoptics">AppOptics</h2>
+
+<p><a href="https://appoptics.com/">AppOptics</a> instrumentation will be automatic starting
+with appoptics_apm-4.11.0.gem. For earlier gem versions please add appoptics_apm
+tracing as follows:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'appoptics_apm'</span>
+
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">AppOpticsTracing</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+<div class="monitoring-img-group">
+  <a href="/queries/appoptics_example.png" target="_blank" class="img-link">
+  <img src="/queries/appoptics_example.png" title="appoptics monitoring" alt="appoptics monitoring" />
+</a>
+
+</div>
+
 <h2 id="appsignal">Appsignal</h2>
 
 <p>To add <a href="https://appsignal.com/">AppSignal</a> instrumentation:</p>
