@@ -406,6 +406,7 @@ describe GraphQL::Schema::Warden do
       assert_equal false, possible_type_names(res["data"]["LanguageMember"]).include?("Phoneme")
     end
 
+    focus
     it "hides interfaces if all possible types are hidden" do
       sdl = %|
         type Query {
@@ -429,7 +430,8 @@ describe GraphQL::Schema::Warden do
           Node: __type(name: "Node") { name }
         }
       |
-
+      $debug = true
+      pp schema.types.keys.sort
       res = schema.execute(query_string)
       assert res["data"]["Node"]
 

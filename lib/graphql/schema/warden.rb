@@ -68,6 +68,7 @@ module GraphQL
       def get_type(type_name)
         @visible_types ||= read_through do |name|
           type_defn = @schema.get_type(name)
+          p ["get_type", type_name, type_defn, visible_type?(type_defn)]
           if type_defn && visible_type?(type_defn)
             type_defn
           else
@@ -95,7 +96,7 @@ module GraphQL
         @visible_parent_fields ||= read_through do |type|
           read_through do |f_name|
             field_defn = @schema.get_field(type, f_name)
-            if field_defn && visible_field?(field_defn)
+            if field_defn && visible_field?(type, field_defn)
               field_defn
             else
               nil
@@ -117,14 +118,14 @@ module GraphQL
       # @param type_defn [GraphQL::ObjectType, GraphQL::InterfaceType]
       # @return [Array<GraphQL::Field>] Fields on `type_defn`
       def fields(type_defn)
-        @visible_fields ||= read_through { |t| @schema.get_fields(t).each_value.select { |f| visible_field?(f, t) } }
+        @visible_fields ||= read_through { |t| @schema.get_fields(t).each_value.select { |f| visible_field?(t, f) } }
         @visible_fields[type_defn]
       end
 
       # @param argument_owner [GraphQL::Field, GraphQL::InputObjectType]
       # @return [Array<GraphQL::Argument>] Visible arguments on `argument_owner`
       def arguments(argument_owner)
-        @visible_arguments ||= read_through { |o| o.arguments.each_value.select { |a| visible_field?(a) } }
+        @visible_arguments ||= read_through { |o| o.arguments.each_value.select { |a| visible_argument?(a) } }
         @visible_arguments[argument_owner]
       end
 
@@ -160,27 +161,46 @@ module GraphQL
         @unions[obj_type]
       end
 
-      def visible_field?(field_defn, type_defn = nil)
-        return false if type_defn && !field_on_visible_interface?(field_defn, type_defn)
-        visible?(field_defn) && visible_type?(field_defn.type.unwrap)
+      def visible_argument?(arg_defn)
+        visible?(arg_defn) && visible_type?(arg_defn.type.unwrap)
       end
 
-      # Returns true when the field is on a visible interface
-      # returns true if the field is not on an interface
-      # returns false if the field is on a hidden interface
+      def visible_field?(owner_type, field_defn)
+        visible?(field_defn) && visible_type?(field_defn.type.unwrap) && field_on_visible_interface?(field_defn, owner_type)
+      end
+
+      # We need this to tell whether a field was inherited by an interface
+      # even when that interface is hidden from `#interfaces`
+      def unfiltered_interfaces(type_defn)
+        @unfiltered_interfaces ||= read_through { |t| t.interfaces(nil) }
+        @unfiltered_interfaces[type_defn]
+      end
+
+      # If this field was inherited from an interface, and the field on that interface is _hidden_,
+      # then treat this inherited field as hidden.
+      # (If it _wasn't_ inherited, then don't hide it for this reason.)
       def field_on_visible_interface?(field_defn, type_defn)
-        # This needs to be fixed, it was encountering a type that couldn't be converted to graphql
-        begin
-          owner_type = field_defn.metadata[:type_class].owner.to_graphql
-        rescue
-          return true
+        if type_defn.kind.object?
+          any_interface_has_field = false
+          any_interface_has_visible_field = false
+          unfiltered_interfaces(type_defn).each do |interface_type|
+            if interface_type.get_field(field_defn.name)
+              any_interface_has_field = true
+              if visible?(interface_type) && get_field(interface_type, field_defn.name)
+                any_interface_has_visible_field = true
+              end
+            end
+          end
+
+          if any_interface_has_field
+            any_interface_has_visible_field
+          else
+            # it's the object's own field
+            true
+          end
+        else
+          true
         end
-
-        # We don't care about interfaces that are included in other interfaces
-        # This could be a later addition
-        return true unless owner_type.kind.interface? && !type_defn.kind.interface?
-
-        interfaces(type_defn).include?(owner_type)
       end
 
       def visible_type?(type_defn)

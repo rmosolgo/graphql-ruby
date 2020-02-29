@@ -187,13 +187,17 @@ module Jazz
 
   module PrivateNameEntity
     include BaseInterface
-    
+
     type_membership_class PrivateMembership
 
     field :private_name, String, null: false
 
     def private_name
       "private name"
+    end
+
+    def self.visible?(ctx)
+      ctx[:private] == true
     end
   end
 

@@ -115,7 +115,7 @@ module GraphQL
       clean_inherited_ifaces = []
       inherited_fields = {}
       @interface_type_memberships.each do |type_membership|
-        if type_membership.visible?(ctx)
+        if !ctx.nil? && type_membership.visible?(ctx)
           clean_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
         end
       end
@@ -123,7 +123,7 @@ module GraphQL
       @inherited_interface_type_memberships.each do |type_membership|
         if type_membership.visible?(ctx)
           iface = GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
-          clean_inherited_ifaces << iface 
+          clean_inherited_ifaces << iface
           if iface.is_a?(GraphQL::InterfaceType)
             inherited_fields.merge!(iface.fields)
           end

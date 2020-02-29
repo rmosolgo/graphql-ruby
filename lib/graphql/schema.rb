@@ -1750,7 +1750,7 @@ module GraphQL
             }
             own_possible_types[owner.graphql_name] = owner.possible_types
           elsif type.kind.interface? && owner.kind.object?
-            new_interfaces = owner.interfaces.map do |t|
+            new_interfaces = owner.interfaces(nil).map do |t|
               if t.is_a?(String) && t == type.graphql_name
                 type
               elsif t.is_a?(LateBoundType) && t.graphql_name == type.graphql_name
@@ -1858,7 +1858,7 @@ module GraphQL
           end
           if type.kind.object?
             own_possible_types[type.graphql_name] = [type]
-            type.interfaces.each do |i|
+            type.interfaces(nil).each do |i|
               implementers = own_possible_types[i.graphql_name] ||= []
               implementers << type
               add_type(i, owner: type, late_types: late_types, path: path + ["implements"])

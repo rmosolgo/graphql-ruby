@@ -85,8 +85,10 @@ module GraphQL
               # `.fields` will use the inheritance chain
               # to find inherited fields
               include(int)
-            elsif int.is_a?(String)
+            elsif int.is_a?(String) || int.is_a?(GraphQL::Schema::LateBoundType)
               new_memberships << int
+            else
+              raise ArgumentError, "Unexpected interface definition (expected module): #{int} (#{int.class})"
             end
           end
 
@@ -94,11 +96,16 @@ module GraphQL
           interface_type_memberships.reject! { |existing_i_m|
             new_memberships.any? { |new_i_m|
               new_name = new_i_m.is_a?(String) ? new_i_m : new_i_m.abstract_type.graphql_name
-              old_name = existing_i_m.is_a?(String) ? existing_i_m : existing_i_m.abstract_type.graphql_name
+              old_name = if existing_i_m.is_a?(String)
+                existing_i_m
+              elsif existing_i_m.is_a?(GraphQL::Schema::LateBoundType)
+                existing_i_m.graphql_name
+              else
+                existing_i_m.abstract_type.graphql_name
+              end
               new_name == old_name
             }
           }
-
           interface_type_memberships.concat(new_memberships)
         end
 
@@ -106,18 +113,28 @@ module GraphQL
           @interface_type_memberships ||= []
         end
 
-        def interfaces(context: GraphQL::Query::NullContext)
-          visible_interfaces = []
-          self.interface_type_memberships.each do |type_membership|
-            visible_interfaces << type_membership.abstract_type if type_membership.visible?(context)
+        # param context [Query::Context, nil] If `nil` is given, skip filtering.
+        def interfaces(context = GraphQL::Query::NullContext)
+          if context.nil?
+            visible_interfaces = interface_type_memberships
+              .select { |tm| tm.is_a?(Schema::TypeMembership) } # exclude strings and late-bound types
+              .map(&:abstract_type)
+          else
+            visible_interfaces = []
+            interface_type_memberships.select do |type_membership|
+              vis = type_membership.visible?(context)
+              if vis
+                visible_interfaces << type_membership.abstract_type
+              end
+            end
           end
-          visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context: context) : [])
+          visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context) : [])
         end
 
         # Include legacy-style interfaces, too
         def fields
           all_fields = super
-          interfaces.each do |int|
+          interfaces(nil).each do |int|
             if int.is_a?(GraphQL::InterfaceType)
               int_f = {}
               int.fields.each do |name, legacy_field|
