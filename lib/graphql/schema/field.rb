@@ -522,7 +522,7 @@ module GraphQL
                   @resolve_proc.call(extended_obj, args, ctx)
                 end
               else
-                public_send_field(after_obj, ruby_args, ctx)
+                public_send_field(after_obj, ruby_args, query_ctx)
               end
             else
               err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
@@ -545,30 +545,7 @@ module GraphQL
           # Unwrap the GraphQL object to get the application object.
           application_object = object.object
           if self.authorized?(application_object, args, ctx)
-            # Apply field extensions
-            with_extensions(object, args, ctx) do |extended_obj, extended_args|
-              field_receiver = if @resolver_class
-                resolver_obj = if extended_obj.is_a?(GraphQL::Schema::Object)
-                  extended_obj.object
-                else
-                  extended_obj
-                end
-                @resolver_class.new(object: resolver_obj, context: ctx, field: self)
-              else
-                extended_obj
-              end
-
-              if field_receiver.respond_to?(@resolver_method)
-                # Call the method with kwargs, if there are any
-                if extended_args.any?
-                  field_receiver.public_send(@resolver_method, **extended_args)
-                else
-                  field_receiver.public_send(@resolver_method)
-                end
-              else
-                resolve_field_method(field_receiver, extended_args, ctx)
-              end
-            end
+            public_send_field(object, args, ctx)
           else
             err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
             ctx.schema.unauthorized_field(err)
@@ -594,7 +571,14 @@ module GraphQL
       # @param ruby_kwargs [Hash<Symbol => Object>]
       # @param ctx [GraphQL::Query::Context]
       def resolve_field_method(obj, ruby_kwargs, ctx)
-        if obj.object.is_a?(Hash)
+        if obj.respond_to?(@resolver_method)
+          # Call the method with kwargs, if there are any
+          if ruby_kwargs.any?
+            obj.public_send(@resolver_method, **ruby_kwargs)
+          else
+            obj.public_send(@resolver_method)
+          end
+        elsif obj.object.is_a?(Hash)
           inner_object = obj.object
           if inner_object.key?(@method_sym)
             inner_object[@method_sym]
@@ -674,8 +658,7 @@ module GraphQL
         end
       end
 
-      def public_send_field(obj, ruby_kwargs, field_ctx)
-        query_ctx = field_ctx.query.context
+      def public_send_field(obj, ruby_kwargs, query_ctx)
         with_extensions(obj, ruby_kwargs, query_ctx) do |extended_obj, extended_args|
           if @resolver_class
             if extended_obj.is_a?(GraphQL::Schema::Object)
@@ -684,15 +667,7 @@ module GraphQL
             extended_obj = @resolver_class.new(object: extended_obj, context: query_ctx, field: self)
           end
 
-          if extended_obj.respond_to?(@resolver_method)
-            if extended_args.any?
-              extended_obj.public_send(@resolver_method, **extended_args)
-            else
-              extended_obj.public_send(@resolver_method)
-            end
-          else
-            resolve_field_method(extended_obj, extended_args, query_ctx)
-          end
+          resolve_field_method(extended_obj, extended_args, query_ctx)
         end
       end
 
