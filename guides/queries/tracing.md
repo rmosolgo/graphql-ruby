@@ -67,8 +67,9 @@ Leaf fields are _not_ monitored (to avoid high cardinality in the metrics servic
 Implementations are based on {{ "Tracing::PlatformTracing" | api_doc }}.
 
 ## AppOptics
-[AppOptics](https://appoptics.com/) instrumentation will be automatic starting 
-with appoptics_apm-4.11.0.gem. For earlier gem versions please add appoptics_apm 
+
+[AppOptics](https://appoptics.com/) instrumentation will be automatic starting
+with appoptics_apm-4.11.0.gem. For earlier gem versions please add appoptics_apm
 tracing as follows:
 
 ```ruby

@@ -82,10 +82,10 @@ describe GraphQL::Tracing::AppOpticsTracing do
 
   it 'uses type + field keys' do
     query = <<-QL
-    query { company(id: 1) # there is a comment here 
-            { id name address 
-               { street } 
-            } 
+    query { company(id: 1) # there is a comment here
+            { id name address
+               { street }
+            }
           }
    # and another one here
    QL
