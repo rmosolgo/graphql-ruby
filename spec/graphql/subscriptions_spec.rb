@@ -203,7 +203,13 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
 
   Resolvers = {
     "Subscription" => {
-      "payload" => ->(o,a,c) { nil },
+      "payload" => ->(o,a,c) {
+        if c.query.subscription_update?
+          o
+        else
+          c.skip
+        end
+       },
       "myEvent" => ->(o,a,c) {
         if c.query.subscription_update?
           o
@@ -211,7 +217,13 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
           c.skip
         end
       },
-      "event" => ->(o,a,c) { nil },
+      "event" => ->(o,a,c) {
+        if c.query.subscription_update?
+          o
+        else
+          nil
+        end
+       },
       "eventSubscription" => ->(o,a,c) { nil },
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
