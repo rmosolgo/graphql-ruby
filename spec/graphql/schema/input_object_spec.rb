@@ -61,6 +61,27 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
+  describe "camelizing with numbers" do
+    module InputObjectWithNumbers
+      class InputObject < GraphQL::Schema::InputObject
+        argument :number_arg1, Integer, required: false
+        argument :number_arg_2, Integer, required: false
+        argument :number_arg3, Integer, required: false, camelize: false
+        argument :number_arg_4, Integer, required: false, camelize: false
+      end
+    end
+
+    it "accepts leading underscores or _no_ underscores" do
+      input_obj = InputObjectWithNumbers::InputObject
+      assert_equal ["numberArg1", "numberArg2", "number_arg3", "number_arg_4"], input_obj.arguments.keys
+      assert_equal ["numberArg1", "numberArg2", "number_arg3", "number_arg_4"], input_obj.arguments.values.map(&:graphql_name)
+      assert_equal :number_arg1, input_obj.arguments["numberArg1"].keyword
+      assert_equal :number_arg_2, input_obj.arguments["numberArg2"].keyword
+      assert_equal :number_arg3, input_obj.arguments["number_arg3"].keyword
+      assert_equal :number_arg_4, input_obj.arguments["number_arg_4"].keyword
+    end
+  end
+
   describe "prepare: / loads: / as:" do
     module InputObjectPrepareTest
       class InputObj < GraphQL::Schema::InputObject
