@@ -158,8 +158,8 @@ module StarWars
     field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, resolver: ShipsWithMaxPageSize
 
     field :bases, BasesConnectionWithTotalCountType, null: true, connection: true do
-      argument :nameIncludes, String, required: false
-      argument :complexOrder, Boolean, required: false
+      argument :name_includes, String, required: false
+      argument :complex_order, Boolean, required: false
     end
 
     def bases(name_includes: nil, complex_order: nil)
@@ -201,7 +201,7 @@ module StarWars
     field :basesWithoutNodes, BaseConnectionWithoutNodes, null: true, resolver_method: :all_bases_array
 
     field :basesAsSequelDataset, BasesConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
-      argument :nameIncludes, String, required: false
+      argument :name_includes, String, required: false
     end
 
     def bases_as_sequel_dataset(name_includes: nil)
