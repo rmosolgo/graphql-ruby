@@ -27,28 +27,6 @@ module GraphQL
                   valid = validation_error.valid?
                 end
               rescue GraphQL::LiteralValidationError => validation_error
-                # check to see if the ast node that caused the error to be raised is
-                # the same as the node we were checking here.
-                arg_type = arg_defn.type
-                if arg_type.kind.non_null?
-                  arg_type = arg_type.of_type
-                end
-
-                matched = if arg_type.kind.list?
-                  # for a list we claim an error if the node is contained in our list
-                  Array(node.value).include?(validation_error.ast_value)
-                elsif arg_type.kind.input_object? && node.value.is_a?(GraphQL::Language::Nodes::InputObject)
-                  # for an input object we check the arguments
-                  node.value.arguments.include?(validation_error.ast_value)
-                else
-                  # otherwise we just check equality
-                  node.value == validation_error.ast_value
-                end
-                if !matched
-                  # This node isn't the node that caused the error,
-                  # So halt this visit but continue visiting the rest of the tree
-                  return super
-                end
               end
 
               if !valid
