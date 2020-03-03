@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::Analysis::AST::QueryComplexity::ComplexityMergeFunctions
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Analysis::AST::QueryComplexity::ComplexityMergeFunctions";
+  relpath = '../../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../../_index.html">Index (C)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../../Analysis.html" title="GraphQL::Analysis (module)">Analysis</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../AST.html" title="GraphQL::Analysis::AST (module)">AST</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../QueryComplexity.html" title="GraphQL::Analysis::AST::QueryComplexity (class)">QueryComplexity</a></span></span>
+     &raquo; 
+    <span class="title">ComplexityMergeFunctions</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::Analysis::AST::QueryComplexity::ComplexityMergeFunctions
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/analysis/ast/query_complexity.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>These functions use <code>ScopedTypeComplexity</code> objects,
+especially their <code>scoped_children</code>, to traverse down the tree
+and find the max complexity for any possible runtime type.
+Yowza.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#applies_to%3F-class_method" title="applies_to? (class method)">.<strong>applies_to?</strong>(query, left_scope, right_scope)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>When looking at two selection scopes, figure out whether the selections on <code>right_scope</code> should be applied when analyzing <code>left_scope</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#merged_max_complexity-class_method" title="merged_max_complexity (class method)">.<strong>merged_max_complexity</strong>(query, children_for_scope)  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Complexity value for all these selections in the current scope.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#merged_max_complexity_for_scopes-class_method" title="merged_max_complexity_for_scopes (class method)">.<strong>merged_max_complexity_for_scopes</strong>(query, scoped_children_hashes)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="applies_to?-class_method">
+  
+    .<strong>applies_to?</strong>(query, left_scope, right_scope)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>When looking at two selection scopes, figure out whether the selections on
+<code>right_scope</code> should be applied when analyzing <code>left_scope</code>.
+This is like the <code>Typecast.subtype?</code>, except it’s using query-specific type filtering.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/analysis/ast/query_complexity.rb', line 111</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_applies_to?'>applies_to?</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_left_scope'>left_scope</span><span class='comma'>,</span> <span class='id identifier rubyid_right_scope'>right_scope</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_left_scope'>left_scope</span> <span class='op'>==</span> <span class='id identifier rubyid_right_scope'>right_scope</span>
+    <span class='comment'># This can happen when several branches are being analyzed together
+</span>    <span class='kw'>true</span>
+  <span class='kw'>else</span>
+    <span class='comment'># Check if these two scopes have _any_ types in common.
+</span>    <span class='id identifier rubyid_possible_right_types'>possible_right_types</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='lparen'>(</span><span class='id identifier rubyid_right_scope'>right_scope</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_possible_left_types'>possible_left_types</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='lparen'>(</span><span class='id identifier rubyid_left_scope'>left_scope</span><span class='rparen'>)</span>
+    <span class='op'>!</span><span class='lparen'>(</span><span class='id identifier rubyid_possible_right_types'>possible_right_types</span> <span class='op'>&amp;</span> <span class='id identifier rubyid_possible_left_types'>possible_left_types</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="merged_max_complexity-class_method">
+  
+    .<strong>merged_max_complexity</strong>(query, children_for_scope)  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Complexity value for all these selections in the current scope.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>children_for_scope</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>An array of <code>scoped_children[scope]</code> hashes (<code>{field_key =&gt; complexity}</code>)</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Complexity value for all these selections in the current scope</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/analysis/ast/query_complexity.rb', line 181</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_merged_max_complexity'>merged_max_complexity</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_children_for_scope'>children_for_scope</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_all_keys'>all_keys</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_children_for_scope'>children_for_scope</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_c'>c</span><span class='op'>|</span>
+    <span class='id identifier rubyid_all_keys'>all_keys</span><span class='period'>.</span><span class='id identifier rubyid_concat'>concat</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_all_keys'>all_keys</span><span class='period'>.</span><span class='id identifier rubyid_uniq!'>uniq!</span>
+  <span class='id identifier rubyid_complexity_for_keys'>complexity_for_keys</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_all_keys'>all_keys</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_child_key'>child_key</span><span class='op'>|</span>
+
+    <span class='id identifier rubyid_scoped_children_for_key'>scoped_children_for_key</span> <span class='op'>=</span> <span class='kw'>nil</span>
+    <span class='id identifier rubyid_complexity_for_key'>complexity_for_key</span> <span class='op'>=</span> <span class='kw'>nil</span>
+    <span class='id identifier rubyid_children_for_scope'>children_for_scope</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_children_hash'>children_hash</span><span class='op'>|</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_children_hash'>children_hash</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_child_key'>child_key</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_complexity_for_key'>complexity_for_key</span> <span class='op'>=</span> <span class='id identifier rubyid_children_hash'>children_hash</span><span class='lbracket'>[</span><span class='id identifier rubyid_child_key'>child_key</span><span class='rbracket'>]</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_complexity_for_key'>complexity_for_key</span><span class='period'>.</span><span class='id identifier rubyid_terminal?'>terminal?</span>
+          <span class='comment'># Assume that all terminals would return the same complexity
+</span>          <span class='comment'># Since it&#39;s a terminal, its child complexity is zero.
+</span>          <span class='id identifier rubyid_complexity_for_key'>complexity_for_key</span> <span class='op'>=</span> <span class='id identifier rubyid_complexity_for_key'>complexity_for_key</span><span class='period'>.</span><span class='id identifier rubyid_own_complexity'>own_complexity</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_complexity_for_keys'>complexity_for_keys</span><span class='lbracket'>[</span><span class='id identifier rubyid_child_key'>child_key</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_complexity_for_key'>complexity_for_key</span>
+        <span class='kw'>else</span>
+          <span class='id identifier rubyid_scoped_children_for_key'>scoped_children_for_key</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+          <span class='id identifier rubyid_scoped_children_for_key'>scoped_children_for_key</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_complexity_for_key'>complexity_for_key</span><span class='period'>.</span><span class='id identifier rubyid_scoped_children'>scoped_children</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+
+    <span class='kw'>if</span> <span class='id identifier rubyid_scoped_children_for_key'>scoped_children_for_key</span>
+      <span class='id identifier rubyid_child_complexity'>child_complexity</span> <span class='op'>=</span> <span class='id identifier rubyid_merged_max_complexity_for_scopes'>merged_max_complexity_for_scopes</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_scoped_children_for_key'>scoped_children_for_key</span><span class='rparen'>)</span>
+      <span class='comment'># This is the _last_ one we visited; assume it&#39;s representative.
+</span>      <span class='id identifier rubyid_max_complexity'>max_complexity</span> <span class='op'>=</span> <span class='id identifier rubyid_complexity_for_key'>complexity_for_key</span><span class='period'>.</span><span class='id identifier rubyid_own_complexity'>own_complexity</span><span class='lparen'>(</span><span class='id identifier rubyid_child_complexity'>child_complexity</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_complexity_for_keys'>complexity_for_keys</span><span class='lbracket'>[</span><span class='id identifier rubyid_child_key'>child_key</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_max_complexity'>max_complexity</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Calculate the child complexity by summing the complexity of all selections
+</span>  <span class='id identifier rubyid_complexity_for_keys'>complexity_for_keys</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span><span class='period'>.</span><span class='id identifier rubyid_inject'>inject</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='symbol'>:+</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="merged_max_complexity_for_scopes-class_method">
+  
+    .<strong>merged_max_complexity_for_scopes</strong>(query, scoped_children_hashes)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/analysis/ast/query_complexity.rb', line 123</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_merged_max_complexity_for_scopes'>merged_max_complexity_for_scopes</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_scoped_children_hashes'>scoped_children_hashes</span><span class='rparen'>)</span>
+  <span class='comment'># Figure out what scopes are possible here.
+</span>  <span class='comment'># Use a hash, but ignore the values; it&#39;s just a fast way to work with the keys.
+</span>  <span class='id identifier rubyid_all_scopes'>all_scopes</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_scoped_children_hashes'>scoped_children_hashes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='op'>|</span>
+    <span class='id identifier rubyid_all_scopes'>all_scopes</span><span class='period'>.</span><span class='id identifier rubyid_merge!'>merge!</span><span class='lparen'>(</span><span class='id identifier rubyid_h'>h</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># If an abstract scope is present, but _all_ of its concrete types
+</span>  <span class='comment'># are also in the list, remove it from the list of scopes to check,
+</span>  <span class='comment'># because every possible type is covered by a concrete type.
+</span>  <span class='comment'># (That is, there are no remainder types to check.)
+</span>  <span class='comment'>#
+</span>  <span class='comment'># TODO redocument
+</span>  <span class='id identifier rubyid_prev_keys'>prev_keys</span> <span class='op'>=</span> <span class='id identifier rubyid_all_scopes'>all_scopes</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span>
+  <span class='id identifier rubyid_prev_keys'>prev_keys</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_scope'>scope</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_scope'>scope</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_abstract?'>abstract?</span>
+      <span class='id identifier rubyid_missing_concrete_types'>missing_concrete_types</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='lparen'>(</span><span class='id identifier rubyid_scope'>scope</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='op'>!</span><span class='id identifier rubyid_all_scopes'>all_scopes</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_t'>t</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+      <span class='comment'># This concrete type is possible _only_ as a member of the abstract type.
+</span>      <span class='comment'># So, attribute to it the complexity which belongs to the abstract type.
+</span>      <span class='id identifier rubyid_missing_concrete_types'>missing_concrete_types</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_concrete_scope'>concrete_scope</span><span class='op'>|</span>
+        <span class='id identifier rubyid_all_scopes'>all_scopes</span><span class='lbracket'>[</span><span class='id identifier rubyid_concrete_scope'>concrete_scope</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_all_scopes'>all_scopes</span><span class='lbracket'>[</span><span class='id identifier rubyid_scope'>scope</span><span class='rbracket'>]</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_all_scopes'>all_scopes</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span><span class='lparen'>(</span><span class='id identifier rubyid_scope'>scope</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># This will hold `{ type =&gt; int }` pairs, one for each possible branch
+</span>  <span class='id identifier rubyid_complexity_by_scope'>complexity_by_scope</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+
+  <span class='comment'># For each scope,
+</span>  <span class='comment'># find the lexical selections that might apply to it,
+</span>  <span class='comment'># and gather them together into an array.
+</span>  <span class='comment'># Then, treat the set of selection hashes
+</span>  <span class='comment'># as a set and calculate the complexity for them as a unit
+</span>  <span class='id identifier rubyid_all_scopes'>all_scopes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_scope'>scope</span><span class='comma'>,</span> <span class='id identifier rubyid__'>_</span><span class='op'>|</span>
+    <span class='comment'># These will be the selections on `scope`
+</span>    <span class='id identifier rubyid_children_for_scope'>children_for_scope</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_scoped_children_hashes'>scoped_children_hashes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_sc_h'>sc_h</span><span class='op'>|</span>
+      <span class='id identifier rubyid_sc_h'>sc_h</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_inner_scope'>inner_scope</span><span class='comma'>,</span> <span class='id identifier rubyid_children_hash'>children_hash</span><span class='op'>|</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_applies_to?'>applies_to?</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_scope'>scope</span><span class='comma'>,</span> <span class='id identifier rubyid_inner_scope'>inner_scope</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_children_for_scope'>children_for_scope</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_children_hash'>children_hash</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+
+    <span class='comment'># Calculate the complexity for `scope`, merging all
+</span>    <span class='comment'># possible lexical branches.
+</span>    <span class='id identifier rubyid_complexity_value'>complexity_value</span> <span class='op'>=</span> <span class='id identifier rubyid_merged_max_complexity'>merged_max_complexity</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_children_for_scope'>children_for_scope</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_complexity_by_scope'>complexity_by_scope</span><span class='lbracket'>[</span><span class='id identifier rubyid_scope'>scope</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_complexity_value'>complexity_value</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Return the max complexity among all scopes
+</span>  <span class='id identifier rubyid_complexity_by_scope'>complexity_by_scope</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Mar  3 12:01:40 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.23 (ruby-2.6.3).
+</div>
+
+    </div>
+  </body>
+</html>
