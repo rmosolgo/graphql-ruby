@@ -37,6 +37,41 @@ if testing_rails?
 
     include ConnectionAssertions
 
+    describe "ActiveRecordRelationConnection with legacy runtime" do
+      let(:schema) {
+        # Make a class-based schema that's _not_ using the interpreter
+        schema_class = ConnectionAssertions.build_schema(
+          connection_class: nil,
+          total_count_connection_class: nil,
+          get_items: nil,
+        )
+        Class.new(schema_class) do
+          query_execution_strategy(GraphQL::Execution::Execute)
+          self.analysis_engine = GraphQL::Analysis
+          self.interpreter = false
+
+          def get_items
+            -> {
+              if Food.respond_to?(:scoped)
+                Food.scoped # Rails 3-friendly version of .all
+              else
+                Food.all
+              end
+            }
+          end
+
+          def connection_class
+            GraphQL::Pagination::ActiveRecordRelationConnection
+          end
+
+          def total_count_connection_class
+            RelationConnectionWithTotalCount
+          end
+        end
+      }
+      include ConnectionAssertions
+    end
+
     it "doesn't run pageInfo queries when not necessary" do
       results = nil
       log = with_active_record_log do
