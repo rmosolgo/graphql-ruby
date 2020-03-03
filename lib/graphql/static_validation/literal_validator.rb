@@ -6,6 +6,8 @@ module GraphQL
       def initialize(context:)
         @context = context
         @warden = context.warden
+        @invalid_response = GraphQL::Query::InputValidationResult.new(valid: false, problems: [])
+        @valid_response = GraphQL::Query::InputValidationResult.new(valid: true, problems: [])
       end
 
       def validate(ast_value, type)
@@ -20,15 +22,16 @@ module GraphQL
         if type.nil?
           # this means we're an undefined argument, see #present_input_field_values_are_valid
           maybe_raise_if_invalid(ast_value) do
-            false
+            @invalid_response
           end
         elsif ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
           maybe_raise_if_invalid(ast_value) do
-            !type.kind.non_null?
+            type.kind.non_null? ? @invalid_response : @valid_response
           end
         elsif type.kind.non_null?
           maybe_raise_if_invalid(ast_value) do
-            (!ast_value.nil?) &&
+            ast_value.nil? ?
+              @invalid_response :
               recursively_validate(ast_value, type.of_type)
           end
         elsif type.kind.list?
@@ -36,7 +39,7 @@ module GraphQL
           results = ensure_array(ast_value).map { |val| recursively_validate(val, item_type) }
           merge_results(results)
         elsif ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-          true
+          @valid_response
         elsif type.kind.scalar? && constant_scalar?(ast_value)
           maybe_raise_if_invalid(ast_value) do
             type.validate_input(ast_value, @context)
@@ -47,16 +50,19 @@ module GraphQL
               type.validate_input(ast_value.name, @context)
             else
               # if our ast_value isn't an Enum it's going to be invalid so return false
-              false
+              @invalid_response
             end
           end
         elsif type.kind.input_object? && ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
           maybe_raise_if_invalid(ast_value) do
-            required_input_fields_are_present(type, ast_value) && present_input_field_values_are_valid(type, ast_value)
+            merge_results([
+              required_input_fields_are_present(type, ast_value),
+              present_input_field_values_are_valid(type, ast_value)
+            ])
           end
         else
           maybe_raise_if_invalid(ast_value) do
-            false
+            @invalid_response
           end
         end
       end
@@ -64,16 +70,7 @@ module GraphQL
       def maybe_raise_if_invalid(ast_value)
         ret = yield
 
-        is_valid = case ret
-        when nil, false
-          false
-        when Query::InputValidationResult
-          ret.valid?
-        else
-          true
-        end
-
-        if !@context.schema.error_bubbling && !is_valid
+        if !@context.schema.error_bubbling && !ret.valid?
           throw(:invalid, ret)
         else
           ret
@@ -103,7 +100,7 @@ module GraphQL
         present_field_names = ast_node.arguments.map(&:name)
         missing_required_field_names = required_field_names - present_field_names
         if @context.schema.error_bubbling
-          missing_required_field_names.empty?
+          missing_required_field_names.empty? ? @valid_response : @invalid_response
         else
           results = missing_required_field_names.map do |name|
             arg_type = @warden.arguments(type).find { |f| f.name == name }.type
@@ -132,11 +129,7 @@ module GraphQL
       def merge_results(results_list)
         merged_result = Query::InputValidationResult.new
         results_list.each do |inner_result|
-          if inner_result == false
-            merged_result.add_problem("Validation failed")
-          elsif inner_result.is_a?(Query::InputValidationResult)
-            merged_result.merge_result!([], inner_result)
-          end
+          merged_result.merge_result!([], inner_result)
         end
         merged_result
       end

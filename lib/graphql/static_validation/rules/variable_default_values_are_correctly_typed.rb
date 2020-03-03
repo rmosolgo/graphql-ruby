@@ -17,20 +17,13 @@ module GraphQL
             if type.nil?
               # This is handled by another validator
             else
+              validation_result = context.validate_literal(value, type)
 
-              valid = context.validate_literal(value, type)
-              if valid.is_a?(GraphQL::Query::InputValidationResult)
-                validation_error = valid
-                valid = validation_error.valid?
-              end
-
-              if !valid
-                if validation_error
-                  problems = validation_error.problems
-                  first_problem = problems && problems.first
-                  if first_problem
-                    error_message = first_problem["message"]
-                  end
+              if !validation_result.valid?
+                problems = validation_result.problems
+                first_problem = problems && problems.first
+                if first_problem
+                  error_message = first_problem["message"]
                 end
 
                 error_message ||= "Default value for $#{node.name} doesn't match type #{type.to_type_signature}"
