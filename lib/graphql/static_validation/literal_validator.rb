@@ -67,9 +67,10 @@ module GraphQL
         end
       end
 
+      # When `error_bubbling` is false, we want to bail on the first failure that we find.
+      # Use `throw` to escape the current call stack, returning the invalid response.
       def maybe_raise_if_invalid(ast_value)
         ret = yield
-
         if !@context.schema.error_bubbling && !ret.valid?
           throw(:invalid, ret)
         else

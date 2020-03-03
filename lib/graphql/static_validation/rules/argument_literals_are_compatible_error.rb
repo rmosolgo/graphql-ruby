@@ -17,7 +17,7 @@ module GraphQL
       def to_h
         if @coerce_extensions
           extensions = @coerce_extensions
-          # This is for legacy compat -- I don't think it's right :confounded:
+          # This is for legacy compat -- but this key is supposed to be a GraphQL type name :confounded:
           extensions["typeName"] = "CoercionError"
         else
           extensions = {

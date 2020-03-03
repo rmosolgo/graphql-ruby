@@ -57,7 +57,7 @@ module GraphQL
             end
             result.add_problem("Could not coerce value#{str_value} to #{graphql_name}")
           elsif coerced_result.is_a?(GraphQL::CoercionError)
-            result.add_problem(coerced_result.message, extensions: coerced_result.extensions)
+            result.add_problem(coerced_result.message, message: coerced_result.message, extensions: coerced_result.extensions)
           end
           result
         end

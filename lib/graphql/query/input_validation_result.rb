@@ -4,21 +4,18 @@ module GraphQL
     class InputValidationResult
       attr_accessor :problems
 
-      def initialize(valid: nil, problems: nil)
+      def initialize(valid: true, problems: nil)
         @valid = valid
         @problems = problems
       end
 
       def valid?
-        if @valid.nil?
-          @problems.nil?
-        else
-          @valid
-        end
+        @valid
       end
 
       def add_problem(explanation, path = nil, extensions: nil, message: nil)
         @problems ||= []
+        @valid = false
         problem = { "path" => path || [], "explanation" => explanation }
         if extensions
           problem["extensions"] = extensions

@@ -2,7 +2,6 @@
 module GraphQL
   module StaticValidation
     module ArgumentLiteralsAreCompatible
-      # TODO dedup with ArgumentsAreDefined
       def on_argument(node, parent)
         # Check the child arguments first;
         # don't add a new error if one of them reports an error
@@ -34,7 +33,6 @@ module GraphQL
                 # This is some legacy stuff from when `CoercionError` was raised thru the stack
                 if message
                   coerce_extensions = first_problem["extensions"] || {
-                    "typeName" => "CoercionError",
                     "code" => "argumentLiteralsIncompatible"
                   }
                 end
