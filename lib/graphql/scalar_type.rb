@@ -67,8 +67,21 @@ module GraphQL
 
     def validate_non_null_input(value, ctx)
       result = Query::InputValidationResult.new
-      if value.is_a?(GraphQL::Language::Nodes::Enum) || coerce_non_null_input(value, ctx).nil?
+
+      coerced_result = begin
+        coerce_non_null_input(value, ctx)
+      rescue GraphQL::CoercionError => err
+        err
+      end
+
+      if value.is_a?(GraphQL::Language::Nodes::Enum) || coerced_result.nil?
         result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{name}")
+      elsif coerced_result.is_a?(GraphQL::CoercionError)
+        result.add_problem(
+          coerced_result.message,
+          message: coerced_result.message,
+          extensions: coerced_result.extensions
+        )
       end
       result
     end

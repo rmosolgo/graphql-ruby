@@ -128,10 +128,9 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         assert_equal 1, errors.length
       end
     end
+
     it "works with error bubbling enabled" do
       with_error_bubbling(schema) do
-        # TODO:
-        # It's annoying that this error cascades up, there should only be one:
         assert_equal 2, errors.length
       end
     end
