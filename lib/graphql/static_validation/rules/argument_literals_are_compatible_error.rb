@@ -5,19 +5,31 @@ module GraphQL
       attr_reader :type_name
       attr_reader :argument_name
 
-      def initialize(message, path: nil, nodes: [], type:, argument: nil, extensions: nil)
+      def initialize(message, path: nil, nodes: [], type:, argument: nil, extensions: nil, coerce_extensions: nil)
         super(message, path: path, nodes: nodes)
         @type_name = type
         @argument_name = argument
         @extensions = extensions
+        @coerce_extensions = coerce_extensions
       end
 
       # A hash representation of this Message
       def to_h
-        extensions = {
-          "code" => code,
-          "typeName" => type_name
-        }.tap { |h| h["argumentName"] = argument_name unless argument_name.nil? }
+        if @coerce_extensions
+          extensions = @coerce_extensions
+          # This is for legacy compat -- I don't think it's right :confounded:
+          extensions["typeName"] = "CoercionError"
+        else
+          extensions = {
+            "code" => code,
+            "typeName" => type_name
+          }
+
+          if argument_name
+            extensions["argumentName"] = argument_name
+          end
+        end
+
         extensions.merge!(@extensions) unless @extensions.nil?
         super.merge({
           "extensions" => extensions

@@ -18,21 +18,31 @@ module GraphQL
               # This is handled by another validator
             else
               begin
-                valid = context.valid_literal?(value, type)
-              rescue GraphQL::CoercionError => err
-                error_message = err.message
-              rescue GraphQL::LiteralValidationError
+                valid = context.validate_literal(value, type)
+                if valid.is_a?(GraphQL::Query::InputValidationResult)
+                  validation_error = valid
+                  valid = validation_error.valid?
+                end
+              rescue GraphQL::LiteralValidationError => validation_error
                 # noop, we just want to stop any LiteralValidationError from propagating
               end
 
               if !valid
+                if validation_error
+                  problems = validation_error.problems
+                  first_problem = problems && problems.first
+                  if first_problem
+                    error_message = first_problem["message"]
+                  end
+                end
+
                 error_message ||= "Default value for $#{node.name} doesn't match type #{type.to_type_signature}"
                 add_error(GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTypedError.new(
                   error_message,
                   nodes: node,
                   name: node.name,
                   type: type.to_type_signature,
-                  error_type: VariableDefaultValuesAreCorrectlyTypedError::VIOLATIONS[:INVALID_TYPE]
+                  error_type: VariableDefaultValuesAreCorrectlyTypedError::VIOLATIONS[:INVALID_TYPE],
                 ))
               end
             end

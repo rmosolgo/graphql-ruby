@@ -8,7 +8,7 @@ module GraphQL
         @warden = context.warden
       end
 
-      def validate(ast_value, type)
+      def recursively_validate(ast_value, type)
         if type.nil?
           # this means we're an undefined argument, see #present_input_field_values_are_valid
           maybe_raise_if_invalid(ast_value) do
@@ -20,21 +20,23 @@ module GraphQL
           end
         elsif type.kind.non_null?
           maybe_raise_if_invalid(ast_value) do
-            (!ast_value.nil?)
-          end && validate(ast_value, type.of_type)
+            (!ast_value.nil?) &&
+              recursively_validate(ast_value, type.of_type)
+          end
         elsif type.kind.list?
           item_type = type.of_type
-          ensure_array(ast_value).all? { |val| validate(val, item_type) }
+          results = ensure_array(ast_value).map { |val| recursively_validate(val, item_type) }
+          merge_results(results)
         elsif ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           true
         elsif type.kind.scalar? && constant_scalar?(ast_value)
           maybe_raise_if_invalid(ast_value) do
-            type.valid_input?(ast_value, @context)
+            type.validate_input(ast_value, @context)
           end
         elsif type.kind.enum?
           maybe_raise_if_invalid(ast_value) do
             if ast_value.is_a?(GraphQL::Language::Nodes::Enum)
-              type.valid_input?(ast_value.name, @context)
+              type.validate_input(ast_value.name, @context)
             else
               # if our ast_value isn't an Enum it's going to be invalid so return false
               false
@@ -55,8 +57,21 @@ module GraphQL
 
       def maybe_raise_if_invalid(ast_value)
         ret = yield
-        if !@context.schema.error_bubbling && !ret
+
+        is_valid = case ret
+        when nil, false
+          false
+        when Query::InputValidationResult
+          ret.valid?
+        else
+          true
+        end
+
+        if !@context.schema.error_bubbling && !is_valid
           e = LiteralValidationError.new
+          if ret.respond_to?(:problems)
+            e.problems = ret.problems
+          end
           e.ast_value = ast_value
           raise e
         else
@@ -89,25 +104,40 @@ module GraphQL
         if @context.schema.error_bubbling
           missing_required_field_names.empty?
         else
-          missing_required_field_names.all? do |name|
-            validate(GraphQL::Language::Nodes::NullValue.new(name: name), @warden.arguments(type).find { |f| f.name == name }.type )
+          results = missing_required_field_names.map do |name|
+            arg_type = @warden.arguments(type).find { |f| f.name == name }.type
+            recursively_validate(GraphQL::Language::Nodes::NullValue.new(name: name), arg_type)
           end
+          merge_results(results)
         end
       end
 
       def present_input_field_values_are_valid(type, ast_node)
         field_map = @warden.arguments(type).reduce({}) { |m, f| m[f.name] = f; m}
-        ast_node.arguments.all? do |value|
+        results = ast_node.arguments.map do |value|
           field = field_map[value.name]
           # we want to call validate on an argument even if it's an invalid one
           # so that our raise exception is on it instead of the entire InputObject
           type = field && field.type
-          validate(value.value, type)
+          recursively_validate(value.value, type)
         end
+        merge_results(results)
       end
 
       def ensure_array(value)
         value.is_a?(Array) ? value : [value]
+      end
+
+      def merge_results(results_list)
+        merged_result = Query::InputValidationResult.new
+        results_list.each do |inner_result|
+          if inner_result == false
+            merged_result.add_problem("Validation failed")
+          elsif inner_result.is_a?(Query::InputValidationResult)
+            merged_result.merge_result!([], inner_result)
+          end
+        end
+        merged_result
       end
     end
   end

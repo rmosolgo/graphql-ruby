@@ -3,14 +3,22 @@ module GraphQL
   class Query
     class InputValidationResult
       attr_accessor :problems
+      attr_reader :extensions, :message
 
       def valid?
         @problems.nil?
       end
 
-      def add_problem(explanation, path = nil)
+      def add_problem(explanation, path = nil, extensions: nil, message: nil)
         @problems ||= []
-        @problems.push({ "path" => path || [], "explanation" => explanation })
+        problem = { "path" => path || [], "explanation" => explanation }
+        if extensions
+          problem["extensions"] = extensions
+        end
+        if message
+          problem["message"] = message
+        end
+        @problems.push(problem)
       end
 
       def merge_result!(path, inner_result)
@@ -18,7 +26,7 @@ module GraphQL
 
         inner_result.problems.each do |p|
           item_path = [path, *p["path"]]
-          add_problem(p["explanation"], item_path)
+          add_problem(p["explanation"], item_path, message: p["message"], extensions: p["extensions"])
         end
       end
     end
