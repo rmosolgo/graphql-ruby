@@ -82,6 +82,7 @@
 - (Non-interpreter only) The return value of subscription fields is passed along to execute the subscription. Return `nil` to get the previous behavior. #2536
 - `Schema.from_definition` builds a _class-based schema_ from the definition string #2178
 - Only integers are accepted for `Int` type #2404
+- Custom scalars now call `.coerce_input` on all input values - previously this call was skipped for `null` values. 
 
 ### Deprecations
 
