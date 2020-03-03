@@ -8,6 +8,14 @@ module GraphQL
         @warden = context.warden
       end
 
+      def validate(ast_value, type)
+        catch(:invalid) do
+          recursively_validate(ast_value, type)
+        end
+      end
+
+      private
+
       def recursively_validate(ast_value, type)
         if type.nil?
           # this means we're an undefined argument, see #present_input_field_values_are_valid
@@ -53,8 +61,6 @@ module GraphQL
         end
       end
 
-      private
-
       def maybe_raise_if_invalid(ast_value)
         ret = yield
 
@@ -68,12 +74,7 @@ module GraphQL
         end
 
         if !@context.schema.error_bubbling && !is_valid
-          e = LiteralValidationError.new
-          if ret.respond_to?(:problems)
-            e.problems = ret.problems
-          end
-          e.ast_value = ast_value
-          raise e
+          throw(:invalid, ret)
         else
           ret
         end

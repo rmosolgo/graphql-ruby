@@ -36,7 +36,7 @@ module GraphQL
       end
 
       def validate_literal(ast_value, type)
-        @literal_validator.recursively_validate(ast_value, type)
+        @literal_validator.validate(ast_value, type)
       end
     end
   end

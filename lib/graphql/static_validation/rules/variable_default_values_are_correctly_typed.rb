@@ -17,14 +17,11 @@ module GraphQL
             if type.nil?
               # This is handled by another validator
             else
-              begin
-                valid = context.validate_literal(value, type)
-                if valid.is_a?(GraphQL::Query::InputValidationResult)
-                  validation_error = valid
-                  valid = validation_error.valid?
-                end
-              rescue GraphQL::LiteralValidationError => validation_error
-                # noop, we just want to stop any LiteralValidationError from propagating
+
+              valid = context.validate_literal(value, type)
+              if valid.is_a?(GraphQL::Query::InputValidationResult)
+                validation_error = valid
+                valid = validation_error.valid?
               end
 
               if !valid

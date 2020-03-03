@@ -20,13 +20,11 @@ module GraphQL
             arg_defn = parent_defn.arguments[node.name]
             validation_error = nil
             if arg_defn
-              begin
-                valid = context.validate_literal(node.value, arg_defn.type)
-                if valid.is_a?(GraphQL::Query::InputValidationResult)
-                  validation_error = valid
-                  valid = validation_error.valid?
-                end
-              rescue GraphQL::LiteralValidationError => validation_error
+              valid = context.validate_literal(node.value, arg_defn.type)
+
+              if valid.is_a?(GraphQL::Query::InputValidationResult)
+                validation_error = valid
+                valid = validation_error.valid?
               end
 
               if !valid
