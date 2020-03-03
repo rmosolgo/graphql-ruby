@@ -703,8 +703,8 @@ describe GraphQL::Schema::Warden do
           res = MaskHelpers.query_with_mask(query_string, mask)
           expected_errors =
             [
+              "InputObject 'WithinInput' doesn't accept argument 'miles'",
               "Argument 'within' on Field 'languages' has an invalid value ({latitude: 1.0, longitude: 2.2, miles: 3.3}). Expected type 'WithinInput'.",
-              "InputObject 'WithinInput' doesn't accept argument 'miles'"
             ]
           assert_equal expected_errors, error_messages(res)
         end
