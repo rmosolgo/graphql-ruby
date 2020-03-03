@@ -8,6 +8,26 @@
 
 ### Bug fixes
 
+## 1.10.4 (3 March 2020)
+
+### Breaking changes
+
+- When an argument is defined with a symbol (`argument :my_arg, ...`), that symbol is used _verbatim_ to build Ruby keyword arguments. Previously it was converted to underscore-case, but this autotransform was confusing and wrong in some cases. You may have to change the symbol in your `argument(...)` configuration if you were depending on that underscorization. #2792
+- Schemas from `.from_definition` previously had half-way connection support. It's now completely removed, so you have to add connection wrappers manually. See #2782 for migration notes.
+
+### New features
+
+- Add `Appoptics` tracing #2789
+- Add `Query#sanitized_query_string` #2785
+- Improved duplicate type error message #2777
+
+### Bug fixes
+
+- Fix arguments ending in numbers, so they're injected with the same name that they're configured with #2792
+- Improve `Query#arguments_for` with interpreter #2781
+- Fix visitor replacement of variable definitions #2752
+- Remove half-broken connection handling from `Schema.from_definition` #2782
+
 ## 1.10.3 (17 Feb 2020)
 
 ### New features
