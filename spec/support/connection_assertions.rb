@@ -62,7 +62,12 @@ module ConnectionAssertions
         end
 
         def items(max_page_size_override: nil)
-          context.schema.connection_class.new(get_items, max_page_size: max_page_size_override)
+          if max_page_size_override
+            context.schema.connection_class.new(get_items, max_page_size: max_page_size_override)
+          else
+            # don't manually apply the wrapper when it's not required -- check automatic wrapping.
+            get_items
+          end
         end
 
         field :custom_items, custom_item_connection, null: false

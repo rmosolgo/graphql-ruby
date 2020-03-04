@@ -934,6 +934,11 @@ module GraphQL
         if !schema_defn.interpreter?
           schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         end
+
+        if new_connections?
+          schema_defn.connections = self.connections
+        end
+
         schema_defn.send(:rebuild_artifacts)
 
         schema_defn
