@@ -59,7 +59,7 @@ module GraphQL
             sliced_nodes.count > first
           elsif before
             # The original array is longer than the `before` index
-            index_from_cursor(before) < items.length
+            index_from_cursor(before) < items.length + 1
           else
             false
           end

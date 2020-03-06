@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Relay::ConnectionResolve do
   let(:query_string) { <<-GRAPHQL
-    query getShips($name: String!){
+    query getShips($name: String!, $testParentName: Boolean = false){
       rebels {
         ships(nameIncludes: $name) {
           edges {
@@ -11,7 +11,7 @@ describe GraphQL::Relay::ConnectionResolve do
               name
             }
           }
-          parentClassName
+          parentClassName @include(if: $testParentName)
         }
       }
     }
@@ -45,27 +45,31 @@ describe GraphQL::Relay::ConnectionResolve do
   end
 
 
-  describe "when a lazy object is returned" do
-    it "returns the items with the correct parent" do
-      result = star_wars_query(query_string, { "name" => "lazyObject"})
-      assert_equal 5, result["data"]["rebels"]["ships"]["edges"].length
-      assert_equal "StarWars::FactionRecord", result["data"]["rebels"]["ships"]["parentClassName"]
+  if !TESTING_INTERPRETER
+    describe "when a lazy object is returned" do
+      it "returns the items with the correct parent" do
+        result = star_wars_query(query_string, { "name" => "lazyObject", "testParentName" => true })
+        assert_equal 5, result["data"]["rebels"]["ships"]["edges"].length
+        assert_equal "StarWars::FactionRecord", result["data"]["rebels"]["ships"]["parentClassName"]
+      end
     end
   end
 
   describe "when a resolver is used" do
-    it "returns the items with the correct parent" do
-      resolver_query_str = <<-GRAPHQL
-        {
-          rebels {
-            shipsByResolver {
-              parentClassName
+    if !TESTING_INTERPRETER
+      it "returns the items with the correct parent" do
+        resolver_query_str = <<-GRAPHQL
+          {
+            rebels {
+              shipsByResolver {
+                parentClassName
+              }
             }
           }
-        }
-        GRAPHQL
-      result = star_wars_query(resolver_query_str)
-      assert_equal "StarWars::FactionRecord", result["data"]["rebels"]["shipsByResolver"]["parentClassName"]
+          GRAPHQL
+        result = star_wars_query(resolver_query_str)
+        assert_equal "StarWars::FactionRecord", result["data"]["rebels"]["shipsByResolver"]["parentClassName"]
+      end
     end
   end
 
