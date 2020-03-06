@@ -48,7 +48,11 @@ module StarWars
     field :total_count, Integer, null: true
 
     def total_count
-      object.nodes.count
+      if TESTING_INTERPRETER
+        object.items.count
+      else
+        object.nodes.count
+      end
     end
   end
 
@@ -431,6 +435,8 @@ module StarWars
     if TESTING_INTERPRETER
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
+      use GraphQL::Pagination::Connections
+      connections.add(LazyNodesWrapper, LazyNodesRelationConnection)
     end
 
     def self.resolve_type(type, object, ctx)
