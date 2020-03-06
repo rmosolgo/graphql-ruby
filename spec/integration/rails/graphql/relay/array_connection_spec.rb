@@ -289,33 +289,33 @@ describe GraphQL::Relay::ArrayConnection do
         end
       else
         it "provides bidirectional_pagination" do
-            result = star_wars_query(query_string, { "first" => 1 })
-            last_cursor = get_last_cursor(result)
+          result = star_wars_query(query_string, { "first" => 1 })
+          last_cursor = get_last_cursor(result)
 
-            # When going forwards, bi-directional pagination
-            # returns `true` even for `hasPreviousPage`
-            result = star_wars_query(query_string, { "first" => 1, "after" => last_cursor })
-            assert_equal(true, get_page_info(result, "ships")["hasNextPage"])
-            assert_equal(false, get_page_info(result, "ships")["hasPreviousPage"])
+          # When going forwards, bi-directional pagination
+          # returns `true` even for `hasPreviousPage`
+          result = star_wars_query(query_string, { "first" => 1, "after" => last_cursor })
+          assert_equal(true, get_page_info(result, "ships")["hasNextPage"])
+          assert_equal(false, get_page_info(result, "ships")["hasPreviousPage"])
 
-            result = with_bidirectional_pagination {
-              star_wars_query(query_string, { "first" => 3, "after" => last_cursor })
-            }
-            assert_equal(true, get_page_info(result, "ships")["hasNextPage"])
-            assert_equal(true, get_page_info(result, "ships")["hasPreviousPage"])
+          result = with_bidirectional_pagination {
+            star_wars_query(query_string, { "first" => 3, "after" => last_cursor })
+          }
+          assert_equal(true, get_page_info(result, "ships")["hasNextPage"])
+          assert_equal(true, get_page_info(result, "ships")["hasPreviousPage"])
 
-            # When going backwards, bi-directional pagination
-            # returns true for `hasNextPage`
-            last_cursor = get_last_cursor(result)
-            result = star_wars_query(query_string, { "last" => 1, "before" => last_cursor })
-            assert_equal(false, get_page_info(result, "ships")["hasNextPage"])
-            assert_equal(true, get_page_info(result, "ships")["hasPreviousPage"])
+          # When going backwards, bi-directional pagination
+          # returns true for `hasNextPage`
+          last_cursor = get_last_cursor(result)
+          result = star_wars_query(query_string, { "last" => 1, "before" => last_cursor })
+          assert_equal(false, get_page_info(result, "ships")["hasNextPage"])
+          assert_equal(true, get_page_info(result, "ships")["hasPreviousPage"])
 
-            result = with_bidirectional_pagination {
-              star_wars_query(query_string, { "last" => 2, "before" => last_cursor })
-            }
-            assert_equal(true, get_page_info(result, "ships")["hasNextPage"])
-            assert_equal(true, get_page_info(result, "ships")["hasPreviousPage"])
+          result = with_bidirectional_pagination {
+            star_wars_query(query_string, { "last" => 2, "before" => last_cursor })
+          }
+          assert_equal(true, get_page_info(result, "ships")["hasNextPage"])
+          assert_equal(true, get_page_info(result, "ships")["hasPreviousPage"])
         end
 
         it "returns correct page info when the before cursor belongs to the last element in the array" do
