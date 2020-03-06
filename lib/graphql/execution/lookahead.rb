@@ -340,7 +340,7 @@ module GraphQL
             # For these, `prepare` is applied during `#initialize`.
             # Pass `nil` so it will be skipped in `#arguments`.
             # What a mess.
-            args = arguments(query, nil, arg_type, ast_value)
+            args = arguments(query, arg_type, ast_value)
             # We're not tracking defaults_used, but for our purposes
             # we compare the value to the default value.
             return true, arg_type.new(ruby_kwargs: args, context: query.context, defaults_used: nil)
