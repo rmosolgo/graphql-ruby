@@ -301,7 +301,7 @@ describe GraphQL::Relay::RelationConnection do
         # Max page size is applied _without_ `first`, also
         result = star_wars_query(query_string)
         assert_equal(2, result["data"]["empire"]["bases"]["edges"].size)
-        assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is false when first is not specified")
+        assert_equal(true, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is true when first is not specified")
       end
 
       it "applies to queries by `last`" do
@@ -360,7 +360,7 @@ describe GraphQL::Relay::RelationConnection do
         # Max page size is applied _without_ `first`, also
         result = star_wars_query(query_string)
         assert_equal(3, result["data"]["empire"]["bases"]["edges"].size)
-        assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is false when first is not specified")
+        assert_equal(true, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is true when first is not specified")
       end
 
       it "applies to queries by `last`" do

@@ -34,19 +34,17 @@ module GraphQL
       private
 
       def first
-        return @first if defined? @first
-
-        @first = get_limited_arg(:first)
-        @first = max_page_size if @first && max_page_size && @first > max_page_size
-        @first
+        @first ||= begin
+          capped = limit_pagination_argument(arguments[:first], max_page_size)
+          if capped.nil? && last.nil?
+            capped = max_page_size
+          end
+          capped
+        end
       end
 
       def last
-        return @last if defined? @last
-
-        @last = get_limited_arg(:last)
-        @last = max_page_size if @last && max_page_size && @last > max_page_size
-        @last
+        @last ||= limit_pagination_argument(arguments[:last], max_page_size)
       end
 
       # apply first / last limit results

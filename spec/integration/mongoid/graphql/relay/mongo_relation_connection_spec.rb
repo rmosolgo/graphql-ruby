@@ -252,7 +252,7 @@ describe GraphQL::Relay::MongoRelationConnection do
         # Max page size is applied _without_ `first`, also
         result = star_trek_query(query_string)
         assert_equal(2, result["data"]["federation"]["bases"]["edges"].size)
-        assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is false when first is not specified")
+        assert_equal(true, result["data"]["federation"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is true when first is not specified")
       end
 
       it "applies to queries by `last`" do
@@ -311,7 +311,7 @@ describe GraphQL::Relay::MongoRelationConnection do
         # Max page size is applied _without_ `first`, also
         result = star_trek_query(query_string)
         assert_equal(3, result["data"]["federation"]["bases"]["edges"].size)
-        assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is false when first is not specified")
+        assert_equal(true, result["data"]["federation"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is true when first is not specified")
       end
 
       it "applies to queries by `last`" do

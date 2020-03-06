@@ -175,7 +175,7 @@ describe GraphQL::Relay::ArrayConnection do
         # Max page size is applied _without_ `first`, also
         result = star_wars_query(query_string)
         assert_equal(["Yavin", "Echo Base"], get_names(result))
-        assert_equal(false, get_page_info(result)["hasNextPage"], "hasNextPage is false when first is not specified")
+        assert_equal(true, get_page_info(result)["hasNextPage"], "hasNextPage is true when first is not specified")
       end
 
       it "applies to queries by `last`" do
@@ -235,7 +235,7 @@ describe GraphQL::Relay::ArrayConnection do
         # Max page size is applied _without_ `first`, also
         result = star_wars_query(query_string)
         assert_equal(["Yavin", "Echo Base", "Secret Hideout"], get_names(result))
-        assert_equal(false, get_page_info(result)["hasNextPage"], "hasNextPage is false when first is not specified")
+        assert_equal(true, get_page_info(result)["hasNextPage"], "hasNextPage is true when first is not specified")
       end
 
       it "applies to queries by `last`" do
