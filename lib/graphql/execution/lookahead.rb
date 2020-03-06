@@ -54,7 +54,7 @@ module GraphQL
         if defined?(@arguments)
           @arguments
         else
-          @arguments =if @field
+          @arguments = if @field
             @query.arguments_for(@ast_nodes.first, @field)
           else
             nil
