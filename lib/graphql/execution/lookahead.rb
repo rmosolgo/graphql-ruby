@@ -51,7 +51,15 @@ module GraphQL
 
       # @return [Hash<Symbol, Object>]
       def arguments
-        @arguments ||= @field && ArgumentHelpers.arguments(@query, @field, ast_nodes.first)
+        if defined?(@arguments)
+          @arguments
+        else
+          @arguments =if @field
+            @query.arguments_for(@ast_nodes.first, @field)
+          else
+            nil
+          end
+        end
       end
 
       # True if this node has a selection on `field_name`.
@@ -208,7 +216,7 @@ module GraphQL
           dir_defn = @query.schema.directives.fetch(directive.name)
           directive_class = dir_defn.type_class
           if directive_class
-            dir_args = GraphQL::Execution::Lookahead::ArgumentHelpers.arguments(@query, dir_defn, directive)
+            dir_args = @query.arguments_for(directive, dir_defn)
             return true unless directive_class.static_include?(dir_args, @query.context)
           end
         end
@@ -278,95 +286,11 @@ module GraphQL
       end
 
       def arguments_match?(arguments, field_defn, field_node)
-        query_kwargs = ArgumentHelpers.arguments(@query, field_defn, field_node)
+        query_kwargs = @query.arguments_for(field_node, field_defn)
         arguments.all? do |arg_name, arg_value|
           arg_name = normalize_keyword(arg_name)
           # Make sure the constraint is present with a matching value
           query_kwargs.key?(arg_name) && query_kwargs[arg_name] == arg_value
-        end
-      end
-
-      # TODO Dedup with interpreter
-      module ArgumentHelpers
-        module_function
-
-        def arguments(query, arg_owner, ast_node)
-          kwarg_arguments = {}
-          arg_defns = arg_owner.arguments
-          ast_node.arguments.each do |arg|
-            arg_defn = arg_defns[arg.name] || raise("Invariant: missing argument definition for #{arg.name.inspect} in #{arg_defns.keys} from #{arg_owner}")
-            # Need to distinguish between client-provided `nil`
-            # and nothing-at-all
-            is_present, value = arg_to_value(query, arg_defn.type, arg.value)
-            if is_present
-              kwarg_arguments[arg_defn.keyword] = value
-            end
-          end
-          arg_defns.each do |name, arg_defn|
-            if arg_defn.default_value? && !kwarg_arguments.key?(arg_defn.keyword)
-              kwarg_arguments[arg_defn.keyword] = arg_defn.default_value
-            end
-          end
-          kwarg_arguments
-        end
-
-        # Get a Ruby-ready value from a client query.
-        # @param graphql_object [Object] The owner of the field whose argument this is
-        # @param arg_type [Class, GraphQL::Schema::NonNull, GraphQL::Schema::List]
-        # @param ast_value [GraphQL::Language::Nodes::VariableIdentifier, String, Integer, Float, Boolean]
-        # @return [Array(is_present, value)]
-        def arg_to_value(query, arg_type, ast_value)
-          if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-            # If it's not here, it will get added later
-            if query.variables.key?(ast_value.name)
-              return true, query.variables[ast_value.name]
-            else
-              return false, nil
-            end
-          elsif ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
-            return true, nil
-          elsif arg_type.is_a?(GraphQL::Schema::NonNull)
-            arg_to_value(query, arg_type.of_type, ast_value)
-          elsif arg_type.is_a?(GraphQL::Schema::List)
-            # Treat a single value like a list
-            arg_value = Array(ast_value)
-            list = []
-            arg_value.map do |inner_v|
-              _present, value = arg_to_value(query, arg_type.of_type, inner_v)
-              list << value
-            end
-            return true, list
-          elsif arg_type.is_a?(Class) && arg_type < GraphQL::Schema::InputObject
-            # For these, `prepare` is applied during `#initialize`.
-            # Pass `nil` so it will be skipped in `#arguments`.
-            # What a mess.
-            args = arguments(query, nil, arg_type, ast_value)
-            # We're not tracking defaults_used, but for our purposes
-            # we compare the value to the default value.
-            return true, arg_type.new(ruby_kwargs: args, context: query.context, defaults_used: nil)
-          else
-            flat_value = flatten_ast_value(query, ast_value)
-            return true, arg_type.coerce_input(flat_value, query.context)
-          end
-        end
-
-        def flatten_ast_value(query, v)
-          case v
-          when GraphQL::Language::Nodes::Enum
-            v.name
-          when GraphQL::Language::Nodes::InputObject
-            h = {}
-            v.arguments.each do |arg|
-              h[arg.name] = flatten_ast_value(query, arg.value)
-            end
-            h
-          when Array
-            v.map { |v2| flatten_ast_value(query, v2) }
-          when GraphQL::Language::Nodes::VariableIdentifier
-            flatten_ast_value(query.variables[v.name])
-          else
-            v
-          end
         end
       end
 
