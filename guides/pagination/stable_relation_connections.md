@@ -13,7 +13,7 @@ pro: true
 
 These connection implementations are database-specific so that they can build proper queries with regard to `NULL` handling. (Postgres treats nulls as _larger_ than other values while MySQL and SQLite treat them as _smaller_ than other values.)
 
-__Note:__ In GraphQL 1.12.x, the {% internal_link "previous stable connection implementation", "/pro/cursors" %} is still enabled by default. See [Opting Out](/pro/cursors#opting-out) to disable that feature, then enable this new one.
+__Note:__ In GraphQL-Pro 1.12.x, the {% internal_link "previous stable connection implementation", "/pro/cursors" %} is still enabled by default. See [Opting Out](/pro/cursors#opting-out) to disable that feature, then enable this new one.
 
 ## What's the difference?
 
