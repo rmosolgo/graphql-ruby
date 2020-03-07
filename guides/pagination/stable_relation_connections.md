@@ -42,10 +42,10 @@ class MyAppSchema < GraphQL::Schema
   use GraphQL::Pagination::Connections
 
   # Hook up the stable connection that matches your database
-  connections.add(GraphQL::Pro::PostgresStableRelationConnection, ActiveRecord::Relation)
+  connections.add(ActiveRecord::Relation, GraphQL::Pro::PostgresStableRelationConnection)
   # Or...
-  # connections.add(GraphQL::Pro::MySQLStableRelationConnection, ActiveRecord::Relation)
-  # connections.add(GraphQL::Pro::SqliteStableRelationConnection, ActiveRecord::Relation)
+  # connections.add(ActiveRecord::Relation, GraphQL::Pro::MySQLStableRelationConnection)
+  # connections.add(ActiveRecord::Relation, GraphQL::Pro::SqliteStableRelationConnection)
 end
 ```
 
