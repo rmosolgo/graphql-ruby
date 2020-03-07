@@ -20,12 +20,14 @@ describe GraphQL::Execution::Lookahead do
     end
 
     class BirdGenus < GraphQL::Schema::Object
+      implements Node
       field :name, String, null: false
       field :latin_name, String, null: false
       field :id, ID, null: false, method: :latin_name
     end
 
     class BirdSpecies < GraphQL::Schema::Object
+      implements Node
       field :name, String, null: false
       field :id, ID, null: false, method: :name
       field :is_waterfowl, Boolean, null: false
