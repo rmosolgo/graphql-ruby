@@ -87,10 +87,10 @@
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pagination</span><span class="o">::</span><span class="no">Connections</span>
 
   <span class="c1"># Hook up the stable connection that matches your database</span>
-  <span class="n">connections</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PostgresStableRelationConnection</span><span class="p">,</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span><span class="p">)</span>
+  <span class="n">connections</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PostgresStableRelationConnection</span><span class="p">)</span>
   <span class="c1"># Or...</span>
-  <span class="c1"># connections.add(GraphQL::Pro::MySQLStableRelationConnection, ActiveRecord::Relation)</span>
-  <span class="c1"># connections.add(GraphQL::Pro::SqliteStableRelationConnection, ActiveRecord::Relation)</span>
+  <span class="c1"># connections.add(ActiveRecord::Relation, GraphQL::Pro::MySQLStableRelationConnection)</span>
+  <span class="c1"># connections.add(ActiveRecord::Relation, GraphQL::Pro::SqliteStableRelationConnection)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
