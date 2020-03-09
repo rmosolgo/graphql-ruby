@@ -6,7 +6,6 @@ module GraphQL
     # {@target} is passed to the specified function, along with any arguments and block.
     # This allows a method-based DSL without adding methods to the defined class.
     class DefinedObjectProxy
-      extend GraphQL::Ruby2Keywords
       # The object which will be defined by definition functions
       attr_reader :target
 
@@ -43,7 +42,6 @@ module GraphQL
           raise NoDefinitionError, msg, caller
         end
       end
-      ruby2_keywords :method_missing
 
       def respond_to_missing?(name, include_private = false)
         @dictionary[name] || super
