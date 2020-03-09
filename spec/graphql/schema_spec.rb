@@ -390,7 +390,72 @@ describe GraphQL::Schema do
         end
       end
 
-      expected_message = "Multiple definitions for `Thing`. Previously found DuplicateTypeNames::Thing (Class), then found DuplicateTypeNames::Thing2 (Class) at Query.t2"
+      expected_message = <<-ERR.chomp
+Multiple definitions for `Thing`. Previously found DuplicateTypeNames::Thing (Class), then found DuplicateTypeNames::Thing2 (Class) at Query.t2 >> Thing
+
+These two types have the same name, but they're different Ruby objects. Try renaming one of them (by giving it a new class name, or with `graphql_name(\"...\")`), or remove one of the definitions.
+ERR
+      assert_equal expected_message, err.message
+    end
+
+    it "catches duplicate scalar types" do
+      err = assert_raises GraphQL::Schema::DuplicateTypeNamesError do
+        module DuplicateScalarNames
+          class T1 < GraphQL::Schema::Object
+            implements GraphQL::Relay::Node.interface
+          end
+
+          class Query < GraphQL::Schema::Object
+            add_field(GraphQL::Types::Relay::NodeField)
+            field :t1, T1, null: false do
+              argument :i1, Int, required: true
+              argument :i2, GraphQL::INT_TYPE, required: true
+            end
+          end
+
+          class Schema < GraphQL::Schema
+            query(Query)
+            # Opt in to the new runtime (default in future graphql-ruby versions)
+            use GraphQL::Execution::Interpreter
+
+            # Add built-in connections for pagination
+            use GraphQL::Pagination::Connections
+          end
+        end
+      end
+
+      expected_message = <<-ERR.chomp
+Multiple definitions for `ID`. Previously found GraphQL::Types::ID (Class), then found ID (GraphQL::ScalarType) at Query.t1 >> T1.id >> ID
+
+These two GraphQL types have the _same name_, but one is a Class and the other isn't. Check for legacy type definitions in the schema, and try updating them.
+ERR
+      assert_equal expected_message, err.message
+
+      err = assert_raises GraphQL::Schema::DuplicateTypeNamesError do
+        module DuplicateIntDefinition
+          class Query < GraphQL::Schema::Object
+            field :s1, String, null: false do
+              argument :i1, Int, required: true
+              argument :i2, GraphQL::INT_TYPE, required: true
+            end
+          end
+
+          class Schema < GraphQL::Schema
+            query(Query)
+            # Opt in to the new runtime (default in future graphql-ruby versions)
+            use GraphQL::Execution::Interpreter
+
+            # Add built-in connections for pagination
+            use GraphQL::Pagination::Connections
+          end
+        end
+      end
+
+      expected_message = <<-ERR.chomp
+Multiple definitions for `Int`. Previously found GraphQL::Types::Int (Class), then found Int (GraphQL::ScalarType) at Query.s1.i2
+
+These two GraphQL types have the _same name_, but one is a Class and the other isn't. Check for legacy type definitions in the schema, and try updating them.
+ERR
       assert_equal expected_message, err.message
     end
   end

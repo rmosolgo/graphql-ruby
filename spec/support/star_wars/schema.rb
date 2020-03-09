@@ -354,43 +354,22 @@ module StarWars
       [OpenStruct.new(id: nil)]
     end
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodeField)
-    else
-      field :node, field: GraphQL::Relay::Node.field
+    add_field(GraphQL::Types::Relay::NodeField)
+
+    field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
+      argument :id, ID, required: true
+    end
+    def node_with_custom_resolver(id:)
+      StarWars::DATA["Faction"]["1"]
     end
 
-    if TESTING_INTERPRETER
-      field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
-        argument :id, ID, required: true
-      end
-      def node_with_custom_resolver(id:)
-        StarWars::DATA["Faction"]["1"]
-      end
-    else
-      custom_node_field = GraphQL::Relay::Node.field do
-        resolve ->(_, _, _) { StarWars::DATA["Faction"]["1"] }
-      end
-      field :nodeWithCustomResolver, field: custom_node_field
-    end
+    add_field(GraphQL::Types::Relay::NodesField)
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodesField)
-    else
-      field :nodes, field: GraphQL::Relay::Node.plural_field
+    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
+      argument :ids, [ID], required: true
     end
-
-    if TESTING_INTERPRETER
-      field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
-        argument :ids, [ID], required: true
-      end
-      def nodes_with_custom_resolver(ids:)
-        [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]]
-      end
-    else
-      field :nodesWithCustomResolver, field: GraphQL::Relay::Node.plural_field(
-        resolve: ->(_, _, _) { [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]] }
-      )
+    def nodes_with_custom_resolver(ids:)
+      [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]]
     end
 
     field :batchedBase, BaseType, null: true do

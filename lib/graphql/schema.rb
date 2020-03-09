@@ -84,7 +84,13 @@ module GraphQL
 
     class DuplicateTypeNamesError < GraphQL::Error
       def initialize(type_name:, first_definition:, second_definition:, path:)
-        super("Multiple definitions for `#{type_name}`. Previously found #{first_definition.inspect} (#{first_definition.class}), then found #{second_definition.inspect} (#{second_definition.class}) at #{path.join(".")}")
+        message = "Multiple definitions for `#{type_name}`. Previously found #{first_definition.inspect} (#{first_definition.class}), then found #{second_definition.inspect} (#{second_definition.class}) at #{path.join("")}"
+        if (first_definition.is_a?(Module) && !second_definition.is_a?(Module)) || (second_definition.is_a?(Module) && !first_definition.is_a?(Module))
+          message += "\n\nThese two GraphQL types have the _same name_, but one is a Class and the other isn't. Check for legacy type definitions in the schema, and try updating them."
+        else
+          message += "\n\nThese two types have the same name, but they're different Ruby objects. Try renaming one of them (by giving it a new class name, or with `graphql_name(\"...\")`), or remove one of the definitions."
+        end
+        super(message)
       end
     end
 
@@ -1794,6 +1800,7 @@ module GraphQL
       end
 
       def add_type(type, owner:, late_types:, path:)
+        orig_type = type
         if type.respond_to?(:metadata) && type.metadata.is_a?(Hash)
           type_class = type.metadata[:type_class]
           if type_class.nil?
@@ -1811,12 +1818,13 @@ module GraphQL
           um << owner
         end
 
+        prev_type = own_types[type.graphql_name]
         if (prev_type = own_types[type.graphql_name])
-          if prev_type != type
+          if prev_type != orig_type
             raise DuplicateTypeNamesError.new(
               type_name: type.graphql_name,
               first_definition: prev_type,
-              second_definition: type,
+              second_definition: orig_type,
               path: path,
             )
           else
@@ -1834,12 +1842,12 @@ module GraphQL
             type.fields.each do |name, field|
               field_type = field.type.unwrap
               references_to(field_type, from: field)
-              field_path = path + [name]
-              add_type(field_type, owner: field, late_types: late_types, path: field_path)
+              field_path = path + [".#{name}"]
+              add_type(field_type, owner: field, late_types: late_types, path: field_path + [" >> #{field_type.graphql_name}"])
               field.arguments.each do |arg_name, arg|
                 arg_type = arg.type.unwrap
                 references_to(arg_type, from: arg)
-                add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg_name])
+                add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [".#{arg_name}"])
               end
             end
           end
