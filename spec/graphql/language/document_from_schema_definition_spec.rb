@@ -8,6 +8,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
     let(:schema_idl) { <<-GRAPHQL
       type QueryType {
         foo: Foo
+        u: Union
       }
 
       type Foo implements Bar {
@@ -101,6 +102,7 @@ type Query {
       let(:schema_idl) { <<-GRAPHQL
         type Query {
           foo: Foo
+          u: Union
         }
 
         type Foo implements Bar {
@@ -150,6 +152,7 @@ type Query {
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
+          u: Union
         }
 
         type Foo implements Bar {
@@ -206,6 +209,7 @@ type Query {
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
+          u: Union
         }
 
         type Foo implements Bar {
@@ -267,6 +271,7 @@ type Query {
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
+          u: Union
         }
 
         type Foo implements Bar {
@@ -320,6 +325,7 @@ type Query {
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
+          u: Union
         }
 
         type Foo implements Bar {
@@ -370,6 +376,7 @@ type Query {
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
+          u: Union
         }
 
         type Foo implements Bar {
