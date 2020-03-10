@@ -365,4 +365,52 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       end
     end
   end
+
+  describe "field_complexity hook" do
+    class CustomComplexityAnalyzer < GraphQL::Analysis::AST::QueryComplexity
+      def initialize(query)
+        super
+        @field_complexities_by_query = {}
+      end
+
+      def result
+        super
+        @field_complexities_by_query[@query]
+      end
+
+      private
+
+      def field_complexity(scoped_type_complexity, max_complexity:, child_complexity:)
+        @field_complexities_by_query[scoped_type_complexity.query] ||= {}
+        @field_complexities_by_query[scoped_type_complexity.query][scoped_type_complexity.response_path] = {
+          max_complexity: max_complexity,
+          child_complexity: child_complexity,
+        }
+      end
+    end
+
+    let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, [CustomComplexityAnalyzer]) }
+
+    let(:query_string) {%|
+    {
+      cheese {
+        id
+      }
+
+      cheese {
+        id
+        flavor
+      }
+    }
+    |}
+    it "gets called for each field with complexity data" do
+      field_complexities = reduce_result.first
+
+      assert_equal({
+        ['cheese', 'id'] => { max_complexity: 1, child_complexity: nil },
+        ['cheese', 'flavor'] => { max_complexity: 1, child_complexity: nil },
+        ['cheese'] => { max_complexity: 3, child_complexity: 2 },
+      }, field_complexities)
+    end
+  end
 end
