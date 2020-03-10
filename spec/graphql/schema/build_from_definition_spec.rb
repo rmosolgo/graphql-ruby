@@ -1304,4 +1304,55 @@ type ThingEdge {
       end
     end
   end
+
+  describe "orphan types" do
+    focus
+    it "only puts unreachable types in orphan types" do
+      schema = GraphQL::Schema.from_definition <<-GRAPHQL
+      type Query {
+        node(id: ID!): Node
+        t1: ReachableType
+      }
+
+      interface Node {
+        id: ID!
+      }
+
+      type ReachableType implements Node {
+        id: ID!
+      }
+
+      type ReachableThroughInterfaceType implements Node {
+        id: ID!
+      }
+
+      type UnreachableType {
+        id: ID!
+      }
+      GRAPHQL
+
+      assert_equal [], schema.orphan_types.map(&:graphql_name)
+
+      expected_definition = <<-GRAPHQL.chomp
+interface Node {
+  id: ID!
+}
+
+type Query {
+  node(id: ID!): Node
+  t1: ReachableType
+}
+
+type ReachableThroughInterfaceType implements Node {
+  id: ID!
+}
+
+type ReachableType implements Node {
+  id: ID!
+}
+      GRAPHQL
+
+      assert_equal expected_definition, schema.to_definition, "UnreachableType is excluded"
+    end
+  end
 end

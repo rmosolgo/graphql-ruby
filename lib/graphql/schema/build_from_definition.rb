@@ -140,6 +140,9 @@ module GraphQL
                 use(plugin)
               end
             end
+
+            # Empty `orphan_types` -- this will make unreachable types ... unreachable.
+            own_orphan_types.clear
           end
         end
 
