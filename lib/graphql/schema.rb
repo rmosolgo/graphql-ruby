@@ -1609,7 +1609,7 @@ module GraphQL
 
       # @api private
       def add_subscription_extension_if_necessary
-        if interpreter? && !defined?(@subscription_extension_added) && subscription
+        if interpreter? && !defined?(@subscription_extension_added) && subscription && self.subscriptions
           @subscription_extension_added = true
           if subscription.singleton_class.ancestors.include?(Subscriptions::SubscriptionRoot)
             # TODO This isn't true yet
