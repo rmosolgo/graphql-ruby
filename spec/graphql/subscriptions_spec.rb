@@ -213,7 +213,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
         else
           c.skip
         end
-       },
+      },
       "myEvent" => ->(o,a,c) {
         if c.query.subscription_update?
           o
@@ -227,7 +227,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
         else
           nil
         end
-       },
+      },
       "eventSubscription" => ->(o,a,c) { nil },
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
