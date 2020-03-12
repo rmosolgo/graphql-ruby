@@ -22,14 +22,14 @@ module ConnectionAssertions
   class NonceEnabledEncoder
     class << self
       def encode(value, nonce: false)
-        "#{JSON.dump(value)}#{nonce ? "+nonce" : ""}"
+        "#{JSON.dump([value])}#{nonce ? "+nonce" : ""}"
       end
 
       def decode(value, nonce: false)
         if nonce
           value = value.sub(/\+nonce$/, "")
         end
-        JSON.parse(value)
+        JSON.parse(value).first
       end
     end
   end
