@@ -8,6 +8,23 @@
 
 ### Bug fixes
 
+## 1.10.5 (12 March 2020)
+
+### New features
+
+- Add `#field_complexity` hook to `AST::QueryComplexity` analyzer #2807
+
+### Bug fixes
+
+- Pass `nonce: true` when encoding cursors #2821
+- Ignore empty-string cursors #2821
+- Properly pass along `Analysis::AST` to schema instances #2820
+- Support filtering unreachable types in schemas from IDL #2816
+- Use `Query#arguments_for` for lookahead arguments #2811
+- Fix pagination bug on old connections #2799
+- Support new connection system on old runtime #2798
+- Add details to raise CoercionErrors #2796
+
 ## 1.10.4 (3 March 2020)
 
 ### Breaking changes
@@ -82,7 +99,7 @@
 - (Non-interpreter only) The return value of subscription fields is passed along to execute the subscription. Return `nil` to get the previous behavior. #2536
 - `Schema.from_definition` builds a _class-based schema_ from the definition string #2178
 - Only integers are accepted for `Int` type #2404
-- Custom scalars now call `.coerce_input` on all input values - previously this call was skipped for `null` values. 
+- Custom scalars now call `.coerce_input` on all input values - previously this call was skipped for `null` values.
 
 ### Deprecations
 
