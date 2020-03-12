@@ -29,14 +29,22 @@ module GraphQL
       # Raw access to client-provided values. (`max_page_size` not applied to first or last.)
       attr_accessor :before_value, :after_value, :first_value, :last_value
 
-      # @return [String, nil] the client-provided cursor
+      # @return [String, nil] the client-provided cursor. `""` is treated as `nil`.
       def before
-        @before_value
+        if defined?(@before)
+          @before
+        else
+          @before = @before_value == "" ? nil : @before_value
+        end
       end
 
-      # @return [String, nil] the client-provided cursor
+      # @return [String, nil] the client-provided cursor. `""` is treated as `nil`.
       def after
-        @after_value
+        if defined?(@after)
+          @after
+        else
+          @after = @after_value == "" ? nil : @after_value
+        end
       end
 
       # @param items [Object] some unpaginated collection item, like an `Array` or `ActiveRecord::Relation`
@@ -147,7 +155,11 @@ module GraphQL
       end
 
       def decode(cursor)
-        context.schema.cursor_encoder.decode(cursor)
+        context.schema.cursor_encoder.decode(cursor, nonce: true)
+      end
+
+      def encode(cursor)
+        context.schema.cursor_encoder.encode(cursor, nonce: true)
       end
 
       # A wrapper around paginated items. It includes a {cursor} for pagination
