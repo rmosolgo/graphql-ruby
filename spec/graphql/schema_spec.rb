@@ -291,6 +291,30 @@ describe GraphQL::Schema do
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
         assert_equal true, query.context[:no_op_analyzer_ran_result]
       end
+
+      describe "when called on schema instance" do
+        let(:schema) do
+          Class.new(GraphQL::Schema) do
+            query query_type
+            use GraphQL::Analysis::AST
+            use PluginWithInstrumentationTracingAndAnalyzer
+          end.to_graphql
+        end
+
+        let(:query) { GraphQL::Query.new(schema, "query { foobar }") }
+
+        it "attaches plugins correctly, runs all of their callbacks" do
+          res = query.result
+          assert res.key?("data")
+
+          assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
+          assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
+          assert_equal true, query.context[:no_op_tracer_ran]
+          assert_equal true, query.context[:no_op_analyzer_ran_initialize]
+          assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
+          assert_equal true, query.context[:no_op_analyzer_ran_result]
+        end
+      end
     end
 
     describe "when called on schema subclasses" do
