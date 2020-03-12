@@ -99,6 +99,7 @@ type Hello implements I {
   And a field to boot
   """
   str(i: Input): String
+  u: U
 }
 
 """
@@ -157,17 +158,17 @@ union U = Hello
       assert_equal 34, field.ast_node.line
       assert_equal 37, field.ast_node.definition_line
 
-      assert_equal 40, built_schema.types["I"].ast_node.line
-      assert_equal 43, built_schema.types["I"].ast_node.definition_line
+      assert_equal 41, built_schema.types["I"].ast_node.line
+      assert_equal 44, built_schema.types["I"].ast_node.definition_line
 
-      assert_equal 47, built_schema.types["Input"].ast_node.line
-      assert_equal 50, built_schema.types["Input"].ast_node.definition_line
+      assert_equal 48, built_schema.types["Input"].ast_node.line
+      assert_equal 51, built_schema.types["Input"].ast_node.definition_line
 
-      assert_equal 54, built_schema.types["S"].ast_node.line
-      assert_equal 57, built_schema.types["S"].ast_node.definition_line
+      assert_equal 55, built_schema.types["S"].ast_node.line
+      assert_equal 58, built_schema.types["S"].ast_node.definition_line
 
-      assert_equal 59, built_schema.types["U"].ast_node.line
-      assert_equal 62, built_schema.types["U"].ast_node.definition_line
+      assert_equal 60, built_schema.types["U"].ast_node.line
+      assert_equal 63, built_schema.types["U"].ast_node.definition_line
     end
 
     it 'maintains built-in directives' do
@@ -1302,6 +1303,56 @@ type ThingEdge {
         schema = GraphQL::Schema.from_definition(schema_defn)
         assert_equal schema_defn.chomp, schema.to_definition
       end
+    end
+  end
+
+  describe "orphan types" do
+    it "only puts unreachable types in orphan types" do
+      schema = GraphQL::Schema.from_definition <<-GRAPHQL
+      type Query {
+        node(id: ID!): Node
+        t1: ReachableType
+      }
+
+      interface Node {
+        id: ID!
+      }
+
+      type ReachableType implements Node {
+        id: ID!
+      }
+
+      type ReachableThroughInterfaceType implements Node {
+        id: ID!
+      }
+
+      type UnreachableType {
+        id: ID!
+      }
+      GRAPHQL
+
+      assert_equal [], schema.orphan_types.map(&:graphql_name)
+
+      expected_definition = <<-GRAPHQL.chomp
+interface Node {
+  id: ID!
+}
+
+type Query {
+  node(id: ID!): Node
+  t1: ReachableType
+}
+
+type ReachableThroughInterfaceType implements Node {
+  id: ID!
+}
+
+type ReachableType implements Node {
+  id: ID!
+}
+      GRAPHQL
+
+      assert_equal expected_definition, schema.to_definition, "UnreachableType is excluded"
     end
   end
 end
