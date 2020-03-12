@@ -21,7 +21,7 @@ module GraphQL
 
       def cursor_for(item)
         idx = items.find_index(item) + 1
-        context.schema.cursor_encoder.encode(idx.to_s)
+        encode(idx.to_s)
       end
 
       private

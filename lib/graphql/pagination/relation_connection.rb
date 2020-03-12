@@ -44,7 +44,7 @@ module GraphQL
         load_nodes
         # index in nodes + existing offset + 1 (because it's offset, not index)
         offset = nodes.index(item) + 1 + (@paged_nodes_offset || 0) + (relation_offset(items) || 0)
-        context.schema.cursor_encoder.encode(offset.to_s)
+        encode(offset.to_s)
       end
 
       private
