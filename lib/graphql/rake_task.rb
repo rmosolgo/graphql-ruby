@@ -76,7 +76,7 @@ module GraphQL
     # Set the parameters of this task by passing keyword arguments
     # or assigning attributes inside the block
     def initialize(options = {})
-      default_dependencies = if Rake::Task.task_defined?("environment")
+      default_dependencies = if Rake::Task.task_defined?(:environment)
         [:environment]
       else
         []
