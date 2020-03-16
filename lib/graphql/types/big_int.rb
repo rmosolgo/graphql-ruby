@@ -6,7 +6,7 @@ module GraphQL
       description "Represents non-fractional signed whole numeric values. Since the value may exceed the size of a 32-bit integer, it's encoded as a string."
 
       def self.coerce_input(value, _ctx)
-        Integer(value)
+        value && Integer(value)
       rescue ArgumentError
         nil
       end

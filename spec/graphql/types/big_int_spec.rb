@@ -21,4 +21,8 @@ describe GraphQL::Types::BigInt do
     assert_equal nil, GraphQL::Types::BigInt.coerce_input("xyz", nil)
     assert_equal nil, GraphQL::Types::BigInt.coerce_input("2.2", nil)
   end
+
+  it 'returns `nil` for nil' do
+    assert_equal nil, GraphQL::Types::BigInt.coerce_input(nil, nil)
+  end
 end
