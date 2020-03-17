@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.13.1 (12 Mar 2020)
+
+- Use `nonce: true` when working with cursors in new stable connections
+
 ## 1.13.0 (10 Feb 2020)
 
 ### New Features

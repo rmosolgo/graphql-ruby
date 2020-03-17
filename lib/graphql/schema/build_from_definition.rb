@@ -5,9 +5,11 @@ module GraphQL
   class Schema
     module BuildFromDefinition
       class << self
-        def from_definition(definition_string, default_resolve:, using: {}, interpreter: true, parser: DefaultParser)
+        # @see {Schema.from_definition}
+        def from_definition(definition_string, default_resolve:, using: {}, relay: false, interpreter: true, parser: DefaultParser)
           document = parser.parse(definition_string)
-          Builder.build(document, default_resolve: default_resolve, using: using, interpreter: interpreter)
+          default_resolve ||= {}
+          Builder.build(document, default_resolve: default_resolve, relay: relay, using: using, interpreter: interpreter)
         end
       end
 
@@ -15,21 +17,10 @@ module GraphQL
       DefaultParser = GraphQL::Language::Parser
 
       # @api private
-      module DefaultResolve
-        def self.call(type, field, obj, args, ctx)
-          if field.arguments.any?
-            obj.public_send(field.name, args, ctx)
-          else
-            obj.public_send(field.name)
-          end
-        end
-      end
-
-      # @api private
       module Builder
         extend self
 
-        def build(document, default_resolve: DefaultResolve, using: {}, interpreter: true)
+        def build(document, default_resolve:, using: {}, interpreter: true, relay:)
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
 
           if default_resolve.is_a?(Hash)
@@ -149,6 +140,9 @@ module GraphQL
                 use(plugin)
               end
             end
+
+            # Empty `orphan_types` -- this will make unreachable types ... unreachable.
+            own_orphan_types.clear
           end
         end
 
@@ -316,6 +310,7 @@ module GraphQL
               type: type_resolver.call(field_definition.type),
               null: true,
               connection: type_name.end_with?("Connection"),
+              connection_extension: nil,
               deprecation_reason: build_deprecation_reason(field_definition.directives),
               ast_node: field_definition,
               method_conflict_warning: false,

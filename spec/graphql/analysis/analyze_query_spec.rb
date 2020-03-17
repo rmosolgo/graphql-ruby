@@ -218,7 +218,10 @@ describe GraphQL::Analysis do
       }
     |}
     let(:schema) do
-      schema = Class.new(Dummy::Schema)
+      schema = Class.new(Dummy::Schema) do
+        self.analysis_engine = GraphQL::Analysis
+      end
+
       schema.query_analyzer(id_catcher)
       schema.query_analyzer(flavor_catcher)
       schema.graphql_definition

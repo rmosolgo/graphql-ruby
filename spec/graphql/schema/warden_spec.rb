@@ -488,6 +488,7 @@ describe GraphQL::Schema::Warden do
       sdl = "
         type Query {
           node: Node
+          a: A
         }
 
         type A implements Node {
@@ -518,7 +519,7 @@ describe GraphQL::Schema::Warden do
 
       res = schema.execute(query_string)
       assert res["data"]["Node"]
-      assert_equal ["node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
+      assert_equal ["a", "node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
       # When the possible types are all hidden, hide the interface and fields pointing to it
       res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) })
@@ -529,7 +530,7 @@ describe GraphQL::Schema::Warden do
       # still show the interface since it allows code reuse
       res = schema.execute(query_string, except: ->(m, _) { m.graphql_name == "node" })
       assert_equal "Node", res["data"]["Node"]["name"]
-      assert_equal [], res["data"]["Query"]["fields"]
+      assert_equal [{"name" => "a"}], res["data"]["Query"]["fields"]
     end
 
     it "can't be a fragment condition" do
@@ -703,8 +704,8 @@ describe GraphQL::Schema::Warden do
           res = MaskHelpers.query_with_mask(query_string, mask)
           expected_errors =
             [
+              "InputObject 'WithinInput' doesn't accept argument 'miles'",
               "Argument 'within' on Field 'languages' has an invalid value ({latitude: 1.0, longitude: 2.2, miles: 3.3}). Expected type 'WithinInput'.",
-              "InputObject 'WithinInput' doesn't accept argument 'miles'"
             ]
           assert_equal expected_errors, error_messages(res)
         end

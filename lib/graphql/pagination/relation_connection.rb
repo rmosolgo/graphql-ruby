@@ -44,7 +44,7 @@ module GraphQL
         load_nodes
         # index in nodes + existing offset + 1 (because it's offset, not index)
         offset = nodes.index(item) + 1 + (@paged_nodes_offset || 0) + (relation_offset(items) || 0)
-        context.schema.cursor_encoder.encode(offset.to_s)
+        encode(offset.to_s)
       end
 
       private
@@ -137,8 +137,9 @@ module GraphQL
       def limited_nodes
         @limited_nodes ||= begin
           paginated_nodes = sliced_nodes
+          previous_limit = relation_limit(paginated_nodes)
 
-          if first && (relation_limit(paginated_nodes).nil? || relation_limit(paginated_nodes) > first) && last.nil?
+          if first && (previous_limit.nil? || previous_limit > first)
             # `first` would create a stricter limit that the one already applied, so add it
             paginated_nodes = set_limit(paginated_nodes, first)
           end

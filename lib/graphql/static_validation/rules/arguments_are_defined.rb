@@ -3,26 +3,7 @@ module GraphQL
   module StaticValidation
     module ArgumentsAreDefined
       def on_argument(node, parent)
-        parent_defn = case parent
-        when GraphQL::Language::Nodes::InputObject
-          arg_defn = context.argument_definition
-          if arg_defn.nil?
-            nil
-          else
-            arg_ret_type = arg_defn.type.unwrap
-            if arg_ret_type.kind.input_object?
-              arg_ret_type
-            else
-              nil
-            end
-          end
-        when GraphQL::Language::Nodes::Directive
-          context.schema.directives[parent.name]
-        when GraphQL::Language::Nodes::Field
-          context.field_definition
-        else
-          raise "Unexpected argument parent: #{parent.class} (##{parent})"
-        end
+        parent_defn = parent_definition(parent)
 
         if parent_defn && context.warden.arguments(parent_defn).any? { |arg| arg.name == node.name }
           super
@@ -44,6 +25,7 @@ module GraphQL
 
       private
 
+      # TODO smell: these methods are added to all visitors, since they're included in a module.
       def parent_name(parent, type_defn)
         case parent
         when GraphQL::Language::Nodes::Field
@@ -59,6 +41,29 @@ module GraphQL
 
       def node_type(parent)
         parent.class.name.split("::").last
+      end
+
+      def parent_definition(parent)
+        case parent
+        when GraphQL::Language::Nodes::InputObject
+          arg_defn = context.argument_definition
+          if arg_defn.nil?
+            nil
+          else
+            arg_ret_type = arg_defn.type.unwrap
+            if arg_ret_type.kind.input_object?
+              arg_ret_type
+            else
+              nil
+            end
+          end
+        when GraphQL::Language::Nodes::Directive
+          context.schema.directives[parent.name]
+        when GraphQL::Language::Nodes::Field
+          context.field_definition
+        else
+          raise "Unexpected argument parent: #{parent.class} (##{parent})"
+        end
       end
     end
   end

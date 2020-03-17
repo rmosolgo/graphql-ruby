@@ -114,4 +114,36 @@ describe GraphQL::Schema::Scalar do
       assert_includes(res["errors"][0]["message"], "Argument 'input' on Field 'echoJson' has an invalid value")
     end
   end
+
+  describe "raising CoercionError" do
+    class CoercionErrorSchema < GraphQL::Schema
+      class CustomScalar < GraphQL::Schema::Scalar
+        def self.coerce_input(val, ctx)
+          raise GraphQL::CoercionError, "#{val.inspect} can't be Custom value"
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :f1, String, null: true do
+          argument :arg, CustomScalar, required: true
+        end
+      end
+
+      query(Query)
+    end
+
+    it "makes a nice validation error" do
+      result = CoercionErrorSchema.execute("{ f1(arg: \"a\") }")
+      expected_error = {
+        "message" => "\"a\" can't be Custom value",
+        "locations" => [{"line"=>1, "column"=>3}],
+        "path" => ["query", "f1", "arg"],
+        "extensions" => {
+          "code"=>"argumentLiteralsIncompatible",
+          "typeName"=>"CoercionError"
+        }
+      }
+      assert_equal [expected_error], result["errors"]
+    end
+  end
 end

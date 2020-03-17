@@ -8,6 +8,43 @@
 
 ### Bug fixes
 
+## 1.10.5 (12 March 2020)
+
+### New features
+
+- Add `#field_complexity` hook to `AST::QueryComplexity` analyzer #2807
+
+### Bug fixes
+
+- Pass `nonce: true` when encoding cursors #2821
+- Ignore empty-string cursors #2821
+- Properly pass along `Analysis::AST` to schema instances #2820
+- Support filtering unreachable types in schemas from IDL #2816
+- Use `Query#arguments_for` for lookahead arguments #2811
+- Fix pagination bug on old connections #2799
+- Support new connection system on old runtime #2798
+- Add details to raise CoercionErrors #2796
+
+## 1.10.4 (3 March 2020)
+
+### Breaking changes
+
+- When an argument is defined with a symbol (`argument :my_arg, ...`), that symbol is used _verbatim_ to build Ruby keyword arguments. Previously it was converted to underscore-case, but this autotransform was confusing and wrong in some cases. You may have to change the symbol in your `argument(...)` configuration if you were depending on that underscorization. #2792
+- Schemas from `.from_definition` previously had half-way connection support. It's now completely removed, so you have to add connection wrappers manually. See #2782 for migration notes.
+
+### New features
+
+- Add `Appoptics` tracing #2789
+- Add `Query#sanitized_query_string` #2785
+- Improved duplicate type error message #2777
+
+### Bug fixes
+
+- Fix arguments ending in numbers, so they're injected with the same name that they're configured with #2792
+- Improve `Query#arguments_for` with interpreter #2781
+- Fix visitor replacement of variable definitions #2752
+- Remove half-broken connection handling from `Schema.from_definition` #2782
+
 ## 1.10.3 (17 Feb 2020)
 
 ### New features
@@ -62,6 +99,7 @@
 - (Non-interpreter only) The return value of subscription fields is passed along to execute the subscription. Return `nil` to get the previous behavior. #2536
 - `Schema.from_definition` builds a _class-based schema_ from the definition string #2178
 - Only integers are accepted for `Int` type #2404
+- Custom scalars now call `.coerce_input` on all input values - previously this call was skipped for `null` values.
 
 ### Deprecations
 

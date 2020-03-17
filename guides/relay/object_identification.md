@@ -55,12 +55,12 @@ end
 
 One requirement for Relay's object management is implementing the `"Node"` interface.
 
-To implement the node interface, add {{ "GraphQL::Relay::Node.interface" | api_doc }} to your definition:
+To implement the node interface, add {{ "GraphQL::Types::Relay::Node" | api_doc }} to your definition:
 
 ```ruby
 class Types::PostType < GraphQL::Schema::Object
   # Implement the "Node" interface for Relay
-  implements GraphQL::Relay::Node.interface
+  implements GraphQL::Types::Relay::Node
   # ...
 end
 ```

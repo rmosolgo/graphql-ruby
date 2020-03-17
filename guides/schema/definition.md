@@ -130,11 +130,11 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`query_analyzer`__ and __`multiplex_analyzer`__ accept processors for ahead-of-type query analysis, see {% internal_link "Analysis", "/queries/analysis" %} for more.
+__`query_analyzer`__ and __`multiplex_analyzer`__ accept processors for ahead-of-type query analysis, see {% internal_link "Analysis", "/queries/ast_analysis" %} for more.
 
 ```ruby
 class MySchema < GraphQL::Schema
-  query_analyzer MyQueryAnalyzer.new
+  query_analyzer MyQueryAnalyzer
 end
 ```
 

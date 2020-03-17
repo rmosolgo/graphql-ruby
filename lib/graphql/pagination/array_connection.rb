@@ -21,7 +21,7 @@ module GraphQL
 
       def cursor_for(item)
         idx = items.find_index(item) + 1
-        context.schema.cursor_encoder.encode(idx.to_s)
+        encode(idx.to_s)
       end
 
       private
@@ -59,7 +59,7 @@ module GraphQL
             sliced_nodes.count > first
           elsif before
             # The original array is longer than the `before` index
-            index_from_cursor(before) < items.length
+            index_from_cursor(before) < items.length + 1
           else
             false
           end

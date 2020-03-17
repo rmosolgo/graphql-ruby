@@ -300,6 +300,42 @@ describe GraphQL::Subscriptions do
         end
       end
 
+      it "sends updated data for multifield subscriptions" do
+        query_str = <<-GRAPHQL
+        subscription ($id: ID!){
+          payload(id: $id) { str, int }
+          event { int }
+        }
+        GRAPHQL
+
+        # Initial subscriptions
+        res = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
+        empty_response = TESTING_INTERPRETER ? {} : nil
+
+        # Initial response is nil, no broadcasts yet
+        assert_equal(empty_response, res["data"])
+        assert_equal [], deliveries["1"]
+
+        # Application stuff happens.
+        # The application signals graphql via `subscriptions.trigger`:
+        schema.subscriptions.trigger(:payload, {"id" => "100"}, root_object.payload)
+
+        # Let's see what GraphQL sent over the wire:
+        assert_equal({"str" => "Update", "int" => 1}, deliveries["1"][0]["data"]["payload"])
+        assert_equal(nil, deliveries["1"][0]["data"]["event"])
+
+        if TESTING_INTERPRETER
+          # double-subscriptions is broken on the old runtime
+
+          # Trigger another field subscription
+          schema.subscriptions.trigger(:event, {}, OpenStruct.new(int: 1))
+
+          # Now we should get result for another field
+          assert_equal(nil, deliveries["1"][1]["data"]["payload"])
+          assert_equal({"int" => 1}, deliveries["1"][1]["data"]["event"])
+        end
+      end
+
       describe "passing a document into #execute" do
         it "sends the updated data" do
           query_str = <<-GRAPHQL

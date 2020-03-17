@@ -5,7 +5,6 @@ doc_stub: false
 search: true
 section: Queries
 desc: A New Runtime for GraphQL-Ruby
-experimental: true
 index: 11
 ---
 

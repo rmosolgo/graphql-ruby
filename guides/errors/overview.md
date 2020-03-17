@@ -29,7 +29,7 @@ The validation rules are part of the GraphQL specification and built into GraphQ
 
 ## Analysis Errors
 
-GraphQL-Ruby supports pre-execution analysis, which may return `"errors"` instead of running a query. You can find details in the {% internal_link "Analysis guide", "/queries/analysis" %}.
+GraphQL-Ruby supports pre-execution analysis, which may return `"errors"` instead of running a query. You can find details in the {% internal_link "Analysis guide", "queries/ast_analysis" %}.
 
 ## GraphQL Invariants
 

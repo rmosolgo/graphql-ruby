@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.7.5 (4 Mar 2020)
+
+- Add missing dependency declarations
+
 ## 1.7.4 (18 Feb 2020)
 
 - Move all exports to top level

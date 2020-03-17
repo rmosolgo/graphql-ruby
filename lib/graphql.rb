@@ -109,7 +109,6 @@ require "graphql/introspection"
 
 require "graphql/analysis_error"
 require "graphql/coercion_error"
-require "graphql/literal_validation_error"
 require "graphql/runtime_type_error"
 require "graphql/invalid_null_error"
 require "graphql/invalid_name_error"

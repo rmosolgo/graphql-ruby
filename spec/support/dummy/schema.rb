@@ -104,7 +104,7 @@ module Dummy
       # metadata test
       joins [:cheeses, :milks]
       argument :source, [DairyAnimal], required: true
-      argument :nullableSource, [DairyAnimal], required: false, default_value: [1]
+      argument :nullable_source, [DairyAnimal], required: false, default_value: [1]
     end
 
     def similar_cheese(source:, nullable_source:)

@@ -232,5 +232,20 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
         assert_equal [], errors
       end
     end
+
+    describe "nullability mismatch in non-null list" do
+      let(:query_string) {
+        <<-GRAPHQL
+        query ($sizes: [ImageSize!]) {
+          sizedImageUrl(sizes: $sizes)
+        }
+        GRAPHQL
+      }
+
+      it "gives the right error" do
+        err =  "Nullability mismatch on variable $sizes and argument sizes ([ImageSize!] / [ImageSize!]!)"
+        assert_equal [err], errors.map { |e| e["message"]}
+      end
+    end
   end
 end

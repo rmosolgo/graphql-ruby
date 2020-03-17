@@ -843,4 +843,50 @@ describe GraphQL::Query do
     res = Jazz::Schema.execute("{ __typename } ", warden: warden)
     assert_equal ["Field '__typename' doesn't exist on type 'Query'"], res["errors"].map { |e| e["message"] }
   end
+
+  describe "arguments_for" do
+    it "returns symbol-keyed, underscored hashes, regardless of literal or variable values" do
+      query_str = "
+      query($product: [DairyProductInput!]!) {
+        f1: searchDairy(product: [{source: SHEEP}]) {
+          __typename
+        }
+        f2: searchDairy(product: $product) {
+          __typename
+        }
+      }
+      "
+
+      query = GraphQL::Query.new(Dummy::Schema, query_str, variables: { "product" => [{"source" => "SHEEP"}]})
+      field_defn = Dummy::Schema.get_field("Query", "searchDairy")
+      node_1 = query.document.definitions.first.selections.first
+      node_2 = query.document.definitions.first.selections.last
+
+      argument_contexts = {
+        "literals" => node_1,
+        "variables" => node_2,
+      }
+
+      argument_contexts.each do |context_name, ast_node|
+        args = query.arguments_for(ast_node, field_defn)
+        assert_instance_of Hash, args, "it makes a hash for #{context_name}"
+        assert_equal [:product], args.keys, "it has a single symbol key for #{context_name}"
+        product_value = args[:product]
+        assert_instance_of Array, product_value
+        product_value_item = product_value[0]
+        assert_instance_of Dummy::DairyProductInput, product_value_item, "it initializes an input object for #{context_name}"
+        assert_equal "SHEEP", product_value_item[:source], "it adds the input value for #{context_name}"
+
+        # Default values are merged in
+        expected_h = {
+          source: "SHEEP",
+          origin_dairy: "Sugar Hollow Dairy",
+          fat_content: 0.3,
+          organic: false,
+          order_by: { direction: "ASC"}
+        }
+        assert_equal expected_h, product_value_item.to_h, "it makes a hash with defaults for #{context_name}"
+      end
+    end
+  end
 end
