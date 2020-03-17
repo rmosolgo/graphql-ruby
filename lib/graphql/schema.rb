@@ -1630,12 +1630,10 @@ module GraphQL
         if interpreter? && !defined?(@subscription_extension_added) && subscription && self.subscriptions
           @subscription_extension_added = true
           if subscription.singleton_class.ancestors.include?(Subscriptions::SubscriptionRoot)
-            # TODO This isn't true yet
             warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")
           else
-            p "Adding StandAloneExtension to #{self}"
             subscription.fields.each do |name, field|
-              field.extension(Subscriptions::SubscriptionRoot::StandAloneExtension)
+              field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
             end
           end
         end

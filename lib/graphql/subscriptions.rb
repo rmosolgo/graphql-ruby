@@ -7,6 +7,7 @@ if defined?(ActionCable)
   require "graphql/subscriptions/action_cable_subscriptions"
 end
 require "graphql/subscriptions/subscription_root"
+require "graphql/subscriptions/default_subscription_resolve_extension"
 
 module GraphQL
   class Subscriptions
@@ -29,6 +30,7 @@ module GraphQL
       defn.instrument(:field, instrumentation)
       options[:schema] = schema
       schema.subscriptions = self.new(**options)
+      schema.add_subscription_extension_if_necessary
       nil
     end
 

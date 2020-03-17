@@ -2,9 +2,11 @@
 
 module GraphQL
   class Subscriptions
-    # Extend this module in your subscription root when using {GraphQL::Execution::Interpreter}.
+    # @api private
+    # @deprecated This module is no longer needed.
     module SubscriptionRoot
       def self.extended(child_cls)
+        warn "`extend GraphQL::Subscriptions::SubscriptionRoot` is no longer required; you can remove it from your Subscription type (#{child_cls})"
         child_cls.include(InstanceMethods)
       end
 
@@ -58,30 +60,6 @@ module GraphQL
           else
             # This is a subscription update, but this event wasn't triggered.
             context.skip
-          end
-        end
-      end
-
-      class StandAloneExtension < Extension
-        def resolve(context:, object:, arguments:)
-          has_override_implementation = @field.resolver ||
-            object.respond_to?(@field.resolver_method)
-
-          # p [@field.path, has_override_implementation, [
-          #   @field.resolver,
-          #   @field.resolver_method, object.methods.sort - Object.methods,
-          #   object.respond_to?(@field.resolver_method),
-          # ]]
-          if !has_override_implementation
-            # p "halting"
-            if context.query.subscription_update?
-              object.object
-            else
-              context.skip
-            end
-          else
-            # p "yielding"
-            yield(object, arguments)
           end
         end
       end

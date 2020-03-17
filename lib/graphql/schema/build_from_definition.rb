@@ -44,8 +44,7 @@ module GraphQL
               types[definition.name] = build_enum_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ObjectTypeDefinition
               is_subscription_root = (definition.name == "Subscription" && (schema_definition.nil? || schema_definition.subscription.nil?)) || (schema_definition && (definition.name == schema_definition.subscription))
-              should_extend_subscription_root = is_subscription_root && interpreter
-              types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve, extend_subscription_root: should_extend_subscription_root)
+              types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve)
             when GraphQL::Language::Nodes::InterfaceTypeDefinition
               types[definition.name] = build_interface_type(definition, type_resolver)
             when GraphQL::Language::Nodes::UnionTypeDefinition
@@ -204,7 +203,7 @@ module GraphQL
           end
         end
 
-        def build_object_type(object_type_definition, type_resolver, default_resolve:, extend_subscription_root:)
+        def build_object_type(object_type_definition, type_resolver, default_resolve:)
           builder = self
           type_def = nil
           typed_resolve_fn = ->(field, obj, args, ctx) { default_resolve.call(type_def, field, obj, args, ctx) }
@@ -214,10 +213,6 @@ module GraphQL
             graphql_name(object_type_definition.name)
             description(object_type_definition.description)
             ast_node(object_type_definition)
-            if extend_subscription_root
-              # This has to come before `field ...` configurations since it modifies them
-              extend Subscriptions::SubscriptionRoot
-            end
 
             object_type_definition.interfaces.each do |interface_name|
               interface_defn = type_resolver.call(interface_name)

@@ -12,9 +12,7 @@ class GraphqlChannel < ActionCable::Channel::Base
   end
 
   class SubscriptionType < GraphQL::Schema::Object
-    if TESTING_INTERPRETER
-      extend GraphQL::Subscriptions::SubscriptionRoot
-    else
+    if !TESTING_INTERPRETER
       def payload(id:)
         id
       end

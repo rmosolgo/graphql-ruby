@@ -42,15 +42,6 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-If you have a subscription root type, it will also need an update. Extend this new module:
-
-```ruby
-class Types::Subscription < Types::BaseObject
-  # Extend this module to support subscription root fields with Interpreter
-  extend GraphQL::Subscriptions::SubscriptionRoot
-end
-```
-
 Some Relay configurations must be updated too. For example:
 
 ```diff
