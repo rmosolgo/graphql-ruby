@@ -43,7 +43,6 @@ module GraphQL
             when GraphQL::Language::Nodes::EnumTypeDefinition
               types[definition.name] = build_enum_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ObjectTypeDefinition
-              is_subscription_root = (definition.name == "Subscription" && (schema_definition.nil? || schema_definition.subscription.nil?)) || (schema_definition && (definition.name == schema_definition.subscription))
               types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve)
             when GraphQL::Language::Nodes::InterfaceTypeDefinition
               types[definition.name] = build_interface_type(definition, type_resolver)
