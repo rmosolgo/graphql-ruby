@@ -225,7 +225,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
         if c.query.subscription_update?
           o
         else
-          nil
+          c.skip
         end
       },
       "eventSubscription" => ->(o,a,c) { nil },
