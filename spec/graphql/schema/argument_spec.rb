@@ -231,6 +231,19 @@ describe GraphQL::Schema::Argument do
 
       res3 = Jazz::Schema.execute(query_str2, variables: { ensembleId: nil })
       assert_nil res3["data"]["loadAndReturnEnsemble"].fetch("ensemble")
+
+      query_str3 = <<-GRAPHQL
+      mutation {
+        loadAndReturnEnsemble(input: {}) {
+          ensemble {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      res4 = Jazz::Schema.execute(query_str3, variables: { ensembleId: nil })
+      assert_nil res4["data"]["loadAndReturnEnsemble"].fetch("ensemble")
     end
   end
 end

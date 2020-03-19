@@ -703,7 +703,7 @@ module Jazz
     argument :ensemble_id, ID, required: false, loads: Ensemble
     field :ensemble, Ensemble, null: true
 
-    def resolve(ensemble:)
+    def resolve(ensemble: nil)
       { ensemble: ensemble }
     end
   end
