@@ -71,7 +71,7 @@ module GraphQL
           # Cache this hash to avoid re-merging it
           arg_defns = self.arguments
 
-          arg_defns.each do |arg_name, arg_defn|
+          maybe_lazies = arg_defns.map do |arg_name, arg_defn|
             arg_key = arg_defn.keyword
             has_value = false
             if values.key?(arg_name)
@@ -90,25 +90,32 @@ module GraphQL
               loaded_value = nil
               if loads && !arg_defn.from_resolver?
                 loaded_value = if arg_defn.type.list?
-                  value.map { |val| load_application_object(arg_defn, loads, val, context) }
+                  loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, context) }
+                  GraphQL::Execution::Lazy.all(loaded_values)
                 else
                   load_application_object(arg_defn, loads, value, context)
                 end
               end
 
-              prepared_value = context.schema.error_handler.with_error_handling(context) do
+              context.schema.after_lazy(loaded_value) do |loaded_value|
+                prepared_value = context.schema.error_handler.with_error_handling(context) do
 
-                coerced_value = if loaded_value
-                  loaded_value
-                else
-                  arg_defn.type.coerce_input(value, context)
+                  coerced_value = if loaded_value
+                    loaded_value
+                  else
+                    arg_defn.type.coerce_input(value, context)
+                  end
+
+                  arg_defn.prepare_value(parent_object, coerced_value, context: context)
                 end
-
-                arg_defn.prepare_value(parent_object, coerced_value, context: context)
+                kwarg_arguments[arg_defn.keyword] = prepared_value
               end
-              kwarg_arguments[arg_defn.keyword] = prepared_value
             end
           end
+
+          # This _fixes_ lazy `loads:` in input objects, but it's a non-optimal implementation.
+          # It will force a batch-load for each set of arguments.
+          GraphQL::Execution::Lazy.all(maybe_lazies).value
           kwarg_arguments
         end
 

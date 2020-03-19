@@ -21,6 +21,7 @@ module GraphQL
         end
         # Apply prepares, not great to have it duplicated here.
         @arguments_by_keyword = {}
+        maybe_lazies = []
         self.class.arguments.each do |name, arg_defn|
           @arguments_by_keyword[arg_defn.keyword] = arg_defn
           ruby_kwargs_key = arg_defn.keyword
@@ -31,10 +32,14 @@ module GraphQL
             # With the interpreter, it's done during `coerce_arguments`
             if loads && !arg_defn.from_resolver? && !context.interpreter?
               value = @ruby_style_hash[ruby_kwargs_key]
-              @ruby_style_hash[ruby_kwargs_key] = if arg_defn.type.list?
-                value.map { |val| load_application_object(arg_defn, loads, val, context) }
+              loaded_value = if arg_defn.type.list?
+                loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, context) }
+                GraphQL::Execution::Lazy.all(loaded_values)
               else
                 load_application_object(arg_defn, loads, value, context)
+              end
+              maybe_lazies << context.schema.after_lazy(loaded_value) do |loaded_value|
+                @ruby_style_hash[ruby_kwargs_key] = loaded_value
               end
             end
 
@@ -45,6 +50,8 @@ module GraphQL
             end
           end
         end
+
+        GraphQL::Execution::Lazy.all(maybe_lazies).value
       end
 
       # @return [GraphQL::Query::Context] The context for this query

@@ -365,7 +365,7 @@ describe GraphQL::Schema::Resolver do
 
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
-        def resolve_field(*args)
+        def resolve_field(args, obj, ctx)
           value = super
           if @name == "resolver3"
             value << -1

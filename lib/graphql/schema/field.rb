@@ -646,22 +646,36 @@ module GraphQL
         if graphql_args.any? || @extras.any?
           # Splat the GraphQL::Arguments to Ruby keyword arguments
           ruby_kwargs = graphql_args.to_kwargs
+          maybe_lazies = []
           # Apply any `prepare` methods. Not great code organization, can this go somewhere better?
           arguments.each do |name, arg_defn|
             ruby_kwargs_key = arg_defn.keyword
 
-            loads = arg_defn.loads
-            if ruby_kwargs.key?(ruby_kwargs_key) && loads && !arg_defn.from_resolver?
+            if ruby_kwargs.key?(ruby_kwargs_key)
+              loads = arg_defn.loads
               value = ruby_kwargs[ruby_kwargs_key]
-              ruby_kwargs[ruby_kwargs_key] = if arg_defn.type.list?
-                value.map { |val| load_application_object(arg_defn, loads, val, field_ctx.query.context) }
+              loaded_value = if loads && !arg_defn.from_resolver?
+                if arg_defn.type.list?
+                  loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, field_ctx.query.context) }
+                  if loaded_values.any? { |v| field_ctx.schema.lazy?(v) }
+                    GraphQL::Execution::Lazy.all(loaded_values)
+                  else
+                    loaded_values
+                  end
+                else
+                  load_application_object(arg_defn, loads, value, field_ctx.query.context)
+                end
               else
-                load_application_object(arg_defn, loads, value, field_ctx.query.context)
+                value
               end
-            end
 
-            if ruby_kwargs.key?(ruby_kwargs_key) && arg_defn.prepare
-              ruby_kwargs[ruby_kwargs_key] = arg_defn.prepare_value(obj, ruby_kwargs[ruby_kwargs_key])
+              maybe_lazies << field_ctx.schema.after_lazy(loaded_value) do |loaded_value|
+                ruby_kwargs[ruby_kwargs_key] = if arg_defn.prepare
+                  arg_defn.prepare_value(obj, loaded_value)
+                else
+                  loaded_value
+                end
+              end
             end
           end
 
@@ -669,7 +683,13 @@ module GraphQL
             ruby_kwargs[extra_arg] = fetch_extra(extra_arg, field_ctx)
           end
 
-          ruby_kwargs
+          if maybe_lazies.any? { |l| field_ctx.schema.lazy?(l) }
+            GraphQL::Execution::Lazy.all(maybe_lazies).then do
+              ruby_kwargs
+            end
+          else
+            ruby_kwargs
+          end
         else
           NO_ARGS
         end

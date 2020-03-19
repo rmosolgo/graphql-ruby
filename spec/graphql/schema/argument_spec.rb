@@ -45,13 +45,14 @@ describe GraphQL::Schema::Argument do
 
     class Schema < GraphQL::Schema
       query(Query)
+      lazy_resolve(Proc, :call)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
         use GraphQL::Analysis::AST
       end
 
       def self.object_from_id(id, ctx)
-        Jazz::GloballyIdentifiableType.find(id)
+        -> { Jazz::GloballyIdentifiableType.find(id) }
       end
 
       orphan_types [Jazz::InstrumentType]

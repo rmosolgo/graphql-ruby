@@ -68,7 +68,7 @@ module Jazz
       super(*args, **options, &block)
     end
 
-    def resolve_field(*)
+    def resolve_field(obj, args, ctx)
       result = super
       if @upcase && result
         result.upcase
