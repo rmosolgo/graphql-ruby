@@ -244,6 +244,17 @@ describe GraphQL::Schema::Argument do
 
       res4 = Jazz::Schema.execute(query_str3, variables: { ensembleId: nil })
       assert_nil res4["data"]["loadAndReturnEnsemble"].fetch("ensemble")
+
+      query_str4 = <<-GRAPHQL
+      query {
+        nullableEnsemble(ensembleId: null) {
+          name
+        }
+      }
+      GRAPHQL
+
+      res5 = Jazz::Schema.execute(query_str4)
+      assert_nil res5["data"].fetch("nullableEnsemble")
     end
   end
 end

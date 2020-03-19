@@ -496,6 +496,15 @@ module Jazz
     end
 
     field :complex_hash_key, String, null: false, hash_key: :'foo bar/fizz-buzz'
+
+
+    field :nullable_ensemble, Ensemble, null: true do
+      argument :ensemble_id, ID, required: false, loads: Ensemble
+    end
+
+    def nullable_ensemble(ensemble: nil)
+      ensemble
+    end
   end
 
   class EnsembleInput < GraphQL::Schema::InputObject
