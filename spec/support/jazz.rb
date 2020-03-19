@@ -699,6 +699,15 @@ module Jazz
     end
   end
 
+  class LoadAndReturnEnsemble < GraphQL::Schema::RelayClassicMutation
+    argument :ensemble_id, ID, required: false, loads: Ensemble
+    field :ensemble, Ensemble, null: true
+
+    def resolve(ensemble:)
+      { ensemble: ensemble }
+    end
+  end
+
   class DummyOutput < GraphQL::Schema::Object
     graphql_name "DummyOutput"
 
@@ -731,6 +740,7 @@ module Jazz
     field :upvote_ensembles_as_bands, mutation: UpvoteEnsemblesAsBands
     field :upvote_ensembles_ids, mutation: UpvoteEnsemblesIds
     field :rename_ensemble_as_band, mutation: RenameEnsembleAsBand
+    field :load_and_return_ensemble, mutation: LoadAndReturnEnsemble
     field :returns_multiple_errors, mutation: ReturnsMultipleErrors, null: false
     field :has_extras, mutation: HasExtras
     field :has_extras_stripped, mutation: HasExtrasStripped
