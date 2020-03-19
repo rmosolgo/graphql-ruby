@@ -33,8 +33,7 @@ module GraphQL
             if loads && !arg_defn.from_resolver? && !context.interpreter?
               value = @ruby_style_hash[ruby_kwargs_key]
               loaded_value = if arg_defn.type.list?
-                loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, context) }
-                GraphQL::Execution::Lazy.all(loaded_values)
+                value.map { |val| load_application_object(arg_defn, loads, val, context) }
               else
                 load_application_object(arg_defn, loads, value, context)
               end
@@ -51,11 +50,7 @@ module GraphQL
           end
         end
 
-        @lazy = if maybe_lazies.any? { |l| context.schema.lazy?(l) }
-          GraphQL::Execution::Lazy.all(maybe_lazies)
-        else
-          nil
-        end
+        @maybe_lazies = maybe_lazies
       end
 
       # @return [GraphQL::Query::Context] The context for this query
@@ -78,8 +73,10 @@ module GraphQL
       end
 
       def prepare
-        if @lazy
-          @lazy.then { self }
+        if context
+          context.schema.after_lazy(@maybe_lazies) do
+            self
+          end
         else
           self
         end

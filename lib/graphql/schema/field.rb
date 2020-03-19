@@ -657,11 +657,7 @@ module GraphQL
               loaded_value = if loads && !arg_defn.from_resolver?
                 if arg_defn.type.list?
                   loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, field_ctx.query.context) }
-                  if loaded_values.any? { |v| field_ctx.schema.lazy?(v) }
-                    GraphQL::Execution::Lazy.all(loaded_values)
-                  else
-                    loaded_values
-                  end
+                  maybe_lazies.concat(loaded_values)
                 else
                   load_application_object(arg_defn, loads, value, field_ctx.query.context)
                 end
@@ -670,11 +666,13 @@ module GraphQL
               end
 
               maybe_lazies << field_ctx.schema.after_lazy(loaded_value) do |loaded_value|
-                ruby_kwargs[ruby_kwargs_key] = if arg_defn.prepare
+                prepared_value = if arg_defn.prepare
                   arg_defn.prepare_value(obj, loaded_value)
                 else
                   loaded_value
                 end
+
+                ruby_kwargs[ruby_kwargs_key] = prepared_value
               end
             end
           end
@@ -683,11 +681,7 @@ module GraphQL
             ruby_kwargs[extra_arg] = fetch_extra(extra_arg, field_ctx)
           end
 
-          if maybe_lazies.any? { |l| field_ctx.schema.lazy?(l) }
-            GraphQL::Execution::Lazy.all(maybe_lazies).then do
-              ruby_kwargs
-            end
-          else
+          field_ctx.schema.after_lazy(maybe_lazies) do
             ruby_kwargs
           end
         else

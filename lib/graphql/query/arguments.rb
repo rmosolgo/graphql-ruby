@@ -86,7 +86,8 @@ module GraphQL
         end
       end
 
-      def_delegators :to_h, :keys, :values, :each, :any?
+      def_delegators :to_h, :keys, :values, :each
+      def_delegators :@argument_values, :any?
 
       def prepare
         self

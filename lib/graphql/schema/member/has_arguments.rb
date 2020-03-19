@@ -71,7 +71,8 @@ module GraphQL
           # Cache this hash to avoid re-merging it
           arg_defns = self.arguments
 
-          maybe_lazies = arg_defns.map do |arg_name, arg_defn|
+          maybe_lazies = []
+          arg_lazies = arg_defns.map do |arg_name, arg_defn|
             arg_key = arg_defn.keyword
             has_value = false
             if values.key?(arg_name)
@@ -90,12 +91,7 @@ module GraphQL
               loaded_value = nil
               if loads && !arg_defn.from_resolver?
                 loaded_value = if arg_defn.type.list?
-                  loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, context) }
-                  if loaded_values.any? { |l| context.schema.lazy?(l) }
-                    GraphQL::Execution::Lazy.all(loaded_values)
-                  else
-                    loaded_values
-                  end
+                  value.map { |val| load_application_object(arg_defn, loads, val, context) }
                 else
                   load_application_object(arg_defn, loads, value, context)
                 end
@@ -119,13 +115,8 @@ module GraphQL
             end
           end
 
-          # This _fixes_ lazy `loads:` in input objects, but it's a non-optimal implementation.
-          # It will force a batch-load for each set of arguments.
-          if maybe_lazies.any? { |l| context.schema.lazy?(l) }
-            GraphQL::Execution::Lazy.all(maybe_lazies).then do
-              kwarg_arguments
-            end
-          else
+          maybe_lazies.concat(arg_lazies)
+          context.schema.after_lazy(maybe_lazies) do
             kwarg_arguments
           end
         end
