@@ -681,7 +681,7 @@ module GraphQL
             ruby_kwargs[extra_arg] = fetch_extra(extra_arg, field_ctx)
           end
 
-          field_ctx.schema.after_lazy(maybe_lazies) do
+          field_ctx.schema.after_any_lazies(maybe_lazies) do
             ruby_kwargs
           end
         else

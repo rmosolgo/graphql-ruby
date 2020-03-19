@@ -116,7 +116,7 @@ module GraphQL
           end
 
           maybe_lazies.concat(arg_lazies)
-          context.schema.after_lazy(maybe_lazies) do
+          context.schema.after_any_lazies(maybe_lazies) do
             kwarg_arguments
           end
         end

@@ -117,19 +117,15 @@ module GraphQL
 
       # Override this method to handle lazy objects in a custom way.
       # @param value [Object] an instance of a class registered with {.lazy_resolve}
-      # @param ctx [GraphQL::Query::Context] the context for this query
       # @return [Object] A GraphQL-ready (non-lazy) object
+      # @api private
       def sync_lazy(value)
-        if value.is_a?(Array)
-          value.map { |v| sync_lazy(v) }
+        lazy_method = lazy_method_name(value)
+        if lazy_method
+          synced_value = value.public_send(lazy_method)
+          sync_lazy(synced_value)
         else
-          lazy_method = lazy_method_name(value)
-          if lazy_method
-            synced_value = value.public_send(lazy_method)
-            sync_lazy(synced_value)
-          else
-            value
-          end
+          value
         end
       end
 
@@ -140,10 +136,20 @@ module GraphQL
 
       # @return [Boolean] True if this object should be lazily resolved
       def lazy?(obj)
-        if obj.is_a?(Array)
-          obj.any? { |v| lazy?(v) }
+        !!lazy_method_name(obj)
+      end
+
+      # Return a lazy if any of `maybe_lazies` are lazy,
+      # otherwise, call the block eagerly and return the result.
+      # @param maybe_lazies [Array]
+      # @api private
+      def after_any_lazies(maybe_lazies)
+        if maybe_lazies.any? { |l| lazy?(l) }
+          GraphQL::Execution::Lazy.all(maybe_lazies).then do |result|
+            yield
+          end
         else
-          !!lazy_method_name(obj)
+          yield
         end
       end
     end

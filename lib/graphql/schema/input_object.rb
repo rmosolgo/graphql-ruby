@@ -74,7 +74,7 @@ module GraphQL
 
       def prepare
         if context
-          context.schema.after_lazy(@maybe_lazies) do
+          context.schema.after_any_lazies(@maybe_lazies) do
             self
           end
         else
