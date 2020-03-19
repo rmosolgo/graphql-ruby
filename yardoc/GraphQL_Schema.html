@@ -22,17 +22,18 @@ value :ONIONS
 value :PEPPERS
 end
 Includes:
+GraphQL::Schema::LazyHandlingMethods,
 GraphQL::Define::InstanceDefinable
 Extended by:
+GraphQL::Schema::LazyHandlingMethods,
 GraphQL::Schema::FindInheritedValue,
 GraphQL::Schema::Member::HasAstNode,
 GraphQL::Schema::Member::AcceptsDefinition, Forwardable
 Class methods:
-accessible?, add_type, add_type_and_traverse, after_lazy,
-all_middleware, as_json, context_class, cursor_encoder,
-default_directives, default_filter, default_mask,
-default_max_page_size, directive, directives,
-disable_introspection_entry_points,
+accessible?, add_type, add_type_and_traverse, all_middleware,
+as_json, context_class, cursor_encoder, default_directives,
+default_filter, default_mask, default_max_page_size, directive,
+directives, disable_introspection_entry_points,
 disable_introspection_entry_points?,
 disable_schema_introspection_entry_point,
 disable_schema_introspection_entry_point?,
@@ -41,39 +42,38 @@ disable_type_introspection_entry_point?, execute, find,
 from_definition, from_introspection, get_field, get_fields,
 get_type, graphql_definition, id_from_object, inaccessible_fields,
 inherited, instrument, instrumenters, interpreter?, introspection,
-introspection_system, lazy?, lazy_method_name, lazy_methods,
-lazy_resolve, middleware, multiplex, multiplex_analyzer,
-multiplex_analyzers, mutation, mutation_execution_strategy,
-new_connections?, non_introspection_types, object_from_id,
-orphan_types, own_directives, own_instrumenters, own_middleware,
+introspection_system, lazy_methods, lazy_resolve, middleware,
+multiplex, multiplex_analyzer, multiplex_analyzers, mutation,
+mutation_execution_strategy, new_connections?,
+non_introspection_types, object_from_id, orphan_types,
+own_directives, own_instrumenters, own_middleware,
 own_multiplex_analyzers, own_orphan_types, own_plugins,
 own_possible_types, own_query_analyzers, own_rescues, own_tracers,
 own_types, own_union_memberships, parse_error, plugins,
 possible_types, query, query_analyzer, query_analyzers,
 query_execution_strategy, references_to, rescue_from, rescues,
 resolve_type, root_type_for_operation, root_types, static_validator,
-subscription, subscription_execution_strategy, sync_lazy,
-to_definition, to_document, to_graphql, to_json, tracer, tracers,
-type_error, type_from_ast, types, unauthorized_field,
-unauthorized_object, union_memberships, update_type_owner, use,
-using_ast_analysis?, visible?
+subscription, subscription_execution_strategy, to_definition,
+to_document, to_graphql, to_json, tracer, tracers, type_error,
+type_from_ast, types, unauthorized_field, unauthorized_object,
+union_memberships, update_type_owner, use, using_ast_analysis?,
+visible?
 Instance methods:
-accessible?, after_lazy, as_json, call_on_type_class,
-check_resolved_type, default_filter, define,
-disable_introspection_entry_points?,
+accessible?, as_json, call_on_type_class, check_resolved_type,
+default_filter, define, disable_introspection_entry_points?,
 disable_schema_introspection_entry_point?,
 disable_type_introspection_entry_point?, execute,
 execution_strategy_for_operation, find, get_field, get_fields,
 get_type, id_from_object, id_from_object=, initialize,
 initialize_copy, inspect, instrument, interpreter?,
-introspection_system, lazy?, lazy_method_name, multiplex,
-new_connections?, object_from_id, object_from_id=, parse_error,
-parse_error=, possible_types, rebuild_artifacts, references_to,
-remove_handler, rescue_from, rescue_middleware, rescues?,
-resolve_type, resolve_type=, root_type_for_operation, root_types,
-sync_lazy, to_definition, to_document, to_json, type_error,
-type_error=, type_from_ast, types, union_memberships,
-using_ast_analysis?, validate, visible?, with_definition_error_check</p>
+introspection_system, multiplex, new_connections?, object_from_id,
+object_from_id=, parse_error, parse_error=, possible_types,
+rebuild_artifacts, references_to, remove_handler, rescue_from,
+rescue_middleware, rescues?, resolve_type, resolve_type=,
+root_type_for_operation, root_types, to_definition, to_document,
+to_json, type_error, type_error=, type_from_ast, types,
+union_memberships, using_ast_analysis?, validate, visible?,
+with_definition_error_check</p>
 
 
   </body>
