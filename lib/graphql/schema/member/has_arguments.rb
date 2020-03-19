@@ -91,13 +91,18 @@ module GraphQL
               if loads && !arg_defn.from_resolver?
                 loaded_value = if arg_defn.type.list?
                   loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, context) }
-                  GraphQL::Execution::Lazy.all(loaded_values)
+                  if loaded_values.any? { |l| context.schema.lazy?(l) }
+                    GraphQL::Execution::Lazy.all(loaded_values)
+                  else
+                    loaded_values
+                  end
                 else
                   load_application_object(arg_defn, loads, value, context)
                 end
               end
 
               context.schema.after_lazy(loaded_value) do |loaded_value|
+                coerced_value = nil
                 prepared_value = context.schema.error_handler.with_error_handling(context) do
 
                   coerced_value = if loaded_value
@@ -108,6 +113,7 @@ module GraphQL
 
                   arg_defn.prepare_value(parent_object, coerced_value, context: context)
                 end
+
                 kwarg_arguments[arg_defn.keyword] = prepared_value
               end
             end
@@ -115,8 +121,13 @@ module GraphQL
 
           # This _fixes_ lazy `loads:` in input objects, but it's a non-optimal implementation.
           # It will force a batch-load for each set of arguments.
-          GraphQL::Execution::Lazy.all(maybe_lazies).value
-          kwarg_arguments
+          if maybe_lazies.any? { |l| context.schema.lazy?(l) }
+            GraphQL::Execution::Lazy.all(maybe_lazies).then do
+              kwarg_arguments
+            end
+          else
+            kwarg_arguments
+          end
         end
 
         module ArgumentClassAccessor

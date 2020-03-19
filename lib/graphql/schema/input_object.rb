@@ -51,7 +51,11 @@ module GraphQL
           end
         end
 
-        GraphQL::Execution::Lazy.all(maybe_lazies).value
+        @lazy = if maybe_lazies.any? { |l| context.schema.lazy?(l) }
+          GraphQL::Execution::Lazy.all(maybe_lazies)
+        else
+          nil
+        end
       end
 
       # @return [GraphQL::Query::Context] The context for this query
@@ -74,7 +78,11 @@ module GraphQL
       end
 
       def prepare
-        self
+        if @lazy
+          @lazy.then { self }
+        else
+          self
+        end
       end
 
       def unwrap_value(value)
