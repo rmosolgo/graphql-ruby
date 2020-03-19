@@ -138,6 +138,9 @@ module GraphQL
 
           def load_application_object(argument, lookup_as_type, id, context)
             # See if any object can be found for this ID
+            if id.nil?
+              return nil
+            end
             loaded_application_object = object_from_id(lookup_as_type, id, context)
             context.schema.after_lazy(loaded_application_object) do |application_object|
               if application_object.nil?
