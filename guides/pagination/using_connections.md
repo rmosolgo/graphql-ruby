@@ -79,7 +79,7 @@ You can apply `max_page_size` to limit the number of items returned, regardless 
 
   ```ruby
   class MyAppSchema < GraphQL::Schema
-    max_page_size 50
+    default_max_page_size 50
   end
   ```
 
