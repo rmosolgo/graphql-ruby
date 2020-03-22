@@ -87,6 +87,11 @@ module Graphql
         default: false,
         desc: "Include GraphQL::Batch installation"
 
+      class_option :playground,
+        type: :boolean,
+        default: false,
+        desc: "Use GraphQL Playground over Graphiql as IDE"
+
       # These two options are taken from Rails' own generators'
       class_option :api,
         type: :boolean,
@@ -138,6 +143,20 @@ if Rails.env.development?
 RUBY
             end
           end
+        end
+
+        if options[:playground]
+          gem("graphql_playground-rails", group: :development)
+
+          log :route, 'graphql_playground-rails'
+          shell.mute do
+            route <<-RUBY
+if Rails.env.development?
+  mount GraphqlPlayground::Rails::Engine, at: "/playground", graphql_path: "/graphql"
+end
+RUBY
+          end
+
         end
 
         if gemfile_modified?
