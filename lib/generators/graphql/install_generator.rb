@@ -150,11 +150,19 @@ RUBY
 
           log :route, 'graphql_playground-rails'
           shell.mute do
-            route <<-RUBY
+            if Rails::VERSION::STRING > "5.2"
+              route <<-RUBY
 if Rails.env.development?
   mount GraphqlPlayground::Rails::Engine, at: "/playground", graphql_path: "/graphql"
 end
 RUBY
+            else
+              route <<-RUBY
+if Rails.env.development?
+    mount GraphqlPlayground::Rails::Engine, at: "/playground", graphql_path: "/graphql"
+  end
+RUBY
+            end
           end
 
         end
