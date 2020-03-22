@@ -189,6 +189,24 @@ RUBY
     assert_file "app/controllers/graphql_controller.rb", /CustomSchema\.execute/
   end
 
+  test "it can add GraphQL Playground as an IDE through the --playground option" do
+    run_generator(["--playground"])
+
+    assert_file "Gemfile" do |contents|
+      assert_includes contents, "graphql_playground-rails"
+    end
+
+    expected_playground_route = %|
+  if Rails.env.development?
+    mount GraphqlPlayground::Rails::Engine, at: "/playground", graphql_path: "/graphql"
+  end
+|
+
+    assert_file "config/routes.rb" do |contents|
+      assert_includes contents, expected_playground_route
+    end
+  end
+
   EXPECTED_GRAPHQLS_CONTROLLER = <<-'RUBY'
 class GraphqlController < ApplicationController
   # If accessing from outside this domain, nullify the session
