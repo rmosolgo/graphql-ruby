@@ -4,45 +4,59 @@ import { Cable } from "actioncable"
 import { Operation } from "apollo-link"
 
 describe("ActionCableLink", () => {
-  it("delegates to the cable", () => {
-    var log: any[] = []
-    var subscription: any
-    var cable = {
+  var log: any[]
+  var cable: any
+  var options: any
+  var link: any
+  var query: any
+  var operation: Operation
+
+  beforeEach(() => {
+    log = []
+    cable = {
       subscriptions: {
-        create: function(_channelName: string, options: {connected: Function, perform: Function, received: Function}) {
-          subscription = Object.assign(options, {
-            perform: function(actionName: string, options: object) {
-              log.push(["perform", { actionName: actionName, options: options }])
-            },
-            unsubscribe: function() {
-              log.push(["unsubscribe"])
-            },
-          })
+        create: function(_channelName: string, options: {connected: Function, received: Function}) {
+          var subscription = Object.assign(
+            Object.create({
+              perform: function(actionName: string, options: object) {
+                log.push(["perform", { actionName: actionName, options: options }])
+              },
+              unsubscribe: function() {
+                log.push(["unsubscribe"])
+              }
+            }),
+            options
+          )
+
           subscription.connected = subscription.connected.bind(subscription)
+          subscription.__proto__.unsubscribe = subscription.__proto__.unsubscribe.bind(subscription)
           subscription.connected()
+          return subscription
         }
       }
     }
-
-    var options = {
+    options = {
       cable: (cable as unknown) as Cable
     }
-    var link = new ActionCableLink(options)
+    link = new ActionCableLink(options)
 
-    var query = parse("subscription { foo { bar } }")
+    query = parse("subscription { foo { bar } }")
 
-    var operation = ({
+    operation = ({
       query: query,
       variables: { a: 1 },
       operationId: "operationId",
       operationName: "operationName"
     } as unknown) as Operation
+  })
 
+  it("delegates to the cable", () => {
     var observable = link.request(operation, null as any)
 
-    observable.subscribe(function(result: any) {
+    // unpack the underlying subscription
+    var subscription: any = (observable.subscribe(function(result: any) {
       log.push(["received", result])
-    })
+    }) as any)._cleanup
 
     subscription.received({
       result: {
@@ -65,7 +79,6 @@ describe("ActionCableLink", () => {
       more: false
     })
 
-
     expect(log).toEqual([
       [
         "perform", {
@@ -80,6 +93,47 @@ describe("ActionCableLink", () => {
       ],
       ["received", { data: "data 1" }],
       ["received", { data: "data 2" }],
+      ["unsubscribe"]
+    ])
+  })
+
+  it("delegates a manual unsubscribe to the cable", () => {
+    var observable = link.request(operation, null as any)
+
+    // unpack the underlying subscription
+    var subscription: any = (observable.subscribe(function(result: any) {
+      log.push(["received", result])
+    }) as any)._cleanup
+
+    subscription.received({
+      result: {
+        data: null
+      },
+      more: true
+    })
+
+    subscription.received({
+      result: {
+        data: "data 1"
+      },
+      more: true
+    })
+
+    subscription.unsubscribe()
+
+    expect(log).toEqual([
+      [
+        "perform", {
+          actionName: "execute",
+          options: {
+            query: "subscription {\n  foo {\n    bar\n  }\n}\n",
+            variables: { a: 1 },
+            operationId: "operationId",
+            operationName: "operationName"
+          }
+        }
+      ],
+      ["received", { data: "data 1" }],
       ["unsubscribe"]
     ])
   })
