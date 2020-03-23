@@ -53,7 +53,7 @@ class ActionCableLink extends ApolloLink {
       })
 
       // Make the ActionCable subscription behave like an Apollo subscription
-      return { ...subscription, closed: false, unsubscribe: subscription.unsubscribe }
+      return Object.assign(subscription, {closed: false})
     })
   }
 }
