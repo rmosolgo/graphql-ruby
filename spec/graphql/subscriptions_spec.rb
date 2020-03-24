@@ -205,29 +205,19 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   }
   GRAPHQL
 
+  DEFAULT_SUBSCRIPTION_RESOLVE = ->(o,a,c) {
+    if c.query.subscription_update?
+      o
+    else
+      c.skip
+    end
+  }
+
   Resolvers = {
     "Subscription" => {
-      "payload" => ->(o,a,c) {
-        if c.query.subscription_update?
-          o
-        else
-          c.skip
-        end
-      },
-      "myEvent" => ->(o,a,c) {
-        if c.query.subscription_update?
-          o
-        else
-          c.skip
-        end
-      },
-      "event" => ->(o,a,c) {
-        if c.query.subscription_update?
-          o
-        else
-          c.skip
-        end
-      },
+      "payload" => DEFAULT_SUBSCRIPTION_RESOLVE,
+      "myEvent" => DEFAULT_SUBSCRIPTION_RESOLVE,
+      "event" => DEFAULT_SUBSCRIPTION_RESOLVE,
       "eventSubscription" => ->(o,a,c) { nil },
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
