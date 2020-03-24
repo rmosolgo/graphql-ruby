@@ -386,7 +386,8 @@ module GraphQL
       def has_max_page_size?
         @has_max_page_size
       end
-      # @return [Integer, nil] Applied to connections if present
+
+      # @return [Integer, nil] Applied to connections if {#has_max_page_size?}
       attr_reader :max_page_size
 
       # @return [GraphQL::Field]
