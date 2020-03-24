@@ -658,9 +658,8 @@ describe GraphQL::Subscriptions do
             failedEvent(id: $id) { str, int }
           }
             GRAPHQL
-            assert_equal nil, res["data"]
+            assert_nil res.fetch("data")
             assert_equal "unauthorized", res["errors"][0]["message"]
-
             assert_equal 0, active_subscriptions.size
           end
 

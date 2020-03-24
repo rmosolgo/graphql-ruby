@@ -297,7 +297,7 @@ module GraphQL
 
           field_definitions.map do |field_definition|
             type_name = resolve_type_name(field_definition.type)
-
+            resolve_method_name = "resolve_#{field_definition.name}"
             owner.field(
               field_definition.name,
               description: field_definition.description,
@@ -309,14 +309,15 @@ module GraphQL
               ast_node: field_definition,
               method_conflict_warning: false,
               camelize: false,
+              resolver_method: resolve_method_name,
             ) do
               builder.build_arguments(self, field_definition.arguments, type_resolver)
 
               # Don't do this for interfaces
               if default_resolve
-                # TODO fragile hack. formalize this API?
-                define_singleton_method :resolve_field_method do |obj, args, ctx|
-                  default_resolve.call(self, obj.object, args, ctx)
+                owner.define_method(resolve_method_name) do |**args|
+                  field_instance = self.class.get_field(field_definition.name)
+                  default_resolve.call(field_instance, object, args, context)
                 end
               end
             end
