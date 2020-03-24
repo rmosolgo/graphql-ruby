@@ -152,6 +152,7 @@ describe GraphQL::Schema::InputObject do
         end
 
         orphan_types [Jazz::InstrumentType]
+        max_complexity 100
       end
     end
 
@@ -184,6 +185,19 @@ describe GraphQL::Schema::InputObject do
         assert_equal("boom!", res["errors"][0]["extensions"]["problems"][0]["explanation"])
         assert_equal(input, res["errors"][0]["extensions"]["value"])
       end
+    end
+
+    it "handles not-found with max complexity analyzer running" do
+      query_str = <<-GRAPHQL
+      { inputs(input: {a: 1, b: 2, c: 3, d: 4, e: 6, instrumentId: "Instrument/Nonsense"}) }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(
+        query_str,
+        context: { multiply_by: 3 }
+      )
+
+      assert_equal ["No object found for `instrumentId: \"Instrument/Nonsense\"`"], res["errors"].map { |e| e["message"] }
     end
 
     it "loads input object arguments" do

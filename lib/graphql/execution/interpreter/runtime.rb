@@ -174,69 +174,71 @@ module GraphQL
               next
             end
 
-            # It might turn out that making arguments for every field is slow.
-            # If we have to cache them, we'll need a more subtle approach here.
-            field_defn.extras.each do |extra|
-              case extra
-              when :ast_node
-                kwarg_arguments[:ast_node] = ast_node
-              when :execution_errors
-                kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
-              when :path
-                kwarg_arguments[:path] = next_path
-              when :lookahead
-                if !field_ast_nodes
-                  field_ast_nodes = [ast_node]
+            after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |kwarg_arguments|
+              # It might turn out that making arguments for every field is slow.
+              # If we have to cache them, we'll need a more subtle approach here.
+              field_defn.extras.each do |extra|
+                case extra
+                when :ast_node
+                  kwarg_arguments[:ast_node] = ast_node
+                when :execution_errors
+                  kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
+                when :path
+                  kwarg_arguments[:path] = next_path
+                when :lookahead
+                  if !field_ast_nodes
+                    field_ast_nodes = [ast_node]
+                  end
+                  kwarg_arguments[:lookahead] = Execution::Lookahead.new(
+                    query: query,
+                    ast_nodes: field_ast_nodes,
+                    field: field_defn,
+                  )
+                else
+                  kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
                 end
-                kwarg_arguments[:lookahead] = Execution::Lookahead.new(
-                  query: query,
-                  ast_nodes: field_ast_nodes,
-                  field: field_defn,
-                )
-              else
-                kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
               end
-            end
 
-            @interpreter_context[:current_arguments] = kwarg_arguments
+              @interpreter_context[:current_arguments] = kwarg_arguments
 
-            # Optimize for the case that field is selected only once
-            if field_ast_nodes.nil? || field_ast_nodes.size == 1
-              next_selections = ast_node.selections
-            else
-              next_selections = []
-              field_ast_nodes.each { |f| next_selections.concat(f.selections) }
-            end
+              # Optimize for the case that field is selected only once
+              if field_ast_nodes.nil? || field_ast_nodes.size == 1
+                next_selections = ast_node.selections
+              else
+                next_selections = []
+                field_ast_nodes.each { |f| next_selections.concat(f.selections) }
+              end
 
-            field_result = resolve_with_directives(object, ast_node) do
-              # Actually call the field resolver and capture the result
-              app_result = begin
-                query.with_error_handling do
-                  query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, query: query, object: object, arguments: kwarg_arguments}) do
-                    field_defn.resolve(object, kwarg_arguments, context)
+              field_result = resolve_with_directives(object, ast_node) do
+                # Actually call the field resolver and capture the result
+                app_result = begin
+                  query.with_error_handling do
+                    query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, query: query, object: object, arguments: kwarg_arguments}) do
+                      field_defn.resolve(object, kwarg_arguments, context)
+                    end
+                  end
+                rescue GraphQL::ExecutionError => err
+                  err
+                end
+                after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |inner_result|
+                  continue_value = continue_value(next_path, inner_result, field_defn, return_type.non_null?, ast_node)
+                  if RawValue === continue_value
+                    # Write raw value directly to the response without resolving nested objects
+                    write_in_response(next_path, continue_value.resolve)
+                  elsif HALT != continue_value
+                    continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments)
                   end
                 end
-              rescue GraphQL::ExecutionError => err
-                err
               end
-              after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |inner_result|
-                continue_value = continue_value(next_path, inner_result, field_defn, return_type.non_null?, ast_node)
-                if RawValue === continue_value
-                  # Write raw value directly to the response without resolving nested objects
-                  write_in_response(next_path, continue_value.resolve)
-                elsif HALT != continue_value
-                  continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments)
-                end
-              end
-            end
 
-            # If this field is a root mutation field, immediately resolve
-            # all of its child fields before moving on to the next root mutation field.
-            # (Subselections of this mutation will still be resolved level-by-level.)
-            if root_operation_type == "mutation"
-              Interpreter::Resolve.resolve_all([field_result])
-            else
-              field_result
+              # If this field is a root mutation field, immediately resolve
+              # all of its child fields before moving on to the next root mutation field.
+              # (Subselections of this mutation will still be resolved level-by-level.)
+              if root_operation_type == "mutation"
+                Interpreter::Resolve.resolve_all([field_result])
+              else
+                field_result
+              end
             end
           end
         end
