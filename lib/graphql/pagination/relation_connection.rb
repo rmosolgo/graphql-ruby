@@ -12,7 +12,7 @@ module GraphQL
 
       def has_previous_page
         if @has_previous_page.nil?
-          @has_previous_page = if @after_offset && @after_offset > 0
+          @has_previous_page = if after_offset && after_offset > 0
             true
           elsif last
             # See whether there are any nodes _before_ the current offset.
@@ -29,7 +29,7 @@ module GraphQL
 
       def has_next_page
         if @has_next_page.nil?
-          @has_next_page = if @before_offset && @before_offset > 0
+          @has_next_page = if before_offset && before_offset > 0
             true
           elsif first
             relation_count(set_limit(sliced_nodes, first + 1)) == first + 1
@@ -105,31 +105,39 @@ module GraphQL
       def sliced_nodes
         @sliced_nodes ||= begin
           paginated_nodes = items
-          @after_offset = after && offset_from_cursor(after)
-          @before_offset = before && offset_from_cursor(before)
 
-          if @after_offset
+          if after_offset
             previous_offset = relation_offset(items) || 0
-            paginated_nodes = set_offset(paginated_nodes, previous_offset + @after_offset)
+            paginated_nodes = set_offset(paginated_nodes, previous_offset + after_offset)
           end
 
-          if @before_offset && @after_offset
-            if @after_offset < @before_offset
+          if before_offset && after_offset
+            if after_offset < before_offset
               # Get the number of items between the two cursors
-              space_between = @before_offset - @after_offset - 1
+              space_between = before_offset - after_offset - 1
               paginated_nodes = set_limit(paginated_nodes, space_between)
             else
               # TODO I think this is untested
               # The cursors overextend one another to an empty set
               paginated_nodes = null_relation(paginated_nodes)
             end
-          elsif @before_offset
+          elsif before_offset
             # Use limit to cut off the tail of the relation
-            paginated_nodes = set_limit(paginated_nodes, @before_offset - 1)
+            paginated_nodes = set_limit(paginated_nodes, before_offset - 1)
           end
 
           paginated_nodes
         end
+      end
+
+      # @return [Integer, nil]
+      def before_offset
+        @before_offset ||= before && offset_from_cursor(before)
+      end
+
+      # @return [Integer, nil]
+      def after_offset
+        @after_offset ||= after && offset_from_cursor(after)
       end
 
       # Apply `first` and `last` to `sliced_nodes`,

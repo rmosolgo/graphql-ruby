@@ -23,14 +23,14 @@ describe GraphQL::Relay::PageInfo do
     query getShips($first: Int, $after: String, $last: Int, $before: String, $nameIncludes: String){
       empire {
         bases(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
-          edges {
-            cursor
-          }
           pageInfo {
             hasNextPage
             hasPreviousPage
             startCursor
             endCursor
+          },
+          edges {
+            cursor
           }
         }
       }
