@@ -41,7 +41,8 @@ module GraphQL
     end
 
     def interfaces(ctx = GraphQL::Query::NullContext)
-      load_interfaces(ctx)
+      ifaces, inherited_ifaces = load_interfaces(ctx)
+      ifaces + inherited_ifaces
     end
 
     def kind
@@ -105,33 +106,37 @@ module GraphQL
     end
 
     def interface_fields
-      load_interfaces unless @clean_inherited_fields
-      @clean_inherited_fields
+      if @clean_inherited_fields
+        @clean_inherited_fields
+      else
+        _ifaces, inherited_ifaces = load_interfaces(nil)
+        @clean_inherited_fields = {}
+        inherited_ifaces.each do |iface|
+          if iface.is_a?(GraphQL::InterfaceType)
+            @clean_inherited_fields.merge!(iface.fields)
+          end
+        end
+        @clean_inherited_fields
+      end
     end
 
     def load_interfaces(ctx = GraphQL::Query::NullContext)
       ensure_defined
       clean_ifaces = []
       clean_inherited_ifaces = []
-      inherited_fields = {}
       @interface_type_memberships.each do |type_membership|
-        if !ctx.nil? && type_membership.visible?(ctx)
+        if ctx.nil? || type_membership.visible?(ctx)
           clean_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
         end
       end
 
       @inherited_interface_type_memberships.each do |type_membership|
-        if type_membership.visible?(ctx)
-          iface = GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
-          clean_inherited_ifaces << iface
-          if iface.is_a?(GraphQL::InterfaceType)
-            inherited_fields.merge!(iface.fields)
-          end
+        if ctx.nil? || type_membership.visible?(ctx)
+          clean_inherited_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
         end
       end
 
-      @clean_inherited_fields = inherited_fields
-      clean_inherited_ifaces + clean_ifaces
+      [clean_ifaces, clean_inherited_ifaces]
     end
   end
 end

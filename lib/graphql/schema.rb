@@ -1765,16 +1765,24 @@ module GraphQL
             }
             own_possible_types[owner.graphql_name] = owner.possible_types
           elsif type.kind.interface? && owner.kind.object?
-            new_interfaces = owner.interfaces(nil).map do |t|
-              if t.is_a?(String) && t == type.graphql_name
+            new_interfaces = owner.interface_type_memberships.map do |tm|
+              if tm.is_a?(Schema::TypeMembership)
+                tm.abstract_type # TODO won't this lose some configuration?
+              elsif tm.is_a?(String) && tm == type.graphql_name
                 type
-              elsif t.is_a?(LateBoundType) && t.graphql_name == type.graphql_name
+              elsif tm.is_a?(LateBoundType) && tm.graphql_name == type.graphql_name
                 type
               else
-                t
+                tm
               end
             end
             owner.implements(*new_interfaces)
+            new_interfaces.each do |int|
+              pt = own_possible_types[int.graphql_name] ||= []
+              if !pt.include?(owner)
+                pt << owner
+              end
+            end
           end
 
         when nil
@@ -1873,10 +1881,18 @@ module GraphQL
           end
           if type.kind.object?
             own_possible_types[type.graphql_name] = [type]
-            type.interfaces(nil).each do |i|
-              implementers = own_possible_types[i.graphql_name] ||= []
-              implementers << type
-              add_type(i, owner: type, late_types: late_types, path: path + ["implements"])
+            type.interface_type_memberships.each do |type_membership|
+              case type_membership
+              when Schema::TypeMembership
+                interface_type = type_membership.abstract_type
+                implementers = own_possible_types[interface_type.graphql_name] ||= []
+                implementers << type
+              when String, LateBoundType
+                interface_type = type_membership
+              else
+                raise "Invariant: unexpected type_membership #{type_membership.class} (#{type_membership.inspect})"
+              end
+              add_type(interface_type, owner: type, late_types: late_types, path: path + ["implements"])
             end
           end
         end

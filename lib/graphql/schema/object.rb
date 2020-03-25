@@ -121,7 +121,7 @@ module GraphQL
               .map(&:abstract_type)
           else
             visible_interfaces = []
-            interface_type_memberships.select do |type_membership|
+            interface_type_memberships.each do |type_membership|
               vis = type_membership.visible?(context)
               if vis
                 visible_interfaces << type_membership.abstract_type

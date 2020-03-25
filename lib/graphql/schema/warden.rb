@@ -68,7 +68,6 @@ module GraphQL
       def get_type(type_name)
         @visible_types ||= read_through do |name|
           type_defn = @schema.get_type(name)
-          p ["get_type", type_name, type_defn, visible_type?(type_defn)]
           if type_defn && visible_type?(type_defn)
             type_defn
           else
@@ -110,7 +109,8 @@ module GraphQL
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
         @visible_possible_types ||= read_through { |type_defn|
-          @schema.possible_types(type_defn, @context).select { |t| visible_type?(t) }
+          pt = @schema.possible_types(type_defn, @context)
+          pt.select { |t| visible_type?(t) }
         }
         @visible_possible_types[type_defn]
       end
@@ -183,10 +183,12 @@ module GraphQL
         if type_defn.kind.object?
           any_interface_has_field = false
           any_interface_has_visible_field = false
-          unfiltered_interfaces(type_defn).each do |interface_type|
-            if interface_type.get_field(field_defn.name)
+          ints = unfiltered_interfaces(type_defn)
+          ints.each do |interface_type|
+            if (iface_field_defn = interface_type.get_field(field_defn.graphql_name))
               any_interface_has_field = true
-              if visible?(interface_type) && get_field(interface_type, field_defn.name)
+
+              if visible?(interface_type) && visible_field?(interface_type, iface_field_defn)
                 any_interface_has_visible_field = true
               end
             end
@@ -247,7 +249,7 @@ module GraphQL
       end
 
       def visible_possible_types?(type_defn)
-        possible_types(type_defn).any? { |t| visible_type?(t) }
+        possible_types(type_defn).any? { |t| [t.graphql_name, "visible_type?", visible_type?(t)]; visible_type?(t) }
       end
 
       def visible?(member)

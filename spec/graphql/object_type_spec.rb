@@ -110,7 +110,7 @@ describe GraphQL::ObjectType do
         field :hello, types.String
       end
 
-      assert_equal([Dummy::Edible.graphql_definition, Dummy::AnimalProduct.graphql_definition], type.interfaces)
+      assert_equal([Dummy::AnimalProduct.graphql_definition, Dummy::Edible.graphql_definition], type.interfaces)
     end
 
     it "can be used to inherit fields from the interface" do

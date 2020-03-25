@@ -48,7 +48,7 @@ describe GraphQL::Schema::Object do
     end
 
     it "implements visibility constrained interface when context is private" do
-      found_interfaces = object_class.interfaces(context: { private: true })
+      found_interfaces = object_class.interfaces({ private: true })
       assert_equal 4, found_interfaces.count
       assert found_interfaces.any? { |int| int.graphql_name == 'PrivateNameEntity' }
     end
