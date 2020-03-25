@@ -243,7 +243,7 @@ module GraphQL
         @return_type_null = null
         @connection = connection
         @has_max_page_size = max_page_size != :not_given
-        @max_page_size = max_page_size
+        @max_page_size = max_page_size == :not_given ? nil : max_page_size
         @introspection = introspection
         @extras = extras
         @resolver_class = resolver_class
