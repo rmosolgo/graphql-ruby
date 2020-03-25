@@ -173,7 +173,7 @@ module GraphQL
       # @param resolver_method [Symbol] The method on the type to call to resolve this field (defaults to `name`)
       # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
       # @param connection_extension [Class] The extension to add, to implement connections. If `nil`, no extension is added.
-      # @param max_page_size [Integer] For connections, the maximum number of items to return from this field
+      # @param max_page_size [Integer, nil] For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
       # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
       # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
       # @param field [GraphQL::Field, GraphQL::Schema::Field] **deprecated** for compatibility with <1.8.0
@@ -188,7 +188,7 @@ module GraphQL
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: nil, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: [], extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, arguments: EMPTY_HASH, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: [], extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, arguments: EMPTY_HASH, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -242,7 +242,8 @@ module GraphQL
         @return_type_expr = type
         @return_type_null = null
         @connection = connection
-        @max_page_size = max_page_size
+        @has_max_page_size = max_page_size != :not_given
+        @max_page_size = max_page_size == :not_given ? nil : max_page_size
         @introspection = introspection
         @extras = extras
         @resolver_class = resolver_class
@@ -381,7 +382,12 @@ module GraphQL
         end
       end
 
-      # @return [Integer, nil] Applied to connections if present
+      # @return [Boolean] True if this field's {#max_page_size} should override the schema default.
+      def has_max_page_size?
+        @has_max_page_size
+      end
+
+      # @return [Integer, nil] Applied to connections if {#has_max_page_size?}
       attr_reader :max_page_size
 
       # @return [GraphQL::Field]

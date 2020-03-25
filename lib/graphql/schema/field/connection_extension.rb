@@ -35,7 +35,9 @@ module GraphQL
             value.after_value ||= arguments[:after]
             value.last_value ||= arguments[:last]
             value.before_value ||= arguments[:before]
-            value.max_page_size ||= field.max_page_size
+            if field.has_max_page_size? && !value.has_max_page_size_override?
+              value.max_page_size = field.max_page_size
+            end
             value
           elsif context.schema.new_connections?
             wrappers = context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
