@@ -102,7 +102,7 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GraphqlController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
   <span class="k">def</span> <span class="nf">execute</span>
-    <span class="c1"># Somehow get the the current `User` from this HTTP request.</span>
+    <span class="c1"># Somehow get the current `User` from this HTTP request.</span>
     <span class="n">current_user</span> <span class="o">=</span> <span class="n">get_logged_in_user</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
     <span class="c1"># Provide the current user in `context` for use during the query</span>
     <span class="n">context</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">current_user: </span><span class="n">current_user</span> <span class="p">}</span>
