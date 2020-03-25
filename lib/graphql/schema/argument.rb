@@ -55,7 +55,7 @@ module GraphQL
         @owner = owner
         @as = as
         @loads = loads
-        @keyword = as || Schema::Member::BuildType.underscore(@name).to_sym
+        @keyword = as || (arg_name.is_a?(Symbol) ? arg_name : Schema::Member::BuildType.underscore(@name).to_sym)
         @prepare = prepare
         @ast_node = ast_node
         @from_resolver = from_resolver

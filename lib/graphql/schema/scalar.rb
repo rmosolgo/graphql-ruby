@@ -43,13 +43,21 @@ module GraphQL
 
         def validate_non_null_input(value, ctx)
           result = Query::InputValidationResult.new
-          if coerce_input(value, ctx).nil?
+          coerced_result = begin
+            coerce_input(value, ctx)
+          rescue GraphQL::CoercionError => err
+            err
+          end
+
+          if coerced_result.nil?
             str_value = if value == Float::INFINITY
               ""
             else
               " #{GraphQL::Language.serialize(value)}"
             end
             result.add_problem("Could not coerce value#{str_value} to #{graphql_name}")
+          elsif coerced_result.is_a?(GraphQL::CoercionError)
+            result.add_problem(coerced_result.message, message: coerced_result.message, extensions: coerced_result.extensions)
           end
           result
         end

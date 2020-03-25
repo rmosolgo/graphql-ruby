@@ -81,7 +81,13 @@ module GraphQL
       # The value passed as `first:`, if there was one. Negative numbers become `0`.
       # @return [Integer, nil]
       def first
-        @first ||= get_limited_arg(:first)
+        @first ||= begin
+          capped = limit_pagination_argument(arguments[:first], max_page_size)
+          if capped.nil? && last.nil?
+            capped = max_page_size
+          end
+          capped
+        end
       end
 
       # The value passed as `after:`, if there was one
@@ -93,7 +99,7 @@ module GraphQL
       # The value passed as `last:`, if there was one. Negative numbers become `0`.
       # @return [Integer, nil]
       def last
-        @last ||= get_limited_arg(:last)
+        @last ||= limit_pagination_argument(arguments[:last], max_page_size)
       end
 
       # The value passed as `before:`, if there was one
@@ -152,16 +158,18 @@ module GraphQL
 
       private
 
-      # Return a sanitized `arguments[arg_name]` (don't allow negatives)
-      def get_limited_arg(arg_name)
-        arg_value = arguments[arg_name]
-        if arg_value.nil?
-          arg_value
-        elsif arg_value < 0
-          0
-        else
-          arg_value
+      # @param argument [nil, Integer] `first` or `last`, as provided by the client
+      # @param max_page_size [nil, Integer]
+      # @return [nil, Integer] `nil` if the input was `nil`, otherwise a value between `0` and `max_page_size`
+      def limit_pagination_argument(argument, max_page_size)
+        if argument
+          if argument < 0
+            argument = 0
+          elsif max_page_size && argument > max_page_size
+            argument = max_page_size
+          end
         end
+        argument
       end
 
       def paged_nodes

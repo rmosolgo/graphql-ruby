@@ -96,6 +96,67 @@ module GraphQL
       end
     end
 
+    module LazyHandlingMethods
+      # Call the given block at the right time, either:
+      # - Right away, if `value` is not registered with `lazy_resolve`
+      # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
+      # @api private
+      def after_lazy(value)
+        if lazy?(value)
+          GraphQL::Execution::Lazy.new do
+            result = sync_lazy(value)
+            # The returned result might also be lazy, so check it, too
+            after_lazy(result) do |final_result|
+              yield(final_result) if block_given?
+            end
+          end
+        else
+          yield(value) if block_given?
+        end
+      end
+
+      # Override this method to handle lazy objects in a custom way.
+      # @param value [Object] an instance of a class registered with {.lazy_resolve}
+      # @return [Object] A GraphQL-ready (non-lazy) object
+      # @api private
+      def sync_lazy(value)
+        lazy_method = lazy_method_name(value)
+        if lazy_method
+          synced_value = value.public_send(lazy_method)
+          sync_lazy(synced_value)
+        else
+          value
+        end
+      end
+
+      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered wtih {#lazy_resolve}.
+      def lazy_method_name(obj)
+        lazy_methods.get(obj)
+      end
+
+      # @return [Boolean] True if this object should be lazily resolved
+      def lazy?(obj)
+        !!lazy_method_name(obj)
+      end
+
+      # Return a lazy if any of `maybe_lazies` are lazy,
+      # otherwise, call the block eagerly and return the result.
+      # @param maybe_lazies [Array]
+      # @api private
+      def after_any_lazies(maybe_lazies)
+        if maybe_lazies.any? { |l| lazy?(l) }
+          GraphQL::Execution::Lazy.all(maybe_lazies).then do |result|
+            yield
+          end
+        else
+          yield
+        end
+      end
+    end
+
+    include LazyHandlingMethods
+    extend LazyHandlingMethods
+
     accepts_definitions \
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity, :default_max_page_size,
@@ -740,16 +801,6 @@ module GraphQL
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
     class InvalidDocumentError < Error; end;
 
-    # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered wtih {#lazy_resolve}.
-    def lazy_method_name(obj)
-      @lazy_methods.get(obj)
-    end
-
-    # @return [Boolean] True if this object should be lazily resolved
-    def lazy?(obj)
-      !!lazy_method_name(obj)
-    end
-
     # Return the GraphQL IDL for the schema
     # @param context [Hash]
     # @param only [<#call(member, ctx)>]
@@ -908,6 +959,7 @@ module GraphQL
         schema_defn.cursor_encoder = cursor_encoder
         schema_defn.tracers.concat(tracers)
         schema_defn.query_analyzers.concat(query_analyzers)
+        schema_defn.analysis_engine = analysis_engine
 
         schema_defn.middleware.concat(all_middleware)
         schema_defn.multiplex_analyzers.concat(multiplex_analyzers)
@@ -934,6 +986,11 @@ module GraphQL
         if !schema_defn.interpreter?
           schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         end
+
+        if new_connections?
+          schema_defn.connections = self.connections
+        end
+
         schema_defn.send(:rebuild_artifacts)
 
         schema_defn
@@ -1576,48 +1633,6 @@ module GraphQL
         end
       end
 
-      # Call the given block at the right time, either:
-      # - Right away, if `value` is not registered with `lazy_resolve`
-      # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
-      # @api private
-      def after_lazy(value)
-        if lazy?(value)
-          GraphQL::Execution::Lazy.new do
-            result = sync_lazy(value)
-            # The returned result might also be lazy, so check it, too
-            after_lazy(result) do |final_result|
-              yield(final_result) if block_given?
-            end
-          end
-        else
-          yield(value) if block_given?
-        end
-      end
-
-      # Override this method to handle lazy objects in a custom way.
-      # @param value [Object] an instance of a class registered with {.lazy_resolve}
-      # @param ctx [GraphQL::Query::Context] the context for this query
-      # @return [Object] A GraphQL-ready (non-lazy) object
-      def sync_lazy(value)
-        lazy_method = lazy_method_name(value)
-        if lazy_method
-          synced_value = value.public_send(lazy_method)
-          sync_lazy(synced_value)
-        else
-          value
-        end
-      end
-
-      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered wtih {#lazy_resolve}.
-      def lazy_method_name(obj)
-        lazy_methods.get(obj)
-      end
-
-      # @return [Boolean] True if this object should be lazily resolved
-      def lazy?(obj)
-        !!lazy_method_name(obj)
-      end
-
       private
 
       def lazy_methods
@@ -1865,36 +1880,6 @@ module GraphQL
             end
           end
         end
-      end
-    end
-
-    # Call the given block at the right time, either:
-    # - Right away, if `value` is not registered with `lazy_resolve`
-    # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
-    # @api private
-    def after_lazy(value)
-      if lazy?(value)
-        GraphQL::Execution::Lazy.new do
-          result = sync_lazy(value)
-          # The returned result might also be lazy, so check it, too
-          after_lazy(result) do |final_result|
-            yield(final_result) if block_given?
-          end
-        end
-      else
-        yield(value) if block_given?
-      end
-    end
-
-    # @see Schema.sync_lazy for a hook to override
-    # @api private
-    def sync_lazy(value)
-      lazy_method = lazy_method_name(value)
-      if lazy_method
-        synced_value = value.public_send(lazy_method)
-        sync_lazy(synced_value)
-      else
-        value
       end
     end
 

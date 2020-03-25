@@ -71,7 +71,8 @@ module GraphQL
           # Cache this hash to avoid re-merging it
           arg_defns = self.arguments
 
-          arg_defns.each do |arg_name, arg_defn|
+          maybe_lazies = []
+          arg_lazies = arg_defns.map do |arg_name, arg_defn|
             arg_key = arg_defn.keyword
             has_value = false
             if values.key?(arg_name)
@@ -96,20 +97,28 @@ module GraphQL
                 end
               end
 
-              prepared_value = context.schema.error_handler.with_error_handling(context) do
+              context.schema.after_lazy(loaded_value) do |loaded_value|
+                coerced_value = nil
+                prepared_value = context.schema.error_handler.with_error_handling(context) do
 
-                coerced_value = if loaded_value
-                  loaded_value
-                else
-                  arg_defn.type.coerce_input(value, context)
+                  coerced_value = if loaded_value
+                    loaded_value
+                  else
+                    arg_defn.type.coerce_input(value, context)
+                  end
+
+                  arg_defn.prepare_value(parent_object, coerced_value, context: context)
                 end
 
-                arg_defn.prepare_value(parent_object, coerced_value, context: context)
+                kwarg_arguments[arg_defn.keyword] = prepared_value
               end
-              kwarg_arguments[arg_defn.keyword] = prepared_value
             end
           end
-          kwarg_arguments
+
+          maybe_lazies.concat(arg_lazies)
+          context.schema.after_any_lazies(maybe_lazies) do
+            kwarg_arguments
+          end
         end
 
         module ArgumentClassAccessor
@@ -138,6 +147,9 @@ module GraphQL
 
           def load_application_object(argument, lookup_as_type, id, context)
             # See if any object can be found for this ID
+            if id.nil?
+              return nil
+            end
             loaded_application_object = object_from_id(lookup_as_type, id, context)
             context.schema.after_lazy(loaded_application_object) do |application_object|
               if application_object.nil?

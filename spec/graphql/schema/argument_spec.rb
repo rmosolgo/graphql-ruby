@@ -45,13 +45,14 @@ describe GraphQL::Schema::Argument do
 
     class Schema < GraphQL::Schema
       query(Query)
+      lazy_resolve(Proc, :call)
       if TESTING_INTERPRETER
         use GraphQL::Execution::Interpreter
         use GraphQL::Analysis::AST
       end
 
       def self.object_from_id(id, ctx)
-        Jazz::GloballyIdentifiableType.find(id)
+        -> { Jazz::GloballyIdentifiableType.find(id) }
       end
 
       orphan_types [Jazz::InstrumentType]
@@ -199,6 +200,62 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str)
       assert_equal "{:instrument=>#{Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION").inspect}, :required_with_default_arg=>1}", res["data"]["field"]
+    end
+
+    it "returns nil when no ID is given and `required: false`" do
+      query_str = <<-GRAPHQL
+      mutation($ensembleId: ID) {
+        loadAndReturnEnsemble(input: {ensembleId: $ensembleId}) {
+          ensemble {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str, variables: { ensembleId: "Ensemble/Robert Glasper Experiment" })
+      assert_equal "ROBERT GLASPER Experiment", res["data"]["loadAndReturnEnsemble"]["ensemble"]["name"]
+
+      res2 = Jazz::Schema.execute(query_str, variables: { ensembleId: nil })
+      assert_nil res2["data"]["loadAndReturnEnsemble"].fetch("ensemble")
+
+
+      query_str2 = <<-GRAPHQL
+      mutation {
+        loadAndReturnEnsemble(input: {ensembleId: null}) {
+          ensemble {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      res3 = Jazz::Schema.execute(query_str2, variables: { ensembleId: nil })
+      assert_nil res3["data"]["loadAndReturnEnsemble"].fetch("ensemble")
+
+      query_str3 = <<-GRAPHQL
+      mutation {
+        loadAndReturnEnsemble(input: {}) {
+          ensemble {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      res4 = Jazz::Schema.execute(query_str3, variables: { ensembleId: nil })
+      assert_nil res4["data"]["loadAndReturnEnsemble"].fetch("ensemble")
+
+      query_str4 = <<-GRAPHQL
+      query {
+        nullableEnsemble(ensembleId: null) {
+          name
+        }
+      }
+      GRAPHQL
+
+      res5 = Jazz::Schema.execute(query_str4)
+      assert_nil res5["data"].fetch("nullableEnsemble")
     end
   end
 end

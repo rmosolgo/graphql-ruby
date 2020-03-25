@@ -12,7 +12,16 @@ module GraphQL
                 # First, normalize all AST or Ruby values to a plain Ruby hash
                 args_hash = prepare_args_hash(ast_node)
                 # Then call into the schema to coerce those incoming values
-                arg_owner.coerce_arguments(parent_object, args_hash, query.context)
+                args = arg_owner.coerce_arguments(parent_object, args_hash, query.context)
+
+                h3[parent_object] = if args.is_a?(GraphQL::Execution::Lazy)
+                  args.then { |resolved_args|
+                    # when this promise is resolved, update the cache with the resolved value
+                    h3[parent_object] = resolved_args
+                  }
+                else
+                  args
+                end
               end
             end
           end

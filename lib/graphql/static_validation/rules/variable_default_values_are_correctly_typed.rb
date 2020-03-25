@@ -17,22 +17,22 @@ module GraphQL
             if type.nil?
               # This is handled by another validator
             else
-              begin
-                valid = context.valid_literal?(value, type)
-              rescue GraphQL::CoercionError => err
-                error_message = err.message
-              rescue GraphQL::LiteralValidationError
-                # noop, we just want to stop any LiteralValidationError from propagating
-              end
+              validation_result = context.validate_literal(value, type)
 
-              if !valid
+              if !validation_result.valid?
+                problems = validation_result.problems
+                first_problem = problems && problems.first
+                if first_problem
+                  error_message = first_problem["message"]
+                end
+
                 error_message ||= "Default value for $#{node.name} doesn't match type #{type.to_type_signature}"
                 add_error(GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTypedError.new(
                   error_message,
                   nodes: node,
                   name: node.name,
                   type: type.to_type_signature,
-                  error_type: VariableDefaultValuesAreCorrectlyTypedError::VIOLATIONS[:INVALID_TYPE]
+                  error_type: VariableDefaultValuesAreCorrectlyTypedError::VIOLATIONS[:INVALID_TYPE],
                 ))
               end
             end

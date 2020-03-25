@@ -19,6 +19,21 @@ module ConnectionAssertions
     "Jicama",
   ]
 
+  class NonceEnabledEncoder
+    class << self
+      def encode(value, nonce: false)
+        "#{JSON.dump([value])}#{nonce ? "+nonce" : ""}"
+      end
+
+      def decode(value, nonce: false)
+        if nonce
+          value = value.sub(/\+nonce$/, "")
+        end
+        JSON.parse(value).first
+      end
+    end
+  end
+
   def self.build_schema(get_items:, connection_class:, total_count_connection_class:)
     base_schema = Class.new(GraphQL::Schema) do
       use GraphQL::Pagination::Connections
@@ -28,6 +43,7 @@ module ConnectionAssertions
       use GraphQL::Execution::Interpreter
 
       default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
+      cursor_encoder(NonceEnabledEncoder)
 
       # Make a way to get local variables (passed in as args)
       # into method resolvers below
@@ -62,7 +78,12 @@ module ConnectionAssertions
         end
 
         def items(max_page_size_override: nil)
-          context.schema.connection_class.new(get_items, max_page_size: max_page_size_override)
+          if max_page_size_override
+            context.schema.connection_class.new(get_items, max_page_size: max_page_size_override)
+          else
+            # don't manually apply the wrapper when it's not required -- check automatic wrapping.
+            get_items
+          end
         end
 
         field :custom_items, custom_item_connection, null: false
@@ -172,12 +193,12 @@ module ConnectionAssertions
 
         it "handles out-of-bounds cursors" do
           # It treats negative cursors like zero
-          bogus_negative_cursor = Base64.strict_encode64("-10")
+          bogus_negative_cursor = NonceEnabledEncoder.encode("-10")
           res = exec_query(query_str, first: 3, after: bogus_negative_cursor)
           assert_names(["Avocado", "Beet", "Cucumber"], res)
 
           # It returns nothing for cursors beyond the array
-          bogus_huge_cursor = Base64.strict_encode64("100")
+          bogus_huge_cursor = NonceEnabledEncoder.encode("100")
           res = exec_query(query_str, first: 3, after: bogus_huge_cursor)
           assert_names([], res)
         end
@@ -188,6 +209,20 @@ module ConnectionAssertions
 
           res = exec_query(query_str, last: -9)
           assert_names([], res)
+        end
+
+        it "handles blank cursors by treating them as nil" do
+          res = exec_query(query_str, first: 3, after: "")
+          assert_names(["Avocado", "Beet", "Cucumber"], res)
+
+          res = exec_query(query_str, last: 3, before: "")
+          assert_names(["Horseradish", "I Can't Believe It's Not Butter", "Jicama"], res)
+        end
+
+        it "builds cursors with nonce" do
+          res = exec_query(query_str, first: 3, after: "")
+          end_cursor = get_page_info(res, "endCursor")
+          assert end_cursor.end_with?("+nonce"), "it added nonce to #{end_cursor.inspect}"
         end
 
         it "applies max_page_size to first and last" do
