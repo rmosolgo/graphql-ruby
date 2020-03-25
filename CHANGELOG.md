@@ -1989,7 +1989,7 @@
         }
 
         id_from_object ->(obj, type_defn, ctx) {
-          # Provide the the type name & the object's `id`:
+          # Provide the type name & the object's `id`:
           GraphQL::Schema::UniqueWithinType.encode(type_defn.name, obj.id)
         }
       end

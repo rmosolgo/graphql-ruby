@@ -54,7 +54,7 @@ The handler is called with several arguments:
 
 - __`err`__ is the error that was raised during field execution, then rescued
 - __`obj`__ is the object which was having a field resolved against it
-- __`args`__ is the the Hash of arguments passed to the resolver
+- __`args`__ is the Hash of arguments passed to the resolver
 - __`ctx`__ is the query context
 - __`field`__ is the {{ "GraphQL::Schema::Field" | api_doc }} instance for the field where the error was rescued
 
