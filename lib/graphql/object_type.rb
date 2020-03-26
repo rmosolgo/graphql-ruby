@@ -17,14 +17,14 @@ module GraphQL
     def initialize
       super
       @fields = {}
-      @interface_fields = {}
-      @interface_type_memberships = []
+      @clean_inherited_fields = nil
+      @structural_interface_type_memberships = []
       @inherited_interface_type_memberships = []
     end
 
     def initialize_copy(other)
       super
-      @interface_type_memberships = other.interface_type_memberships.dup
+      @structural_interface_type_memberships = other.structural_interface_type_memberships.dup
       @inherited_interface_type_memberships = other.inherited_interface_type_memberships.dup
       @fields = other.fields.dup
     end
@@ -33,15 +33,29 @@ module GraphQL
     # @param new_interfaces [Array<GraphQL::Interface>] interfaces that this type implements
     # @deprecated Use `implements` instead of `interfaces`.
     def interfaces=(new_interfaces)
-      @interface_type_memberships = []
+      @structural_interface_type_memberships = []
       @inherited_interface_type_memberships = []
       @clean_inherited_fields = nil
       implements(new_interfaces, inherit: true)
     end
 
     def interfaces(ctx = GraphQL::Query::NullContext)
-      ifaces, inherited_ifaces = load_interfaces(ctx)
-      ifaces + inherited_ifaces
+      ensure_defined
+      visible_ifaces = []
+      @structural_interface_type_memberships.each do |type_membership|
+        if type_membership.visible?(ctx)
+          visible_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
+        end
+      end
+
+      @inherited_interface_type_memberships.each do |type_membership|
+        if type_membership.visible?(ctx)
+          # TODO remove resolve_related_type ? here and elsewhere, since it's done during initialization
+          visible_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
+        end
+      end
+
+      visible_ifaces
     end
 
     def kind
@@ -72,31 +86,28 @@ module GraphQL
       end
       @clean_inherited_fields = nil
 
-      type_memberships = inherit ? @inherited_interface_type_memberships : @interface_type_memberships
-      type_memberships_from_interfaces = interfaces.map do |iface|
-        # this needs to be fixed
-        # For some reason, ifaces were being read as procs
-        # This was coming from interfaces being built by definition
-        if iface.respond_to?(:type_membership_class)
-          iface.type_membership_class.new(iface, self, options)
-        else
-          GraphQL::Schema::TypeMembership.new(iface, self, options)
+      type_memberships = inherit ? @inherited_interface_type_memberships : @structural_interface_type_memberships
+      interfaces.each do |iface|
+        iface = BaseType.resolve_related_type(iface)
+        if iface.is_a?(GraphQL::InterfaceType)
+          type_memberships << iface.type_membership_class.new(iface, self, options)
         end
       end
-      type_memberships.concat(type_memberships_from_interfaces)
     end
 
     def resolve_type_proc
       nil
     end
 
-    def interface_type_memberships=(interface_type_memberships)
-      @interface_type_memberships = interface_type_memberships
+    attr_writer :structural_interface_type_memberships
+
+    def interface_type_memberships
+      @structural_interface_type_memberships + @inherited_interface_type_memberships
     end
 
     protected
 
-    attr_reader :interface_type_memberships, :inherited_interface_type_memberships
+    attr_reader :structural_interface_type_memberships, :inherited_interface_type_memberships
 
     private
 
@@ -108,34 +119,18 @@ module GraphQL
       if @clean_inherited_fields
         @clean_inherited_fields
       else
-        _ifaces, inherited_ifaces = load_interfaces(nil)
+        ensure_defined
         @clean_inherited_fields = {}
-        inherited_ifaces.each do |iface|
+        @inherited_interface_type_memberships.each do |type_membership|
+          iface = GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
           if iface.is_a?(GraphQL::InterfaceType)
             @clean_inherited_fields.merge!(iface.fields)
+          else
+            pp iface
           end
         end
         @clean_inherited_fields
       end
-    end
-
-    def load_interfaces(ctx = GraphQL::Query::NullContext)
-      ensure_defined
-      clean_ifaces = []
-      clean_inherited_ifaces = []
-      @interface_type_memberships.each do |type_membership|
-        if ctx.nil? || type_membership.visible?(ctx)
-          clean_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
-        end
-      end
-
-      @inherited_interface_type_memberships.each do |type_membership|
-        if ctx.nil? || type_membership.visible?(ctx)
-          clean_inherited_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
-        end
-      end
-
-      [clean_ifaces, clean_inherited_ifaces]
     end
   end
 end

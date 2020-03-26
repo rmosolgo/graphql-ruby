@@ -113,37 +113,25 @@ module GraphQL
           @own_interface_type_memberships ||= []
         end
 
+        def interface_type_memberships
+          tm = own_interface_type_memberships
+          if superclass.respond_to?(:interface_type_memberships)
+            tm + superclass.interface_type_memberships
+          else
+            tm
+          end
+        end
+
         # param context [Query::Context, nil] If `nil` is given, skip filtering.
         def interfaces(context = GraphQL::Query::NullContext)
-          if context.nil?
-            visible_interfaces = own_interface_type_memberships
-              .select { |tm| tm.is_a?(Schema::TypeMembership) } # exclude strings and late-bound types
-              .map(&:abstract_type)
-          else
-            visible_interfaces = []
-            own_interface_type_memberships.each do |type_membership|
-              vis = type_membership.visible?(context)
-              if vis
-                visible_interfaces << type_membership.abstract_type
-              end
+          visible_interfaces = []
+          own_interface_type_memberships.each do |type_membership|
+            vis = type_membership.visible?(context)
+            if vis
+              visible_interfaces << type_membership.abstract_type
             end
           end
           visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context) : [])
-        end
-
-        # Include legacy-style interfaces, too
-        def fields
-          all_fields = super
-          interfaces(nil).each do |int|
-            if int.is_a?(GraphQL::InterfaceType)
-              int_f = {}
-              int.fields.each do |name, legacy_field|
-                int_f[name] = field_class.from_options(name, field: legacy_field)
-              end
-              all_fields = int_f.merge(all_fields)
-            end
-          end
-          all_fields
         end
 
         # @return [GraphQL::ObjectType]
@@ -151,7 +139,7 @@ module GraphQL
           obj_type = GraphQL::ObjectType.new
           obj_type.name = graphql_name
           obj_type.description = description
-          obj_type.interface_type_memberships = own_interface_type_memberships
+          obj_type.structural_interface_type_memberships = own_interface_type_memberships
           obj_type.introspection = introspection
           obj_type.mutation = mutation
           obj_type.ast_node = ast_node

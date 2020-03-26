@@ -1881,7 +1881,7 @@ module GraphQL
           end
           if type.kind.object?
             own_possible_types[type.graphql_name] = [type]
-            type.own_interface_type_memberships.each do |type_membership|
+            type.interface_type_memberships.each do |type_membership|
               case type_membership
               when Schema::TypeMembership
                 interface_type = type_membership.abstract_type
