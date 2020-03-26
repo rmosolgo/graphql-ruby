@@ -15,9 +15,36 @@ describe GraphQL::Types::ISO8601Date do
         argument :date, GraphQL::Types::ISO8601Date, required: true
       end
 
+      field :parse_date_time, DateObject, null: true do
+        argument :date, GraphQL::Types::ISO8601Date, required: true
+      end
+
+      field :parse_date_string, DateObject, null: true do
+        argument :date, GraphQL::Types::ISO8601Date, required: true
+      end
+
+      field :parse_date_time_string, DateObject, null: true do
+        argument :date, GraphQL::Types::ISO8601Date, required: true
+      end
+
       def parse_date(date:)
-        # Date is parsed by the scalar, so it's already a DateTime
-        date
+        # Resolve a Date object
+        Date.parse(date.iso8601)
+      end
+
+      def parse_date_time(date:)
+        # Resolve a DateTime object
+        DateTime.parse(date.iso8601)
+      end
+
+      def parse_date_string(date:)
+        # Resolve a Date string
+        Date.parse(date.iso8601).iso8601
+      end
+
+      def parse_date_time_string(date:)
+        # Resolve a DateTime string
+        DateTime.parse(date.iso8601).iso8601
       end
     end
 
@@ -68,18 +95,41 @@ describe GraphQL::Types::ISO8601Date do
   end
 
   describe "as an output" do
-    it "returns a string" do
-      query_str = <<-GRAPHQL
+    let(:date_str) { "2010-02-02" }
+    let(:query_str) do
+      <<-GRAPHQL
       query($date: ISO8601Date!){
         parseDate(date: $date) {
           iso8601
         }
+        parseDateTime(date: $date) {
+          iso8601
+        }
+        parseDateString(date: $date) {
+          iso8601
+        }
+        parseDateTimeString(date: $date) {
+          iso8601
+        }
       }
       GRAPHQL
-
-      date_str = "2010-02-02"
-      full_res = DateTest::Schema.execute(query_str, variables: { date: date_str })
+    end
+    let(:full_res) { DateTest::Schema.execute(query_str, variables: { date: date_str }) }
+    
+    it 'serializes a Date object as an ISO8601 Date string' do
       assert_equal date_str, full_res["data"]["parseDate"]["iso8601"]
+    end
+
+    it 'serializes a DateTime object as an ISO8601 Date string' do
+      assert_equal date_str, full_res["data"]["parseDateTime"]["iso8601"]
+    end
+
+    it 'serializes a Date string as an ISO8601 Date string' do
+      assert_equal date_str, full_res["data"]["parseDateString"]["iso8601"]
+    end
+
+    it 'serializes a DateTime string as an ISO8601 Date string' do
+      assert_equal date_str, full_res["data"]["parseDateTimeString"]["iso8601"]
     end
   end
 

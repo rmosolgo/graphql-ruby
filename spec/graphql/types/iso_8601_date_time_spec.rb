@@ -19,15 +19,42 @@ describe GraphQL::Types::ISO8601DateTime do
         argument :date, GraphQL::Types::ISO8601DateTime, required: true
       end
 
-      field :constant_date, DateTimeObject, null: false
-
-      def parse_date(date:)
-        # Date is parsed by the scalar, so it's already a DateTime
-        date
+      field :parse_date_time, DateTimeObject, null: true do
+        argument :date, GraphQL::Types::ISO8601DateTime, required: true
       end
 
-      def constant_date
-        Date.new(2019, 9, 10)
+      field :parse_date_string, DateTimeObject, null: true do
+        argument :date, GraphQL::Types::ISO8601DateTime, required: true
+      end
+
+      field :parse_date_time_string, DateTimeObject, null: true do
+        argument :date, GraphQL::Types::ISO8601DateTime, required: true
+      end
+
+      field :invalid_date, DateTimeObject, null: false
+
+      def parse_date(date:)
+        # Resolve a Date object
+        Date.parse(date.iso8601)
+      end
+
+      def parse_date_time(date:)
+        # Resolve a DateTime object
+        DateTime.parse(date.iso8601(3))
+      end
+
+      def parse_date_string(date:)
+        # Resolve a Date string
+        Date.parse(date.iso8601).iso8601
+      end
+
+      def parse_date_time_string(date:)
+        # Resolve a DateTime string
+        DateTime.parse(date.iso8601).iso8601
+      end
+
+      def invalid_date
+        'abc'
       end
     end
 
@@ -47,7 +74,7 @@ describe GraphQL::Types::ISO8601DateTime do
     def parse_date(date_str)
       query_str = <<-GRAPHQL
       query($date: ISO8601DateTime!){
-        parseDate(date: $date) {
+        parseDateTime(date: $date) {
           year
           month
           day
@@ -59,7 +86,7 @@ describe GraphQL::Types::ISO8601DateTime do
       }
       GRAPHQL
       full_res = DateTimeTest::Schema.execute(query_str, variables: { date: date_str })
-      full_res["errors"] || full_res["data"]["parseDate"]
+      full_res["errors"] || full_res["data"]["parseDateTime"]
     end
 
     it "parses valid dates" do
@@ -86,18 +113,42 @@ describe GraphQL::Types::ISO8601DateTime do
   end
 
   describe "as an output" do
-    it "returns a string" do
-      query_str = <<-GRAPHQL
+    let(:date_str) { "2010-02-02T22:30:30-06:00" }
+    let(:date_str_midnight) { DateTime.parse(Date.parse(date_str).iso8601).iso8601 }
+    let(:query_str) do
+      <<-GRAPHQL
       query($date: ISO8601DateTime!){
         parseDate(date: $date) {
           iso8601
         }
+        parseDateTime(date: $date) {
+          iso8601
+        }
+        parseDateString(date: $date) {
+          iso8601
+        }
+        parseDateTimeString(date: $date) {
+          iso8601
+        }
       }
       GRAPHQL
+    end
+    let(:full_res) { DateTimeTest::Schema.execute(query_str, variables: { date: date_str }) }
 
-      date_str = "2010-02-02T22:30:30-06:00"
-      full_res = DateTimeTest::Schema.execute(query_str, variables: { date: date_str })
-      assert_equal date_str, full_res["data"]["parseDate"]["iso8601"]
+    it 'serializes a Date object as an ISO8601 DateTime string' do
+      assert_equal date_str_midnight, full_res["data"]["parseDate"]["iso8601"]
+    end
+
+    it 'serializes a DateTime object as an ISO8601 DateTime string' do
+      assert_equal date_str, full_res["data"]["parseDateTime"]["iso8601"]
+    end
+
+    it 'serializes a Date string as an ISO8601 DateTime string' do
+      assert_equal date_str_midnight, full_res["data"]["parseDateString"]["iso8601"]
+    end
+
+    it 'serializes a DateTime string as an ISO8601 DateTime string' do
+      assert_equal date_str, full_res["data"]["parseDateTimeString"]["iso8601"]
     end
 
     describe "with time_precision = 3 (i.e. 'with milliseconds')" do
@@ -113,7 +164,7 @@ describe GraphQL::Types::ISO8601DateTime do
       it "returns a string" do
         query_str = <<-GRAPHQL
         query($date: ISO8601DateTime!){
-          parseDate(date: $date) {
+          parseDateTime(date: $date) {
             iso8601
           }
         }
@@ -121,7 +172,7 @@ describe GraphQL::Types::ISO8601DateTime do
 
         date_str = "2010-02-02T22:30:30.123-06:00"
         full_res = DateTimeTest::Schema.execute(query_str, variables: { date: date_str })
-        assert_equal date_str, full_res["data"]["parseDate"]["iso8601"]
+        assert_equal date_str, full_res["data"]["parseDateTime"]["iso8601"]
       end
     end
 
@@ -129,7 +180,7 @@ describe GraphQL::Types::ISO8601DateTime do
       it "raises an error" do
         query_str = <<-GRAPHQL
         query {
-          constantDate {
+          invalidDate {
             iso8601
           }
         }
@@ -138,7 +189,7 @@ describe GraphQL::Types::ISO8601DateTime do
         err = assert_raises(GraphQL::Error) do
           DateTimeTest::Schema.execute(query_str)
         end
-        assert_equal err.message, "An incompatible object (Date) was given to GraphQL::Types::ISO8601DateTime. Make sure that only DateTimes are used with this type."
+        assert_equal err.message, "An incompatible object (String) was given to GraphQL::Types::ISO8601DateTime. Make sure that only DateTimes are used with this type."
       end
     end
   end
