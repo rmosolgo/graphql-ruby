@@ -4,7 +4,7 @@ module StarTrek
   # https://github.com/graphql/graphql-relay-js/blob/master/src/__tests__/StarTrekSchema.js
 
   class Ship < GraphQL::Schema::Object
-    implements GraphQL::Relay::Node.interface
+    implements GraphQL::Types::Relay::Node
     global_id_field :id
     field :name, String, null: true
     # Test cyclical connection types:
@@ -18,7 +18,7 @@ module StarTrek
 
   class BaseType < GraphQL::Schema::Object
     graphql_name "Base"
-    implements GraphQL::Relay::Node.interface
+    implements GraphQL::Types::Relay::Node
     global_id_field :id
     field :name, String, null: false, resolve: ->(obj, args, ctx) {
       LazyWrapper.new {
@@ -102,7 +102,7 @@ module StarTrek
   end
 
   class Faction < GraphQL::Schema::Object
-    implements GraphQL::Relay::Node.interface
+    implements GraphQL::Types::Relay::Node
 
     field :id, ID, null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
     field :name, String, null: true
@@ -309,17 +309,44 @@ module StarTrek
       [OpenStruct.new(id: nil)]
     end
 
-    field :node, field: GraphQL::Relay::Node.field
-
-    custom_node_field = GraphQL::Relay::Node.field do
-      resolve ->(_, _, _) { StarTrek::DATA["Faction"]["1"] }
+    if TESTING_INTERPRETER
+      add_field(GraphQL::Types::Relay::NodeField)
+    else
+      field :node, field: GraphQL::Relay::Node.field
     end
-    field :nodeWithCustomResolver, field: custom_node_field
 
-    field :nodes, field: GraphQL::Relay::Node.plural_field
-    field :nodesWithCustomResolver, field: GraphQL::Relay::Node.plural_field(
-      resolve: ->(_, _, _) { [StarTrek::DATA["Faction"]["1"], StarTrek::DATA["Faction"]["2"]] }
-    )
+    if TESTING_INTERPRETER
+      field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
+        argument :id, ID, required: true
+      end
+      def node_with_custom_resolver(id:)
+        StarTrek::DATA["Faction"]["1"]
+      end
+    else
+      custom_node_field = GraphQL::Relay::Node.field do
+        resolve ->(_, _, _) { StarTrek::DATA["Faction"]["1"] }
+      end
+      field :nodeWithCustomResolver, field: custom_node_field
+    end
+
+    if TESTING_INTERPRETER
+      add_field(GraphQL::Types::Relay::NodesField)
+    else
+      field :nodes, field: GraphQL::Relay::Node.plural_field
+    end
+
+    if TESTING_INTERPRETER
+      field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
+        argument :ids, [ID], required: true
+      end
+      def nodes_with_custom_resolver(ids:)
+        [StarTrek::DATA["Faction"]["1"], StarTrek::DATA["Faction"]["2"]]
+      end
+    else
+      field :nodesWithCustomResolver, field: GraphQL::Relay::Node.plural_field(
+        resolve: ->(_, _, _) { [StarTrek::DATA["Faction"]["1"], StarTrek::DATA["Faction"]["2"]] }
+      )
+    end
 
     field :batchedBase, BaseType, null: true do
       argument :id, ID, required: true
