@@ -172,7 +172,7 @@ module GraphQL
       # We need this to tell whether a field was inherited by an interface
       # even when that interface is hidden from `#interfaces`
       def unfiltered_interfaces(type_defn)
-        @unfiltered_interfaces ||= read_through { |t| t.interface_type_memberships.map(&:abstract_type) }
+        @unfiltered_interfaces ||= read_through(&:interfaces)
         @unfiltered_interfaces[type_defn]
       end
 

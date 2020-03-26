@@ -95,7 +95,14 @@ module GraphQL
           # Remove any interfaces which are being replaced (late-bound types are updated in place this way)
           own_interface_type_memberships.reject! { |existing_i_m|
             new_memberships.any? { |new_i_m|
-              new_name = new_i_m.is_a?(String) ? new_i_m : new_i_m.abstract_type.graphql_name
+              new_name = if new_i_m.is_a?(String)
+                new_i_m
+              elsif new_i_m.is_a?(GraphQL::Schema::LateBoundType)
+                new_i_m.graphql_name
+              else
+                new_i_m.abstract_type.graphql_name
+              end
+
               old_name = if existing_i_m.is_a?(String)
                 existing_i_m
               elsif existing_i_m.is_a?(GraphQL::Schema::LateBoundType)
@@ -114,21 +121,22 @@ module GraphQL
         end
 
         def interface_type_memberships
-          tm = own_interface_type_memberships
-          if superclass.respond_to?(:interface_type_memberships)
-            tm + superclass.interface_type_memberships
-          else
-            tm
-          end
+          own_interface_type_memberships + (superclass.respond_to?(:interface_type_memberships) ? superclass.interface_type_memberships : [])
         end
 
-        # param context [Query::Context, nil] If `nil` is given, skip filtering.
+        # param context [Query::Context] If omitted, skip filtering.
         def interfaces(context = GraphQL::Query::NullContext)
           visible_interfaces = []
+          unfiltered = context == GraphQL::Query::NullContext
           own_interface_type_memberships.each do |type_membership|
-            vis = type_membership.visible?(context)
-            if vis
-              visible_interfaces << type_membership.abstract_type
+            # During initialization, `type_memberships` can hold late-bound types
+            case type_membership
+            when String, Schema::LateBoundType
+              visible_interfaces << type_membership
+            when Schema::TypeMembership
+              if unfiltered || type_membership.visible?(context)
+                visible_interfaces << type_membership.abstract_type
+              end
             end
           end
           visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context) : [])

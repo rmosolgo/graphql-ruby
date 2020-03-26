@@ -1765,15 +1765,15 @@ module GraphQL
             }
             own_possible_types[owner.graphql_name] = owner.possible_types
           elsif type.kind.interface? && owner.kind.object?
-            new_interfaces = owner.own_interface_type_memberships.map do |tm|
-              if tm.is_a?(Schema::TypeMembership)
-                tm.abstract_type # TODO won't this lose some configuration?
-              elsif tm.is_a?(String) && tm == type.graphql_name
+            new_interfaces = owner.interfaces.map do |int_t|
+              if int_t.is_a?(String) && int_t == type.graphql_name
                 type
-              elsif tm.is_a?(LateBoundType) && tm.graphql_name == type.graphql_name
+              elsif int_t.is_a?(LateBoundType) && int_t.graphql_name == type.graphql_name
                 type
               else
-                tm
+                 # TODO won't this lose some configuration?
+                 # Consider excluding these from this list, since they were probably already visited.
+                int_t
               end
             end
             owner.implements(*new_interfaces)
@@ -1881,16 +1881,19 @@ module GraphQL
           end
           if type.kind.object?
             own_possible_types[type.graphql_name] = [type]
-            type.interface_type_memberships.each do |type_membership|
-              case type_membership
+            type.interface_type_memberships.each do |interface_type_membership|
+              case interface_type_membership
               when Schema::TypeMembership
-                interface_type = type_membership.abstract_type
-                implementers = own_possible_types[interface_type.graphql_name] ||= []
-                implementers << type
-              when String, LateBoundType
-                interface_type = type_membership
+                interface_type = interface_type_membership.abstract_type
+                # We can get these now; we'll have to get late-bound types later
+                if interface_type.is_a?(Module)
+                  implementers = own_possible_types[interface_type.graphql_name] ||= []
+                  implementers << type
+                end
+              when String, Schema::LateBoundType
+                interface_type = interface_type_membership
               else
-                raise "Invariant: unexpected type_membership #{type_membership.class} (#{type_membership.inspect})"
+                raise ArgumentError, "Invariant: unexpected type membership for #{type.graphql_name}: #{interface_type_membership.class} (#{interface_type_membership.inspect})"
               end
               add_type(interface_type, owner: type, late_types: late_types, path: path + ["implements"])
             end

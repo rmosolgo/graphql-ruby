@@ -42,8 +42,9 @@ module GraphQL
     def interfaces(ctx = GraphQL::Query::NullContext)
       ensure_defined
       visible_ifaces = []
+      unfiltered = ctx == GraphQL::Query::NullContext
       @structural_interface_type_memberships.each do |type_membership|
-        if type_membership.visible?(ctx)
+        if unfiltered || type_membership.visible?(ctx)
           visible_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
         end
       end
@@ -100,10 +101,6 @@ module GraphQL
     end
 
     attr_writer :structural_interface_type_memberships
-
-    def interface_type_memberships
-      @structural_interface_type_memberships + @inherited_interface_type_memberships
-    end
 
     protected
 
