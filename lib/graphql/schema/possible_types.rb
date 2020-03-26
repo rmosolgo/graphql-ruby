@@ -14,7 +14,11 @@ module GraphQL
     class PossibleTypes
       def initialize(schema)
         @object_types = schema.types.values.select { |type| type.kind.object? }
-        @interface_implementers = {}
+        @interface_implementers = Hash.new do |h1, ctx|
+          h1[ctx] = Hash.new do |h2, int_type|
+            h2[int_type] = @object_types.select { |type| type.interfaces(ctx).include?(int_type) }.sort_by(&:name)
+          end
+        end
       end
 
       def possible_types(type_defn, ctx)
@@ -33,12 +37,6 @@ module GraphQL
       end
 
       def interface_implementers(ctx, type_defn)
-        @interface_implementers[ctx] ||= begin
-          Hash.new do |hash, key|
-            hash[key] = @object_types.select { |type| type.interfaces(ctx).include?(key) }.sort_by(&:name)
-          end
-        end
-
         @interface_implementers[ctx][type_defn]
       end
     end

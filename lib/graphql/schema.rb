@@ -1765,7 +1765,7 @@ module GraphQL
             }
             own_possible_types[owner.graphql_name] = owner.possible_types
           elsif type.kind.interface? && owner.kind.object?
-            new_interfaces = owner.interface_type_memberships.map do |tm|
+            new_interfaces = owner.own_interface_type_memberships.map do |tm|
               if tm.is_a?(Schema::TypeMembership)
                 tm.abstract_type # TODO won't this lose some configuration?
               elsif tm.is_a?(String) && tm == type.graphql_name
@@ -1881,7 +1881,7 @@ module GraphQL
           end
           if type.kind.object?
             own_possible_types[type.graphql_name] = [type]
-            type.interface_type_memberships.each do |type_membership|
+            type.own_interface_type_memberships.each do |type_membership|
               case type_membership
               when Schema::TypeMembership
                 interface_type = type_membership.abstract_type

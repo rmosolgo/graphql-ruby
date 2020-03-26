@@ -249,7 +249,7 @@ module GraphQL
       end
 
       def visible_possible_types?(type_defn)
-        possible_types(type_defn).any? { |t| [t.graphql_name, "visible_type?", visible_type?(t)]; visible_type?(t) }
+        possible_types(type_defn).any? { |t| visible_type?(t) }
       end
 
       def visible?(member)

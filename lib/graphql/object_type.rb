@@ -35,7 +35,6 @@ module GraphQL
     def interfaces=(new_interfaces)
       @interface_type_memberships = []
       @inherited_interface_type_memberships = []
-      @dirty_inherited_fields = {}
       @clean_inherited_fields = nil
       implements(new_interfaces, inherit: true)
     end

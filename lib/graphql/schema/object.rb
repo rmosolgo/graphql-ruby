@@ -93,7 +93,7 @@ module GraphQL
           end
 
           # Remove any interfaces which are being replaced (late-bound types are updated in place this way)
-          interface_type_memberships.reject! { |existing_i_m|
+          own_interface_type_memberships.reject! { |existing_i_m|
             new_memberships.any? { |new_i_m|
               new_name = new_i_m.is_a?(String) ? new_i_m : new_i_m.abstract_type.graphql_name
               old_name = if existing_i_m.is_a?(String)
@@ -106,22 +106,22 @@ module GraphQL
               new_name == old_name
             }
           }
-          interface_type_memberships.concat(new_memberships)
+          own_interface_type_memberships.concat(new_memberships)
         end
 
-        def interface_type_memberships
-          @interface_type_memberships ||= []
+        def own_interface_type_memberships
+          @own_interface_type_memberships ||= []
         end
 
         # param context [Query::Context, nil] If `nil` is given, skip filtering.
         def interfaces(context = GraphQL::Query::NullContext)
           if context.nil?
-            visible_interfaces = interface_type_memberships
+            visible_interfaces = own_interface_type_memberships
               .select { |tm| tm.is_a?(Schema::TypeMembership) } # exclude strings and late-bound types
               .map(&:abstract_type)
           else
             visible_interfaces = []
-            interface_type_memberships.each do |type_membership|
+            own_interface_type_memberships.each do |type_membership|
               vis = type_membership.visible?(context)
               if vis
                 visible_interfaces << type_membership.abstract_type
@@ -151,7 +151,7 @@ module GraphQL
           obj_type = GraphQL::ObjectType.new
           obj_type.name = graphql_name
           obj_type.description = description
-          obj_type.interface_type_memberships = interface_type_memberships
+          obj_type.interface_type_memberships = own_interface_type_memberships
           obj_type.introspection = introspection
           obj_type.mutation = mutation
           obj_type.ast_node = ast_node
