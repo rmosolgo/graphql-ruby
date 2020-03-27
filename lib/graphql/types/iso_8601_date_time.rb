@@ -34,7 +34,7 @@ module GraphQL
       def self.coerce_result(value, _ctx)
         value = value.iso8601(time_precision) if value.class == DateTime
         DateTime.parse(value.to_s).iso8601(time_precision)
-      rescue ArgumentError => e
+      rescue ArgumentError
         raise GraphQL::Error, "An incompatible object (#{value.class}) was given to #{self}. Make sure that only Dates, DateTimes, and well-formatted Strings are used with this type."
       end
 
