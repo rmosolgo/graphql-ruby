@@ -1765,15 +1765,15 @@ module GraphQL
             }
             own_possible_types[owner.graphql_name] = owner.possible_types
           elsif type.kind.interface? && owner.kind.object?
-            new_interfaces = owner.interfaces.map do |int_t|
+            new_interfaces = []
+            owner.interfaces.each do |int_t|
               if int_t.is_a?(String) && int_t == type.graphql_name
-                type
+                new_interfaces << type
               elsif int_t.is_a?(LateBoundType) && int_t.graphql_name == type.graphql_name
-                type
+                new_interfaces << type
               else
-                 # TODO won't this lose some configuration?
-                 # Consider excluding these from this list, since they were probably already visited.
-                int_t
+                # Don't re-add proper interface definitions,
+                # they were probably already added, maybe with options.
               end
             end
             owner.implements(*new_interfaces)
