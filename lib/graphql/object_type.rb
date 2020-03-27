@@ -43,16 +43,13 @@ module GraphQL
       ensure_defined
       visible_ifaces = []
       unfiltered = ctx == GraphQL::Query::NullContext
-      @structural_interface_type_memberships.each do |type_membership|
-        if unfiltered || type_membership.visible?(ctx)
-          visible_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
-        end
-      end
-
-      @inherited_interface_type_memberships.each do |type_membership|
-        if type_membership.visible?(ctx)
-          # TODO remove resolve_related_type ? here and elsewhere, since it's done during initialization
-          visible_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
+      [@structural_interface_type_memberships, @inherited_interface_type_memberships].each do |tms|
+        tms.each do |type_membership|
+          if unfiltered || type_membership.visible?(ctx)
+            # if this is derived from a class-based object, we have to
+            # get the `.graphql_definition` of the attached interface.
+            visible_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
+          end
         end
       end
 
