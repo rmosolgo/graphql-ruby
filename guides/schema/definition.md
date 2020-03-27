@@ -181,7 +181,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-Then, during execution, `context` will be an instance `CustomContext`.
+Then, during execution, `context` will be an instance of `CustomContext`.
 
 ## Default Limits
 
