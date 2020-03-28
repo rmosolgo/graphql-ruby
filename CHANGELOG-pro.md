@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+## 1.13.2 (28 Mar 2020)
+
+### Deprecations
+
+- `GraphQL::Pro::Subscriptions` is deprecated; use `GraphQL::Pro::PusherSubscriptions` instead which works the same, but better (see below). This new name avoids confusion with the later-added `AblySubscriptions`.
+
+### New Features
+
+- `GraphQL::Pro::PusherSubscriptions` replaces `GraphQL::Pro::Subscriptions` and adds orphaned record cleanup. (No more dangling records in Redis.)
+
 ## 1.13.1 (12 Mar 2020)
 
 - Use `nonce: true` when working with cursors in new stable connections
