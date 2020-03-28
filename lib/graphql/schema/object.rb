@@ -86,6 +86,9 @@ module GraphQL
               # to find inherited fields
               include(int)
             elsif int.is_a?(String) || int.is_a?(GraphQL::Schema::LateBoundType)
+              if options.any?
+                raise ArgumentError, "`implements(...)` doesn't support options with late-loaded types yet. Remove #{options} and open an issue to request this feature."
+              end
               new_memberships << int
             else
               raise ArgumentError, "Unexpected interface definition (expected module): #{int} (#{int.class})"
@@ -93,23 +96,14 @@ module GraphQL
           end
 
           # Remove any interfaces which are being replaced (late-bound types are updated in place this way)
-          own_interface_type_memberships.reject! { |existing_i_m|
-            new_memberships.any? { |new_i_m|
-              new_name = if new_i_m.is_a?(String)
-                new_i_m
-              elsif new_i_m.is_a?(GraphQL::Schema::LateBoundType)
-                new_i_m.graphql_name
-              else
-                new_i_m.abstract_type.graphql_name
-              end
+          own_interface_type_memberships.reject! { |old_i_m|
+            old_int_type = old_i_m.respond_to?(:abstract_type) ? old_i_m.abstract_type : old_i_m
+            old_name = Schema::Member::BuildType.to_type_name(old_int_type)
 
-              old_name = if existing_i_m.is_a?(String)
-                existing_i_m
-              elsif existing_i_m.is_a?(GraphQL::Schema::LateBoundType)
-                existing_i_m.graphql_name
-              else
-                existing_i_m.abstract_type.graphql_name
-              end
+            new_memberships.any? { |new_i_m|
+              new_int_type = new_i_m.respond_to?(:abstract_type) ? new_i_m.abstract_type : new_i_m
+              new_name = Schema::Member::BuildType.to_type_name(new_i_m)
+
               new_name == old_name
             }
           }
