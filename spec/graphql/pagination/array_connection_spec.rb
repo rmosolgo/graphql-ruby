@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Pagination::ArrayConnection do
-  ITEMS = ConnectionAssertions::NAMES.map { |n| { name: n } }
+  ARRAY_ITEMS = ConnectionAssertions::NAMES.map { |n| { name: n } }
 
   class ArrayConnectionWithTotalCount < GraphQL::Pagination::ArrayConnection
     def total_count
@@ -14,7 +14,7 @@ describe GraphQL::Pagination::ArrayConnection do
     ConnectionAssertions.build_schema(
       connection_class: GraphQL::Pagination::ArrayConnection,
       total_count_connection_class: ArrayConnectionWithTotalCount,
-      get_items: -> { ITEMS }
+      get_items: -> { ARRAY_ITEMS }
     )
   }
 

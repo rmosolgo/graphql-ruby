@@ -332,20 +332,26 @@ module GraphQL
             inner_type = type.of_type
             idx = 0
             scoped_context = context.scoped_context
-            value.each do |inner_value|
-              next_path = path.dup
-              next_path << idx
-              next_path.freeze
-              idx += 1
-              set_type_at_path(next_path, inner_type)
-              # This will update `response_list` with the lazy
-              after_lazy(inner_value, owner: inner_type, path: next_path, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
-                continue_value = continue_value(next_path, inner_inner_value, field, inner_type.non_null?, ast_node)
-                if HALT != continue_value
-                  continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections, false, owner_object, arguments)
+            begin
+              value.each do |inner_value|
+                next_path = path.dup
+                next_path << idx
+                next_path.freeze
+                idx += 1
+                set_type_at_path(next_path, inner_type)
+                # This will update `response_list` with the lazy
+                after_lazy(inner_value, owner: inner_type, path: next_path, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
+                  continue_value = continue_value(next_path, inner_inner_value, field, inner_type.non_null?, ast_node)
+                  if HALT != continue_value
+                    continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections, false, owner_object, arguments)
+                  end
                 end
               end
+            rescue NoMethodError
+              # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
+              raise ListResultFailedError.new(value: value, field: field, path: path)
             end
+
             response_list
           when "NON_NULL"
             inner_type = type.of_type
