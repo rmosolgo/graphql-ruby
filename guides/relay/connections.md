@@ -83,8 +83,8 @@ class Types::PostConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConne
   field :total_count, Integer, null: false
   def total_count
     # - `object` is the Connection
-    # - `object.nodes` is the collection of Posts
-    object.nodes.size
+    # - `object.items` is the original collection of Posts
+    object.items.size
   end
 end
 ```
