@@ -88,19 +88,15 @@
     <span class="vi">@fields</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
   <span class="k">end</span>
 
-  <span class="k">def</span> <span class="nf">on_leave_argument</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">_visitor</span><span class="p">)</span>
-    <span class="vi">@arguments</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
-  <span class="k">end</span>
-
   <span class="k">def</span> <span class="nf">result</span>
     <span class="c1"># Do something with the gathered result.</span>
-    <span class="no">Analytics</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="vi">@fields</span><span class="p">,</span> <span class="vi">@arguments</span><span class="p">)</span>
+    <span class="no">Analytics</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="vi">@fields</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>In this example, we counted every field and argument, no matter if they were on fragment definitions
-or if they were skipped by directives. If we want to detect those contexts, we can use helper
+<p>In this example, we counted every field, no matter if it was on fragment definitions
+or if it was skipped by directives. If we want to detect those contexts, we can use helper
 methods:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicFieldAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
@@ -127,6 +123,10 @@ methods:</p>
 </code></pre></div></div>
 
 <p>See <a href="/api-doc/1.10.5/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> for more information about the <code class="highlighter-rouge">visitor</code> object.</p>
+
+<h3 id="field-arguments">Field Arguments</h3>
+
+<p>Usually, analyzers will use <code class="highlighter-rouge">on_enter_field</code> and <code class="highlighter-rouge">on_leave_field</code> to process queries. To get a field’s arguments during analysis, use <code class="highlighter-rouge">visitor.query.arguments_for(node, visitor.field_definition)</code> (<a href="/api-doc/1.10.5/GraphQL/Query#arguments_for-instance_method" target="_blank" title="API docs for GraphQL::Query#arguments_for"><code>GraphQL::Query#arguments_for</code></a>). That method returns coerced argument values and normalizes argument literals and variable values.</p>
 
 <h3 id="errors">Errors</h3>
 
