@@ -281,13 +281,28 @@ module StarTrek
   class QueryType < GraphQL::Schema::Object
     graphql_name "Query"
 
-    field :federation, Faction, null: true, resolve: ->(obj, args, ctx) { StarTrek::DATA["Faction"]["1"]}
+    field :federation, Faction, null: true
 
-    field :klingons, Faction, null: true, resolve: ->(obj, args, ctx) { StarTrek::DATA["Faction"]["2"]}
+    def federation
+      StarTrek::DATA["Faction"]["1"]
+    end
 
-    field :romulans, Faction, null: true, resolve: ->(obj, args, ctx) { StarTrek::DATA["Faction"]["3"]}
+    field :klingons, Faction, null: true
+    def klingons
+      StarTrek::DATA["Faction"]["2"]
+    end
 
-    field :largestBase, BaseType, null: true, resolve: ->(obj, args, ctx) { Base.find(3) }
+    field :romulans, Faction, null: true
+
+    def romulans
+      StarTrek::DATA["Faction"]["3"]
+    end
+
+    field :largest_base, BaseType, null: true
+
+    def largest_base
+      Base.find(3)
+    end
 
     field :newestBasesGroupedByFaction, BaseType.connection_type, null: true
 
