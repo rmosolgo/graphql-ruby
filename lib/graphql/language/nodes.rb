@@ -39,11 +39,11 @@ module GraphQL
 
         # Value equality
         # @return [Boolean] True if `self` is equivalent to `other`
-        def eql?(other)
+        def ==(other)
           return true if equal?(other)
-          other.is_a?(self.class) &&
-            other.scalars.eql?(self.scalars) &&
-            other.children.eql?(self.children)
+          other.kind_of?(self.class) &&
+            other.scalars == self.scalars &&
+            other.children == self.children
         end
 
         NO_CHILDREN = [].freeze

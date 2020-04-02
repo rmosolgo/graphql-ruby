@@ -30,8 +30,8 @@ describe GraphQL::Language::Nodes::AbstractNode do
       let(:query_string2) { query_string1 }
 
       it "should be equal" do
-        assert document1.eql?(document2)
-        assert document2.eql?(document1)
+        assert document1 == document2
+        assert document2 == document1
       end
     end
 
@@ -40,8 +40,8 @@ describe GraphQL::Language::Nodes::AbstractNode do
       let(:query_string2) { "mutation { setField }" }
 
       it "should not be equal" do
-        refute document1.eql?(document2)
-        refute document2.eql?(document1)
+        refute document1 == document2
+        refute document2 == document1
       end
     end
 
@@ -50,8 +50,8 @@ describe GraphQL::Language::Nodes::AbstractNode do
       let(:query_string2) { "query { bar }" }
 
       it "should not be equal" do
-        refute document1.eql?(document2)
-        refute document2.eql?(document1)
+        refute document1 == document2
+        refute document2 == document1
       end
     end
 
