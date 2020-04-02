@@ -23,7 +23,6 @@ matrix:
       - bundle exec rake js:all
   - env:
       - DISPLAY=':99.0'
-      - TESTING_INTERPRETER=yes
     rvm: 2.6.2
     services:
       - xvfb
@@ -41,7 +40,7 @@ matrix:
       - gem uninstall -v '>= 2' -i $(rvm gemdir)@global -ax bundler || true
       - gem install bundler -v '< 2'
   - env:
-      - TESTING_INTERPRETER=yes
+      - TESTING_LEGACY=yes
     rvm: 2.4.3
     gemfile: gemfiles/rails_5.2.gemfile
   - rvm: ruby-head
