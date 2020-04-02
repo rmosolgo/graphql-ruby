@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.13.3 (2 Apr 2020)
+
+### New Features
+
+- `GraphQL::Pro::OperationStore::Migration` can be used to copy persisted operations from one backend to another (eg, ActiveRecord to Redis). See the source file, `lib/graphql/pro/operation_store/migration.rb` for docs.
+
 ## 1.13.2 (28 Mar 2020)
 
 ### Deprecations
