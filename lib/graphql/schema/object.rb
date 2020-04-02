@@ -85,6 +85,8 @@ module GraphQL
               # `.fields` will use the inheritance chain
               # to find inherited fields
               include(int)
+            elsif int.is_a?(GraphQL::InterfaceType)
+              new_memberships << int.type_membership_class.new(int, self, options)
             elsif int.is_a?(String) || int.is_a?(GraphQL::Schema::LateBoundType)
               if options.any?
                 raise ArgumentError, "`implements(...)` doesn't support options with late-loaded types yet. Remove #{options} and open an issue to request this feature."
@@ -102,7 +104,7 @@ module GraphQL
 
             new_memberships.any? { |new_i_m|
               new_int_type = new_i_m.respond_to?(:abstract_type) ? new_i_m.abstract_type : new_i_m
-              new_name = Schema::Member::BuildType.to_type_name(new_i_m)
+              new_name = Schema::Member::BuildType.to_type_name(new_int_type)
 
               new_name == old_name
             }
@@ -131,9 +133,27 @@ module GraphQL
               if unfiltered || type_membership.visible?(context)
                 visible_interfaces << type_membership.abstract_type
               end
+            else
+              raise "Invariant: Unexpected type_membership #{type_membership.class}: #{type_membership.inspect}"
             end
           end
           visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context) : [])
+        end
+
+
+        # Include legacy-style interfaces, too
+        def fields
+          all_fields = super
+          interfaces.each do |int|
+            if int.is_a?(GraphQL::InterfaceType)
+              int_f = {}
+              int.fields.each do |name, legacy_field|
+                int_f[name] = field_class.from_options(name, field: legacy_field)
+              end
+              all_fields = int_f.merge(all_fields)
+            end
+          end
+          all_fields
         end
 
         # @return [GraphQL::ObjectType]
