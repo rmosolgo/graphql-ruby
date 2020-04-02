@@ -3,6 +3,7 @@ require "graphql/query/arguments"
 require "graphql/query/arguments_cache"
 require "graphql/query/context"
 require "graphql/query/executor"
+require "graphql/query/fingerprint"
 require "graphql/query/literal_input"
 require "graphql/query/null_context"
 require "graphql/query/result"
@@ -263,6 +264,21 @@ module GraphQL
       with_prepared_ast {
         GraphQL::Language::SanitizedPrinter.new(self).sanitized_query_string
       }
+    end
+
+    # @return [String] An opaque hash identifying this query-variables combination
+    def fingerprint
+      @fingerprint ||= "#{query_fingerprint}/#{variables_fingerprint}"
+    end
+
+    # @return [String] An opaque hash for identifying this query's given query string
+    def query_fingerprint
+      @query_hash ||= Fingerprint.generate(query_string)
+    end
+
+    # @return [String] An opaque hash for identifying this query's given a variable values (not including defaults)
+    def variables_fingerprint
+      @variables_hash ||= Fingerprint.generate(provided_variables.to_json)
     end
 
     def validation_pipeline
