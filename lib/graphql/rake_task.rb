@@ -76,15 +76,7 @@ module GraphQL
     # Set the parameters of this task by passing keyword arguments
     # or assigning attributes inside the block
     def initialize(options = {})
-      default_dependencies = if Rake::Task.task_defined?("environment")
-        [:environment]
-      else
-        []
-      end
-
-      all_options = DEFAULT_OPTIONS
-        .merge(dependencies: default_dependencies)
-        .merge(options)
+      all_options = DEFAULT_OPTIONS.merge(options)
       all_options.each do |k, v|
         self.public_send("#{k}=", v)
       end
@@ -117,18 +109,26 @@ module GraphQL
       File.join(@directory, @json_outfile)
     end
 
+    def load_rails_environment_if_defined
+      if Rake::Task.task_defined?('environment')
+        Rake::Task['environment'].invoke
+      end
+    end
+
     # Use the Rake DSL to add tasks
     def define_task
       namespace(@namespace) do
         namespace("schema") do
           desc("Dump the schema to IDL in #{idl_path}")
           task :idl => @dependencies do
+            load_rails_environment_if_defined
             write_outfile(:to_definition, idl_path)
             puts "Schema IDL dumped into #{idl_path}"
           end
 
           desc("Dump the schema to JSON in #{json_path}")
           task :json => @dependencies do
+            load_rails_environment_if_defined
             write_outfile(:to_json, json_path)
             puts "Schema JSON dumped into #{json_path}"
           end
