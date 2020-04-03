@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.7.6 (3 Apr 2020)
+
+- Fix ActionCableLink sending unsubcribe to ActionCable #2842
+
 ## 1.7.5 (4 Mar 2020)
 
 - Add missing dependency declarations
