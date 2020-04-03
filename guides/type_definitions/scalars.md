@@ -31,7 +31,7 @@ field :top_score, Integer, null: false
 # Float field
 field :avg_points_per_game, Float, null: false
 # Boolean field
-field :is_top_ranked, Boolean, null: false
+field :is_top_ranked, GraphQL::Types::Boolean, null: false
 # ID field
 field :id, ID, null: false
 # ISO8601DateTime field
