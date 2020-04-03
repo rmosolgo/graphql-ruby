@@ -140,11 +140,12 @@ module GraphQL
           visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context) : [])
         end
 
-
-        # Include legacy-style interfaces, too
+        # @return [Hash<String => GraphQL::Schema::Field>] All of this object's fields, indexed by name
+        # @see get_field A faster way to find one field by name ({#fields} merges hashes of inherited fields; {#get_field} just looks up one field.)
         def fields
           all_fields = super
           interfaces.each do |int|
+            # Include legacy-style interfaces, too
             if int.is_a?(GraphQL::InterfaceType)
               int_f = {}
               int.fields.each do |name, legacy_field|
