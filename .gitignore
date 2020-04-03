@@ -23,4 +23,6 @@ yarn.lock
 OperationStoreClient.js
 spec/integration/tmp
 .vscode/
+*.swp
+*.swo
 javascript_client/dist/

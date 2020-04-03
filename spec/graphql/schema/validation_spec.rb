@@ -141,7 +141,7 @@ describe GraphQL::Schema::Validation do
     }
 
     it "requires an Array for interfaces" do
-      assert_error_includes invalid_interface_member_object, "must contain GraphQL::InterfaceType, not Symbol"
+      assert_error_includes invalid_interface_member_object, "field \"foo\" type must return GraphQL::BaseType, not Symbol (:string)"
     end
 
     it "validates the fields" do

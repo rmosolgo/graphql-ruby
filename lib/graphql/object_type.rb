@@ -17,17 +17,15 @@ module GraphQL
     def initialize
       super
       @fields = {}
-      @interface_fields = {}
-      @dirty_interfaces = []
-      @dirty_inherited_interfaces = []
+      @clean_inherited_fields = nil
+      @structural_interface_type_memberships = []
+      @inherited_interface_type_memberships = []
     end
 
     def initialize_copy(other)
       super
-      @clean_interfaces = nil
-      @clean_inherited_interfaces = nil
-      @dirty_interfaces = other.dirty_interfaces.dup
-      @dirty_inherited_interfaces = other.dirty_inherited_interfaces.dup
+      @structural_interface_type_memberships = other.structural_interface_type_memberships.dup
+      @inherited_interface_type_memberships = other.inherited_interface_type_memberships.dup
       @fields = other.fields.dup
     end
 
@@ -35,18 +33,27 @@ module GraphQL
     # @param new_interfaces [Array<GraphQL::Interface>] interfaces that this type implements
     # @deprecated Use `implements` instead of `interfaces`.
     def interfaces=(new_interfaces)
-      @clean_interfaces = nil
-      @clean_inherited_interfaces = nil
+      @structural_interface_type_memberships = []
+      @inherited_interface_type_memberships = []
       @clean_inherited_fields = nil
-
-      @dirty_inherited_interfaces = []
-      @dirty_inherited_fields = {}
       implements(new_interfaces, inherit: true)
     end
 
-    def interfaces
-      load_interfaces
-      @clean_interfaces
+    def interfaces(ctx = GraphQL::Query::NullContext)
+      ensure_defined
+      visible_ifaces = []
+      unfiltered = ctx == GraphQL::Query::NullContext
+      [@structural_interface_type_memberships, @inherited_interface_type_memberships].each do |tms|
+        tms.each do |type_membership|
+          if unfiltered || type_membership.visible?(ctx)
+            # if this is derived from a class-based object, we have to
+            # get the `.graphql_definition` of the attached interface.
+            visible_ifaces << GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
+          end
+        end
+      end
+
+      visible_ifaces
     end
 
     def kind
@@ -71,24 +78,30 @@ module GraphQL
     # This declaration will be validated when the schema is defined.
     # @param interfaces [Array<GraphQL::Interface>] add a new interface that this type implements
     # @param inherits [Boolean] If true, copy the interfaces' field definitions to this type
-    def implements(interfaces, inherit: false)
+    def implements(interfaces, inherit: false, **options)
       if !interfaces.is_a?(Array)
         raise ArgumentError, "`implements(interfaces)` must be an array, not #{interfaces.class} (#{interfaces})"
       end
-
-      @clean_interfaces = nil
       @clean_inherited_fields = nil
-      dirty_ifaces = inherit ? @dirty_inherited_interfaces : @dirty_interfaces
-      dirty_ifaces.concat(interfaces)
+
+      type_memberships = inherit ? @inherited_interface_type_memberships : @structural_interface_type_memberships
+      interfaces.each do |iface|
+        iface = BaseType.resolve_related_type(iface)
+        if iface.is_a?(GraphQL::InterfaceType)
+          type_memberships << iface.type_membership_class.new(iface, self, options)
+        end
+      end
     end
 
     def resolve_type_proc
       nil
     end
 
+    attr_writer :structural_interface_type_memberships
+
     protected
 
-    attr_reader :dirty_interfaces, :dirty_inherited_interfaces
+    attr_reader :structural_interface_type_memberships, :inherited_interface_type_memberships
 
     private
 
@@ -97,24 +110,20 @@ module GraphQL
     end
 
     def interface_fields
-      load_interfaces
-      @clean_inherited_fields
-    end
-
-    def load_interfaces
-      @clean_interfaces ||= begin
+      if @clean_inherited_fields
+        @clean_inherited_fields
+      else
         ensure_defined
-        clean_ifaces = normalize_interfaces(@dirty_interfaces)
-        clean_inherited_ifaces = normalize_interfaces(@dirty_inherited_interfaces)
-        inherited_fields = {}
-        clean_inherited_ifaces.each do |iface|
-          # This will be found later in schema validation:
+        @clean_inherited_fields = {}
+        @inherited_interface_type_memberships.each do |type_membership|
+          iface = GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
           if iface.is_a?(GraphQL::InterfaceType)
-            inherited_fields.merge!(iface.fields)
+            @clean_inherited_fields.merge!(iface.fields)
+          else
+            pp iface
           end
         end
-        @clean_inherited_fields = inherited_fields
-        clean_inherited_ifaces + clean_ifaces
+        @clean_inherited_fields
       end
     end
   end

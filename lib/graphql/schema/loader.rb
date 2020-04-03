@@ -21,7 +21,7 @@ module GraphQL
         schema.fetch("types").each do |type|
           next if type.fetch("name").start_with?("__")
           type_object = define_type(type, type_resolver)
-          types[type_object.name] = type_object
+          types[type["name"]] = type_object
         end
 
         kargs = { orphan_types: types.values, resolve_type: NullResolveType }
