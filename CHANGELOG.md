@@ -8,6 +8,25 @@
 
 ### Bug fixes
 
+## 1.10.6 (6 April 2020)
+
+### New features
+
+- Add options to `implements(...)` and inteface type visibility #2791
+- Add `Query#fingerprint` for logging #2859
+- Add `--playground` option to install generator #2839
+- Support lazy-loaded objects from input object `loads:` #2834
+
+### Bug fixes
+
+- Fix `Language::Nodes` equality: move `eql?` to `==` #2861
+- Make rake task properly detect rails `environment` task #2862
+- Fix `nil` override for `max_page_size` #2843
+- Fix `pageInfo` methods when they're called before `nodes` #2845
+- Make the default development error match a normal GraphQL error #2825
+- Fix `loads:` with `require: false` #2833
+- Fix typeerror for `BigInt` given `nil` #2827
+
 ## 1.10.5 (12 March 2020)
 
 ### New features
