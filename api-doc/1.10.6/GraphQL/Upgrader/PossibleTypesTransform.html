@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Upgrader::PossibleTypesTransform
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Upgrader::PossibleTypesTransform";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (P)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Upgrader.html" title="GraphQL::Upgrader (module)">Upgrader</a></span></span>
+     &raquo; 
+    <span class="title">PossibleTypesTransform</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Upgrader::PossibleTypesTransform
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Transform.html" title="GraphQL::Upgrader::Transform (class)">Transform</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Transform.html" title="GraphQL::Upgrader::Transform (class)">Transform</a></span></li>
+          
+            <li class="next">GraphQL::Upgrader::PossibleTypesTransform</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/upgrader/member.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Transform <code>possible_types [A, B, C]</code> to <code>possible_types(A, B, C)</code></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="PATTERN-constant" class="">PATTERN =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>(?&lt;indent&gt;\s*)(?:possible_types) \[\s*(?&lt;possible_types&gt;(?:[a-zA-Z_0-9:\.,\s]+))\]</span><span class='regexp_end'>/m</span></span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#apply-instance_method" title="#apply (instance method)">#<strong>apply</strong>(input_text)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="Transform.html" title="GraphQL::Upgrader::Transform (class)">Transform</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Transform.html#apply_processor-instance_method" title="GraphQL::Upgrader::Transform#apply_processor (method)">#apply_processor</a></span>, <span class='object_link'><a href="Transform.html#normalize_type_expression-instance_method" title="GraphQL::Upgrader::Transform#normalize_type_expression (method)">#normalize_type_expression</a></span>, <span class='object_link'><a href="Transform.html#reindent_lines-instance_method" title="GraphQL::Upgrader::Transform#reindent_lines (method)">#reindent_lines</a></span>, <span class='object_link'><a href="Transform.html#trim_lines-instance_method" title="GraphQL::Upgrader::Transform#trim_lines (method)">#trim_lines</a></span>, <span class='object_link'><a href="Transform.html#underscorize-instance_method" title="GraphQL::Upgrader::Transform#underscorize (method)">#underscorize</a></span></p>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="apply-instance_method">
+  
+    #<strong>apply</strong>(input_text)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/upgrader/member.rb', line 661</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_apply'>apply</span><span class='lparen'>(</span><span class='id identifier rubyid_input_text'>input_text</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_input_text'>input_text</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#PATTERN-constant" title="GraphQL::Upgrader::PossibleTypesTransform::PATTERN (constant)">PATTERN</a></span></span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_indent'>indent</span> <span class='op'>=</span> <span class='gvar'>$~</span><span class='lbracket'>[</span><span class='symbol'>:indent</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_possible_types'>possible_types</span> <span class='op'>=</span> <span class='gvar'>$~</span><span class='lbracket'>[</span><span class='symbol'>:possible_types</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>,</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:strip</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:empty?</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_extra_leading_newlines'>extra_leading_newlines</span> <span class='op'>=</span> <span class='id identifier rubyid_indent'>indent</span><span class='lbracket'>[</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^\n*</span><span class='regexp_end'>/</span></span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_method_indent'>method_indent</span> <span class='op'>=</span> <span class='id identifier rubyid_indent'>indent</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^\n*</span><span class='regexp_end'>/m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_type_indent'>type_indent</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>  </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_method_indent'>method_indent</span>
+    <span class='id identifier rubyid_possible_types_call'>possible_types_call</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_method_indent'>method_indent</span><span class='embexpr_end'>}</span><span class='tstring_content'>possible_types(\n</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type_indent'>type_indent</span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_t'>t</span><span class='embexpr_end'>}</span><span class='tstring_content'>,</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_method_indent'>method_indent</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_extra_leading_newlines'>extra_leading_newlines</span> <span class='op'>+</span> <span class='id identifier rubyid_trim_lines'>trim_lines</span><span class='lparen'>(</span><span class='id identifier rubyid_possible_types_call'>possible_types_call</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Apr  7 10:09:42 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.24 (ruby-2.6.3).
+</div>
+
+    </div>
+  </body>
+</html>
