@@ -76,6 +76,9 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/subscription_type.rb</span>
 <span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">SubscriptionType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="c1"># If you're using the interpreter, also add:</span>
+  <span class="kp">extend</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">SubscriptionRoot</span>
+
   <span class="n">field</span> <span class="ss">:post_was_published</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PostType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
     <span class="ss">description: </span><span class="s2">"A post was published to the blog"</span>
   <span class="c1"># ...</span>
@@ -100,6 +103,8 @@
 <p>When a client first sends a <code class="highlighter-rouge">subscription</code> operation, the root fields are resolved, so their corresponding methods are called, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">SubscriptionType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="kp">extend</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">SubscriptionRoot</span>
+
   <span class="n">field</span> <span class="ss">:post_was_published</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PostType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
     <span class="ss">description: </span><span class="s2">"A post was published to the blog"</span> <span class="k">do</span>
       <span class="n">argument</span> <span class="ss">:topic</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PostTopic</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
