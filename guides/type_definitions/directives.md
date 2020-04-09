@@ -39,6 +39,7 @@ Custom directives extend {{ "GraphQL::Schema::Directive" | api_doc }}:
 ```ruby
 # app/graphql/directives/my_directive.rb
 class Directives::MyDirective < GraphQL::Schema::Directive
+  graphql_name "directive_name" # string, not symbol!
   description "A nice runtime customization"
 end
 ```
@@ -52,6 +53,16 @@ class MySchema < GraphQL::Schema
   # Attach the custom directive to the schema
   directive(Directives::MyDirective)
 end
+```
+
+And you can reference them in the query with `@directive_name(...)`:
+
+```ruby
+query {
+  field @directive_name {
+    id
+  }
+}
 ```
 
 {{ "GraphQL::Schema::Directive::Feature" | api_doc }} and {{ "GraphQL::Schema::Directive::Transform" | api_doc }} are included in the library as examples.
