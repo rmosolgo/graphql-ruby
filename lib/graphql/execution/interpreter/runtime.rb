@@ -439,7 +439,7 @@ module GraphQL
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
                   err
               end
-              after_lazy(inner_obj, owner: owner, field: field, path: path, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager) do |really_inner_obj|
+              after_lazy(inner_obj, owner: owner, field: field, path: path, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager, trace: trace) do |really_inner_obj|
                 yield(really_inner_obj)
               end
             end
