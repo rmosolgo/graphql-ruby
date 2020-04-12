@@ -374,11 +374,12 @@ module GraphQL
           end
         end
 
-        def resolve_with_directives(object, ast_node)
-          run_directive(object, ast_node, 0) { yield }
+        def resolve_with_directives(object, ast_node, &block)
+          return yield if ast_node.directives.empty?
+          run_directive(object, ast_node, 0, &block)
         end
 
-        def run_directive(object, ast_node, idx)
+        def run_directive(object, ast_node, idx, &block)
           dir_node = ast_node.directives[idx]
           if !dir_node
             yield
@@ -389,7 +390,7 @@ module GraphQL
             end
             dir_args = arguments(nil, dir_defn, dir_node)
             dir_defn.resolve(object, dir_args, context) do
-              run_directive(object, ast_node, idx + 1) { yield }
+              run_directive(object, ast_node, idx + 1, &block)
             end
           end
         end
