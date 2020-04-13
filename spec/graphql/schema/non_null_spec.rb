@@ -55,4 +55,38 @@ describe GraphQL::Schema::NonNull do
       assert_equal ['Parse error on "!" (BANG) at [2, 21]'], res["errors"].map { |e| e["message"] }
     end
   end
+
+  describe "Introspection" do
+    class NonNullIntrospectionSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :strs, [String], null: false
+      end
+
+      query Query
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+    end
+
+    it "doesn't break on description" do
+      res = NonNullIntrospectionSchema.execute(<<~GRAPHQL).to_h
+        query IntrospectionQuery {
+          __type(name: "Query") {
+            fields {
+              type {
+                description
+                ofType {
+                  description
+                  ofType {
+                    description
+                  }
+                }
+              }
+            }
+          }
+        }
+      GRAPHQL
+
+      assert_equal [nil], res["data"]["__type"]["fields"].map { |f| f["description"] }
+    end
+  end
 end
