@@ -194,7 +194,8 @@ describe GraphQL::Schema::Loader do
     let(:loaded_schema) { GraphQL::Schema::Loader.load(schema_json) }
 
     it "returns the schema" do
-      assert_deep_equal(schema, loaded_schema)
+      assert_instance_of Class, loaded_schema
+      assert_equal GraphQL::Schema, loaded_schema.superclass
     end
 
     it "can export the loaded schema" do
@@ -217,7 +218,7 @@ describe GraphQL::Schema::Loader do
 
     it "sets correct default values on custom scalar input fields" do
       type = loaded_schema.types["Varied"]
-      field = type.input_fields['bigint']
+      field = type.arguments['bigint']
 
       assert_equal((2**54).to_s, field.default_value)
     end

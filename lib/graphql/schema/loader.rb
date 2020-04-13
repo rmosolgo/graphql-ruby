@@ -5,18 +5,19 @@ module GraphQL
     # to make a schema. This schema is missing some important details like
     # `resolve` functions, but it does include the full type system,
     # so you can use it to validate queries.
+    #
+    # @see GraphQL::Schema.from_introspection for a public API
     module Loader
       extend self
 
       # Create schema with the result of an introspection query.
       # @param introspection_result [Hash] A response from {GraphQL::Introspection::INTROSPECTION_QUERY}
-      # @return [GraphQL::Schema] the schema described by `input`
-      # @deprecated Use {GraphQL::Schema.from_introspection} instead
+      # @return [Class] the schema described by `input`
       def load(introspection_result)
         schema = introspection_result.fetch("data").fetch("__schema")
 
         types = {}
-        type_resolver = ->(type) { -> { resolve_type(types, type) } }
+        type_resolver = ->(type) { resolve_type(types, type) }
 
         schema.fetch("types").each do |type|
           next if type.fetch("name").start_with?("__")
@@ -24,18 +25,22 @@ module GraphQL
           types[type["name"]] = type_object
         end
 
-        kargs = { orphan_types: types.values, resolve_type: NullResolveType }
-        [:query, :mutation, :subscription].each do |root|
-          type = schema["#{root}Type"]
-          kargs[root] = types.fetch(type.fetch("name")) if type
+        Class.new(GraphQL::Schema) do
+          orphan_types(types.values)
+
+          def self.resolve_type(*)
+            raise(GraphQL::RequiredImplementationMissingError, "This schema was loaded from string, so it can't resolve types for objects")
+          end
+
+          [:query, :mutation, :subscription].each do |root|
+            type = schema["#{root}Type"]
+            if type
+              type_defn = types.fetch(type.fetch("name"))
+              self.public_send(root, type_defn)
+            end
+          end
         end
-
-        Schema.define(**kargs, raise_definition_error: true)
       end
-
-      NullResolveType = ->(type, obj, ctx) {
-        raise(GraphQL::RequiredImplementationMissingError, "This schema was loaded from string, so it can't resolve types for objects")
-      }
 
       NullScalarCoerce = ->(val, _ctx) { val }
 
@@ -48,14 +53,14 @@ module GraphQL
             type_name = type.fetch("name")
             type = types[type_name] || Schema::BUILT_IN_TYPES[type_name]
             if type.nil?
-              raise "Type not found: #{type_name.inspect} among #{types.keys.sort}"
+              GraphQL::Schema::LateBoundType.new(type_name)
             else
-              type.graphql_definition
+              type
             end
           when "LIST"
-            ListType.new(of_type: resolve_type(types, type.fetch("ofType")))
+            Schema::List.new(resolve_type(types, type.fetch("ofType")))
           when "NON_NULL"
-            NonNullType.new(of_type: resolve_type(types, type.fetch("ofType")))
+            Schema::NonNull.new(resolve_type(types, type.fetch("ofType")))
           else
             fail GraphQL::RequiredImplementationMissingError, "#{kind} not implemented"
           end
@@ -83,107 +88,106 @@ module GraphQL
         end
 
         def define_type(type, type_resolver)
+          loader = self
           case type.fetch("kind")
           when "ENUM"
-            EnumType.define(
-              name: type["name"],
-              description: type["description"],
-              values: type["enumValues"].map { |enum|
-                EnumType::EnumValue.define(
-                  name: enum["name"],
-                  description: enum["description"],
-                  deprecation_reason: enum["deprecationReason"],
-                  value: enum["name"]
+            Class.new(GraphQL::Schema::Enum) do
+              graphql_name(type["name"])
+              description(type["description"])
+              type["enumValues"].each do |enum_value|
+                value(
+                  enum_value["name"],
+                  description: enum_value["description"],
+                  deprecation_reason: enum_value["deprecation_reason"],
                 )
-              })
-          when "INTERFACE"
-            InterfaceType.define(
-              name: type["name"],
-              description: type["description"],
-              fields: Hash[(type["fields"] || []).map { |field|
-                [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
-              }]
-            )
-          when "INPUT_OBJECT"
-            InputObjectType.define(
-              name: type["name"],
-              description: type["description"],
-              arguments: Hash[type["inputFields"].map { |arg|
-                [arg["name"], define_type(arg.merge("kind" => "ARGUMENT"), type_resolver)]
-              }]
-            )
-          when "OBJECT"
-            ObjectType.define(
-              name: type["name"],
-              description: type["description"],
-              interfaces: (type["interfaces"] || []).map { |interface|
-                type_resolver.call(interface)
-              },
-              fields: Hash[type["fields"].map { |field|
-                [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
-              }]
-            )
-          when "FIELD"
-            defns = {
-              name: type["name"],
-              type: type_resolver.call(type["type"]),
-              description: type["description"],
-            }
-
-            # Avoid passing an empty hash, which warns on Ruby 2.7
-            if type["args"].any?
-              defns[:arguments] = Hash[type["args"].map { |arg|
-                [arg["name"], define_type(arg.merge("kind" => "ARGUMENT"), type_resolver)]
-              }]
-            end
-
-            GraphQL::Field.define(**defns)
-          when "ARGUMENT"
-            kwargs = {}
-            if type["defaultValue"]
-              kwargs[:default_value] = begin
-                default_value_str = type["defaultValue"]
-
-                dummy_query_str = "query getStuff($var: InputObj = #{default_value_str}) { __typename }"
-
-                # Returns a `GraphQL::Language::Nodes::Document`:
-                dummy_query_ast = GraphQL.parse(dummy_query_str)
-
-                # Reach into the AST for the default value:
-                input_value_ast = dummy_query_ast.definitions.first.variables.first.default_value
-
-                extract_default_value(default_value_str, input_value_ast)
               end
             end
-
-            GraphQL::Argument.define(
-              name: type["name"],
-              type: type_resolver.call(type["type"]),
-              description: type["description"],
-              method_access: false,
-              **kwargs
-            )
+          when "INTERFACE"
+            Module.new do
+              include GraphQL::Schema::Interface
+              graphql_name(type["name"])
+              description(type["description"])
+              loader.build_fields(self, type["fields"] || [], type_resolver)
+            end
+          when "INPUT_OBJECT"
+            Class.new(GraphQL::Schema::InputObject) do
+              graphql_name(type["name"])
+              description(type["description"])
+              loader.build_arguments(self, type["inputFields"], type_resolver)
+            end
+          when "OBJECT"
+            Class.new(GraphQL::Schema::Object) do
+              graphql_name(type["name"])
+              description(type["description"])
+              if type["interfaces"]
+                type["interfaces"].each do |interface_type|
+                  implements(type_resolver.call(interface_type))
+                end
+              end
+              loader.build_fields(self, type["fields"], type_resolver)
+            end
           when "SCALAR"
             type_name = type.fetch("name")
-            if GraphQL::Schema::BUILT_IN_TYPES[type_name]
-              GraphQL::Schema::BUILT_IN_TYPES[type_name]
+            if (builtin = GraphQL::Schema::BUILT_IN_TYPES[type_name])
+              builtin
             else
-              ScalarType.define(
-                name: type["name"],
-                description: type["description"],
-                coerce: NullScalarCoerce,
-              )
+              Class.new(GraphQL::Schema::Scalar) do
+                graphql_name(type["name"])
+                description(type["description"])
+              end
             end
           when "UNION"
-            UnionType.define(
-              name: type["name"],
-              description: type["description"],
-              possible_types: type["possibleTypes"].map { |possible_type|
-                type_resolver.call(possible_type)
-              }
-            )
+            Class.new(GraphQL::Schema::Union) do
+              graphql_name(type["name"])
+              description(type["description"])
+              possible_types(*(type["possibleTypes"].map { |pt| type_resolver.call(pt) }))
+            end
           else
             fail GraphQL::RequiredImplementationMissingError, "#{type["kind"]} not implemented"
+          end
+        end
+
+        public
+
+        def build_fields(type_defn, fields, type_resolver)
+          loader = self
+          fields.each do |field_hash|
+            type_defn.field(
+              field_hash["name"],
+              type: type_resolver.call(field_hash["type"]),
+              description: field_hash["description"],
+              null: true,
+            ) do
+              if field_hash["args"].any?
+                loader.build_arguments(self, field_hash["args"], type_resolver)
+              end
+            end
+          end
+        end
+
+        def build_arguments(arg_owner, args, type_resolver)
+          args.each do |arg|
+            kwargs = {
+              type: type_resolver.call(arg["type"]),
+              description: arg["description"],
+              required: false,
+            }
+
+            if arg["defaultValue"]
+              default_value_str = arg["defaultValue"]
+
+              dummy_query_str = "query getStuff($var: InputObj = #{default_value_str}) { __typename }"
+
+              # Returns a `GraphQL::Language::Nodes::Document`:
+              dummy_query_ast = GraphQL.parse(dummy_query_str)
+
+              # Reach into the AST for the default value:
+              input_value_ast = dummy_query_ast.definitions.first.variables.first.default_value
+
+              kwargs[:default_value] = extract_default_value(default_value_str, input_value_ast)
+            end
+
+            arg_owner.argument(arg["name"], **kwargs)
           end
         end
       end
