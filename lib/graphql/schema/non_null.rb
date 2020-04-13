@@ -57,6 +57,11 @@ module GraphQL
       def coerce_result(value, ctx)
         of_type.coerce_result(value, ctx)
       end
+
+      # This is for implementing introspection
+      def description
+        nil
+      end
     end
   end
 end
