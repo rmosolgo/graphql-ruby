@@ -30,5 +30,8 @@
     "graphql": "^14.3.1",
     "minimist": "^1.2.0",
     "typescript": "^3.7.5"
+  },
+  "prettier": {
+    "semi": false
   }
 }
