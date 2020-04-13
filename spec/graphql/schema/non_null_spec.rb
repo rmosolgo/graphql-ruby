@@ -68,7 +68,7 @@ describe GraphQL::Schema::NonNull do
     end
 
     it "doesn't break on description" do
-      res = NonNullIntrospectionSchema.execute(<<~GRAPHQL).to_h
+      res = NonNullIntrospectionSchema.execute(<<-GRAPHQL).to_h
         query IntrospectionQuery {
           __type(name: "Query") {
             fields {
