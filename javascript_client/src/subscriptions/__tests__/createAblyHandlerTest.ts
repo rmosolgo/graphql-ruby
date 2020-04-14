@@ -153,4 +153,35 @@ describe("createAblyHandler", () => {
     expect(errorInvokedWith).toBeUndefined()
     expect(nextInvokedWith).toBeUndefined()
   })
+
+  it("dispatches caught errors", async () => {
+    let errorInvokedWith = undefined
+    let nextInvokedWith = undefined
+
+    const error = new Error("blam")
+
+    const producer = createAblyHandler({
+      fetchOperation: () => new Promise((_resolve, reject) => reject(error)),
+      ably: createDummyConsumer()
+    })
+
+    producer(
+      dummyOperation,
+      {},
+      {},
+      {
+        onError: (errors: any) => {
+          errorInvokedWith = errors
+        },
+        onNext: (response: any) => {
+          nextInvokedWith = response
+        },
+        onCompleted: () => {}
+      }
+    )
+
+    await nextTick()
+    expect(errorInvokedWith).toBe(error)
+    expect(nextInvokedWith).toBeUndefined()
+  })
 })
