@@ -26,41 +26,40 @@ function createAblyHandler(options: AblyHandlerOptions) {
     var channelName
     var channel: Types.RealtimeChannelCallbacks
     // POST the subscription like a normal query
-    fetchOperation(operation, variables, cacheConfig).then(function(response: {
-      headers: { get: Function }
-      body: any
-    }) {
-      const dispatchResult = (result: { errors: any; data: any }) => {
-        if (result) {
-          if (result.errors) {
-            // What kind of error stuff belongs here?
-            observer.onError(result.errors)
-          } else if (result.data) {
-            observer.onNext({ data: result.data })
+    fetchOperation(operation, variables, cacheConfig)
+      .then(function(response: { headers: { get: Function }; body: any }) {
+        const dispatchResult = (result: { errors: any; data: any }) => {
+          if (result) {
+            if (result.errors) {
+              // What kind of error stuff belongs here?
+              observer.onError(result.errors)
+            } else if (result.data) {
+              observer.onNext({ data: result.data })
+            }
           }
         }
-      }
-      dispatchResult(response.body)
-      channelName = response.headers.get("X-Subscription-ID")
-      channel = ably.channels.get(channelName)
-      // Register presence, so that we can detect empty channels and clean them up server-side
-      if (ably.auth.clientId) {
-        channel.presence.enter("subscribed")
-      } else {
-        channel.presence.enterClient("graphql-subscriber", "subscribed")
-      }
-      // When you get an update from ably, give it to Relay
-      channel.subscribe("update", function(message) {
-        // TODO Extract this code
-        // When we get a response, send the update to `observer`
-        var payload = message.data
-        dispatchResult(payload.result)
-        if (!payload.more) {
-          // Subscription is finished
-          observer.onCompleted()
+        dispatchResult(response.body)
+        channelName = response.headers.get("X-Subscription-ID")
+        channel = ably.channels.get(channelName)
+        // Register presence, so that we can detect empty channels and clean them up server-side
+        if (ably.auth.clientId) {
+          channel.presence.enter("subscribed")
+        } else {
+          channel.presence.enterClient("graphql-subscriber", "subscribed")
         }
+        // When you get an update from ably, give it to Relay
+        channel.subscribe("update", function(message) {
+          // TODO Extract this code
+          // When we get a response, send the update to `observer`
+          var payload = message.data
+          dispatchResult(payload.result)
+          if (!payload.more) {
+            // Subscription is finished
+            observer.onCompleted()
+          }
+        })
       })
-    })
+      .catch((error: any) => observer.onError(error))
     return {
       dispose: function() {
         if (channel) {
