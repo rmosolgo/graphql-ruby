@@ -94,20 +94,6 @@ module GraphQL
         print(node)
       end
 
-      def print_directive(directive)
-        if directive.name == "deprecated"
-          reason = directive.arguments.find { |arg| arg.name == "reason" }
-
-          if reason.value == GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON
-            "@deprecated"
-          else
-            "@deprecated(reason: #{reason.value.to_s.inspect})"
-          end
-        else
-          super
-        end
-      end
-
       class IntrospectionPrinter < GraphQL::Language::Printer
         def print_schema_definition(schema)
           "schema {\n  query: Root\n}"
