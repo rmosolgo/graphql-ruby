@@ -1,5 +1,10 @@
 # graphql-ruby-client
 
+## 1.7.7 (15 Apr 2020)
+
+- Ably handler: dispatch initial response #2866
+- Ably handler: catch any error in initial HTTP call #2877
+
 ## 1.7.6 (3 Apr 2020)
 
 - Fix ActionCableLink sending unsubcribe to ActionCable #2842
