@@ -96,7 +96,7 @@
 
 <p>To implement the node interface, add <a href="/api-doc/1.10.6/GraphQL/Types/Relay/Node" target="_blank" title="API docs for GraphQL::Types::Relay::Node"><code>GraphQL::Types::Relay::Node</code></a> to your definition:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Implement the "Node" interface for Relay</span>
   <span class="n">implements</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span>
   <span class="c1"># ...</span>
@@ -127,7 +127,7 @@
 
 <p>To add a UUID field named <code class="highlighter-rouge">"id"</code>, use the <code class="highlighter-rouge">global_id_field</code> helper:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># `id` exposes the UUID</span>
   <span class="n">global_id_field</span> <span class="ss">:id</span>
   <span class="c1"># ...</span>
@@ -140,7 +140,7 @@
 
 <p>You should also provide a root-level <code class="highlighter-rouge">node</code> field so that Relay can refetch objects from your schema. It is provided as <code class="highlighter-rouge">GraphQL::Relay::Node.field</code>, so you can attach it like this:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Used by Relay to lookup objects by UUID:</span>
   <span class="n">add_field</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">NodeField</span><span class="p">)</span>
   <span class="c1"># ...</span>
@@ -151,7 +151,7 @@
 
 <p>You can also provide a root-level <code class="highlighter-rouge">nodes</code> field so that Relay can refetch objects by IDs. Similarly, it is provided as <code class="highlighter-rouge">GraphQL::Relay::Node.plural_field</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Fetches a list of objects given a list of IDs</span>
   <span class="n">add_field</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">NodesField</span><span class="p">)</span>
   <span class="c1"># ...</span>

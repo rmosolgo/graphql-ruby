@@ -79,10 +79,10 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_input_object.rb</span>
 <span class="c1"># Add a base class</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span>
+<span class="k">class</span> <span class="nc">Types::BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span>
 <span class="k">end</span>
 
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostAttributes</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInputObject</span>
+<span class="k">class</span> <span class="nc">Types::PostAttributes</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInputObject</span>
   <span class="n">description</span> <span class="s2">"Attributes for creating or updating a blog post"</span>
   <span class="n">argument</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"Header for the post"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
   <span class="n">argument</span> <span class="ss">:full_text</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"Full body of the post"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
@@ -123,12 +123,12 @@
 
 <p>You can customize the <code class="highlighter-rouge">GraphQL::Schema::Argument</code> class which is used for input objects:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span> 
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span> 
   <span class="c1"># your customization here ... </span>
 <span class="k">end</span> 
 
 
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span> 
+<span class="k">class</span> <span class="nc">Types::BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span> 
   <span class="c1"># Hook up the customized argument class </span>
   <span class="n">argument_class</span><span class="p">(</span><span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span><span class="p">)</span>  
 <span class="k">end</span> 
@@ -147,7 +147,7 @@
 
 <p>Your input objects can be automatically converted to other Ruby types before they’re passed to your application code. This is an easy way to use <code class="highlighter-rouge">Range</code>’s in your schema:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">DateRangeInput</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInputObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::DateRangeInput</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInputObject</span>
   <span class="n">description</span> <span class="s2">"Range of dates"</span>
   <span class="n">argument</span> <span class="ss">:min</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Date</span><span class="p">,</span> <span class="s2">"Minimum value of the range"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
   <span class="n">argument</span> <span class="ss">:max</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Date</span><span class="p">,</span> <span class="s2">"Maximum value of the range"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
@@ -157,7 +157,7 @@
   <span class="k">end</span>
 <span class="k">end</span>
 
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">CalendarType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<span class="k">class</span> <span class="nc">Types::CalendarType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:appointments</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Appointment</span><span class="p">],</span> <span class="s2">"Appointments on your calendar"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
     <span class="n">argument</span> <span class="ss">:during</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">DateRangeInput</span><span class="p">,</span> <span class="s2">"Only show appointments within this range"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
   <span class="k">end</span>

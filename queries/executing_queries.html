@@ -169,7 +169,7 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 
 <p>That value will be provided to root-level fields, such as mutation fields. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">MutationType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::MutationType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
 
   <span class="k">def</span> <span class="nf">create_post</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>

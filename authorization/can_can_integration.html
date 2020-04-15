@@ -102,7 +102,7 @@
 <p>For each object type, you can assign a required action for Ruby objects of that type. To get started, include the <code class="highlighter-rouge">ObjectIntegration</code> in your base object class:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_object.rb</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<span class="k">class</span> <span class="nc">Types::BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Add the CanCan integration:</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">CanCanIntegration</span><span class="o">::</span><span class="no">ObjectIntegration</span>
   <span class="c1"># By default, require `can :read, ...`</span>
@@ -116,7 +116,7 @@
 
 <p>CanCan configurations are inherited, and can be overridden in subclasses. For example, to allow <em>all</em> viewers to see the <code class="highlighter-rouge">Query</code> root type:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Query</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Query</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Allow anyone to see the query root</span>
   <span class="n">can_can_action</span> <span class="kp">nil</span>
 <span class="k">end</span>
@@ -170,7 +170,7 @@
 <p>You can also require certain checks on a field-by-field basis. First, include the integration in your base field class:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_field.rb</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+<span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
   <span class="c1"># Add the CanCan integration:</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">CanCanIntegration</span><span class="o">::</span><span class="no">FieldIntegration</span>
   <span class="c1"># By default, don't require a role at field-level:</span>
@@ -181,7 +181,7 @@
 <p>If you haven’t already done so, you should also hook up your base field class to your base object and base interface:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_object.rb</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<span class="k">class</span> <span class="nc">Types::BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
 <span class="k">end</span>
 <span class="c1"># app/graphql/types/base_interface.rb</span>
@@ -190,14 +190,14 @@
   <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
 <span class="k">end</span>
 <span class="c1"># app/graphql/mutations/base_mutation.rb</span>
-<span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <p>Then, you can add <code class="highlighter-rouge">can_can_action:</code> options to your fields:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Only allow `can :review_applications, JobPosting` users</span>
   <span class="c1"># to see who has applied</span>
   <span class="n">field</span> <span class="ss">:applicants</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
@@ -211,7 +211,7 @@
 
 <p>Similar to field-level checks, you can require certain permissions to <em>use</em> certain arguments. To do this, add the integration to your base argument class:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span>
   <span class="c1"># Include the integration and default to no permissions required</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">CanCanIntegration</span><span class="o">::</span><span class="no">ArgumentIntegration</span>
   <span class="n">can_can_action</span> <span class="kp">nil</span>
@@ -220,23 +220,23 @@
 
 <p>Then, make sure your base argument is hooked up to your base field and base input object:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
   <span class="n">argument_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span>
   <span class="c1"># PS: see "Authorizing Fields" to make sure your base field is hooked up to objects, interfaces and mutations</span>
 <span class="k">end</span>
 
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span>
+<span class="k">class</span> <span class="nc">Types::BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span>
   <span class="n">argument_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span>
 <span class="k">end</span>
 
-<span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="n">argument_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <p>Now, arguments accept a <code class="highlighter-rouge">can_can_action:</code> option, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Company</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Company</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:employees</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Employee</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="k">do</span>
     <span class="c1"># Only admins can filter employees by email:</span>
     <span class="n">argument</span> <span class="ss">:email</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">can_can_action: :admin</span>
@@ -261,7 +261,7 @@
 
 <p>Add <code class="highlighter-rouge">MutationIntegration</code> to your base mutation, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">CanCanIntegration</span><span class="o">::</span><span class="no">MutationIntegration</span>
 
   <span class="c1"># Also, to use argument-level authorization:</span>
@@ -271,7 +271,7 @@
 
 <p>Also, you’ll probably want a <code class="highlighter-rouge">BaseMutationPayload</code> where you can set a default role:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseMutationPayload</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseMutationPayload</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># If `BaseObject` requires some permissions, override that for mutation results.</span>
   <span class="c1"># Assume that anyone who can run a mutation can read their generated result types.</span>
   <span class="n">can_can_action</span> <span class="kp">nil</span>
@@ -280,7 +280,7 @@
 
 <p>And hook it up to your base mutation:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="n">object_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseMutationPayload</span>
   <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
 <span class="k">end</span>
@@ -290,7 +290,7 @@
 
 <p>Each mutation can have a class-level <code class="highlighter-rouge">can_can_action</code> which will be checked before loading objects or resolving, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">can_can_action</span> <span class="ss">:run_mutation</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -303,7 +303,7 @@
 
 <p>Beyond the normal <a href="#authorizing-objects">object reading permissions</a>, you can add an additional role for the specific mutation input using a <code class="highlighter-rouge">can_can_action:</code> option:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">FireEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::FireEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span>
     <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Employee</span><span class="p">,</span>
     <span class="ss">can_can_action: :supervise</span><span class="p">,</span>
@@ -316,7 +316,7 @@
 
 <p>By default, an authorization failure in a mutation will raise a Ruby exception. You can customize this by implementing <code class="highlighter-rouge">#unauthorized_by_can_can(owner, value)</code> in your base mutation, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="k">def</span> <span class="nf">unauthorized_by_can_can</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
     <span class="c1"># No error, just return nil:</span>
     <span class="kp">nil</span>
@@ -335,7 +335,7 @@
 
 <p>Whatever that method returns will be treated as an early return value for the mutation, so for example, you could return <a href="/mutations/mutation_errors">errors as data</a>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="n">field</span> <span class="ss">:errors</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>
 
   <span class="k">def</span> <span class="nf">unauthorized_by_can_can</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>

@@ -102,7 +102,7 @@
 <p>You can specify Pundit roles that must be satisfied in order for viewers to see objects of a certain type. To get started, include the <code class="highlighter-rouge">ObjectIntegration</code> in your base object class:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_object.rb</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<span class="k">class</span> <span class="nc">Types::BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Add the Pundit integration:</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PunditIntegration</span><span class="o">::</span><span class="no">ObjectIntegration</span>
   <span class="c1"># By default, require staff:</span>
@@ -116,7 +116,7 @@
 
 <p>Then, each child class can override that parent configuration. For example, allow <em>all</em> viewers to read the <code class="highlighter-rouge">Query</code> root:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Query</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Query</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Allow anyone to see the query root</span>
   <span class="n">pundit_role</span> <span class="kp">nil</span>
 <span class="k">end</span>
@@ -130,7 +130,7 @@
 
 <p>Then, GraphQL will call a method on the policy to see whether the object is permitted or not. This method is assigned in the object class, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Employee</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Employee</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Only show employee objects to their bosses,</span>
   <span class="c1"># or when that employee is the current viewer</span>
   <span class="n">pundit_role</span> <span class="ss">:employer_or_self</span>
@@ -144,7 +144,7 @@
 
 <p>By default, the integration uses <code class="highlighter-rouge">Pundit.policy!(current_user, object)</code> to find a policy. You can specify a policy class using <code class="highlighter-rouge">pundit_policy_class(...)</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Employee</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Employee</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">pundit_policy_class</span><span class="p">(</span><span class="no">Policies</span><span class="o">::</span><span class="no">CustomEmployeePolicy</span><span class="p">)</span>
   <span class="c1"># Or, you could use a string:</span>
   <span class="c1"># pundit_policy_class("Policies::CustomEmployeePolicy")</span>
@@ -157,7 +157,7 @@
 
 <p>The integration requires that every object with a <code class="highlighter-rouge">pundit_role</code> has a corresponding policy class. To allow objects to <em>skip</em> authorization, you can pass <code class="highlighter-rouge">nil</code> as the role:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PublicProfile</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::PublicProfile</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Anyone can see this</span>
   <span class="n">pundit_role</span> <span class="kp">nil</span>
 <span class="k">end</span>
@@ -201,7 +201,7 @@
 <p>You can also require certain checks on a field-by-field basis. First, include the integration in your base field class:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_field.rb</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+<span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
   <span class="c1"># Add the Pundit integration:</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PunditIntegration</span><span class="o">::</span><span class="no">FieldIntegration</span>
   <span class="c1"># By default, don't require a role at field-level:</span>
@@ -212,7 +212,7 @@
 <p>If you haven’t already done so, you should also hook up your base field class to your base object and base interface:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_object.rb</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<span class="k">class</span> <span class="nc">Types::BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
 <span class="k">end</span>
 <span class="c1"># app/graphql/types/base_interface.rb</span>
@@ -221,14 +221,14 @@
   <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
 <span class="k">end</span>
 <span class="c1"># app/graphql/mutations/base_mutation.rb</span>
-<span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <p>Then, you can add <code class="highlighter-rouge">pundit_role:</code> options to your fields:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Allow signed-in users to browse listings</span>
   <span class="n">pundit_role</span> <span class="ss">:signed_in</span>
 
@@ -245,7 +245,7 @@
 
 <p>You can override the policy class for a field using <code class="highlighter-rouge">pundit_policy_class:</code>, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Only allow `ApplicantsPolicy#staff?` users to see</span>
   <span class="c1"># who has applied</span>
   <span class="n">field</span> <span class="ss">:applicants</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
@@ -264,7 +264,7 @@
 
 <p>Similar to field-level checks, you can require certain permissions to <em>use</em> certain arguments. To do this, add the integration to your base argument class:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span>
   <span class="c1"># Include the integration and default to no permissions required</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PunditIntegration</span><span class="o">::</span><span class="no">ArgumentIntegration</span>
   <span class="n">pundit_role</span> <span class="kp">nil</span>
@@ -273,23 +273,23 @@
 
 <p>Then, make sure your base argument is hooked up to your base field and base input object:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
   <span class="n">argument_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span>
   <span class="c1"># PS: see "Authorizing Fields" to make sure your base field is hooked up to objects, interfaces and mutations</span>
 <span class="k">end</span>
 
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span>
+<span class="k">class</span> <span class="nc">Types::BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span>
   <span class="n">argument_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span>
 <span class="k">end</span>
 
-<span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="n">argument_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <p>Now, arguments accept a <code class="highlighter-rouge">pundit_role:</code> option, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Company</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Company</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:employees</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Employee</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="k">do</span>
     <span class="c1"># Only admins can filter employees by email:</span>
     <span class="n">argument</span> <span class="ss">:email</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">pundit_role: :admin</span>
@@ -314,7 +314,7 @@
 
 <p>Add <code class="highlighter-rouge">MutationIntegration</code> to your base mutation, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PunditIntegration</span><span class="o">::</span><span class="no">MutationIntegration</span>
 
   <span class="c1"># Also, to use argument-level authorization:</span>
@@ -324,7 +324,7 @@
 
 <p>Also, you’ll probably want a <code class="highlighter-rouge">BaseMutationPayload</code> where you can set a default role:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseMutationPayload</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseMutationPayload</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># If `BaseObject` requires some permissions, override that for mutation results.</span>
   <span class="c1"># Assume that anyone who can run a mutation can read their generated result types.</span>
   <span class="n">pundit_role</span> <span class="kp">nil</span>
@@ -333,7 +333,7 @@
 
 <p>And hook it up to your base mutation:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="n">object_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseMutationPayload</span>
   <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
 <span class="k">end</span>
@@ -343,7 +343,7 @@
 
 <p>Each mutation can have a class-level <code class="highlighter-rouge">pundit_role</code> which will be checked before loading objects or resolving, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">pundit_role</span> <span class="ss">:admin</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -354,7 +354,7 @@
 
 <p>By default, Pundit uses the mutation’s class name to look up a policy. You can override this by defining <code class="highlighter-rouge">self.policy_class</code> on your mutation:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">policy_class</span>
     <span class="o">::</span><span class="no">UserPolicy</span>
   <span class="k">end</span>
@@ -367,7 +367,7 @@
 
 <p>Another good approach is to have one policy per mutation. You can implement <code class="highlighter-rouge">self.policy_class</code> to look up a class <em>within</em> the mutation, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">policy_class</span>
     <span class="c1"># Look up a nested `Policy` constant:</span>
     <span class="nb">self</span><span class="p">.</span><span class="nf">const_get</span><span class="p">(</span><span class="ss">:Policy</span><span class="p">)</span>
@@ -377,7 +377,7 @@
 
 <p>Then, each mutation can define its policy inline, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="c1"># This will be found by `BaseMutation.policy_class`, defined above:</span>
   <span class="k">class</span> <span class="nc">Policy</span>
     <span class="c1"># ...</span>
@@ -395,7 +395,7 @@
 
 <p>Beyond the normal <a href="#authorizing-objects">object reading permissions</a>, you can add an additional role for the specific mutation input using a <code class="highlighter-rouge">pundit_role:</code> option:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">FireEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::FireEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span>
     <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Employee</span><span class="p">,</span>
     <span class="ss">pundit_role: :supervisor</span><span class="p">,</span>
@@ -408,7 +408,7 @@
 
 <p>By default, an authorization failure in a mutation will raise a Ruby exception. You can customize this by implementing <code class="highlighter-rouge">#unauthorized_by_pundit(owner, value)</code> in your base mutation, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="k">def</span> <span class="nf">unauthorized_by_pundit</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
     <span class="c1"># No error, just return nil:</span>
     <span class="kp">nil</span>
@@ -427,7 +427,7 @@
 
 <p>Whatever that method returns will be treated as an early return value for the mutation, so for example, you could return <a href="/mutations/mutation_errors">errors as data</a>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="n">field</span> <span class="ss">:errors</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>
 
   <span class="k">def</span> <span class="nf">unauthorized_by_pundit</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
@@ -476,10 +476,10 @@
 <span class="k">end</span>
 
 <span class="c1"># Add policy hooks as class methods</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<span class="k">class</span> <span class="nc">Types::BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="kp">extend</span> <span class="no">CustomPolicyLookup</span>
 <span class="k">end</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseUnion</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Union</span>
+<span class="k">class</span> <span class="nc">Types::BaseUnion</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Union</span>
   <span class="kp">extend</span> <span class="no">CustomPolicyLookup</span>
 <span class="k">end</span>
 <span class="k">module</span> <span class="nn">Types::BaseInterface</span>
@@ -491,13 +491,13 @@
 <span class="k">end</span>
 
 <span class="c1"># Add policy hooks as instance methods</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+<span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
   <span class="kp">include</span> <span class="no">CustomPolicyLookup</span>
 <span class="k">end</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span>
+<span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span>
   <span class="kp">include</span> <span class="no">CustomPolicyLookup</span>
 <span class="k">end</span>
-<span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="kp">include</span> <span class="no">CustomPolicyLookup</span>
 <span class="k">end</span>
 </code></pre></div></div>

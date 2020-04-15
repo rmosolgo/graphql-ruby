@@ -63,7 +63,7 @@
 <p>First, add a base class for your application. You can hook up your base classes there:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/subscriptions/base_subscription.rb</span>
-<span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Subscription</span>
+<span class="k">class</span> <span class="nc">Subscriptions::BaseSubscription</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Subscription</span>
   <span class="c1"># Hook up base classes</span>
   <span class="n">object_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field_class</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseField</span>
@@ -78,13 +78,13 @@
 <p>Define a class for each subscribable event in your system. For example, if you run a chat room, you might publish events whenever messages are posted in a room:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/subscriptions/message_was_posted.rb</span>
-<span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+<span class="k">class</span> <span class="nc">Subscriptions::MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <p>Then, hook up the new class to the <a href="/subscriptions/subscription_type">Subscription root type</a> with the <code class="highlighter-rouge">subscription:</code> option:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">SubscriptionType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::SubscriptionType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:message_was_posted</span><span class="p">,</span> <span class="ss">subscription: </span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -102,7 +102,7 @@
 
 <p>Subscription fields take <a href="/fields/arguments">arguments</a> just like normal fields. They also accept a <a href="/mutations/mutation_classes#auto-loading-arguments"><code class="highlighter-rouge">loads:</code> option</a> just like mutations. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="c1"># `room_id` loads a `room`</span>
   <span class="n">argument</span> <span class="ss">:room_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span>
 
@@ -132,7 +132,7 @@
 
 <p>Like mutations, you can use a generated return type for subscriptions. When you add <code class="highlighter-rouge">field(...)</code>s to a subscription, they’ll be added to the subscription’s generated return type. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="n">field</span> <span class="ss">:room</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
   <span class="n">field</span> <span class="ss">:message</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">MessageType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
 <span class="k">end</span>
@@ -221,7 +221,7 @@
 
 <p>By default, GraphQL-Ruby returns <em>nothing</em> (<code class="highlighter-rouge">:no_response</code>) on an initial subscription. But, you may choose to override this and return a value in <code class="highlighter-rouge">def subscribe</code>. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="c1"># ...</span>
   <span class="n">field</span> <span class="ss">:room</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
 
@@ -267,7 +267,7 @@
 
 <p>Perhaps you don’t want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to <em>other</em> subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning <code class="highlighter-rouge">:no_update</code>.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions</span><span class="o">::</span><span class="no">CommentWasAdded</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::CommentWasAdded</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">post_id</span><span class="p">:)</span>
     <span class="n">comment</span> <span class="o">=</span> <span class="n">object</span> <span class="c1"># #&lt;Comment ...&gt;</span>
     <span class="k">if</span> <span class="n">comment</span><span class="p">.</span><span class="nf">author</span> <span class="o">==</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">]</span>

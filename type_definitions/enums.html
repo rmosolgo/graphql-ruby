@@ -79,11 +79,11 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># First, a base class</span>
 <span class="c1"># app/graphql/types/base_enum</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseEnum</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Enum</span>
+<span class="k">class</span> <span class="nc">Types::BaseEnum</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Enum</span>
 <span class="k">end</span>
 
 <span class="c1"># app/graphql/types/media_category.rb</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">MediaCategory</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
+<span class="k">class</span> <span class="nc">Types::MediaCategory</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
   <span class="n">value</span> <span class="s2">"AUDIO"</span><span class="p">,</span> <span class="s2">"An audio file, such as music or spoken word"</span>
   <span class="n">value</span> <span class="s2">"IMAGE"</span><span class="p">,</span> <span class="s2">"A still image, such as a photo or graphic"</span>
   <span class="n">value</span> <span class="s2">"TEXT"</span><span class="p">,</span> <span class="s2">"Written words"</span>

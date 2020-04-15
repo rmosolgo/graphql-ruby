@@ -69,7 +69,7 @@
 
 <p>When you implement this method to return <code class="highlighter-rouge">false</code>, the query will be halted, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Friendship</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Friendship</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># You can only see the details on a `Friendship`</span>
   <span class="c1"># if you're one of the people involved in it.</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>

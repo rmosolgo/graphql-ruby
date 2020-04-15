@@ -124,7 +124,7 @@
 <span class="k">end</span>
 
 <span class="c1"># Add the field to some objects:</span>
-<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">User</span> <span class="o">&lt;</span> <span class="no">BaseObject</span>
+<span class="k">class</span> <span class="nc">Types::User</span> <span class="o">&lt;</span> <span class="no">BaseObject</span>
   <span class="kp">include</span> <span class="no">HasRecommendedItems</span> <span class="c1"># adds the field</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -181,7 +181,7 @@
 
 <p>And attach it to your field:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">User</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::User</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:recommended_items</span><span class="p">,</span>
     <span class="ss">resolver: </span><span class="no">Resolvers</span><span class="o">::</span><span class="no">RecommendedItems</span><span class="p">,</span>
     <span class="ss">description: </span><span class="s2">"Items this user might like"</span>

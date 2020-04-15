@@ -78,7 +78,7 @@
 
 <p>Let’s say you’re working on a new feature which should remain secret for a while. You can implement <code class="highlighter-rouge">.visible?</code> in a type:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">SecretFeature</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::SecretFeature</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">visible?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
     <span class="c1"># only show it to users with the secret_feature enabled</span>
     <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">feature_enabled?</span><span class="p">(</span><span class="ss">:secret_feature</span><span class="p">)</span>
