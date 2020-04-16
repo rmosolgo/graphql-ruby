@@ -8,6 +8,25 @@
 
 ### Bug fixes
 
+## 1.10.7 (16 April 2020)
+
+### Breaking changes
+
+- `Schema.from_introspection(...)` builds class-based schemas #2876
+
+### New features
+
+- `Date` and `DateTime` types also accept well-formatted strings #2848
+- `Schema.from_introspection(...)` builds class-based schemas #2876
+- `Schema#to_definition` now dumps all directives that were part of the original IDL, if the schema was parsed with `.from_definition` #2879
+
+### Bug fixes
+
+- Fix memory leak in legacy runtime #2884
+- Fix interface inheritance in legacy runtime #2882
+- Fix description on `List` and `NonNull` types (for introspection) #2875
+- Fix over-rescue of NoMethodError when building list responses #2887
+
 ## 1.10.6 (6 April 2020)
 
 ### New features
