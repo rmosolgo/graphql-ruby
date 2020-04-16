@@ -62,6 +62,16 @@ describe GraphQL::Pagination::Connections do
     use GraphQL::Analysis::AST
     use GraphQL::Pagination::Connections
 
+    class BadThing
+      def name
+        self.no_such_method # raise a NoMethodError
+      end
+
+      def inspect
+        "<BadThing!>"
+      end
+    end
+
     class ThingConnection < GraphQL::Schema::Object
       field :name, String, null: false
     end
@@ -71,6 +81,14 @@ describe GraphQL::Pagination::Connections do
 
       def things
         [{name: "thing1"}, {name: "thing2"}]
+      end
+
+      field :things2, [ThingConnection], null: false, connection: false
+
+      def things2
+        [
+          BadThing.new
+        ]
       end
     end
 
@@ -85,5 +103,13 @@ describe GraphQL::Pagination::Connections do
     assert_includes err.message, "Failed to build a GraphQL list result for field `Query.things` at path `things`."
     assert_includes err.message, "to implement `.each` to satisfy the GraphQL return type `[ThingConnection!]!`"
     assert_includes err.message, "This field was treated as a Relay-style connection; add `connection: false` to the `field(...)` to disable this behavior."
+  end
+
+  it "lets unrelated NoMethodErrors bubble up" do
+    err = assert_raises NoMethodError do
+      pp ConnectionErrorTestSchema.execute("{ things2 { name } }")
+    end
+
+    assert_includes err.message, "undefined method `no_such_method' for <BadThing!>"
   end
 end

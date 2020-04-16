@@ -347,9 +347,14 @@ module GraphQL
                   end
                 end
               end
-            rescue NoMethodError
-              # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
-              raise ListResultFailedError.new(value: value, field: field, path: path)
+            rescue NoMethodError => err
+              if err.name == :each && err.receiver == value
+                # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
+                raise ListResultFailedError.new(value: value, field: field, path: path)
+              else
+                # This was some other NoMethodError -- let it bubble to reveal the real error.
+                raise
+              end
             end
 
             response_list
