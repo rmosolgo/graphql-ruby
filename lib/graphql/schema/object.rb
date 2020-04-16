@@ -162,7 +162,7 @@ module GraphQL
           obj_type = GraphQL::ObjectType.new
           obj_type.name = graphql_name
           obj_type.description = description
-          obj_type.structural_interface_type_memberships = own_interface_type_memberships
+          obj_type.structural_interface_type_memberships = interface_type_memberships
           obj_type.introspection = introspection
           obj_type.mutation = mutation
           obj_type.ast_node = ast_node
