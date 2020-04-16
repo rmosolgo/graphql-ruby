@@ -555,8 +555,17 @@ module GraphQL
     # @param context [GraphQL::Query::Context] The context for the current query
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
     def possible_types(type_defn, context = GraphQL::Query::NullContext)
-      @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
-      @possible_types.possible_types(type_defn, context)
+      if context == GraphQL::Query::NullContext
+        @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
+        @possible_types.possible_types(type_defn, context)
+      else
+        # Use the incoming context to cache this instance --
+        # if it were cached on the schema, we'd have a memory leak
+        # https://github.com/rmosolgo/graphql-ruby/issues/2878
+        ns = context.namespace(:possible_types)
+        per_query_possible_types = ns[:possible_types] ||= GraphQL::Schema::PossibleTypes.new(self)
+        per_query_possible_types.possible_types(type_defn, context)
+      end
     end
 
     # @see [GraphQL::Schema::Warden] Resticted access to root types
