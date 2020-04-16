@@ -310,7 +310,7 @@ module Jazz
     field :sunglasses_type, String, null: false
 
     def sunglasses_type
-      "cool"
+      "cool 😎"
     end
   end
 
