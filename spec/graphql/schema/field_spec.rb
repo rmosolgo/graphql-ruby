@@ -174,7 +174,6 @@ describe GraphQL::Schema::Field do
           use(GraphQL::Analysis::AST)
         end
 
-        focus
         it "provides metadata about arguments" do
           res = ArgumentDetailsSchema.execute("{ argumentDetails }")
           expected_strs = [
