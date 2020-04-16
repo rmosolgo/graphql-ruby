@@ -889,7 +889,6 @@ describe GraphQL::Query do
       end
     end
 
-    focus
     it "returns detailed arguments with `detailed: true`" do
       query_str = "
       query($fatContent: Float, $organic: Boolean = false) {
@@ -907,7 +906,6 @@ describe GraphQL::Query do
         .value.first
 
       input_obj_defn = field_defn.arguments["product"].type.unwrap
-      p [input_obj_defn, node_1]
       detailed_args_1 = query.arguments_for(node_1, input_obj_defn, detailed: true)
 
       # Literal value
