@@ -251,7 +251,7 @@ module GraphQL
         @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
         combined_args = @arguments_cache.fetch(ast_node, definition, parent_object)
         schema.after_lazy(combined_args) do |args|
-          detailed ? args[:detailed] : args[:simple]
+          detailed ? args : args.values
         end
       else
         @arguments_cache ||= ArgumentsCache.build(self)

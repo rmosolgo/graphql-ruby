@@ -906,23 +906,31 @@ describe GraphQL::Query do
         .value.first
 
       input_obj_defn = field_defn.arguments["product"].type.unwrap
-      detailed_args_1 = query.arguments_for(node_1, input_obj_defn, detailed: true)
+      detailed_args = query.arguments_for(node_1, input_obj_defn, detailed: true)
 
       # Literal value
-      assert_equal false, detailed_args_1["source"][:default_used]
-      assert_equal "SHEEP", detailed_args_1["source"][:value]
+      source_arg_value = detailed_args.argument_values[:source]
+      assert_equal false, source_arg_value.default_used?
+      assert_equal "SHEEP", source_arg_value.value
+      assert_equal "source", source_arg_value.definition.graphql_name
 
       # Unused optional variable, uses default
-      assert_equal true, detailed_args_1["fatContent"][:default_used]
-      assert_equal 0.3, detailed_args_1["fatContent"][:value]
+      fat_content_arg_value = detailed_args.argument_values[:fat_content]
+      assert_equal true, fat_content_arg_value.default_used?
+      assert_equal 0.3, fat_content_arg_value.value
+      assert_equal "fatContent", fat_content_arg_value.definition.graphql_name
 
       # Variable value
-      assert_equal false, detailed_args_1["organic"][:default_used]
-      assert_equal false, detailed_args_1["organic"][:value]
+      organic_arg_value = detailed_args.argument_values[:organic]
+      assert_equal false, organic_arg_value.default_used?
+      assert_equal false, organic_arg_value.value
+      assert_equal "organic", organic_arg_value.definition.graphql_name
 
       # Absent value, uses default
-      assert_equal true, detailed_args_1["order_by"][:default_used]
-      assert_equal({direction: "ASC"}, detailed_args_1["order_by"][:value].to_h)
+      order_by_argument_value = detailed_args.argument_values[:order_by]
+      assert_equal true, order_by_argument_value.default_used?
+      assert_equal({direction: "ASC"}, order_by_argument_value.value.to_h)
+      assert_equal "order_by", order_by_argument_value.definition.graphql_name
     end
   end
 end
