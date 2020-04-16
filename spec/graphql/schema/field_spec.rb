@@ -147,6 +147,46 @@ describe GraphQL::Schema::Field do
         field.extras([:ast_node])
         assert_equal [:lookahead, :ast_node], field.extras
       end
+
+      describe "argument_details" do
+        class ArgumentDetailsSchema < GraphQL::Schema
+          class Query < GraphQL::Schema::Object
+            field :argument_details, [String], null: false, extras: [:argument_details] do
+              argument :arg1, Int, required: false
+              argument :arg2, Int, required: false, default_value: 2
+            end
+
+            def argument_details(argument_details:, arg1: nil, arg2:)
+              [
+                argument_details.class.name,
+                argument_details.argument_values.values.first.class.name,
+                # `.values` includes extras:
+                argument_details.values.keys.join("|"),
+                # `.argument_values` includes only defined GraphQL arguments:
+                argument_details.argument_values.keys.join("|"),
+                argument_details.argument_values[:arg2].default_used?.inspect
+              ]
+            end
+          end
+
+          query(Query)
+          use(GraphQL::Execution::Interpreter)
+          use(GraphQL::Analysis::AST)
+        end
+
+        focus
+        it "provides metadata about arguments" do
+          res = ArgumentDetailsSchema.execute("{ argumentDetails }")
+          expected_strs = [
+            "GraphQL::Execution::Interpreter::Arguments",
+            "GraphQL::Execution::Interpreter::Arguments::ArgumentValue",
+            "arg2|argument_details",
+            "arg2",
+            "true",
+          ]
+          assert_equal expected_strs, res["data"]["argumentDetails"]
+        end
+      end
     end
 
     it "is the #owner of its arguments" do

@@ -31,11 +31,14 @@ module GraphQL
 
             @values.each do |keyword, arg_value|
               arg_defn = args_by_keyword[keyword]
-              detailed_values[keyword] = ArgumentValue.new(
-                value: arg_value,
-                definition: arg_defn,
-                default_used: calculate_default_used(keyword, arg_defn.name)
-              )
+              # It's actually possible to _miss_ here, becuase `extras` are included in `@values`
+              if arg_defn
+                detailed_values[keyword] = ArgumentValue.new(
+                  value: arg_value,
+                  definition: arg_defn,
+                  default_used: calculate_default_used(keyword, arg_defn.name)
+                )
+              end
             end
 
             detailed_values

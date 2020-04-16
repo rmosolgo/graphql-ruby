@@ -194,6 +194,8 @@ module GraphQL
                     ast_nodes: field_ast_nodes,
                     field: field_defn,
                   )
+                when :argument_details
+                  kwarg_arguments[:argument_details] = arguments(object, field_defn, ast_node, detailed: true)
                 else
                   kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
                 end
@@ -444,8 +446,8 @@ module GraphQL
           end
         end
 
-        def arguments(graphql_object, arg_owner, ast_node)
-          query.arguments_for(ast_node, arg_owner, parent_object: graphql_object)
+        def arguments(graphql_object, arg_owner, ast_node, detailed: false)
+          query.arguments_for(ast_node, arg_owner, parent_object: graphql_object, detailed: detailed)
         end
 
         def write_invalid_null_in_response(path, invalid_null_error)
