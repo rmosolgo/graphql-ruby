@@ -20,6 +20,8 @@ module GraphQL
       end
 
       def cursor_for(item)
+        return encode('') if item.nil?
+
         idx = items.find_index(item) + 1
         encode(idx.to_s)
       end

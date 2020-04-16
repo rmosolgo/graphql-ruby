@@ -41,6 +41,8 @@ module GraphQL
       end
 
       def cursor_for(item)
+        return encode('') if item.nil?
+
         load_nodes
         # index in nodes + existing offset + 1 (because it's offset, not index)
         offset = nodes.index(item) + 1 + (@paged_nodes_offset || 0) + (relation_offset(items) || 0)
