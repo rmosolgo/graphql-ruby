@@ -189,7 +189,7 @@ describe GraphQL::Types::ISO8601DateTime do
         err = assert_raises(GraphQL::Error) do
           DateTimeTest::Schema.execute(query_str)
         end
-        assert_equal err.message, "An incompatible object (String) was given to GraphQL::Types::ISO8601DateTime. Make sure that only Dates, DateTimes, and well-formatted Strings are used with this type."
+        assert_equal err.message, "An incompatible object (String) was given to GraphQL::Types::ISO8601DateTime. Make sure that only Dates, DateTimes, and well-formatted Strings are used with this type. (invalid date)"
       end
     end
   end
