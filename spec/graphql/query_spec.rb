@@ -888,5 +888,43 @@ describe GraphQL::Query do
         assert_equal expected_h, product_value_item.to_h, "it makes a hash with defaults for #{context_name}"
       end
     end
+
+    focus
+    it "returns detailed arguments with `detailed: true`" do
+      query_str = "
+      query($fatContent: Float, $organic: Boolean = false) {
+        searchDairy(product: [{source: SHEEP, fatContent: $fatContent, organic: $organic}]) {
+          __typename
+        }
+      }
+      "
+
+      query = GraphQL::Query.new(Dummy::Schema, query_str, variables: { "product" => [{"source" => "SHEEP"}]})
+      field_defn = Dummy::Schema.get_field("Query", "searchDairy")
+      node_1 = query.document.definitions.first
+        .selections.first
+        .arguments.first
+        .value.first
+
+      input_obj_defn = field_defn.arguments["product"].type.unwrap
+      p [input_obj_defn, node_1]
+      detailed_args_1 = query.arguments_for(node_1, input_obj_defn, detailed: true)
+
+      # Literal value
+      assert_equal false, detailed_args_1["source"][:default_used]
+      assert_equal "SHEEP", detailed_args_1["source"][:value]
+
+      # Unused optional variable, uses default
+      assert_equal true, detailed_args_1["fatContent"][:default_used]
+      assert_equal 0.3, detailed_args_1["fatContent"][:value]
+
+      # Variable value
+      assert_equal false, detailed_args_1["organic"][:default_used]
+      assert_equal false, detailed_args_1["organic"][:value]
+
+      # Absent value, uses default
+      assert_equal true, detailed_args_1["order_by"][:default_used]
+      assert_equal({direction: "ASC"}, detailed_args_1["order_by"][:value].to_h)
+    end
   end
 end

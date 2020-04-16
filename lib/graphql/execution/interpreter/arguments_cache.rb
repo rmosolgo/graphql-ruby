@@ -17,10 +17,10 @@ module GraphQL
                 h3[parent_object] = if args.is_a?(GraphQL::Execution::Lazy)
                   args.then { |resolved_args|
                     # when this promise is resolved, update the cache with the resolved value
-                    h3[parent_object] = resolved_args
+                    h3[parent_object] = make_detailed_args(resolved_args, ast_node, arg_owner)
                   }
                 else
-                  args
+                  make_detailed_args(args, ast_node, arg_owner)
                 end
               end
             end
@@ -32,6 +32,43 @@ module GraphQL
         end
 
         private
+
+        def make_detailed_args(args, ast_node, arg_owner)
+          detailed_args = {}
+          arg_owner.arguments.each do |name, defn|
+            if !args.key?(defn.keyword)
+              # There was neither a provided nor default value for this arg
+              next
+            end
+            ast_arg = ast_node.arguments.find { |a| a.name == name }
+
+            default_used = if ast_arg.nil?
+              true
+            elsif ast_arg.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
+              var_name = ast_arg.value.name
+              if @query.variables.key?(var_name)
+                # A value was given, or the variable definition provided a default
+                false
+              else
+                # An optional variable was used, and no value was given
+                true
+              end
+            else
+              # An argument value was present in the AST
+              false
+            end
+            detailed_args[name] = {
+              definition: defn,
+              value: args[defn.keyword],
+              default_used: default_used
+            }
+          end
+
+          {
+            simple: args,
+            detailed: detailed_args
+          }
+        end
 
         NO_VALUE_GIVEN = Object.new
 
