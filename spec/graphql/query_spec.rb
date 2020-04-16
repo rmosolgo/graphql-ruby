@@ -890,13 +890,13 @@ describe GraphQL::Query do
     end
 
     it "returns detailed arguments with `detailed: true`" do
-      query_str = "
+      query_str = <<-GRAPHQL
       query($fatContent: Float, $organic: Boolean = false) {
         searchDairy(product: [{source: SHEEP, fatContent: $fatContent, organic: $organic}]) {
           __typename
         }
       }
-      "
+      GRAPHQL
 
       query = GraphQL::Query.new(Dummy::Schema, query_str, variables: { "product" => [{"source" => "SHEEP"}]})
       field_defn = Dummy::Schema.get_field("Query", "searchDairy")
@@ -927,6 +927,35 @@ describe GraphQL::Query do
       assert_equal "organic", organic_arg_value.definition.graphql_name
 
       # Absent value, uses default
+      order_by_argument_value = detailed_args.argument_values[:order_by]
+      assert_equal true, order_by_argument_value.default_used?
+      assert_equal({direction: "ASC"}, order_by_argument_value.value.to_h)
+      assert_equal "order_by", order_by_argument_value.definition.graphql_name
+    end
+
+    it "provides access to nested input objects" do
+      query_str = <<-GRAPHQL
+      query($fatContent: Float, $organic: Boolean = false, $products: [DairyProductInput!]!) {
+        searchDairy(product: $products) {
+          __typename
+        }
+      }
+      GRAPHQL
+
+      query = GraphQL::Query.new(Dummy::Schema, query_str, variables: { "products" => [{"source" => "SHEEP"}]})
+      field_defn = Dummy::Schema.get_field("Query", "searchDairy")
+      node = query.document.definitions.first
+        .selections.first
+
+      args = query.arguments_for(node, field_defn, detailed: true)
+      product_args = args.argument_values[:product].arguments
+      first_product = product_args.first
+
+      source_arg_value = first_product.argument_values[:source]
+      assert_equal false, source_arg_value.default_used?
+      assert_equal "SHEEP", source_arg_value.value
+      assert_equal "source", source_arg_value.definition.graphql_name
+
       order_by_argument_value = detailed_args.argument_values[:order_by]
       assert_equal true, order_by_argument_value.default_used?
       assert_equal({direction: "ASC"}, order_by_argument_value.value.to_h)
