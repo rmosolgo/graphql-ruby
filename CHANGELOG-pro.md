@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.13.4 (17 Apr 2020)
+
+### Bug Fix
+
+- StableRelationConnection: properly return `hasNextPage: true` when `before` and `max_page_size` are used.
+
 ## 1.13.3 (2 Apr 2020)
 
 ### New Features
