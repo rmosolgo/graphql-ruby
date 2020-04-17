@@ -16,12 +16,7 @@ module GraphQL
 
                 h3[parent_object] = @query.schema.after_lazy(args) do |resolved_args|
                   # when this promise is resolved, update the cache with the resolved value
-                  h3[parent_object] = Arguments.new(
-                    values: resolved_args,
-                    ast_node: ast_node,
-                    owner: arg_owner,
-                    query: @query,
-                  )
+                  h3[parent_object] = resolved_args
                 end
               end
             end

@@ -160,8 +160,8 @@ describe GraphQL::Schema::Field do
               [
                 argument_details.class.name,
                 argument_details.argument_values.values.first.class.name,
-                # `.values` includes extras:
-                argument_details.values.keys.join("|"),
+                # `.keyword_arguments` includes extras:
+                argument_details.keyword_arguments.keys.join("|"),
                 # `.argument_values` includes only defined GraphQL arguments:
                 argument_details.argument_values.keys.join("|"),
                 argument_details.argument_values[:arg2].default_used?.inspect

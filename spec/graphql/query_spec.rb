@@ -948,15 +948,15 @@ describe GraphQL::Query do
         .selections.first
 
       args = query.arguments_for(node, field_defn, detailed: true)
-      product_args = args.argument_values[:product].arguments
-      first_product = product_args.first
+      product_args = args.argument_values[:product].value
+      first_product_args = product_args.first.arguments
 
-      source_arg_value = first_product.argument_values[:source]
+      source_arg_value = first_product_args.argument_values[:source]
       assert_equal false, source_arg_value.default_used?
       assert_equal "SHEEP", source_arg_value.value
       assert_equal "source", source_arg_value.definition.graphql_name
 
-      order_by_argument_value = detailed_args.argument_values[:order_by]
+      order_by_argument_value = first_product_args.argument_values[:order_by]
       assert_equal true, order_by_argument_value.default_used?
       assert_equal({direction: "ASC"}, order_by_argument_value.value.to_h)
       assert_equal "order_by", order_by_argument_value.definition.graphql_name

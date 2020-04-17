@@ -63,10 +63,12 @@ module GraphQL
           self.class.argument_class(new_arg_class)
         end
 
+        # @api private
         # @param values [Hash<String, Object>]
         # @param context [GraphQL::Query::Context]
         # @return Hash<Symbol, Object>
         def coerce_arguments(parent_object, values, context)
+          argument_values = {}
           kwarg_arguments = {}
           # Cache this hash to avoid re-merging it
           arg_defns = self.arguments
@@ -75,6 +77,7 @@ module GraphQL
           arg_lazies = arg_defns.map do |arg_name, arg_defn|
             arg_key = arg_defn.keyword
             has_value = false
+            default_used = false
             if values.key?(arg_name)
               has_value = true
               value = values[arg_name]
@@ -84,6 +87,7 @@ module GraphQL
             elsif arg_defn.default_value?
               has_value = true
               value = arg_defn.default_value
+              default_used = true
             end
 
             if has_value
@@ -110,14 +114,23 @@ module GraphQL
                   arg_defn.prepare_value(parent_object, coerced_value, context: context)
                 end
 
-                kwarg_arguments[arg_defn.keyword] = prepared_value
+                kwarg_arguments[arg_key] = prepared_value
+                # TODO code smell to access such a deeply-nested constant in a distant module
+                argument_values[arg_key] = GraphQL::Execution::Interpreter::Arguments::ArgumentValue.new(
+                  value: prepared_value,
+                  definition: arg_defn,
+                  default_used: default_used,
+                )
               end
             end
           end
 
           maybe_lazies.concat(arg_lazies)
           context.schema.after_any_lazies(maybe_lazies) do
-            kwarg_arguments
+            GraphQL::Execution::Interpreter::Arguments.new(
+              keyword_arguments: kwarg_arguments,
+              argument_values: argument_values,
+            )
           end
         end
 
