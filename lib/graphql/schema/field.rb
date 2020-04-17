@@ -47,6 +47,11 @@ module GraphQL
         @resolver_class
       end
 
+      # @return [Boolean] Is this field a predefined introspection field?
+      def introspection?
+        @introspection
+      end
+
       alias :mutation :resolver
 
       # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
