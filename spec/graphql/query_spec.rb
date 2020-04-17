@@ -868,7 +868,9 @@ describe GraphQL::Query do
       }
 
       argument_contexts.each do |context_name, ast_node|
-        args = query.arguments_for(ast_node, field_defn)
+        detailed_args = query.arguments_for(ast_node, field_defn)
+        assert_instance_of GraphQL::Execution::Interpreter::Arguments, detailed_args
+        args = detailed_args.keyword_arguments
         assert_instance_of Hash, args, "it makes a hash for #{context_name}"
         assert_equal [:product], args.keys, "it has a single symbol key for #{context_name}"
         product_value = args[:product]
@@ -906,29 +908,33 @@ describe GraphQL::Query do
         .value.first
 
       input_obj_defn = field_defn.arguments["product"].type.unwrap
-      detailed_args = query.arguments_for(node_1, input_obj_defn, detailed: true)
+      detailed_args = query.arguments_for(node_1, input_obj_defn)
 
       # Literal value
       source_arg_value = detailed_args.argument_values[:source]
       assert_equal false, source_arg_value.default_used?
+      assert_equal "SHEEP", detailed_args[:source]
       assert_equal "SHEEP", source_arg_value.value
       assert_equal "source", source_arg_value.definition.graphql_name
 
       # Unused optional variable, uses default
       fat_content_arg_value = detailed_args.argument_values[:fat_content]
       assert_equal true, fat_content_arg_value.default_used?
+      assert_equal 0.3, detailed_args[:fat_content]
       assert_equal 0.3, fat_content_arg_value.value
       assert_equal "fatContent", fat_content_arg_value.definition.graphql_name
 
       # Variable value
       organic_arg_value = detailed_args.argument_values[:organic]
       assert_equal false, organic_arg_value.default_used?
+      assert_equal false, detailed_args[:organic]
       assert_equal false, organic_arg_value.value
       assert_equal "organic", organic_arg_value.definition.graphql_name
 
       # Absent value, uses default
       order_by_argument_value = detailed_args.argument_values[:order_by]
       assert_equal true, order_by_argument_value.default_used?
+      assert_equal({direction: "ASC"}, detailed_args[:order_by].to_h)
       assert_equal({direction: "ASC"}, order_by_argument_value.value.to_h)
       assert_equal "order_by", order_by_argument_value.definition.graphql_name
     end
@@ -947,7 +953,7 @@ describe GraphQL::Query do
       node = query.document.definitions.first
         .selections.first
 
-      args = query.arguments_for(node, field_defn, detailed: true)
+      args = query.arguments_for(node, field_defn)
       product_args = args.argument_values[:product].value
       first_product_args = product_args.first.arguments
 

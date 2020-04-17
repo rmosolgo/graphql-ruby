@@ -55,7 +55,9 @@ module GraphQL
           @arguments
         else
           @arguments = if @field
-            @query.arguments_for(@ast_nodes.first, @field)
+            @query.schema.after_lazy(@query.arguments_for(@ast_nodes.first, @field)) do |args|
+              args.keyword_arguments
+            end
           else
             nil
           end

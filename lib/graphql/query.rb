@@ -246,13 +246,10 @@ module GraphQL
     # @param definition [GraphQL::Schema::Field]
     # @param parent_object [GraphQL::Schema::Object]
     # @return Hash{Symbol => Object}
-    def arguments_for(ast_node, definition, parent_object: nil, detailed: false)
+    def arguments_for(ast_node, definition, parent_object: nil)
       if interpreter?
         @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
-        combined_args = @arguments_cache.fetch(ast_node, definition, parent_object)
-        schema.after_lazy(combined_args) do |args|
-          detailed ? args : args.keyword_arguments
-        end
+        @arguments_cache.fetch(ast_node, definition, parent_object)
       else
         @arguments_cache ||= ArgumentsCache.build(self)
         @arguments_cache[ast_node][definition]

@@ -28,7 +28,11 @@ module GraphQL
         # @return [Hash{Symbol => ArgumentValue}]
         attr_reader :argument_values
 
-        def_delegators :@keyword_arguments, :key?, :[]
+        def_delegators :@keyword_arguments, :key?, :[], :keys, :each, :values
+
+        def inspect
+          "#<#{self.class} @keyword_arguments=#{keyword_arguments.inspect}>"
+        end
 
         # A container for metadata regarding arguments present in a GraphQL query.
         # @see Arguments#argument_values for a hash of these objects.
