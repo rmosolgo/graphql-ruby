@@ -663,7 +663,7 @@ module GraphQL
               loaded_value = if loads && !arg_defn.from_resolver?
                 if arg_defn.type.list?
                   loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, field_ctx.query.context) }
-                  maybe_lazies.concat(loaded_values)
+                  field_ctx.schema.after_any_lazies(loaded_values) { |result| result }
                 else
                   load_application_object(arg_defn, loads, value, field_ctx.query.context)
                 end

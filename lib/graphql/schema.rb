@@ -146,10 +146,10 @@ module GraphQL
       def after_any_lazies(maybe_lazies)
         if maybe_lazies.any? { |l| lazy?(l) }
           GraphQL::Execution::Lazy.all(maybe_lazies).then do |result|
-            yield
+            yield result
           end
         else
-          yield
+          yield maybe_lazies
         end
       end
     end

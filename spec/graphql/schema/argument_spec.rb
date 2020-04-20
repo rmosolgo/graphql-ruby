@@ -20,6 +20,7 @@ describe GraphQL::Schema::Argument do
 
         argument :keys, [String], required: false, method_access: false
         argument :instrument_id, ID, required: false, loads: Jazz::InstrumentType
+        argument :instrument_ids, [ID], required: false, loads: Jazz::InstrumentType
 
         class Multiply
           def call(val, context)
@@ -61,7 +62,7 @@ describe GraphQL::Schema::Argument do
 
   describe "#keys" do
     it "is not overwritten by the 'keys' argument" do
-      expected_keys = ["aliasedArg", "arg", "argWithBlock", "explodingPreparedArg", "instrumentId", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
+      expected_keys = ["aliasedArg", "arg", "argWithBlock", "explodingPreparedArg", "instrumentId", "instrumentIds", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
       assert_equal expected_keys, SchemaArgumentTest::Query.fields["field"].arguments.keys.sort
     end
   end
@@ -200,6 +201,13 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str)
       assert_equal "{:instrument=>#{Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION").inspect}, :required_with_default_arg=>1}", res["data"]["field"]
+
+      query_str2 = <<-GRAPHQL
+      query { field(instrumentIds: ["Instrument/Organ"]) }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str2)
+      assert_equal "{:instruments=>[#{Jazz::Models::Instrument.new("Organ", "KEYS").inspect}], :required_with_default_arg=>1}", res["data"]["field"]
     end
 
     it "returns nil when no ID is given and `required: false`" do

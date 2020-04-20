@@ -91,7 +91,8 @@ module GraphQL
               loaded_value = nil
               if loads && !arg_defn.from_resolver?
                 loaded_value = if arg_defn.type.list?
-                  value.map { |val| load_application_object(arg_defn, loads, val, context) }
+                  loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, context) }
+                  context.schema.after_any_lazies(loaded_values) { |result| result }
                 else
                   load_application_object(arg_defn, loads, value, context)
                 end
