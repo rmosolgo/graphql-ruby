@@ -175,6 +175,11 @@ module GraphQL
             end
 
             after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |kwarg_arguments|
+              if kwarg_arguments.is_a? GraphQL::ExecutionError
+                continue_value(next_path, kwarg_arguments, field_defn, return_type.non_null?, ast_node)
+                next
+              end
+
               # It might turn out that making arguments for every field is slow.
               # If we have to cache them, we'll need a more subtle approach here.
               field_defn.extras.each do |extra|
@@ -432,7 +437,7 @@ module GraphQL
                   end
                 end
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                  yield(err)
+                  err
               end
               after_lazy(inner_obj, owner: owner, field: field, path: path, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager) do |really_inner_obj|
                 yield(really_inner_obj)
