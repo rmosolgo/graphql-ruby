@@ -210,8 +210,10 @@ module GraphQL
 
           input_values = coerce_arguments(nil, value, ctx)
 
-          input_obj_instance = self.new(ruby_kwargs: input_values, context: ctx, defaults_used: nil)
-          input_obj_instance.prepare
+          ctx.schema.after_lazy(input_values) do |resolved_input_values|
+            input_obj_instance = self.new(ruby_kwargs: resolved_input_values, context: ctx, defaults_used: nil)
+            input_obj_instance.prepare
+          end
         end
 
         # It's funny to think of a _result_ of an input object.
