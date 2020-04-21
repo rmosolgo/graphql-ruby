@@ -95,6 +95,16 @@ describe GraphQL::Schema::Field do
       assert_equal type.to_graphql, field.to_graphql.type
     end
 
+    describe "introspection?" do
+      it "returns false on regular fields" do
+        assert_equal false, field.introspection?
+      end
+
+      it "returns true on predefined introspection fields" do
+        assert_equal true, GraphQL::Schema.types['__Type'].fields.values.first.introspection?
+      end
+    end
+
     describe "extras" do
       it "can get errors, which adds path" do
         query_str = <<-GRAPHQL
