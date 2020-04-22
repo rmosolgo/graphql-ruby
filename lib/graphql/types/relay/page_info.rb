@@ -12,10 +12,10 @@ module GraphQL
         field :has_previous_page, Boolean, null: false,
           description: "When paginating backwards, are there more items?"
 
-        field :start_cursor, String, null: false,
+        field :start_cursor, String, null: true,
           description: "When paginating backwards, the cursor to continue."
 
-        field :end_cursor, String, null: false,
+        field :end_cursor, String, null: true,
           description: "When paginating forwards, the cursor to continue."
       end
     end
