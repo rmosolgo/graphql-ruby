@@ -143,12 +143,12 @@ module GraphQL
 
       # @return [String] The cursor of the first item in {nodes}
       def start_cursor
-        cursor_for(nodes.first)
+        nodes.first ? cursor_for(nodes.first) : ""
       end
 
       # @return [String] The cursor of the last item in {nodes}
       def end_cursor
-        cursor_for(nodes.last)
+        nodes.last ? cursor_for(nodes.last) : ""
       end
 
       # Return a cursor for this item.
