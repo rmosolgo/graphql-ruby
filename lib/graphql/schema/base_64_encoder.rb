@@ -14,7 +14,7 @@ module GraphQL
         # urlsafe_decode64 is for forward compatibility
         Base64Bp.urlsafe_decode64(encoded_text)
       rescue ArgumentError
-        raise GraphQL::ExecutionError, "Invalid cursor: #{encoded_text.inspect}"
+        raise GraphQL::ExecutionError, "Invalid input: #{encoded_text.inspect}"
       end
     end
   end
