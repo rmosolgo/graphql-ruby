@@ -23,11 +23,11 @@ module GraphQL
 
       # Traverse a node in a rewritten query tree,
       # visiting the node itself and each of its typed children.
-      def each_node(node)
+      def each_node(node, &block)
         yield(node)
         node.typed_children.each do |obj_type, children|
           children.each do |name, node|
-            each_node(node) { |n| yield(n) }
+            each_node(node, &block)
           end
         end
       end

@@ -374,11 +374,12 @@ module GraphQL
           end
         end
 
-        def resolve_with_directives(object, ast_node)
-          run_directive(object, ast_node, 0) { yield }
+        def resolve_with_directives(object, ast_node, &block)
+          return yield if ast_node.directives.empty?
+          run_directive(object, ast_node, 0, &block)
         end
 
-        def run_directive(object, ast_node, idx)
+        def run_directive(object, ast_node, idx, &block)
           dir_node = ast_node.directives[idx]
           if !dir_node
             yield
@@ -389,7 +390,7 @@ module GraphQL
             end
             dir_args = arguments(nil, dir_defn, dir_node)
             dir_defn.resolve(object, dir_args, context) do
-              run_directive(object, ast_node, idx + 1) { yield }
+              run_directive(object, ast_node, idx + 1, &block)
             end
           end
         end
@@ -412,7 +413,7 @@ module GraphQL
         # @param eager [Boolean] Set to `true` for mutation root fields only
         # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
-        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false, trace: true)
+        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false, trace: true, &block)
           @interpreter_context[:current_object] = owner_object
           @interpreter_context[:current_arguments] = arguments
           @interpreter_context[:current_path] = path
@@ -439,9 +440,7 @@ module GraphQL
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
                   err
               end
-              after_lazy(inner_obj, owner: owner, field: field, path: path, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager) do |really_inner_obj|
-                yield(really_inner_obj)
-              end
+              after_lazy(inner_obj, owner: owner, field: field, path: path, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager, trace: trace, &block)
             end
 
             if eager
