@@ -13,6 +13,8 @@ module GraphQL
       def self.decode(encoded_text, nonce: false)
         # urlsafe_decode64 is for forward compatibility
         Base64Bp.urlsafe_decode64(encoded_text)
+      rescue ArgumentError
+        raise GraphQL::ExecutionError, "Invalid input: #{encoded_text.inspect}"
       end
     end
   end
