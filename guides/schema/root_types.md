@@ -27,7 +27,7 @@ The types are `GraphQL::Schema::Object` classes, for example:
 ```ruby
 # app/graphql/types/query_type.rb
 class Types::QueryType < GraphQL::Schema::Object
-  field :all_posts, [PostType], 'Returns all blog posts', null: false
+  field :posts, [PostType], 'Returns all blog posts', null: false
 end
 
 # Similarly:
@@ -43,9 +43,9 @@ end
 Each type is the entry point for the corresponding GraphQL query:
 
 ```ruby
-query GetPost {
-  # `Query.post`
-  post(id: 1) { ... }
+query Posts {
+  # `Query.posts`
+  posts { ... }
 }
 
 mutation AddPost($postAttrs: PostInput!){
