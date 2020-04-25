@@ -870,8 +870,8 @@ module GraphQL
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
       # @see {#as_json}
       # @return [String]
-      def to_json(*args)
-        JSON.pretty_generate(as_json(*args))
+      def to_json(**args)
+        JSON.pretty_generate(as_json(**args))
       end
 
       # Return the Hash response of {Introspection::INTROSPECTION_QUERY}.
