@@ -265,6 +265,12 @@ describe GraphQL::Schema::Object do
       res = Jazz::Schema.execute(query_str)
       assert_equal ["BELA FLECK AND THE FLECKTONES", "ROBERT GLASPER EXPERIMENT"], res["data"]["ensembles"].map { |e| e["upcaseName"] }
     end
+
+    it "passes on type memberships from superclasses" do
+      obj_type = Jazz::StylishMusician.to_graphql
+      parent_obj_type = Jazz::Musician.to_graphql
+      assert_equal parent_obj_type.interfaces, obj_type.interfaces
+    end
   end
 
 

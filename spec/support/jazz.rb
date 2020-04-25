@@ -306,6 +306,14 @@ module Jazz
     end
   end
 
+  class StylishMusician < Musician
+    field :sunglasses_type, String, null: false
+
+    def sunglasses_type
+      "cool 😎"
+    end
+  end
+
   # Since this is not a legacy input type, this test can be removed
   class LegacyInputType < GraphQL::Schema::InputObject
     argument :int_value, Int, required: true

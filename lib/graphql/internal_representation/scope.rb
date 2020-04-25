@@ -66,11 +66,11 @@ module GraphQL
       # Call the block for each type in `self`.
       # This uses the simplest possible expression of `self`,
       # so if this scope is defined by an abstract type, it gets yielded.
-      def each
+      def each(&block)
         if @abstract_type
           yield(@type)
         else
-          @types.each { |t| yield(t) }
+          @types.each(&block)
         end
       end
 

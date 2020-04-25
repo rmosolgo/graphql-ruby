@@ -175,6 +175,11 @@ module GraphQL
             end
 
             after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
+              if resolved_arguments.is_a? GraphQL::ExecutionError
+                continue_value(next_path, resolved_arguments, field_defn, return_type.non_null?, ast_node)
+                next
+              end
+
               kwarg_arguments = resolved_arguments.keyword_arguments
 
               # It might turn out that making arguments for every field is slow.
@@ -351,9 +356,15 @@ module GraphQL
                   end
                 end
               end
-            rescue NoMethodError
-              # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
-              raise ListResultFailedError.new(value: value, field: field, path: path)
+            rescue NoMethodError => err
+              # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
+              if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == value : true)
+                # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
+                raise ListResultFailedError.new(value: value, field: field, path: path)
+              else
+                # This was some other NoMethodError -- let it bubble to reveal the real error.
+                raise
+              end
             end
 
             response_list
@@ -367,11 +378,12 @@ module GraphQL
           end
         end
 
-        def resolve_with_directives(object, ast_node)
-          run_directive(object, ast_node, 0) { yield }
+        def resolve_with_directives(object, ast_node, &block)
+          return yield if ast_node.directives.empty?
+          run_directive(object, ast_node, 0, &block)
         end
 
-        def run_directive(object, ast_node, idx)
+        def run_directive(object, ast_node, idx, &block)
           dir_node = ast_node.directives[idx]
           if !dir_node
             yield
@@ -382,7 +394,7 @@ module GraphQL
             end
             dir_args = arguments(nil, dir_defn, dir_node).keyword_arguments
             dir_defn.resolve(object, dir_args, context) do
-              run_directive(object, ast_node, idx + 1) { yield }
+              run_directive(object, ast_node, idx + 1, &block)
             end
           end
         end
@@ -405,7 +417,7 @@ module GraphQL
         # @param eager [Boolean] Set to `true` for mutation root fields only
         # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
-        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false, trace: true)
+        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false, trace: true, &block)
           @interpreter_context[:current_object] = owner_object
           @interpreter_context[:current_arguments] = arguments
           @interpreter_context[:current_path] = path
@@ -430,11 +442,9 @@ module GraphQL
                   end
                 end
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                  yield(err)
+                  err
               end
-              after_lazy(inner_obj, owner: owner, field: field, path: path, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager) do |really_inner_obj|
-                yield(really_inner_obj)
-              end
+              after_lazy(inner_obj, owner: owner, field: field, path: path, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager, trace: trace, &block)
             end
 
             if eager

@@ -220,7 +220,7 @@ module GraphQL
         # or use it as a configuration method to assign a return type
         # instead of generating one.
         # TODO unify with {#null}
-        # @param new_type [Class, nil] If a type definition class is provided, it will be used as the return type of the field
+        # @param new_type [Class, Array<Class>, nil] If a type definition class is provided, it will be used as the return type of the field
         # @param null [true, false] Whether or not the field may return `nil`
         # @return [Class] The type which this field returns.
         def type(new_type = nil, null: nil)

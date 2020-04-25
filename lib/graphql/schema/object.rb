@@ -79,14 +79,14 @@ module GraphQL
                 raise "#{int} cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
               end
 
-              new_memberships << int.type_membership_class.new(int, self, options)
+              new_memberships << int.type_membership_class.new(int, self, **options)
 
               # Include the methods here,
               # `.fields` will use the inheritance chain
               # to find inherited fields
               include(int)
             elsif int.is_a?(GraphQL::InterfaceType)
-              new_memberships << int.type_membership_class.new(int, self, options)
+              new_memberships << int.type_membership_class.new(int, self, **options)
             elsif int.is_a?(String) || int.is_a?(GraphQL::Schema::LateBoundType)
               if options.any?
                 raise ArgumentError, "`implements(...)` doesn't support options with late-loaded types yet. Remove #{options} and open an issue to request this feature."
@@ -162,7 +162,7 @@ module GraphQL
           obj_type = GraphQL::ObjectType.new
           obj_type.name = graphql_name
           obj_type.description = description
-          obj_type.structural_interface_type_memberships = own_interface_type_memberships
+          obj_type.structural_interface_type_memberships = interface_type_memberships
           obj_type.introspection = introspection
           obj_type.mutation = mutation
           obj_type.ast_node = ast_node

@@ -853,4 +853,25 @@ SCHEMA
     str = GraphQL::Schema::Printer.print_schema TestPrintSchema
     assert_equal "schema {\n  query: OddlyNamedQuery\n}\n\ntype OddlyNamedQuery {\n  int: Int!\n}", str
   end
+
+  it "prints directives parsed from IDL" do
+    input = <<-GRAPHQL
+input I {
+  i1: Int @intDir(a: 1)
+}
+
+type Query @someDirective {
+  e(i: I): Thing
+  i: Int! @customDirective
+}
+
+enum Thing {
+  A @a(a: A)
+  B @b(b: {b: B})
+}
+    GRAPHQL
+
+    schema = GraphQL::Schema.from_definition(input)
+    assert_equal input.chomp, GraphQL::Schema::Printer.print_schema(schema)
+  end
 end

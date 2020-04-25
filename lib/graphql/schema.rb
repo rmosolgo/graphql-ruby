@@ -101,14 +101,12 @@ module GraphQL
       # - Right away, if `value` is not registered with `lazy_resolve`
       # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
       # @api private
-      def after_lazy(value)
+      def after_lazy(value, &block)
         if lazy?(value)
           GraphQL::Execution::Lazy.new do
             result = sync_lazy(value)
             # The returned result might also be lazy, so check it, too
-            after_lazy(result) do |final_result|
-              yield(final_result) if block_given?
-            end
+            after_lazy(result, &block)
           end
         else
           yield(value) if block_given?
@@ -146,10 +144,10 @@ module GraphQL
       def after_any_lazies(maybe_lazies)
         if maybe_lazies.any? { |l| lazy?(l) }
           GraphQL::Execution::Lazy.all(maybe_lazies).then do |result|
-            yield
+            yield result
           end
         else
-          yield
+          yield maybe_lazies
         end
       end
     end
@@ -555,8 +553,17 @@ module GraphQL
     # @param context [GraphQL::Query::Context] The context for the current query
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
     def possible_types(type_defn, context = GraphQL::Query::NullContext)
-      @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
-      @possible_types.possible_types(type_defn, context)
+      if context == GraphQL::Query::NullContext
+        @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
+        @possible_types.possible_types(type_defn, context)
+      else
+        # Use the incoming context to cache this instance --
+        # if it were cached on the schema, we'd have a memory leak
+        # https://github.com/rmosolgo/graphql-ruby/issues/2878
+        ns = context.namespace(:possible_types)
+        per_query_possible_types = ns[:possible_types] ||= GraphQL::Schema::PossibleTypes.new(self)
+        per_query_possible_types.possible_types(type_defn, context)
+      end
     end
 
     # @see [GraphQL::Schema::Warden] Resticted access to root types
@@ -863,8 +870,8 @@ module GraphQL
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
       # @see {#as_json}
       # @return [String]
-      def to_json(*args)
-        JSON.pretty_generate(as_json(*args))
+      def to_json(**args)
+        JSON.pretty_generate(as_json(**args))
       end
 
       # Return the Hash response of {Introspection::INTROSPECTION_QUERY}.
