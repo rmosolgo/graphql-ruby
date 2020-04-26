@@ -1838,17 +1838,13 @@ module GraphQL
           um << owner
         end
 
-        if (prev_type = own_types[type.graphql_name])
-          if prev_type != type
-            raise DuplicateTypeNamesError.new(
-              type_name: type.graphql_name,
-              first_definition: prev_type,
-              second_definition: type,
-              path: path,
-            )
-          else
-            # This type was already added
-          end
+        if (prev_type = own_types[type.graphql_name]) != type
+          raise DuplicateTypeNamesError.new(
+            type_name: type.graphql_name,
+            first_definition: prev_type,
+            second_definition: type,
+            path: path,
+          )
         elsif type.is_a?(Class) && type < GraphQL::Schema::Directive
           type.arguments.each do |name, arg|
             arg_type = arg.type.unwrap
