@@ -1838,7 +1838,7 @@ module GraphQL
           um << owner
         end
 
-        if (prev_type = own_types[type.graphql_name]) != type
+        if prev_type = own_types[type.graphql_name] && prev_type != type
           raise DuplicateTypeNamesError.new(
             type_name: type.graphql_name,
             first_definition: prev_type,
