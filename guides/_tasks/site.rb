@@ -4,7 +4,8 @@ require "yard"
 namespace :apidocs do
   desc "Fetch a gem version from RubyGems, build the docs"
   task :gen_version, [:version] do |t, args|
-    version = args[:version] || raise("A version is required")
+    # GITHUB_REF comes from GitHub Actions
+    version = args[:version] || ENV["GITHUB_REF"] || raise("A version is required")
     if version.start_with?("v")
       version = version[1..-1]
     end
