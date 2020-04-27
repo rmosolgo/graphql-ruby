@@ -28,11 +28,9 @@ jobs:
           gem install bundler
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
-      - name: Build HTML, Build API docs, reindex
-        env:
-          ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
+      - name: Build API docs
         run: |
-          bundle exec rake site:build_doc apidocs:gen_version site:update_search_index site:clean_html site:build_html
+          bundle exec rake apidocs:gen_version
       - name: Commit changes as last committer
         run: |
           git config --global user.name "%(git log --format="%aN" -n 1)"

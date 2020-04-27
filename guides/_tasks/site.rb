@@ -14,20 +14,21 @@ namespace :apidocs do
       version = version[1..-1]
     end
     Dir.mktmpdir do
+      puts "Fetching graphql-#{version}"
       system("gem fetch graphql --version=#{version}")
       system("gem unpack graphql-#{version}.gem")
 
       Dir.chdir("graphql-#{version}") do
-        if !File.exist?("doc")
-          system("yardoc")
-        end
+        system("yardoc")
         # Copy it into gh-pages for publishing
         # and locally for previewing
         push_dest = "../../gh-pages/api-doc/#{version}"
         local_dest = "../../guides/_site/api-doc/#{version}"
         mkdir_p push_dest
         mkdir_p local_dest
+        puts "Copying to #{push_dest}"
         copy_entry "doc", push_dest
+        puts "Copying to #{local_dest}"
         copy_entry "doc", local_dest
       end
     end
