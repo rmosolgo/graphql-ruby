@@ -105,7 +105,7 @@ namespace :site do
     puts "Committing and pushing to GitHub Pages..."
     sha = `git rev-parse HEAD`.strip
     Dir.chdir('gh-pages') do
-      sh "git add ."
+      sh "git add -A ."
       sh "git commit --allow-empty -m 'Updating to #{sha}.'"
     end
   end

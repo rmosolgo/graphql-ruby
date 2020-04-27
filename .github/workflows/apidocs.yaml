@@ -35,7 +35,9 @@ jobs:
         run: |
           git config --global user.name "%(git log --format="%aN" -n 1)"
           git config --global user.email "%(git log --format="%aE" -n 1)"
+          git status
           bundle exec rake site:commit_changes
+          git status
       - name: Deploy to GitHub pages via gh-pages branch
         uses: s0/git-publish-subdir-action@master
         env:
