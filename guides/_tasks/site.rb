@@ -9,13 +9,10 @@ namespace :apidocs do
     if version.start_with?("v")
       version = version[1..-1]
     end
-    Dir.chdir("tmp") do
-      if !File.exist?("graphql-#{version}.gem")
-        system("gem fetch graphql --version=#{version}")
-      end
-      if !File.exist?("graphql-#{version}")
-        system("gem unpack graphql-#{version}.gem")
-      end
+    Dir.mktmpdir do
+      system("gem fetch graphql --version=#{version}")
+      system("gem unpack graphql-#{version}.gem")
+
       Dir.chdir("graphql-#{version}") do
         if !File.exist?("doc")
           system("yardoc")
