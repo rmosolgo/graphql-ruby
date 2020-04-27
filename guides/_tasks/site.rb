@@ -6,6 +6,10 @@ namespace :apidocs do
   task :gen_version, [:version] do |t, args|
     # GITHUB_REF comes from GitHub Actions
     version = args[:version] || ENV["GITHUB_REF"] || raise("A version is required")
+    # GitHub Actions gives the full tag name
+    if version.start_with?("refs/tags/")
+      version = version[10..-1]
+    end
     if version.start_with?("v")
       version = version[1..-1]
     end
