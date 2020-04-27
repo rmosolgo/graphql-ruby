@@ -14,7 +14,7 @@ jobs:
       - name: Checkout release tag
         uses: actions/checkout@v2
         with:
-          ref: GITHUB_REF
+          ref: ${{ GITHUB_REF }}
       - name: Checkout GitHub pages branch
         uses: actions/checkout@v2
         with:
