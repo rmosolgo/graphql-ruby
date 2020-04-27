@@ -174,11 +174,13 @@ module GraphQL
               next
             end
 
-            after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |kwarg_arguments|
-              if kwarg_arguments.is_a? GraphQL::ExecutionError
-                continue_value(next_path, kwarg_arguments, field_defn, return_type.non_null?, ast_node)
+            after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
+              if resolved_arguments.is_a? GraphQL::ExecutionError
+                continue_value(next_path, resolved_arguments, field_defn, return_type.non_null?, ast_node)
                 next
               end
+
+              kwarg_arguments = resolved_arguments.keyword_arguments
 
               # It might turn out that making arguments for every field is slow.
               # If we have to cache them, we'll need a more subtle approach here.
@@ -199,6 +201,8 @@ module GraphQL
                     ast_nodes: field_ast_nodes,
                     field: field_defn,
                   )
+                when :argument_details
+                  kwarg_arguments[:argument_details] = resolved_arguments
                 else
                   kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
                 end
@@ -388,7 +392,7 @@ module GraphQL
             if !dir_defn.is_a?(Class)
               dir_defn = dir_defn.type_class || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
             end
-            dir_args = arguments(nil, dir_defn, dir_node)
+            dir_args = arguments(nil, dir_defn, dir_node).keyword_arguments
             dir_defn.resolve(object, dir_args, context) do
               run_directive(object, ast_node, idx + 1, &block)
             end
@@ -399,7 +403,7 @@ module GraphQL
         def directives_include?(node, graphql_object, parent_type)
           node.directives.each do |dir_node|
             dir_defn = schema.directives.fetch(dir_node.name).type_class || raise("Only class-based directives are supported (not #{dir_node.name.inspect})")
-            args = arguments(graphql_object, dir_defn, dir_node)
+            args = arguments(graphql_object, dir_defn, dir_node).keyword_arguments
             if !dir_defn.include?(graphql_object, args, context)
               return false
             end

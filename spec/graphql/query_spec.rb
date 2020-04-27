@@ -868,7 +868,9 @@ describe GraphQL::Query do
       }
 
       argument_contexts.each do |context_name, ast_node|
-        args = query.arguments_for(ast_node, field_defn)
+        detailed_args = query.arguments_for(ast_node, field_defn)
+        assert_instance_of GraphQL::Execution::Interpreter::Arguments, detailed_args
+        args = detailed_args.keyword_arguments
         assert_instance_of Hash, args, "it makes a hash for #{context_name}"
         assert_equal [:product], args.keys, "it has a single symbol key for #{context_name}"
         product_value = args[:product]
@@ -887,6 +889,83 @@ describe GraphQL::Query do
         }
         assert_equal expected_h, product_value_item.to_h, "it makes a hash with defaults for #{context_name}"
       end
+    end
+
+    it "returns argument metadata" do
+      query_str = <<-GRAPHQL
+      query($fatContent: Float, $organic: Boolean = false) {
+        searchDairy(product: [{source: SHEEP, fatContent: $fatContent, organic: $organic}]) {
+          __typename
+        }
+      }
+      GRAPHQL
+
+      query = GraphQL::Query.new(Dummy::Schema, query_str, variables: { "product" => [{"source" => "SHEEP"}]})
+      field_defn = Dummy::Schema.get_field("Query", "searchDairy")
+      node_1 = query.document.definitions.first
+        .selections.first
+        .arguments.first
+        .value.first
+
+      input_obj_defn = field_defn.arguments["product"].type.unwrap
+      detailed_args = query.arguments_for(node_1, input_obj_defn)
+
+      # Literal value
+      source_arg_value = detailed_args.argument_values[:source]
+      assert_equal false, source_arg_value.default_used?
+      assert_equal "SHEEP", detailed_args[:source]
+      assert_equal "SHEEP", source_arg_value.value
+      assert_equal "source", source_arg_value.definition.graphql_name
+
+      # Unused optional variable, uses default
+      fat_content_arg_value = detailed_args.argument_values[:fat_content]
+      assert_equal true, fat_content_arg_value.default_used?
+      assert_equal 0.3, detailed_args[:fat_content]
+      assert_equal 0.3, fat_content_arg_value.value
+      assert_equal "fatContent", fat_content_arg_value.definition.graphql_name
+
+      # Variable value
+      organic_arg_value = detailed_args.argument_values[:organic]
+      assert_equal false, organic_arg_value.default_used?
+      assert_equal false, detailed_args[:organic]
+      assert_equal false, organic_arg_value.value
+      assert_equal "organic", organic_arg_value.definition.graphql_name
+
+      # Absent value, uses default
+      order_by_argument_value = detailed_args.argument_values[:order_by]
+      assert_equal true, order_by_argument_value.default_used?
+      assert_equal({direction: "ASC"}, detailed_args[:order_by].to_h)
+      assert_equal({direction: "ASC"}, order_by_argument_value.value.to_h)
+      assert_equal "order_by", order_by_argument_value.definition.graphql_name
+    end
+
+    it "provides access to nested input objects" do
+      query_str = <<-GRAPHQL
+      query($fatContent: Float, $organic: Boolean = false, $products: [DairyProductInput!]!) {
+        searchDairy(product: $products) {
+          __typename
+        }
+      }
+      GRAPHQL
+
+      query = GraphQL::Query.new(Dummy::Schema, query_str, variables: { "products" => [{"source" => "SHEEP"}]})
+      field_defn = Dummy::Schema.get_field("Query", "searchDairy")
+      node = query.document.definitions.first
+        .selections.first
+
+      args = query.arguments_for(node, field_defn)
+      product_args = args.argument_values[:product].value
+      first_product_args = product_args.first.arguments
+
+      source_arg_value = first_product_args.argument_values[:source]
+      assert_equal false, source_arg_value.default_used?
+      assert_equal "SHEEP", source_arg_value.value
+      assert_equal "source", source_arg_value.definition.graphql_name
+
+      order_by_argument_value = first_product_args.argument_values[:order_by]
+      assert_equal true, order_by_argument_value.default_used?
+      assert_equal({direction: "ASC"}, order_by_argument_value.value.to_h)
+      assert_equal "order_by", order_by_argument_value.definition.graphql_name
     end
   end
 end

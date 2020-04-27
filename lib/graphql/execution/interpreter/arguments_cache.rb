@@ -14,13 +14,9 @@ module GraphQL
                 # Then call into the schema to coerce those incoming values
                 args = arg_owner.coerce_arguments(parent_object, args_hash, query.context)
 
-                h3[parent_object] = if args.is_a?(GraphQL::Execution::Lazy)
-                  args.then { |resolved_args|
-                    # when this promise is resolved, update the cache with the resolved value
-                    h3[parent_object] = resolved_args
-                  }
-                else
-                  args
+                h3[parent_object] = @query.schema.after_lazy(args) do |resolved_args|
+                  # when this promise is resolved, update the cache with the resolved value
+                  h3[parent_object] = resolved_args
                 end
               end
             end

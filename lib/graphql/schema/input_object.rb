@@ -10,12 +10,13 @@ module GraphQL
 
       include GraphQL::Dig
 
-      def initialize(values = nil, ruby_kwargs: nil, context:, defaults_used:)
+      def initialize(arguments = nil, ruby_kwargs: nil, context:, defaults_used:)
         @context = context
         if ruby_kwargs
           @ruby_style_hash = ruby_kwargs
+          @arguments = arguments
         else
-          @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
+          @arguments = self.class.arguments_class.new(arguments, context: context, defaults_used: defaults_used)
           # Symbolized, underscored hash:
           @ruby_style_hash = @arguments.to_kwargs
         end
@@ -56,7 +57,7 @@ module GraphQL
       # @return [GraphQL::Query::Context] The context for this query
       attr_reader :context
 
-      # @return [GraphQL::Query::Arguments] The underlying arguments instance
+      # @return [GraphQL::Query::Arguments, GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only
@@ -208,10 +209,10 @@ module GraphQL
             return nil
           end
 
-          input_values = coerce_arguments(nil, value, ctx)
+          arguments = coerce_arguments(nil, value, ctx)
 
-          ctx.schema.after_lazy(input_values) do |resolved_input_values|
-            input_obj_instance = self.new(ruby_kwargs: resolved_input_values, context: ctx, defaults_used: nil)
+          ctx.schema.after_lazy(arguments) do |resolved_arguments|
+            input_obj_instance = self.new(resolved_arguments, ruby_kwargs: resolved_arguments.keyword_arguments, context: ctx, defaults_used: nil)
             input_obj_instance.prepare
           end
         end
