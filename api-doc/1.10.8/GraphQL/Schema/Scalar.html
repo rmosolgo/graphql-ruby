@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Schema::Scalar
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Schema::Scalar";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (S)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span>
+     &raquo; 
+    <span class="title">Scalar</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Schema::Scalar
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></li>
+          
+            <li class="next">GraphQL::Schema::Scalar</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  <dl>
+      <dt>Extended by:</dt>
+      <dd><span class='object_link'><a href="Member/AcceptsDefinition.html" title="GraphQL::Schema::Member::AcceptsDefinition (module)">Member::AcceptsDefinition</a></span>, <span class='object_link'><a href="Member/ValidatesInput.html" title="GraphQL::Schema::Member::ValidatesInput (module)">Member::ValidatesInput</a></span></dd>
+  </dl>
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/scalar.rb</dd>
+  </dl>
+  
+</div>
+
+<div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="../Types/BigInt.html" title="GraphQL::Types::BigInt (class)">Types::BigInt</a></span>, <span class='object_link'><a href="../Types/Boolean.html" title="GraphQL::Types::Boolean (class)">Types::Boolean</a></span>, <span class='object_link'><a href="../Types/Float.html" title="GraphQL::Types::Float (class)">Types::Float</a></span>, <span class='object_link'><a href="../Types/ID.html" title="GraphQL::Types::ID (class)">Types::ID</a></span>, <span class='object_link'><a href="../Types/ISO8601Date.html" title="GraphQL::Types::ISO8601Date (class)">Types::ISO8601Date</a></span>, <span class='object_link'><a href="../Types/ISO8601DateTime.html" title="GraphQL::Types::ISO8601DateTime (class)">Types::ISO8601DateTime</a></span>, <span class='object_link'><a href="../Types/Int.html" title="GraphQL::Types::Int (class)">Types::Int</a></span>, <span class='object_link'><a href="../Types/JSON.html" title="GraphQL::Types::JSON (class)">Types::JSON</a></span>, <span class='object_link'><a href="../Types/String.html" title="GraphQL::Types::String (class)">Types::String</a></span></p>
+</div>
+
+
+
+  <h2>Constant Summary</h2>
+  
+  <h3 class="inherited">Constants included
+     from <span class='object_link'><a href="Member/GraphQLTypeNames.html" title="GraphQL::Schema::Member::GraphQLTypeNames (module)">Member::GraphQLTypeNames</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/GraphQLTypeNames.html#Boolean-constant" title="GraphQL::Schema::Member::GraphQLTypeNames::Boolean (constant)">Member::GraphQLTypeNames::Boolean</a></span>, <span class='object_link'><a href="Member/GraphQLTypeNames.html#ID-constant" title="GraphQL::Schema::Member::GraphQLTypeNames::ID (constant)">Member::GraphQLTypeNames::ID</a></span>, <span class='object_link'><a href="Member/GraphQLTypeNames.html#Int-constant" title="GraphQL::Schema::Member::GraphQLTypeNames::Int (constant)">Member::GraphQLTypeNames::Int</a></span></p>
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce_input-class_method" title="coerce_input (class method)">.<strong>coerce_input</strong>(val, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce_result-class_method" title="coerce_result (class method)">.<strong>coerce_result</strong>(val, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_scalar-class_method" title="default_scalar (class method)">.<strong>default_scalar</strong>(is_default = nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_scalar%3F-class_method" title="default_scalar? (class method)">.<strong>default_scalar?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#kind-class_method" title="kind (class method)">.<strong>kind</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_graphql-class_method" title="to_graphql (class method)">.<strong>to_graphql</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#validate_non_null_input-class_method" title="validate_non_null_input (class method)">.<strong>validate_non_null_input</strong>(value, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/ValidatesInput.html" title="GraphQL::Schema::Member::ValidatesInput (module)">Member::ValidatesInput</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/ValidatesInput.html#coerce_isolated_input-instance_method" title="GraphQL::Schema::Member::ValidatesInput#coerce_isolated_input (method)">coerce_isolated_input</a></span>, <span class='object_link'><a href="Member/ValidatesInput.html#coerce_isolated_result-instance_method" title="GraphQL::Schema::Member::ValidatesInput#coerce_isolated_result (method)">coerce_isolated_result</a></span>, <span class='object_link'><a href="Member/ValidatesInput.html#valid_input%3F-instance_method" title="GraphQL::Schema::Member::ValidatesInput#valid_input? (method)">valid_input?</a></span>, <span class='object_link'><a href="Member/ValidatesInput.html#valid_isolated_input%3F-instance_method" title="GraphQL::Schema::Member::ValidatesInput#valid_isolated_input? (method)">valid_isolated_input?</a></span>, <span class='object_link'><a href="Member/ValidatesInput.html#validate_input-instance_method" title="GraphQL::Schema::Member::ValidatesInput#validate_input (method)">validate_input</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/HasAstNode.html" title="GraphQL::Schema::Member::HasAstNode (module)">Member::HasAstNode</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/HasAstNode.html#ast_node-instance_method" title="GraphQL::Schema::Member::HasAstNode#ast_node (method)">#ast_node</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/HasPath.html" title="GraphQL::Schema::Member::HasPath (module)">Member::HasPath</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/HasPath.html#path-instance_method" title="GraphQL::Schema::Member::HasPath#path (method)">#path</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/RelayShortcuts.html" title="GraphQL::Schema::Member::RelayShortcuts (module)">Member::RelayShortcuts</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/RelayShortcuts.html#connection_type-instance_method" title="GraphQL::Schema::Member::RelayShortcuts#connection_type (method)">#connection_type</a></span>, <span class='object_link'><a href="Member/RelayShortcuts.html#connection_type_class-instance_method" title="GraphQL::Schema::Member::RelayShortcuts#connection_type_class (method)">#connection_type_class</a></span>, <span class='object_link'><a href="Member/RelayShortcuts.html#edge_type-instance_method" title="GraphQL::Schema::Member::RelayShortcuts#edge_type (method)">#edge_type</a></span>, <span class='object_link'><a href="Member/RelayShortcuts.html#edge_type_class-instance_method" title="GraphQL::Schema::Member::RelayShortcuts#edge_type_class (method)">#edge_type_class</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/Scoped.html" title="GraphQL::Schema::Member::Scoped (module)">Member::Scoped</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/Scoped.html#scope_items-instance_method" title="GraphQL::Schema::Member::Scoped#scope_items (method)">#scope_items</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/TypeSystemHelpers.html" title="GraphQL::Schema::Member::TypeSystemHelpers (module)">Member::TypeSystemHelpers</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/TypeSystemHelpers.html#kind-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#kind (method)">#kind</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#list%3F-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#list? (method)">#list?</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#non_null%3F-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#non_null? (method)">#non_null?</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#to_list_type-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#to_list_type (method)">#to_list_type</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#to_non_null_type-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#to_non_null_type (method)">#to_non_null_type</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#to_type_signature-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#to_type_signature (method)">#to_type_signature</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/BaseDSLMethods/ConfigurationExtension.html" title="GraphQL::Schema::Member::BaseDSLMethods::ConfigurationExtension (module)">Member::BaseDSLMethods::ConfigurationExtension</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/BaseDSLMethods/ConfigurationExtension.html#inherited-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods::ConfigurationExtension#inherited (method)">#inherited</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/BaseDSLMethods.html" title="GraphQL::Schema::Member::BaseDSLMethods (module)">Member::BaseDSLMethods</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/BaseDSLMethods.html#accessible%3F-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#accessible? (method)">#accessible?</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#authorized%3F-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#authorized? (method)">#authorized?</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#default_graphql_name-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#default_graphql_name (method)">#default_graphql_name</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#description-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#description (method)">#description</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#graphql_name-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#graphql_name (method)">#graphql_name</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#introspection-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#introspection (method)">#introspection</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#introspection%3F-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#introspection? (method)">#introspection?</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#mutation-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#mutation (method)">#mutation</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#name-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#name (method)">#name</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#overridden_graphql_name-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#overridden_graphql_name (method)">#overridden_graphql_name</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#to_graphql-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#to_graphql (method)">#to_graphql</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#visible%3F-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#visible? (method)">#visible?</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../Relay/TypeExtensions.html" title="GraphQL::Relay::TypeExtensions (module)">Relay::TypeExtensions</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Relay/TypeExtensions.html#connection_type-instance_method" title="GraphQL::Relay::TypeExtensions#connection_type (method)">#connection_type</a></span>, <span class='object_link'><a href="../Relay/TypeExtensions.html#define_connection-instance_method" title="GraphQL::Relay::TypeExtensions#define_connection (method)">#define_connection</a></span>, <span class='object_link'><a href="../Relay/TypeExtensions.html#define_edge-instance_method" title="GraphQL::Relay::TypeExtensions#define_edge (method)">#define_edge</a></span>, <span class='object_link'><a href="../Relay/TypeExtensions.html#edge_type-instance_method" title="GraphQL::Relay::TypeExtensions#edge_type (method)">#edge_type</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/CachedGraphQLDefinition.html" title="GraphQL::Schema::Member::CachedGraphQLDefinition (module)">Member::CachedGraphQLDefinition</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/CachedGraphQLDefinition.html#graphql_definition-instance_method" title="GraphQL::Schema::Member::CachedGraphQLDefinition#graphql_definition (method)">#graphql_definition</a></span>, <span class='object_link'><a href="Member/CachedGraphQLDefinition.html#initialize_copy-instance_method" title="GraphQL::Schema::Member::CachedGraphQLDefinition#initialize_copy (method)">#initialize_copy</a></span>, <span class='object_link'><a href="Member/CachedGraphQLDefinition.html#type_class-instance_method" title="GraphQL::Schema::Member::CachedGraphQLDefinition#type_class (method)">#type_class</a></span></p>
+
+  
+  
+  
+  
+  
+  
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="coerce_input-class_method">
+  
+    .<strong>coerce_input</strong>(val, ctx)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+9
+10
+11</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/scalar.rb', line 9</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_coerce_input'>coerce_input</span><span class='lparen'>(</span><span class='id identifier rubyid_val'>val</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_val'>val</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="coerce_result-class_method">
+  
+    .<strong>coerce_result</strong>(val, ctx)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/scalar.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_coerce_result'>coerce_result</span><span class='lparen'>(</span><span class='id identifier rubyid_val'>val</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_val'>val</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="default_scalar-class_method">
+  
+    .<strong>default_scalar</strong>(is_default = nil)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+33
+34
+35
+36
+37
+38</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/scalar.rb', line 33</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_default_scalar'>default_scalar</span><span class='lparen'>(</span><span class='id identifier rubyid_is_default'>is_default</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_is_default'>is_default</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='ivar'>@default_scalar</span> <span class='op'>=</span> <span class='id identifier rubyid_is_default'>is_default</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@default_scalar</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="default_scalar?-class_method">
+  
+    .<strong>default_scalar?</strong>  &#x21d2; <tt><span class='object_link'><a href="Member/GraphQLTypeNames.html#Boolean-constant" title="GraphQL::Schema::Member::GraphQLTypeNames::Boolean (constant)">Boolean</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Member/GraphQLTypeNames.html#Boolean-constant" title="GraphQL::Schema::Member::GraphQLTypeNames::Boolean (constant)">Boolean</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/scalar.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_default_scalar?'>default_scalar?</span>
+  <span class='ivar'>@default_scalar</span> <span class='op'>||=</span> <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="kind-class_method">
+  
+    .<strong>kind</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+29
+30
+31</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/scalar.rb', line 29</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_kind'>kind</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../TypeKinds.html" title="GraphQL::TypeKinds (module)">TypeKinds</a></span></span><span class='op'>::</span><span class='const'>SCALAR</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_graphql-class_method">
+  
+    .<strong>to_graphql</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/scalar.rb', line 17</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_graphql'>to_graphql</span>
+  <span class='id identifier rubyid_type_defn'>type_defn</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ScalarType.html" title="GraphQL::ScalarType (class)">ScalarType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../ScalarType.html#initialize-instance_method" title="GraphQL::ScalarType#initialize (method)">new</a></span></span>
+  <span class='id identifier rubyid_type_defn'>type_defn</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='id identifier rubyid_graphql_name'>graphql_name</span>
+  <span class='id identifier rubyid_type_defn'>type_defn</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span> <span class='op'>=</span> <span class='id identifier rubyid_description'>description</span>
+  <span class='id identifier rubyid_type_defn'>type_defn</span><span class='period'>.</span><span class='id identifier rubyid_coerce_result'>coerce_result</span> <span class='op'>=</span> <span class='id identifier rubyid_method'>method</span><span class='lparen'>(</span><span class='symbol'>:coerce_result</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_type_defn'>type_defn</span><span class='period'>.</span><span class='id identifier rubyid_coerce_input'>coerce_input</span> <span class='op'>=</span> <span class='id identifier rubyid_method'>method</span><span class='lparen'>(</span><span class='symbol'>:coerce_input</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_type_defn'>type_defn</span><span class='period'>.</span><span class='id identifier rubyid_metadata'>metadata</span><span class='lbracket'>[</span><span class='symbol'>:type_class</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>self</span>
+  <span class='id identifier rubyid_type_defn'>type_defn</span><span class='period'>.</span><span class='id identifier rubyid_default_scalar'>default_scalar</span> <span class='op'>=</span> <span class='id identifier rubyid_default_scalar'>default_scalar</span>
+  <span class='id identifier rubyid_type_defn'>type_defn</span><span class='period'>.</span><span class='id identifier rubyid_ast_node'>ast_node</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_node'>ast_node</span>
+  <span class='id identifier rubyid_type_defn'>type_defn</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="validate_non_null_input-class_method">
+  
+    .<strong>validate_non_null_input</strong>(value, ctx)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/scalar.rb', line 44</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_validate_non_null_input'>validate_non_null_input</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query/InputValidationResult.html" title="GraphQL::Query::InputValidationResult (class)">InputValidationResult</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Query/InputValidationResult.html#initialize-instance_method" title="GraphQL::Query::InputValidationResult#initialize (method)">new</a></span></span>
+  <span class='id identifier rubyid_coerced_result'>coerced_result</span> <span class='op'>=</span> <span class='kw'>begin</span>
+    <span class='id identifier rubyid_coerce_input'>coerce_input</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../CoercionError.html" title="GraphQL::CoercionError (class)">CoercionError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_err'>err</span>
+    <span class='id identifier rubyid_err'>err</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_coerced_result'>coerced_result</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='id identifier rubyid_str_value'>str_value</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>==</span> <span class='const'>Float</span><span class='op'>::</span><span class='const'>INFINITY</span>
+      <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>else</span>
+      <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='period'>.</span><span class='id identifier rubyid_serialize'><span class='object_link'><a href="../Language.html#serialize-class_method" title="GraphQL::Language.serialize (method)">serialize</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_add_problem'>add_problem</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Could not coerce value</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_str_value'>str_value</span><span class='embexpr_end'>}</span><span class='tstring_content'> to </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_coerced_result'>coerced_result</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../CoercionError.html" title="GraphQL::CoercionError (class)">CoercionError</a></span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_add_problem'>add_problem</span><span class='lparen'>(</span><span class='id identifier rubyid_coerced_result'>coerced_result</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='label'>message:</span> <span class='id identifier rubyid_coerced_result'>coerced_result</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='label'>extensions:</span> <span class='id identifier rubyid_coerced_result'>coerced_result</span><span class='period'>.</span><span class='id identifier rubyid_extensions'>extensions</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_result'>result</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon Apr 27 13:39:23 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.24 (ruby-2.7.1).
+</div>
+
+    </div>
+  </body>
+</html>
