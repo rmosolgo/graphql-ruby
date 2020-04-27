@@ -8,6 +8,24 @@
 
 ### Bug fixes
 
+## 1.10.8 (27 April 2020)
+
+### Breaking changes
+
+- With the interpreter, `Query#arguments_for` returns `Interpreter::Arguments` instances instead of plain hashes. (They should work mostly the same, though.) #2881
+
+### New features
+
+- `Schema::Field#introspection?` returns true for built-in introspection-related fields
+
+### Bug fixes
+
+- Fix Ruby 2.7 warning on `Schema.to_json` #2905
+- Pass `&block` to nested method calls to reduce stack depths #2900
+- Fix lazy `loads:` with list arguments #2894
+- Fix `loads:` on nested input object #2895
+- Rescue base64 encoding errors in the encoder #2896
+
 ## 1.10.7 (16 April 2020)
 
 ### Breaking changes
