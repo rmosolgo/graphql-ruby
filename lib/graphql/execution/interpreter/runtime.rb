@@ -202,7 +202,7 @@ module GraphQL
                     field: field_defn,
                   )
                 when :argument_details
-                  kwarg_arguments[:argument_details] = arguments(object, field_defn, ast_node)
+                  kwarg_arguments[:argument_details] = resolved_arguments
                 else
                   kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
                 end

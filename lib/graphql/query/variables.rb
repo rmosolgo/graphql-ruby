@@ -10,10 +10,6 @@ module GraphQL
 
       attr_reader :context
 
-      # Unlike {Query#provided_variables}, these are normalized to string keys
-      # @return [Hash{String => Object}]
-      attr_reader :provided_variables
-
       def initialize(ctx, ast_variables, provided_variables)
         schema = ctx.schema
         @context = ctx

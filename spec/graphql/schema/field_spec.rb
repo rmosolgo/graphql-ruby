@@ -188,7 +188,7 @@ describe GraphQL::Schema::Field do
           res = ArgumentDetailsSchema.execute("{ argumentDetails }")
           expected_strs = [
             "GraphQL::Execution::Interpreter::Arguments",
-            "GraphQL::Execution::Interpreter::Arguments::ArgumentValue",
+            "GraphQL::Execution::Interpreter::ArgumentValue",
             "arg2|argument_details",
             "arg2",
             "true",

@@ -66,7 +66,7 @@ module GraphQL
         # @api private
         # @param values [Hash<String, Object>]
         # @param context [GraphQL::Query::Context]
-        # @return Hash<Symbol, Object>
+        # @return [Hash<Symbol, Object>, Execution::Lazy<Hash>]
         def coerce_arguments(parent_object, values, context)
           argument_values = {}
           kwarg_arguments = {}
@@ -117,7 +117,7 @@ module GraphQL
 
                 kwarg_arguments[arg_key] = prepared_value
                 # TODO code smell to access such a deeply-nested constant in a distant module
-                argument_values[arg_key] = GraphQL::Execution::Interpreter::Arguments::ArgumentValue.new(
+                argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
                   value: prepared_value,
                   definition: arg_defn,
                   default_used: default_used,

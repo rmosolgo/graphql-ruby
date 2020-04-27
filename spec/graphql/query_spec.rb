@@ -891,7 +891,7 @@ describe GraphQL::Query do
       end
     end
 
-    it "returns detailed arguments with `detailed: true`" do
+    it "returns argument metadata" do
       query_str = <<-GRAPHQL
       query($fatContent: Float, $organic: Boolean = false) {
         searchDairy(product: [{source: SHEEP, fatContent: $fatContent, organic: $organic}]) {
