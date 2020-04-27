@@ -33,8 +33,8 @@ jobs:
           bundle exec rake apidocs:gen_version
       - name: Commit changes as last committer
         run: |
-          git config --global user.name "%(git log --format="%aN" -n 1)"
-          git config --global user.email "%(git log --format="%aE" -n 1)"
+          git config --global user.name rmosolgo
+          git config --global user.email rdmosolgo@github.com
           git status
           bundle exec rake site:commit_changes
           git status
