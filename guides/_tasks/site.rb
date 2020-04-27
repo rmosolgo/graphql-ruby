@@ -23,8 +23,8 @@ namespace :apidocs do
         system("yardoc")
         # Copy it into gh-pages for publishing
         # and locally for previewing
-        push_dest = File.expand_path("../../gh-pages/api-doc/#{version}")
-        local_dest = File.expand_path("../../guides/_site/api-doc/#{version}")
+        push_dest = File.expand_path("../gh-pages/api-doc/#{version}")
+        local_dest = File.expand_path("../guides/_site/api-doc/#{version}")
         mkdir_p push_dest
         mkdir_p local_dest
         puts "Copying from #{Dir.pwd}/doc to #{push_dest}"
