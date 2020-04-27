@@ -17,6 +17,7 @@ namespace :apidocs do
       puts "Fetching graphql-#{version}"
       system("gem fetch graphql --version=#{version}")
       system("gem unpack graphql-#{version}.gem")
+      system("rm graphql-#{version}.gem")
 
       Dir.chdir("graphql-#{version}") do
         system("yardoc")
@@ -105,8 +106,10 @@ namespace :site do
     puts "Committing and pushing to GitHub Pages..."
     sha = `git rev-parse HEAD`.strip
     Dir.chdir('gh-pages') do
-      sh "git add -A ."
-      sh "git commit --allow-empty -m 'Updating to #{sha}.'"
+      system "git status"
+      system "git add ."
+      system "git status"
+      system "git commit --allow-empty -m 'Updating to #{sha}.'"
     end
   end
 
