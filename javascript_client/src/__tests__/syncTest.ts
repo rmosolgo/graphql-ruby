@@ -2,8 +2,12 @@ import sync from "../sync"
 var fs = require("fs")
 var nock = require("nock")
 
+interface MockOperation {
+  alias: string,
+}
+
 interface MockPayload {
-  operations: object[],
+  operations: MockOperation[],
   generatedCode: string,
 }
 
@@ -127,6 +131,23 @@ describe("sync operations", () => {
         },
       }
       return sync(options).then(function () {
+        return expect(payload.operations).toMatchSnapshot()
+      })
+    })
+
+    it("Uses Apollo Android OperationOutput JSON files", () => {
+      var payload: MockPayload
+      var options = {
+        client: "test-1",
+        quiet: true,
+        apolloAndroidOperationOutput: "./src/__tests__/example-apollo-android-operation-output.json",
+        url: "bogus",
+        send: (sendPayload: MockPayload, _opts: object) => {
+          payload = sendPayload
+        },
+      }
+      return sync(options).then(function () {
+        expect(payload.operations[0].alias).toEqual("aba626ea9bdf465954e89e5590eb2c1a")
         return expect(payload.operations).toMatchSnapshot()
       })
     })
