@@ -102,8 +102,8 @@ function sync(options: SyncOptions) {
   var outfile: string | null
   if (options.outfile) {
     outfile = options.outfile
-  } else if (options.relayPersistedOutput) {
-    // relay-compiler has embedded IDs in its generated files,
+  } else if (options.relayPersistedOutput || options.apolloAndroidOperationOutput) {
+    // These artifacts have embedded IDs in its generated files,
     // no need to generate an outfile.
     outfile = null
   } else if (fs.existsSync("src")) {

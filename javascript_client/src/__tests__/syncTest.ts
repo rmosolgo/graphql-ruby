@@ -254,6 +254,21 @@ describe("sync operations", () => {
         expect(wasWritten).toBe(false)
       })
     })
+
+    it("Skips outfile generation when using --apollo-android-operation-output artifact", () => {
+      var options = {
+        client: "test-2",
+        apolloAndroidOperationOutput: "./src/__tests__/example-apollo-android-operation-output.json",
+        url: "bogus",
+        quiet: true,
+        send: () => { },
+      }
+      return sync(options).then(function() {
+        // This is the default outfile:
+        var wasWritten = fs.existsSync("./src/OperationStoreClient.js")
+        expect(wasWritten).toBe(false)
+      })
+    })
   })
 
   describe("Logging", () => {
