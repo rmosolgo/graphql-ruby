@@ -11,7 +11,9 @@ Experimental, some things to keep in mind:</p>
 <ul>
   <li>No queueing system; ActiveJob should be added - Take care to
 reload context when re-delivering the subscription. (see
-Query#subscription_update?) 
+Query#subscription_update?) - Avoid the async ActionCable adapter
+and use the redis or PostgreSQL adapters instead. Otherwise calling
+#trigger won’t work from background jobs or the Rails console. 
 Examples:
     <h1 id="adding-actioncablesubscriptions-to-your-schema">Adding ActionCableSubscriptions to your schema</h1>
     <p>class MySchema &lt; GraphQL::Schema</p>
