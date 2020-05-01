@@ -30,7 +30,7 @@ jobs:
           bundle install --jobs 4 --retry 3
       - name: Build API docs
         run: |
-          bundle exec rake apidocs:gen_version
+          bundle exec rake site:fetch_latest apidocs:gen_version
       - name: Commit changes as last committer
         run: |
           git config --global user.name rmosolgo
