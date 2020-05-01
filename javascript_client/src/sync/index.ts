@@ -6,6 +6,7 @@ import fs from "fs"
 interface SyncOptions {
   path?: string,
   relayPersistedOutput?: string,
+  apolloAndroidOperationOutput?: string,
   secret?: string
   url: string,
   mode?: string,
@@ -71,6 +72,21 @@ function sync(options: SyncOptions) {
         alias: hash,
       })
     }
+  } else if (options.apolloAndroidOperationOutput) {
+    // Apollo Android has already generated an artifact (https://www.apollographql.com/docs/android/advanced/persisted-queries/#operationoutputjson)
+    var payload: { operations: ClientOperation[] } = { operations: [] }
+    var apolloAndroidOutputText = fs.readFileSync(options.apolloAndroidOperationOutput, "utf8")
+    var apolloAndroidOutput = JSON.parse(apolloAndroidOutputText)
+    var operationData
+    // Structure is { operationId => { "name" => "...", "source" => "query { ... } " } }
+    for (var operationId in apolloAndroidOutput) {
+      operationData = apolloAndroidOutput[operationId]
+      payload.operations.push({
+        body: operationData.source,
+        alias: operationId,
+      })
+    }
+
   } else {
     var payload = gatherOperations({
       path: graphqlGlob,
@@ -86,8 +102,8 @@ function sync(options: SyncOptions) {
   var outfile: string | null
   if (options.outfile) {
     outfile = options.outfile
-  } else if (options.relayPersistedOutput) {
-    // relay-compiler has embedded IDs in its generated files,
+  } else if (options.relayPersistedOutput || options.apolloAndroidOperationOutput) {
+    // These artifacts have embedded IDs in its generated files,
     // no need to generate an outfile.
     outfile = null
   } else if (fs.existsSync("src")) {
