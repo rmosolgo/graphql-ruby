@@ -103,7 +103,7 @@ def authorized?(employee:)
 end
 ```
 
-When `#authorized?` returns `false`, the mutation will be halted. If it returns `true` (or something truthy), the mutation will continue.
+When `#authorized?` returns `false` (or something falsey), the mutation will be halted. If it returns `true` (or something truthy), the mutation will continue.
 
 #### Adding errors
 
@@ -123,9 +123,8 @@ Alternatively, you can add top-level errors by raising `GraphQL::ExecutionError`
 
 ```ruby
 def authorized?(employee:)
-  if !context[:current_user].manager_of?(employee)
-    raise GraphQL::ExecutionError, "You can only promote your _own_ employees"
-  end
+  return true if context[:current_user].manager_of?(employee)
+  raise GraphQL::ExecutionError, "You can only promote your _own_ employees"
 end
 ```
 
