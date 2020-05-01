@@ -8,6 +8,7 @@ module GraphQL
       # @see GraphQL::Query#arguments_for to get access to these objects.
       class Arguments
         extend Forwardable
+        include GraphQL::Dig
 
         # The Ruby-style arguments hash, ready for a resolver.
         # This hash is the one used at runtime.
