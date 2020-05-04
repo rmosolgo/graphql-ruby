@@ -73,11 +73,14 @@ module GraphQL
       # against the arguments in the next selection. This method will return false
       # if any of the given `arguments:` are not present and matching in the next selection.
       # (But, the next selection may contain _more_ than the given arguments.)
+      #
+      # If `with_alias:` is provided, field aliases would be checked to find selections.
+      #
       # @param field_name [String, Symbol]
       # @param arguments [Hash] Arguments which must match in the selection
       # @return [Boolean]
-      def selects?(field_name, arguments: nil)
-        selection(field_name, arguments: arguments).selected?
+      def selects?(field_name, arguments: nil, with_alias: false)
+        selection(field_name, arguments: arguments, with_alias: with_alias).selected?
       end
 
       # @return [Boolean] True if this lookahead represents a field that was requested
@@ -88,26 +91,24 @@ module GraphQL
       # Like {#selects?}, but can be used for chaining.
       # It returns a null object (check with {#selected?})
       # @return [GraphQL::Execution::Lookahead]
-      def selection(field_name, selected_type: @selected_type, arguments: nil)
-        next_field_name = normalize_name(field_name)
-
-        next_field_defn = get_class_based_field(selected_type, next_field_name)
-        if next_field_defn
-          next_nodes = []
-          @ast_nodes.each do |ast_node|
-            ast_node.selections.each do |selection|
-              find_selected_nodes(selection, next_field_name, next_field_defn, arguments: arguments, matches: next_nodes)
-            end
-          end
-
-          if next_nodes.any?
-            Lookahead.new(query: @query, ast_nodes: next_nodes, field: next_field_defn, owner_type: selected_type)
-          else
-            NULL_LOOKAHEAD
-          end
-        else
-          NULL_LOOKAHEAD
+      def selection(field_name, selected_type: @selected_type, arguments: nil, with_alias: false)
+        if !with_alias || selects?(field_name, arguments: arguments)
+          next_field_name = normalize_name(field_name)
+          next_field_defn = get_class_based_field(selected_type, next_field_name)
+          return lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments)
         end
+
+        return alias_selections[field_name] if alias_selections.key?(field_name)
+
+        alias_node = lookup_alias_node(ast_nodes, field_name)
+        return NULL_LOOKAHEAD unless alias_node
+
+        next_field_name = alias_node.name
+        next_field_defn = get_class_based_field(selected_type, next_field_name)
+
+        arguments = @query.arguments_for(alias_node, next_field_defn)
+        arguments = arguments.is_a?(::GraphQL::Execution::Interpreter::Arguments) ? arguments.keyword_arguments : arguments
+        alias_selections[field_name] = lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments)
       end
 
       # Like {#selection}, but for all nodes.
@@ -300,6 +301,35 @@ module GraphQL
           arg_name = normalize_keyword(arg_name)
           # Make sure the constraint is present with a matching value
           query_kwargs.key?(arg_name) && query_kwargs[arg_name] == arg_value
+        end
+      end
+
+      def lookahead_for_selection(field_name, field_defn, selected_type, arguments)
+        return NULL_LOOKAHEAD unless field_defn
+
+        next_nodes = []
+        @ast_nodes.each do |ast_node|
+          ast_node.selections.each do |selection|
+            find_selected_nodes(selection, field_name, field_defn, arguments: arguments, matches: next_nodes)
+          end
+        end
+
+        return NULL_LOOKAHEAD if next_nodes.empty?
+
+        Lookahead.new(query: @query, ast_nodes: next_nodes, field: field_defn, owner_type: selected_type)
+      end
+
+      def alias_selections
+        return @alias_selections if defined?(@alias_selections)
+        @alias_selections ||= {}
+      end
+
+      def lookup_alias_node(nodes, name)
+        return if nodes.empty?
+        nodes.find do |node|
+          return node if node.alias?(name)
+          child = lookup_alias_node(node.children, name)
+          return child if child
         end
       end
     end

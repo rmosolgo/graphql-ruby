@@ -123,6 +123,10 @@ module GraphQL
           copy_of_self
         end
 
+        def alias?(_)
+          false
+        end
+
         protected
 
         def merge!(new_options)
@@ -374,6 +378,10 @@ module GraphQL
           @selections = attributes[:selections] || NONE
           # oops, alias is a keyword:
           @alias = attributes[:alias]
+        end
+
+        def alias?(val)
+          self.alias == val
         end
 
         # Override this because default is `:fields`

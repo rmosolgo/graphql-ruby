@@ -108,6 +108,10 @@ module GraphQL
 
       NoArguments = Class.new(self) do
         self.argument_definitions = []
+
+        def empty?
+          true
+        end
       end
 
       NO_ARGS = NoArguments.new({}, context: nil, defaults_used: Set.new)

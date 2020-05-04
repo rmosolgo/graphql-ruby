@@ -94,3 +94,38 @@ end
 ```
 
 That way, you can check for specific selections on the nodes in a connection.
+
+## Lookaheads with aliases
+
+If your want to find selection by it's [alias](https://spec.graphql.org/June2018/#sec-Field-Alias), you can pass the option `with_alias: true` to `#selection` and `#selects?`. When this option is passed, lookahead will check if there is a field with the provided name, and then fall back to alias.
+For instance, imagine that you have a following query, than can find a bird species by its name:
+
+```graphql
+query {
+  gull: findBirdSpecies(byName: "Laughing Gull") {
+    name
+  }
+
+  tanager: findBirdSpecies(byName: "Scarlet Tanager") {
+    name
+  }
+}
+```
+
+In this case, you can get the lookahead for each selection in a following way:
+
+```ruby
+def find_bird_species(by_name:, lookahead:)
+  if lookahead.selects?("gull")
+    # ...
+  else
+    # ...
+  end
+
+  if lookahead.selects?("tanager")
+    # ...
+  else
+    # ...
+  end
+end
+```
