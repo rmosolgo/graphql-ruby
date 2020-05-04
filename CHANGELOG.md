@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.10.9 (4 May 2020)
+
+### New features
+
+- Add `Interpreter::Arguments#dig` #2912
+
 ## 1.10.8 (27 April 2020)
 
 ### Breaking changes
