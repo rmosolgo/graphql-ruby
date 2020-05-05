@@ -84,7 +84,7 @@ The new runtime works with class-based schemas only. Several features are no lon
 
 - `rescue_from`
 
-  This was built on middleware, which is not supported anymore. For a replacement, see {% internal_link "Error Handling", "/errors/error_handling" %}.
+  This was built on middleware, which is not supported anymore. For a replacement, see [Error Handling](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/errors/error_handling.md).
 
 - `.graphql_definition` and `def to_graphql`
 
