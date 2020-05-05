@@ -1,0 +1,144 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Related Projects</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.10.9/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#other-guides">Other</a>
+  &raquo; Related Projects
+</p>
+
+
+<h1 class="guide-header">Related Projects</h1>
+<div class="guide-container">
+  <p>Want to add something? Please open a pull request <a href="https://github.com/rmosolgo/graphql-ruby">on GitHub</a>!</p>
+
+<h2 id="code">Code</h2>
+
+<ul>
+  <li><code class="highlighter-rouge">graphql-ruby</code> + Rails demo (<a href="https://github.com/rmosolgo/graphql-ruby-demo">src</a> / <a href="https://graphql-ruby-demo.herokuapp.com">heroku</a>)</li>
+  <li><code class="highlighter-rouge">graphql-ruby</code> + Sinatra demo (<a href="https://github.com/robinjmurphy/ruby-graphql-server-example">src</a> / <a href="https://ruby-graphql-server-example.herokuapp.com/">heroku</a>)</li>
+  <li><a href="https://github.com/shopify/graphql-batch"><code class="highlighter-rouge">graphql-batch</code></a>, a batched query execution strategy</li>
+  <li><a href="https://github.com/stackshareio/graphql-cache"><code class="highlighter-rouge">graphql-cache</code></a>, a resolver-level caching solution</li>
+  <li><a href="https://github.com/rmosolgo/graphql-libgraphqlparser-ruby"><code class="highlighter-rouge">graphql-libgraphqlparser</code></a>, bindings to <a href="https://github.com/graphql/libgraphqlparser">libgraphqlparser</a>, a C-level parser.</li>
+  <li><a href="https://github.com/gjtorikian/graphql-docs"><code class="highlighter-rouge">graphql-docs</code></a>, a tool to automatically generate static HTML documentation from your GraphQL implementation</li>
+  <li><a href="https://github.com/Shopify/graphql-metrics"><code class="highlighter-rouge">graphql-metrics</code></a>, a plugin to extract fine-grain metrics of GraphQL queries received by your server</li>
+  <li>Rails Helpers:
+    <ul>
+      <li><a href="https://github.com/goco-inc/graphql-activerecord"><code class="highlighter-rouge">graphql-activerecord</code></a></li>
+      <li><a href="https://github.com/colepatrickturner/graphql-rails-resolver"><code class="highlighter-rouge">graphql-rails-resolve</code></a></li>
+      <li><a href="https://github.com/nettofarah/graphql-query-resolver"><code class="highlighter-rouge">graphql-query-resolver</code></a>, a graphql-ruby add-on to minimize N+1 queries.</li>
+      <li><a href="https://github.com/jetruby/graphql-rails_logger"><code class="highlighter-rouge">graphql-rails_logger</code></a>, a logger which allows you to inspect GraphQL queries in a more readable format.</li>
+      <li><a href="https://github.com/jetruby/apollo_upload_server-ruby"><code class="highlighter-rouge">apollo_upload_server-ruby</code></a>, a middleware which allows you to upload files with GraphQL and multipart/form-data using <a href="https://github.com/jaydenseric/apollo-upload-client"><code class="highlighter-rouge">apollo-upload-client</code></a> library on front-end.</li>
+    </ul>
+  </li>
+  <li><a href="https://github.com/rstankov/SearchObjectGraphQL"><code class="highlighter-rouge">search_object_graphql</code></a>, a DSL for defining search resolvers for GraphQL.</li>
+  <li><a href="https://github.com/palkan/action_policy-graphql"><code class="highlighter-rouge">action_policy-graphql</code></a>, an integration for using <a href="https://github.com/palkan/action_policy"><code class="highlighter-rouge">action_policy</code></a> as an authorization framework for GraphQL applications.</li>
+  <li><a href="https://github.com/samesystem/graphql_rails"><code class="highlighter-rouge">graphql_rails</code></a>, Rails way GraphQL build tool</li>
+  <li><a href="https://github.com/ajsharp/graphql-rails-generators"><code class="highlighter-rouge">graphql-rails-generators</code></a>, Generate graphql-ruby mutations, types and input types from your ActiveRecord models.</li>
+</ul>
+
+<h2 id="blog-posts">Blog Posts</h2>
+
+<ul>
+  <li>Building a blog in GraphQL and Relay on Rails <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de">Introduction</a>, <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc">Part 1</a>, <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca">Part 2</a></li>
+  <li>https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152</li>
+  <li>https://blog.jacobwgillespie.com/from-rest-to-graphql-b4e95e94c26b#.4cjtklrwt</li>
+  <li>http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/</li>
+  <li>http://mgiroux.me/2015/uploading-files-using-relay-with-rails/</li>
+  <li>http://mgiroux.me/2016/journey-into-graphql-ruby-query-execution/</li>
+  <li>https://jonsimpson.ca/parallel-graphql-resolvers-with-futures/</li>
+  <li>Active Storage meets GraphQL: <a href="https://evilmartians.com/chronicles/active-storage-meets-graphql-direct-uploads">Direct uploads</a> and <a href="https://evilmartians.com/chronicles/active-storage-meets-graphql-pt-2-exposing-attachment-urls">Exposing attachment URLs</a></li>
+  <li><a href="https://evilmartians.com/chronicles/exposing-permissions-in-graphql-apis-with-action-policy">Exposing permissions in GraphQL APIs with Action Policy</a></li>
+  <li><a href="https://evilmartians.com/chronicles/reporting-non-nullable-violations-in-graphql-ruby-properly">Reporting non-nullable violations in graphql-ruby properly</a></li>
+</ul>
+
+<h2 id="screencasts">Screencasts</h2>
+
+<ul>
+  <li><a href="https://rubyplus.com/episodes/271-GraphQL-Basics-in-Rails-5">GraphQL Basics in Rails 5</a></li>
+</ul>
+
+<h2 id="presentations">Presentations</h2>
+<ul>
+  <li><a href="https://speakerdeck.com/nettofarah/rescuing-legacy-codebases-with-graphql-1">Rescuing Legacy Codebases with GraphQL</a> by <a href="https://twitter.com/nettofarah">@nettofarah</a></li>
+</ul>
+
+<h2 id="tutorials">Tutorials</h2>
+<ul>
+  <li>
+    <p><a href="https://www.howtographql.com/graphql-ruby/0-introduction/">How To GraphQL</a> by <a href="https://github.com/rstankov">@rstankov</a></p>
+  </li>
+  <li>
+    <p><a href="https://www.blook.pub/books/graphql-rails-tutorial">GraphQL Ruby CRUD Tutorial</a> by <a href="https://twitter.com/kohheepeace">@kohheepeace</a></p>
+  </li>
+  <li>
+    <p>Rails/GraphQL + React/Apollo Tutorial (<a href="https://evilmartians.com/chronicles/graphql-on-rails-1-from-zero-to-the-first-query">Part 1</a>, <a href="https://evilmartians.com/chronicles/graphql-on-rails-2-updating-the-data">Part 2</a>, <a href="https://evilmartians.com/chronicles/graphql-on-rails-3-on-the-way-to-perfection">Part 3</a>) by <a href="https://twitter.com/evilmartians">@evilmartians</a></p>
+  </li>
+</ul>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/related_projects.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Related Projects">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
