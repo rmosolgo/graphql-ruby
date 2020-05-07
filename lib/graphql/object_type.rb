@@ -88,7 +88,7 @@ module GraphQL
       interfaces.each do |iface|
         iface = BaseType.resolve_related_type(iface)
         if iface.is_a?(GraphQL::InterfaceType)
-          type_memberships << iface.type_membership_class.new(iface, self, options)
+          type_memberships << iface.type_membership_class.new(iface, self, **options)
         end
       end
     end
