@@ -171,6 +171,7 @@ module GraphQL
               type: type_resolver.call(arg["type"]),
               description: arg["description"],
               required: false,
+              method_access: false,
             }
 
             if arg["defaultValue"]
