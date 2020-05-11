@@ -8,6 +8,28 @@
 
 ### Bug Fix
 
+## 1.13.4 (17 Apr 2020)
+
+### Bug Fix
+
+- StableRelationConnection: properly return `hasNextPage: true` when `before` and `max_page_size` are used.
+
+## 1.13.3 (2 Apr 2020)
+
+### New Features
+
+- `GraphQL::Pro::OperationStore::Migration` can be used to copy persisted operations from one backend to another (eg, ActiveRecord to Redis). See the source file, `lib/graphql/pro/operation_store/migration.rb` for docs.
+
+## 1.13.2 (28 Mar 2020)
+
+### Deprecations
+
+- `GraphQL::Pro::Subscriptions` is deprecated; use `GraphQL::Pro::PusherSubscriptions` instead which works the same, but better (see below). This new name avoids confusion with the later-added `AblySubscriptions`.
+
+### New Features
+
+- `GraphQL::Pro::PusherSubscriptions` replaces `GraphQL::Pro::Subscriptions` and adds orphaned record cleanup. (No more dangling records in Redis.)
+
 ## 1.13.1 (12 Mar 2020)
 
 - Use `nonce: true` when working with cursors in new stable connections

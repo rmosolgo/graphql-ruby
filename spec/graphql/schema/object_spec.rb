@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "spec_helper"
-
 describe GraphQL::Schema::Object do
   describe "class attributes" do
     let(:object_class) { Jazz::Ensemble }
@@ -8,8 +7,10 @@ describe GraphQL::Schema::Object do
     it "tells type data" do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
-      assert_equal 6, object_class.fields.size
-      assert_equal 3, object_class.interfaces.size
+      assert_equal 7, object_class.fields.size
+      assert_equal ["GloballyIdentifiable", "HasMusicians", "NamedEntity", "PrivateNameEntity"], object_class.interfaces.map(&:graphql_name).sort
+      # It filters interfaces, too
+      assert_equal ["GloballyIdentifiable", "HasMusicians", "NamedEntity"], object_class.interfaces({}).map(&:graphql_name).sort
       # Compatibility methods are delegated to the underlying BaseType
       assert object_class.respond_to?(:connection_type)
     end
@@ -27,9 +28,9 @@ describe GraphQL::Schema::Object do
       end
 
       # one more than the parent class
-      assert_equal 7, new_object_class.fields.size
+      assert_equal 8, new_object_class.fields.size
       # inherited interfaces are present
-      assert_equal 3, new_object_class.interfaces.size
+      assert_equal ["GloballyIdentifiable", "HasMusicians", "NamedEntity", "PrivateNameEntity"], new_object_class.interfaces.map(&:graphql_name).sort
       # The new field is present
       assert new_object_class.fields.key?("newField")
       # The overridden field is present:
@@ -46,6 +47,12 @@ describe GraphQL::Schema::Object do
       assert_equal "NewSubclass", new_subclass_1.graphql_name
       assert_equal "NewSubclass", new_subclass_2.graphql_name
       assert_equal object_class.description, new_subclass_2.description
+    end
+
+    it "implements visibility constrained interface when context is private" do
+      found_interfaces = object_class.interfaces({ private: true })
+      assert_equal 4, found_interfaces.count
+      assert found_interfaces.any? { |int| int.graphql_name == 'PrivateNameEntity' }
     end
 
     it "should take Ruby name (without Type suffix) as default graphql name" do
@@ -102,6 +109,14 @@ describe GraphQL::Schema::Object do
       object_type.implements(InterfaceType)
       new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
       assert_equal method_defs, new_method_defs
+    end
+
+    it "can implement legacy interfaces" do
+      object_type = Class.new(GraphQL::Schema::Object) do
+        implements GraphQL::Relay::Node.interface # class-based would be `GraphQL::Types::Relay::Node`
+      end
+      assert_equal ["Node"], object_type.interfaces.map(&:graphql_name)
+      assert_equal ["id"], object_type.fields.keys
     end
   end
 
@@ -228,9 +243,9 @@ describe GraphQL::Schema::Object do
     it "returns a matching GraphQL::ObjectType" do
       assert_equal "Ensemble", obj_type.name
       assert_equal "A group of musicians playing together", obj_type.description
-      assert_equal 6, obj_type.all_fields.size
+      assert_equal 7, obj_type.all_fields.size
 
-      name_field = obj_type.all_fields[2]
+      name_field = obj_type.all_fields[3]
       assert_equal "name", name_field.name
       assert_equal GraphQL::STRING_TYPE.to_non_null_type, name_field.type
       assert_equal nil, name_field.description
@@ -249,6 +264,12 @@ describe GraphQL::Schema::Object do
 
       res = Jazz::Schema.execute(query_str)
       assert_equal ["BELA FLECK AND THE FLECKTONES", "ROBERT GLASPER EXPERIMENT"], res["data"]["ensembles"].map { |e| e["upcaseName"] }
+    end
+
+    it "passes on type memberships from superclasses" do
+      obj_type = Jazz::StylishMusician.to_graphql
+      parent_obj_type = Jazz::Musician.to_graphql
+      assert_equal parent_obj_type.interfaces, obj_type.interfaces
     end
   end
 

@@ -30,18 +30,18 @@ describe GraphQL::Relay::RelationConnection do
       }
 
       fragment basesConnection on BasesConnectionWithTotalCount {
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        },
         totalCount,
         edges {
           cursor
           node {
             name
           }
-        },
-        pageInfo {
-          hasNextPage
-          hasPreviousPage
-          startCursor
-          endCursor
         }
       }
     |}

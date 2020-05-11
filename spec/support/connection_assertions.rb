@@ -77,8 +77,8 @@ module ConnectionAssertions
           argument :max_page_size_override, Integer, required: false
         end
 
-        def items(max_page_size_override: nil)
-          if max_page_size_override
+        def items(max_page_size_override: :no_value)
+          if max_page_size_override != :no_value
             context.schema.connection_class.new(get_items, max_page_size: max_page_size_override)
           else
             # don't manually apply the wrapper when it's not required -- check automatic wrapping.
@@ -304,6 +304,23 @@ module ConnectionAssertions
           GRAPHQL
 
           assert_names(["Avocado", "Beet", "Cucumber", "Dill", "Eggplant", "Fennel", "Ginger"], res)
+
+          # Unlimited
+          res = schema.execute <<-GRAPHQL
+          {
+            items(first: 100, maxPageSizeOverride: null) {
+              nodes {
+                name
+              }
+              edges {
+                node {
+                  name
+                }
+              }
+            }
+          }
+          GRAPHQL
+          assert_names(NAMES, res)
         end
 
         it "applies a field-level max-page-size configuration" do

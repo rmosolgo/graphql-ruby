@@ -8,6 +8,68 @@
 
 ### Bug fixes
 
+## 1.10.9 (4 May 2020)
+
+### New features
+
+- Add `Interpreter::Arguments#dig` #2912
+
+## 1.10.8 (27 April 2020)
+
+### Breaking changes
+
+- With the interpreter, `Query#arguments_for` returns `Interpreter::Arguments` instances instead of plain hashes. (They should work mostly the same, though.) #2881
+
+### New features
+
+- `Schema::Field#introspection?` returns true for built-in introspection-related fields
+
+### Bug fixes
+
+- Fix Ruby 2.7 warning on `Schema.to_json` #2905
+- Pass `&block` to nested method calls to reduce stack depths #2900
+- Fix lazy `loads:` with list arguments #2894
+- Fix `loads:` on nested input object #2895
+- Rescue base64 encoding errors in the encoder #2896
+
+## 1.10.7 (16 April 2020)
+
+### Breaking changes
+
+- `Schema.from_introspection(...)` builds class-based schemas #2876
+
+### New features
+
+- `Date` and `DateTime` types also accept well-formatted strings #2848
+- `Schema.from_introspection(...)` builds class-based schemas #2876
+- `Schema#to_definition` now dumps all directives that were part of the original IDL, if the schema was parsed with `.from_definition` #2879
+
+### Bug fixes
+
+- Fix memory leak in legacy runtime #2884
+- Fix interface inheritance in legacy runtime #2882
+- Fix description on `List` and `NonNull` types (for introspection) #2875
+- Fix over-rescue of NoMethodError when building list responses #2887
+
+## 1.10.6 (6 April 2020)
+
+### New features
+
+- Add options to `implements(...)` and inteface type visibility #2791
+- Add `Query#fingerprint` for logging #2859
+- Add `--playground` option to install generator #2839
+- Support lazy-loaded objects from input object `loads:` #2834
+
+### Bug fixes
+
+- Fix `Language::Nodes` equality: move `eql?` to `==` #2861
+- Make rake task properly detect rails `environment` task #2862
+- Fix `nil` override for `max_page_size` #2843
+- Fix `pageInfo` methods when they're called before `nodes` #2845
+- Make the default development error match a normal GraphQL error #2825
+- Fix `loads:` with `require: false` #2833
+- Fix typeerror for `BigInt` given `nil` #2827
+
 ## 1.10.5 (12 March 2020)
 
 ### New features
@@ -1989,7 +2051,7 @@
         }
 
         id_from_object ->(obj, type_defn, ctx) {
-          # Provide the the type name & the object's `id`:
+          # Provide the type name & the object's `id`:
           GraphQL::Schema::UniqueWithinType.encode(type_defn.name, obj.id)
         }
       end

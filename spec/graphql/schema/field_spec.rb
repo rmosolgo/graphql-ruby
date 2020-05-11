@@ -95,6 +95,16 @@ describe GraphQL::Schema::Field do
       assert_equal type.to_graphql, field.to_graphql.type
     end
 
+    describe "introspection?" do
+      it "returns false on regular fields" do
+        assert_equal false, field.introspection?
+      end
+
+      it "returns true on predefined introspection fields" do
+        assert_equal true, GraphQL::Schema.types['__Type'].fields.values.first.introspection?
+      end
+    end
+
     describe "extras" do
       it "can get errors, which adds path" do
         query_str = <<-GRAPHQL
@@ -146,6 +156,45 @@ describe GraphQL::Schema::Field do
 
         field.extras([:ast_node])
         assert_equal [:lookahead, :ast_node], field.extras
+      end
+
+      describe "argument_details" do
+        class ArgumentDetailsSchema < GraphQL::Schema
+          class Query < GraphQL::Schema::Object
+            field :argument_details, [String], null: false, extras: [:argument_details] do
+              argument :arg1, Int, required: false
+              argument :arg2, Int, required: false, default_value: 2
+            end
+
+            def argument_details(argument_details:, arg1: nil, arg2:)
+              [
+                argument_details.class.name,
+                argument_details.argument_values.values.first.class.name,
+                # `.keyword_arguments` includes extras:
+                argument_details.keyword_arguments.keys.join("|"),
+                # `.argument_values` includes only defined GraphQL arguments:
+                argument_details.argument_values.keys.join("|"),
+                argument_details.argument_values[:arg2].default_used?.inspect
+              ]
+            end
+          end
+
+          query(Query)
+          use(GraphQL::Execution::Interpreter)
+          use(GraphQL::Analysis::AST)
+        end
+
+        it "provides metadata about arguments" do
+          res = ArgumentDetailsSchema.execute("{ argumentDetails }")
+          expected_strs = [
+            "GraphQL::Execution::Interpreter::Arguments",
+            "GraphQL::Execution::Interpreter::ArgumentValue",
+            "arg2|argument_details",
+            "arg2",
+            "true",
+          ]
+          assert_equal expected_strs, res["data"]["argumentDetails"]
+        end
       end
     end
 

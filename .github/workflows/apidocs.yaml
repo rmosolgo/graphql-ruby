@@ -1,0 +1,47 @@
+name: Publish API docs
+on:
+  # For some reason, `on: release: ...` didn't work with `nektos/act`
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  build:
+    name: Publish API Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.GITHUB_REF }}
+      - name: Checkout GitHub pages branch
+        uses: actions/checkout@v2
+        with:
+          path: gh-pages
+          ref: gh-pages
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+      - name: Bundle install
+        run: |
+          gem install bundler
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+      - name: Build API docs
+        run: |
+          bundle exec rake site:fetch_latest apidocs:gen_version
+      - name: Commit changes as last committer
+        run: |
+          git config --global user.name rmosolgo
+          git config --global user.email rdmosolgo@github.com
+          git status
+          bundle exec rake site:commit_changes
+          git status
+      - name: Deploy to GitHub pages via gh-pages branch
+        uses: s0/git-publish-subdir-action@master
+        env:
+          REPO: self
+          BRANCH: gh-pages
+          FOLDER: gh-pages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

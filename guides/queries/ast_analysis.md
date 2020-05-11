@@ -51,19 +51,15 @@ class BasicCounterAnalyzer < GraphQL::Analysis::AST::Analyzer
     @fields.add(node.name)
   end
 
-  def on_leave_argument(node, _parent, _visitor)
-    @arguments.add(node.name)
-  end
-
   def result
     # Do something with the gathered result.
-    Analytics.log(@fields, @arguments)
+    Analytics.log(@fields)
   end
 end
 ```
 
-In this example, we counted every field and argument, no matter if they were on fragment definitions
-or if they were skipped by directives. If we want to detect those contexts, we can use helper
+In this example, we counted every field, no matter if it was on fragment definitions
+or if it was skipped by directives. If we want to detect those contexts, we can use helper
 methods:
 
 ```ruby
@@ -91,6 +87,10 @@ end
 ```
 
 See {{ "GraphQL::Analysis::AST::Visitor" | api_doc }} for more information about the `visitor` object.
+
+### Field Arguments
+
+Usually, analyzers will use `on_enter_field` and `on_leave_field` to process queries. To get a field's arguments during analysis, use `visitor.query.arguments_for(node, visitor.field_definition)` ({{ "GraphQL::Query#arguments_for" | api_doc }}). That method returns coerced argument values and normalizes argument literals and variable values.
 
 ### Errors
 

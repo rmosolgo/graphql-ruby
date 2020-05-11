@@ -43,8 +43,8 @@ module GraphQL
             @storage = storage
           end
 
-          def each
-            @storage.each { |i| yield(i) }
+          def each(&block)
+            @storage.each(&block)
           end
         end
 

@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require "graphql/execution/interpreter/argument_value"
+require "graphql/execution/interpreter/arguments"
 require "graphql/execution/interpreter/arguments_cache"
 require "graphql/execution/interpreter/execution_errors"
 require "graphql/execution/interpreter/hash_response"
@@ -90,6 +92,19 @@ module GraphQL
         final_values.compact!
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
           Interpreter::Resolve.resolve_all(final_values)
+        end
+      end
+
+      class ListResultFailedError < GraphQL::Error
+        def initialize(value:, path:, field:)
+          message = "Failed to build a GraphQL list result for field `#{field.path}` at path `#{path.join(".")}`.\n".dup
+
+          message << "Expected `#{value.inspect}` to implement `.each` to satisfy the GraphQL return type `#{field.type.to_type_signature}`.\n"
+
+          if field.connection?
+            message << "\nThis field was treated as a Relay-style connection; add `connection: false` to the `field(...)` to disable this behavior."
+          end
+          super(message)
         end
       end
     end

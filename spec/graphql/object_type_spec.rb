@@ -110,7 +110,7 @@ describe GraphQL::ObjectType do
         field :hello, types.String
       end
 
-      assert_equal([Dummy::Edible.graphql_definition, Dummy::AnimalProduct.graphql_definition], type.interfaces)
+      assert_equal([Dummy::AnimalProduct.graphql_definition, Dummy::Edible.graphql_definition], type.interfaces)
     end
 
     it "can be used to inherit fields from the interface" do
@@ -176,7 +176,7 @@ describe GraphQL::ObjectType do
       type_2.fields["nonsense"] = GraphQL::Field.define(name: "nonsense", type: type)
 
       assert_equal 4, type.interfaces.size
-      assert_equal 5, type_2.interfaces.size
+      assert_equal 4, type_2.interfaces.size
       assert_equal 9, type.fields.size
       assert_equal 10, type_2.fields.size
     end

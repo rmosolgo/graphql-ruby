@@ -63,7 +63,7 @@ In general, authentication is _not_ addressed in GraphQL at all. Instead, your c
 ```ruby
 class GraphqlController < ApplicationController
   def execute
-    # Somehow get the the current `User` from this HTTP request.
+    # Somehow get the current `User` from this HTTP request.
     current_user = get_logged_in_user(request)
     # Provide the current user in `context` for use during the query
     context = { current_user: current_user }

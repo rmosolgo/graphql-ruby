@@ -60,6 +60,32 @@ describe GraphQL::Schema::IntrospectionSystem do
       assert_equal 1, res["data"]["__type"]["possibleTypes"].length
       assert_equal "MUSICIAN", res["data"]["__type"]["possibleTypes"].first["name"]
     end
+
+    it "does not include hidden interfaces based on context" do
+      context = { private: false }
+      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
+
+      assert res["data"]["__type"]["interfaces"].none? { |i| i["name"] == "PRIVATENAMEENTITY" }
+    end
+
+    it "includes hidden interfaces based on the context" do
+      context = { private: true }
+      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
+
+      assert res["data"]["__type"]["interfaces"].any? { |i| i["name"] == "PRIVATENAMEENTITY" }
+    end
+
+    it "does not include fields from hidden  interfaces based on the context" do
+      context = { private: false }
+      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
+      assert res["data"]["__type"]["fields"].none? { |i| i["name"] == "privateName" }
+    end
+
+    it "includes fields from interfaces based on the context" do
+      context = { private: true }
+      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
+      assert res["data"]["__type"]["fields"].any? { |i| i["name"] == "privateName" }
+    end
   end
 
   describe "copying the built-ins" do

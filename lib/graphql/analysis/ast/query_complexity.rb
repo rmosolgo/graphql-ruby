@@ -54,7 +54,7 @@ module GraphQL
             case defined_complexity
             when Proc
               arguments = @query.arguments_for(@node, @field_definition)
-              defined_complexity.call(@query.context, arguments, child_complexity)
+              defined_complexity.call(@query.context, arguments.keyword_arguments, child_complexity)
             when Numeric
               defined_complexity + child_complexity
             else

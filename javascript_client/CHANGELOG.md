@@ -1,5 +1,18 @@
 # graphql-ruby-client
 
+## 1.7.8 (1 May 2020)
+
+- `sync`: Add support for Apollo-Android's `OperationOutput.json` #2914
+
+## 1.7.7 (15 Apr 2020)
+
+- Ably handler: dispatch initial response #2866
+- Ably handler: catch any error in initial HTTP call #2877
+
+## 1.7.6 (3 Apr 2020)
+
+- Fix ActionCableLink sending unsubcribe to ActionCable #2842
+
 ## 1.7.5 (4 Mar 2020)
 
 - Add missing dependency declarations

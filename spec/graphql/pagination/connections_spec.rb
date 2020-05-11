@@ -54,4 +54,62 @@ describe GraphQL::Pagination::Connections do
       schema.connections.wrap(field_defn, Set.new([1,2,3]), {}, nil, wrappers: {})
     end
   end
+
+  # Simulate a schema with a `*Connection` type that _isn't_
+  # supposed to be a connection. Help debug, see https://github.com/rmosolgo/graphql-ruby/issues/2588
+  class ConnectionErrorTestSchema < GraphQL::Schema
+    use GraphQL::Execution::Interpreter
+    use GraphQL::Analysis::AST
+    use GraphQL::Pagination::Connections
+
+    class BadThing
+      def name
+        self.no_such_method # raise a NoMethodError
+      end
+
+      def inspect
+        "<BadThing!>"
+      end
+    end
+
+    class ThingConnection < GraphQL::Schema::Object
+      field :name, String, null: false
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :things, [ThingConnection], null: false
+
+      def things
+        [{name: "thing1"}, {name: "thing2"}]
+      end
+
+      field :things2, [ThingConnection], null: false, connection: false
+
+      def things2
+        [
+          BadThing.new
+        ]
+      end
+    end
+
+    query(Query)
+  end
+
+  it "raises a helpful error when it fails to implement a connection" do
+    err = assert_raises GraphQL::Execution::Interpreter::ListResultFailedError do
+      pp ConnectionErrorTestSchema.execute("{ things { name } }")
+    end
+
+    assert_includes err.message, "Failed to build a GraphQL list result for field `Query.things` at path `things`."
+    assert_includes err.message, "to implement `.each` to satisfy the GraphQL return type `[ThingConnection!]!`"
+    assert_includes err.message, "This field was treated as a Relay-style connection; add `connection: false` to the `field(...)` to disable this behavior."
+  end
+
+  it "lets unrelated NoMethodErrors bubble up" do
+    err = assert_raises NoMethodError do
+      pp ConnectionErrorTestSchema.execute("{ things2 { name } }")
+    end
+
+    assert_includes err.message, "undefined method `no_such_method' for <BadThing!>"
+  end
 end

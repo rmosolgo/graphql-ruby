@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    name: Publish
+    name: Publish Website
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
@@ -27,7 +27,7 @@ jobs:
         env:
           ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
         run: |
-          bundle exec rake site:build_doc site:update_search_index site:clean_html site:build_html
+          bundle exec rake site:fetch_latest site:build_doc site:update_search_index site:clean_html site:build_html
       - name: Commit changes as last committer
         run: |
           git config --global user.name "%(git log --format="%aN" -n 1)"

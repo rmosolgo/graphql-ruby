@@ -521,7 +521,7 @@ type Query {
         ).document
       }
 
-      it "returns the the schema IDL including only the built ins and not introspection types" do
+      it "returns the schema IDL including only the built ins and not introspection types" do
         assert equivalent_node?(expected_document, document)
       end
     end

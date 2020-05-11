@@ -8,6 +8,7 @@ module GraphQL
     #
     # - No queueing system; ActiveJob should be added
     # - Take care to reload context when re-delivering the subscription. (see {Query#subscription_update?})
+    # - Avoid the async ActionCable adapter and use the redis or PostgreSQL adapters instead. Otherwise calling #trigger won't work from background jobs or the Rails console. 
     #
     # @example Adding ActionCableSubscriptions to your schema
     #   class MySchema < GraphQL::Schema
