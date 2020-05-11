@@ -91,6 +91,22 @@ describe GraphQL::Types::ISO8601Date do
       assert_equal expected_errors, parse_date("2018-26-07").map { |e| e["message"] }
       assert_equal expected_errors, parse_date("xyz").map { |e| e["message"] }
       assert_equal expected_errors, parse_date(nil).map { |e| e["message"] }
+      assert_equal expected_errors, parse_date([1, 2, 3]).map { |e| e["message"] }
+    end
+
+
+    it "handles array inputs gracefully" do
+      query_str = <<-GRAPHQL
+        {
+          parseDate(date: ["A", "B", "C"]) {
+            year
+          }
+        }
+      GRAPHQL
+
+      res = DateTest::Schema.execute(query_str)
+      expected_message = "Argument 'date' on Field 'parseDate' has an invalid value ([\"A\", \"B\", \"C\"]). Expected type 'ISO8601Date!'."
+      assert_equal expected_message, res["errors"].first["message"]
     end
   end
 
@@ -115,7 +131,7 @@ describe GraphQL::Types::ISO8601Date do
       GRAPHQL
     end
     let(:full_res) { DateTest::Schema.execute(query_str, variables: { date: date_str }) }
-    
+
     it 'serializes a Date object as an ISO8601 Date string' do
       assert_equal date_str, full_res["data"]["parseDate"]["iso8601"]
     end

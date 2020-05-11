@@ -109,6 +109,21 @@ describe GraphQL::Types::ISO8601DateTime do
       assert_equal expected_errors, parse_date("2018-06-07T99:31:42-07:00").map { |e| e["message"] }
       assert_equal expected_errors, parse_date("xyz").map { |e| e["message"] }
       assert_equal expected_errors, parse_date(nil).map { |e| e["message"] }
+      assert_equal expected_errors, parse_date([1,2,3]).map { |e| e["message"] }
+    end
+
+    it "handles array inputs gracefully" do
+      query_str = <<-GRAPHQL
+        {
+          parseDateTime(date: ["A", "B", "C"]) {
+            year
+          }
+        }
+      GRAPHQL
+
+      res = DateTimeTest::Schema.execute(query_str)
+      expected_message = "Argument 'date' on Field 'parseDateTime' has an invalid value ([\"A\", \"B\", \"C\"]). Expected type 'ISO8601DateTime!'."
+      assert_equal expected_message, res["errors"].first["message"]
     end
   end
 
