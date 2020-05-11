@@ -102,7 +102,6 @@ describe GraphQL::Schema::Subscription do
     end
 
     class Subscription < GraphQL::Schema::Object
-      extend GraphQL::Subscriptions::SubscriptionRoot
       field :toot_was_tooted, subscription: TootWasTooted
       field :direct_toot_was_tooted, subscription: DirectTootWasTooted
       field :users_joined, subscription: UsersJoined
