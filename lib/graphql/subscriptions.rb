@@ -100,7 +100,7 @@ module GraphQL
       context = query_data.fetch(:context)
       operation_name = query_data.fetch(:operation_name)
       # Re-evaluate the saved query
-      result = @schema.execute(
+      @schema.execute(
         query: query_string,
         context: context,
         subscription_topic: event.topic,
@@ -108,13 +108,14 @@ module GraphQL
         variables: variables,
         root_value: object,
       )
-      deliver(subscription_id, result)
     rescue GraphQL::Schema::Subscription::NoUpdateError
       # This update was skipped in user code; do nothing.
+      nil
     rescue GraphQL::Schema::Subscription::UnsubscribedError
       # `unsubscribe` was called, clean up on our side
       # TODO also send `{more: false}` to client?
       delete_subscription(subscription_id)
+      nil
     end
 
     # Event `event` occurred on `object`,
@@ -124,7 +125,10 @@ module GraphQL
     # @return [void]
     def execute_all(event, object)
       each_subscription_id(event) do |subscription_id|
-        execute(subscription_id, event, object)
+        result = execute(subscription_id, event, object)
+        if !result.nil?
+          deliver(subscription_id, result)
+        end
       end
     end
 
