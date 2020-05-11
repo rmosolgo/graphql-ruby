@@ -12,12 +12,6 @@ class GraphqlChannel < ActionCable::Channel::Base
   end
 
   class SubscriptionType < GraphQL::Schema::Object
-    if !TESTING_INTERPRETER
-      def payload(id:)
-        id
-      end
-    end
-
     field :payload, PayloadType, null: false do
       argument :id, ID, required: true
     end
@@ -48,10 +42,9 @@ class GraphqlChannel < ActionCable::Channel::Base
     subscription(SubscriptionType)
     use GraphQL::Subscriptions::ActionCableSubscriptions,
       serializer: CustomSerializer
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
+
+    use GraphQL::Execution::Interpreter
+    use GraphQL::Analysis::AST
   end
 
   def subscribed
