@@ -572,50 +572,6 @@ module GraphQL
         err
       end
 
-      # Find a way to resolve this field, checking:
-      #
-      # - Hash keys, if the wrapped object is a hash;
-      # - A method on the wrapped object;
-      # - Or, raise not implemented.
-      #
-      # This can be overridden by defining a method on the object type.
-      # @param obj [GraphQL::Schema::Object]
-      # @param ruby_kwargs [Hash<Symbol => Object>]
-      # @param ctx [GraphQL::Query::Context]
-      def resolve_field_method(obj, ruby_kwargs, ctx)
-        if obj.respond_to?(@resolver_method)
-          # Call the method with kwargs, if there are any
-          if ruby_kwargs.any?
-            obj.public_send(@resolver_method, **ruby_kwargs)
-          else
-            obj.public_send(@resolver_method)
-          end
-        elsif obj.object.is_a?(Hash)
-          inner_object = obj.object
-          if inner_object.key?(@method_sym)
-            inner_object[@method_sym]
-          else
-            inner_object[@method_str]
-          end
-        elsif obj.object.respond_to?(@method_sym)
-          if ruby_kwargs.any?
-            obj.object.public_send(@method_sym, **ruby_kwargs)
-          else
-            obj.object.public_send(@method_sym)
-          end
-        else
-          raise <<-ERR
-        Failed to implement #{@owner.graphql_name}.#{@name}, tried:
-
-        - `#{obj.class}##{@resolver_method}`, which did not exist
-        - `#{obj.object.class}##{@method_sym}`, which did not exist
-        - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
-
-        To implement this field, define one of the methods above (and check for typos)
-        ERR
-        end
-      end
-
       # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
       def fetch_extra(extra_name, ctx)
         if extra_name != :path && extra_name != :ast_node && respond_to?(extra_name)
@@ -684,16 +640,53 @@ module GraphQL
         end
       end
 
-      def public_send_field(obj, ruby_kwargs, query_ctx)
-        with_extensions(obj, ruby_kwargs, query_ctx) do |extended_obj, extended_args|
+      def public_send_field(unextended_obj, unextended_ruby_kwargs, query_ctx)
+        with_extensions(unextended_obj, unextended_ruby_kwargs, query_ctx) do |obj, ruby_kwargs|
           if @resolver_class
-            if extended_obj.is_a?(GraphQL::Schema::Object)
-              extended_obj = extended_obj.object
+            if obj.is_a?(GraphQL::Schema::Object)
+              obj = obj.object
             end
-            extended_obj = @resolver_class.new(object: extended_obj, context: query_ctx, field: self)
+            obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
           end
 
-          resolve_field_method(extended_obj, extended_args, query_ctx)
+          # Find a way to resolve this field, checking:
+          #
+          # - A method on the type instance;
+          # - Hash keys, if the wrapped object is a hash;
+          # - A method on the wrapped object;
+          # - Or, raise not implemented.
+          #
+          if obj.respond_to?(@resolver_method)
+            # Call the method with kwargs, if there are any
+            if ruby_kwargs.any?
+              obj.public_send(@resolver_method, **ruby_kwargs)
+            else
+              obj.public_send(@resolver_method)
+            end
+          elsif obj.object.is_a?(Hash)
+            inner_object = obj.object
+            if inner_object.key?(@method_sym)
+              inner_object[@method_sym]
+            else
+              inner_object[@method_str]
+            end
+          elsif obj.object.respond_to?(@method_sym)
+            if ruby_kwargs.any?
+              obj.object.public_send(@method_sym, **ruby_kwargs)
+            else
+              obj.object.public_send(@method_sym)
+            end
+          else
+            raise <<-ERR
+          Failed to implement #{@owner.graphql_name}.#{@name}, tried:
+
+          - `#{obj.class}##{@resolver_method}`, which did not exist
+          - `#{obj.object.class}##{@method_sym}`, which did not exist
+          - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
+
+          To implement this field, define one of the methods above (and check for typos)
+          ERR
+          end
         end
       end
 
