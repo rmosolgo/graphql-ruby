@@ -122,13 +122,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     if !TESTING_INTERPRETER
       # Stub methods are required
       [:payload, :event, :my_event].each do |m|
-        define_method(m) { |*a|
-          if context.query.subscription_update?
-            object
-          else
-            context.skip
-          end
-        }
+        define_method(m) { |*a| nil }
       end
     end
     field :payload, Payload, null: false do
@@ -205,6 +199,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   }
   GRAPHQL
 
+
   DEFAULT_SUBSCRIPTION_RESOLVE = ->(o,a,c) {
     if c.query.subscription_update?
       o
@@ -267,11 +262,11 @@ describe GraphQL::Subscriptions do
           res_1 = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
           res_2 = schema.execute(query_str, context: { socket: "2" }, variables: { "id" => "200" }, root_value: root_object)
 
-          empty_response = TESTING_INTERPRETER ? { "data" => {} } : { "data" => nil }
+          empty_response = TESTING_INTERPRETER ? {} : nil
 
           # Initial response is nil, no broadcasts yet
-          assert_equal(empty_response, res_1.to_h)
-          assert_equal(empty_response, res_2.to_h)
+          assert_equal(empty_response, res_1["data"])
+          assert_equal(empty_response, res_2["data"])
           assert_equal [], deliveries["1"]
           assert_equal [], deliveries["2"]
 
@@ -648,8 +643,9 @@ describe GraphQL::Subscriptions do
             failedEvent(id: $id) { str, int }
           }
             GRAPHQL
-            assert_nil res.fetch("data")
+            assert_equal nil, res["data"]
             assert_equal "unauthorized", res["errors"][0]["message"]
+
             assert_equal 0, active_subscriptions.size
           end
 
