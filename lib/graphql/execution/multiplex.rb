@@ -34,8 +34,7 @@ module GraphQL
         @schema = schema
         @queries = queries
         @context = context
-        # TODO remove support for global tracers
-        @tracers = schema.tracers + GraphQL::Tracing.tracers + (context[:tracers] || [])
+        @tracers = schema.tracers + (context[:tracers] || [])
         # Support `context: {backtrace: true}`
         if context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
           @tracers << GraphQL::Backtrace::Tracer

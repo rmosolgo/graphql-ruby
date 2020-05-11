@@ -16,8 +16,6 @@ end
 module GraphQL
   # Library entry point for performance metric reporting.
   #
-  # __Warning:__ Installing/uninstalling tracers is not thread-safe. Do it during application boot only.
-  #
   # @example Sending custom events
   #   query.trace("my_custom_event", { ... }) do
   #     # do stuff ...
@@ -85,31 +83,6 @@ module GraphQL
         end
       end
     end
-
-    class << self
-      # Install a tracer to receive events.
-      # @param tracer [<#trace(key, metadata)>]
-      # @return [void]
-      # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
-      def install(tracer)
-        warn("GraphQL::Tracing.install is deprecated, add it to the schema with `tracer(my_tracer)` instead.")
-        if !tracers.include?(tracer)
-          @tracers << tracer
-        end
-      end
-
-      # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
-      def uninstall(tracer)
-        @tracers.delete(tracer)
-      end
-
-      # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
-      def tracers
-        @tracers ||= []
-      end
-    end
-    # Initialize the array
-    tracers
 
     module NullTracer
       module_function
