@@ -237,8 +237,8 @@ module GraphQL
         end
 
         # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
-        method_name = method || hash_key || @underscored_name
-        resolver_method ||= @underscored_name.to_sym
+        method_name = method || hash_key || name_s
+        resolver_method ||= name_s.to_sym
 
         @method_str = method_name.to_s
         @method_sym = method_name.to_sym

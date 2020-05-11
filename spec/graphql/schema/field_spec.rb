@@ -428,4 +428,51 @@ describe GraphQL::Schema::Field do
       assert_equal CustomConnectionExtension, child_field_class.connection_extension
     end
   end
+
+  describe "looking up hash keys with case" do
+    class HashKeySchema < GraphQL::Schema
+      class ResultType < GraphQL::Schema::Object
+        field :lowercase, String, camelize: false, null: true
+        field :Capital, String, camelize: false, null: true
+        field :Other, String, camelize: true, null: true
+        field :OtherCapital, String, camelize: false, null: true, hash_key: "OtherCapital"
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :search_results, ResultType, null: false
+        def search_results
+          {
+            "lowercase" => "lowercase-works",
+            "Capital" => "capital-camelize-false-works",
+            "Other" => "capital-camelize-true-works",
+            "OtherCapital" => "explicit-hash-key-works"
+          }
+        end
+      end
+
+      query(QueryType)
+    end
+
+    it "finds exact matches by hash key" do
+      res = HashKeySchema.execute <<-GRAPHQL
+      {
+        searchResults {
+          lowercase
+          Capital
+          Other
+          OtherCapital
+        }
+      }
+      GRAPHQL
+
+      search_results = res["data"]["searchResults"]
+      expected_result = {
+        "lowercase" => "lowercase-works",
+        "Capital" => "capital-camelize-false-works",
+        "Other" => "capital-camelize-true-works",
+        "OtherCapital" => "explicit-hash-key-works"
+      }
+      assert_equal expected_result, search_results
+    end
+  end
 end
