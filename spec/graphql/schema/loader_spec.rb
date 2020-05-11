@@ -336,7 +336,7 @@ describe GraphQL::Schema::Loader do
               ]
             }
           }
-        })
+        }).graphql_definition
       end
     end
 
