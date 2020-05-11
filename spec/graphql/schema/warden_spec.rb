@@ -429,7 +429,6 @@ describe GraphQL::Schema::Warden do
           Node: __type(name: "Node") { name }
         }
       |
-
       res = schema.execute(query_string)
       assert res["data"]["Node"]
 

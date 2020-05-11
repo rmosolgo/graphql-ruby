@@ -1,10 +1,10 @@
 {
   "name": "graphql-ruby-client",
-  "version": "1.7.5",
+  "version": "1.7.8",
   "description": "JavaScript client for graphql-ruby",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "https://github.com/rmosolgo/graphql-ruby-client",
+  "repository": "https://github.com/rmosolgo/graphql-ruby",
   "author": "Robert Mosolgo",
   "license": "LGPL-3.0",
   "bin": "./dist/cli.js",
@@ -30,5 +30,8 @@
     "graphql": "^14.3.1",
     "minimist": "^1.2.0",
     "typescript": "^3.7.5"
+  },
+  "prettier": {
+    "semi": false
   }
 }

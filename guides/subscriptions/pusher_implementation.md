@@ -107,7 +107,7 @@ Then, that Redis client is passed to the Subscription configuration:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  use GraphQL::Pro::Subscriptions, redis: $graphql_subscriptions_redis
+  use GraphQL::Pro::PusherSubscriptions, redis: $graphql_subscriptions_redis
 end
 ```
 
@@ -201,10 +201,10 @@ end
 
 Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query `context`.
 
-By default, this is done with {{ "GraphQL::Subscriptions::Serialize" | api_doc }}'s `dump` and `load` methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of `GraphQL::Pro::Subscriptions` and override `#dump_context(ctx)` and `#load_context(ctx_string)`:
+By default, this is done with {{ "GraphQL::Subscriptions::Serialize" | api_doc }}'s `dump` and `load` methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of `GraphQL::Pro::PusherSubscriptions` and override `#dump_context(ctx)` and `#load_context(ctx_string)`:
 
 ```ruby
-class CustomSubscriptions < GraphQL::Pro::Subscriptions
+class CustomSubscriptions < GraphQL::Pro::PusherSubscriptions
   def dump_context(ctx)
     context_hash = ctx.to_h
     # somehow convert this hash to a string, return the string
@@ -221,7 +221,7 @@ Then, use your _custom_ subscriptions class instead of the built-in one for your
 
 ```ruby
 class MySchema < GraphQL::Schema
-  # Use custom subscriptions instead of GraphQL::Pro::Subscriptions
+  # Use custom subscriptions instead of GraphQL::Pro::PusherSubscriptions
   # to get custom serialization logic
   use CustomSubscriptions, redis: $redis
 end

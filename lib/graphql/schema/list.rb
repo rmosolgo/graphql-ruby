@@ -31,6 +31,11 @@ module GraphQL
         nil
       end
 
+      # Also for implementing introspection
+      def description
+        nil
+      end
+
       def coerce_result(value, ctx)
         value.map { |i| i.nil? ? nil : of_type.coerce_result(i, ctx) }
       end

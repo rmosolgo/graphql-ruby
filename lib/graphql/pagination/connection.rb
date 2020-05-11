@@ -54,19 +54,39 @@ module GraphQL
       # @param last [Integer, nil] Limit parameter from the client, if provided
       # @param before [String, nil] A cursor for pagination, if the client provided one.
       # @param max_page_size [Integer, nil] A configured value to cap the result size. Applied as `first` if neither first or last are given.
-      def initialize(items, context: nil, first: nil, after: nil, max_page_size: nil, last: nil, before: nil)
+      def initialize(items, context: nil, first: nil, after: nil, max_page_size: :not_given, last: nil, before: nil)
         @items = items
         @context = context
         @first_value = first
         @after_value = after
         @last_value = last
         @before_value = before
-        @max_page_size = max_page_size
+
+        # This is only true if the object was _initialized_ with an override
+        # or if one is assigned later.
+        @has_max_page_size_override = max_page_size != :not_given
+        @max_page_size = if max_page_size == :not_given
+          nil
+        else
+          max_page_size
+        end
       end
 
-      attr_writer :max_page_size
+      def max_page_size=(new_value)
+        @has_max_page_size_override = true
+        @max_page_size = new_value
+      end
+
       def max_page_size
-        @max_page_size ||= context.schema.default_max_page_size
+        if @has_max_page_size_override
+          @max_page_size
+        else
+          context.schema.default_max_page_size
+        end
+      end
+
+      def has_max_page_size_override?
+        @has_max_page_size_override
       end
 
       attr_writer :first

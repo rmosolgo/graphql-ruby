@@ -138,13 +138,14 @@ describe GraphQL::Schema::InputObject do
       class Schema < GraphQL::Schema
         query(Query)
         mutation(Mutation)
+        lazy_resolve(Proc, :call)
         if TESTING_INTERPRETER
           use GraphQL::Execution::Interpreter
           use GraphQL::Analysis::AST
         end
 
         def self.object_from_id(id, ctx)
-          Jazz::GloballyIdentifiableType.find(id)
+          -> { Jazz::GloballyIdentifiableType.find(id) }
         end
 
         def self.resolve_type(type, obj, ctx)

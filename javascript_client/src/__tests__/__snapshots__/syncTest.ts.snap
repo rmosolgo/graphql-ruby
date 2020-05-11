@@ -265,6 +265,193 @@ Array [
 
 exports[`sync operations Printing the result prints success 3`] = `Array []`;
 
+exports[`sync operations Relay support Uses Apollo Android OperationOutput JSON files 1`] = `
+Array [
+  Object {
+    "alias": "aba626ea9bdf465954e89e5590eb2c1a",
+    "body": "mutation RemoveTodoMutation(
+  $input: RemoveTodoInput!
+) {
+  removeTodo(input: $input) {
+    deletedTodoId
+    user {
+      completedCount
+      totalCount
+      id
+    }
+  }
+}
+",
+  },
+  Object {
+    "alias": "67c2bc8aa3185a209d6651b4feb63c04",
+    "body": "query appQuery(
+  $userId: String
+) {
+  user(id: $userId) {
+    ...TodoApp_user
+    id
+  }
+}
+
+fragment TodoApp_user on User {
+  id
+  userId
+  totalCount
+  ...TodoListFooter_user
+  ...TodoList_user
+}
+
+fragment TodoListFooter_user on User {
+  id
+  userId
+  completedCount
+  todos(first: 2147483647) {
+    edges {
+      node {
+        id
+        complete
+        __typename
+      }
+      cursor
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+  totalCount
+}
+
+fragment TodoList_user on User {
+  todos(first: 2147483647) {
+    edges {
+      node {
+        id
+        complete
+        ...Todo_todo
+        __typename
+      }
+      cursor
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+  id
+  userId
+  totalCount
+  completedCount
+  ...Todo_user
+}
+
+fragment Todo_todo on Todo {
+  complete
+  id
+  text
+}
+
+fragment Todo_user on User {
+  id
+  userId
+  totalCount
+  completedCount
+}
+",
+  },
+  Object {
+    "alias": "db9904c31d91416f21d45fe3d153884c",
+    "body": "mutation MarkAllTodosMutation(
+  $input: MarkAllTodosInput!
+) {
+  markAllTodos(input: $input) {
+    changedTodos {
+      id
+      complete
+    }
+    user {
+      id
+      completedCount
+    }
+  }
+}
+",
+  },
+  Object {
+    "alias": "2eb8c9941fdb3117fdbc08d15fab62d0",
+    "body": "mutation AddTodoMutation(
+  $input: AddTodoInput!
+) {
+  addTodo(input: $input) {
+    todoEdge {
+      __typename
+      cursor
+      node {
+        complete
+        id
+        text
+      }
+    }
+    user {
+      id
+      totalCount
+    }
+  }
+}
+",
+  },
+  Object {
+    "alias": "d970fd7dbf118794415dec7324d463e3",
+    "body": "mutation RenameTodoMutation(
+  $input: RenameTodoInput!
+) {
+  renameTodo(input: $input) {
+    todo {
+      id
+      text
+    }
+  }
+}
+",
+  },
+  Object {
+    "alias": "a49217db31a8be3f4107763b957d5fca",
+    "body": "mutation RemoveCompletedTodosMutation(
+  $input: RemoveCompletedTodosInput!
+) {
+  removeCompletedTodos(input: $input) {
+    deletedTodoIds
+    user {
+      completedCount
+      totalCount
+      id
+    }
+  }
+}
+",
+  },
+  Object {
+    "alias": "d7dda774dcfa32fe0d9661e01cac9a4a",
+    "body": "mutation ChangeTodoStatusMutation(
+  $input: ChangeTodoStatusInput!
+) {
+  changeTodoStatus(input: $input) {
+    todo {
+      id
+      complete
+    }
+    user {
+      id
+      completedCount
+    }
+  }
+}
+",
+  },
+]
+`;
+
 exports[`sync operations Relay support Uses Relay generated .js files 1`] = `
 Array [
   Object {

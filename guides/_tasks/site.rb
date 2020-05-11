@@ -4,28 +4,32 @@ require "yard"
 namespace :apidocs do
   desc "Fetch a gem version from RubyGems, build the docs"
   task :gen_version, [:version] do |t, args|
-    version = args[:version] || raise("A version is required")
+    # GITHUB_REF comes from GitHub Actions
+    version = args[:version] || ENV["GITHUB_REF"] || raise("A version is required")
+    # GitHub Actions gives the full tag name
+    if version.start_with?("refs/tags/")
+      version = version[10..-1]
+    end
     if version.start_with?("v")
       version = version[1..-1]
     end
-    Dir.chdir("tmp") do
-      if !File.exist?("graphql-#{version}.gem")
-        system("gem fetch graphql --version=#{version}")
-      end
-      if !File.exist?("graphql-#{version}")
-        system("gem unpack graphql-#{version}.gem")
-      end
+    Dir.mktmpdir do
+      puts "Fetching graphql-#{version}"
+      system("gem fetch graphql --version=#{version}")
+      system("gem unpack graphql-#{version}.gem")
+      system("rm graphql-#{version}.gem")
+
       Dir.chdir("graphql-#{version}") do
-        if !File.exist?("doc")
-          system("yardoc")
-        end
+        system("yardoc")
         # Copy it into gh-pages for publishing
         # and locally for previewing
-        push_dest = "../../gh-pages/api-doc/#{version}"
-        local_dest = "../../guides/_site/api-doc/#{version}"
+        push_dest = File.expand_path("../gh-pages/api-doc/#{version}")
+        local_dest = File.expand_path("../guides/_site/api-doc/#{version}")
         mkdir_p push_dest
         mkdir_p local_dest
+        puts "Copying from #{Dir.pwd}/doc to #{push_dest}"
         copy_entry "doc", push_dest
+        puts "Copying from #{Dir.pwd}/doc to #{local_dest}"
         copy_entry "doc", local_dest
       end
     end
@@ -102,8 +106,10 @@ namespace :site do
     puts "Committing and pushing to GitHub Pages..."
     sha = `git rev-parse HEAD`.strip
     Dir.chdir('gh-pages') do
-      sh "git add ."
-      sh "git commit --allow-empty -m 'Updating to #{sha}.'"
+      system "git status"
+      system "git add ."
+      system "git status"
+      system "git commit --allow-empty -m 'Updating to #{sha}.'"
     end
   end
 

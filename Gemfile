@@ -7,7 +7,7 @@ gem 'bootsnap' # required by the Rails apps generated in tests
 gem 'ruby-prof', platform: :ruby
 gem 'pry'
 gem 'pry-stack_explorer', platform: :ruby
-if RUBY_VERSION >= "2.3"
+if RUBY_VERSION >= "2.4"
   gem 'pry-byebug'
 end
 

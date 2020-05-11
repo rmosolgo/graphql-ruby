@@ -2,12 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Analysis::AST::QueryComplexity do
-  let(:schema) {
-    schema = Class.new(Dummy::Schema)
-    schema.analysis_engine = GraphQL::Analysis::AST
-    schema
-  }
-
+  let(:schema) { Dummy::Schema }
   let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::QueryComplexity]) }
   let(:reduce_multiplex_result) {
     GraphQL::Analysis::AST.analyze_multiplex(multiplex, [GraphQL::Analysis::AST::QueryComplexity])
@@ -282,54 +277,45 @@ describe GraphQL::Analysis::AST::QueryComplexity do
   end
 
   describe "custom complexities" do
+    class CustomComplexitySchema < GraphQL::Schema
+      module ComplexityInterface
+        include GraphQL::Schema::Interface
+        field :value, Int, null: true
+      end
+
+      class SingleComplexity < GraphQL::Schema::Object
+        field :value, Int, null: true, complexity: 0.1
+        field :complexity, SingleComplexity, null: true do
+          argument :value, Int, required: false
+          complexity(->(ctx, args, child_complexity) { args[:value] + child_complexity })
+        end
+        implements ComplexityInterface
+      end
+
+      class DoubleComplexity < GraphQL::Schema::Object
+        field :value, Int, null: true, complexity: 4
+        implements ComplexityInterface
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :complexity, SingleComplexity, null: true do
+          argument :value, Int, required: false
+          complexity ->(ctx, args, child_complexity) { args[:value] + child_complexity }
+        end
+
+        field :inner_complexity, ComplexityInterface, null: true do
+          argument :value, Int, required: false
+        end
+      end
+
+      query(Query)
+      orphan_types(DoubleComplexity)
+      use(GraphQL::Execution::Interpreter)
+      use(GraphQL::Analysis::AST)
+    end
+
     let(:query) { GraphQL::Query.new(complexity_schema, query_string) }
-    let(:complexity_schema) {
-      complexity_interface = GraphQL::InterfaceType.define do
-        name "ComplexityInterface"
-        field :value, types.Int
-      end
-
-      single_complexity_type = GraphQL::ObjectType.define do
-        name "SingleComplexity"
-        field :value, types.Int, complexity: 0.1 do
-          resolve ->(obj, args, ctx) { obj }
-        end
-        field :complexity, single_complexity_type do
-          argument :value, types.Int
-          complexity ->(ctx, args, child_complexity) { args[:value] + child_complexity }
-          resolve ->(obj, args, ctx) { args[:value] }
-        end
-        interfaces [complexity_interface]
-      end
-
-      double_complexity_type = GraphQL::ObjectType.define do
-        name "DoubleComplexity"
-        field :value, types.Int, complexity: 4 do
-          resolve ->(obj, args, ctx) { obj }
-        end
-        interfaces [complexity_interface]
-      end
-
-      query_type = GraphQL::ObjectType.define do
-        name "Query"
-        field :complexity, single_complexity_type do
-          argument :value, types.Int
-          complexity ->(ctx, args, child_complexity) { args[:value] + child_complexity }
-          resolve ->(obj, args, ctx) { args[:value] }
-        end
-
-        field :innerComplexity, complexity_interface do
-          argument :value, types.Int
-          resolve ->(obj, args, ctx) { args[:value] }
-        end
-      end
-
-      GraphQL::Schema.define(
-        query: query_type,
-        orphan_types: [double_complexity_type],
-        resolve_type: ->(a,b,c) { :pass }
-      )
-    }
+    let(:complexity_schema) { CustomComplexitySchema }
     let(:query_string) {%|
       {
         a: complexity(value: 3) { value }

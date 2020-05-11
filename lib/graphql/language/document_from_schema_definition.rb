@@ -49,7 +49,7 @@ module GraphQL
           subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,
           # This only supports directives from parsing,
           # use a custom printer to add to this list.
-          directives: @schema.ast_node ? @schema.ast_node.directives : [],
+          directives: ast_directives(@schema),
         )
       end
 
@@ -59,32 +59,26 @@ module GraphQL
           interfaces: warden.interfaces(object_type).sort_by(&:graphql_name).map { |iface| build_type_name_node(iface) },
           fields: build_field_nodes(warden.fields(object_type)),
           description: object_type.description,
+          directives: ast_directives(object_type),
         )
       end
 
       def build_field_node(field)
-        field_node = GraphQL::Language::Nodes::FieldDefinition.new(
+        GraphQL::Language::Nodes::FieldDefinition.new(
           name: field.graphql_name,
           arguments: build_argument_nodes(warden.arguments(field)),
           type: build_type_name_node(field.type),
           description: field.description,
+          directives: ast_directives(field),
         )
-
-        if field.deprecation_reason
-          field_node = field_node.merge_directive(
-            name: GraphQL::Directive::DeprecatedDirective.graphql_name,
-            arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: field.deprecation_reason)]
-          )
-        end
-
-        field_node
       end
 
       def build_union_type_node(union_type)
         GraphQL::Language::Nodes::UnionTypeDefinition.new(
           name: union_type.graphql_name,
           description: union_type.description,
-          types: warden.possible_types(union_type).sort_by(&:graphql_name).map { |type| build_type_name_node(type) }
+          types: warden.possible_types(union_type).sort_by(&:graphql_name).map { |type| build_type_name_node(type) },
+          directives: ast_directives(union_type),
         )
       end
 
@@ -92,7 +86,8 @@ module GraphQL
         GraphQL::Language::Nodes::InterfaceTypeDefinition.new(
           name: interface_type.graphql_name,
           description: interface_type.description,
-          fields: build_field_nodes(warden.fields(interface_type))
+          fields: build_field_nodes(warden.fields(interface_type)),
+          directives: ast_directives(interface_type),
         )
       end
 
@@ -103,29 +98,23 @@ module GraphQL
             build_enum_value_node(enum_value)
           end,
           description: enum_type.description,
+          directives: ast_directives(enum_type),
         )
       end
 
       def build_enum_value_node(enum_value)
-        enum_value_node = GraphQL::Language::Nodes::EnumValueDefinition.new(
+        GraphQL::Language::Nodes::EnumValueDefinition.new(
           name: enum_value.graphql_name,
           description: enum_value.description,
+          directives: ast_directives(enum_value),
         )
-
-        if enum_value.deprecation_reason
-          enum_value_node = enum_value_node.merge_directive(
-            name: GraphQL::Directive::DeprecatedDirective.graphql_name,
-            arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: enum_value.deprecation_reason)]
-          )
-        end
-
-        enum_value_node
       end
 
       def build_scalar_type_node(scalar_type)
         GraphQL::Language::Nodes::ScalarTypeDefinition.new(
           name: scalar_type.graphql_name,
           description: scalar_type.description,
+          directives: ast_directives(scalar_type),
         )
       end
 
@@ -141,6 +130,7 @@ module GraphQL
           description: argument.description,
           type: build_type_name_node(argument.type),
           default_value: default_value,
+          directives: ast_directives(argument),
         )
 
         argument_node
@@ -151,6 +141,7 @@ module GraphQL
           name: input_object.graphql_name,
           fields: build_argument_nodes(warden.arguments(input_object)),
           description: input_object.description,
+          directives: ast_directives(input_object),
         )
       end
 
@@ -290,6 +281,34 @@ module GraphQL
         (schema.query.nil? || schema.query.graphql_name == 'Query') &&
         (schema.mutation.nil? || schema.mutation.graphql_name == 'Mutation') &&
         (schema.subscription.nil? || schema.subscription.graphql_name == 'Subscription')
+      end
+
+      def ast_directives(member)
+        ast_directives = member.ast_node ? member.ast_node.directives : []
+
+        # If this schema was built from IDL, it will already have `@deprecated` in `ast_node.directives`
+        if member.respond_to?(:deprecation_reason) &&
+            (reason = member.deprecation_reason) &&
+            ast_directives.none? { |d| d.name == "deprecated" }
+
+          arguments = []
+
+          if reason != GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON
+            arguments << GraphQL::Language::Nodes::Argument.new(
+              name: "reason",
+              value: reason
+            )
+          end
+
+          ast_directives += [
+            GraphQL::Language::Nodes::Directive.new(
+              name: GraphQL::Directive::DeprecatedDirective.graphql_name,
+              arguments: arguments
+            )
+          ]
+        end
+
+        ast_directives
       end
 
       attr_reader :schema, :warden, :always_include_schema,

@@ -95,7 +95,7 @@ module GraphQL
         @visible_parent_fields ||= read_through do |type|
           read_through do |f_name|
             field_defn = @schema.get_field(type, f_name)
-            if field_defn && visible_field?(field_defn)
+            if field_defn && visible_field?(type, field_defn)
               field_defn
             else
               nil
@@ -109,7 +109,8 @@ module GraphQL
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
         @visible_possible_types ||= read_through { |type_defn|
-          @schema.possible_types(type_defn, @context).select { |t| visible_type?(t) }
+          pt = @schema.possible_types(type_defn, @context)
+          pt.select { |t| visible_type?(t) }
         }
         @visible_possible_types[type_defn]
       end
@@ -117,14 +118,14 @@ module GraphQL
       # @param type_defn [GraphQL::ObjectType, GraphQL::InterfaceType]
       # @return [Array<GraphQL::Field>] Fields on `type_defn`
       def fields(type_defn)
-        @visible_fields ||= read_through { |t| @schema.get_fields(t).each_value.select { |f| visible_field?(f) } }
+        @visible_fields ||= read_through { |t| @schema.get_fields(t).each_value.select { |f| visible_field?(t, f) } }
         @visible_fields[type_defn]
       end
 
       # @param argument_owner [GraphQL::Field, GraphQL::InputObjectType]
       # @return [Array<GraphQL::Argument>] Visible arguments on `argument_owner`
       def arguments(argument_owner)
-        @visible_arguments ||= read_through { |o| o.arguments.each_value.select { |a| visible_field?(a) } }
+        @visible_arguments ||= read_through { |o| o.arguments.each_value.select { |a| visible_argument?(a) } }
         @visible_arguments[argument_owner]
       end
 
@@ -136,7 +137,7 @@ module GraphQL
 
       # @return [Array<GraphQL::InterfaceType>] Visible interfaces implemented by `obj_type`
       def interfaces(obj_type)
-        @visible_interfaces ||= read_through { |t| t.interfaces.select { |i| visible?(i) } }
+        @visible_interfaces ||= read_through { |t| t.interfaces(@context).select { |i| visible?(i) } }
         @visible_interfaces[obj_type]
       end
 
@@ -160,8 +161,48 @@ module GraphQL
         @unions[obj_type]
       end
 
-      def visible_field?(field_defn)
-        visible?(field_defn) && visible_type?(field_defn.type.unwrap)
+      def visible_argument?(arg_defn)
+        visible?(arg_defn) && visible_type?(arg_defn.type.unwrap)
+      end
+
+      def visible_field?(owner_type, field_defn)
+        visible?(field_defn) && visible_type?(field_defn.type.unwrap) && field_on_visible_interface?(field_defn, owner_type)
+      end
+
+      # We need this to tell whether a field was inherited by an interface
+      # even when that interface is hidden from `#interfaces`
+      def unfiltered_interfaces(type_defn)
+        @unfiltered_interfaces ||= read_through(&:interfaces)
+        @unfiltered_interfaces[type_defn]
+      end
+
+      # If this field was inherited from an interface, and the field on that interface is _hidden_,
+      # then treat this inherited field as hidden.
+      # (If it _wasn't_ inherited, then don't hide it for this reason.)
+      def field_on_visible_interface?(field_defn, type_defn)
+        if type_defn.kind.object?
+          any_interface_has_field = false
+          any_interface_has_visible_field = false
+          ints = unfiltered_interfaces(type_defn)
+          ints.each do |interface_type|
+            if (iface_field_defn = interface_type.get_field(field_defn.graphql_name))
+              any_interface_has_field = true
+
+              if visible?(interface_type) && visible_field?(interface_type, iface_field_defn)
+                any_interface_has_visible_field = true
+              end
+            end
+          end
+
+          if any_interface_has_field
+            any_interface_has_visible_field
+          else
+            # it's the object's own field
+            true
+          end
+        else
+          true
+        end
       end
 
       def visible_type?(type_defn)

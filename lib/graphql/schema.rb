@@ -101,14 +101,12 @@ module GraphQL
       # - Right away, if `value` is not registered with `lazy_resolve`
       # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
       # @api private
-      def after_lazy(value)
+      def after_lazy(value, &block)
         if lazy?(value)
           GraphQL::Execution::Lazy.new do
             result = sync_lazy(value)
             # The returned result might also be lazy, so check it, too
-            after_lazy(result) do |final_result|
-              yield(final_result) if block_given?
-            end
+            after_lazy(result, &block)
           end
         else
           yield(value) if block_given?
@@ -146,10 +144,10 @@ module GraphQL
       def after_any_lazies(maybe_lazies)
         if maybe_lazies.any? { |l| lazy?(l) }
           GraphQL::Execution::Lazy.all(maybe_lazies).then do |result|
-            yield
+            yield result
           end
         else
-          yield
+          yield maybe_lazies
         end
       end
     end
@@ -555,8 +553,17 @@ module GraphQL
     # @param context [GraphQL::Query::Context] The context for the current query
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
     def possible_types(type_defn, context = GraphQL::Query::NullContext)
-      @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
-      @possible_types.possible_types(type_defn, context)
+      if context == GraphQL::Query::NullContext
+        @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
+        @possible_types.possible_types(type_defn, context)
+      else
+        # Use the incoming context to cache this instance --
+        # if it were cached on the schema, we'd have a memory leak
+        # https://github.com/rmosolgo/graphql-ruby/issues/2878
+        ns = context.namespace(:possible_types)
+        per_query_possible_types = ns[:possible_types] ||= GraphQL::Schema::PossibleTypes.new(self)
+        per_query_possible_types.possible_types(type_defn, context)
+      end
     end
 
     # @see [GraphQL::Schema::Warden] Resticted access to root types
@@ -863,8 +870,8 @@ module GraphQL
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
       # @see {#as_json}
       # @return [String]
-      def to_json(*args)
-        JSON.pretty_generate(as_json(*args))
+      def to_json(**args)
+        JSON.pretty_generate(as_json(**args))
       end
 
       # Return the Hash response of {Introspection::INTROSPECTION_QUERY}.
@@ -1765,16 +1772,24 @@ module GraphQL
             }
             own_possible_types[owner.graphql_name] = owner.possible_types
           elsif type.kind.interface? && owner.kind.object?
-            new_interfaces = owner.interfaces.map do |t|
-              if t.is_a?(String) && t == type.graphql_name
-                type
-              elsif t.is_a?(LateBoundType) && t.graphql_name == type.graphql_name
-                type
+            new_interfaces = []
+            owner.interfaces.each do |int_t|
+              if int_t.is_a?(String) && int_t == type.graphql_name
+                new_interfaces << type
+              elsif int_t.is_a?(LateBoundType) && int_t.graphql_name == type.graphql_name
+                new_interfaces << type
               else
-                t
+                # Don't re-add proper interface definitions,
+                # they were probably already added, maybe with options.
               end
             end
             owner.implements(*new_interfaces)
+            new_interfaces.each do |int|
+              pt = own_possible_types[int.graphql_name] ||= []
+              if !pt.include?(owner)
+                pt << owner
+              end
+            end
           end
 
         when nil
@@ -1873,10 +1888,21 @@ module GraphQL
           end
           if type.kind.object?
             own_possible_types[type.graphql_name] = [type]
-            type.interfaces.each do |i|
-              implementers = own_possible_types[i.graphql_name] ||= []
-              implementers << type
-              add_type(i, owner: type, late_types: late_types, path: path + ["implements"])
+            type.interface_type_memberships.each do |interface_type_membership|
+              case interface_type_membership
+              when Schema::TypeMembership
+                interface_type = interface_type_membership.abstract_type
+                # We can get these now; we'll have to get late-bound types later
+                if interface_type.is_a?(Module)
+                  implementers = own_possible_types[interface_type.graphql_name] ||= []
+                  implementers << type
+                end
+              when String, Schema::LateBoundType
+                interface_type = interface_type_membership
+              else
+                raise ArgumentError, "Invariant: unexpected type membership for #{type.graphql_name}: #{interface_type_membership.class} (#{interface_type_membership.inspect})"
+              end
+              add_type(interface_type, owner: type, late_types: late_types, path: path + ["implements"])
             end
           end
         end

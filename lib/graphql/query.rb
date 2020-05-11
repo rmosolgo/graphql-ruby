@@ -3,6 +3,7 @@ require "graphql/query/arguments"
 require "graphql/query/arguments_cache"
 require "graphql/query/context"
 require "graphql/query/executor"
+require "graphql/query/fingerprint"
 require "graphql/query/literal_input"
 require "graphql/query/null_context"
 require "graphql/query/result"
@@ -106,7 +107,7 @@ module GraphQL
       if variables.is_a?(String)
         raise ArgumentError, "Query variables should be a Hash, not a String. Try JSON.parse to prepare variables."
       else
-        @provided_variables = variables
+        @provided_variables = variables || {}
       end
 
       @query_string = query_string || query
@@ -263,6 +264,32 @@ module GraphQL
       with_prepared_ast {
         GraphQL::Language::SanitizedPrinter.new(self).sanitized_query_string
       }
+    end
+
+    # This contains a few components:
+    #
+    # - The selected operation name (or `anonymous`)
+    # - The fingerprint of the query string
+    # - The number of given variables (for readability)
+    # - The fingerprint of the given variables
+    #
+    # This fingerprint can be used to track runs of the same operation-variables combination over time.
+    #
+    # @see operation_fingerprint
+    # @see variables_fingerprint
+    # @return [String] An opaque hash identifying this operation-variables combination
+    def fingerprint
+      @fingerprint ||= "#{operation_fingerprint}/#{variables_fingerprint}"
+    end
+
+    # @return [String] An opaque hash for identifying this query's given query string and selected operation
+    def operation_fingerprint
+      @operation_fingerprint ||= "#{selected_operation_name || "anonymous"}/#{Fingerprint.generate(query_string)}"
+    end
+
+    # @return [String] An opaque hash for identifying this query's given a variable values (not including defaults)
+    def variables_fingerprint
+      @variables_fingerprint ||= "#{provided_variables.size}/#{Fingerprint.generate(provided_variables.to_json)}"
     end
 
     def validation_pipeline

@@ -5,6 +5,7 @@ module GraphQL
     accepts_definitions :fields, :orphan_types, :resolve_type, field: GraphQL::Define::AssignObjectField
 
     attr_accessor :fields, :orphan_types, :resolve_type_proc
+    attr_writer :type_membership_class  
     ensure_defined :fields, :orphan_types, :resolve_type_proc, :resolve_type
 
     def initialize
@@ -60,6 +61,10 @@ module GraphQL
     def possible_type?(type, ctx)
       type_name = type.is_a?(String) ? type : type.graphql_name
       !get_possible_type(type_name, ctx).nil?
+    end
+
+    def type_membership_class
+      @type_membership_class || GraphQL::Schema::TypeMembership
     end
   end
 end

@@ -6,9 +6,8 @@ Bundler.require
 
 # Print full backtrace for failiures:
 ENV["BACKTRACE"] = "1"
-# Set this env var to use Interpreter for fixture schemas.
-# Eventually, interpreter will be the default.
-TESTING_INTERPRETER = ENV["TESTING_INTERPRETER"]
+# Set this env var to use legacy runtime for fixture schemas.
+TESTING_INTERPRETER = !ENV["TESTING_LEGACY"]
 
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
