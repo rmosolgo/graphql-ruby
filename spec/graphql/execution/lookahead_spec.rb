@@ -439,6 +439,30 @@ describe GraphQL::Execution::Lookahead do
       assert GraphQL::Execution::Lookahead::NULL_LOOKAHEAD != lookahead.selection("similarSpecies")
     end
 
+    describe "when same field is selected twice" do
+      let(:document) {
+        GraphQL.parse <<-GRAPHQL
+          query {
+            gull: findBirdSpecies(byName: "Laughing Gull") {
+              name
+            }
+
+            tanager: findBirdSpecies(byName: "Scarlet Tanager") {
+              name
+            }
+          }
+        GRAPHQL
+      }
+
+      let(:graphql_query) do
+        GraphQL::Query.new(LookaheadTest::Schema, document: document)
+      end
+
+      it "returns lookahead with two ast_nodes" do
+        assert_equal 2, graphql_query.lookahead.selection("findBirdSpecies").ast_nodes.length
+      end
+    end
+
     describe "when query has alias" do
       def assert_selection_exists(selection)
         assert GraphQL::Execution::Lookahead::NULL_LOOKAHEAD != selection
@@ -541,11 +565,13 @@ describe GraphQL::Execution::Lookahead do
               graphql_query.lookahead.selection("gull", with_alias: true).tap do |selection|
                 assert_selection_exists selection
                 assert_equal({ by_name: "Laughing Gull" }, selection.arguments)
+                assert_equal 1, selection.ast_nodes.length
               end
 
               graphql_query.lookahead.selection("tanager", with_alias: true).tap do |selection|
                 assert_selection_exists selection
                 assert_equal({ by_name: "Scarlet Tanager" }, selection.arguments)
+                assert_equal 1, selection.ast_nodes.length
               end
             end
           end
