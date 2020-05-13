@@ -30,6 +30,20 @@ type HelloScalars {
       assert_schema_and_compare_output(schema.chop)
     end
 
+    it 'can build a schema with underscored names' do
+      schema = <<-SCHEMA
+type A_Type {
+  f(argument_1: Int, argument_two: Int): Int
+}
+
+type Query {
+  some_field: A_Type
+}
+      SCHEMA
+
+      assert_schema_and_compare_output(schema.chop)
+    end
+
     it 'can build a schema with default input object values' do
       schema = <<-SCHEMA
 input InputObject {

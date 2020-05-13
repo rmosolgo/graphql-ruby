@@ -191,7 +191,7 @@ describe GraphQL::Schema::Loader do
       end
     end
 
-    let(:loaded_schema) { GraphQL::Schema::Loader.load(schema_json) }
+    let(:loaded_schema) { GraphQL::Schema.from_introspection(schema_json) }
 
     it "returns the schema" do
       assert_instance_of Class, loaded_schema
@@ -274,6 +274,23 @@ describe GraphQL::Schema::Loader do
 
       assert type.arguments['sub'].default_value?
       assert type.arguments['sub'].default_value.nil?
+    end
+
+    it "works with underscored names" do
+      schema_sdl = <<-GRAPHQL.chomp
+type A_Type {
+  f(argument_1: Int, argument_two: Int): Int
+}
+
+type Query {
+  some_field: A_Type
+}
+      GRAPHQL
+
+      introspection_res = GraphQL::Schema.from_definition(schema_sdl).as_json
+      rebuilt_schema = GraphQL::Schema.from_introspection(introspection_res)
+
+      assert_equal schema_sdl, rebuilt_schema.to_definition
     end
 
     it "doesnt warn about method conflicts (because it doesn't make method accesses)" do
