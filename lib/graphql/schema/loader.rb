@@ -157,6 +157,7 @@ module GraphQL
               type: type_resolver.call(field_hash["type"]),
               description: field_hash["description"],
               null: true,
+              camelize: false,
             ) do
               if field_hash["args"].any?
                 loader.build_arguments(self, field_hash["args"], type_resolver)
@@ -172,6 +173,7 @@ module GraphQL
               description: arg["description"],
               required: false,
               method_access: false,
+              camelize: false,
             }
 
             if arg["defaultValue"]
