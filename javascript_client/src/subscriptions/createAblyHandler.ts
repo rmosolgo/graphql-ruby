@@ -14,6 +14,8 @@ interface ApolloObserver {
   onCompleted: Function
 }
 
+const anonymousClientId = "graphql-subscriber"
+
 class AblyError {
   constructor(reason: Types.ErrorInfo) {
     const error = Error(reason.message)
@@ -33,14 +35,19 @@ class AblyError {
 function createAblyHandler(options: AblyHandlerOptions) {
   var ably = options.ably
   var fetchOperation = options.fetchOperation
+
+  const isAnonymousClient = () =>
+    !ably.auth.clientId || ably.auth.clientId === "*"
+
   return function(
     operation: object,
     variables: object,
     cacheConfig: object,
     observer: ApolloObserver
   ) {
-    var channelName
+    var channelName: string
     var channel: Types.RealtimeChannelCallbacks
+
     // POST the subscription like a normal query
     fetchOperation(operation, variables, cacheConfig)
       .then(function(response: { headers: { get: Function }; body: any }) {
@@ -83,10 +90,10 @@ function createAblyHandler(options: AblyHandlerOptions) {
           }
         })
         // Register presence, so that we can detect empty channels and clean them up server-side
-        if (ably.auth.clientId) {
-          channel.presence.enter("subscribed")
+        if (isAnonymousClient()) {
+          channel.presence.enterClient(anonymousClientId, "subscribed")
         } else {
-          channel.presence.enterClient("graphql-subscriber", "subscribed")
+          channel.presence.enter("subscribed")
         }
         // When you get an update from ably, give it to Relay
         channel.subscribe("update", function(message) {
@@ -104,12 +111,14 @@ function createAblyHandler(options: AblyHandlerOptions) {
     return {
       dispose: function() {
         if (channel) {
-          if (ably.auth.clientId) {
-            channel.presence.leave()
+          if (isAnonymousClient()) {
+            channel.presence.leaveClient(anonymousClientId)
           } else {
-            channel.presence.leaveClient("graphql-subscriber")
+            channel.presence.leave()
           }
           channel.unsubscribe()
+          channel.detach()
+          ably.channels.release(channelName)
         }
       }
     }
