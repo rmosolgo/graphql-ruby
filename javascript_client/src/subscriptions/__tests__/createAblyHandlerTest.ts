@@ -10,7 +10,8 @@ const channelTemplate = {
     leave() {}
   },
   subscribe: () => {},
-  unsubscribe: () => {}
+  unsubscribe: () => {},
+  on: () => {}
 }
 
 const createDummyConsumer = (channel: any = channelTemplate): Realtime =>
@@ -183,5 +184,80 @@ describe("createAblyHandler", () => {
     await nextTick()
     expect(errorInvokedWith).toBe(error)
     expect(nextInvokedWith).toBeUndefined()
+  })
+
+  describe("integration with Ably", () => {
+    const key = process.env.ABLY_KEY
+    const testWithAblyKey = key ? test : test.skip
+
+    test("onError is called when using invalid key", async () => {
+      const ably = new Realtime({
+        key: "integration-test:invalid",
+        log: { level: 0 }
+      })
+      await new Promise(resolve => {
+        const fetchOperation = async () => ({
+          headers: new Map([["X-Subscription-ID", "foo"]])
+        })
+
+        const ablyHandler = createAblyHandler({ ably, fetchOperation })
+        const operation = {}
+        const variables = {}
+        const cacheConfig = {}
+        const onError = (error: any) => {
+          expect(error.message).toMatch(/Invalid key in request/)
+          resolve()
+        }
+        const onNext = () => console.log("onNext")
+        const onCompleted = () => console.log("onCompleted")
+        const observer = {
+          onError,
+          onNext,
+          onCompleted
+        }
+        ablyHandler(operation, variables, cacheConfig, observer)
+      })
+      ably.close()
+    })
+
+    // For executing this test you need to provide a valid Ably API key in
+    // environment variable ABLY_KEY
+    testWithAblyKey(
+      "onError is called for too many subscriptions",
+      async () => {
+        const ably = new Realtime({ key, log: { level: 0 } })
+        await new Promise(resolve => {
+          let subscriptionCounter = 0
+          const fetchOperation = async () => {
+            subscriptionCounter += 1
+            return {
+              headers: new Map([
+                ["X-Subscription-ID", `foo-${subscriptionCounter}`]
+              ])
+            }
+          }
+          const ablyHandler = createAblyHandler({ ably, fetchOperation })
+          const operation = {}
+          const variables = {}
+          const cacheConfig = {}
+          const onError = (error: any) => {
+            expect(error.message).toMatch(/Maximum number of channels/)
+            resolve()
+          }
+          const onNext = () => console.log("onNext")
+          const onCompleted = () => console.log("onCompleted")
+          const observer = {
+            onError,
+            onNext,
+            onCompleted
+          }
+          for (let i = 0; i < 201; ++i) {
+            ablyHandler(operation, variables, cacheConfig, observer)
+          }
+        })
+
+        ably.close()
+      }
+    )
   })
 })
