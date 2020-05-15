@@ -32,6 +32,7 @@
     "typescript": "^3.7.5"
   },
   "prettier": {
-    "semi": false
+    "semi": false,
+    "trailingComma": "none"
   }
 }

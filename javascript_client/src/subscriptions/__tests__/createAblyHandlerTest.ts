@@ -10,14 +10,20 @@ const channelTemplate = {
     leave() {}
   },
   subscribe: () => {},
-  unsubscribe: () => {}
+  unsubscribe: () => {},
+  on: () => {},
+  detach: () => {}
 }
 
-const createDummyConsumer = (channel: any = channelTemplate): Realtime =>
+const createDummyConsumer = (
+  channel: any = channelTemplate,
+  release = (_channelName: string) => {}
+): Realtime =>
   (({
     auth: { clientId: "foo" },
     channels: {
-      get: () => channel
+      get: () => channel,
+      release
     }
   } as unknown) as Realtime)
 
@@ -25,19 +31,33 @@ const nextTick = () => new Promise(resolve => setTimeout(resolve, 0))
 
 describe("createAblyHandler", () => {
   it("returns a function producing a disposable subscription", async () => {
-    var wasDisposed = false
+    const subscriptionId = "dummy-subscription"
+    var wasUnsubscribed = false
+    var wasDetached = false
+    var releasedChannelName
 
     const producer = createAblyHandler({
       fetchOperation: () =>
         new Promise(resolve =>
-          resolve({ headers: new Map(), body: { data: { foo: "bar" } } })
+          resolve({
+            headers: new Map([["X-Subscription-ID", subscriptionId]]),
+            body: { data: { foo: "bar" } }
+          })
         ),
-      ably: createDummyConsumer({
-        ...channelTemplate,
-        unsubscribe: () => {
-          wasDisposed = true
+      ably: createDummyConsumer(
+        {
+          ...channelTemplate,
+          unsubscribe: () => {
+            wasUnsubscribed = true
+          },
+          detach: () => {
+            wasDetached = true
+          }
+        },
+        (channelName: string) => {
+          releasedChannelName = channelName
         }
-      })
+      )
     })
 
     const subscription = producer(
@@ -49,7 +69,9 @@ describe("createAblyHandler", () => {
 
     await nextTick()
     subscription.dispose()
-    expect(wasDisposed).toEqual(true)
+    expect(wasUnsubscribed).toEqual(true)
+    expect(wasDetached).toEqual(true)
+    expect(releasedChannelName).toEqual(subscriptionId)
   })
 
   it("dispatches the immediate response in case of success", async () => {
@@ -183,5 +205,127 @@ describe("createAblyHandler", () => {
     await nextTick()
     expect(errorInvokedWith).toBe(error)
     expect(nextInvokedWith).toBeUndefined()
+  })
+
+  describe("integration with Ably", () => {
+    const key = process.env.ABLY_KEY
+    const testWithAblyKey = key ? test : test.skip
+
+    test("onError is called when using invalid key", async () => {
+      const ably = new Realtime({
+        key: "integration-test:invalid",
+        log: { level: 0 }
+      })
+      await new Promise(resolve => {
+        const fetchOperation = async () => ({
+          headers: new Map([["X-Subscription-ID", "foo"]])
+        })
+
+        const ablyHandler = createAblyHandler({ ably, fetchOperation })
+        const operation = {}
+        const variables = {}
+        const cacheConfig = {}
+        const onError = (error: any) => {
+          expect(error.message).toMatch(/Invalid key in request/)
+          resolve()
+        }
+        const onNext = () => console.log("onNext")
+        const onCompleted = () => console.log("onCompleted")
+        const observer = {
+          onError,
+          onNext,
+          onCompleted
+        }
+        ablyHandler(operation, variables, cacheConfig, observer)
+      })
+      ably.close()
+    })
+
+    // For executing this test you need to provide a valid Ably API key in
+    // environment variable ABLY_KEY
+    testWithAblyKey(
+      "onError is called for too many subscriptions",
+      async () => {
+        const ably = new Realtime({ key, log: { level: 0 } })
+        await new Promise(resolve => {
+          let subscriptionCounter = 0
+          const fetchOperation = async () => {
+            subscriptionCounter += 1
+            return {
+              headers: new Map([
+                ["X-Subscription-ID", `foo-${subscriptionCounter}`]
+              ])
+            }
+          }
+          const ablyHandler = createAblyHandler({ ably, fetchOperation })
+          const operation = {}
+          const variables = {}
+          const cacheConfig = {}
+          const onError = (error: any) => {
+            expect(error.message).toMatch(/Maximum number of channels/)
+            resolve()
+          }
+          const onNext = () => console.log("onNext")
+          const onCompleted = () => console.log("onCompleted")
+          const observer = {
+            onError,
+            onNext,
+            onCompleted
+          }
+          for (let i = 0; i < 201; ++i) {
+            ablyHandler(operation, variables, cacheConfig, observer)
+          }
+        })
+
+        ably.close()
+      }
+    )
+
+    // For executing this test you need to provide a valid Ably API key in
+    // environment variable ABLY_KEY
+    testWithAblyKey("can make more than 200 subscriptions", async () => {
+      let caughtError = null
+      const ably = new Realtime({ key, log: { level: 0 } })
+      let subscriptionCounter = 0
+      const fetchOperation = async () => {
+        subscriptionCounter += 1
+        return {
+          headers: new Map([
+            ["X-Subscription-ID", `foo-${subscriptionCounter}`]
+          ])
+        }
+      }
+      const ablyHandler = createAblyHandler({ ably, fetchOperation })
+      const operation = {}
+      const variables = {}
+      const cacheConfig = {}
+      const onError = (error: Error) => {
+        caughtError = error
+      }
+      const onNext = () => {}
+      const onCompleted = () => {}
+      const observer = {
+        onError,
+        onNext,
+        onCompleted
+      }
+      for (let i = 0; i < 201; ++i) {
+        const { dispose } = ablyHandler(
+          operation,
+          variables,
+          cacheConfig,
+          observer
+        )
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        dispose()
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      ably.close()
+
+      if (caughtError) throw caughtError
+    })
   })
 })
