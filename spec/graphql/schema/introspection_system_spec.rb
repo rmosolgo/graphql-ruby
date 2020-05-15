@@ -86,6 +86,12 @@ describe GraphQL::Schema::IntrospectionSystem do
       res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
       assert res["data"]["__type"]["fields"].any? { |i| i["name"] == "privateName" }
     end
+
+    it "includes fields that are defined locally on the object, even when the interface's implementation is private" do
+      context = { private: false }
+      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
+      assert res["data"]["__type"]["fields"].any? { |i| i["name"] == "overriddenName" }
+    end
   end
 
   describe "copying the built-ins" do

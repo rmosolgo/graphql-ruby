@@ -191,6 +191,7 @@ module Jazz
     type_membership_class PrivateMembership
 
     field :private_name, String, null: false
+    field :overridden_name, String, null: false
 
     def private_name
       "private name"
@@ -226,6 +227,9 @@ module Jazz
     description "A group of musicians playing together"
     config :config, :configged
     field :formed_at, String, null: true, hash_key: "formedAtDate"
+
+    # This overrides the visibility from PrivateNameEntity
+    field :overridden_name, String, null: false
 
     def overridden_name
       @object.name.sub("Robert Glasper", "ROBERT GLASPER")
