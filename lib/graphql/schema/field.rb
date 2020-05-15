@@ -672,6 +672,8 @@ module GraphQL
                 else
                   load_application_object(arg_defn, loads, value, field_ctx.query.context)
                 end
+              elsif arg_defn.type.list? && value.is_a?(Array)
+                field_ctx.schema.after_any_lazies(value, &:itself)
               else
                 value
               end
