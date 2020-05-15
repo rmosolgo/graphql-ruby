@@ -37,7 +37,7 @@
 //   }})
 //
 import { ApolloLink, Observable, FetchResult, NextLink, Operation } from "apollo-link"
-import { Realtime } from "ably"
+import { Realtime, Types } from "ably"
 
 type RequestResult = Observable<FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>>
 
@@ -77,7 +77,7 @@ class AblyLink extends ApolloLink {
     return subscriptionChannel
   }
 
-  _createSubscription(subscriptionChannel: string, observer: { next: Function, complete: Function}) {
+  _createSubscription(subscriptionChannel: string, observer: { next: Function, complete: Function, error: Function}) {
     const ablyChannel = this.ably.channels.get(subscriptionChannel)
     const ablyClientId = this.ably.auth.clientId
     // Register presence, so that we can detect empty channels and clean them up server-side
@@ -86,8 +86,25 @@ class AblyLink extends ApolloLink {
     } else {
       ablyChannel.presence.enterClient("graphql-subscriber", "subscribed")
     }
+
+    ablyChannel.on("failed", function(stateChange: Types.ChannelStateChange) {
+      observer.error(new Error("Ably channel changed to failed state (" + stateChange.reason || "no reason given" + ")")
+      )
+    })
+    ablyChannel.on("suspended", function(stateChange: Types.ChannelStateChange) {
+      // Note: suspension can be a temporary condition and isn't necessarily
+      // an error, however we handle the case where the channel gets
+      // suspended before it is attached because that's the only way to
+      // propagate error 90010 (see https://help.ably.io/error/90010)
+      if (
+        stateChange.previous === "attaching" &&
+        stateChange.current === "suspended"
+      ) {
+        observer.error(new Error("Ably channel suspended before being attached (" + stateChange.reason || "no reason given" + ")"))
+      }
+    })
     // Subscribe for more update
-    ablyChannel.subscribe("update", function(message) {
+    ablyChannel.subscribe("update", (message) => {
       var payload = message.data
       if (!payload.more) {
         // This is the end, the server says to unsubscribe
@@ -97,6 +114,8 @@ class AblyLink extends ApolloLink {
           ablyChannel.presence.leaveClient("graphql-subscriber")
         }
         ablyChannel.unsubscribe()
+        ablyChannel.detach()
+        this.ably.channels.release(subscriptionChannel)
         observer.complete()
       }
       const result = payload.result
