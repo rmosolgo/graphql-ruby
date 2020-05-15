@@ -1,5 +1,10 @@
 # graphql-ruby-client
 
+## 1.7.9 (15 May 2020)
+
+- Ably: _completely_ unsubscribe when subscriptions are done #2944
+- Ably: propagate errors from subscriptions #2944
+
 ## 1.7.8 (1 May 2020)
 
 - `sync`: Add support for Apollo-Android's `OperationOutput.json` #2914
