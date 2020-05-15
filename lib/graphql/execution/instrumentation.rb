@@ -77,7 +77,7 @@ module GraphQL
         end
 
         def call_after_hooks(instrumenters, object, after_hook_name, ex)
-          instrumenters.reverse.each do |instrumenter|
+          instrumenters.reverse_each do |instrumenter|
             begin
               instrumenter.public_send(after_hook_name, object)
             rescue => e
