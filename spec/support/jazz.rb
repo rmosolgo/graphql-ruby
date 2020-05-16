@@ -404,7 +404,7 @@ module Jazz
     # For asserting that the object is initialized once:
     field :object_id, String, null: false
     field :inspect_context, [String], null: false
-    field :hashyEnsemble, Ensemble, null: false
+    field :hashy_ensemble, Ensemble, null: false
 
     field :echo_json, GraphQL::Types::JSON, null: false do
       argument :input, GraphQL::Types::JSON, required: true
