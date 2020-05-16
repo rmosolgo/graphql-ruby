@@ -177,8 +177,8 @@ module StarWars
       all_bases
     end
 
-    field :basesClone, BaseConnection, null: true
-    field :basesByName, BaseConnection, null: true do
+    field :bases_clone, BaseConnection, null: true
+    field :bases_by_name, BaseConnection, null: true do
       argument :order, String, default_value: "name", required: false
     end
     def bases_by_name(order: nil)
@@ -204,7 +204,7 @@ module StarWars
     field :basesWithLargeMaxLimitRelation, BaseConnection, null: true, max_page_size: 1000, resolver_method: :all_bases
     field :basesWithoutNodes, BaseConnectionWithoutNodes, null: true, resolver_method: :all_bases_array
 
-    field :basesAsSequelDataset, BasesConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
+    field :bases_as_sequel_dataset, BasesConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
       argument :name_includes, String, required: false
     end
 
@@ -333,13 +333,13 @@ module StarWars
       StarWars::DATA["Faction"]["2"]
     end
 
-    field :largestBase, BaseType, null: true
+    field :largest_base, BaseType, null: true
 
     def largest_base
       Base.find(3)
     end
 
-    field :newestBasesGroupedByFaction, BaseConnection, null: true
+    field :newest_bases_grouped_by_faction, BaseConnection, null: true
 
     def newest_bases_grouped_by_faction
       Base
@@ -348,7 +348,7 @@ module StarWars
         .order('faction_id desc')
     end
 
-    field :basesWithNullName, BaseConnection, null: false
+    field :bases_with_null_name, BaseConnection, null: false
 
     def bases_with_null_name
       [OpenStruct.new(id: nil)]
@@ -393,7 +393,7 @@ module StarWars
       )
     end
 
-    field :batchedBase, BaseType, null: true do
+    field :batched_base, BaseType, null: true do
       argument :id, ID, required: true
     end
 
