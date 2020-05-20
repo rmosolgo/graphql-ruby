@@ -60,14 +60,14 @@ module Graphql
 
       def column_type_string(column)
         return "ID" if column.name == "id"
+
         column_type = column.type.to_s
+        
         case column_type
         when "datetime"
           "DateTime"
         when "text"
           "String"
-        when "date"
-          "Date"
         else
           column_type.camelize
         end
