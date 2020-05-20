@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.9.20 (20 May 2020)
+
+### Bug fixes
+
+- Fix `default_value: {}` on Ruby 2.7
+
 ## 1.9.19 (28 Jan 2020)
 
 ### Bug Fixes
