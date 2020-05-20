@@ -73,14 +73,27 @@ module GraphQL
       # against the arguments in the next selection. This method will return false
       # if any of the given `arguments:` are not present and matching in the next selection.
       # (But, the next selection may contain _more_ than the given arguments.)
-      #
-      # If `with_alias:` is provided, field aliases would be checked to find selections.
-      #
       # @param field_name [String, Symbol]
       # @param arguments [Hash] Arguments which must match in the selection
       # @return [Boolean]
-      def selects?(field_name, arguments: nil, with_alias: false)
-        selection(field_name, arguments: arguments, with_alias: with_alias).selected?
+      def selects?(field_name, arguments: nil)
+        selection(field_name, arguments: arguments).selected?
+      end
+
+      # True if this node has a selection on `alias`.
+      # If `alias` is a String, it is treated as a GraphQL-style (camelized)
+      # field name and used verbatim. If `field_name` is a Symbol, it is
+      # treated as a Ruby-style (underscored) name and camelized before comparing.
+      #
+      # If `arguments:` is provided, each provided key/value will be matched
+      # against the arguments in the next selection. This method will return false
+      # if any of the given `arguments:` are not present and matching in the next selection.
+      # (But, the next selection may contain _more_ than the given arguments.)
+      # @param alias_name [String, Symbol]
+      # @param arguments [Hash] Arguments which must match in the selection
+      # @return [Boolean]
+      def selects_alias?(alias_name, arguments: nil)
+        alias_selection(alias_name, arguments: arguments).selected?
       end
 
       # @return [Boolean] True if this lookahead represents a field that was requested
@@ -91,24 +104,29 @@ module GraphQL
       # Like {#selects?}, but can be used for chaining.
       # It returns a null object (check with {#selected?})
       # @return [GraphQL::Execution::Lookahead]
-      def selection(field_name, selected_type: @selected_type, arguments: nil, with_alias: false)
-        if !with_alias || selects?(field_name, arguments: arguments)
-          next_field_name = normalize_name(field_name)
-          next_field_defn = get_class_based_field(selected_type, next_field_name)
-          return lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments)
-        end
+      def selection(field_name, selected_type: @selected_type, arguments: nil)
+        next_field_name = normalize_name(field_name)
+        next_field_defn = get_class_based_field(selected_type, next_field_name)
+        lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments)
+      end
 
-        return alias_selections[field_name] if alias_selections.key?(field_name)
+      # Like {#selection}, but for aliases.
+      # It returns a null object (check with {#selected?})
+      # @return [GraphQL::Execution::Lookahead]
+      def alias_selection(alias_name, selected_type: @selected_type, arguments: nil)
+        return alias_selections[alias_name] if alias_selections.key?(alias_name)
 
-        alias_node = lookup_alias_node(ast_nodes, field_name)
-        return NULL_LOOKAHEAD unless alias_node
+        alias_node = lookup_alias_node(ast_nodes, alias_name)
+
+        return selection(alias_name, selected_type: selected_type, arguments: arguments) unless alias_node
 
         next_field_name = alias_node.name
         next_field_defn = get_class_based_field(selected_type, next_field_name)
 
         arguments = @query.arguments_for(alias_node, next_field_defn)
         arguments = arguments.is_a?(::GraphQL::Execution::Interpreter::Arguments) ? arguments.keyword_arguments : arguments
-        alias_selections[field_name] = lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments)
+
+        alias_selections[alias_name] = lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments)
       end
 
       # Like {#selection}, but for all nodes.
