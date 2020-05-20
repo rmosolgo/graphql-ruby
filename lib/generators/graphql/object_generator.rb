@@ -59,18 +59,7 @@ module Graphql
       end
 
       def column_type_string(column)
-        return "ID" if column.name == "id"
-
-        column_type = column.type.to_s
-        
-        case column_type
-        when "datetime"
-          "DateTime"
-        when "text"
-          "String"
-        else
-          column_type.camelize
-        end
+        column.name == "id" ? "ID" : column.type.to_s.camelize
       end
 
       def class_exists?
