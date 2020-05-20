@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+## 1.10.10 (20 May 2020)
+
+### Bug Fixes
+
+- Fix lazy `loads:` with list arguments #2949
+- Show object fields even when inherited ones are hidden #2950
+- Use `reverse_each` in instrumenters #2945
+- Fix underscored names in introspection loader #2941
+- Fix array input to Date/DateTime types #2927
+- Fix method conflict warnings on schema loader #2934
+- Fix some Ruby 2.7 warnings #2925
+
 ## 1.10.9 (4 May 2020)
 
 ### New features
