@@ -69,7 +69,7 @@ module Graphql
       end
 
       def klass
-        Module.const_get(type_name.camelize)
+        @klass ||= Module.const_get(type_name.camelize)
       end
     end
   end
