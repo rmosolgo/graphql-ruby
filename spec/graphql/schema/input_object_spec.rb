@@ -113,11 +113,11 @@ describe GraphQL::Schema::InputObject do
       end
 
       class Mutation < GraphQL::Schema::Object
-        class TouchInstrument < GraphQL::Schema::Mutation
-          class InstrumentInput < GraphQL::Schema::InputObject
-            argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
-          end
+        class InstrumentInput < GraphQL::Schema::InputObject
+          argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+        end
 
+        class TouchInstrument < GraphQL::Schema::Mutation
           argument :input_obj, InstrumentInput, required: true
           field :instrument_name_method, String, null: false
           field :instrument_name_key, String, null: false
@@ -132,6 +132,19 @@ describe GraphQL::Schema::InputObject do
         end
 
         field :touch_instrument, mutation: TouchInstrument
+
+        class ListInstruments < GraphQL::Schema::Mutation
+          argument :list, [InstrumentInput], required: true
+          field :resolved_list, String, null: false
+
+          def resolve(list:)
+            {
+              resolved_list: list.map(&:to_kwargs).inspect
+            }
+          end
+        end
+
+        field :list_instruments, mutation: ListInstruments
       end
 
 
@@ -214,6 +227,20 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareTest::Schema.execute(query_str)
       assert_equal "Drum Kit", res["data"]["touchInstrument"]["instrumentNameMethod"]
       assert_equal "Drum Kit", res["data"]["touchInstrument"]["instrumentNameKey"]
+    end
+
+    it "loads nested input object arguments" do
+      query_str = <<-GRAPHQL
+      mutation {
+        listInstruments(list: [{ instrumentId: "Instrument/Drum Kit" }]) {
+          resolvedList
+        }
+      }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(query_str)
+      expected_obj = [{ instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") }].inspect
+      assert_equal expected_obj, res["data"]["listInstruments"]["resolvedList"]
     end
   end
 
