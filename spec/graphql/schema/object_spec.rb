@@ -395,4 +395,29 @@ describe GraphQL::Schema::Object do
       end
     end
   end
+
+  describe "type-specific invalid null errors" do
+    class ObjectInvalidNullSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :int, Integer, null: false
+        def int
+          nil
+        end
+      end
+      query(Query)
+
+      def self.type_error(err, ctx)
+        raise err
+      end
+
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+    end
+
+    it "raises them when invalid nil is returned" do
+      assert_raises(ObjectInvalidNullSchema::Query::InvalidNullError) do
+        ObjectInvalidNullSchema.execute("{ int }")
+      end
+    end
+  end
 end
