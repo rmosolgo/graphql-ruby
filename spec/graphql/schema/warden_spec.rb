@@ -562,7 +562,7 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      assert_raises(GraphQL::UnresolvedTypeError) {
+      assert_raises(MaskHelpers::EmicUnitType::UnresolvedTypeError) {
         MaskHelpers.run_query(query_string, only: whitelist)
       }
     end

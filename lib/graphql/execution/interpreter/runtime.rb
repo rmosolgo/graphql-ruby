@@ -312,7 +312,12 @@ module GraphQL
 
               if !possible_types.include?(resolved_type)
                 parent_type = field.owner
-                type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
+                err_class = if type.const_defined?(:UnresolvedTypeError)
+                  type::UnresolvedTypeError
+                else
+                  GraphQL::UnresolvedTypeError
+                end
+                type_error = err_class.new(value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
                 write_in_response(path, nil)
                 nil
