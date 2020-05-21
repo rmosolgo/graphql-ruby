@@ -7,7 +7,6 @@ module GraphQL
       module HasUnresolvedTypeError
         private
         def add_unresolved_type_error(child_class)
-          # Only add a constant if it will be inside a named namespace (skip anonymous classes)
           child_class.const_set(:UnresolvedTypeError, Class.new(GraphQL::UnresolvedTypeError))
         end
       end

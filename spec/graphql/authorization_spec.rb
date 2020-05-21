@@ -556,7 +556,7 @@ describe GraphQL::Authorization do
     end
 
     it "refuses to resolve to hidden enum values" do
-      assert_raises(GraphQL::EnumType::UnresolvedValueError) do
+      assert_raises(AuthTest::LandscapeFeature::UnresolvedValueError) do
         auth_execute <<-GRAPHQL, context: { hide: true }
         {
           landscapeFeature(string: "TAR_PIT")
@@ -564,7 +564,7 @@ describe GraphQL::Authorization do
         GRAPHQL
       end
 
-      assert_raises(GraphQL::EnumType::UnresolvedValueError) do
+      assert_raises(AuthTest::LandscapeFeature::UnresolvedValueError) do
         auth_execute <<-GRAPHQL, context: { hide: true }
         {
           landscapeFeatures(strings: ["STREAM", "TAR_PIT"])
