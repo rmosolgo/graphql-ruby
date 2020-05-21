@@ -42,4 +42,9 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
     click_on("Trigger 2")
     assert_selector "#updates-2-400", text: "400"
   end
+
+
+  test "it only re-runs queries once for subscriptions with matching fingerprints" do
+    skip
+  end
 end

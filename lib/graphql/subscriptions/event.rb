@@ -6,7 +6,6 @@ module GraphQL
     # - Subscribed to by `subscription { ... }`
     # - Triggered by `MySchema.subscriber.trigger(name, arguments, obj)`
     #
-    # An array of `Event`s are passed to `store.register(query, events)`.
     class Event
       # @return [String] Corresponds to the Subscription root field name
       attr_reader :name
@@ -20,14 +19,17 @@ module GraphQL
       # @return [String] An opaque string which identifies this event, derived from `name` and `arguments`
       attr_reader :topic
 
+      # @return [GraphQL::Schema::Field]
+      attr_reader :field
+
       def initialize(name:, arguments:, field: nil, context: nil, scope: nil)
         @name = name
         @arguments = arguments
         @context = context
-        field ||= context.field
-        scope_val = scope || (context && field.subscription_scope && context[field.subscription_scope])
+        @field = field || context.field
+        scope_val = scope || (context && field.subscription_scope && context[@field.subscription_scope])
 
-        @topic = self.class.serialize(name, arguments, field, scope: scope_val)
+        @topic = self.class.serialize(name, arguments, @field, scope: scope_val)
       end
 
       # @return [String] an identifier for this unit of subscription
@@ -51,6 +53,10 @@ module GraphQL
 
         sorted_h = stringify_args(field, normalized_args.to_h)
         Serialize.dump_recursive([scope, name, sorted_h])
+      end
+
+      def fingerprint
+        @fingerprint ||= "#{@topic}/#{@context.query.fingerprint}"
       end
 
       class << self

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "securerandom"
 
 module GraphQL
   class Schema
@@ -93,11 +94,11 @@ module GraphQL
         raise UnsubscribedError
       end
 
+      READING_SCOPE = ::Object.new
       # Call this method to provide a new subscription_scope; OR
       # call it without an argument to get the subscription_scope
       # @param new_scope [Symbol]
       # @return [Symbol]
-      READING_SCOPE = ::Object.new
       def self.subscription_scope(new_scope = READING_SCOPE)
         if new_scope != READING_SCOPE
           @subscription_scope = new_scope

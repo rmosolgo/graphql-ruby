@@ -1,6 +1,6 @@
 <h1>ActionCable Test Page</h1>
-<button onClick="sub1.trigger()">Trigger 1</button>
-<button onClick="sub2.trigger()">Trigger 2</button>
+<button onClick="sub1.trigger({field: 'payload', arguments: { id: 'updates-1' }, value: val1++})">Trigger 1</button>
+<button onClick="sub1.trigger({field: 'payload', arguments: { id: 'updates-2' }, value: val2++})">Trigger 2</button>
 <p>ActionCable updates:</p>
 <ul id="updates-1">
 </ul>
@@ -10,7 +10,64 @@
 
 <button onClick="sub1.unsubscribe()">Unsubscribe 1</button>
 <button onClick="sub2.unsubscribe()">Unsubscribe 2</button>
+
+
+<p>Fingerprint test</p>
+<button onClick="subscribeWithFingerprint()">Subscribe with fingerprint</button>
+<ul id="fingerprint-updates">
+</ul>
+<button onClick="triggerWithFingerprint()">Trigger with fingerprint</button>
+
 <script>
-var sub1 = App.subscribe("updates-1")
-var sub2 = App.subscribe("updates-2")
+function appendItem(parentId, text) {
+  var list = document.getElementById(parentId)
+  var child = document.createElement("li")
+  child.id = parentId + "-" + text
+  child.innerText = text
+  list.appendChild(child)
+}
+
+var payloadString = "subscription($id: ID!) { payload(id: $id) { value } }"
+function handleResponse(elementId, data) {
+  console.log("handleResponse", elementId, data)
+  if (data.result.data) {
+    if (data.result.data.payload) {
+      var value = data.result.data.payload.value
+      appendItem(elementId, value)
+    } else {
+      appendItem(elementId, "connected")
+    }
+  }
+}
+var sub1 = App.subscribe({
+  query: payloadString,
+  variables: { "id": "updates-1" },
+  received: function(data) { handleResponse("updates-1", data) },
+})
+var val1 = 1
+var sub2 = App.subscribe({
+  query: payloadString,
+  variables: { "id": "updates-2" },
+  received: function(data) { handleResponse("updates-2", data) }
+})
+var val2 = 1
+
+var fingerprintSubscription = null
+function subscribeWithFingerprint() {
+  fingerprintSubscription = App.subscribe({
+    query: "subscription { counterIncremented { newValue } }",
+    variables: {},
+    received: function(data) {
+      if (data.result.data.counterIncremented) {
+        appendItem("fingerprint-updates", data.result.data.counterIncremented.newValue)
+      } else {
+        appendItem("fingerprint-updates", "connected")
+      }
+    }
+  })
+}
+
+function triggerWithFingerprint() {
+  fingerprintSubscription.trigger({field: "counterIncremented", arguments: {}, value: null})
+}
 </script>

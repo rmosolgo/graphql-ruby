@@ -22,16 +22,10 @@
 
   App.cable = ActionCable.createConsumer();
 
-  function appendItem(parentId, text) {
-    var list = document.getElementById(parentId)
-    var child = document.createElement("li")
-    child.id = parentId + "-" + text
-    child.innerText = text
-    list.appendChild(child)
-  }
-
-  App.subscribe = function(elementId) {
-    var value = 1
+  App.subscribe = function(options) {
+    var query = options.query
+    var variables = options.variables
+    var receivedCallback = options.received
     // Unique-ish
     var uuid = Math.round(Date.now() + Math.random() * 100000).toString(16)
     return {
@@ -41,22 +35,19 @@
         }, {
           connected: function() {
             this.perform("execute", {
-              query: "subscription($id: ID!) { payload(id: $id) { value } }",
-              variables: { id: elementId },
+              query: query,
+              variables: variables,
             })
-            console.log("Connected")
-            appendItem(elementId, "connected")
+            console.log("Connected", query, variables)
           },
           received: function(data) {
-            if (data.result.data) {
-              var value = data.result.data.payload.value
-              appendItem(elementId, value)
-            }
+            console.log("received", query, variables, data)
+            receivedCallback(data)
           }
         }
       ),
-      trigger: function() {
-        this.subscription.perform("make_trigger", { id: elementId, value: value++ })
+      trigger: function(options) {
+        this.subscription.perform("make_trigger", options)
       },
       unsubscribe: function() {
         this.subscription.unsubscribe()

@@ -90,6 +90,7 @@ module GraphQL
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
         @subscriptions = Concurrent::Map.new
+        @events = Concurrent::Map.new { |h, k| h[k] = Concurrent::Map.new { |h2, k2| h2[k2] = [] } }
         @serializer = serializer
         super
       end
@@ -118,19 +119,41 @@ module GraphQL
         subscription_id = query.context[:subscription_id] ||= build_id
         stream = query.context[:action_cable_stream] ||= SUBSCRIPTION_PREFIX + subscription_id
         channel.stream_from(stream)
-        @subscriptions[subscription_id] = query
+        @subscriptions[subscription_id] = [query, events]
         events.each do |event|
-          channel.stream_from(EVENT_PREFIX + event.topic, coder: ActiveSupport::JSON) do |message|
-            result = execute(subscription_id, event, @serializer.load(message))
-            deliver(subscription_id, result)
-            nil
+          if @events.key?(event.topic)
+            # This process is already subscribed to this event, just add a new subscription below
+            # pass
+          else
+            # Setup a new listener to run all events with this topic in this process
+            channel.stream_from(EVENT_PREFIX + event.topic, coder: ActiveSupport::JSON) do |message|
+              events_by_fingerprint = @events[event.topic]
+              events_by_fingerprint.each do |key, events|
+                # The fingerprint has told us that this response should be shared by all subscribers,
+                # so just run it once, then deliver the result to every subscriber
+                first_event = events.first
+                object = @serializer.load(message)
+                first_subscription_id = first_event.context.fetch(:subscription_id)
+                result = execute(subscription_id, event, object)
+                # Having calculated the result _once_, send the same payload to all subscribers
+                events.each do |event|
+                  subscription_id = event.context.fetch(:subscription_id)
+                  deliver(subscription_id, result)
+                end
+              end
+              execute(subscription_id, event, @serializer.load(message))
+              nil
+            end
           end
+
+          # Add this event to the list of events to be updated
+          @events[event.topic][event.fingerprint] << event
         end
       end
 
       # Return the query from "storage" (in memory)
       def read_subscription(subscription_id)
-        query = @subscriptions[subscription_id]
+        query, _events = @subscriptions[subscription_id]
         {
           query_string: query.query_string,
           variables: query.provided_variables,
@@ -141,7 +164,21 @@ module GraphQL
 
       # The channel was closed, forget about it.
       def delete_subscription(subscription_id)
-        @subscriptions.delete(subscription_id)
+        query, events = @subscriptions.delete(subscription_id)
+        events.each do |event|
+          ev_by_fingerprint = @events[event.topic]
+          ev_for_fingerprint = ev_by_fingerprint[event.fingerprint]
+          ev_for_fingerprint.delete(event)
+          if ev_for_fingerprint.empty?
+            ev_by_fingerprint.delete(event.fingerprint)
+
+            if ev_by_fingerprint.empty?
+              stream_name = EVENT_PREFIX + event.topic
+              query.context[:channel].stop_stream_from(stream_name)
+              @events.delete(event.topic)
+            end
+          end
+        end
       end
     end
   end
