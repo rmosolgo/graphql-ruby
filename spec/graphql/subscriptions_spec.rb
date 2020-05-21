@@ -61,7 +61,7 @@ class InMemoryBackend
       @deliveries[channel] << result
     end
 
-    def execute(channel, event, object)
+    def execute_update(channel, event, object)
       @pushes << channel
       super
     end

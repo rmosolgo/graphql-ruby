@@ -90,7 +90,7 @@ module GraphQL
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
         @subscriptions = Concurrent::Map.new
-        @events = Concurrent::Map.new { |h, k| h[k] = Concurrent::Map.new { |h2, k2| h2[k2] = [] } }
+        @events = Concurrent::Map.new { |h, k| h[k] = Concurrent::Map.new { |h2, k2| h2[k2] = Concurrent::Array.new } }
         @serializer = serializer
         super
       end
@@ -121,33 +121,61 @@ module GraphQL
         channel.stream_from(stream)
         @subscriptions[subscription_id] = [query, events]
         events.each do |event|
-          if @events.key?(event.topic)
-            # This process is already subscribed to this event, just add a new subscription below
-            # pass
-          else
-            # Setup a new listener to run all events with this topic in this process
-            channel.stream_from(EVENT_PREFIX + event.topic, coder: ActiveSupport::JSON) do |message|
-              events_by_fingerprint = @events[event.topic]
-              events_by_fingerprint.each do |key, events|
-                # The fingerprint has told us that this response should be shared by all subscribers,
-                # so just run it once, then deliver the result to every subscriber
-                first_event = events.first
-                object = @serializer.load(message)
-                first_subscription_id = first_event.context.fetch(:subscription_id)
-                result = execute(subscription_id, event, object)
-                # Having calculated the result _once_, send the same payload to all subscribers
-                events.each do |event|
-                  subscription_id = event.context.fetch(:subscription_id)
-                  deliver(subscription_id, result)
-                end
-              end
-              execute(subscription_id, event, @serializer.load(message))
-              nil
-            end
-          end
-
+          # Setup a new listener to run all events with this topic in this process
+          setup_stream(channel, event)
           # Add this event to the list of events to be updated
           @events[event.topic][event.fingerprint] << event
+        end
+      end
+
+      # Every subscribing channel is listening here, but only one of them takes any action.
+      # This is so we can reuse payloads when possible, and make one payload to send to
+      # all subscribers.
+      #
+      # But the problem is, any channel could close at any time, so each channel has to
+      # be ready to take over the primary position.
+      #
+      # To make sure there's always one-and-only-one channel building payloads,
+      # let the listener belonging to the first event on the list be
+      # the one to build and publish payloads.
+      #
+      # TODO: there's still some problem. To replicate:
+      #
+      # - Load the page
+      # - Trigger 1
+      # - Trigger 2
+      # - Double-check in the logs that `1` was setup first
+      # - Unsubscribe 1
+      # - Trigger 2
+      #
+      # It should fail to update `2`, even though its still subscribed. I'm seeing:
+      #
+      # > Unsubscribing from channel: {"channel":"GraphqlChannel","id":"17239209737"}
+      # > ...
+      # > Could not execute command from ({"command"=>"message", "identifier"=>"{\"channel\":\"GraphqlChannel\",\"id\":\"17239209737\"}", "data"=>"{\"field\":\"payload\",\"arguments\":{\"id\":\"updates-2\"},\"value\":2,\"action\":\"make_trigger\"}"}) [RuntimeError - Unable to find subscription with identifier: {"channel":"GraphqlChannel","id":"17239209737"}]: /Users/rmosolgo/.rbenv/versions/2.4.2/lib/ruby/gems/2.4.0/gems/actioncable-5.2.1/lib/action_cable/connection/subscriptions.rb:78:in `find' | /Users/rmosolgo/.rbenv/versions/2.4.2/lib/ruby/gems/2.4.0/gems/actioncable-5.2.1/lib/action_cable/connection/subscriptions.rb:55:in `perform_action' | /Users/rmosolgo/.rbenv/versions/2.4.2/lib/ruby/gems/2.4.0/gems/actioncable-5.2.1/lib/action_cable/connection/subscriptions.rb:19:in `execute_command' | /Users/rmosolgo/.rbenv/versions/2.4.2/lib/ruby/gems/2.4.0/gems/actioncable-5.2.1/lib/action_cable/connection/base.rb:87:in `dispatch_websocket_message' | /Users/rmosolgo/.rbenv/versions/2.4.2/lib/ruby/gems/2.4.0/gems/actioncable-5.2.1/lib/action_cable/server/worker.rb:60:in `block in invoke'
+      #
+      # Like it's trying to send a message over a channel that has closed.
+      def setup_stream(channel, initial_event)
+        topic = initial_event.topic
+        channel.stream_from(EVENT_PREFIX + topic, coder: ActiveSupport::JSON) do |message|
+          object = @serializer.load(message)
+          events_by_fingerprint = @events[topic]
+          events_by_fingerprint.each do |_fingerprint, events|
+            if events.any? && events.first == initial_event
+              # The fingerprint has told us that this response should be shared by all subscribers,
+              # so just run it once, then deliver the result to every subscriber
+              first_event = events.first
+              first_subscription_id = first_event.context.fetch(:subscription_id)
+              puts "execute_update #{first_subscription_id} -- #{first_event.fingerprint}"
+              result = execute_update(first_subscription_id, first_event, object)
+              # Having calculated the result _once_, send the same payload to all subscribers
+              events.each do |event|
+                subscription_id = event.context.fetch(:subscription_id)
+                deliver(subscription_id, result)
+              end
+            end
+          end
+          nil
         end
       end
 
@@ -171,14 +199,17 @@ module GraphQL
           ev_for_fingerprint.delete(event)
           if ev_for_fingerprint.empty?
             ev_by_fingerprint.delete(event.fingerprint)
-
-            if ev_by_fingerprint.empty?
-              stream_name = EVENT_PREFIX + event.topic
-              query.context[:channel].stop_stream_from(stream_name)
-              @events.delete(event.topic)
-            end
           end
         end
+        puts "Deleted #{subscription_id} (#{events.map(&:fingerprint)})"
+        debug = {}
+        @events.each do |topic, ev_by_fingerprint|
+          debug[topic] = {}
+          ev_by_fingerprint.each do |fp, evs|
+            debug[topic][fp] = evs.map { |ev| ev.context[:subscription_id] }
+          end
+        end
+        puts "Remaining: #{debug}"
       end
     end
   end

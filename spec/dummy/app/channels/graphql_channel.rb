@@ -105,6 +105,7 @@ class GraphqlChannel < ActionCable::Channel::Base
 
   def unsubscribed
     @subscription_ids.each { |sid|
+      puts "Unsubscribing from #{sid}"
       GraphQLSchema.subscriptions.delete_subscription(sid)
     }
   end

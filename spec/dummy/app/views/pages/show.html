@@ -11,12 +11,23 @@
 <button onClick="sub1.unsubscribe()">Unsubscribe 1</button>
 <button onClick="sub2.unsubscribe()">Unsubscribe 2</button>
 
+<hr>
 
 <p>Fingerprint test</p>
-<button onClick="subscribeWithFingerprint()">Subscribe with fingerprint</button>
-<ul id="fingerprint-updates">
+
+<button onClick="subscribeWithFingerprint('1')">Subscribe with fingerprint 1</button>
+<ul id="fingerprint-updates-1">
 </ul>
-<button onClick="triggerWithFingerprint()">Trigger with fingerprint</button>
+<button onClick="triggerWithFingerprint('1')">Trigger with fingerprint 1</button>
+<button onClick="unsubscribeWithFingerprint('1')">Unsubscribe with fingerprint 1</button>
+
+<br>
+
+<button onClick="subscribeWithFingerprint('2')">Subscribe with fingerprint 2</button>
+<ul id="fingerprint-updates-2">
+</ul>
+<button onClick="triggerWithFingerprint('2')">Trigger with fingerprint 2</button>
+<button onClick="unsubscribeWithFingerprint('2')">Unsubscribe with fingerprint 2</button>
 
 <script>
 function appendItem(parentId, text) {
@@ -52,22 +63,36 @@ var sub2 = App.subscribe({
 })
 var val2 = 1
 
-var fingerprintSubscription = null
-function subscribeWithFingerprint() {
-  fingerprintSubscription = App.subscribe({
-    query: "subscription { counterIncremented { newValue } }",
+var fingerprintSubscriptions = {}
+function subscribeWithFingerprint(key) {
+  if (!fingerprintSubscriptions[key]) {
+    fingerprintSubscriptions[key] = []
+  }
+  var subs = fingerprintSubscriptions[key]
+  var newSub = App.subscribe({
+    query: "subscription fingerprint" + key + " { counterIncremented { newValue } }",
     variables: {},
     received: function(data) {
       if (data.result.data.counterIncremented) {
-        appendItem("fingerprint-updates", data.result.data.counterIncremented.newValue)
+        appendItem("fingerprint-updates-" + key, "update-" + newSub.number + "-value-" + data.result.data.counterIncremented.newValue)
       } else {
-        appendItem("fingerprint-updates", "connected")
+        appendItem("fingerprint-updates-" + key, "connected-" + newSub.number)
       }
     }
   })
+  newSub.number = subs.length + 1
+  subs.push(newSub)
 }
 
-function triggerWithFingerprint() {
-  fingerprintSubscription.trigger({field: "counterIncremented", arguments: {}, value: null})
+function triggerWithFingerprint(key) {
+  var sub = fingerprintSubscriptions[key][0]
+  sub.trigger({field: "counterIncremented", arguments: {}, value: null})
+}
+
+function unsubscribeWithFingerprint(key) {
+  fingerprintSubscriptions[key].forEach(function(sub) {
+    sub.unsubscribe()
+  })
+  fingerprintSubscriptions[key] = []
 }
 </script>

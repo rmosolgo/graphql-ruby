@@ -79,15 +79,13 @@ module GraphQL
     # `event` was triggered on `object`, and `subscription_id` was subscribed,
     # so it should be updated.
     #
-    # Load `subscription_id`'s GraphQL data, re-evaluate the query, and deliver the result.
-    #
-    # This is where a queue may be inserted to push updates in the background.
+    # Load `subscription_id`'s GraphQL data, re-evaluate the query and return the result.
     #
     # @param subscription_id [String]
     # @param event [GraphQL::Subscriptions::Event] The event which was triggered
     # @param object [Object] The value for the subscription field
-    # @return [void]
-    def execute(subscription_id, event, object)
+    # @return [GraphQL::Query::Result]
+    def execute_update(subscription_id, event, object)
       # Lookup the saved data for this subscription
       query_data = read_subscription(subscription_id)
       if query_data.nil?
@@ -118,6 +116,15 @@ module GraphQL
       nil
     end
 
+    # Run the update query for this subscription and deliver it
+    # @see {#execute_update}
+    # @see {#deliver}
+    # @return [void]
+    def execute(subscription_id, event, object)
+      res = execute_update(subscription_id, event, object)
+      deliver(subscription_id, res)
+    end
+
     # Event `event` occurred on `object`,
     # Update all subscribers.
     # @param event [Subscriptions::Event]
@@ -125,7 +132,7 @@ module GraphQL
     # @return [void]
     def execute_all(event, object)
       each_subscription_id(event) do |subscription_id|
-        result = execute(subscription_id, event, object)
+        result = execute_update(subscription_id, event, object)
         if !result.nil?
           deliver(subscription_id, result)
         end
