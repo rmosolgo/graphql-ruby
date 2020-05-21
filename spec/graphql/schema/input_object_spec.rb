@@ -86,6 +86,38 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
+  describe "prepare with camelized inputs" do
+    class PrepareCamelizedSchema < GraphQL::Schema
+      class CamelizedInput < GraphQL::Schema::InputObject
+        argument :inputString, String, required: true,
+          camelize: false,
+          as: :input_string,
+          prepare: -> (val, ctx) { val.upcase }
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :input_test, String, null: false do
+          argument :camelized_input, CamelizedInput, required: true
+        end
+
+        def input_test(camelized_input:)
+          camelized_input[:input_string]
+        end
+      end
+
+      query(Query)
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
+      end
+    end
+
+    it "calls the prepare proc" do
+      res = PrepareCamelizedSchema.execute("{ inputTest(camelizedInput: { inputString: \"abc\" }) }")
+      assert_equal "ABC", res["data"]["inputTest"]
+    end
+  end
+
   describe "prepare: / loads: / as:" do
     module InputObjectPrepareTest
       class InputObj < GraphQL::Schema::InputObject
