@@ -14,6 +14,7 @@ module GraphQL
         include GraphQL::Schema::Member::RelayShortcuts
         include GraphQL::Schema::Member::Scoped
         include GraphQL::Schema::Member::HasAstNode
+        include GraphQL::Schema::Member::HasUnresolvedTypeError
 
         # Methods defined in this block will be:
         # - Added as class methods to this interface
@@ -73,6 +74,10 @@ module GraphQL
             child_class.description(description)
             if overridden_graphql_name
               child_class.graphql_name(overridden_graphql_name)
+            end
+            # If interfaces are mixed into each other, only define this class once
+            if !child_class.const_defined?(:UnresolvedTypeError, false)
+              add_unresolved_type_error(child_class)
             end
           elsif child_class < GraphQL::Schema::Object
             # This is being included into an object type, make sure it's using `implements(...)`
