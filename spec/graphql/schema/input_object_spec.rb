@@ -92,7 +92,7 @@ describe GraphQL::Schema::InputObject do
         argument :inputString, String, required: true,
           camelize: false,
           as: :input_string,
-          prepare: -> (val, ctx) { val.upcase }
+          prepare: ->(val, ctx) { val.upcase }
       end
 
       class Query < GraphQL::Schema::Object
