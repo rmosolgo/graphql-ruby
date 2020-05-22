@@ -937,6 +937,9 @@ describe GraphQL::Query do
       assert_equal({direction: "ASC"}, detailed_args[:order_by].to_h)
       assert_equal({direction: "ASC"}, order_by_argument_value.value.to_h)
       assert_equal "order_by", order_by_argument_value.definition.graphql_name
+
+      assert_equal [source_arg_value, fat_content_arg_value, organic_arg_value, order_by_argument_value, detailed_args.argument_values[:origin_dairy]].to_set,
+                   detailed_args.each_value.to_set
     end
 
     it "provides access to nested input objects" do
