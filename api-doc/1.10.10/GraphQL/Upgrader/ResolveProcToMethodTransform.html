@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Upgrader::ResolveProcToMethodTransform
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Upgrader::ResolveProcToMethodTransform";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (R)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Upgrader.html" title="GraphQL::Upgrader (module)">Upgrader</a></span></span>
+     &raquo; 
+    <span class="title">ResolveProcToMethodTransform</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Upgrader::ResolveProcToMethodTransform
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Transform.html" title="GraphQL::Upgrader::Transform (class)">Transform</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Transform.html" title="GraphQL::Upgrader::Transform (class)">Transform</a></span></li>
+          
+            <li class="next">GraphQL::Upgrader::ResolveProcToMethodTransform</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/upgrader/member.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="ResolveProcToMethodTransform/ResolveProcProcessor.html" title="GraphQL::Upgrader::ResolveProcToMethodTransform::ResolveProcProcessor (class)">ResolveProcProcessor</a></span>
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#apply-instance_method" title="#apply (instance method)">#<strong>apply</strong>(input_text)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="Transform.html" title="GraphQL::Upgrader::Transform (class)">Transform</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Transform.html#apply_processor-instance_method" title="GraphQL::Upgrader::Transform#apply_processor (method)">#apply_processor</a></span>, <span class='object_link'><a href="Transform.html#normalize_type_expression-instance_method" title="GraphQL::Upgrader::Transform#normalize_type_expression (method)">#normalize_type_expression</a></span>, <span class='object_link'><a href="Transform.html#reindent_lines-instance_method" title="GraphQL::Upgrader::Transform#reindent_lines (method)">#reindent_lines</a></span>, <span class='object_link'><a href="Transform.html#trim_lines-instance_method" title="GraphQL::Upgrader::Transform#trim_lines (method)">#trim_lines</a></span>, <span class='object_link'><a href="Transform.html#underscorize-instance_method" title="GraphQL::Upgrader::Transform#underscorize (method)">#underscorize</a></span></p>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="apply-instance_method">
+  
+    #<strong>apply</strong>(input_text)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546
+547
+548
+549
+550
+551
+552
+553
+554
+555
+556
+557
+558
+559
+560
+561
+562
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582
+583
+584
+585
+586</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/upgrader/member.rb', line 513</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_apply'>apply</span><span class='lparen'>(</span><span class='id identifier rubyid_input_text'>input_text</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_input_text'>input_text</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>resolve\(? ?-&gt;</span><span class='regexp_end'>/</span></span>
+    <span class='comment'># - Find the proc literal
+</span>    <span class='comment'># - Get the three argument names (obj, arg, ctx)
+</span>    <span class='comment'># - Get the proc body
+</span>    <span class='comment'># - Find and replace:
+</span>    <span class='comment'>#  - The ctx argument becomes `context`
+</span>    <span class='comment'>#  - The obj argument becomes `object`
+</span>    <span class='comment'># - Args is trickier:
+</span>    <span class='comment'>#   - If it&#39;s not used, remove it
+</span>    <span class='comment'>#   - If it&#39;s used, abandon ship and make it `**args`
+</span>    <span class='comment'>#   - Convert string args access to symbol access, since it&#39;s a Ruby **splat
+</span>    <span class='comment'>#   - Convert camelized arg names to underscored arg names
+</span>    <span class='comment'>#   - (It would be nice to correctly become Ruby kwargs, but that might be too hard)
+</span>    <span class='comment'>#   - Add a `# TODO` comment to the method source?
+</span>    <span class='comment'># - Rebuild the method:
+</span>    <span class='comment'>#   - use the field name as the method name
+</span>    <span class='comment'>#   - handle args as described above
+</span>    <span class='comment'>#   - put the modified proc body as the method body
+</span>
+    <span class='id identifier rubyid_input_text'>input_text</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>(?&lt;field_type&gt;input_field|field|connection|argument) :(?&lt;name&gt;[a-zA-Z_0-9_]*)</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_field_name'>field_name</span> <span class='op'>=</span> <span class='gvar'>$~</span><span class='lbracket'>[</span><span class='symbol'>:name</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_processor'>processor</span> <span class='op'>=</span> <span class='id identifier rubyid_apply_processor'>apply_processor</span><span class='lparen'>(</span><span class='id identifier rubyid_input_text'>input_text</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="ResolveProcToMethodTransform/ResolveProcProcessor.html" title="GraphQL::Upgrader::ResolveProcToMethodTransform::ResolveProcProcessor (class)">ResolveProcProcessor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="ResolveProcToMethodTransform/ResolveProcProcessor.html#initialize-instance_method" title="GraphQL::Upgrader::ResolveProcToMethodTransform::ResolveProcProcessor#initialize (method)">new</a></span></span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_processor'>processor</span><span class='period'>.</span><span class='id identifier rubyid_resolve_proc_sections'>resolve_proc_sections</span><span class='period'>.</span><span class='id identifier rubyid_reverse'>reverse</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_resolve_proc_section'>resolve_proc_section</span><span class='op'>|</span>
+      <span class='id identifier rubyid_proc_body'>proc_body</span> <span class='op'>=</span> <span class='id identifier rubyid_input_text'>input_text</span><span class='lbracket'>[</span><span class='id identifier rubyid_resolve_proc_section'>resolve_proc_section</span><span class='period'>.</span><span class='id identifier rubyid_proc_start'>proc_start</span><span class='op'>..</span><span class='id identifier rubyid_resolve_proc_section'>resolve_proc_section</span><span class='period'>.</span><span class='id identifier rubyid_proc_end'>proc_end</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_obj_arg_name'>obj_arg_name</span><span class='comma'>,</span> <span class='id identifier rubyid_args_arg_name'>args_arg_name</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx_arg_name'>ctx_arg_name</span> <span class='op'>=</span> <span class='id identifier rubyid_resolve_proc_section'>resolve_proc_section</span><span class='period'>.</span><span class='id identifier rubyid_proc_arg_names'>proc_arg_names</span>
+      <span class='comment'># This is not good, it will hit false positives
+</span>      <span class='comment'># Should use AST to make this substitution
+</span>      <span class='kw'>if</span> <span class='id identifier rubyid_obj_arg_name'>obj_arg_name</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>_</span><span class='tstring_end'>&quot;</span></span>
+        <span class='id identifier rubyid_proc_body'>proc_body</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>([^\w:.]|^)</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj_arg_name'>obj_arg_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>([^\w:]|$)</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>\1object\2</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_ctx_arg_name'>ctx_arg_name</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>_</span><span class='tstring_end'>&quot;</span></span>
+        <span class='id identifier rubyid_proc_body'>proc_body</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>([^\w:.]|^)</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_ctx_arg_name'>ctx_arg_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>([^\w:]|$)</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>\1context\2</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+
+      <span class='id identifier rubyid_method_def_indent'>method_def_indent</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span> <span class='op'>*</span> <span class='lparen'>(</span><span class='id identifier rubyid_resolve_proc_section'>resolve_proc_section</span><span class='period'>.</span><span class='id identifier rubyid_resolve_indent'>resolve_indent</span> <span class='op'>-</span> <span class='int'>2</span><span class='rparen'>)</span>
+      <span class='comment'># Turn the proc body into a method body
+</span>      <span class='id identifier rubyid_method_body'>method_body</span> <span class='op'>=</span> <span class='id identifier rubyid_reindent_lines'>reindent_lines</span><span class='lparen'>(</span><span class='id identifier rubyid_proc_body'>proc_body</span><span class='comma'>,</span> <span class='label'>from_indent:</span> <span class='id identifier rubyid_resolve_proc_section'>resolve_proc_section</span><span class='period'>.</span><span class='id identifier rubyid_resolve_indent'>resolve_indent</span> <span class='op'>+</span> <span class='int'>2</span><span class='comma'>,</span> <span class='label'>to_indent:</span> <span class='id identifier rubyid_resolve_proc_section'>resolve_proc_section</span><span class='period'>.</span><span class='id identifier rubyid_resolve_indent'>resolve_indent</span><span class='rparen'>)</span>
+      <span class='comment'># Add `def... end`
+</span>      <span class='id identifier rubyid_method_def'>method_def</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_input_text'>input_text</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>argument </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+        <span class='comment'># This field has arguments
+</span>        <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>def </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_name'>field_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>(**</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_args_arg_name'>args_arg_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>else</span>
+        <span class='comment'># No field arguments, so, no method arguments
+</span>        <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>def </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_name'>field_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>end</span>
+      <span class='comment'># Wrap the body in def ... end
+</span>      <span class='id identifier rubyid_method_body'>method_body</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_method_def_indent'>method_def_indent</span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_method_def'>method_def</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_method_body'>method_body</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_method_def_indent'>method_def_indent</span><span class='embexpr_end'>}</span><span class='tstring_content'>end\n</span><span class='tstring_end'>&quot;</span></span>
+      <span class='comment'># Update Argument access to be underscore and symbols
+</span>      <span class='comment'># Update `args[...]` and `args.key?`
+</span>      <span class='id identifier rubyid_method_body'>method_body</span> <span class='op'>=</span> <span class='id identifier rubyid_method_body'>method_body</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_args_arg_name'>args_arg_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>(?&lt;method_begin&gt;\.key\?\(?|\[)[&quot;&#39;:](?&lt;arg_name&gt;[a-zA-Z0-9_]+)[&quot;&#39;]?(?&lt;method_end&gt;\]|\))?</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span> <span class='kw'>do</span>
+        <span class='id identifier rubyid_method_begin'>method_begin</span> <span class='op'>=</span> <span class='gvar'>$~</span><span class='lbracket'>[</span><span class='symbol'>:method_begin</span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_arg_name'>arg_name</span> <span class='op'>=</span> <span class='id identifier rubyid_underscorize'>underscorize</span><span class='lparen'>(</span><span class='gvar'>$~</span><span class='lbracket'>[</span><span class='symbol'>:arg_name</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_method_end'>method_end</span> <span class='op'>=</span> <span class='gvar'>$~</span><span class='lbracket'>[</span><span class='symbol'>:method_end</span><span class='rbracket'>]</span>
+        <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_args_arg_name'>args_arg_name</span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_method_begin'>method_begin</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arg_name'>arg_name</span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_method_end'>method_end</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>end</span>
+
+      <span class='comment'># Replace the resolve proc with the method
+</span>      <span class='id identifier rubyid_input_text'>input_text</span><span class='lbracket'>[</span><span class='id identifier rubyid_resolve_proc_section'>resolve_proc_section</span><span class='period'>.</span><span class='id identifier rubyid_resolve_start'>resolve_start</span><span class='op'>..</span><span class='id identifier rubyid_resolve_proc_section'>resolve_proc_section</span><span class='period'>.</span><span class='id identifier rubyid_resolve_end'>resolve_end</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
+      <span class='comment'># The replacement above might have left some preceeding whitespace,
+</span>      <span class='comment'># so remove it by deleting all whitespace chars before `resolve`:
+</span>      <span class='id identifier rubyid_preceeding_whitespace'>preceeding_whitespace</span> <span class='op'>=</span> <span class='id identifier rubyid_resolve_proc_section'>resolve_proc_section</span><span class='period'>.</span><span class='id identifier rubyid_resolve_start'>resolve_start</span> <span class='op'>-</span> <span class='int'>1</span>
+      <span class='kw'>while</span> <span class='id identifier rubyid_input_text'>input_text</span><span class='lbracket'>[</span><span class='id identifier rubyid_preceeding_whitespace'>preceeding_whitespace</span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_preceeding_whitespace'>preceeding_whitespace</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+        <span class='id identifier rubyid_input_text'>input_text</span><span class='lbracket'>[</span><span class='id identifier rubyid_preceeding_whitespace'>preceeding_whitespace</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
+        <span class='id identifier rubyid_preceeding_whitespace'>preceeding_whitespace</span> <span class='op'>-=</span> <span class='int'>1</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_input_text'>input_text</span> <span class='op'>+=</span> <span class='id identifier rubyid_method_body'>method_body</span>
+      <span class='id identifier rubyid_input_text'>input_text</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_input_text'>input_text</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu May 28 14:31:08 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.25 (ruby-2.7.1).
+</div>
+
+    </div>
+  </body>
+</html>
