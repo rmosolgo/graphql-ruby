@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Introduction</h1>
 <div class="guide-container">
-  <p>Object fields expose data about that object or connect the object to other objects. You can add fields to your object types with the <code class="highlighter-rouge">field(...)</code> class method, for example:</p>
+  <p>Object fields expose data about that object or connect the object to other objects. You can add fields to your object types with the <code class="language-plaintext highlighter-rouge">field(...)</code> class method, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"The unique name of this list"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 </code></pre></div></div>
@@ -67,22 +67,22 @@
 
 <h3 id="field-return-type">Field Return Type</h3>
 
-<p>The second argument to <code class="highlighter-rouge">field(...)</code> is the return type. This can be:</p>
+<p>The second argument to <code class="language-plaintext highlighter-rouge">field(...)</code> is the return type. This can be:</p>
 
 <ul>
-  <li>A built-in GraphQL type (<code class="highlighter-rouge">Integer</code>, <code class="highlighter-rouge">Float</code>, <code class="highlighter-rouge">String</code>, <code class="highlighter-rouge">ID</code>, or <code class="highlighter-rouge">Boolean</code>)</li>
+  <li>A built-in GraphQL type (<code class="language-plaintext highlighter-rouge">Integer</code>, <code class="language-plaintext highlighter-rouge">Float</code>, <code class="language-plaintext highlighter-rouge">String</code>, <code class="language-plaintext highlighter-rouge">ID</code>, or <code class="language-plaintext highlighter-rouge">Boolean</code>)</li>
   <li>A GraphQL type from your application</li>
   <li>An <em>array</em> of any of the above, which denotes a <a href="/type_definitions/lists">list type</a>.</li>
 </ul>
 
-<p><a href="/type_definitions/non_nulls">Nullability</a> is expressed with the required <code class="highlighter-rouge">null:</code> keyword:</p>
+<p><a href="/type_definitions/non_nulls">Nullability</a> is expressed with the required <code class="language-plaintext highlighter-rouge">null:</code> keyword:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">null: true</code> means that the field <em>may</em> return <code class="highlighter-rouge">nil</code></li>
-  <li><code class="highlighter-rouge">null: false</code> means the field is non-nullable; it may not return <code class="highlighter-rouge">nil</code>. If the implementation returns <code class="highlighter-rouge">nil</code>, GraphQL-Ruby will return an error to the client.</li>
+  <li><code class="language-plaintext highlighter-rouge">null: true</code> means that the field <em>may</em> return <code class="language-plaintext highlighter-rouge">nil</code></li>
+  <li><code class="language-plaintext highlighter-rouge">null: false</code> means the field is non-nullable; it may not return <code class="language-plaintext highlighter-rouge">nil</code>. If the implementation returns <code class="language-plaintext highlighter-rouge">nil</code>, GraphQL-Ruby will return an error to the client.</li>
 </ul>
 
-<p>Additionally, list types maybe nullable by adding <code class="highlighter-rouge">[..., null: true]</code> to the definition.</p>
+<p>Additionally, list types maybe nullable by adding <code class="language-plaintext highlighter-rouge">[..., null: true]</code> to the definition.</p>
 
 <p>Here are some examples:</p>
 
@@ -96,7 +96,7 @@
 
 <p>Fields maybe documented with a <strong>description</strong> and may be <strong>deprecated</strong>.</p>
 
-<p><strong>Descriptions</strong> can be added with the <code class="highlighter-rouge">field(...)</code> method as a positional argument, a keyword argument, or inside the block:</p>
+<p><strong>Descriptions</strong> can be added with the <code class="language-plaintext highlighter-rouge">field(...)</code> method as a positional argument, a keyword argument, or inside the block:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 3rd positional argument</span>
 <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"The name of this thing"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
@@ -111,23 +111,23 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><strong>Deprecated</strong> fields can be marked by adding a <code class="highlighter-rouge">deprecation_reason:</code> keyword argument:</p>
+<p><strong>Deprecated</strong> fields can be marked by adding a <code class="language-plaintext highlighter-rouge">deprecation_reason:</code> keyword argument:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:email</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
   <span class="ss">deprecation_reason: </span><span class="s2">"Users may have multiple emails, use `User.emails` instead."</span>
 </code></pre></div></div>
 
-<p>Fields with a <code class="highlighter-rouge">deprecation_reason:</code> will appear as “deprecated” in GraphiQL.</p>
+<p>Fields with a <code class="language-plaintext highlighter-rouge">deprecation_reason:</code> will appear as “deprecated” in GraphiQL.</p>
 
 <h3 id="field-resolution">Field Resolution</h3>
 
-<p>In general, fields return Ruby values corresponding to their GraphQL return types. For example, a field with the return type <code class="highlighter-rouge">String</code> should return a Ruby string, and a field with the return type <code class="highlighter-rouge">[User!]!</code> should return a Ruby array with zero or more <code class="highlighter-rouge">User</code> objects in it.</p>
+<p>In general, fields return Ruby values corresponding to their GraphQL return types. For example, a field with the return type <code class="language-plaintext highlighter-rouge">String</code> should return a Ruby string, and a field with the return type <code class="language-plaintext highlighter-rouge">[User!]!</code> should return a Ruby array with zero or more <code class="language-plaintext highlighter-rouge">User</code> objects in it.</p>
 
 <p>By default, fields return values by:</p>
 
 <ul>
   <li>Trying to call a method on the underlying object; <em>OR</em></li>
-  <li>If the underlying object is a <code class="highlighter-rouge">Hash</code>, lookup a key in that hash.</li>
+  <li>If the underlying object is a <code class="language-plaintext highlighter-rouge">Hash</code>, lookup a key in that hash.</li>
 </ul>
 
 <p>The method name or hash key corresponds to the field name, so in this example:</p>
@@ -135,9 +135,9 @@
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:top_score</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 </code></pre></div></div>
 
-<p>The default behavior is to look for a <code class="highlighter-rouge">#top_score</code> method, or lookup a <code class="highlighter-rouge">Hash</code> key, <code class="highlighter-rouge">:top_score</code> (symbol) or <code class="highlighter-rouge">"top_score"</code> (string).</p>
+<p>The default behavior is to look for a <code class="language-plaintext highlighter-rouge">#top_score</code> method, or lookup a <code class="language-plaintext highlighter-rouge">Hash</code> key, <code class="language-plaintext highlighter-rouge">:top_score</code> (symbol) or <code class="language-plaintext highlighter-rouge">"top_score"</code> (string).</p>
 
-<p>You can override the method name with the <code class="highlighter-rouge">method:</code> keyword, or override the hash key with the <code class="highlighter-rouge">hash_key:</code> keyword, for example:</p>
+<p>You can override the method name with the <code class="language-plaintext highlighter-rouge">method:</code> keyword, or override the hash key with the <code class="language-plaintext highlighter-rouge">hash_key:</code> keyword, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use the `#best_score` method to resolve this field</span>
 <span class="n">field</span> <span class="ss">:top_score</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
@@ -148,7 +148,7 @@
   <span class="ss">hash_key: </span><span class="s2">"allPlayers"</span>
 </code></pre></div></div>
 
-<p>To pass-through the underlying object without calling a method on it, you can use <code class="highlighter-rouge">method: :itself</code>:</p>
+<p>To pass-through the underlying object without calling a method on it, you can use <code class="language-plaintext highlighter-rouge">method: :itself</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:player</span><span class="p">,</span> <span class="no">User</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
   <span class="ss">method: :itself</span>
@@ -176,8 +176,8 @@
 <p>Inside the method, you can access some helper methods:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">object</code> is the underlying application object (formerly <code class="highlighter-rouge">obj</code> to resolve functions)</li>
-  <li><code class="highlighter-rouge">context</code> is the query context (passed as <code class="highlighter-rouge">context:</code> when executing queries, formerly <code class="highlighter-rouge">ctx</code> to resolve functions)</li>
+  <li><code class="language-plaintext highlighter-rouge">object</code> is the underlying application object (formerly <code class="language-plaintext highlighter-rouge">obj</code> to resolve functions)</li>
+  <li><code class="language-plaintext highlighter-rouge">context</code> is the query context (passed as <code class="language-plaintext highlighter-rouge">context:</code> when executing queries, formerly <code class="language-plaintext highlighter-rouge">ctx</code> to resolve functions)</li>
 </ul>
 
 <p>Additionally, when you define arguments (see below), they’re passed to the method definition, for example:</p>
@@ -192,7 +192,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>As the examples above show, by default the custom method name must match the field name. If you want to use a different custom method, the <code class="highlighter-rouge">resolver_method</code> option is available:</p>
+<p>As the examples above show, by default the custom method name must match the field name. If you want to use a different custom method, the <code class="language-plaintext highlighter-rouge">resolver_method</code> option is available:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use the custom method with a non-default name below to resolve this field</span>
 <span class="n">field</span> <span class="ss">:total_games_played</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">resolver_method: :games_played</span>
@@ -202,23 +202,23 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">resolver_method</code> has two main use cases:</p>
+<p><code class="language-plaintext highlighter-rouge">resolver_method</code> has two main use cases:</p>
 
 <ol>
   <li>resolver re-use between multiple fields</li>
-  <li>dealing with method conflicts (specifically if you have fields named <code class="highlighter-rouge">context</code> or <code class="highlighter-rouge">object</code>)</li>
+  <li>dealing with method conflicts (specifically if you have fields named <code class="language-plaintext highlighter-rouge">context</code> or <code class="language-plaintext highlighter-rouge">object</code>)</li>
 </ol>
 
-<p>Note that <code class="highlighter-rouge">resolver_method</code> <em>cannot</em> be used in combination with <code class="highlighter-rouge">method</code> or <code class="highlighter-rouge">hash_key</code>.</p>
+<p>Note that <code class="language-plaintext highlighter-rouge">resolver_method</code> <em>cannot</em> be used in combination with <code class="language-plaintext highlighter-rouge">method</code> or <code class="language-plaintext highlighter-rouge">hash_key</code>.</p>
 
 <h3 id="field-arguments">Field Arguments</h3>
 
 <p><em>Arguments</em> allow fields to take input to their resolution. For example:</p>
 
 <ul>
-  <li>A <code class="highlighter-rouge">search()</code> field may take a <code class="highlighter-rouge">term:</code> argument, which is the query to use for searching, eg <code class="highlighter-rouge">search(term: "GraphQL")</code></li>
-  <li>A <code class="highlighter-rouge">user()</code> field may take an <code class="highlighter-rouge">id:</code> argument, which specifies which user to find, eg <code class="highlighter-rouge">user(id: 1)</code></li>
-  <li>An <code class="highlighter-rouge">attachments()</code> field may take a <code class="highlighter-rouge">type:</code> argument, which filters the result by file type, eg <code class="highlighter-rouge">attachments(type: PHOTO)</code></li>
+  <li>A <code class="language-plaintext highlighter-rouge">search()</code> field may take a <code class="language-plaintext highlighter-rouge">term:</code> argument, which is the query to use for searching, eg <code class="language-plaintext highlighter-rouge">search(term: "GraphQL")</code></li>
+  <li>A <code class="language-plaintext highlighter-rouge">user()</code> field may take an <code class="language-plaintext highlighter-rouge">id:</code> argument, which specifies which user to find, eg <code class="language-plaintext highlighter-rouge">user(id: 1)</code></li>
+  <li>An <code class="language-plaintext highlighter-rouge">attachments()</code> field may take a <code class="language-plaintext highlighter-rouge">type:</code> argument, which filters the result by file type, eg <code class="language-plaintext highlighter-rouge">attachments(type: PHOTO)</code></li>
 </ul>
 
 <p>Read more in the <a href="/fields/arguments">Arguments guide</a></p>
@@ -227,24 +227,24 @@
 
 <p>Inside a field method, you can access some low-level objects from the GraphQL-Ruby runtime. Be warned, these APIs are subject to change, so check the changelog when updating.</p>
 
-<p>A few <code class="highlighter-rouge">extras</code> are available:</p>
+<p>A few <code class="language-plaintext highlighter-rouge">extras</code> are available:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">ast_node</code></li>
-  <li><code class="highlighter-rouge">graphql_name</code> (the field’s name)</li>
-  <li><code class="highlighter-rouge">owner</code> (the type that this field belongs to)</li>
-  <li><code class="highlighter-rouge">lookahead</code> (see <a href="/queries/lookahead">Lookahead</a>)</li>
-  <li><code class="highlighter-rouge">execution_errors</code>, whose <code class="highlighter-rouge">#add(err_or_msg)</code> method should be used for adding errors</li>
-  <li><code class="highlighter-rouge">argument_details</code> (Intepreter only), an instance of <a href="/api-doc/1.10.10/GraphQL/Execution/Interpreter/Arguments" target="_blank" title="API docs for GraphQL::Execution::Interpreter::Arguments"><code>GraphQL::Execution::Interpreter::Arguments</code></a> with argument metadata</li>
+  <li><code class="language-plaintext highlighter-rouge">ast_node</code></li>
+  <li><code class="language-plaintext highlighter-rouge">graphql_name</code> (the field’s name)</li>
+  <li><code class="language-plaintext highlighter-rouge">owner</code> (the type that this field belongs to)</li>
+  <li><code class="language-plaintext highlighter-rouge">lookahead</code> (see <a href="/queries/lookahead">Lookahead</a>)</li>
+  <li><code class="language-plaintext highlighter-rouge">execution_errors</code>, whose <code class="language-plaintext highlighter-rouge">#add(err_or_msg)</code> method should be used for adding errors</li>
+  <li><code class="language-plaintext highlighter-rouge">argument_details</code> (Intepreter only), an instance of <a href="/api-doc/1.10.10/GraphQL/Execution/Interpreter/Arguments" target="_blank" title="API docs for GraphQL::Execution::Interpreter::Arguments"><code>GraphQL::Execution::Interpreter::Arguments</code></a> with argument metadata</li>
   <li>Custom extras, see below</li>
 </ul>
 
-<p>To inject them into your field method, first, add the <code class="highlighter-rouge">extras:</code> option to the field definition:</p>
+<p>To inject them into your field method, first, add the <code class="language-plaintext highlighter-rouge">extras:</code> option to the field definition:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:my_field</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">extras: </span><span class="p">[</span><span class="ss">:ast_node</span><span class="p">]</span>
 </code></pre></div></div>
 
-<p>Then add <code class="highlighter-rouge">ast_node:</code> keyword to the method signature:</p>
+<p>Then add <code class="language-plaintext highlighter-rouge">ast_node:</code> keyword to the method signature:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">my_field</span><span class="p">(</span><span class="n">ast_node</span><span class="p">:)</span>
   <span class="c1"># ...</span>
@@ -253,11 +253,11 @@
 
 <p>At runtime, the requested runtime object will be passed to the field.</p>
 
-<p><strong>Custom extras</strong> are also possible. Any method on your field class can be passed to <code class="highlighter-rouge">extras: [...]</code>, and the value will be injected into the method. For example, <code class="highlighter-rouge">extras: [:owner]</code> will inject the object type who owns the field. Any new methods on your custom field class may be used, too.</p>
+<p><strong>Custom extras</strong> are also possible. Any method on your field class can be passed to <code class="language-plaintext highlighter-rouge">extras: [...]</code>, and the value will be injected into the method. For example, <code class="language-plaintext highlighter-rouge">extras: [:owner]</code> will inject the object type who owns the field. Any new methods on your custom field class may be used, too.</p>
 
 <h3 id="field-parameter-default-values">Field Parameter Default Values</h3>
 
-<p>The field method requires you to pass <code class="highlighter-rouge">null:</code> keyword argument to determine whether the field is nullable or not. For another field you may want to override <code class="highlighter-rouge">camelize</code>, which is <code class="highlighter-rouge">true</code> by default. You can override this behavior by adding a custom field with overwritten <code class="highlighter-rouge">camelize</code> option, which is <code class="highlighter-rouge">true</code> by default.</p>
+<p>The field method requires you to pass <code class="language-plaintext highlighter-rouge">null:</code> keyword argument to determine whether the field is nullable or not. For another field you may want to override <code class="language-plaintext highlighter-rouge">camelize</code>, which is <code class="language-plaintext highlighter-rouge">true</code> by default. You can override this behavior by adding a custom field with overwritten <code class="language-plaintext highlighter-rouge">camelize</code> option, which is <code class="language-plaintext highlighter-rouge">true</code> by default.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
   <span class="c1"># Add `null: false` and `camelize: false` which provide default values</span>

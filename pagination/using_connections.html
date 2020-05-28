@@ -49,11 +49,11 @@
 <div class="guide-container">
   <p>GraphQL-Ruby ships with a few implementations of the <a href="/pagination/connection_concepts">connection pattern</a> that you can use out of the box. They support Ruby Arrays, Mongoid, Sequel, and ActiveRecord.</p>
 
-<p>Additionally, connections allow you to limit the number of items returned with <a href="#max-page-size"><code class="highlighter-rouge">max_page_size</code></a>.</p>
+<p>Additionally, connections allow you to limit the number of items returned with <a href="#max-page-size"><code class="language-plaintext highlighter-rouge">max_page_size</code></a>.</p>
 
 <h2 id="adding-the-plugin">Adding the Plugin</h2>
 
-<p>GraphQL-Ruby 1.10.0 includes a new plugin for connections. It’s more flexible and easier to customize. If it’s not already added to your schema with <code class="highlighter-rouge">use ...</code>, add it:</p>
+<p>GraphQL-Ruby 1.10.0 includes a new plugin for connections. It’s more flexible and easier to customize. If it’s not already added to your schema with <code class="language-plaintext highlighter-rouge">use ...</code>, add it:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># ...</span>
@@ -63,18 +63,18 @@
 
 <h2 id="make-connection-fields">Make Connection Fields</h2>
 
-<p>Use <code class="highlighter-rouge">.connection_type</code> to generate a connection type for paginating over objects of a given type:</p>
+<p>Use <code class="language-plaintext highlighter-rouge">.connection_type</code> to generate a connection type for paginating over objects of a given type:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">ItemType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 </code></pre></div></div>
 
-<p>The generated return type will be called <code class="highlighter-rouge">ItemConnection</code>. Since it ends in <code class="highlighter-rouge">*Connection</code>, the <code class="highlighter-rouge">field(...)</code> will automatically be configured with <code class="highlighter-rouge">connection: true</code>. If the connection type’s name doesn’t end in <code class="highlighter-rouge">Connection</code>, you have to add that configuration yourself:</p>
+<p>The generated return type will be called <code class="language-plaintext highlighter-rouge">ItemConnection</code>. Since it ends in <code class="language-plaintext highlighter-rouge">*Connection</code>, the <code class="language-plaintext highlighter-rouge">field(...)</code> will automatically be configured with <code class="language-plaintext highlighter-rouge">connection: true</code>. If the connection type’s name doesn’t end in <code class="language-plaintext highlighter-rouge">Connection</code>, you have to add that configuration yourself:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># here's a custom type whose name doesn't end in "Connection", so `connection: true` is required:</span>
 <span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">ItemConnectionPage</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">connection: </span><span class="kp">true</span>
 </code></pre></div></div>
 
-<p>The field will be given some arguments by default: <code class="highlighter-rouge">first</code>, <code class="highlighter-rouge">last</code>, <code class="highlighter-rouge">after</code>, and <code class="highlighter-rouge">before</code>.</p>
+<p>The field will be given some arguments by default: <code class="language-plaintext highlighter-rouge">first</code>, <code class="language-plaintext highlighter-rouge">last</code>, <code class="language-plaintext highlighter-rouge">after</code>, and <code class="language-plaintext highlighter-rouge">before</code>.</p>
 
 <h2 id="return-collections">Return Collections</h2>
 
@@ -103,11 +103,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>This way, you can handle this <em>particular</em> <code class="highlighter-rouge">relation</code> with custom code.</p>
+<p>This way, you can handle this <em>particular</em> <code class="language-plaintext highlighter-rouge">relation</code> with custom code.</p>
 
 <h2 id="max-page-size">Max Page Size</h2>
 
-<p>You can apply <code class="highlighter-rouge">max_page_size</code> to limit the number of items returned, regardless of what the client requests.</p>
+<p>You can apply <code class="language-plaintext highlighter-rouge">max_page_size</code> to limit the number of items returned, regardless of what the client requests.</p>
 
 <ul>
   <li>
@@ -128,7 +128,7 @@
 </code></pre></div>    </div>
   </li>
   <li>
-    <p><strong>Dynamically</strong>, you can add <code class="highlighter-rouge">max_page_size:</code> when you apply custom connection wrappers:</p>
+    <p><strong>Dynamically</strong>, you can add <code class="language-plaintext highlighter-rouge">max_page_size:</code> when you apply custom connection wrappers:</p>
 
     <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">items</span>
   <span class="n">relation</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">items</span>
@@ -138,7 +138,7 @@
   </li>
 </ul>
 
-<p>To <em>remove</em> a <code class="highlighter-rouge">max_page_size</code> setting, you can pass <code class="highlighter-rouge">nil</code>. That will allow unbounded collections to be returned to clients.</p>
+<p>To <em>remove</em> a <code class="language-plaintext highlighter-rouge">max_page_size</code> setting, you can pass <code class="language-plaintext highlighter-rouge">nil</code>. That will allow unbounded collections to be returned to clients.</p>
 
 </div>
 <p class="guide-footer">

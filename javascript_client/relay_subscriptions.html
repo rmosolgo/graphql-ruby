@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Relay Subscriptions</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">graphql-ruby-client</code> includes three kinds of support for subscriptions with Relay Modern:</p>
+  <p><code class="language-plaintext highlighter-rouge">graphql-ruby-client</code> includes three kinds of support for subscriptions with Relay Modern:</p>
 
 <ul>
   <li><a href="#pusher">Pusher</a></li>
@@ -55,7 +55,7 @@
   <li><a href="#actioncable">ActionCable</a></li>
 </ul>
 
-<p>To use it, require <code class="highlighter-rouge">subscriptions/createHandler</code> and call the function with your client and optionally, your OperationStoreClient.</p>
+<p>To use it, require <code class="language-plaintext highlighter-rouge">subscriptions/createHandler</code> and call the function with your client and optionally, your OperationStoreClient.</p>
 
 <p>See the <a href="/subscriptions/overview">Subscriptions guide</a> for information about server-side setup.</p>
 
@@ -64,13 +64,13 @@
 <p>Subscriptions with <a href="/subscriptions/pusher_implementation">Pusher</a> require two things:</p>
 
 <ul>
-  <li>A client from the <a href="https://github.com/pusher/pusher-js"><code class="highlighter-rouge">pusher-js</code> library</a></li>
-  <li>A <a href="#fetchoperation-function"><code class="highlighter-rouge">fetchOperation</code> function</a> for sending the <code class="highlighter-rouge">subscription</code> operation to the server</li>
+  <li>A client from the <a href="https://github.com/pusher/pusher-js"><code class="language-plaintext highlighter-rouge">pusher-js</code> library</a></li>
+  <li>A <a href="#fetchoperation-function"><code class="language-plaintext highlighter-rouge">fetchOperation</code> function</a> for sending the <code class="language-plaintext highlighter-rouge">subscription</code> operation to the server</li>
 </ul>
 
 <h3 id="pusher-client">Pusher client</h3>
 
-<p>Pass <code class="highlighter-rouge">pusher:</code> to get Subscription updates over Pusher:</p>
+<p>Pass <code class="language-plaintext highlighter-rouge">pusher:</code> to get Subscription updates over Pusher:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load the helper function</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client</span><span class="dl">"</span>
@@ -99,13 +99,13 @@
 <p>Subscriptions with <a href="/subscriptions/ably_implementation">Ably</a> require two things:</p>
 
 <ul>
-  <li>A client from the <a href="https://github.com/ably/ably-js"><code class="highlighter-rouge">ably-js</code> library</a></li>
-  <li>A <a href="#fetchoperation-function"><code class="highlighter-rouge">fetchOperation</code> function</a> for sending the <code class="highlighter-rouge">subscription</code> operation to the server</li>
+  <li>A client from the <a href="https://github.com/ably/ably-js"><code class="language-plaintext highlighter-rouge">ably-js</code> library</a></li>
+  <li>A <a href="#fetchoperation-function"><code class="language-plaintext highlighter-rouge">fetchOperation</code> function</a> for sending the <code class="language-plaintext highlighter-rouge">subscription</code> operation to the server</li>
 </ul>
 
 <h3 id="ably-client">Ably client</h3>
 
-<p>Pass <code class="highlighter-rouge">ably:</code> to get Subscription updates over Ably:</p>
+<p>Pass <code class="language-plaintext highlighter-rouge">ably:</code> to get Subscription updates over Ably:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load the helper function</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client</span><span class="dl">"</span>
@@ -131,7 +131,7 @@
 
 <h2 id="actioncable">ActionCable</h2>
 
-<p>With this configuration, <code class="highlighter-rouge">subscription</code> queries will be routed to <a href="/subscriptions/action_cable_implementation">ActionCable</a>.</p>
+<p>With this configuration, <code class="language-plaintext highlighter-rouge">subscription</code> queries will be routed to <a href="/subscriptions/action_cable_implementation">ActionCable</a>.</p>
 
 <p>For example:</p>
 
@@ -152,7 +152,7 @@
 
 <h2 id="fetchoperation-function">fetchOperation function</h2>
 
-<p>The <code class="highlighter-rouge">fetchOperation</code> function can be extracted from your <code class="highlighter-rouge">fetchQuery</code> function. Its signature is:</p>
+<p>The <code class="language-plaintext highlighter-rouge">fetchOperation</code> function can be extracted from your <code class="language-plaintext highlighter-rouge">fetchQuery</code> function. Its signature is:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Returns a promise from `fetch`</span>
 <span class="kd">function</span> <span class="nx">fetchOperation</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,</span> <span class="nx">cacheConfig</span><span class="p">)</span> <span class="p">{</span>
@@ -161,11 +161,11 @@
 </code></pre></div></div>
 
 <ul>
-  <li><code class="highlighter-rouge">operation</code>, <code class="highlighter-rouge">variables</code>, and <code class="highlighter-rouge">cacheConfig</code> are the first three arguments to the <code class="highlighter-rouge">fetchQuery</code> function.</li>
-  <li>The function should call <code class="highlighter-rouge">fetch</code> and return the result (a Promise of a <code class="highlighter-rouge">Response</code>).</li>
+  <li><code class="language-plaintext highlighter-rouge">operation</code>, <code class="language-plaintext highlighter-rouge">variables</code>, and <code class="language-plaintext highlighter-rouge">cacheConfig</code> are the first three arguments to the <code class="language-plaintext highlighter-rouge">fetchQuery</code> function.</li>
+  <li>The function should call <code class="language-plaintext highlighter-rouge">fetch</code> and return the result (a Promise of a <code class="language-plaintext highlighter-rouge">Response</code>).</li>
 </ul>
 
-<p>For example, <code class="highlighter-rouge">Environment.js</code> may look like:</p>
+<p>For example, <code class="language-plaintext highlighter-rouge">Environment.js</code> may look like:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// This function sends a GraphQL query to the server</span>
 <span class="kd">const</span> <span class="nx">fetchOperation</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,</span> <span class="nx">cacheConfig</span><span class="p">)</span> <span class="p">{</span>
@@ -207,7 +207,7 @@
 <span class="kd">const</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">Network</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">fetchQuery</span><span class="p">,</span> <span class="nx">subscriptionHandler</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>Since <code class="highlighter-rouge">OperationStoreClient</code> is in the <code class="highlighter-rouge">fetchOperation</code> function, it will apply to all GraphQL operations.</p>
+<p>Since <code class="language-plaintext highlighter-rouge">OperationStoreClient</code> is in the <code class="language-plaintext highlighter-rouge">fetchOperation</code> function, it will apply to all GraphQL operations.</p>
 
 
 </div>

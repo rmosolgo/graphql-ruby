@@ -49,22 +49,22 @@
 <div class="guide-container">
   <p><em>Scoping</em> is a complementary consideration to authorization. Rather than checking “can this user see this thing?”, scoping takes a list of items filters it to the subset which is appropriate for the current viewer and context. The resulting subset is authorized as normal, and, assuming that it was properly scoped, each item should pass authorization checks.</p>
 
-<p>For similar features, see <a href="https://github.com/varvet/pundit#scopes">Pundit scopes</a> and <a href="https://github.com/cancancommunity/cancancan/wiki/Fetching-Records">Cancan’s <code class="highlighter-rouge">.accessible_by</code></a>.</p>
+<p>For similar features, see <a href="https://github.com/varvet/pundit#scopes">Pundit scopes</a> and <a href="https://github.com/cancancommunity/cancancan/wiki/Fetching-Records">Cancan’s <code class="language-plaintext highlighter-rouge">.accessible_by</code></a>.</p>
 
-<h2 id="scope-option"><code class="highlighter-rouge">scope:</code> option</h2>
+<h2 id="scope-option"><code class="language-plaintext highlighter-rouge">scope:</code> option</h2>
 
-<p>Fields accept a <code class="highlighter-rouge">scope:</code> option to enable (or disable) scoping, for example:</p>
+<p>Fields accept a <code class="language-plaintext highlighter-rouge">scope:</code> option to enable (or disable) scoping, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:products</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Product</span><span class="p">],</span> <span class="ss">scope: </span><span class="kp">true</span>
 <span class="c1"># Or</span>
 <span class="n">field</span> <span class="ss">:all_products</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Product</span><span class="p">],</span> <span class="ss">scope: </span><span class="kp">false</span>
 </code></pre></div></div>
 
-<p>For <strong>list</strong> and <strong>connection</strong> fields, <code class="highlighter-rouge">scope: true</code> is the default. For all other fields, <code class="highlighter-rouge">scope: false</code> is the default. You can override this by using the <code class="highlighter-rouge">scope:</code> option.</p>
+<p>For <strong>list</strong> and <strong>connection</strong> fields, <code class="language-plaintext highlighter-rouge">scope: true</code> is the default. For all other fields, <code class="language-plaintext highlighter-rouge">scope: false</code> is the default. You can override this by using the <code class="language-plaintext highlighter-rouge">scope:</code> option.</p>
 
-<h2 id="scope_itemsitems-ctx-method"><code class="highlighter-rouge">.scope_items(items, ctx)</code> method</h2>
+<h2 id="scope_itemsitems-ctx-method"><code class="language-plaintext highlighter-rouge">.scope_items(items, ctx)</code> method</h2>
 
-<p>Type classes may implement <code class="highlighter-rouge">.scope_items(items, ctx)</code>. This method is called when a field has <code class="highlighter-rouge">scope: true</code>. For example,</p>
+<p>Type classes may implement <code class="language-plaintext highlighter-rouge">.scope_items(items, ctx)</code>. This method is called when a field has <code class="language-plaintext highlighter-rouge">scope: true</code>. For example,</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:products</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Product</span><span class="p">]</span> <span class="c1"># has `scope: true` by default</span>
 </code></pre></div></div>
@@ -78,7 +78,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The method should return a new list with only the appropriate items for the current <code class="highlighter-rouge">context</code>.</p>
+<p>The method should return a new list with only the appropriate items for the current <code class="language-plaintext highlighter-rouge">context</code>.</p>
 
 </div>
 <p class="guide-footer">

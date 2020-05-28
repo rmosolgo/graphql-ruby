@@ -53,7 +53,7 @@
 
 <h3 id="using-analyzers">Using Analyzers</h3>
 
-<p>Query analyzers are added to the schema the same one as before with <code class="highlighter-rouge">query_analyzer</code>. However, to use the new analysis engine, you must opt in by using <code class="highlighter-rouge">use GraphQL::Analysis::AST</code>, for example:</p>
+<p>Query analyzers are added to the schema the same one as before with <code class="language-plaintext highlighter-rouge">query_analyzer</code>. However, to use the new analysis engine, you must opt in by using <code class="language-plaintext highlighter-rouge">use GraphQL::Analysis::AST</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
@@ -65,12 +65,12 @@
 
 <h2 id="analyzer-api">Analyzer API</h2>
 
-<p>Analyzers respond to methods similar to AST visitors. They’re named like <code class="highlighter-rouge">on_enter_#{ast_node}</code> and <code class="highlighter-rouge">on_leave_#{ast_node}</code>. Methods are called with three arguments:</p>
+<p>Analyzers respond to methods similar to AST visitors. They’re named like <code class="language-plaintext highlighter-rouge">on_enter_#{ast_node}</code> and <code class="language-plaintext highlighter-rouge">on_leave_#{ast_node}</code>. Methods are called with three arguments:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">node</code>: The current AST node (being entered or left)</li>
-  <li><code class="highlighter-rouge">parent</code>: The AST node which preceeds this one in the tree</li>
-  <li><code class="highlighter-rouge">visitor</code>: A <a href="/api-doc/1.10.10/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> which is managing this analysis run</li>
+  <li><code class="language-plaintext highlighter-rouge">node</code>: The current AST node (being entered or left)</li>
+  <li><code class="language-plaintext highlighter-rouge">parent</code>: The AST node which preceeds this one in the tree</li>
+  <li><code class="language-plaintext highlighter-rouge">visitor</code>: A <a href="/api-doc/1.10.10/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> which is managing this analysis run</li>
 </ul>
 
 <p>For example:</p>
@@ -122,15 +122,15 @@ methods:</p>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>See <a href="/api-doc/1.10.10/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> for more information about the <code class="highlighter-rouge">visitor</code> object.</p>
+<p>See <a href="/api-doc/1.10.10/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> for more information about the <code class="language-plaintext highlighter-rouge">visitor</code> object.</p>
 
 <h3 id="field-arguments">Field Arguments</h3>
 
-<p>Usually, analyzers will use <code class="highlighter-rouge">on_enter_field</code> and <code class="highlighter-rouge">on_leave_field</code> to process queries. To get a field’s arguments during analysis, use <code class="highlighter-rouge">visitor.query.arguments_for(node, visitor.field_definition)</code> (<a href="/api-doc/1.10.10/GraphQL/Query#arguments_for-instance_method" target="_blank" title="API docs for GraphQL::Query#arguments_for"><code>GraphQL::Query#arguments_for</code></a>). That method returns coerced argument values and normalizes argument literals and variable values.</p>
+<p>Usually, analyzers will use <code class="language-plaintext highlighter-rouge">on_enter_field</code> and <code class="language-plaintext highlighter-rouge">on_leave_field</code> to process queries. To get a field’s arguments during analysis, use <code class="language-plaintext highlighter-rouge">visitor.query.arguments_for(node, visitor.field_definition)</code> (<a href="/api-doc/1.10.10/GraphQL/Query#arguments_for-instance_method" target="_blank" title="API docs for GraphQL::Query#arguments_for"><code>GraphQL::Query#arguments_for</code></a>). That method returns coerced argument values and normalizes argument literals and variable values.</p>
 
 <h3 id="errors">Errors</h3>
 
-<p>It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return <a href="/api-doc/1.10.10/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> in the <code class="highlighter-rouge">result</code> method:</p>
+<p>It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return <a href="/api-doc/1.10.10/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> in the <code class="language-plaintext highlighter-rouge">result</code> method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NoFieldsCalledHello</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
   <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
@@ -147,7 +147,7 @@ methods:</p>
 
 <h3 id="conditional-analysis">Conditional Analysis</h3>
 
-<p>Some analyzers might only make sense in certain context, or some might be too expensive to run for every query. To handle these scenarios, your analyzers may answer to an <code class="highlighter-rouge">analyze?</code> method:</p>
+<p>Some analyzers might only make sense in certain context, or some might be too expensive to run for every query. To handle these scenarios, your analyzers may answer to an <code class="language-plaintext highlighter-rouge">analyze?</code> method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicFieldAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
   <span class="c1"># Use the analyze? method to enable or disable a certain analyzer</span>
@@ -168,11 +168,11 @@ methods:</p>
 
 <h2 id="analyzing-multiplexes">Analyzing Multiplexes</h2>
 
-<p>Analyzers are initialized with the <em>unit of analysis</em>, available as <code class="highlighter-rouge">subject</code>.</p>
+<p>Analyzers are initialized with the <em>unit of analysis</em>, available as <code class="language-plaintext highlighter-rouge">subject</code>.</p>
 
-<p>When analyzers are hooked up to multiplexes, <code class="highlighter-rouge">query</code> is <code class="highlighter-rouge">nil</code>, but <code class="highlighter-rouge">multiplex</code> returns the subject of analysis. You can use <code class="highlighter-rouge">visitor.query</code> inside visit methods to reference the query that owns the current AST node.</p>
+<p>When analyzers are hooked up to multiplexes, <code class="language-plaintext highlighter-rouge">query</code> is <code class="language-plaintext highlighter-rouge">nil</code>, but <code class="language-plaintext highlighter-rouge">multiplex</code> returns the subject of analysis. You can use <code class="language-plaintext highlighter-rouge">visitor.query</code> inside visit methods to reference the query that owns the current AST node.</p>
 
-<p>Note that some built-in analyzers (eg <code class="highlighter-rouge">AST::MaxQueryDepth</code>) support multiplexes even though <code class="highlighter-rouge">Query</code> is in their name.</p>
+<p>Note that some built-in analyzers (eg <code class="language-plaintext highlighter-rouge">AST::MaxQueryDepth</code>) support multiplexes even though <code class="language-plaintext highlighter-rouge">Query</code> is in their name.</p>
 
 </div>
 <p class="guide-footer">

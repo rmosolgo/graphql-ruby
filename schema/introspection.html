@@ -73,12 +73,12 @@
 <p>Here are the default parts of the introspection system:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">__schema</code> is a root-level field that contains data about the schema: its entry points, types, and directives.</li>
-  <li><code class="highlighter-rouge">__type(name: String!)</code> is a root-level field that returns data about a type with the given <code class="highlighter-rouge">name</code>, if there is a type with that name.</li>
-  <li><code class="highlighter-rouge">__typename</code> works a bit differently: it can be added to <em>any</em> selection, and it will return the type of object being queried.</li>
+  <li><code class="language-plaintext highlighter-rouge">__schema</code> is a root-level field that contains data about the schema: its entry points, types, and directives.</li>
+  <li><code class="language-plaintext highlighter-rouge">__type(name: String!)</code> is a root-level field that returns data about a type with the given <code class="language-plaintext highlighter-rouge">name</code>, if there is a type with that name.</li>
+  <li><code class="language-plaintext highlighter-rouge">__typename</code> works a bit differently: it can be added to <em>any</em> selection, and it will return the type of object being queried.</li>
 </ul>
 
-<p>Here are some <code class="highlighter-rouge">__typename</code> examples:</p>
+<p>Here are some <code class="language-plaintext highlighter-rouge">__typename</code> examples:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
   </span><span class="n">user</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -97,7 +97,7 @@
 </span><span class="c"># }</span><span class="w">
 </span></code></pre></div></div>
 
-<p>For unions and interfaces, <code class="highlighter-rouge">__typename</code> returns the <em>object</em> type for the current object, for example:</p>
+<p>For unions and interfaces, <code class="language-plaintext highlighter-rouge">__typename</code> returns the <em>object</em> type for the current object, for example:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
   </span><span class="n">search</span><span class="p">(</span><span class="n">term</span><span class="p">:</span><span class="w"> </span><span class="s2">"puppies"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -151,14 +151,14 @@
 <p>The introspection namespace may contain a few different customizations:</p>
 
 <ul>
-  <li>Class-based <a href="/type_definitions/objects">object definitions</a> which replace the built-in introspection types (such as <code class="highlighter-rouge">__Schema</code> and <code class="highlighter-rouge">__Type</code>)</li>
-  <li><code class="highlighter-rouge">EntryPoints</code>, A class-based <a href="/type_definitions/objects">object definition</a> containing introspection entry points (like <code class="highlighter-rouge">__schema</code> and <code class="highlighter-rouge">__type(name:)</code>).</li>
-  <li><code class="highlighter-rouge">DynamicFields</code>, A class-based <a href="/type_definitions/objects">object definition</a> containing dynamic, globally-available fields (like <code class="highlighter-rouge">__typename</code>.)</li>
+  <li>Class-based <a href="/type_definitions/objects">object definitions</a> which replace the built-in introspection types (such as <code class="language-plaintext highlighter-rouge">__Schema</code> and <code class="language-plaintext highlighter-rouge">__Type</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">EntryPoints</code>, A class-based <a href="/type_definitions/objects">object definition</a> containing introspection entry points (like <code class="language-plaintext highlighter-rouge">__schema</code> and <code class="language-plaintext highlighter-rouge">__type(name:)</code>).</li>
+  <li><code class="language-plaintext highlighter-rouge">DynamicFields</code>, A class-based <a href="/type_definitions/objects">object definition</a> containing dynamic, globally-available fields (like <code class="language-plaintext highlighter-rouge">__typename</code>.)</li>
 </ul>
 
 <h3 id="custom-introspection-types">Custom Introspection Types</h3>
 
-<p>The <code class="highlighter-rouge">module</code> passed as <code class="highlighter-rouge">introspection</code> may contain classes with the following names, which replace the built-in introspection types:</p>
+<p>The <code class="language-plaintext highlighter-rouge">module</code> passed as <code class="language-plaintext highlighter-rouge">introspection</code> may contain classes with the following names, which replace the built-in introspection types:</p>
 
 <table>
   <thead>
@@ -170,43 +170,43 @@
   </thead>
   <tbody>
     <tr>
-      <td><code class="highlighter-rouge">SchemaType</code></td>
-      <td><code class="highlighter-rouge">__Schema</code></td>
+      <td><code class="language-plaintext highlighter-rouge">SchemaType</code></td>
+      <td><code class="language-plaintext highlighter-rouge">__Schema</code></td>
       <td><a href="/api-doc/1.10.10/GraphQL/Introspection/SchemaType" target="_blank" title="API docs for GraphQL::Introspection::SchemaType"><code>GraphQL::Introspection::SchemaType</code></a></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">TypeType</code></td>
-      <td><code class="highlighter-rouge">__Type</code></td>
+      <td><code class="language-plaintext highlighter-rouge">TypeType</code></td>
+      <td><code class="language-plaintext highlighter-rouge">__Type</code></td>
       <td><a href="/api-doc/1.10.10/GraphQL/Introspection/TypeType" target="_blank" title="API docs for GraphQL::Introspection::TypeType"><code>GraphQL::Introspection::TypeType</code></a></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">DirectiveType</code></td>
-      <td><code class="highlighter-rouge">__Directive</code></td>
+      <td><code class="language-plaintext highlighter-rouge">DirectiveType</code></td>
+      <td><code class="language-plaintext highlighter-rouge">__Directive</code></td>
       <td><a href="/api-doc/1.10.10/GraphQL/Introspection/DirectiveType" target="_blank" title="API docs for GraphQL::Introspection::DirectiveType"><code>GraphQL::Introspection::DirectiveType</code></a></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">DirectiveLocationType</code></td>
-      <td><code class="highlighter-rouge">__DirectiveLocation</code></td>
+      <td><code class="language-plaintext highlighter-rouge">DirectiveLocationType</code></td>
+      <td><code class="language-plaintext highlighter-rouge">__DirectiveLocation</code></td>
       <td><a href="/api-doc/1.10.10/GraphQL/Introspection/DirectiveLocationEnum" target="_blank" title="API docs for GraphQL::Introspection::DirectiveLocationEnum"><code>GraphQL::Introspection::DirectiveLocationEnum</code></a></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">EnumValueType</code></td>
-      <td><code class="highlighter-rouge">__EnumValue</code></td>
+      <td><code class="language-plaintext highlighter-rouge">EnumValueType</code></td>
+      <td><code class="language-plaintext highlighter-rouge">__EnumValue</code></td>
       <td><a href="/api-doc/1.10.10/GraphQL/Introspection/EnumValueType" target="_blank" title="API docs for GraphQL::Introspection::EnumValueType"><code>GraphQL::Introspection::EnumValueType</code></a></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">FieldType</code></td>
-      <td><code class="highlighter-rouge">__Field</code></td>
+      <td><code class="language-plaintext highlighter-rouge">FieldType</code></td>
+      <td><code class="language-plaintext highlighter-rouge">__Field</code></td>
       <td><a href="/api-doc/1.10.10/GraphQL/Introspection/FieldType" target="_blank" title="API docs for GraphQL::Introspection::FieldType"><code>GraphQL::Introspection::FieldType</code></a></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">InputValueType</code></td>
-      <td><code class="highlighter-rouge">__InputValue</code></td>
+      <td><code class="language-plaintext highlighter-rouge">InputValueType</code></td>
+      <td><code class="language-plaintext highlighter-rouge">__InputValue</code></td>
       <td><a href="/api-doc/1.10.10/GraphQL/Introspection/InputValueType" target="_blank" title="API docs for GraphQL::Introspection::InputValueType"><code>GraphQL::Introspection::InputValueType</code></a></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">TypeKindType</code></td>
-      <td><code class="highlighter-rouge">__TypeKind</code></td>
+      <td><code class="language-plaintext highlighter-rouge">TypeKindType</code></td>
+      <td><code class="language-plaintext highlighter-rouge">__TypeKind</code></td>
       <td><a href="/api-doc/1.10.10/GraphQL/Introspection/TypeKindEnum" target="_blank" title="API docs for GraphQL::Introspection::TypeKindEnum"><code>GraphQL::Introspection::TypeKindEnum</code></a></td>
     </tr>
   </tbody>
@@ -228,10 +228,10 @@
 <p>Inside the class definition, you may:</p>
 
 <ul>
-  <li>add new fields by calling <code class="highlighter-rouge">field(...)</code> and providing implementations</li>
-  <li>redefine field structure by calling <code class="highlighter-rouge">field(...)</code></li>
+  <li>add new fields by calling <code class="language-plaintext highlighter-rouge">field(...)</code> and providing implementations</li>
+  <li>redefine field structure by calling <code class="language-plaintext highlighter-rouge">field(...)</code></li>
   <li>provide new field implementations by defining methods</li>
-  <li>provide new descriptions by calling <code class="highlighter-rouge">description(...)</code></li>
+  <li>provide new descriptions by calling <code class="language-plaintext highlighter-rouge">description(...)</code></li>
 </ul>
 
 <h3 id="introspection-entry-points">Introspection Entry Points</h3>
@@ -239,11 +239,11 @@
 <p>The GraphQL spec describes two entry points to the introspection system:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">__schema</code> returns data about the schema (as type <code class="highlighter-rouge">__Schema</code>)</li>
-  <li><code class="highlighter-rouge">__type(name:)</code> returns data about a type, if one is found by name (as type <code class="highlighter-rouge">__Type</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">__schema</code> returns data about the schema (as type <code class="language-plaintext highlighter-rouge">__Schema</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">__type(name:)</code> returns data about a type, if one is found by name (as type <code class="language-plaintext highlighter-rouge">__Type</code>)</li>
 </ul>
 
-<p>You can re-implement these fields or create new ones by creating a custom <code class="highlighter-rouge">EntryPoints</code> class in your introspection namespace:</p>
+<p>You can re-implement these fields or create new ones by creating a custom <code class="language-plaintext highlighter-rouge">EntryPoints</code> class in your introspection namespace:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Introspection</span>
   <span class="k">class</span> <span class="nc">EntryPoints</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Introspection</span><span class="o">::</span><span class="no">EntryPoints</span>
@@ -252,13 +252,13 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>This class an object type definition, so you can override fields or add new ones here. They’ll be available on the root <code class="highlighter-rouge">query</code> object, but ignored in introspection (just like <code class="highlighter-rouge">__schema</code> and <code class="highlighter-rouge">__type</code>).</p>
+<p>This class an object type definition, so you can override fields or add new ones here. They’ll be available on the root <code class="language-plaintext highlighter-rouge">query</code> object, but ignored in introspection (just like <code class="language-plaintext highlighter-rouge">__schema</code> and <code class="language-plaintext highlighter-rouge">__type</code>).</p>
 
 <h3 id="dynamic-fields">Dynamic Fields</h3>
 
-<p>The GraphQL spec describes a field which may be added to <em>any</em> selection: <code class="highlighter-rouge">__typename</code>. It returns the name of the current GraphQL type.</p>
+<p>The GraphQL spec describes a field which may be added to <em>any</em> selection: <code class="language-plaintext highlighter-rouge">__typename</code>. It returns the name of the current GraphQL type.</p>
 
-<p>You can add fields like this (or override <code class="highlighter-rouge">__typename</code>) by creating a custom <code class="highlighter-rouge">DynamicFields</code> defintion:</p>
+<p>You can add fields like this (or override <code class="language-plaintext highlighter-rouge">__typename</code>) by creating a custom <code class="language-plaintext highlighter-rouge">DynamicFields</code> defintion:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Introspection</span>
   <span class="k">class</span> <span class="nc">DynamicFields</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Introspection</span><span class="o">::</span><span class="no">DynamicFields</span>
@@ -267,18 +267,18 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Any fields defined there will be available in any selection, but ignored in introspection (just like <code class="highlighter-rouge">__typename</code>).</p>
+<p>Any fields defined there will be available in any selection, but ignored in introspection (just like <code class="language-plaintext highlighter-rouge">__typename</code>).</p>
 
 <h2 id="disabling-introspection">Disabling Introspection</h2>
 
-<p>In case you want to turn off introspection entry points <code class="highlighter-rouge">__schema</code> and <code class="highlighter-rouge">__type</code> (for instance in the production environment) you can use a <code class="highlighter-rouge">#disable_introspection_entry_points</code> shorthand method:</p>
+<p>In case you want to turn off introspection entry points <code class="language-plaintext highlighter-rouge">__schema</code> and <code class="language-plaintext highlighter-rouge">__type</code> (for instance in the production environment) you can use a <code class="language-plaintext highlighter-rouge">#disable_introspection_entry_points</code> shorthand method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">disable_introspection_entry_points</span> <span class="k">if</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">.</span><span class="nf">production?</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Where <code class="highlighter-rouge">disable_introspection_entry_points</code> will disable both the <code class="highlighter-rouge">__schema</code> and <code class="highlighter-rouge">__type</code> introspection entry points, you can also individually disable the introspection entry points using the <code class="highlighter-rouge">disable_schema_introspection_entry_point</code> and <code class="highlighter-rouge">disable_type_introspection_entry_point</code> shorthand methods:</p>
+<p>Where <code class="language-plaintext highlighter-rouge">disable_introspection_entry_points</code> will disable both the <code class="language-plaintext highlighter-rouge">__schema</code> and <code class="language-plaintext highlighter-rouge">__type</code> introspection entry points, you can also individually disable the introspection entry points using the <code class="language-plaintext highlighter-rouge">disable_schema_introspection_entry_point</code> and <code class="language-plaintext highlighter-rouge">disable_type_introspection_entry_point</code> shorthand methods:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">disable_schema_introspection_entry_point</span>

@@ -6,17 +6,17 @@
   <body>
     <p>Module: GraphQL::Schema::CatchallMiddleware
 In early GraphQL versions, errors would be “automatically” rescued
-and replaced with <code class="highlighter-rouge">"Internal error"</code>. That behavior was undesirable
+and replaced with <code class="language-plaintext highlighter-rouge">"Internal error"</code>. That behavior was undesirable
 but this middleware is offered for people who want to preserve it. 
 It has a couple of differences from the previous behavior:</p>
 <ul>
   <li>Other parts of the query <em>will</em> be run (previously,
 execution would stop when the error was raised and the result
-would have no <code class="highlighter-rouge">"data"</code> key at all)</li>
+would have no <code class="language-plaintext highlighter-rouge">"data"</code> key at all)</li>
   <li>The entry in Query::Context#errors is a GraphQL::ExecutionError,
 <em>not</em>
 the originally-raised error.</li>
-  <li>The entry in the <code class="highlighter-rouge">"errors"</code> key includes the location of the field
+  <li>The entry in the <code class="language-plaintext highlighter-rouge">"errors"</code> key includes the location of the field
 which raised the errors.
 Examples:
     <h1 id="use-catchallmiddleware-with-your-schema">Use CatchallMiddleware with your schema</h1>

@@ -50,7 +50,7 @@
   <p>Structural changes to a GraphQL schema come in two categories:</p>
 
 <ul>
-  <li><strong>Breaking</strong> changes may cause previously-valid queries to become invalid. For example, if you remove the <code class="highlighter-rouge">title</code> field, anyone who tries to query that field will get a validation error instead of response data.</li>
+  <li><strong>Breaking</strong> changes may cause previously-valid queries to become invalid. For example, if you remove the <code class="language-plaintext highlighter-rouge">title</code> field, anyone who tries to query that field will get a validation error instead of response data.</li>
   <li><strong>Non-breaking</strong> changes <em>add</em> options to a schema without breaking previously-valid queries.</li>
 </ul>
 
@@ -58,9 +58,9 @@
 
 <p>Here are few tips for managing schema structure changes.</p>
 
-<h2 id="maintain-a-graphql-schema-dump">Maintain a <code class="highlighter-rouge">.graphql</code> schema dump</h2>
+<h2 id="maintain-a-graphql-schema-dump">Maintain a <code class="language-plaintext highlighter-rouge">.graphql</code> schema dump</h2>
 
-<p>Make structure changes part of the normal code review process by adding a <code class="highlighter-rouge">schema.graphql</code> artifact to your project. This way, any changes to schema structure will show up clearly in a pull request as a diff to that file.</p>
+<p>Make structure changes part of the normal code review process by adding a <code class="language-plaintext highlighter-rouge">schema.graphql</code> artifact to your project. This way, any changes to schema structure will show up clearly in a pull request as a diff to that file.</p>
 
 <p>You can read about this approach in <a href="https://rmosolgo.github.io/blog/2017/03/16/tracking-schema-changes-with-graphql-ruby/">“Tracking Schema Changes with GraphQL-Ruby”</a> or the built-in <a href="/api-doc/1.10.10/GraphQL/RakeTask" target="_blank" title="API docs for GraphQL::RakeTask"><code>GraphQL::RakeTask</code></a> for generating schema dumps.</p>
 

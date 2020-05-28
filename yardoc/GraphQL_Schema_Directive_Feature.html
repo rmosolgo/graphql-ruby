@@ -13,7 +13,7 @@ With that system, you could use this directive to exclude parts of a
 query if the current viewer doesn’t have certain flags enabled. (So,
 this flag would be for internal clients, like your iOS app, not
 third-party API clients.) 
-To use it, you have to implement <code class="highlighter-rouge">.enabled?</code>, for example: 
+To use it, you have to implement <code class="language-plaintext highlighter-rouge">.enabled?</code>, for example: 
 Examples:</p>
 <h1 id="implementing-the-feature-directive">Implementing the Feature directive</h1>
 <h1 id="appgraphqldirectivesfeaturerb">app/graphql/directives/feature.rb</h1>
@@ -28,7 +28,7 @@ end
 end</p>
 <h1 id="flagging-a-part-of-the-query">Flagging a part of the query</h1>
 <p>viewer {</p>
-<h1 id="this-field-only-runs-if-enabledrecommendationengine-obj-context">This field only runs if <code class="highlighter-rouge">.enabled?("recommendationEngine", obj, context)</code></h1>
+<h1 id="this-field-only-runs-if-enabledrecommendationengine-obj-context">This field only runs if <code class="language-plaintext highlighter-rouge">.enabled?("recommendationEngine", obj, context)</code></h1>
 <h1 id="returns-true-otherwise-its-treated-as-if-it-didnt-exist">returns true. Otherwise, it’s treated as if it didn’t exist.</h1>
 <p>recommendations @feature(flag: “recommendationEngine”) {
 name

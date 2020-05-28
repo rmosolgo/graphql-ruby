@@ -56,11 +56,11 @@
 
 <h1 class="guide-header">Server Setup</h1>
 <div class="guide-container">
-  <p>Before using <code class="highlighter-rouge">@defer</code> in queries, you have to:</p>
+  <p>Before using <code class="language-plaintext highlighter-rouge">@defer</code> in queries, you have to:</p>
 
 <ul>
-  <li>Update <code class="highlighter-rouge">graphql</code> and <code class="highlighter-rouge">graphql-pro</code> gems</li>
-  <li>Add <code class="highlighter-rouge">@defer</code> to your GraphQL schema</li>
+  <li>Update <code class="language-plaintext highlighter-rouge">graphql</code> and <code class="language-plaintext highlighter-rouge">graphql-pro</code> gems</li>
+  <li>Add <code class="language-plaintext highlighter-rouge">@defer</code> to your GraphQL schema</li>
   <li>Update your HTTP handlers (eg, Rails controllers) to send streaming responses</li>
 </ul>
 
@@ -68,7 +68,7 @@
 
 <h2 id="updating-the-gems">Updating the gems</h2>
 
-<p><code class="highlighter-rouge">GraphQL::Pro::Defer</code> is included in <code class="highlighter-rouge">graphql-pro 1.10+</code>, and it requires the new <a href="/queries/interpreter">Interpreter runtime</a> in <code class="highlighter-rouge">graphql 1.9+</code>, so update your gemfile:</p>
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Pro::Defer</code> is included in <code class="language-plaintext highlighter-rouge">graphql-pro 1.10+</code>, and it requires the new <a href="/queries/interpreter">Interpreter runtime</a> in <code class="language-plaintext highlighter-rouge">graphql 1.9+</code>, so update your gemfile:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 1.9+ for Interpreter</span>
 <span class="n">gem</span> <span class="s2">"graphql"</span><span class="p">,</span> <span class="s2">"~&gt;1.9.0"</span>
@@ -78,12 +78,12 @@
 
 <p>And then install them:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle update graphql graphql-pro
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle update graphql graphql-pro
 </code></pre></div></div>
 
-<h2 id="adding-defer-to-your-schema">Adding <code class="highlighter-rouge">@defer</code> to your schema</h2>
+<h2 id="adding-defer-to-your-schema">Adding <code class="language-plaintext highlighter-rouge">@defer</code> to your schema</h2>
 
-<p>Then, add <code class="highlighter-rouge">GraphQL::Pro::Defer</code> to your schema as a plugin:</p>
+<p>Then, add <code class="language-plaintext highlighter-rouge">GraphQL::Pro::Defer</code> to your schema as a plugin:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># The new interpreter runtime (1.9+) is required:</span>
@@ -98,7 +98,7 @@
 <p>This will:</p>
 
 <ul>
-  <li>Attach a <a href="/type_definitions/directives">custom directive</a> called <code class="highlighter-rouge">@defer</code></li>
+  <li>Attach a <a href="/type_definitions/directives">custom directive</a> called <code class="language-plaintext highlighter-rouge">@defer</code></li>
   <li>Add instrumentation to queries to track deferred work and execute it later</li>
 </ul>
 
@@ -114,11 +114,11 @@
 
 <p>See below for how to integrate GraphQL’s deferred patches with a streaming response API.</p>
 
-<p>To investigate support with a web framework, please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Server support for @defer with ..." target="_blank">open an issue</a> or email <code class="highlighter-rouge">support@graphql.pro</code>.</p>
+<p>To investigate support with a web framework, please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Server support for @defer with ..." target="_blank">open an issue</a> or email <code class="language-plaintext highlighter-rouge">support@graphql.pro</code>.</p>
 
 <h3 id="checking-for-deferrals">Checking for deferrals</h3>
 
-<p>When a query has any <code class="highlighter-rouge">@defer</code>ed fields, you can check for <code class="highlighter-rouge">context[:defer]</code>:</p>
+<p>When a query has any <code class="language-plaintext highlighter-rouge">@defer</code>ed fields, you can check for <code class="language-plaintext highlighter-rouge">context[:defer]</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:defer</span><span class="p">]</span>
   <span class="c1"># some fields were `@defer`ed</span>
@@ -129,7 +129,7 @@
 
 <h3 id="working-with-deferrals">Working with deferrals</h3>
 
-<p>To handle deferrals, you can enumerate over <code class="highlighter-rouge">context[:defer]</code>, for example:</p>
+<p>To handle deferrals, you can enumerate over <code class="language-plaintext highlighter-rouge">context[:defer]</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">context</span><span class="p">[</span><span class="ss">:defer</span><span class="p">].</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">deferral</span><span class="o">|</span>
   <span class="c1"># do something with the `deferral`, eg</span>
@@ -142,14 +142,14 @@
 <p>Each deferred patch has a few methods for building a response:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">.to_h</code> returns a hash with <code class="highlighter-rouge">path:</code>, <code class="highlighter-rouge">data:</code>, and/or <code class="highlighter-rouge">errors:</code>. (There is no <code class="highlighter-rouge">path:</code> for the root result.)</li>
-  <li><code class="highlighter-rouge">.to_http_multipart</code> returns a string which works with Apollo client’s <code class="highlighter-rouge">@defer</code> support.</li>
-  <li><code class="highlighter-rouge">.path</code> returns the path to this patch in the response</li>
-  <li><code class="highlighter-rouge">.data</code> returns successfully-resolved results of the patch</li>
-  <li><code class="highlighter-rouge">.errors</code> returns an array of errors, if there were any</li>
+  <li><code class="language-plaintext highlighter-rouge">.to_h</code> returns a hash with <code class="language-plaintext highlighter-rouge">path:</code>, <code class="language-plaintext highlighter-rouge">data:</code>, and/or <code class="language-plaintext highlighter-rouge">errors:</code>. (There is no <code class="language-plaintext highlighter-rouge">path:</code> for the root result.)</li>
+  <li><code class="language-plaintext highlighter-rouge">.to_http_multipart</code> returns a string which works with Apollo client’s <code class="language-plaintext highlighter-rouge">@defer</code> support.</li>
+  <li><code class="language-plaintext highlighter-rouge">.path</code> returns the path to this patch in the response</li>
+  <li><code class="language-plaintext highlighter-rouge">.data</code> returns successfully-resolved results of the patch</li>
+  <li><code class="language-plaintext highlighter-rouge">.errors</code> returns an array of errors, if there were any</li>
 </ul>
 
-<p>Calling <code class="highlighter-rouge">.data</code> or <code class="highlighter-rouge">.errors</code> on a deferral will resume GraphQL execution until the patch is complete.</p>
+<p>Calling <code class="language-plaintext highlighter-rouge">.data</code> or <code class="language-plaintext highlighter-rouge">.errors</code> on a deferral will resume GraphQL execution until the patch is complete.</p>
 
 <h3 id="example-rails-with-apollo-client">Example: Rails with Apollo Client</h3>
 
@@ -182,7 +182,7 @@
 
 <h2 id="next-steps">Next Steps</h2>
 
-<p>Read about <a href="/defer/usage">client usage</a> of <code class="highlighter-rouge">@defer</code>.</p>
+<p>Read about <a href="/defer/usage">client usage</a> of <code class="language-plaintext highlighter-rouge">@defer</code>.</p>
 
 </div>
 <p class="guide-footer">

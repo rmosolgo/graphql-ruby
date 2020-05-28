@@ -55,7 +55,7 @@
   <li>Validate: <a href="/api-doc/1.10.10/GraphQL/StaticValidation/Validator" target="_blank" title="API docs for GraphQL::StaticValidation::Validator"><code>GraphQL::StaticValidation::Validator</code></a> validates the incoming AST as a valid query for the schema</li>
   <li>Rewrite: <a href="/api-doc/1.10.10/GraphQL/InternalRepresentation/Rewrite" target="_blank" title="API docs for GraphQL::InternalRepresentation::Rewrite"><code>GraphQL::InternalRepresentation::Rewrite</code></a> builds a tree of <a href="/api-doc/1.10.10/GraphQL/InternalRepresentation/Node" target="_blank" title="API docs for GraphQL::InternalRepresentation::Node"><code>GraphQL::InternalRepresentation::Node</code></a>s which express the query in a simpler way than the AST</li>
   <li>Analyze: If there are any query analyzers, they are run with <a href="/api-doc/1.10.10/GraphQL/Analysis#analyze_query-class_method" target="_blank" title="API docs for GraphQL::Analysis.analyze_query"><code>GraphQL::Analysis.analyze_query</code></a></li>
-  <li>Execute: The query is traversed, <code class="highlighter-rouge">resolve</code> functions are called and the response is built</li>
+  <li>Execute: The query is traversed, <code class="language-plaintext highlighter-rouge">resolve</code> functions are called and the response is built</li>
   <li>Respond: The response is returned as a Hash</li>
 </ul>
 

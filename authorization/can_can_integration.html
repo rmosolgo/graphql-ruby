@@ -67,7 +67,7 @@
 
 <h2 id="getting-started">Getting Started</h2>
 
-<p><strong>NOTE</strong>: Requires the latest gems, so make sure your <code class="highlighter-rouge">Gemfile</code> has:</p>
+<p><strong>NOTE</strong>: Requires the latest gems, so make sure your <code class="language-plaintext highlighter-rouge">Gemfile</code> has:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># For CanCanIntegration:</span>
 <span class="n">gem</span> <span class="s2">"graphql-pro"</span><span class="p">,</span> <span class="s2">"&gt;=1.7.11"</span>
@@ -75,9 +75,9 @@
 <span class="n">gem</span> <span class="s2">"graphql"</span><span class="p">,</span> <span class="s2">"&gt;=1.8.7"</span>
 </code></pre></div></div>
 
-<p>Then, <code class="highlighter-rouge">bundle install</code>.</p>
+<p>Then, <code class="language-plaintext highlighter-rouge">bundle install</code>.</p>
 
-<p>Whenever you run queries, include <code class="highlighter-rouge">:current_user</code> in the context:</p>
+<p>Whenever you run queries, include <code class="language-plaintext highlighter-rouge">:current_user</code> in the context:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
   <span class="ss">current_user: </span><span class="n">current_user</span><span class="p">,</span>
@@ -99,7 +99,7 @@
 
 <h2 id="authorizing-objects">Authorizing Objects</h2>
 
-<p>For each object type, you can assign a required action for Ruby objects of that type. To get started, include the <code class="highlighter-rouge">ObjectIntegration</code> in your base object class:</p>
+<p>For each object type, you can assign a required action for Ruby objects of that type. To get started, include the <code class="language-plaintext highlighter-rouge">ObjectIntegration</code> in your base object class:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_object.rb</span>
 <span class="k">class</span> <span class="nc">Types::BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
@@ -112,9 +112,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, anyone fetching an object will need <code class="highlighter-rouge">can :read, ...</code> for that object.</p>
+<p>Now, anyone fetching an object will need <code class="language-plaintext highlighter-rouge">can :read, ...</code> for that object.</p>
 
-<p>CanCan configurations are inherited, and can be overridden in subclasses. For example, to allow <em>all</em> viewers to see the <code class="highlighter-rouge">Query</code> root type:</p>
+<p>CanCan configurations are inherited, and can be overridden in subclasses. For example, to allow <em>all</em> viewers to see the <code class="language-plaintext highlighter-rouge">Query</code> root type:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Query</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Allow anyone to see the query root</span>
@@ -124,19 +124,19 @@
 
 <h3 id="bypassing-cancan">Bypassing CanCan</h3>
 
-<p><code class="highlighter-rouge">can_can_action(nil)</code> will override any inherited configuration and skip CanCan checks for an object, field, argument or mutation.</p>
+<p><code class="language-plaintext highlighter-rouge">can_can_action(nil)</code> will override any inherited configuration and skip CanCan checks for an object, field, argument or mutation.</p>
 
 <h3 id="handling-unauthorized-objects">Handling Unauthorized Objects</h3>
 
-<p>When any CanCan check returns <code class="highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.10.10/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
+<p>When any CanCan check returns <code class="language-plaintext highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.10.10/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
 
 <h2 id="scopes">Scopes</h2>
 
 <h4 id="activerecordrelation">ActiveRecord::Relation</h4>
 
-<p>The CanCan integration adds <a href="https://github.com/cancancommunity/cancancan/wiki/Fetching-Records">CanCan’s <code class="highlighter-rouge">.accessible_by</code></a> to GraphQL-Ruby’s <a href="/authorization/scoping">list scoping</a></p>
+<p>The CanCan integration adds <a href="https://github.com/cancancommunity/cancancan/wiki/Fetching-Records">CanCan’s <code class="language-plaintext highlighter-rouge">.accessible_by</code></a> to GraphQL-Ruby’s <a href="/authorization/scoping">list scoping</a></p>
 
-<p>To scope lists of interface or union type, include the integration in your base union class and base interface module <em>and</em> set a base <code class="highlighter-rouge">can_can_action</code>, if desired:</p>
+<p>To scope lists of interface or union type, include the integration in your base union class and base interface module <em>and</em> set a base <code class="language-plaintext highlighter-rouge">can_can_action</code>, if desired:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseUnion</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Union</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">CanCanIntegration</span><span class="o">::</span><span class="no">UnionIntegration</span>
@@ -154,11 +154,11 @@
 
 <h4 id="array">Array</h4>
 
-<p>For Arrays, the CanCan integration will use <code class="highlighter-rouge">.select { ... }</code> to filter items using the <code class="highlighter-rouge">can_can_action</code> from the lists’s type.</p>
+<p>For Arrays, the CanCan integration will use <code class="language-plaintext highlighter-rouge">.select { ... }</code> to filter items using the <code class="language-plaintext highlighter-rouge">can_can_action</code> from the lists’s type.</p>
 
 <h4 id="bypassing-scopes">Bypassing scopes</h4>
 
-<p>To allow an unscoped relation to be returned from a field, disable scoping with <code class="highlighter-rouge">scope: false</code>, for example:</p>
+<p>To allow an unscoped relation to be returned from a field, disable scoping with <code class="language-plaintext highlighter-rouge">scope: false</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Allow anyone to browse the job postings</span>
 <span class="n">field</span> <span class="ss">:job_postings</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">JobPosting</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
@@ -195,7 +195,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, you can add <code class="highlighter-rouge">can_can_action:</code> options to your fields:</p>
+<p>Then, you can add <code class="language-plaintext highlighter-rouge">can_can_action:</code> options to your fields:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Only allow `can :review_applications, JobPosting` users</span>
@@ -205,7 +205,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>It will require the named action (<code class="highlighter-rouge">:review_applicants</code>) for the object being viewed (a <code class="highlighter-rouge">JobPosting</code>).</p>
+<p>It will require the named action (<code class="language-plaintext highlighter-rouge">:review_applicants</code>) for the object being viewed (a <code class="language-plaintext highlighter-rouge">JobPosting</code>).</p>
 
 <h2 id="authorizing-arguments">Authorizing Arguments</h2>
 
@@ -234,7 +234,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, arguments accept a <code class="highlighter-rouge">can_can_action:</code> option, for example:</p>
+<p>Now, arguments accept a <code class="language-plaintext highlighter-rouge">can_can_action:</code> option, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Company</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:employees</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Employee</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="k">do</span>
@@ -244,7 +244,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>This will check for <code class="highlighter-rouge">can :admin, Company</code> (or a similar rule for the <code class="highlighter-rouge">company</code> being queried) for the current user.</p>
+<p>This will check for <code class="language-plaintext highlighter-rouge">can :admin, Company</code> (or a similar rule for the <code class="language-plaintext highlighter-rouge">company</code> being queried) for the current user.</p>
 
 <h2 id="authorizing-mutations">Authorizing Mutations</h2>
 
@@ -259,7 +259,7 @@
 
 <h4 id="setup">Setup</h4>
 
-<p>Add <code class="highlighter-rouge">MutationIntegration</code> to your base mutation, for example:</p>
+<p>Add <code class="language-plaintext highlighter-rouge">MutationIntegration</code> to your base mutation, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">CanCanIntegration</span><span class="o">::</span><span class="no">MutationIntegration</span>
@@ -269,7 +269,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Also, you’ll probably want a <code class="highlighter-rouge">BaseMutationPayload</code> where you can set a default role:</p>
+<p>Also, you’ll probably want a <code class="language-plaintext highlighter-rouge">BaseMutationPayload</code> where you can set a default role:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseMutationPayload</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># If `BaseObject` requires some permissions, override that for mutation results.</span>
@@ -288,20 +288,20 @@
 
 <h4 id="mutation-level-roles">Mutation-level roles</h4>
 
-<p>Each mutation can have a class-level <code class="highlighter-rouge">can_can_action</code> which will be checked before loading objects or resolving, for example:</p>
+<p>Each mutation can have a class-level <code class="language-plaintext highlighter-rouge">can_can_action</code> which will be checked before loading objects or resolving, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">can_can_action</span> <span class="ss">:run_mutation</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>In the example above, <code class="highlighter-rouge">can :run_mutation, Mutations::PromoteEmployee</code> will be checked before running the mutation. (The currently-running instance of <code class="highlighter-rouge">Mutations::PromoteEmployee</code> is passed to the ability checker.)</p>
+<p>In the example above, <code class="language-plaintext highlighter-rouge">can :run_mutation, Mutations::PromoteEmployee</code> will be checked before running the mutation. (The currently-running instance of <code class="language-plaintext highlighter-rouge">Mutations::PromoteEmployee</code> is passed to the ability checker.)</p>
 
 <h4 id="authorizing-loaded-objects">Authorizing Loaded Objects</h4>
 
-<p>Mutations can automatically load and authorize objects by ID using the <code class="highlighter-rouge">loads:</code> option.</p>
+<p>Mutations can automatically load and authorize objects by ID using the <code class="language-plaintext highlighter-rouge">loads:</code> option.</p>
 
-<p>Beyond the normal <a href="#authorizing-objects">object reading permissions</a>, you can add an additional role for the specific mutation input using a <code class="highlighter-rouge">can_can_action:</code> option:</p>
+<p>Beyond the normal <a href="#authorizing-objects">object reading permissions</a>, you can add an additional role for the specific mutation input using a <code class="language-plaintext highlighter-rouge">can_can_action:</code> option:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::FireEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span>
@@ -310,11 +310,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>In the case above, the mutation will halt unless the <code class="highlighter-rouge">can :supervise, ...</code> check returns true. (The fetched instance of <code class="highlighter-rouge">Employee</code> is passed to the ability checker.)</p>
+<p>In the case above, the mutation will halt unless the <code class="language-plaintext highlighter-rouge">can :supervise, ...</code> check returns true. (The fetched instance of <code class="language-plaintext highlighter-rouge">Employee</code> is passed to the ability checker.)</p>
 
 <h4 id="unauthorized-mutations">Unauthorized Mutations</h4>
 
-<p>By default, an authorization failure in a mutation will raise a Ruby exception. You can customize this by implementing <code class="highlighter-rouge">#unauthorized_by_can_can(owner, value)</code> in your base mutation, for example:</p>
+<p>By default, an authorization failure in a mutation will raise a Ruby exception. You can customize this by implementing <code class="language-plaintext highlighter-rouge">#unauthorized_by_can_can(owner, value)</code> in your base mutation, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="k">def</span> <span class="nf">unauthorized_by_can_can</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
@@ -327,11 +327,11 @@
 <p>The method is called with:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">owner</code>: the <code class="highlighter-rouge">GraphQL::Schema::Argument</code> instance or mutation class whose role was not satisfied</li>
-  <li><code class="highlighter-rouge">value</code>: the object which didn’t pass for <code class="highlighter-rouge">context[:current_user]</code></li>
+  <li><code class="language-plaintext highlighter-rouge">owner</code>: the <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Argument</code> instance or mutation class whose role was not satisfied</li>
+  <li><code class="language-plaintext highlighter-rouge">value</code>: the object which didn’t pass for <code class="language-plaintext highlighter-rouge">context[:current_user]</code></li>
 </ul>
 
-<p>Since it’s a mutation method, you can also access <code class="highlighter-rouge">context</code> in that method.</p>
+<p>Since it’s a mutation method, you can also access <code class="language-plaintext highlighter-rouge">context</code> in that method.</p>
 
 <p>Whatever that method returns will be treated as an early return value for the mutation, so for example, you could return <a href="/mutations/mutation_errors">errors as data</a>:</p>
 
@@ -347,11 +347,11 @@
 
 <h2 id="custom-abilities-class">Custom Abilities Class</h2>
 
-<p>By default, the integration will look for a top-level <code class="highlighter-rouge">::Ability</code> class.</p>
+<p>By default, the integration will look for a top-level <code class="language-plaintext highlighter-rouge">::Ability</code> class.</p>
 
-<p>If you’re using a different class, provide an instance ahead-of-time as <code class="highlighter-rouge">context[:can_can_ability]</code></p>
+<p>If you’re using a different class, provide an instance ahead-of-time as <code class="language-plaintext highlighter-rouge">context[:can_can_ability]</code></p>
 
-<p>For example, you could <em>always</em> add one in your schema’s <code class="highlighter-rouge">#execute</code> method:</p>
+<p>For example, you could <em>always</em> add one in your schema’s <code class="language-plaintext highlighter-rouge">#execute</code> method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Override `execute` to provide a custom Abilities instance for the CanCan integration</span>

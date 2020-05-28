@@ -52,7 +52,7 @@
 <ul>
   <li>Define a lazy-loading class with <em>one</em> method for loading &amp; returning a value</li>
   <li>Connect it to your schema with <a href="/api-doc/1.10.10/GraphQL/Schema#lazy_resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema#lazy_resolve"><code>GraphQL::Schema#lazy_resolve</code></a></li>
-  <li>In <code class="highlighter-rouge">resolve</code> functions, return instances of the lazy-loading class</li>
+  <li>In <code class="language-plaintext highlighter-rouge">resolve</code> functions, return instances of the lazy-loading class</li>
 </ul>
 
 <h2 id="example-batched-find">Example: Batched Find</h2>
@@ -108,7 +108,7 @@
 </code></pre></div></div>
 
 <ol>
-  <li>Return lazy objects from <code class="highlighter-rouge">resolve</code></li>
+  <li>Return lazy objects from <code class="language-plaintext highlighter-rouge">resolve</code></li>
 </ol>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:author</span><span class="p">,</span> <span class="no">PersonType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
@@ -118,7 +118,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, calls to <code class="highlighter-rouge">author</code> will use batched database access. For example, this query:</p>
+<p>Now, calls to <code class="language-plaintext highlighter-rouge">author</code> will use batched database access. For example, this query:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
   </span><span class="n">p1</span><span class="p">:</span><span class="w"> </span><span class="n">post</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">author</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
@@ -127,16 +127,16 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>Will only make one query to load the <code class="highlighter-rouge">author</code> values.</p>
+<p>Will only make one query to load the <code class="language-plaintext highlighter-rouge">author</code> values.</p>
 
 <h2 id="gems-for-batching">Gems for batching</h2>
 
 <p>The example above is simple and has some shortcomings. Consider the following gems for a robust solution to batched resolution:</p>
 
 <ul>
-  <li><a href="https://github.com/shopify/graphql-batch"><code class="highlighter-rouge">graphql-batch</code></a> provides a powerful, flexible toolkit for lazy resolution with GraphQL.</li>
-  <li><a href="https://github.com/sheerun/dataloader"><code class="highlighter-rouge">dataloader</code></a> is more general promise-based utility for batching queries within the same thread.</li>
-  <li><a href="https://github.com/exAspArk/batch-loader"><code class="highlighter-rouge">batch-loader</code></a> works with any Ruby code including GraphQL, no extra dependencies or primitives.</li>
+  <li><a href="https://github.com/shopify/graphql-batch"><code class="language-plaintext highlighter-rouge">graphql-batch</code></a> provides a powerful, flexible toolkit for lazy resolution with GraphQL.</li>
+  <li><a href="https://github.com/sheerun/dataloader"><code class="language-plaintext highlighter-rouge">dataloader</code></a> is more general promise-based utility for batching queries within the same thread.</li>
+  <li><a href="https://github.com/exAspArk/batch-loader"><code class="language-plaintext highlighter-rouge">batch-loader</code></a> works with any Ruby code including GraphQL, no extra dependencies or primitives.</li>
 </ul>
 
 </div>

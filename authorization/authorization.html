@@ -51,23 +51,23 @@
 
 <h2 id="adding-authorization-checks">Adding Authorization Checks</h2>
 
-<p>Schema members have <code class="highlighter-rouge">authorized?</code> methods which will be called during execution:</p>
+<p>Schema members have <code class="language-plaintext highlighter-rouge">authorized?</code> methods which will be called during execution:</p>
 
 <ul>
-  <li>Type classes have <code class="highlighter-rouge">.authorized?(object, context)</code> class methods</li>
-  <li>Fields have <code class="highlighter-rouge">#authorized?(object, args, context)</code> instance methods</li>
-  <li>Arguments have <code class="highlighter-rouge">#authorized?(object, arg_value, context)</code> instance methods</li>
+  <li>Type classes have <code class="language-plaintext highlighter-rouge">.authorized?(object, context)</code> class methods</li>
+  <li>Fields have <code class="language-plaintext highlighter-rouge">#authorized?(object, args, context)</code> instance methods</li>
+  <li>Arguments have <code class="language-plaintext highlighter-rouge">#authorized?(object, arg_value, context)</code> instance methods</li>
 </ul>
 
 <p>These methods are called with:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">object</code>: the object from your application which was returned from a field</li>
-  <li><code class="highlighter-rouge">args</code>/<code class="highlighter-rouge">arg_value</code>: The arguments for a field, or the value of an argument</li>
-  <li><code class="highlighter-rouge">context</code>: the query context, based on the hash passed as <code class="highlighter-rouge">context:</code></li>
+  <li><code class="language-plaintext highlighter-rouge">object</code>: the object from your application which was returned from a field</li>
+  <li><code class="language-plaintext highlighter-rouge">args</code>/<code class="language-plaintext highlighter-rouge">arg_value</code>: The arguments for a field, or the value of an argument</li>
+  <li><code class="language-plaintext highlighter-rouge">context</code>: the query context, based on the hash passed as <code class="language-plaintext highlighter-rouge">context:</code></li>
 </ul>
 
-<p>When you implement this method to return <code class="highlighter-rouge">false</code>, the query will be halted, for example:</p>
+<p>When you implement this method to return <code class="language-plaintext highlighter-rouge">false</code>, the query will be halted, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Friendship</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># You can only see the details on a `Friendship`</span>
@@ -78,13 +78,13 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>(Always call <code class="highlighter-rouge">super</code> to get the default checks, too.)</p>
+<p>(Always call <code class="language-plaintext highlighter-rouge">super</code> to get the default checks, too.)</p>
 
-<p>Now, whenever an object of type <code class="highlighter-rouge">Friendship</code> is going to be returned to the client, it will first go through the <code class="highlighter-rouge">.authorized?</code> method. If that method returns false, the field will get <code class="highlighter-rouge">nil</code> instead of the original object, and you may handle that case with an error (see below).</p>
+<p>Now, whenever an object of type <code class="language-plaintext highlighter-rouge">Friendship</code> is going to be returned to the client, it will first go through the <code class="language-plaintext highlighter-rouge">.authorized?</code> method. If that method returns false, the field will get <code class="language-plaintext highlighter-rouge">nil</code> instead of the original object, and you may handle that case with an error (see below).</p>
 
 <h2 id="handling-unauthorized-objects">Handling Unauthorized Objects</h2>
 
-<p>By default, GraphQL-Ruby silently replaces unauthorized objects with <code class="highlighter-rouge">nil</code>, as if they didn’t exist. You can customize this behavior by implementing <a href="/api-doc/1.10.10/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> in your schema class, for example:</p>
+<p>By default, GraphQL-Ruby silently replaces unauthorized objects with <code class="language-plaintext highlighter-rouge">nil</code>, as if they didn’t exist. You can customize this behavior by implementing <a href="/api-doc/1.10.10/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> in your schema class, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Override this hook to handle cases when `authorized?` returns false for an object:</span>
@@ -97,7 +97,7 @@
 
 <p>Now, the custom hook will be called instead of the default one.</p>
 
-<p>If <code class="highlighter-rouge">.unauthorized_object</code> returns a non-<code class="highlighter-rouge">nil</code> object (and doesn’t <code class="highlighter-rouge">raise</code> an error), then that object will be used in place of the unauthorized object.</p>
+<p>If <code class="language-plaintext highlighter-rouge">.unauthorized_object</code> returns a non-<code class="language-plaintext highlighter-rouge">nil</code> object (and doesn’t <code class="language-plaintext highlighter-rouge">raise</code> an error), then that object will be used in place of the unauthorized object.</p>
 
 <p>A similar hook is available for unauthorized fields:</p>
 

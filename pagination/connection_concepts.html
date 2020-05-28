@@ -52,9 +52,9 @@
 <p>Connections are composed of a few kinds of objects:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">Connection</code> types are generics that expose pagination-related metadata and access to the items</li>
-  <li><code class="highlighter-rouge">Edge</code> types are also generics. They represent the relationship between the parent and child (eg, a <code class="highlighter-rouge">PostEdge</code> represents the link from <code class="highlighter-rouge">Blog</code> to <code class="highlighter-rouge">Post</code>).</li>
-  <li><em>nodes</em> are actual list items. In a <code class="highlighter-rouge">PostsConnection</code>, each node is a <code class="highlighter-rouge">Post</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">Connection</code> types are generics that expose pagination-related metadata and access to the items</li>
+  <li><code class="language-plaintext highlighter-rouge">Edge</code> types are also generics. They represent the relationship between the parent and child (eg, a <code class="language-plaintext highlighter-rouge">PostEdge</code> represents the link from <code class="language-plaintext highlighter-rouge">Blog</code> to <code class="language-plaintext highlighter-rouge">Post</code>).</li>
+  <li><em>nodes</em> are actual list items. In a <code class="language-plaintext highlighter-rouge">PostsConnection</code>, each node is a <code class="language-plaintext highlighter-rouge">Post</code>.</li>
 </ul>
 
 <p>Connections have some advantages over offset-based pagination:</p>
@@ -70,7 +70,7 @@
 
 <h3 id="nodes">Nodes</h3>
 
-<p>Nodes are items in a list. A <code class="highlighter-rouge">node</code> is usually an object in your schema. For example, a <code class="highlighter-rouge">node</code> in a <code class="highlighter-rouge">posts</code> connection is a <code class="highlighter-rouge">Post</code>:</p>
+<p>Nodes are items in a list. A <code class="language-plaintext highlighter-rouge">node</code> is usually an object in your schema. For example, a <code class="language-plaintext highlighter-rouge">node</code> in a <code class="language-plaintext highlighter-rouge">posts</code> connection is a <code class="language-plaintext highlighter-rouge">Post</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
   <span class="n">posts</span><span class="p">(</span><span class="ss">first: </span><span class="mi">5</span><span class="p">)</span> <span class="p">{</span>
@@ -109,11 +109,11 @@
 <p>The list items in a connection are called <em>nodes</em>. They can generally be accessed two ways:</p>
 
 <ul>
-  <li>via edges: <code class="highlighter-rouge">posts { edges { node { ... } } }</code></li>
-  <li>via nodes: <code class="highlighter-rouge">posts { nodes { ... } }</code></li>
+  <li>via edges: <code class="language-plaintext highlighter-rouge">posts { edges { node { ... } } }</code></li>
+  <li>via nodes: <code class="language-plaintext highlighter-rouge">posts { nodes { ... } }</code></li>
 </ul>
 
-<p>The differences is that <code class="highlighter-rouge">edges { node { ... } }</code> has more room for relationship metadata. For example, when listing the members of a team, you might include <em>when</em> someone joined the team as edge metadata:</p>
+<p>The differences is that <code class="language-plaintext highlighter-rouge">edges { node { ... } }</code> has more room for relationship metadata. For example, when listing the members of a team, you might include <em>when</em> someone joined the team as edge metadata:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">team</span> <span class="p">{</span>
   <span class="n">members</span><span class="p">(</span><span class="ss">first: </span><span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
@@ -129,7 +129,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>Alternatively, <code class="highlighter-rouge">nodes</code> provides easier access to the items, but can’t expose relationship metadata:</p>
+<p>Alternatively, <code class="language-plaintext highlighter-rouge">nodes</code> provides easier access to the items, but can’t expose relationship metadata:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">team</span> <span class="p">{</span>
   <span class="n">members</span><span class="p">(</span><span class="ss">first: </span><span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
@@ -141,13 +141,13 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>There’s no way to show <code class="highlighter-rouge">joinedAt</code> above without using <code class="highlighter-rouge">edges { ... }</code>.</p>
+<p>There’s no way to show <code class="language-plaintext highlighter-rouge">joinedAt</code> above without using <code class="language-plaintext highlighter-rouge">edges { ... }</code>.</p>
 
 <h3 id="edges">Edges</h3>
 
 <p>Edges are <em>like</em> join tables in that they can expose relationship metadata between a parent object and its children.</p>
 
-<p>For example, let’s say that someone may be the member of <em>several</em> teams. You would make a join table in the database (eg, <code class="highlighter-rouge">team_memberships</code>) which connect people to each of the teams they’re on. This join table could also include information about <em>how</em> that person is related to the team: when they joined, what role they have, etc.</p>
+<p>For example, let’s say that someone may be the member of <em>several</em> teams. You would make a join table in the database (eg, <code class="language-plaintext highlighter-rouge">team_memberships</code>) which connect people to each of the teams they’re on. This join table could also include information about <em>how</em> that person is related to the team: when they joined, what role they have, etc.</p>
 
 <p>Edges can reveal this information about the relationship, for example:</p>
 

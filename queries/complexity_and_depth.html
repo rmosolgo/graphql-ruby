@@ -51,7 +51,7 @@
 
 <h2 id="prevent-complex-queries">Prevent complex queries</h2>
 
-<p>Fields have a “complexity” value which can be configured in their definition. It can be a constant (numeric) value, or a proc. If no <code class="highlighter-rouge">complexity</code> is defined for a field, it will default to a value of <code class="highlighter-rouge">1</code>. It can be defined as a keyword <em>or</em> inside the configuration block. For example:</p>
+<p>Fields have a “complexity” value which can be configured in their definition. It can be a constant (numeric) value, or a proc. If no <code class="language-plaintext highlighter-rouge">complexity</code> is defined for a field, it will default to a value of <code class="language-plaintext highlighter-rouge">1</code>. It can be defined as a keyword <em>or</em> inside the configuration block. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Constant complexity:</span>
 <span class="n">field</span> <span class="ss">:top_score</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">complexity: </span><span class="mi">10</span>
@@ -76,7 +76,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, define your <code class="highlighter-rouge">max_complexity</code> at the schema-level:</p>
+<p>Then, define your <code class="language-plaintext highlighter-rouge">max_complexity</code> at the schema-level:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># ...</span>
@@ -89,7 +89,7 @@
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_complexity: </span><span class="mi">100</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>Using <code class="highlighter-rouge">nil</code> will disable the validation:</p>
+<p>Using <code class="language-plaintext highlighter-rouge">nil</code> will disable the validation:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 😧 Anything goes!</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_complexity: </span><span class="kp">nil</span><span class="p">)</span>
@@ -113,7 +113,7 @@
 
 <h2 id="prevent-deeply-nested-queries">Prevent deeply-nested queries</h2>
 
-<p>You can also reject queries based on the depth of their nesting. You can define <code class="highlighter-rouge">max_depth</code> at schema-level or query-level:</p>
+<p>You can also reject queries based on the depth of their nesting. You can define <code class="language-plaintext highlighter-rouge">max_depth</code> at schema-level or query-level:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Schema-level:</span>
 <span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
@@ -125,7 +125,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_depth: </span><span class="mi">10</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>You can use <code class="highlighter-rouge">nil</code> to disable the validation:</p>
+<p>You can use <code class="language-plaintext highlighter-rouge">nil</code> to disable the validation:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This query won't be validated:</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_depth: </span><span class="kp">nil</span><span class="p">)</span>

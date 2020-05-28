@@ -52,7 +52,7 @@
 <p>Here are two type errors that you can customize in GraphQL-Ruby:</p>
 
 <ul>
-  <li>A field with <code class="highlighter-rouge">null: false</code> returned <code class="highlighter-rouge">nil</code></li>
+  <li>A field with <code class="language-plaintext highlighter-rouge">null: false</code> returned <code class="language-plaintext highlighter-rouge">nil</code></li>
   <li>A field returned a value as a union or interface, but that value couldn’t be resolved to a member of that union or interface.</li>
 </ul>
 
@@ -70,11 +70,11 @@
 <p>If you don’t specify a hook, you get the default behavior:</p>
 
 <ul>
-  <li>Unexpected <code class="highlighter-rouge">nil</code>s add an error the response’s <code class="highlighter-rouge">"errors"</code> key</li>
+  <li>Unexpected <code class="language-plaintext highlighter-rouge">nil</code>s add an error the response’s <code class="language-plaintext highlighter-rouge">"errors"</code> key</li>
   <li>Unresolved Union / Interface types raise <a href="/api-doc/1.10.10/GraphQL/UnresolvedTypeError" target="_blank" title="API docs for GraphQL::UnresolvedTypeError"><code>GraphQL::UnresolvedTypeError</code></a></li>
 </ul>
 
-<p>An object that fails type resolution is treated as <code class="highlighter-rouge">nil</code>.</p>
+<p>An object that fails type resolution is treated as <code class="language-plaintext highlighter-rouge">nil</code>.</p>
 
 </div>
 <p class="guide-footer">

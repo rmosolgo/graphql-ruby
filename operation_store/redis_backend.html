@@ -56,14 +56,14 @@
 
 <h1 class="guide-header">Redis Backend</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">OperationStore</code> can use Redis to store persisted queries. Pass a <code class="highlighter-rouge">redis:</code> option when adding the plugin:</p>
+  <p><code class="language-plaintext highlighter-rouge">OperationStore</code> can use Redis to store persisted queries. Pass a <code class="language-plaintext highlighter-rouge">redis:</code> option when adding the plugin:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">OperationStore</span><span class="p">,</span> <span class="ss">redis: </span><span class="no">Redis</span><span class="p">.</span><span class="nf">new</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>(You can initialize <code class="highlighter-rouge">Redis</code> with any options you need.)</p>
+<p>(You can initialize <code class="language-plaintext highlighter-rouge">Redis</code> with any options you need.)</p>
 
 <p><strong>Note:</strong> Be sure that this Redis instance is configured as a <em>persistent database</em>, not as a cache. You don’t want it to throw away old keys!</p>
 

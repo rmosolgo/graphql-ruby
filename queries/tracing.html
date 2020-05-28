@@ -47,9 +47,9 @@
 
 <h1 class="guide-header">Tracing</h1>
 <div class="guide-container">
-  <p><a href="/api-doc/1.10.10/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> provides a <code class="highlighter-rouge">.trace</code> hook to observe events from the GraphQL runtime.</p>
+  <p><a href="/api-doc/1.10.10/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> provides a <code class="language-plaintext highlighter-rouge">.trace</code> hook to observe events from the GraphQL runtime.</p>
 
-<p>A tracer must implement <code class="highlighter-rouge">.trace</code>, for example:</p>
+<p>A tracer must implement <code class="language-plaintext highlighter-rouge">.trace</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyCustomTracer</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">trace</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
@@ -59,15 +59,15 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">.trace</code> is called with:</p>
+<p><code class="language-plaintext highlighter-rouge">.trace</code> is called with:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">key</code>: the event happening in the runtime</li>
-  <li><code class="highlighter-rouge">data</code>: a hash of metadata about the event</li>
-  <li><code class="highlighter-rouge">&amp;block</code>: the event itself, it must be <code class="highlighter-rouge">yield</code>ed and the value must be returned</li>
+  <li><code class="language-plaintext highlighter-rouge">key</code>: the event happening in the runtime</li>
+  <li><code class="language-plaintext highlighter-rouge">data</code>: a hash of metadata about the event</li>
+  <li><code class="language-plaintext highlighter-rouge">&amp;block</code>: the event itself, it must be <code class="language-plaintext highlighter-rouge">yield</code>ed and the value must be returned</li>
 </ul>
 
-<p>To run a tracer for <strong>every query</strong>, add it to the schema with <code class="highlighter-rouge">tracer</code>:</p>
+<p>To run a tracer for <strong>every query</strong>, add it to the schema with <code class="language-plaintext highlighter-rouge">tracer</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Run `MyCustomTracer` for all queries</span>
 <span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
@@ -75,7 +75,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Or, to run a tracer for <strong>one query only</strong>, add it to <code class="highlighter-rouge">context:</code> as <code class="highlighter-rouge">tracers: [...]</code>, for example:</p>
+<p>Or, to run a tracer for <strong>one query only</strong>, add it to <code class="language-plaintext highlighter-rouge">context:</code> as <code class="language-plaintext highlighter-rouge">tracers: [...]</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Run `MyCustomTracer` for this query</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">tracers: </span><span class="p">[</span><span class="no">MyCustomTracer</span><span class="p">]})</span>
@@ -85,7 +85,7 @@
 
 <h2 id="activesupportnotifications">ActiveSupport::Notifications</h2>
 
-<p>You can emit events to <code class="highlighter-rouge">ActiveSupport::Notifications</code> with an experimental tracer, <code class="highlighter-rouge">ActiveSupportNotificationsTracing</code>.</p>
+<p>You can emit events to <code class="language-plaintext highlighter-rouge">ActiveSupport::Notifications</code> with an experimental tracer, <code class="language-plaintext highlighter-rouge">ActiveSupportNotificationsTracing</code>.</p>
 
 <p>To enable it, install the tracer:</p>
 
@@ -198,7 +198,7 @@ tracing as follows:</p>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>You may provide <code class="highlighter-rouge">options</code> as a <code class="highlighter-rouge">Hash</code> with the following values:</p>
+<p>You may provide <code class="language-plaintext highlighter-rouge">options</code> as a <code class="language-plaintext highlighter-rouge">Hash</code> with the following values:</p>
 
 <table>
   <thead>
@@ -210,24 +210,24 @@ tracing as follows:</p>
   </thead>
   <tbody>
     <tr>
-      <td><code class="highlighter-rouge">analytics_enabled</code></td>
-      <td>Enable analytics for spans. <code class="highlighter-rouge">true</code> for on, <code class="highlighter-rouge">nil</code> to defer to Datadog global setting, <code class="highlighter-rouge">false</code> for off.</td>
-      <td><code class="highlighter-rouge">false</code></td>
+      <td><code class="language-plaintext highlighter-rouge">analytics_enabled</code></td>
+      <td>Enable analytics for spans. <code class="language-plaintext highlighter-rouge">true</code> for on, <code class="language-plaintext highlighter-rouge">nil</code> to defer to Datadog global setting, <code class="language-plaintext highlighter-rouge">false</code> for off.</td>
+      <td><code class="language-plaintext highlighter-rouge">false</code></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">analytics_sample_rate</code></td>
-      <td>Rate which tracing data should be sampled for Datadog analytics. Must be a float between <code class="highlighter-rouge">0</code> and <code class="highlighter-rouge">1.0</code>.</td>
-      <td><code class="highlighter-rouge">1.0</code></td>
+      <td><code class="language-plaintext highlighter-rouge">analytics_sample_rate</code></td>
+      <td>Rate which tracing data should be sampled for Datadog analytics. Must be a float between <code class="language-plaintext highlighter-rouge">0</code> and <code class="language-plaintext highlighter-rouge">1.0</code>.</td>
+      <td><code class="language-plaintext highlighter-rouge">1.0</code></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">service</code></td>
-      <td>Service name used for <code class="highlighter-rouge">graphql</code> instrumentation</td>
-      <td><code class="highlighter-rouge">'ruby-graphql'</code></td>
+      <td><code class="language-plaintext highlighter-rouge">service</code></td>
+      <td>Service name used for <code class="language-plaintext highlighter-rouge">graphql</code> instrumentation</td>
+      <td><code class="language-plaintext highlighter-rouge">'ruby-graphql'</code></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">tracer</code></td>
-      <td><code class="highlighter-rouge">Datadog::Tracer</code> used to perform instrumentation. Usually you don’t need to set this.</td>
-      <td><code class="highlighter-rouge">Datadog.tracer</code></td>
+      <td><code class="language-plaintext highlighter-rouge">tracer</code></td>
+      <td><code class="language-plaintext highlighter-rouge">Datadog::Tracer</code> used to perform instrumentation. Usually you don’t need to set this.</td>
+      <td><code class="language-plaintext highlighter-rouge">Datadog.tracer</code></td>
     </tr>
   </tbody>
 </table>
@@ -246,7 +246,7 @@ tracing as follows:</p>
 </code></pre></div></div>
 
 <p>The PrometheusExporter server must be run with a custom type collector that extends
-<code class="highlighter-rouge">GraphQL::Tracing::PrometheusTracing::GraphQLCollector</code>:</p>
+<code class="language-plaintext highlighter-rouge">GraphQL::Tracing::PrometheusTracing::GraphQLCollector</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># lib/graphql_collector.rb</span>
 

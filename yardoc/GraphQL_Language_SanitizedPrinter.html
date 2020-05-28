@@ -8,7 +8,7 @@
 A custom printer used to print sanitized queries. It inlines
 provided variables within the query for facilitate logging and
 analysis of queries. 
-The printer returns <code class="highlighter-rouge">nil</code> if the query is invalid. 
+The printer returns <code class="language-plaintext highlighter-rouge">nil</code> if the query is invalid. 
 Since the GraphQL Ruby AST for a GraphQL query doesnt contain any
 reference on the type of fields or arguments, we have to track the
 current object, field and input type while printing the query. 

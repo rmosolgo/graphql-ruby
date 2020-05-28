@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Objects</h1>
 <div class="guide-container">
-  <p>GraphQL object types are the bread and butter of GraphQL APIs. Each object has <em>fields</em> which expose data and may be queried by name. For example, we can query a <code class="highlighter-rouge">User</code> like this:</p>
+  <p>GraphQL object types are the bread and butter of GraphQL APIs. Each object has <em>fields</em> which expose data and may be queried by name. For example, we can query a <code class="language-plaintext highlighter-rouge">User</code> like this:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">user</span> <span class="p">{</span>
   <span class="n">handle</span>
@@ -65,7 +65,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>Generally speaking, GraphQL object types correspond to models in your application, like <code class="highlighter-rouge">User</code>, <code class="highlighter-rouge">Product</code>, or <code class="highlighter-rouge">Comment</code>.  Sometimes, object types are described using the <a href="https://graphql.org/learn/schema/#type-language">GraphQL Schema Definition Language</a> (SDL):</p>
+<p>Generally speaking, GraphQL object types correspond to models in your application, like <code class="language-plaintext highlighter-rouge">User</code>, <code class="language-plaintext highlighter-rouge">Product</code>, or <code class="language-plaintext highlighter-rouge">Comment</code>.  Sometimes, object types are described using the <a href="https://graphql.org/learn/schema/#type-language">GraphQL Schema Definition Language</a> (SDL):</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">type</span> <span class="no">User</span> <span class="p">{</span>
   <span class="ss">email: </span><span class="no">String</span>
@@ -74,12 +74,12 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>This means that <code class="highlighter-rouge">User</code> objects have three fields:</p>
+<p>This means that <code class="language-plaintext highlighter-rouge">User</code> objects have three fields:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">email</code>, which may return a <code class="highlighter-rouge">String</code> <em>or</em> <code class="highlighter-rouge">nil</code>.</li>
-  <li><code class="highlighter-rouge">handle</code>, which returns a <code class="highlighter-rouge">String</code> but <em>never</em> <code class="highlighter-rouge">nil</code> (<code class="highlighter-rouge">!</code> means the field never returns <code class="highlighter-rouge">nil</code>)</li>
-  <li><code class="highlighter-rouge">friends</code>, which returns a list of other <code class="highlighter-rouge">User</code>s (<code class="highlighter-rouge">[...]</code> means the field returns a list of values; <code class="highlighter-rouge">User!</code> means the list contains <code class="highlighter-rouge">User</code> objects, and never contains <code class="highlighter-rouge">nil</code>.)</li>
+  <li><code class="language-plaintext highlighter-rouge">email</code>, which may return a <code class="language-plaintext highlighter-rouge">String</code> <em>or</em> <code class="language-plaintext highlighter-rouge">nil</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">handle</code>, which returns a <code class="language-plaintext highlighter-rouge">String</code> but <em>never</em> <code class="language-plaintext highlighter-rouge">nil</code> (<code class="language-plaintext highlighter-rouge">!</code> means the field never returns <code class="language-plaintext highlighter-rouge">nil</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">friends</code>, which returns a list of other <code class="language-plaintext highlighter-rouge">User</code>s (<code class="language-plaintext highlighter-rouge">[...]</code> means the field returns a list of values; <code class="language-plaintext highlighter-rouge">User!</code> means the list contains <code class="language-plaintext highlighter-rouge">User</code> objects, and never contains <code class="language-plaintext highlighter-rouge">nil</code>.)</li>
 </ul>
 
 <p>The same object can be defined using Ruby:</p>
@@ -97,7 +97,7 @@
 
 <p>Classes extending <a href="/api-doc/1.10.10/GraphQL/Schema/Object" target="_blank" title="API docs for GraphQL::Schema::Object"><code>GraphQL::Schema::Object</code></a> describe <a href="https://graphql.org/learn/schema/#object-types-and-fields">Object types</a> and customize their behavior.</p>
 
-<p>Object fields can be created with the <code class="highlighter-rouge">field(...)</code> class method, <a href="#fields">described in detail below</a></p>
+<p>Object fields can be created with the <code class="language-plaintext highlighter-rouge">field(...)</code> class method, <a href="#fields">described in detail below</a></p>
 
 <p>Field and argument names should be underscored as a convention. They will be converted to camelCase in the underlying GraphQL type and be camelCase in the schema itself.</p>
 
@@ -124,20 +124,20 @@
 
 <h2 id="fields">Fields</h2>
 
-<p>Object fields expose data about that object or connect the object to other objects. You can add fields to your object types with the <code class="highlighter-rouge">field(...)</code> class method.</p>
+<p>Object fields expose data about that object or connect the object to other objects. You can add fields to your object types with the <code class="language-plaintext highlighter-rouge">field(...)</code> class method.</p>
 
 <p>See the <a href="/fields/introduction">Fields guide</a> for details about object fields.</p>
 
 <h2 id="implementing-interfaces">Implementing interfaces</h2>
 
-<p>If an object implements any interfaces, they can be added with <code class="highlighter-rouge">implements</code>, for example:</p>
+<p>If an object implements any interfaces, they can be added with <code class="language-plaintext highlighter-rouge">implements</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This object implements some interfaces:</span>
 <span class="n">implements</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">interface</span>
 <span class="n">implements</span> <span class="no">Types</span><span class="o">::</span><span class="no">UserAssignableType</span>
 </code></pre></div></div>
 
-<p>When an object <code class="highlighter-rouge">implements</code> interfaces, it:</p>
+<p>When an object <code class="language-plaintext highlighter-rouge">implements</code> interfaces, it:</p>
 
 <ul>
   <li>inherits the GraphQL field definitions from that object</li>

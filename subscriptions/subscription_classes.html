@@ -82,7 +82,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, hook up the new class to the <a href="/subscriptions/subscription_type">Subscription root type</a> with the <code class="highlighter-rouge">subscription:</code> option:</p>
+<p>Then, hook up the new class to the <a href="/subscriptions/subscription_type">Subscription root type</a> with the <code class="language-plaintext highlighter-rouge">subscription:</code> option:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::SubscriptionType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:message_was_posted</span><span class="p">,</span> <span class="ss">subscription: </span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">MessageWasPosted</span>
@@ -100,7 +100,7 @@
 
 <h2 id="arguments">Arguments</h2>
 
-<p>Subscription fields take <a href="/fields/arguments">arguments</a> just like normal fields. They also accept a <a href="/mutations/mutation_classes#auto-loading-arguments"><code class="highlighter-rouge">loads:</code> option</a> just like mutations. For example:</p>
+<p>Subscription fields take <a href="/fields/arguments">arguments</a> just like normal fields. They also accept a <a href="/mutations/mutation_classes#auto-loading-arguments"><code class="language-plaintext highlighter-rouge">loads:</code> option</a> just like mutations. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="c1"># `room_id` loads a `room`</span>
@@ -126,11 +126,11 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>If the ID doesn’t find an object, then the subscription will be unsubscribed (with <code class="highlighter-rouge">#unsubscribe</code>, see below).</p>
+<p>If the ID doesn’t find an object, then the subscription will be unsubscribed (with <code class="language-plaintext highlighter-rouge">#unsubscribe</code>, see below).</p>
 
 <h2 id="fields">Fields</h2>
 
-<p>Like mutations, you can use a generated return type for subscriptions. When you add <code class="highlighter-rouge">field(...)</code>s to a subscription, they’ll be added to the subscription’s generated return type. For example:</p>
+<p>Like mutations, you can use a generated return type for subscriptions. When you add <code class="language-plaintext highlighter-rouge">field(...)</code>s to a subscription, they’ll be added to the subscription’s generated return type. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="n">field</span> <span class="ss">:room</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
@@ -164,15 +164,15 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>If you configure fields with <code class="highlighter-rouge">null: true</code>, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)</p>
+<p>If you configure fields with <code class="language-plaintext highlighter-rouge">null: true</code>, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)</p>
 
-<p>Instead of a generated type, you can provide an already-configured type with <code class="highlighter-rouge">payload_type</code>:</p>
+<p>Instead of a generated type, you can provide an already-configured type with <code class="language-plaintext highlighter-rouge">payload_type</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Just return a message</span>
 <span class="n">payload_type</span> <span class="no">Types</span><span class="o">::</span><span class="no">MessageType</span>
 </code></pre></div></div>
 
-<p>(In that case, don’t return a hash from <code class="highlighter-rouge">#subscribe</code> or <code class="highlighter-rouge">#update</code>, return a <code class="highlighter-rouge">message</code> object instead.)</p>
+<p>(In that case, don’t return a hash from <code class="language-plaintext highlighter-rouge">#subscribe</code> or <code class="language-plaintext highlighter-rouge">#update</code>, return a <code class="language-plaintext highlighter-rouge">message</code> object instead.)</p>
 
 <h2 id="check-permissions-with-authorized">Check Permissions with #authorized?</h2>
 
@@ -189,28 +189,28 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>You can implement <code class="highlighter-rouge">#authorized?</code> to check that the user has permission to subscribe to these arguments (and receive updates for these arguments), for example:</p>
+<p>You can implement <code class="language-plaintext highlighter-rouge">#authorized?</code> to check that the user has permission to subscribe to these arguments (and receive updates for these arguments), for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
   <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">can_read_messages?</span><span class="p">(</span><span class="n">room</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The method may return <code class="highlighter-rouge">false</code> or raise a <code class="highlighter-rouge">GraphQL::ExecutionError</code> to halt execution.</p>
+<p>The method may return <code class="language-plaintext highlighter-rouge">false</code> or raise a <code class="language-plaintext highlighter-rouge">GraphQL::ExecutionError</code> to halt execution.</p>
 
-<p>This method is called <em>before</em> <code class="highlighter-rouge">#subscribe</code> and <code class="highlighter-rouge">#update</code>, described below. This way, if a user’s permissions have changed since they subscribed, they won’t receive updates unauthorized updates.</p>
+<p>This method is called <em>before</em> <code class="language-plaintext highlighter-rouge">#subscribe</code> and <code class="language-plaintext highlighter-rouge">#update</code>, described below. This way, if a user’s permissions have changed since they subscribed, they won’t receive updates unauthorized updates.</p>
 
-<p>Also, if this method fails before calling <code class="highlighter-rouge">#update</code>, then the client will be automatically unsubscribed (with <code class="highlighter-rouge">#unsubscribe</code>).</p>
+<p>Also, if this method fails before calling <code class="language-plaintext highlighter-rouge">#update</code>, then the client will be automatically unsubscribed (with <code class="language-plaintext highlighter-rouge">#unsubscribe</code>).</p>
 
 <h2 id="initial-subscription-with-subscribe">Initial Subscription with #subscribe</h2>
 
-<p><code class="highlighter-rouge">def subscribe(**args)</code> is called when a client <em>first</em> sends a <code class="highlighter-rouge">subscription { ... }</code> request. In this method, you can do a few things:</p>
+<p><code class="language-plaintext highlighter-rouge">def subscribe(**args)</code> is called when a client <em>first</em> sends a <code class="language-plaintext highlighter-rouge">subscription { ... }</code> request. In this method, you can do a few things:</p>
 
 <ul>
-  <li>Raise <code class="highlighter-rouge">GraphQL::ExecutionError</code> to halt and return an error</li>
+  <li>Raise <code class="language-plaintext highlighter-rouge">GraphQL::ExecutionError</code> to halt and return an error</li>
   <li>Return a value to give the client an initial response</li>
-  <li>Return <code class="highlighter-rouge">:no_response</code> to skip the initial response</li>
-  <li>Return <code class="highlighter-rouge">super</code> to fall back to the default behavior (which is <code class="highlighter-rouge">:no_response</code>).</li>
+  <li>Return <code class="language-plaintext highlighter-rouge">:no_response</code> to skip the initial response</li>
+  <li>Return <code class="language-plaintext highlighter-rouge">super</code> to fall back to the default behavior (which is <code class="language-plaintext highlighter-rouge">:no_response</code>).</li>
 </ul>
 
 <p>You can define this method to add initial responses or perform other logic before subscribing.</p>
@@ -219,7 +219,7 @@
 
 <p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
-<p>By default, GraphQL-Ruby returns <em>nothing</em> (<code class="highlighter-rouge">:no_response</code>) on an initial subscription. But, you may choose to override this and return a value in <code class="highlighter-rouge">def subscribe</code>. For example:</p>
+<p>By default, GraphQL-Ruby returns <em>nothing</em> (<code class="language-plaintext highlighter-rouge">:no_response</code>) on an initial subscription. But, you may choose to override this and return a value in <code class="language-plaintext highlighter-rouge">def subscribe</code>. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="c1"># ...</span>
@@ -253,19 +253,19 @@
 
 <p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
-<p>After a client has registered a subscription, the application may trigger subscription updates with <code class="highlighter-rouge">MySchema.subscriptions.trigger(...)</code> (see the <a href="/subscriptions/triggers">Triggers guide</a> for more). Then, <code class="highlighter-rouge">def update</code> will be called for each client’s subscription. In this method you can:</p>
+<p>After a client has registered a subscription, the application may trigger subscription updates with <code class="language-plaintext highlighter-rouge">MySchema.subscriptions.trigger(...)</code> (see the <a href="/subscriptions/triggers">Triggers guide</a> for more). Then, <code class="language-plaintext highlighter-rouge">def update</code> will be called for each client’s subscription. In this method you can:</p>
 
 <ul>
-  <li>Unsubscribe the client with <code class="highlighter-rouge">unsubscribe</code></li>
-  <li>Return a value with <code class="highlighter-rouge">super</code> (which returns <code class="highlighter-rouge">object</code>) or by returning a different value.</li>
-  <li>Return <code class="highlighter-rouge">:no_update</code> to skip this update</li>
+  <li>Unsubscribe the client with <code class="language-plaintext highlighter-rouge">unsubscribe</code></li>
+  <li>Return a value with <code class="language-plaintext highlighter-rouge">super</code> (which returns <code class="language-plaintext highlighter-rouge">object</code>) or by returning a different value.</li>
+  <li>Return <code class="language-plaintext highlighter-rouge">:no_update</code> to skip this update</li>
 </ul>
 
 <h3 id="skipping-subscription-updates">Skipping subscription updates</h3>
 
 <p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
-<p>Perhaps you don’t want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to <em>other</em> subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning <code class="highlighter-rouge">:no_update</code>.</p>
+<p>Perhaps you don’t want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to <em>other</em> subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning <code class="language-plaintext highlighter-rouge">:no_update</code>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::CommentWasAdded</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">post_id</span><span class="p">:)</span>
@@ -284,7 +284,7 @@
 
 <p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
-<p>By default, whatever object you pass to <code class="highlighter-rouge">.trigger(event_name, args, object)</code> will be used for responding to subscription fields. But, you can return a different object from <code class="highlighter-rouge">#update</code> to override this:</p>
+<p>By default, whatever object you pass to <code class="language-plaintext highlighter-rouge">.trigger(event_name, args, object)</code> will be used for responding to subscription fields. But, you can return a different object from <code class="language-plaintext highlighter-rouge">#update</code> to override this:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:queue</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">QueueType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 
@@ -303,7 +303,7 @@
 
 <h2 id="terminating-the-subscription-with-unsubscribe">Terminating the subscription with #unsubscribe</h2>
 
-<p>Within a subscription method, you may call <code class="highlighter-rouge">unsubscribe</code> to terminate the client’s subscription, for example:</p>
+<p>Within a subscription method, you may call <code class="language-plaintext highlighter-rouge">unsubscribe</code> to terminate the client’s subscription, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
   <span class="k">if</span> <span class="n">room</span><span class="p">.</span><span class="nf">archived?</span>
@@ -315,16 +315,16 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">#unsubscribe</code> has the following effects:</p>
+<p><code class="language-plaintext highlighter-rouge">#unsubscribe</code> has the following effects:</p>
 
 <ul>
   <li>The subscription is unregistered from the backend (this is backend-specific)</li>
   <li>The client is told to unsubscribe (this is transport-specific)</li>
 </ul>
 
-<p><code class="highlighter-rouge">#unsubscribe</code> does <em>not</em> halt the current update.</p>
+<p><code class="language-plaintext highlighter-rouge">#unsubscribe</code> does <em>not</em> halt the current update.</p>
 
-<p>Arguments with <code class="highlighter-rouge">loads:</code> configurations will call <code class="highlighter-rouge">unsubscribe</code> if they are <code class="highlighter-rouge">required: true</code> and their ID doesn’t return a value. (It’s assumed that the subscribed object was deleted.)</p>
+<p>Arguments with <code class="language-plaintext highlighter-rouge">loads:</code> configurations will call <code class="language-plaintext highlighter-rouge">unsubscribe</code> if they are <code class="language-plaintext highlighter-rouge">required: true</code> and their ID doesn’t return a value. (It’s assumed that the subscribed object was deleted.)</p>
 
 </div>
 <p class="guide-footer">

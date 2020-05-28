@@ -57,7 +57,7 @@
 
 <h1 class="guide-header">Backtrace Annotations</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">context</code> objects have a <code class="highlighter-rouge">backtrace</code> which shows its GraphQL context. You can print the backtrace during query execution:</p>
+  <p><code class="language-plaintext highlighter-rouge">context</code> objects have a <code class="language-plaintext highlighter-rouge">backtrace</code> which shows its GraphQL context. You can print the backtrace during query execution:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">puts</span> <span class="n">context</span><span class="p">.</span><span class="nf">backtrace</span>
 <span class="c1"># Loc  | Field                         | Object       | Arguments             | Result</span>
@@ -69,24 +69,24 @@
 <p>The backtrace contains some execution data:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">Loc</code> is the <code class="highlighter-rouge">line:column</code> of the field in the query string</li>
-  <li><code class="highlighter-rouge">Field</code> is the <code class="highlighter-rouge">TypeName.fieldName</code> of the fields in the backtrace</li>
-  <li><code class="highlighter-rouge">Object</code> is the <code class="highlighter-rouge">obj</code> for query resolution (used for resolving the given field), equivalent to <code class="highlighter-rouge">obj.inspect</code></li>
-  <li><code class="highlighter-rouge">Arguments</code> are the GraphQL arguments for field resolution (including any default values and variable values)</li>
-  <li><code class="highlighter-rouge">Result</code> is the GraphQL-ready result which is being constructed (it may be incomplete if the query is still in-progress)</li>
+  <li><code class="language-plaintext highlighter-rouge">Loc</code> is the <code class="language-plaintext highlighter-rouge">line:column</code> of the field in the query string</li>
+  <li><code class="language-plaintext highlighter-rouge">Field</code> is the <code class="language-plaintext highlighter-rouge">TypeName.fieldName</code> of the fields in the backtrace</li>
+  <li><code class="language-plaintext highlighter-rouge">Object</code> is the <code class="language-plaintext highlighter-rouge">obj</code> for query resolution (used for resolving the given field), equivalent to <code class="language-plaintext highlighter-rouge">obj.inspect</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Arguments</code> are the GraphQL arguments for field resolution (including any default values and variable values)</li>
+  <li><code class="language-plaintext highlighter-rouge">Result</code> is the GraphQL-ready result which is being constructed (it may be incomplete if the query is still in-progress)</li>
 </ul>
 
 <h2 id="wrapping-errors">Wrapping Errors</h2>
 
-<p>You can wrap unhandled errors with a GraphQL error with <code class="highlighter-rouge">GraphQL::Backtrace</code>.</p>
+<p>You can wrap unhandled errors with a GraphQL error with <code class="language-plaintext highlighter-rouge">GraphQL::Backtrace</code>.</p>
 
-<p>To enable this feature for a query, add <code class="highlighter-rouge">backtrace: true</code> to your <code class="highlighter-rouge">context</code>, for example:</p>
+<p>To enable this feature for a query, add <code class="language-plaintext highlighter-rouge">backtrace: true</code> to your <code class="language-plaintext highlighter-rouge">context</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Wrap this query with backtrace annotation</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">backtrace: </span><span class="kp">true</span> <span class="p">})</span>
 </code></pre></div></div>
 
-<p>Or, to <em>always</em> wrap backtraces, add it to your schema definition with <code class="highlighter-rouge">use</code>, for example:</p>
+<p>Or, to <em>always</em> wrap backtraces, add it to your schema definition with <code class="language-plaintext highlighter-rouge">use</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Always wrap backtraces with GraphQL annotation</span>
@@ -94,9 +94,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, any unhandled errors will be wrapped by <code class="highlighter-rouge">GraphQL::Backtrace::TracedError</code>, which prints out the GraphQL backtrace, too. For example:</p>
+<p>Now, any unhandled errors will be wrapped by <code class="language-plaintext highlighter-rouge">GraphQL::Backtrace::TracedError</code>, which prints out the GraphQL backtrace, too. For example:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Unhandled error during GraphQL execution:
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Unhandled error during GraphQL execution:
 
   This is broken: Boom
     /Users/rmosolgo/code/graphql-ruby/spec/graphql/backtrace_spec.rb:27:in `block (3 levels) in &lt;top (required)&gt;'

@@ -54,7 +54,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The instrumenter must implement <code class="highlighter-rouge">#before_query(query)</code> and <code class="highlighter-rouge">#after_query(query)</code>. The return values of these methods are not used. They receive the <a href="/api-doc/1.10.10/GraphQL/Query" target="_blank" title="API docs for GraphQL::Query"><code>GraphQL::Query</code></a> instance.</p>
+<p>The instrumenter must implement <code class="language-plaintext highlighter-rouge">#before_query(query)</code> and <code class="language-plaintext highlighter-rouge">#after_query(query)</code>. The return values of these methods are not used. They receive the <a href="/api-doc/1.10.10/GraphQL/Query" target="_blank" title="API docs for GraphQL::Query"><code>GraphQL::Query</code></a> instance.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">QueryTimerInstrumentation</span>
   <span class="kp">module_function</span>

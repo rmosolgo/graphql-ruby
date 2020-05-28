@@ -63,13 +63,13 @@
 
 <h3 id="setup">Setup</h3>
 
-<p>Get your own copy of graphql-ruby by forking <a href="https://github.com/rmosolgo/graphql-ruby"><code class="highlighter-rouge">rmosolgo/graphql-ruby</code> on GitHub</a> and cloning your fork.</p>
+<p>Get your own copy of graphql-ruby by forking <a href="https://github.com/rmosolgo/graphql-ruby"><code class="language-plaintext highlighter-rouge">rmosolgo/graphql-ruby</code> on GitHub</a> and cloning your fork.</p>
 
 <p>Then, install the dependencies:</p>
 
 <ul>
-  <li>Install SQLite3 and MongoDB (eg, <code class="highlighter-rouge">brew install sqlite &amp;&amp; brew tap mongodb/brew &amp;&amp; brew install mongodb-community</code>)</li>
-  <li><code class="highlighter-rouge">bundle install</code></li>
+  <li>Install SQLite3 and MongoDB (eg, <code class="language-plaintext highlighter-rouge">brew install sqlite &amp;&amp; brew tap mongodb/brew &amp;&amp; brew install mongodb-community</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">bundle install</code></li>
   <li>Optional: <a href="https://www.colm.net/open-source/ragel/">Ragel</a> is required to build the lexer</li>
 </ul>
 
@@ -79,23 +79,23 @@
 
 <p>You can run the tests with</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake        # tests &amp; Rubocop
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake        # tests &amp; Rubocop
 bundle exec rake test   # tests only
 </code></pre></div></div>
 
-<p>You can run a <strong>specific file</strong> with <code class="highlighter-rouge">TEST=</code>:</p>
+<p>You can run a <strong>specific file</strong> with <code class="language-plaintext highlighter-rouge">TEST=</code>:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake test TEST=spec/graphql/query_spec.rb
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake test TEST=spec/graphql/query_spec.rb
 # run tests in `query_spec.rb` only
 </code></pre></div></div>
 
 <p>Alternatively, you can run a <strong>specific file</strong> with the <a href="https://github.com/qrush/m">m</a> gem:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>m spec/graphql/query_spec.rb
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>m spec/graphql/query_spec.rb
 # run tests in `query_spec.rb` only
 </code></pre></div></div>
 
-<p>You can focus on a <strong>specific example</strong> with <code class="highlighter-rouge">focus</code>:</p>
+<p>You can focus on a <strong>specific example</strong> with <code class="language-plaintext highlighter-rouge">focus</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">focus</span>
 <span class="n">it</span> <span class="s2">"does something cool"</span> <span class="k">do</span>
@@ -103,26 +103,26 @@ bundle exec rake test   # tests only
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, only <code class="highlighter-rouge">focus</code>ed tests will run:</p>
+<p>Then, only <code class="language-plaintext highlighter-rouge">focus</code>ed tests will run:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake test
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake test
 # only the focused test will be run
 </code></pre></div></div>
 
-<p>(This is provided by <code class="highlighter-rouge">minitest-focus</code>.)</p>
+<p>(This is provided by <code class="language-plaintext highlighter-rouge">minitest-focus</code>.)</p>
 
-<p>You can <strong>watch files</strong> with <code class="highlighter-rouge">guard</code>:</p>
+<p>You can <strong>watch files</strong> with <code class="language-plaintext highlighter-rouge">guard</code>:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec guard
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec guard
 </code></pre></div></div>
 
-<p>When a file in <code class="highlighter-rouge">lib/</code> is modified, <code class="highlighter-rouge">guard</code> will run the corresponding file in <code class="highlighter-rouge">spec</code>. Guard also respects <code class="highlighter-rouge"># test_via:</code> comments, so it will run that test when the file changes (if there is no corresponding file by name).</p>
+<p>When a file in <code class="language-plaintext highlighter-rouge">lib/</code> is modified, <code class="language-plaintext highlighter-rouge">guard</code> will run the corresponding file in <code class="language-plaintext highlighter-rouge">spec</code>. Guard also respects <code class="language-plaintext highlighter-rouge"># test_via:</code> comments, so it will run that test when the file changes (if there is no corresponding file by name).</p>
 
 <h4 id="integration-tests">Integration tests</h4>
 
 <p>You need to pick a specific gemfile from gemfiles/ to run integration tests. For example:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle install
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle install
 BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle exec rake test TEST=spec/integration/rails/graphql/relay/array_connection_spec.rb
 </code></pre></div></div>
 
@@ -130,38 +130,38 @@ BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle exec rake test TEST=spec/integr
 
 <p>There are system tests for checking ActionCable behavior, use:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake test:system
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake test:system
 </code></pre></div></div>
 
 <p>And JavaScript tests:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake test:js
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake test:js
 </code></pre></div></div>
 
 <h3 id="gemfiles-gemfiles-gemfiles">Gemfiles, Gemfiles, Gemfiles</h3>
 
-<p><code class="highlighter-rouge">graphql-ruby</code> has several gemfiles to ensure support for various Rails versions.</p>
+<p><code class="language-plaintext highlighter-rouge">graphql-ruby</code> has several gemfiles to ensure support for various Rails versions.</p>
 
 <p>You can run all gemfiles with</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>appraisal rake
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>appraisal rake
 </code></pre></div></div>
 
-<p>You can specify a gemfile with <code class="highlighter-rouge">BUNDLE_GEMFILE</code>, eg:</p>
+<p>You can specify a gemfile with <code class="language-plaintext highlighter-rouge">BUNDLE_GEMFILE</code>, eg:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake
 </code></pre></div></div>
 
 <h3 id="debugging-with-pry">Debugging with Pry</h3>
 
-<p><a href="https://pryrepl.org/"><code class="highlighter-rouge">pry</code></a> is included with GraphQL-Ruby’s development setup to help with debugging.</p>
+<p><a href="https://pryrepl.org/"><code class="language-plaintext highlighter-rouge">pry</code></a> is included with GraphQL-Ruby’s development setup to help with debugging.</p>
 
 <p>To pause execution in Ruby code, add:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">binding</span><span class="p">.</span><span class="nf">pry</span>
 </code></pre></div></div>
 
-<p>Then, the program will pause and your terminal will become a Ruby REPL. Feel free to use <code class="highlighter-rouge">pry</code> in your development process!</p>
+<p>Then, the program will pause and your terminal will become a Ruby REPL. Feel free to use <code class="language-plaintext highlighter-rouge">pry</code> in your development process!</p>
 
 <h3 id="running-the-benchmarks">Running the Benchmarks</h3>
 
@@ -200,23 +200,23 @@ rake bench:validate        <span class="c"># Benchmark validation of several que
   <li>If you modify existing behavior, update the tests to cover all intended behaviors for that code</li>
 </ul>
 
-<p>Don’t fret about coding style or organization.  There’s a minimal Rubocop config in <code class="highlighter-rouge">.rubocop.yml</code> which runs during CI. You can run it manually with <code class="highlighter-rouge">bundle exec rake rubocop</code>.</p>
+<p>Don’t fret about coding style or organization.  There’s a minimal Rubocop config in <code class="language-plaintext highlighter-rouge">.rubocop.yml</code> which runs during CI. You can run it manually with <code class="language-plaintext highlighter-rouge">bundle exec rake rubocop</code>.</p>
 
 <h3 id="lexer-and-parser">Lexer and Parser</h3>
 
 <p>The lexer and parser use a multistep build process:</p>
 
 <ul>
-  <li>Write the definition (<code class="highlighter-rouge">lexer.rl</code> or <code class="highlighter-rouge">parser.y</code>)</li>
-  <li>Run the generator (Ragel or Racc) to create <code class="highlighter-rouge">.rb</code> files (<code class="highlighter-rouge">lexer.rb</code> or <code class="highlighter-rouge">parser.rb</code>)</li>
-  <li><code class="highlighter-rouge">require</code> those <code class="highlighter-rouge">.rb</code> files in GraphQL-Ruby</li>
+  <li>Write the definition (<code class="language-plaintext highlighter-rouge">lexer.rl</code> or <code class="language-plaintext highlighter-rouge">parser.y</code>)</li>
+  <li>Run the generator (Ragel or Racc) to create <code class="language-plaintext highlighter-rouge">.rb</code> files (<code class="language-plaintext highlighter-rouge">lexer.rb</code> or <code class="language-plaintext highlighter-rouge">parser.rb</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">require</code> those <code class="language-plaintext highlighter-rouge">.rb</code> files in GraphQL-Ruby</li>
 </ul>
 
-<p>To update the lexer or parser, you should update their corresponding <em>definitions</em> (<code class="highlighter-rouge">lexer.rl</code> or <code class="highlighter-rouge">parser.y</code>). Then, you can run <code class="highlighter-rouge">bundle exec rake build_parser</code> to re-generate the <code class="highlighter-rouge">.rb</code> files.</p>
+<p>To update the lexer or parser, you should update their corresponding <em>definitions</em> (<code class="language-plaintext highlighter-rouge">lexer.rl</code> or <code class="language-plaintext highlighter-rouge">parser.y</code>). Then, you can run <code class="language-plaintext highlighter-rouge">bundle exec rake build_parser</code> to re-generate the <code class="language-plaintext highlighter-rouge">.rb</code> files.</p>
 
 <p>You will need Ragel to build the lexer (see above).</p>
 
-<p>If you start <strong>guard</strong> (<code class="highlighter-rouge">bundle exec guard</code>), the <code class="highlighter-rouge">.rb</code> files will be rebuilt whenever the definition files are modified.</p>
+<p>If you start <strong>guard</strong> (<code class="language-plaintext highlighter-rouge">bundle exec guard</code>), the <code class="language-plaintext highlighter-rouge">.rb</code> files will be rebuilt whenever the definition files are modified.</p>
 
 <h4 id="install-ragel-and-colm-on-a-mac">Install Ragel and Colm on a Mac</h4>
 
@@ -242,25 +242,25 @@ Download ragel from http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz</p>
 
 <h3 id="website">Website</h3>
 
-<p>To update the website, update the <code class="highlighter-rouge">.md</code> files in <code class="highlighter-rouge">guides/</code>.</p>
+<p>To update the website, update the <code class="language-plaintext highlighter-rouge">.md</code> files in <code class="language-plaintext highlighter-rouge">guides/</code>.</p>
 
 <p>To preview your changes, you can serve the website locally:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake site:serve
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake site:serve
 </code></pre></div></div>
 
-<p>Then visit <code class="highlighter-rouge">http://localhost:4000</code>.</p>
+<p>Then visit <code class="language-plaintext highlighter-rouge">http://localhost:4000</code>.</p>
 
 <p>To publish the website with GitHub pages, run the Rake task:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake site:publish
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake site:publish
 </code></pre></div></div>
 
 <h4 id="search-index">Search Index</h4>
 
 <p>GraphQL-Ruby’s search index is powered by Algolia. To update the index, you need the API key in an environment variable:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ export ALGOLIA_API_KEY=...
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ export ALGOLIA_API_KEY=...
 </code></pre></div></div>
 
 <p>Without this key, the search index will fall out-of-sync with the website. Contact @rmosolgo to gain access to this key.</p>
@@ -271,32 +271,32 @@ Download ragel from http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz</p>
 
 <p>First, generate local copies of the docs you want to publish:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake apidocs:gen_version[1.8.0] # for example, generate docs that you want to publish
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake apidocs:gen_version[1.8.0] # for example, generate docs that you want to publish
 </code></pre></div></div>
 
 <p>Then, check them out locally:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake site:serve
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake site:serve
 # then visit http://localhost:4000/api-doc/1.8.0/
 </code></pre></div></div>
 
 <p>Then, publish them as part of the whole site:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake site:publish
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake site:publish
 </code></pre></div></div>
 
 <p>Finally, check your work by visiting the docs on the website.</p>
 
 <h3 id="versioning">Versioning</h3>
 
-<p>GraphQL-Ruby does <em>not</em> attempt to deliver “semantic versioning” for the reasons described in <code class="highlighter-rouge">jashkenas</code>’
+<p>GraphQL-Ruby does <em>not</em> attempt to deliver “semantic versioning” for the reasons described in <code class="language-plaintext highlighter-rouge">jashkenas</code>’
 s post, <a href="https://gist.github.com/jashkenas/cbd2b088e20279ae2c8e">“Why Semantic Versioning Isn’t”</a>. Instead, the following scheme is used as a guideline:</p>
 
 <ul>
-  <li>Version numbers consist of three parts, <code class="highlighter-rouge">MAJOR.MINOR.PATCH</code></li>
-  <li><strong><code class="highlighter-rouge">PATCH</code></strong> version indicates bug fixes or small features for specific use cases. Ideally, you can upgrade patch versions with only a quick skim of the changelog.</li>
-  <li><strong><code class="highlighter-rouge">MINOR</code></strong> version indicates significant additions, internal refactors, or small breaking changes. When upgrading a minor version, check the changelog for any new features or breaking changes which apply to your system. The changelog will always include an upgrade path for any breaking changes. Minor versions may also include deprecation warnings to warn about upcoming breaking changes.</li>
-  <li><strong><code class="highlighter-rouge">MAJOR</code></strong> version indicates significant breaking changes. Do not expect code to run without some modification, especially if the code yielded deprecation warnings.</li>
+  <li>Version numbers consist of three parts, <code class="language-plaintext highlighter-rouge">MAJOR.MINOR.PATCH</code></li>
+  <li><strong><code class="language-plaintext highlighter-rouge">PATCH</code></strong> version indicates bug fixes or small features for specific use cases. Ideally, you can upgrade patch versions with only a quick skim of the changelog.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">MINOR</code></strong> version indicates significant additions, internal refactors, or small breaking changes. When upgrading a minor version, check the changelog for any new features or breaking changes which apply to your system. The changelog will always include an upgrade path for any breaking changes. Minor versions may also include deprecation warnings to warn about upcoming breaking changes.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">MAJOR</code></strong> version indicates significant breaking changes. Do not expect code to run without some modification, especially if the code yielded deprecation warnings.</li>
 </ul>
 
 <p>This policy is inspired by the <a href="https://www.ruby-lang.org/en/news/2013/12/21/ruby-version-policy-changes-with-2-1-0/">Ruby 2.1.0+ version policy</a>.</p>
@@ -312,30 +312,30 @@ s post, <a href="https://gist.github.com/jashkenas/cbd2b088e20279ae2c8e">“Why 
 <p>To cut a release:</p>
 
 <ul>
-  <li>Update <code class="highlighter-rouge">CHANGELOG.md</code> for the new version:
+  <li>Update <code class="language-plaintext highlighter-rouge">CHANGELOG.md</code> for the new version:
     <ul>
       <li>Add a new heading for the new version, and paste the four categories of changes into the new section</li>
       <li>Open the GitHub milestone corresponding to the new version</li>
       <li>Check each pull request and put it in the category (or categories) that it belongs in
         <ul>
-          <li>If a change affects the default behavior of GraphQL-Ruby in a disruptive way, add it to <code class="highlighter-rouge">### Breaking Changes</code> and include migration notes if possible</li>
+          <li>If a change affects the default behavior of GraphQL-Ruby in a disruptive way, add it to <code class="language-plaintext highlighter-rouge">### Breaking Changes</code> and include migration notes if possible</li>
           <li>Include the PR number beside the change description for future reference</li>
         </ul>
       </li>
     </ul>
   </li>
-  <li>Update <code class="highlighter-rouge">lib/graphql/version.rb</code> with the new version number</li>
+  <li>Update <code class="language-plaintext highlighter-rouge">lib/graphql/version.rb</code> with the new version number</li>
   <li>Commit changes to master</li>
   <li>Release to RubyGems
     <ul>
-      <li>Without 2FA 😢: <code class="highlighter-rouge">bundle exec rake release</code></li>
-      <li>With 2FA 😎: <code class="highlighter-rouge">bundle exec rake build</code> then <code class="highlighter-rouge">gem push pkg/graphql-&lt;version&gt;.gem</code>, <code class="highlighter-rouge">git tag v&lt;version&gt; &amp;&amp; git push v&lt;version&gt;</code></li>
+      <li>Without 2FA 😢: <code class="language-plaintext highlighter-rouge">bundle exec rake release</code></li>
+      <li>With 2FA 😎: <code class="language-plaintext highlighter-rouge">bundle exec rake build</code> then <code class="language-plaintext highlighter-rouge">gem push pkg/graphql-&lt;version&gt;.gem</code>, <code class="language-plaintext highlighter-rouge">git tag v&lt;version&gt; &amp;&amp; git push v&lt;version&gt;</code></li>
     </ul>
   </li>
   <li>Update the website:
     <ul>
-      <li>Generate new API docs with <code class="highlighter-rouge">bundle exec rake apidocs:gen_version[&lt;your.version.number&gt;]</code></li>
-      <li>Push them to the website with <code class="highlighter-rouge">bundle exec rake site:publish</code></li>
+      <li>Generate new API docs with <code class="language-plaintext highlighter-rouge">bundle exec rake apidocs:gen_version[&lt;your.version.number&gt;]</code></li>
+      <li>Push them to the website with <code class="language-plaintext highlighter-rouge">bundle exec rake site:publish</code></li>
     </ul>
   </li>
   <li>Celebrate 🎊  !</li>

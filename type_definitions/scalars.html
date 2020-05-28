@@ -50,14 +50,14 @@
   <p>Scalars are “leaf” values in GraphQL. There are several built-in scalars, and you can define custom scalars, too. (<a href="/type_definitions/enums">Enums</a> are also leaf values.) The built-in scalars are:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">String</code>, like a JSON or Ruby string</li>
-  <li><code class="highlighter-rouge">Int</code>, like a JSON or Ruby integer</li>
-  <li><code class="highlighter-rouge">Float</code>, like a JSON or Ruby floating point decimal</li>
-  <li><code class="highlighter-rouge">Boolean</code>, like a JSON or Ruby boolean (<code class="highlighter-rouge">true</code> or <code class="highlighter-rouge">false</code>)</li>
-  <li><code class="highlighter-rouge">ID</code>, which a specialized <code class="highlighter-rouge">String</code> for representing unique object identifiers</li>
-  <li><code class="highlighter-rouge">ISO8601DateTime</code>, an ISO 8601-encoded datetime</li>
-  <li><code class="highlighter-rouge">ISO8601Date</code>, an ISO 8601-encoded date</li>
-  <li><code class="highlighter-rouge">JSON</code>, ⚠ This returns arbitrary JSON (Ruby hashes, arrays, strings, integers, floats, booleans and nils). Take care: by using this type, you completely lose all GraphQL type safety. Consider building object types for your data instead.</li>
+  <li><code class="language-plaintext highlighter-rouge">String</code>, like a JSON or Ruby string</li>
+  <li><code class="language-plaintext highlighter-rouge">Int</code>, like a JSON or Ruby integer</li>
+  <li><code class="language-plaintext highlighter-rouge">Float</code>, like a JSON or Ruby floating point decimal</li>
+  <li><code class="language-plaintext highlighter-rouge">Boolean</code>, like a JSON or Ruby boolean (<code class="language-plaintext highlighter-rouge">true</code> or <code class="language-plaintext highlighter-rouge">false</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">ID</code>, which a specialized <code class="language-plaintext highlighter-rouge">String</code> for representing unique object identifiers</li>
+  <li><code class="language-plaintext highlighter-rouge">ISO8601DateTime</code>, an ISO 8601-encoded datetime</li>
+  <li><code class="language-plaintext highlighter-rouge">ISO8601Date</code>, an ISO 8601-encoded date</li>
+  <li><code class="language-plaintext highlighter-rouge">JSON</code>, ⚠ This returns arbitrary JSON (Ruby hashes, arrays, strings, integers, floats, booleans and nils). Take care: by using this type, you completely lose all GraphQL type safety. Consider building object types for your data instead.</li>
 </ul>
 
 <p>Fields can return built-in scalars by referencing them by name:</p>
@@ -127,13 +127,13 @@
 <p>Your class must define two class methods:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">self.coerce_input</code> takes a GraphQL input and converts it into a Ruby value</li>
-  <li><code class="highlighter-rouge">self.coerce_result</code> takes the return value of a field and prepares it for the GraphQL response JSON</li>
+  <li><code class="language-plaintext highlighter-rouge">self.coerce_input</code> takes a GraphQL input and converts it into a Ruby value</li>
+  <li><code class="language-plaintext highlighter-rouge">self.coerce_result</code> takes the return value of a field and prepares it for the GraphQL response JSON</li>
 </ul>
 
-<p>When incoming data is incorrect, the method may raise <a href="/api-doc/1.10.10/GraphQL/CoercionError" target="_blank" title="API docs for GraphQL::CoercionError"><code>GraphQL::CoercionError</code></a>, which will be returned to the client in the <code class="highlighter-rouge">"errors"</code> key.</p>
+<p>When incoming data is incorrect, the method may raise <a href="/api-doc/1.10.10/GraphQL/CoercionError" target="_blank" title="API docs for GraphQL::CoercionError"><code>GraphQL::CoercionError</code></a>, which will be returned to the client in the <code class="language-plaintext highlighter-rouge">"errors"</code> key.</p>
 
-<p>Scalar classes are never initialized; only their <code class="highlighter-rouge">.coerce_*</code> methods are called at runtime.</p>
+<p>Scalar classes are never initialized; only their <code class="language-plaintext highlighter-rouge">.coerce_*</code> methods are called at runtime.</p>
 
 </div>
 <p class="guide-footer">

@@ -47,14 +47,14 @@
 
 <h1 class="guide-header">Top-level "errors"</h1>
 <div class="guide-container">
-  <p>The GraphQL specification <a href="https://graphql.github.io/graphql-spec/June2018/#sec-Errors">allows for a top-level <code class="highlighter-rouge">"errors"</code> key</a> in the response which may contain information about what went wrong during execution. For example:</p>
+  <p>The GraphQL specification <a href="https://graphql.github.io/graphql-spec/June2018/#sec-Errors">allows for a top-level <code class="language-plaintext highlighter-rouge">"errors"</code> key</a> in the response which may contain information about what went wrong during execution. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
   <span class="s2">"errors"</span> <span class="o">=&gt;</span> <span class="p">[</span> <span class="o">...</span> <span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>The response may include <em>both</em> <code class="highlighter-rouge">"data"</code> and <code class="highlighter-rouge">"errors"</code> in the case of a partial success:</p>
+<p>The response may include <em>both</em> <code class="language-plaintext highlighter-rouge">"data"</code> and <code class="language-plaintext highlighter-rouge">"errors"</code> in the case of a partial success:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
   <span class="s2">"data"</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span> <span class="c1"># parts of the query that ran successfully</span>
@@ -66,18 +66,18 @@
 
 <p>In general, top-level errors should only be used for exceptional circumstances when a developer should be made aware that the system had some kind of problem.</p>
 
-<p>For example, the GraphQL specification says that when a non-null field returns <code class="highlighter-rouge">nil</code>, an error should be added to the <code class="highlighter-rouge">"errors"</code> key. This kind of error is not recoverable by the client. Instead, something on the server should be fixed to handle this case.</p>
+<p>For example, the GraphQL specification says that when a non-null field returns <code class="language-plaintext highlighter-rouge">nil</code>, an error should be added to the <code class="language-plaintext highlighter-rouge">"errors"</code> key. This kind of error is not recoverable by the client. Instead, something on the server should be fixed to handle this case.</p>
 
 <p>When you want to notify a client some kind of recoverable issue, consider making error messages part of the schema, for example, as in <a href="/mutations/mutation_errors">mutation errors</a>.</p>
 
 <h2 id="adding-errors-to-the-array">Adding Errors to the Array</h2>
 
-<p>In GraphQL-Ruby, you can add entries to this array by raising <code class="highlighter-rouge">GraphQL::ExecutionError</code> (or a subclass of it), for example:</p>
+<p>In GraphQL-Ruby, you can add entries to this array by raising <code class="language-plaintext highlighter-rouge">GraphQL::ExecutionError</code> (or a subclass of it), for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"Can't continue with this query"</span>
 </code></pre></div></div>
 
-<p>When this error is raised, its <code class="highlighter-rouge">message</code> will be added to the <code class="highlighter-rouge">"errors"</code> key and GraphQL-Ruby will automatically add the <code class="highlighter-rouge">line</code>, <code class="highlighter-rouge">column</code> and <code class="highlighter-rouge">path</code> to it. So, the above error might be:</p>
+<p>When this error is raised, its <code class="language-plaintext highlighter-rouge">message</code> will be added to the <code class="language-plaintext highlighter-rouge">"errors"</code> key and GraphQL-Ruby will automatically add the <code class="language-plaintext highlighter-rouge">line</code>, <code class="language-plaintext highlighter-rouge">column</code> and <code class="language-plaintext highlighter-rouge">path</code> to it. So, the above error might be:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
   <span class="s2">"errors"</span> <span class="o">=&gt;</span> <span class="p">[</span>
@@ -97,24 +97,24 @@
 
 <h2 id="customizing-error-json">Customizing Error JSON</h2>
 
-<p>The default error JSON includes <code class="highlighter-rouge">"message"</code>, <code class="highlighter-rouge">"locations"</code> and <code class="highlighter-rouge">"path"</code>. The <a href="https://graphql.github.io/graphql-spec/draft/#example-fce18">forthcoming version</a> of the GraphQL spec recommends putting custom data in the <code class="highlighter-rouge">"extensions"</code> key of the error JSON.</p>
+<p>The default error JSON includes <code class="language-plaintext highlighter-rouge">"message"</code>, <code class="language-plaintext highlighter-rouge">"locations"</code> and <code class="language-plaintext highlighter-rouge">"path"</code>. The <a href="https://graphql.github.io/graphql-spec/draft/#example-fce18">forthcoming version</a> of the GraphQL spec recommends putting custom data in the <code class="language-plaintext highlighter-rouge">"extensions"</code> key of the error JSON.</p>
 
 <p>You can customize this in two ways:</p>
 
 <ul>
-  <li>Pass <code class="highlighter-rouge">extensions:</code> when raising an error, for example:
+  <li>Pass <code class="language-plaintext highlighter-rouge">extensions:</code> when raising an error, for example:
     <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Something went wrong"</span><span class="p">,</span> <span class="ss">extensions: </span><span class="p">{</span> <span class="s2">"code"</span> <span class="o">=&gt;</span> <span class="s2">"BROKEN"</span> <span class="p">})</span>
 </code></pre></div>    </div>
-    <p>In this case, <code class="highlighter-rouge">"extensions" =&gt; { "code" =&gt; "BROKEN" }</code> will be added to the error JSON.</p>
+    <p>In this case, <code class="language-plaintext highlighter-rouge">"extensions" =&gt; { "code" =&gt; "BROKEN" }</code> will be added to the error JSON.</p>
   </li>
-  <li>Override <code class="highlighter-rouge">#to_h</code> in a subclass of <code class="highlighter-rouge">GraphQL::ExecutionError</code>, for example:
+  <li>Override <code class="language-plaintext highlighter-rouge">#to_h</code> in a subclass of <code class="language-plaintext highlighter-rouge">GraphQL::ExecutionError</code>, for example:
     <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ServiceUnavailableError</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span>
   <span class="k">def</span> <span class="nf">to_h</span>
     <span class="k">super</span><span class="p">.</span><span class="nf">merge</span><span class="p">({</span> <span class="s2">"extensions"</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="s2">"code"</span> <span class="o">=&gt;</span> <span class="s2">"SERVICE_UNAVAILABLE"</span><span class="p">}</span> <span class="p">})</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div>    </div>
-    <p>Now, <code class="highlighter-rouge">"extensions" =&gt; { "code" =&gt; "SERVICE_UNAVAILABLE" }</code> will be added to the error JSON.</p>
+    <p>Now, <code class="language-plaintext highlighter-rouge">"extensions" =&gt; { "code" =&gt; "SERVICE_UNAVAILABLE" }</code> will be added to the error JSON.</p>
   </li>
 </ul>
 

@@ -59,7 +59,7 @@
 
 <h3 id="using-an-extension">Using an extension</h3>
 
-<p>Defined extensions can be added to fields using the <code class="highlighter-rouge">extensions: [...]</code> option or the <code class="highlighter-rouge">extension(...)</code> method:</p>
+<p>Defined extensions can be added to fields using the <code class="language-plaintext highlighter-rouge">extensions: [...]</code> option or the <code class="language-plaintext highlighter-rouge">extension(...)</code> method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">extensions: </span><span class="p">[</span><span class="no">UpcaseExtension</span><span class="p">]</span>
 <span class="c1"># or:</span>
@@ -72,7 +72,7 @@
 
 <h3 id="modifying-field-configuration">Modifying field configuration</h3>
 
-<p>When extensions are attached, they are initialized with a <code class="highlighter-rouge">field:</code> and <code class="highlighter-rouge">options:</code>. Then, <code class="highlighter-rouge">#apply</code> is called, when they may extend the field they’re attached to. For example:</p>
+<p>When extensions are attached, they are initialized with a <code class="language-plaintext highlighter-rouge">field:</code> and <code class="language-plaintext highlighter-rouge">options:</code>. Then, <code class="language-plaintext highlighter-rouge">#apply</code> is called, when they may extend the field they’re attached to. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SearchableExtension</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">FieldExtension</span>
   <span class="k">def</span> <span class="nf">apply</span>
@@ -88,15 +88,15 @@
 
 <p>Extensions have two hooks that wrap field resolution. Since GraphQL-Ruby supports deferred execution, these hooks <em>might not</em> be called back-to-back.</p>
 
-<p>First, <a href="/api-doc/1.10.10/GraphQL/Schema/FieldExtension#resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension#resolve"><code>GraphQL::Schema::FieldExtension#resolve</code></a> is called. <code class="highlighter-rouge">resolve</code> should <code class="highlighter-rouge">yield(object, arguments)</code> to continue execution. If it doesn’t <code class="highlighter-rouge">yield</code>, then the underlying field won’t be called. Whatever <code class="highlighter-rouge">#resolve</code> returns will be used for continuing execution.</p>
+<p>First, <a href="/api-doc/1.10.10/GraphQL/Schema/FieldExtension#resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension#resolve"><code>GraphQL::Schema::FieldExtension#resolve</code></a> is called. <code class="language-plaintext highlighter-rouge">resolve</code> should <code class="language-plaintext highlighter-rouge">yield(object, arguments)</code> to continue execution. If it doesn’t <code class="language-plaintext highlighter-rouge">yield</code>, then the underlying field won’t be called. Whatever <code class="language-plaintext highlighter-rouge">#resolve</code> returns will be used for continuing execution.</p>
 
-<p>After resolution and <em>after</em> syncing lazy values (like <code class="highlighter-rouge">Promise</code>s from <code class="highlighter-rouge">graphql-batch</code>), <a href="/api-doc/1.10.10/GraphQL/Schema/FieldExtension#after_resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension#after_resolve"><code>GraphQL::Schema::FieldExtension#after_resolve</code></a> is called. Whatever that method returns will be used as the field’s return value.</p>
+<p>After resolution and <em>after</em> syncing lazy values (like <code class="language-plaintext highlighter-rouge">Promise</code>s from <code class="language-plaintext highlighter-rouge">graphql-batch</code>), <a href="/api-doc/1.10.10/GraphQL/Schema/FieldExtension#after_resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension#after_resolve"><code>GraphQL::Schema::FieldExtension#after_resolve</code></a> is called. Whatever that method returns will be used as the field’s return value.</p>
 
 <p>See the linked API docs for the parameters of those methods.</p>
 
 <h4 id="execution-memo">Execution “memo”</h4>
 
-<p>One parameter to <code class="highlighter-rouge">after_resolve</code> deserves special attention: <code class="highlighter-rouge">memo:</code>. <code class="highlighter-rouge">resolve</code> <em>may</em> yield a third value. For example:</p>
+<p>One parameter to <code class="language-plaintext highlighter-rouge">after_resolve</code> deserves special attention: <code class="language-plaintext highlighter-rouge">memo:</code>. <code class="language-plaintext highlighter-rouge">resolve</code> <em>may</em> yield a third value. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">object</span><span class="p">:,</span> <span class="n">arguments</span><span class="p">:,</span> <span class="o">**</span><span class="n">rest</span><span class="p">)</span>
   <span class="c1"># yield the current time as `memo`</span>
@@ -104,7 +104,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>If a third value is yielded, it will be passed to <code class="highlighter-rouge">after_resolve</code> as <code class="highlighter-rouge">memo:</code>, for example:</p>
+<p>If a third value is yielded, it will be passed to <code class="language-plaintext highlighter-rouge">after_resolve</code> as <code class="language-plaintext highlighter-rouge">memo:</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">after_resolve</span><span class="p">(</span><span class="n">value</span><span class="p">:,</span> <span class="n">memo</span><span class="p">:,</span> <span class="o">**</span><span class="n">rest</span><span class="p">)</span>
   <span class="nb">puts</span> <span class="s2">"Elapsed: </span><span class="si">#{</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">to_i</span> <span class="o">-</span> <span class="n">memo</span><span class="si">}</span><span class="s2">"</span>
@@ -113,18 +113,18 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>This allows the <code class="highlighter-rouge">resolve</code> hook to pass data to <code class="highlighter-rouge">after_resolve</code>.</p>
+<p>This allows the <code class="language-plaintext highlighter-rouge">resolve</code> hook to pass data to <code class="language-plaintext highlighter-rouge">after_resolve</code>.</p>
 
 <p>Instance variables may not be used because, in a given GraphQL query, the same field may be resolved several times concurrently, and that would result in overriding the instance variable in an unpredictable way. (In fact, extensions are frozen to prevent instance variable writes.)</p>
 
 <h3 id="extension-options">Extension options</h3>
 
-<p>The <code class="highlighter-rouge">extension(...)</code> method takes an optional second argument, for example:</p>
+<p>The <code class="language-plaintext highlighter-rouge">extension(...)</code> method takes an optional second argument, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">extension</span><span class="p">(</span><span class="no">LimitExtension</span><span class="p">,</span> <span class="ss">limit: </span><span class="mi">20</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>In this case, <code class="highlighter-rouge">{limit: 20}</code> will be passed as <code class="highlighter-rouge">options:</code> to <code class="highlighter-rouge">#initialize</code> and <code class="highlighter-rouge">options[:limit]</code> will be <code class="highlighter-rouge">20</code>.</p>
+<p>In this case, <code class="language-plaintext highlighter-rouge">{limit: 20}</code> will be passed as <code class="language-plaintext highlighter-rouge">options:</code> to <code class="language-plaintext highlighter-rouge">#initialize</code> and <code class="language-plaintext highlighter-rouge">options[:limit]</code> will be <code class="language-plaintext highlighter-rouge">20</code>.</p>
 
 <p>For example, options can be used for modifying execution:</p>
 

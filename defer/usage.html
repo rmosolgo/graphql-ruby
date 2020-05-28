@@ -56,7 +56,7 @@
 
 <h1 class="guide-header">Usage</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">@defer</code> is a <a href="https://graphql.org/learn/queries/#directives">GraphQL directive</a> which instructs the server to execute the field in a special way:</p>
+  <p><code class="language-plaintext highlighter-rouge">@defer</code> is a <a href="https://graphql.org/learn/queries/#directives">GraphQL directive</a> which instructs the server to execute the field in a special way:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">query</span><span class="w"> </span><span class="n">GetPlayerInfo</span><span class="p">(</span><span class="nv">$handle</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!){</span><span class="w">
   </span><span class="n">player</span><span class="p">(</span><span class="n">handle</span><span class="p">:</span><span class="w"> </span><span class="nv">$handle</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -67,16 +67,16 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>The directives <code class="highlighter-rouge">@skip</code> and <code class="highlighter-rouge">@include</code> are built into any GraphQL server and client, but <code class="highlighter-rouge">@defer</code> requires special attention.</p>
+<p>The directives <code class="language-plaintext highlighter-rouge">@skip</code> and <code class="language-plaintext highlighter-rouge">@include</code> are built into any GraphQL server and client, but <code class="language-plaintext highlighter-rouge">@defer</code> requires special attention.</p>
 
 <p>Apollo-Client has <a href="https://www.apollographql.com/docs/react/features/defer-support.html">experimental support</a>
 but it may <a href="https://github.com/apollographql/apollo-client/issues/4484">have some issues</a>, so you can try <a href="https://github.com/rmosolgo/apollo-client">this updated fork</a> while they’re worked out.</p>
 
-<p>Want to use <code class="highlighter-rouge">@defer</code> with another client? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Client support for @defer with ..." target="_blank">open an issue</a> or email <code class="highlighter-rouge">support@graphql.pro</code> and we’ll dig in!</p>
+<p>Want to use <code class="language-plaintext highlighter-rouge">@defer</code> with another client? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Client support for @defer with ..." target="_blank">open an issue</a> or email <code class="language-plaintext highlighter-rouge">support@graphql.pro</code> and we’ll dig in!</p>
 
 <h2 id="next-steps">Next Steps</h2>
 
-<p><a href="/defer/setup">Set up your server</a> to support <code class="highlighter-rouge">@defer</code>.</p>
+<p><a href="/defer/setup">Set up your server</a> to support <code class="language-plaintext highlighter-rouge">@defer</code>.</p>
 
 </div>
 <p class="guide-footer">

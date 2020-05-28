@@ -60,19 +60,19 @@
 
 <hr />
 
-<p><code class="highlighter-rouge">GraphQL::Pro</code> includes a mechanism for serving <em>stable</em> cursors for <code class="highlighter-rouge">ActiveRecord::Relation</code>s based on column values. If objects are created or destroyed during pagination, the list of items won’t be disrupted.</p>
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Pro</code> includes a mechanism for serving <em>stable</em> cursors for <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code>s based on column values. If objects are created or destroyed during pagination, the list of items won’t be disrupted.</p>
 
-<p>A new <code class="highlighter-rouge">RelationConnection</code> is applied by default. It is backwards-compatible with existing offset-based cursors. See <a href="#opting-out">“Opting Out”</a> below if you wish to continue using offset-based pagination.</p>
+<p>A new <code class="language-plaintext highlighter-rouge">RelationConnection</code> is applied by default. It is backwards-compatible with existing offset-based cursors. See <a href="#opting-out">“Opting Out”</a> below if you wish to continue using offset-based pagination.</p>
 
 <p>To enforce the opacity of your cursors, consider an <a href="/pro/encoders">encrypted encoder</a>.</p>
 
 <h2 id="whats-the-difference">What’s the difference?</h2>
 
-<p>The default <code class="highlighter-rouge">RelationConnection</code> (which turns an <code class="highlighter-rouge">ActiveRecord::Relation</code> into a Relay-compatible connection) uses <em>offset</em> as a cursor. This naive approach is sufficient for many cases, but it’s subject to a specific set of bugs.</p>
+<p>The default <code class="language-plaintext highlighter-rouge">RelationConnection</code> (which turns an <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code> into a Relay-compatible connection) uses <em>offset</em> as a cursor. This naive approach is sufficient for many cases, but it’s subject to a specific set of bugs.</p>
 
-<p>Let’s say you’re looking at the second page of 10 items (<code class="highlighter-rouge">LIMIT 10 OFFSET 10</code>). During that time, one of the items on page 1 is deleted. When you navigate to page 3 (<code class="highlighter-rouge">LIMIT 10 OFFSET 20</code>), you’ll actually <em>miss</em> one item. The entire list shifted “up” one position when a previous item was deleted.</p>
+<p>Let’s say you’re looking at the second page of 10 items (<code class="language-plaintext highlighter-rouge">LIMIT 10 OFFSET 10</code>). During that time, one of the items on page 1 is deleted. When you navigate to page 3 (<code class="language-plaintext highlighter-rouge">LIMIT 10 OFFSET 20</code>), you’ll actually <em>miss</em> one item. The entire list shifted “up” one position when a previous item was deleted.</p>
 
-<p>To solve this bug, we should use a <em>value</em> to page through items (instead of <em>offset</em>). For example, if items are ordered by <code class="highlighter-rouge">id</code>, use the <code class="highlighter-rouge">id</code> for pagination:</p>
+<p>To solve this bug, we should use a <em>value</em> to page through items (instead of <em>offset</em>). For example, if items are ordered by <code class="language-plaintext highlighter-rouge">id</code>, use the <code class="language-plaintext highlighter-rouge">id</code> for pagination:</p>
 
 <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">LIMIT</span> <span class="mi">10</span>                      <span class="c1">-- page 1</span>
 <span class="k">WHERE</span> <span class="n">id</span> <span class="o">&gt;</span> <span class="p">:</span><span class="n">last_id</span> <span class="k">LIMIT</span> <span class="mi">10</span>  <span class="c1">-- page 2</span>
@@ -87,13 +87,13 @@
 <p>Keep these points in mind when using value-based cursors:</p>
 
 <ul>
-  <li>For a given <code class="highlighter-rouge">ActiveRecord::Relation</code>, only columns of that specific model can be used in pagination. (This is because column names are turned into <code class="highlighter-rouge">WHERE</code> conditions.)</li>
-  <li><code class="highlighter-rouge">RelationConnection</code> may add an additional <code class="highlighter-rouge">primary_key</code> ordering to ensure that the cursor value is unique. This behavior is inspired by <code class="highlighter-rouge">Relation#reverse_order</code> which also assumes that <code class="highlighter-rouge">primary_key</code> is the default sort.</li>
+  <li>For a given <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code>, only columns of that specific model can be used in pagination. (This is because column names are turned into <code class="language-plaintext highlighter-rouge">WHERE</code> conditions.)</li>
+  <li><code class="language-plaintext highlighter-rouge">RelationConnection</code> may add an additional <code class="language-plaintext highlighter-rouge">primary_key</code> ordering to ensure that the cursor value is unique. This behavior is inspired by <code class="language-plaintext highlighter-rouge">Relation#reverse_order</code> which also assumes that <code class="language-plaintext highlighter-rouge">primary_key</code> is the default sort.</li>
 </ul>
 
 <h2 id="grouped-relations">Grouped Relations</h2>
 
-<p>When using a grouped <code class="highlighter-rouge">ActiveRecord::Relation</code>, include a unique ID in your sort to ensure that each row in the result has a unique cursor. For example:</p>
+<p>When using a grouped <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code>, include a unique ID in your sort to ensure that each row in the result has a unique cursor. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Bad: If two results have the same `max(price)`,</span>
 <span class="c1"># they will be identical from a pagination perspective:</span>
@@ -103,13 +103,13 @@
 <span class="no">Products</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"max(price) as price"</span><span class="p">).</span><span class="nf">group</span><span class="p">(</span><span class="s2">"category_id"</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s2">"price, category_id"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>For ungrouped relations, this issue is handled automatically by adding the model’s <code class="highlighter-rouge">primary_key</code> to the order values.</p>
+<p>For ungrouped relations, this issue is handled automatically by adding the model’s <code class="language-plaintext highlighter-rouge">primary_key</code> to the order values.</p>
 
-<p>If you provide an unordered, grouped relation, <code class="highlighter-rouge">GraphQL::Pro::RelationConnection::InvalidRelationError</code> will be raised because an unordered relation <em>cannot</em> be paginated in a stable way.</p>
+<p>If you provide an unordered, grouped relation, <code class="language-plaintext highlighter-rouge">GraphQL::Pro::RelationConnection::InvalidRelationError</code> will be raised because an unordered relation <em>cannot</em> be paginated in a stable way.</p>
 
 <h2 id="backwards-compatibility">Backwards Compatibility</h2>
 
-<p><code class="highlighter-rouge">GraphQL::Pro</code>’s <code class="highlighter-rouge">RelationConnection</code> is backwards-compatible. If it receives an offset-based cursor, it uses that cursor for the next resolution, then returns value-based cursors in the next result.</p>
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Pro</code>’s <code class="language-plaintext highlighter-rouge">RelationConnection</code> is backwards-compatible. If it receives an offset-based cursor, it uses that cursor for the next resolution, then returns value-based cursors in the next result.</p>
 
 <p>If you’re also switching to <a href="/pro/encoders">encrypted cursors</a>, you’ll need a <a href="/pro/encoders#versioning">versioned encoder</a>, too. This way, <em>both</em> unencrypted <em>and</em> encrypted cursors will be accepted! For example:</p>
 
@@ -136,7 +136,7 @@
 
 <h2 id="opting-out">Opting Out</h2>
 
-<p>If you don’t want <code class="highlighter-rouge">GraphQL::Pro</code>’s new cursor behavior, re-register the offset-based <code class="highlighter-rouge">RelationConnection</code>:</p>
+<p>If you don’t want <code class="language-plaintext highlighter-rouge">GraphQL::Pro</code>’s new cursor behavior, re-register the offset-based <code class="language-plaintext highlighter-rouge">RelationConnection</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
 <span class="c1"># Always use the offset-based connection, override `GraphQL::Pro::RelationConnection`</span>
@@ -147,7 +147,7 @@
 
 <h2 id="activerecord-versions">ActiveRecord Versions</h2>
 
-<p><code class="highlighter-rouge">GraphQL::Pro::RelationConnection</code> supports ActiveRecord <code class="highlighter-rouge">&gt;= 4.1.0</code>.</p>
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Pro::RelationConnection</code> supports ActiveRecord <code class="language-plaintext highlighter-rouge">&gt;= 4.1.0</code>.</p>
 
 </div>
 <p class="guide-footer">

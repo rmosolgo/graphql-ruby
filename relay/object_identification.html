@@ -51,12 +51,12 @@
 
 <ul>
   <li><strong>Caching</strong>: Unique IDs are used as primary keys in Relay’s client-side cache.</li>
-  <li><strong>Refetching</strong>: Relay uses unique IDs to refetch objects when it determines that its cache is stale. (It uses the <code class="highlighter-rouge">Query.node</code> field to refetch objects.)</li>
+  <li><strong>Refetching</strong>: Relay uses unique IDs to refetch objects when it determines that its cache is stale. (It uses the <code class="language-plaintext highlighter-rouge">Query.node</code> field to refetch objects.)</li>
 </ul>
 
 <h3 id="defining-uuids">Defining UUIDs</h3>
 
-<p>You must provide a function for generating UUIDs and fetching objects with them. In your schema, define <code class="highlighter-rouge">self.id_from_object</code> and <code class="highlighter-rouge">self.object_from_id</code>:</p>
+<p>You must provide a function for generating UUIDs and fetching objects with them. In your schema, define <code class="language-plaintext highlighter-rouge">self.id_from_object</code> and <code class="language-plaintext highlighter-rouge">self.object_from_id</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
@@ -73,7 +73,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>An unencrypted ID generator is provided in the gem. It uses <code class="highlighter-rouge">Base64</code> to encode values. You can use it like this:</p>
+<p>An unencrypted ID generator is provided in the gem. It uses <code class="language-plaintext highlighter-rouge">Base64</code> to encode values. You can use it like this:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Create UUIDs by joining the type name &amp; ID, then base64-encoding it</span>
@@ -92,7 +92,7 @@
 
 <h3 id="node-interface">Node interface</h3>
 
-<p>One requirement for Relay’s object management is implementing the <code class="highlighter-rouge">"Node"</code> interface.</p>
+<p>One requirement for Relay’s object management is implementing the <code class="language-plaintext highlighter-rouge">"Node"</code> interface.</p>
 
 <p>To implement the node interface, add <a href="/api-doc/1.10.10/GraphQL/Types/Relay/Node" target="_blank" title="API docs for GraphQL::Types::Relay::Node"><code>GraphQL::Types::Relay::Node</code></a> to your definition:</p>
 
@@ -103,7 +103,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>To tell GraphQL how to resolve members of the <code class="highlighter-rouge">"Node"</code> interface, you must also define <code class="highlighter-rouge">Schema.resolve_type</code>:</p>
+<p>To tell GraphQL how to resolve members of the <code class="language-plaintext highlighter-rouge">"Node"</code> interface, you must also define <code class="language-plaintext highlighter-rouge">Schema.resolve_type</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># You'll also need to define `resolve_type` for</span>
@@ -123,9 +123,9 @@
 
 <h3 id="uuid-fields">UUID fields</h3>
 
-<p>Relay Nodes must have a field named <code class="highlighter-rouge">"id"</code> which returns a globally unique ID.</p>
+<p>Relay Nodes must have a field named <code class="language-plaintext highlighter-rouge">"id"</code> which returns a globally unique ID.</p>
 
-<p>To add a UUID field named <code class="highlighter-rouge">"id"</code>, use the <code class="highlighter-rouge">global_id_field</code> helper:</p>
+<p>To add a UUID field named <code class="language-plaintext highlighter-rouge">"id"</code>, use the <code class="language-plaintext highlighter-rouge">global_id_field</code> helper:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># `id` exposes the UUID</span>
@@ -134,11 +134,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>This field will call the previously-defined <code class="highlighter-rouge">id_from_object</code> class method.</p>
+<p>This field will call the previously-defined <code class="language-plaintext highlighter-rouge">id_from_object</code> class method.</p>
 
-<h3 id="node-field-find-by-uuid"><code class="highlighter-rouge">node</code> field (find-by-UUID)</h3>
+<h3 id="node-field-find-by-uuid"><code class="language-plaintext highlighter-rouge">node</code> field (find-by-UUID)</h3>
 
-<p>You should also provide a root-level <code class="highlighter-rouge">node</code> field so that Relay can refetch objects from your schema. It is provided as <code class="highlighter-rouge">GraphQL::Relay::Node.field</code>, so you can attach it like this:</p>
+<p>You should also provide a root-level <code class="language-plaintext highlighter-rouge">node</code> field so that Relay can refetch objects from your schema. It is provided as <code class="language-plaintext highlighter-rouge">GraphQL::Relay::Node.field</code>, so you can attach it like this:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Used by Relay to lookup objects by UUID:</span>
@@ -147,9 +147,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="nodes-field"><code class="highlighter-rouge">nodes</code> field</h3>
+<h3 id="nodes-field"><code class="language-plaintext highlighter-rouge">nodes</code> field</h3>
 
-<p>You can also provide a root-level <code class="highlighter-rouge">nodes</code> field so that Relay can refetch objects by IDs. Similarly, it is provided as <code class="highlighter-rouge">GraphQL::Relay::Node.plural_field</code>:</p>
+<p>You can also provide a root-level <code class="language-plaintext highlighter-rouge">nodes</code> field so that Relay can refetch objects by IDs. Similarly, it is provided as <code class="language-plaintext highlighter-rouge">GraphQL::Relay::Node.plural_field</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Fetches a list of objects given a list of IDs</span>

@@ -9,9 +9,9 @@ This class is part of a private API.
 Wrap a user-provided hash of resolution behavior for easy access at
 runtime. 
 Coerce scalar values by: - Checking for a function in the map like
-<code class="highlighter-rouge">{ Date: { coerce_input: -&gt;(val, ctx) { ... }, coerce_result:
+<code class="language-plaintext highlighter-rouge">{ Date: { coerce_input: -&gt;(val, ctx) { ... }, coerce_result:
 -&gt;(val, ctx) { ... } } }</code> - Falling back to a passthrough 
-Interface/union resolution can be provided as a <code class="highlighter-rouge">resolve_type:</code> key.
+Interface/union resolution can be provided as a <code class="language-plaintext highlighter-rouge">resolve_type:</code> key.
 Instance methods:
 call, coerce_input, coerce_result, initialize</p>
 

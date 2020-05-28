@@ -5,12 +5,12 @@
   </head>
   <body>
     <p>Class: GraphQL::Schema::Timeout::TimeoutError &lt; GraphQL::ExecutionError
-This error is raised when a query exceeds <code class="highlighter-rouge">max_seconds</code>. Since it’s
+This error is raised when a query exceeds <code class="language-plaintext highlighter-rouge">max_seconds</code>. Since it’s
 a child of GraphQL::ExecutionError, its message will be added to the
-response’s <code class="highlighter-rouge">errors</code> key. 
+response’s <code class="language-plaintext highlighter-rouge">errors</code> key. 
 To raise an error that will stop query resolution, use a custom
 block to take this error and raise a new one which <em>doesn’t</em> descend
-from GraphQL::ExecutionError, such as <code class="highlighter-rouge">RuntimeError</code>. 
+from GraphQL::ExecutionError, such as <code class="language-plaintext highlighter-rouge">RuntimeError</code>. 
 Instance methods:
 initialize</p>
 

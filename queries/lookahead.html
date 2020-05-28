@@ -51,12 +51,12 @@
 
 <h2 id="getting-a-lookahead">Getting a Lookahead</h2>
 
-<p>Add <code class="highlighter-rouge">extras: [:lookahead]</code> to your field configuration to recieve an injected lookahead:</p>
+<p>Add <code class="language-plaintext highlighter-rouge">extras: [:lookahead]</code> to your field configuration to recieve an injected lookahead:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:files</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">File</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">extras: </span><span class="p">[</span><span class="ss">:lookahead</span><span class="p">]</span>
 </code></pre></div></div>
 
-<p>Then, update your resolver method to accept a <code class="highlighter-rouge">lookahead:</code> argument:</p>
+<p>Then, update your resolver method to accept a <code class="language-plaintext highlighter-rouge">lookahead:</code> argument:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">files</span><span class="p">(</span><span class="n">lookahead</span><span class="p">:)</span>
   <span class="c1"># ...</span>
@@ -104,11 +104,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Nested lookaheads return empty objects when there’s no selection (not <code class="highlighter-rouge">nil</code>), so the code above will never have a “no method error on <code class="highlighter-rouge">nil</code>”.</p>
+<p>Nested lookaheads return empty objects when there’s no selection (not <code class="language-plaintext highlighter-rouge">nil</code>), so the code above will never have a “no method error on <code class="language-plaintext highlighter-rouge">nil</code>”.</p>
 
 <h2 id="lookaheads-with-connections">Lookaheads with connections</h2>
 
-<p>If you want to see what selections were made on the items in a connection, you can use nested lookaheads. However, don’t forget to check for <code class="highlighter-rouge">edges { node }</code> <em>and</em> <code class="highlighter-rouge">nodes { ... }</code>, if you support that shortcut field. For example:</p>
+<p>If you want to see what selections were made on the items in a connection, you can use nested lookaheads. However, don’t forget to check for <code class="language-plaintext highlighter-rouge">edges { node }</code> <em>and</em> <code class="language-plaintext highlighter-rouge">nodes { ... }</code>, if you support that shortcut field. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:products</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Product</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">extras: </span><span class="p">[</span><span class="ss">:lookahead</span><span class="p">]</span>
 

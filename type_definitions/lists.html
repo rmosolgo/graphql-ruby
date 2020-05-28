@@ -49,7 +49,7 @@
 <div class="guide-container">
   <p>GraphQL has <em>list types</em> which are ordered lists containing items of other types. The following examples use the <a href="https://graphql.org/learn/schema/#type-language">GraphQL Schema Definition Language</a> (SDL).</p>
 
-<p>Fields may return a single scalar value (eg <code class="highlighter-rouge">String</code>), or a <em>list</em> of scalar values (eg, <code class="highlighter-rouge">[String]</code>, a list of strings):</p>
+<p>Fields may return a single scalar value (eg <code class="language-plaintext highlighter-rouge">String</code>), or a <em>list</em> of scalar values (eg, <code class="language-plaintext highlighter-rouge">[String]</code>, a list of strings):</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">type</span> <span class="no">Spy</span> <span class="p">{</span>
   <span class="c1"># This spy's real name</span>
@@ -87,7 +87,7 @@
 
 <h2 id="list-types-in-ruby">List Types in Ruby</h2>
 
-<p>To define a list type in Ruby use <code class="highlighter-rouge">[...]</code> (a Ruby array with one member, the inner type). For example:</p>
+<p>To define a list type in Ruby use <code class="language-plaintext highlighter-rouge">[...]</code> (a Ruby array with one member, the inner type). For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># A field returning a list type:</span>
 <span class="c1"># Equivalent to `aliases: [String!]` above</span>
@@ -99,9 +99,9 @@
 
 <p>For input, GraphQL lists are converted to Ruby arrays.</p>
 
-<p>For fields that return list types, any object responding to <code class="highlighter-rouge">#each</code> may be returned. It will be enumerated as a GraphQL list.</p>
+<p>For fields that return list types, any object responding to <code class="language-plaintext highlighter-rouge">#each</code> may be returned. It will be enumerated as a GraphQL list.</p>
 
-<p>To define lists where <code class="highlighter-rouge">nil</code> may be a member of the list, use <code class="highlighter-rouge">null: true</code> in the definition array, for example:</p>
+<p>To define lists where <code class="language-plaintext highlighter-rouge">nil</code> may be a member of the list, use <code class="language-plaintext highlighter-rouge">null: true</code> in the definition array, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Equivalent to `previousEmployers: [Employer]!`</span>
 <span class="n">field</span> <span class="ss">:previous_employers</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Employer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">],</span> <span class="s2">"Previous employers; `null` represents a period of self-employment or unemployment"</span> <span class="ss">null: </span><span class="kp">false</span>
@@ -112,8 +112,8 @@
 <p>Combining list types and non-null types can be a bit tricky. There are four possible combinations, based on two parameters:</p>
 
 <ul>
-  <li>Nullability of the field: can this field return <code class="highlighter-rouge">null</code>, or does it always return a list?</li>
-  <li>Nullability of the list items: when a list is present, may it include <code class="highlighter-rouge">null</code>?</li>
+  <li>Nullability of the field: can this field return <code class="language-plaintext highlighter-rouge">null</code>, or does it always return a list?</li>
+  <li>Nullability of the list items: when a list is present, may it include <code class="language-plaintext highlighter-rouge">null</code>?</li>
 </ul>
 
 <p>Here’s how those combinations play out:</p>
@@ -138,7 +138,7 @@
   </tbody>
 </table>
 
-<p>(The first line is GraphQL-Ruby code. The second line, beginning with <code class="highlighter-rouge"># =&gt;</code>, is the corresponding GraphQL SDL code.)</p>
+<p>(The first line is GraphQL-Ruby code. The second line, beginning with <code class="language-plaintext highlighter-rouge"># =&gt;</code>, is the corresponding GraphQL SDL code.)</p>
 
 <p>Let’s look at some examples.</p>
 
@@ -151,7 +151,7 @@
 <span class="c1">#   scores: [Int!]!</span>
 </code></pre></div></div>
 
-<p>In this example, <code class="highlighter-rouge">scores</code> may not return <code class="highlighter-rouge">null</code>. It must <em>always</em> return a list. Additionally, the list may <em>never</em> contain <code class="highlighter-rouge">null</code> – it may only contain <code class="highlighter-rouge">Int</code>s. (It may be empty, but it cannot have <code class="highlighter-rouge">null</code> in it.)</p>
+<p>In this example, <code class="language-plaintext highlighter-rouge">scores</code> may not return <code class="language-plaintext highlighter-rouge">null</code>. It must <em>always</em> return a list. Additionally, the list may <em>never</em> contain <code class="language-plaintext highlighter-rouge">null</code> – it may only contain <code class="language-plaintext highlighter-rouge">Int</code>s. (It may be empty, but it cannot have <code class="language-plaintext highlighter-rouge">null</code> in it.)</p>
 
 <p>Here are values the field may return:</p>
 
@@ -165,19 +165,19 @@
   </thead>
   <tbody>
     <tr>
-      <td><code class="highlighter-rouge">[]</code></td>
-      <td><code class="highlighter-rouge">null</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">null</code></td>
       <td> </td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">[1, 2, ...]</code></td>
-      <td><code class="highlighter-rouge">[null]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[1, 2, ...]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[null]</code></td>
       <td> </td>
     </tr>
     <tr>
       <td> </td>
       <td> </td>
-      <td><code class="highlighter-rouge">[1, null, 2, ...]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[1, null, 2, ...]</code></td>
     </tr>
   </tbody>
 </table>
@@ -191,7 +191,7 @@
 <span class="c1">#   scores: [Int]!</span>
 </code></pre></div></div>
 
-<p>In this example, <code class="highlighter-rouge">scores</code> may not return <code class="highlighter-rouge">null</code>. It must <em>always</em> return a list. However, the list <em>may</em> contain <code class="highlighter-rouge">null</code>s and/or <code class="highlighter-rouge">Int</code>s.</p>
+<p>In this example, <code class="language-plaintext highlighter-rouge">scores</code> may not return <code class="language-plaintext highlighter-rouge">null</code>. It must <em>always</em> return a list. However, the list <em>may</em> contain <code class="language-plaintext highlighter-rouge">null</code>s and/or <code class="language-plaintext highlighter-rouge">Int</code>s.</p>
 
 <p>Here are values the field may return:</p>
 
@@ -204,19 +204,19 @@
   </thead>
   <tbody>
     <tr>
-      <td><code class="highlighter-rouge">[]</code></td>
-      <td><code class="highlighter-rouge">null</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">null</code></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">[1, 2, ...]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[1, 2, ...]</code></td>
       <td> </td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">[null]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[null]</code></td>
       <td> </td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">[1, null, 2, ...]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[1, null, 2, ...]</code></td>
       <td> </td>
     </tr>
   </tbody>
@@ -231,7 +231,7 @@
 <span class="c1">#   scores: [Int]</span>
 </code></pre></div></div>
 
-<p>In this example, <code class="highlighter-rouge">scores</code> return <code class="highlighter-rouge">null</code> <em>or</em> a list. Additionally, the list <em>may</em> contain <code class="highlighter-rouge">null</code>s and/or <code class="highlighter-rouge">Int</code>s.</p>
+<p>In this example, <code class="language-plaintext highlighter-rouge">scores</code> return <code class="language-plaintext highlighter-rouge">null</code> <em>or</em> a list. Additionally, the list <em>may</em> contain <code class="language-plaintext highlighter-rouge">null</code>s and/or <code class="language-plaintext highlighter-rouge">Int</code>s.</p>
 
 <p>Here are values the field may return:</p>
 
@@ -244,23 +244,23 @@
   </thead>
   <tbody>
     <tr>
-      <td><code class="highlighter-rouge">null</code></td>
+      <td><code class="language-plaintext highlighter-rouge">null</code></td>
       <td> </td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">[]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[]</code></td>
       <td> </td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">[1, 2, ...]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[1, 2, ...]</code></td>
       <td> </td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">[null]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[null]</code></td>
       <td> </td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">[1, null, 2, ...]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[1, null, 2, ...]</code></td>
       <td> </td>
     </tr>
   </tbody>
@@ -275,7 +275,7 @@
 <span class="c1">#   scores: [Int!]</span>
 </code></pre></div></div>
 
-<p>In this example, <code class="highlighter-rouge">scores</code> return <code class="highlighter-rouge">null</code> <em>or</em> a list. However, if a list is present, it may <em>not</em> contain <code class="highlighter-rouge">null</code> – only <code class="highlighter-rouge">Int</code>s.</p>
+<p>In this example, <code class="language-plaintext highlighter-rouge">scores</code> return <code class="language-plaintext highlighter-rouge">null</code> <em>or</em> a list. However, if a list is present, it may <em>not</em> contain <code class="language-plaintext highlighter-rouge">null</code> – only <code class="language-plaintext highlighter-rouge">Int</code>s.</p>
 
 <p>Here are values the field may return:</p>
 
@@ -288,15 +288,15 @@
   </thead>
   <tbody>
     <tr>
-      <td><code class="highlighter-rouge">null</code></td>
-      <td><code class="highlighter-rouge">[null]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">null</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[null]</code></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">[]</code></td>
-      <td><code class="highlighter-rouge">[1, null, 2, ...]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[1, null, 2, ...]</code></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">[1, 2, ...]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[1, 2, ...]</code></td>
       <td> </td>
     </tr>
   </tbody>

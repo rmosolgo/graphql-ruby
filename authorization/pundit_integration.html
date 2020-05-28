@@ -67,7 +67,7 @@
 
 <h2 id="getting-started">Getting Started</h2>
 
-<p><strong>NOTE</strong>: Requires the latest gems, so make sure your <code class="highlighter-rouge">Gemfile</code> has:</p>
+<p><strong>NOTE</strong>: Requires the latest gems, so make sure your <code class="language-plaintext highlighter-rouge">Gemfile</code> has:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># For PunditIntegration:</span>
 <span class="n">gem</span> <span class="s2">"graphql-pro"</span><span class="p">,</span> <span class="s2">"&gt;=1.7.9"</span>
@@ -75,9 +75,9 @@
 <span class="n">gem</span> <span class="s2">"graphql"</span><span class="p">,</span> <span class="s2">"&gt;=1.8.7"</span>
 </code></pre></div></div>
 
-<p>Then, <code class="highlighter-rouge">bundle install</code>.</p>
+<p>Then, <code class="language-plaintext highlighter-rouge">bundle install</code>.</p>
 
-<p>Whenever you run queries, include <code class="highlighter-rouge">:current_user</code> in the context:</p>
+<p>Whenever you run queries, include <code class="language-plaintext highlighter-rouge">:current_user</code> in the context:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
   <span class="ss">current_user: </span><span class="n">current_user</span><span class="p">,</span>
@@ -99,7 +99,7 @@
 
 <h2 id="authorizing-objects">Authorizing Objects</h2>
 
-<p>You can specify Pundit roles that must be satisfied in order for viewers to see objects of a certain type. To get started, include the <code class="highlighter-rouge">ObjectIntegration</code> in your base object class:</p>
+<p>You can specify Pundit roles that must be satisfied in order for viewers to see objects of a certain type. To get started, include the <code class="language-plaintext highlighter-rouge">ObjectIntegration</code> in your base object class:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_object.rb</span>
 <span class="k">class</span> <span class="nc">Types::BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
@@ -112,9 +112,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, anyone trying to read a GraphQL object will have to pass the <code class="highlighter-rouge">#staff?</code> check on that object’s policy.</p>
+<p>Now, anyone trying to read a GraphQL object will have to pass the <code class="language-plaintext highlighter-rouge">#staff?</code> check on that object’s policy.</p>
 
-<p>Then, each child class can override that parent configuration. For example, allow <em>all</em> viewers to read the <code class="highlighter-rouge">Query</code> root:</p>
+<p>Then, each child class can override that parent configuration. For example, allow <em>all</em> viewers to read the <code class="language-plaintext highlighter-rouge">Query</code> root:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Query</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Allow anyone to see the query root</span>
@@ -126,7 +126,7 @@
 
 <p>For each object returned by GraphQL, the integration matches it to a policy and method.</p>
 
-<p>The policy is found using <a href="https://www.rubydoc.info/gems/pundit/Pundit%2Epolicy!"><code class="highlighter-rouge">Pundit.policy!</code></a>, which looks up a policy using the object’s class name. (This can be customized, see below.)</p>
+<p>The policy is found using <a href="https://www.rubydoc.info/gems/pundit/Pundit%2Epolicy!"><code class="language-plaintext highlighter-rouge">Pundit.policy!</code></a>, which looks up a policy using the object’s class name. (This can be customized, see below.)</p>
 
 <p>Then, GraphQL will call a method on the policy to see whether the object is permitted or not. This method is assigned in the object class, for example:</p>
 
@@ -138,11 +138,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>That configuration will call <code class="highlighter-rouge">#employer_or_self?</code> on the corresponding Pundit policy.</p>
+<p>That configuration will call <code class="language-plaintext highlighter-rouge">#employer_or_self?</code> on the corresponding Pundit policy.</p>
 
 <h4 id="custom-policy-class">Custom Policy Class</h4>
 
-<p>By default, the integration uses <code class="highlighter-rouge">Pundit.policy!(current_user, object)</code> to find a policy. You can specify a policy class using <code class="highlighter-rouge">pundit_policy_class(...)</code>:</p>
+<p>By default, the integration uses <code class="language-plaintext highlighter-rouge">Pundit.policy!(current_user, object)</code> to find a policy. You can specify a policy class using <code class="language-plaintext highlighter-rouge">pundit_policy_class(...)</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Employee</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">pundit_policy_class</span><span class="p">(</span><span class="no">Policies</span><span class="o">::</span><span class="no">CustomEmployeePolicy</span><span class="p">)</span>
@@ -155,7 +155,7 @@
 
 <h4 id="bypassing-policies">Bypassing Policies</h4>
 
-<p>The integration requires that every object with a <code class="highlighter-rouge">pundit_role</code> has a corresponding policy class. To allow objects to <em>skip</em> authorization, you can pass <code class="highlighter-rouge">nil</code> as the role:</p>
+<p>The integration requires that every object with a <code class="language-plaintext highlighter-rouge">pundit_role</code> has a corresponding policy class. To allow objects to <em>skip</em> authorization, you can pass <code class="language-plaintext highlighter-rouge">nil</code> as the role:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::PublicProfile</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Anyone can see this</span>
@@ -165,7 +165,7 @@
 
 <h4 id="handling-unauthorized-objects">Handling Unauthorized Objects</h4>
 
-<p>When any Policy method returns <code class="highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.10.10/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
+<p>When any Policy method returns <code class="language-plaintext highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/1.10.10/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
 
 <h2 id="scopes">Scopes</h2>
 
@@ -183,13 +183,13 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Pundit scopes <a href="https://github.com/rmosolgo/graphql-ruby/issues/2008">don’t play well</a> with <code class="highlighter-rouge">Array</code>s, so the integration <em>skips</em> scopes on Arrays. You can also opt out on a field-by-field basis as described below.</p>
+<p>Pundit scopes <a href="https://github.com/rmosolgo/graphql-ruby/issues/2008">don’t play well</a> with <code class="language-plaintext highlighter-rouge">Array</code>s, so the integration <em>skips</em> scopes on Arrays. You can also opt out on a field-by-field basis as described below.</p>
 
 <p>You can also customize how the scopes are looked up and applied, see below.</p>
 
 <h4 id="bypassing-scopes">Bypassing scopes</h4>
 
-<p>To allow an unscoped relation to be returned from a field, disable scoping with <code class="highlighter-rouge">scope: false</code>, for example:</p>
+<p>To allow an unscoped relation to be returned from a field, disable scoping with <code class="language-plaintext highlighter-rouge">scope: false</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Allow anyone to browse the job postings</span>
 <span class="n">field</span> <span class="ss">:job_postings</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">JobPosting</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
@@ -226,7 +226,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, you can add <code class="highlighter-rouge">pundit_role:</code> options to your fields:</p>
+<p>Then, you can add <code class="language-plaintext highlighter-rouge">pundit_role:</code> options to your fields:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Allow signed-in users to browse listings</span>
@@ -239,11 +239,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>It will call the named role (eg, <code class="highlighter-rouge">#staff?</code>) on the parent object’s policy (eg <code class="highlighter-rouge">JobPostingPolicy</code>).</p>
+<p>It will call the named role (eg, <code class="language-plaintext highlighter-rouge">#staff?</code>) on the parent object’s policy (eg <code class="language-plaintext highlighter-rouge">JobPostingPolicy</code>).</p>
 
 <h4 id="custom-policy-class-1">Custom Policy Class</h4>
 
-<p>You can override the policy class for a field using <code class="highlighter-rouge">pundit_policy_class:</code>, for example:</p>
+<p>You can override the policy class for a field using <code class="language-plaintext highlighter-rouge">pundit_policy_class:</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Only allow `ApplicantsPolicy#staff?` users to see</span>
@@ -256,7 +256,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>This will initialize an <code class="highlighter-rouge">ApplicantsPolicy</code> with the parent object (a <code class="highlighter-rouge">Job</code>) and call <code class="highlighter-rouge">#staff?</code> on it.</p>
+<p>This will initialize an <code class="language-plaintext highlighter-rouge">ApplicantsPolicy</code> with the parent object (a <code class="language-plaintext highlighter-rouge">Job</code>) and call <code class="language-plaintext highlighter-rouge">#staff?</code> on it.</p>
 
 <p>For really custom policy lookup, see <a href="#custom-policy-lookup">Custom Policy Lookup</a> below.</p>
 
@@ -287,7 +287,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, arguments accept a <code class="highlighter-rouge">pundit_role:</code> option, for example:</p>
+<p>Now, arguments accept a <code class="language-plaintext highlighter-rouge">pundit_role:</code> option, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Company</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:employees</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Employee</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="k">do</span>
@@ -297,7 +297,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The role will be called on the parent object’s policy, for example <code class="highlighter-rouge">CompanyPolicy#admin?</code> in the case above.</p>
+<p>The role will be called on the parent object’s policy, for example <code class="language-plaintext highlighter-rouge">CompanyPolicy#admin?</code> in the case above.</p>
 
 <h2 id="authorizing-mutations">Authorizing Mutations</h2>
 
@@ -312,7 +312,7 @@
 
 <h4 id="setup">Setup</h4>
 
-<p>Add <code class="highlighter-rouge">MutationIntegration</code> to your base mutation, for example:</p>
+<p>Add <code class="language-plaintext highlighter-rouge">MutationIntegration</code> to your base mutation, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PunditIntegration</span><span class="o">::</span><span class="no">MutationIntegration</span>
@@ -322,7 +322,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Also, you’ll probably want a <code class="highlighter-rouge">BaseMutationPayload</code> where you can set a default role:</p>
+<p>Also, you’ll probably want a <code class="language-plaintext highlighter-rouge">BaseMutationPayload</code> where you can set a default role:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseMutationPayload</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># If `BaseObject` requires some permissions, override that for mutation results.</span>
@@ -341,18 +341,18 @@
 
 <h4 id="mutation-level-roles">Mutation-level roles</h4>
 
-<p>Each mutation can have a class-level <code class="highlighter-rouge">pundit_role</code> which will be checked before loading objects or resolving, for example:</p>
+<p>Each mutation can have a class-level <code class="language-plaintext highlighter-rouge">pundit_role</code> which will be checked before loading objects or resolving, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">pundit_role</span> <span class="ss">:admin</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>In the example above, <code class="highlighter-rouge">PromoteEmployeePolicy#admin?</code> will be checked before running the mutation.</p>
+<p>In the example above, <code class="language-plaintext highlighter-rouge">PromoteEmployeePolicy#admin?</code> will be checked before running the mutation.</p>
 
 <h4 id="custom-policy-class-2">Custom Policy Class</h4>
 
-<p>By default, Pundit uses the mutation’s class name to look up a policy. You can override this by defining <code class="highlighter-rouge">self.policy_class</code> on your mutation:</p>
+<p>By default, Pundit uses the mutation’s class name to look up a policy. You can override this by defining <code class="language-plaintext highlighter-rouge">self.policy_class</code> on your mutation:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">policy_class</span>
@@ -363,9 +363,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, the mutation will check <code class="highlighter-rouge">UserPolicy#admin?</code> before running.</p>
+<p>Now, the mutation will check <code class="language-plaintext highlighter-rouge">UserPolicy#admin?</code> before running.</p>
 
-<p>Another good approach is to have one policy per mutation. You can implement <code class="highlighter-rouge">self.policy_class</code> to look up a class <em>within</em> the mutation, for example:</p>
+<p>Another good approach is to have one policy per mutation. You can implement <code class="language-plaintext highlighter-rouge">self.policy_class</code> to look up a class <em>within</em> the mutation, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">policy_class</span>
@@ -387,13 +387,13 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, <code class="highlighter-rouge">Mutations::PromoteEmployee::Policy#admin</code> will be checked before running the mutation.</p>
+<p>Now, <code class="language-plaintext highlighter-rouge">Mutations::PromoteEmployee::Policy#admin</code> will be checked before running the mutation.</p>
 
 <h4 id="authorizing-loaded-objects">Authorizing Loaded Objects</h4>
 
-<p>Mutations can automatically load and authorize objects by ID using the <code class="highlighter-rouge">loads:</code> option.</p>
+<p>Mutations can automatically load and authorize objects by ID using the <code class="language-plaintext highlighter-rouge">loads:</code> option.</p>
 
-<p>Beyond the normal <a href="#authorizing-objects">object reading permissions</a>, you can add an additional role for the specific mutation input using a <code class="highlighter-rouge">pundit_role:</code> option:</p>
+<p>Beyond the normal <a href="#authorizing-objects">object reading permissions</a>, you can add an additional role for the specific mutation input using a <code class="language-plaintext highlighter-rouge">pundit_role:</code> option:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::FireEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span>
@@ -402,11 +402,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>In the case above, the mutation will halt unless the <code class="highlighter-rouge">EmployeePolicy#supervisor?</code> method returns true.</p>
+<p>In the case above, the mutation will halt unless the <code class="language-plaintext highlighter-rouge">EmployeePolicy#supervisor?</code> method returns true.</p>
 
 <h4 id="unauthorized-mutations">Unauthorized Mutations</h4>
 
-<p>By default, an authorization failure in a mutation will raise a Ruby exception. You can customize this by implementing <code class="highlighter-rouge">#unauthorized_by_pundit(owner, value)</code> in your base mutation, for example:</p>
+<p>By default, an authorization failure in a mutation will raise a Ruby exception. You can customize this by implementing <code class="language-plaintext highlighter-rouge">#unauthorized_by_pundit(owner, value)</code> in your base mutation, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
   <span class="k">def</span> <span class="nf">unauthorized_by_pundit</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
@@ -419,11 +419,11 @@
 <p>The method is called with:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">owner</code>: the <code class="highlighter-rouge">GraphQL::Schema::Argument</code> or mutation class whose role was not satisfied</li>
-  <li><code class="highlighter-rouge">value</code>: the object which didn’t pass for <code class="highlighter-rouge">context[:current_user]</code></li>
+  <li><code class="language-plaintext highlighter-rouge">owner</code>: the <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Argument</code> or mutation class whose role was not satisfied</li>
+  <li><code class="language-plaintext highlighter-rouge">value</code>: the object which didn’t pass for <code class="language-plaintext highlighter-rouge">context[:current_user]</code></li>
 </ul>
 
-<p>Since it’s a mutation method, you can also access <code class="highlighter-rouge">context</code> in that method.</p>
+<p>Since it’s a mutation method, you can also access <code class="language-plaintext highlighter-rouge">context</code> in that method.</p>
 
 <p>Whatever that method returns will be treated as an early return value for the mutation, so for example, you could return <a href="/mutations/mutation_errors">errors as data</a>:</p>
 
@@ -439,18 +439,18 @@
 
 <h2 id="custom-policy-lookup">Custom Policy Lookup</h2>
 
-<p>By default, the integration uses <code class="highlighter-rouge">Pundit</code>’s top-level methods to interact with policies:</p>
+<p>By default, the integration uses <code class="language-plaintext highlighter-rouge">Pundit</code>’s top-level methods to interact with policies:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">Pundit.policy!(context[:current_user], object)</code> is called to find a policy instance</li>
-  <li><code class="highlighter-rouge">Pundit.policy_scope!(context[:current_user], items)</code> is called to filter <code class="highlighter-rouge">items</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Pundit.policy!(context[:current_user], object)</code> is called to find a policy instance</li>
+  <li><code class="language-plaintext highlighter-rouge">Pundit.policy_scope!(context[:current_user], items)</code> is called to filter <code class="language-plaintext highlighter-rouge">items</code></li>
 </ul>
 
 <p>You can override these by defining the following methods in your schema:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">pundit_policy(context, object)</code> to find a policy (or raise an error if one isn’t found)</li>
-  <li><code class="highlighter-rouge">scope_by_pundit_policy(context, items)</code> to apply a scope to <code class="highlighter-rouge">items</code> (or raise an error if one isn’t found)</li>
+  <li><code class="language-plaintext highlighter-rouge">pundit_policy(context, object)</code> to find a policy (or raise an error if one isn’t found)</li>
+  <li><code class="language-plaintext highlighter-rouge">scope_by_pundit_policy(context, items)</code> to apply a scope to <code class="language-plaintext highlighter-rouge">items</code> (or raise an error if one isn’t found)</li>
 </ul>
 
 <p>Since different objects have different lifecycles, the hooks are installed slightly different ways:</p>
@@ -504,7 +504,7 @@
 
 <h2 id="custom-user-lookup">Custom User Lookup</h2>
 
-<p>By default, the Pundit integration looks for the current user in <code class="highlighter-rouge">context[:current_user]</code>. You can override this by implementing <code class="highlighter-rouge">#pundit_user</code> on your custom query context class. For example:</p>
+<p>By default, the Pundit integration looks for the current user in <code class="language-plaintext highlighter-rouge">context[:current_user]</code>. You can override this by implementing <code class="language-plaintext highlighter-rouge">#pundit_user</code> on your custom query context class. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/query_context.rb</span>
 <span class="k">class</span> <span class="nc">QueryContext</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Query</span><span class="o">::</span><span class="no">Context</span>
@@ -522,7 +522,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, the Pundit integration will use your <code class="highlighter-rouge">def pundit_user</code> to get the current user at runtime.</p>
+<p>Then, the Pundit integration will use your <code class="language-plaintext highlighter-rouge">def pundit_user</code> to get the current user at runtime.</p>
 
 </div>
 <p class="guide-footer">

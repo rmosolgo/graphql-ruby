@@ -58,65 +58,65 @@
 
 <h2 id="graphqlinstall">graphql:install</h2>
 
-<p>You can add GraphQL to a Rails app with <code class="highlighter-rouge">graphql:install</code>:</p>
+<p>You can add GraphQL to a Rails app with <code class="language-plaintext highlighter-rouge">graphql:install</code>:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails generate graphql:install
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails generate graphql:install
 </code></pre></div></div>
 
 <p>This will:</p>
 
 <ul>
-  <li>Set up a folder structure in <code class="highlighter-rouge">app/graphql/</code></li>
+  <li>Set up a folder structure in <code class="language-plaintext highlighter-rouge">app/graphql/</code></li>
   <li>Add schema definition</li>
   <li>Add base type classes</li>
-  <li>Add a <code class="highlighter-rouge">Query</code> type definition</li>
-  <li>Add a <code class="highlighter-rouge">Mutation</code> type definition with a base mutation class</li>
+  <li>Add a <code class="language-plaintext highlighter-rouge">Query</code> type definition</li>
+  <li>Add a <code class="language-plaintext highlighter-rouge">Mutation</code> type definition with a base mutation class</li>
   <li>Add a route and controller for executing queries</li>
-  <li>Install <a href="https://github.com/rmosolgo/graphiql-rails"><code class="highlighter-rouge">graphiql-rails</code></a></li>
+  <li>Install <a href="https://github.com/rmosolgo/graphiql-rails"><code class="language-plaintext highlighter-rouge">graphiql-rails</code></a></li>
 </ul>
 
 <p>After installing you can see your new schema by:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">bundle install</code></li>
-  <li><code class="highlighter-rouge">rails server</code></li>
-  <li>Open <code class="highlighter-rouge">localhost:3000/graphiql</code></li>
+  <li><code class="language-plaintext highlighter-rouge">bundle install</code></li>
+  <li><code class="language-plaintext highlighter-rouge">rails server</code></li>
+  <li>Open <code class="language-plaintext highlighter-rouge">localhost:3000/graphiql</code></li>
 </ul>
 
 <h3 id="options">Options</h3>
 
 <ul>
-  <li><code class="highlighter-rouge">--relay</code> will add <a href="https://facebook.github.io/relay/">Relay</a>-specific code to your schema</li>
-  <li><code class="highlighter-rouge">--batch</code> will add <a href="https://github.com/Shopify/graphql-batch">GraphQL::Batch</a> to your gemfile and include the setup in your schema</li>
-  <li><code class="highlighter-rouge">--playground</code> will include <code class="highlighter-rouge">graphql_playground-rails</code> in the setup (mounted at <code class="highlighter-rouge">/playground</code>)</li>
-  <li><code class="highlighter-rouge">--no-graphiql</code> will exclude <code class="highlighter-rouge">graphiql-rails</code> from the setup</li>
-  <li><code class="highlighter-rouge">--schema=MySchemaName</code> will be used for naming the schema (default is <code class="highlighter-rouge">#{app_name}Schema</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">--relay</code> will add <a href="https://facebook.github.io/relay/">Relay</a>-specific code to your schema</li>
+  <li><code class="language-plaintext highlighter-rouge">--batch</code> will add <a href="https://github.com/Shopify/graphql-batch">GraphQL::Batch</a> to your gemfile and include the setup in your schema</li>
+  <li><code class="language-plaintext highlighter-rouge">--playground</code> will include <code class="language-plaintext highlighter-rouge">graphql_playground-rails</code> in the setup (mounted at <code class="language-plaintext highlighter-rouge">/playground</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">--no-graphiql</code> will exclude <code class="language-plaintext highlighter-rouge">graphiql-rails</code> from the setup</li>
+  <li><code class="language-plaintext highlighter-rouge">--schema=MySchemaName</code> will be used for naming the schema (default is <code class="language-plaintext highlighter-rouge">#{app_name}Schema</code>)</li>
 </ul>
 
 <h2 id="scaffolding-types">Scaffolding Types</h2>
 
-<p>Several generators will add GraphQL types to your project. Run them with <code class="highlighter-rouge">-h</code> to see the options:</p>
+<p>Several generators will add GraphQL types to your project. Run them with <code class="language-plaintext highlighter-rouge">-h</code> to see the options:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">rails g graphql:object</code></li>
-  <li><code class="highlighter-rouge">rails g graphql:interface</code></li>
-  <li><code class="highlighter-rouge">rails g graphql:union</code></li>
-  <li><code class="highlighter-rouge">rails g graphql:enum</code></li>
-  <li><code class="highlighter-rouge">rails g graphql:scalar</code></li>
+  <li><code class="language-plaintext highlighter-rouge">rails g graphql:object</code></li>
+  <li><code class="language-plaintext highlighter-rouge">rails g graphql:interface</code></li>
+  <li><code class="language-plaintext highlighter-rouge">rails g graphql:union</code></li>
+  <li><code class="language-plaintext highlighter-rouge">rails g graphql:enum</code></li>
+  <li><code class="language-plaintext highlighter-rouge">rails g graphql:scalar</code></li>
 </ul>
 
 <h2 id="scaffolding-mutations">Scaffolding Mutations</h2>
 
 <p>You can prepare a Relay Classic mutation with</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails g graphql:mutation #{mutation_name}
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails g graphql:mutation #{mutation_name}
 </code></pre></div></div>
 
 <h2 id="scaffolding-loaders">Scaffolding Loaders</h2>
 
 <p>You can prepare a GraphQL::Batch loader with</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails g graphql:loader
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails g graphql:loader
 </code></pre></div></div>
 
 </div>

@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Root Types</h1>
 <div class="guide-container">
-  <p>GraphQL queries begin from <a href="https://graphql.org/learn/schema/#the-query-and-mutation-types">root types</a>: <code class="highlighter-rouge">query</code>, <code class="highlighter-rouge">mutation</code>, and <code class="highlighter-rouge">subscription</code>.</p>
+  <p>GraphQL queries begin from <a href="https://graphql.org/learn/schema/#the-query-and-mutation-types">root types</a>: <code class="language-plaintext highlighter-rouge">query</code>, <code class="language-plaintext highlighter-rouge">mutation</code>, and <code class="language-plaintext highlighter-rouge">subscription</code>.</p>
 
 <p>Attach these to your schema using methods with the same name:</p>
 
@@ -60,7 +60,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The types are <code class="highlighter-rouge">GraphQL::Schema::Object</code> classes, for example:</p>
+<p>The types are <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Object</code> classes, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/query_type.rb</span>
 <span class="k">class</span> <span class="nc">Types::QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>

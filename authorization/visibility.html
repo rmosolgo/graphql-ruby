@@ -58,16 +58,16 @@
 
 <h2 id="hiding-parts-of-the-schema">Hiding Parts of the Schema</h2>
 
-<p>You can customize the visibility of parts of your schema by reimplementing various <code class="highlighter-rouge">visible?</code> methods:</p>
+<p>You can customize the visibility of parts of your schema by reimplementing various <code class="language-plaintext highlighter-rouge">visible?</code> methods:</p>
 
 <ul>
-  <li>Type classes have a <code class="highlighter-rouge">.visible?(context)</code> class method</li>
-  <li>Fields and arguments have a <code class="highlighter-rouge">#visible?(context)</code> instance method</li>
-  <li>Enum values have <code class="highlighter-rouge">#visible?(context)</code> instance method</li>
-  <li>Mutation classes have a <code class="highlighter-rouge">.visible?(context)</code> class method</li>
+  <li>Type classes have a <code class="language-plaintext highlighter-rouge">.visible?(context)</code> class method</li>
+  <li>Fields and arguments have a <code class="language-plaintext highlighter-rouge">#visible?(context)</code> instance method</li>
+  <li>Enum values have <code class="language-plaintext highlighter-rouge">#visible?(context)</code> instance method</li>
+  <li>Mutation classes have a <code class="language-plaintext highlighter-rouge">.visible?(context)</code> class method</li>
 </ul>
 
-<p>These methods are called with the query context, based on the hash you pass as <code class="highlighter-rouge">context:</code>. If the method returns false, then that member of the schema will be treated as though it doesn’t exist for the entirety of the query. That is:</p>
+<p>These methods are called with the query context, based on the hash you pass as <code class="language-plaintext highlighter-rouge">context:</code>. If the method returns false, then that member of the schema will be treated as though it doesn’t exist for the entirety of the query. That is:</p>
 
 <ul>
   <li>In introspection, the member will <em>not</em> be included in the result</li>
@@ -76,7 +76,7 @@
 
 <h2 id="for-example">For Example</h2>
 
-<p>Let’s say you’re working on a new feature which should remain secret for a while. You can implement <code class="highlighter-rouge">.visible?</code> in a type:</p>
+<p>Let’s say you’re working on a new feature which should remain secret for a while. You can implement <code class="language-plaintext highlighter-rouge">.visible?</code> in a type:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::SecretFeature</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">visible?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
@@ -86,22 +86,22 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>(Always call <code class="highlighter-rouge">super</code> to inherit the default behavior.)</p>
+<p>(Always call <code class="language-plaintext highlighter-rouge">super</code> to inherit the default behavior.)</p>
 
 <p>Now, the following bits of GraphQL will return validation errors:</p>
 
 <ul>
-  <li>Fields that return <code class="highlighter-rouge">SecretFeature</code>, eg <code class="highlighter-rouge">query { findSecretFeature { ... } }</code></li>
-  <li>Fragments on <code class="highlighter-rouge">SecretFeature</code>, eg <code class="highlighter-rouge">Fragment SF on SecretFeature</code></li>
+  <li>Fields that return <code class="language-plaintext highlighter-rouge">SecretFeature</code>, eg <code class="language-plaintext highlighter-rouge">query { findSecretFeature { ... } }</code></li>
+  <li>Fragments on <code class="language-plaintext highlighter-rouge">SecretFeature</code>, eg <code class="language-plaintext highlighter-rouge">Fragment SF on SecretFeature</code></li>
 </ul>
 
 <p>And in introspection:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">__schema { types { ... } }</code> will not include <code class="highlighter-rouge">SecretFeature</code></li>
-  <li><code class="highlighter-rouge">__type(name: "SecretFeature")</code> will return <code class="highlighter-rouge">nil</code></li>
-  <li>Any interfaces or unions which normally include <code class="highlighter-rouge">SecretFeature</code> will <em>not</em> include it</li>
-  <li>Any fields that return <code class="highlighter-rouge">SecretFeature</code> will be excluded from introspection</li>
+  <li><code class="language-plaintext highlighter-rouge">__schema { types { ... } }</code> will not include <code class="language-plaintext highlighter-rouge">SecretFeature</code></li>
+  <li><code class="language-plaintext highlighter-rouge">__type(name: "SecretFeature")</code> will return <code class="language-plaintext highlighter-rouge">nil</code></li>
+  <li>Any interfaces or unions which normally include <code class="language-plaintext highlighter-rouge">SecretFeature</code> will <em>not</em> include it</li>
+  <li>Any fields that return <code class="language-plaintext highlighter-rouge">SecretFeature</code> will be excluded from introspection</li>
 </ul>
 
 </div>

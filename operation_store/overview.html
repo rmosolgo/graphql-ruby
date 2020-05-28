@@ -56,20 +56,20 @@
 
 <h1 class="guide-header">Overview</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">GraphQL::Pro::OperationStore</code> uses <code class="highlighter-rouge">Rack</code> and a storage backend (<a href="/operation_store/active_record_backend">ActiveRecord</a> or <a href="/operation_store/active_record_backend">Redis</a>) to maintain a normalized, deduplicated database of <em>persisted queries</em> for your GraphQL system.</p>
+  <p><code class="language-plaintext highlighter-rouge">GraphQL::Pro::OperationStore</code> uses <code class="language-plaintext highlighter-rouge">Rack</code> and a storage backend (<a href="/operation_store/active_record_backend">ActiveRecord</a> or <a href="/operation_store/active_record_backend">Redis</a>) to maintain a normalized, deduplicated database of <em>persisted queries</em> for your GraphQL system.</p>
 
 <p>In this guide, you’ll find:</p>
 
 <ul>
   <li><a href="#what-are-persisted-queries">Description of persisted queries</a></li>
   <li><a href="#why-persisted-queries">The rationale</a> behind them</li>
-  <li><a href="#how-it-works">How <code class="highlighter-rouge">OperationStore</code> works</a>, in brief</li>
+  <li><a href="#how-it-works">How <code class="language-plaintext highlighter-rouge">OperationStore</code> works</a>, in brief</li>
 </ul>
 
 <p>In other guides, you can read more about:</p>
 
 <ul>
-  <li><a href="/operation_store/getting_started">Getting Started</a> installing <code class="highlighter-rouge">OperationStore</code> in your app</li>
+  <li><a href="/operation_store/getting_started">Getting Started</a> installing <code class="language-plaintext highlighter-rouge">OperationStore</code> in your app</li>
   <li><a href="/operation_store/client_workflow">Workflow</a> and usage for client apps</li>
   <li><a href="/operation_store/access_control">Authentication</a> for the sync API</li>
   <li><a href="/operation_store/server_management">Server Management</a> after your system is running</li>
@@ -79,7 +79,7 @@
 
 <h3 id="what-are-persisted-queries">What are Persisted Queries?</h3>
 
-<p><em>Persisted queries</em> are GraphQL queries (<code class="highlighter-rouge">query</code>, <code class="highlighter-rouge">mutation</code>, or <code class="highlighter-rouge">subscription</code>) that are saved on the server and invoked by clients by <em>reference</em>. In this arrangement, clients don’t send GraphQL queries over the network. Instead, clients send:</p>
+<p><em>Persisted queries</em> are GraphQL queries (<code class="language-plaintext highlighter-rouge">query</code>, <code class="language-plaintext highlighter-rouge">mutation</code>, or <code class="language-plaintext highlighter-rouge">subscription</code>) that are saved on the server and invoked by clients by <em>reference</em>. In this arrangement, clients don’t send GraphQL queries over the network. Instead, clients send:</p>
 
 <ul>
   <li><strong>Client name</strong>, to identify the client who is making the request</li>
@@ -148,7 +148,7 @@
 
 <h4 id="visibility">Visibility</h4>
 
-<p>Persisted queries improve <em>visibility</em> because you can track GraphQL usage from a single location. <code class="highlighter-rouge">OperationStore</code> maintains an index of type, field and argument usage so that you can analyze your traffic.</p>
+<p>Persisted queries improve <em>visibility</em> because you can track GraphQL usage from a single location. <code class="language-plaintext highlighter-rouge">OperationStore</code> maintains an index of type, field and argument usage so that you can analyze your traffic.</p>
 
 <p><a href="/operation_store/operation_index.png" target="_blank" class="img-link">
   <img src="/operation_store/operation_index.png" title="Index of GraphQL usage with persisted queries" alt="Index of GraphQL usage with persisted queries" />
@@ -156,20 +156,20 @@
 
 <h3 id="how-it-works">How it Works</h3>
 
-<p><code class="highlighter-rouge">OperationStore</code> uses tables in your database to store normalized, deduplicated GraphQL strings. The database is immutable: new operations may be added, but operations are never modified or removed.</p>
+<p><code class="language-plaintext highlighter-rouge">OperationStore</code> uses tables in your database to store normalized, deduplicated GraphQL strings. The database is immutable: new operations may be added, but operations are never modified or removed.</p>
 
 <p>When clients <a href="/operation_store/client_workflow">sync their operations</a>, requests are <a href="/operation_store/access_control">authenticated</a>, then the incoming GraphQL is validated, normalized, and added to the database if needed. Also, the incoming client name is associated with all operations in the payload.</p>
 
-<p>Then, at runtime, clients send an <em>operation ID</em> to run a persisted query. It looks like this in <code class="highlighter-rouge">params</code>:</p>
+<p>Then, at runtime, clients send an <em>operation ID</em> to run a persisted query. It looks like this in <code class="language-plaintext highlighter-rouge">params</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">params</span><span class="p">[</span><span class="ss">:operationId</span><span class="p">]</span> <span class="c1"># =&gt; "relay-app-v1/810c97f6631001..."</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">OperationStore</code> uses this to fetch the matching operation from the database. From there, the query is evaluated normally.</p>
+<p><code class="language-plaintext highlighter-rouge">OperationStore</code> uses this to fetch the matching operation from the database. From there, the query is evaluated normally.</p>
 
 <h3 id="getting-started">Getting Started</h3>
 
-<p>See the <a href="/operation_store/getting_started">getting started guide</a> to add <code class="highlighter-rouge">OperationStore</code> to your app.</p>
+<p>See the <a href="/operation_store/getting_started">getting started guide</a> to add <code class="language-plaintext highlighter-rouge">OperationStore</code> to your app.</p>
 
 </div>
 <p class="guide-footer">

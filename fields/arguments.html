@@ -47,9 +47,9 @@
 
 <h1 class="guide-header">Arguments</h1>
 <div class="guide-container">
-  <p>Fields can take <strong>arguments</strong> as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in <code class="highlighter-rouge">MutationType</code>).</p>
+  <p>Fields can take <strong>arguments</strong> as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in <code class="language-plaintext highlighter-rouge">MutationType</code>).</p>
 
-<p>Arguments are defined with the <code class="highlighter-rouge">argument</code> helper. These arguments are passed as <a href="https://robots.thoughtbot.com/ruby-2-keyword-arguments">keyword arguments</a> to the resolver method:</p>
+<p>Arguments are defined with the <code class="language-plaintext highlighter-rouge">argument</code> helper. These arguments are passed as <a href="https://robots.thoughtbot.com/ruby-2-keyword-arguments">keyword arguments</a> to the resolver method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
@@ -60,7 +60,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>To make an argument optional, set <code class="highlighter-rouge">required: false</code>, and set default values for the corresponding keyword arguments:</p>
+<p>To make an argument optional, set <code class="language-plaintext highlighter-rouge">required: false</code>, and set default values for the corresponding keyword arguments:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
@@ -75,7 +75,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Be aware that if all arguments are optional and the query does not provide any arguments, then the resolver method will be called with no arguments. To prevent an <code class="highlighter-rouge">ArgumentError</code> in this case, you must either specify default values for all keyword arguments (as done in the prior example) or use the double splat operator argument in the method definition. For example:</p>
+<p>Be aware that if all arguments are optional and the query does not provide any arguments, then the resolver method will be called with no arguments. To prevent an <code class="language-plaintext highlighter-rouge">ArgumentError</code> in this case, you must either specify default values for all keyword arguments (as done in the prior example) or use the double splat operator argument in the method definition. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">search_posts</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
   <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
@@ -86,7 +86,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Another approach is to use <code class="highlighter-rouge">default_value: value</code> to provide a default value for the argument if it is not supplied in the query.</p>
+<p>Another approach is to use <code class="language-plaintext highlighter-rouge">default_value: value</code> to provide a default value for the argument if it is not supplied in the query.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">default_value: </span><span class="s2">"Programming"</span>
@@ -97,7 +97,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Use <code class="highlighter-rouge">as: :alternate_name</code> to use a different key from within your resolvers while
+<p>Use <code class="language-plaintext highlighter-rouge">as: :alternate_name</code> to use a different key from within your resolvers while
 exposing another key to clients.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
@@ -109,7 +109,7 @@ exposing another key to clients.</p>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Provide a <code class="highlighter-rouge">prepare</code> function to modify or validate the value of an argument before the field’s resolver method is executed:</p>
+<p>Provide a <code class="language-plaintext highlighter-rouge">prepare</code> function to modify or validate the value of an argument before the field’s resolver method is executed:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:start_date</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">prepare: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">startDate</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
@@ -140,7 +140,7 @@ exposing another key to clients.</p>
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>To disable auto-camelization, pass <code class="highlighter-rouge">camelize: false</code> to the <code class="highlighter-rouge">argument</code> method.</p>
+<p>To disable auto-camelization, pass <code class="language-plaintext highlighter-rouge">camelize: false</code> to the <code class="language-plaintext highlighter-rouge">argument</code> method.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:start_year</span><span class="p">,</span> <span class="no">Int</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">camelize: </span><span class="kp">false</span>

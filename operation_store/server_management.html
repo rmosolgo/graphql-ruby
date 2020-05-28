@@ -62,7 +62,7 @@
 
 <p>With persisted queries, you can stop accepting arbitrary GraphQL input. This way, malicious users can’t run large or inappropriate queries on your server.</p>
 
-<p>In short, you can ignore arbitrary GraphQL by <em>skipping</em> the first argument of <code class="highlighter-rouge">MySchema.execute</code>:</p>
+<p>In short, you can ignore arbitrary GraphQL by <em>skipping</em> the first argument of <code class="language-plaintext highlighter-rouge">MySchema.execute</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql.rb</span>
 
@@ -81,7 +81,7 @@
   <li>Should some users still be allowed to send custom strings? (For example, do staff members use GraphiQL to develop new features or debug issues?)</li>
 </ul>
 
-<p>If those apply to you, you can apply some logic to <code class="highlighter-rouge">query_string</code>:</p>
+<p>If those apply to you, you can apply some logic to <code class="language-plaintext highlighter-rouge">query_string</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Allow arbitrary GraphQL:</span>
 <span class="c1"># - from staff users</span>
@@ -115,15 +115,15 @@
 
 <h3 id="integration-with-your-application">Integration with Your Application</h3>
 
-<p>It’s on the road map to add a Ruby API to <code class="highlighter-rouge">OperationStore</code> so that you can integrate it with your application. For example, you might:</p>
+<p>It’s on the road map to add a Ruby API to <code class="language-plaintext highlighter-rouge">OperationStore</code> so that you can integrate it with your application. For example, you might:</p>
 
 <ul>
   <li>Create clients that correspond to users in your system</li>
   <li>Show client secrets via the Dashboard so that users can save them</li>
-  <li>Render your own administration dashboards with <code class="highlighter-rouge">OperationStore</code> data</li>
+  <li>Render your own administration dashboards with <code class="language-plaintext highlighter-rouge">OperationStore</code> data</li>
 </ul>
 
-<p>If this interests you, please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=OperationStore Ruby API" target="_blank">open an issue</a> or email <code class="highlighter-rouge">support@graphql.pro</code>.</p>
+<p>If this interests you, please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=OperationStore Ruby API" target="_blank">open an issue</a> or email <code class="language-plaintext highlighter-rouge">support@graphql.pro</code>.</p>
 
 </div>
 <p class="guide-footer">

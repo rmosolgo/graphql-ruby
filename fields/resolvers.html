@@ -47,17 +47,17 @@
 
 <h1 class="guide-header">Resolvers</h1>
 <div class="guide-container">
-  <p>A <a href="/api-doc/1.10.10/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a> is a container for field signature and resolution logic. It can be attached to a field with the <code class="highlighter-rouge">resolver:</code> keyword:</p>
+  <p>A <a href="/api-doc/1.10.10/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a> is a container for field signature and resolution logic. It can be attached to a field with the <code class="language-plaintext highlighter-rouge">resolver:</code> keyword:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use the resolver class to execute this field</span>
 <span class="n">field</span> <span class="ss">:pending_orders</span><span class="p">,</span> <span class="ss">resolver: </span><span class="no">PendingOrders</span>
 </code></pre></div></div>
 
-<p>Under the hood, <a href="/api-doc/1.10.10/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a> is a specialized subclass of <code class="highlighter-rouge">Resolver</code>.</p>
+<p>Under the hood, <a href="/api-doc/1.10.10/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a> is a specialized subclass of <code class="language-plaintext highlighter-rouge">Resolver</code>.</p>
 
 <h2 id="first-ask-yourself-">First, ask yourself …</h2>
 
-<p>Do you really need a <code class="highlighter-rouge">Resolver</code>? Putting logic in a Resolver has some downsides:</p>
+<p>Do you really need a <code class="language-plaintext highlighter-rouge">Resolver</code>? Putting logic in a Resolver has some downsides:</p>
 
 <ul>
   <li>Since it’s coupled to GraphQL, it’s harder to test than a plain ol’ Ruby object in your app</li>
@@ -108,7 +108,7 @@
 <p>As a matter of code organization, that class method could be put in a module and shared between different classes that need it.</p>
 
 <ul>
-  <li>If you need the <em>same</em> logic shared between several objects, consider using a Ruby module and its <code class="highlighter-rouge">self.included</code> hook, for example:</li>
+  <li>If you need the <em>same</em> logic shared between several objects, consider using a Ruby module and its <code class="language-plaintext highlighter-rouge">self.included</code> hook, for example:</li>
 </ul>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">HasRecommendedItems</span>
@@ -135,14 +135,14 @@
 
 <h2 id="when-do-you-really-need-a-resolver">When do you really need a resolver?</h2>
 
-<p>So, if there are other, better options, why does <code class="highlighter-rouge">Resolver</code> exist? Here are a few specific advantages:</p>
+<p>So, if there are other, better options, why does <code class="language-plaintext highlighter-rouge">Resolver</code> exist? Here are a few specific advantages:</p>
 
 <ul>
-  <li><strong>Isolation</strong>. A <code class="highlighter-rouge">Resolver</code> is instantiated for each call to the field, so its instance variables are private to that object. If you need to use instance variables for some reason, this helps. You have a guarantee that those values won’t hang around when the work is done.</li>
-  <li><strong>Complex Schema Generation</strong>. <code class="highlighter-rouge">RelayClassicMutation</code> (which is a <code class="highlighter-rouge">Resolver</code> subclass) generates input types and return types for each mutation. Using a <code class="highlighter-rouge">Resolver</code> class makes it easier to implement, share and extend this code generation logic.</li>
+  <li><strong>Isolation</strong>. A <code class="language-plaintext highlighter-rouge">Resolver</code> is instantiated for each call to the field, so its instance variables are private to that object. If you need to use instance variables for some reason, this helps. You have a guarantee that those values won’t hang around when the work is done.</li>
+  <li><strong>Complex Schema Generation</strong>. <code class="language-plaintext highlighter-rouge">RelayClassicMutation</code> (which is a <code class="language-plaintext highlighter-rouge">Resolver</code> subclass) generates input types and return types for each mutation. Using a <code class="language-plaintext highlighter-rouge">Resolver</code> class makes it easier to implement, share and extend this code generation logic.</li>
 </ul>
 
-<h2 id="using-resolver">Using <code class="highlighter-rouge">resolver</code></h2>
+<h2 id="using-resolver">Using <code class="language-plaintext highlighter-rouge">resolver</code></h2>
 
 <p>To add resolvers to your project, make a base class:</p>
 
@@ -188,7 +188,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Since the <code class="highlighter-rouge">Resolver</code> lifecycle is managed by the GraphQL runtime, the best way to test it is to execute GraphQL queries and check the results.</p>
+<p>Since the <code class="language-plaintext highlighter-rouge">Resolver</code> lifecycle is managed by the GraphQL runtime, the best way to test it is to execute GraphQL queries and check the results.</p>
 
 <h3 id="nesting-resolvers-of-the-same-type">Nesting resolvers of the same type</h3>
 
@@ -224,7 +224,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The above can produce the following error: <code class="highlighter-rouge">Failed to build return type for Task.tasks from nil: Unexpected type input:  (NilClass)</code>.</p>
+<p>The above can produce the following error: <code class="language-plaintext highlighter-rouge">Failed to build return type for Task.tasks from nil: Unexpected type input:  (NilClass)</code>.</p>
 
 <p>A simple solution is to express the type as a string in the resolver:</p>
 
@@ -243,7 +243,7 @@
 
 <h1 id="extensions">Extensions</h1>
 
-<p>In cases when you want your resolvers to add some extensions to the field they resolve, you can use <code class="highlighter-rouge">extension</code> method, which accepts extension class and options. Multiple extensions can be configured for a single resolver.</p>
+<p>In cases when you want your resolvers to add some extensions to the field they resolve, you can use <code class="language-plaintext highlighter-rouge">extension</code> method, which accepts extension class and options. Multiple extensions can be configured for a single resolver.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GreetingExtension</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">FieldExtension</span>
   <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">object</span><span class="p">:,</span> <span class="n">arguments</span><span class="p">:,</span> <span class="o">**</span><span class="n">rest</span><span class="p">)</span>

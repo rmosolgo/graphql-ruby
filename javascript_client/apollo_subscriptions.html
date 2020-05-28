@@ -73,9 +73,9 @@
 
 <h2 id="apollo-2--pusher">Apollo 2 – Pusher</h2>
 
-<p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with Pusher and ApolloLink.</p>
+<p><code class="language-plaintext highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with Pusher and ApolloLink.</p>
 
-<p>To use it, add <code class="highlighter-rouge">PusherLink</code> before your <code class="highlighter-rouge">HttpLink</code>.</p>
+<p>To use it, add <code class="language-plaintext highlighter-rouge">PusherLink</code> before your <code class="language-plaintext highlighter-rouge">HttpLink</code>.</p>
 
 <p>For example:</p>
 
@@ -111,13 +111,13 @@
 <span class="p">});</span>
 </code></pre></div></div>
 
-<p>This link will check responses for the <code class="highlighter-rouge">X-Subscription-ID</code> header, and if it’s present, it will use that value to subscribe to Pusher for future updates.</p>
+<p>This link will check responses for the <code class="language-plaintext highlighter-rouge">X-Subscription-ID</code> header, and if it’s present, it will use that value to subscribe to Pusher for future updates.</p>
 
 <h2 id="apollo-2--ably">Apollo 2 – Ably</h2>
 
-<p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with Ably and ApolloLink.</p>
+<p><code class="language-plaintext highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with Ably and ApolloLink.</p>
 
-<p>To use it, add <code class="highlighter-rouge">AblyLink</code> before your <code class="highlighter-rouge">HttpLink</code>.</p>
+<p>To use it, add <code class="language-plaintext highlighter-rouge">AblyLink</code> before your <code class="language-plaintext highlighter-rouge">HttpLink</code>.</p>
 
 <p>For example:</p>
 
@@ -151,7 +151,7 @@
 <span class="p">});</span>
 </code></pre></div></div>
 
-<p>This link will check responses for the <code class="highlighter-rouge">X-Subscription-ID</code> header, and if it’s present, it will use that value to subscribe to Ably for future updates.</p>
+<p>This link will check responses for the <code class="language-plaintext highlighter-rouge">X-Subscription-ID</code> header, and if it’s present, it will use that value to subscribe to Ably for future updates.</p>
 
 <p>For your <strong>app key</strong>, make a key with “Subscribe” and “Presence” privileges and use that:</p>
 
@@ -161,13 +161,13 @@
 
 <h2 id="apollo-2--actioncable">Apollo 2 – ActionCable</h2>
 
-<p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with ActionCable and ApolloLink.</p>
+<p><code class="language-plaintext highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with ActionCable and ApolloLink.</p>
 
 <p>To use it, construct a split link that routes:</p>
 
 <ul>
-  <li>subscription queries to an <code class="highlighter-rouge">ActionCableLink</code>; and</li>
-  <li>other queries to an <code class="highlighter-rouge">HttpLink</code></li>
+  <li>subscription queries to an <code class="language-plaintext highlighter-rouge">ActionCableLink</code>; and</li>
+  <li>other queries to an <code class="language-plaintext highlighter-rouge">HttpLink</code></li>
 </ul>
 
 <p>For example:</p>
@@ -206,15 +206,15 @@
 
 <h2 id="apollo-1">Apollo 1</h2>
 
-<p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for Apollo 1 client subscriptions over <a href="/subscriptions/pusher_implementation">Pusher</a> or <a href="/subscriptions/action_cable_implementation">ActionCable</a>.</p>
+<p><code class="language-plaintext highlighter-rouge">graphql-ruby-client</code> includes support for Apollo 1 client subscriptions over <a href="/subscriptions/pusher_implementation">Pusher</a> or <a href="/subscriptions/action_cable_implementation">ActionCable</a>.</p>
 
-<p>To use it, require <code class="highlighter-rouge">subscriptions/addGraphQLSubscriptions</code> and call the function with your network interface and transport client (example below).</p>
+<p>To use it, require <code class="language-plaintext highlighter-rouge">subscriptions/addGraphQLSubscriptions</code> and call the function with your network interface and transport client (example below).</p>
 
 <p>See the <a href="/subscriptions/overview">Subscriptions guide</a> for information about server-side setup.</p>
 
 <h3 id="apollo-1--pusher">Apollo 1 – Pusher</h3>
 
-<p>Pass <code class="highlighter-rouge">{pusher: pusherClient}</code> to use Pusher:</p>
+<p>Pass <code class="language-plaintext highlighter-rouge">{pusher: pusherClient}</code> to use Pusher:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load Pusher and create a client</span>
 <span class="kd">var</span> <span class="nx">Pusher</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">pusher-js</span><span class="dl">"</span><span class="p">)</span>
@@ -231,7 +231,7 @@
 
 <h3 id="apollo-1--actioncable">Apollo 1 – ActionCable</h3>
 
-<p>By passing <code class="highlighter-rouge">{cable: cable}</code>, all <code class="highlighter-rouge">subscription</code> queries will be routed to ActionCable.</p>
+<p>By passing <code class="language-plaintext highlighter-rouge">{cable: cable}</code>, all <code class="language-plaintext highlighter-rouge">subscription</code> queries will be routed to ActionCable.</p>
 
 <p>For example:</p>
 

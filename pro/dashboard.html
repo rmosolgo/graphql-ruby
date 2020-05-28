@@ -62,7 +62,7 @@
 
 <h2 id="installation">Installation</h2>
 
-<p>To hook up the Dashboard, add it to <code class="highlighter-rouge">routes.rb</code></p>
+<p>To hook up the Dashboard, add it to <code class="language-plaintext highlighter-rouge">routes.rb</code></p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
 
@@ -77,13 +77,13 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>With this configuration, it will be available at <code class="highlighter-rouge">/graphql/dashboard</code>.</p>
+<p>With this configuration, it will be available at <code class="language-plaintext highlighter-rouge">/graphql/dashboard</code>.</p>
 
 <p>The dashboard is a Rack app, so you can mount it in Sinatra or any other Rack app.</p>
 
 <h2 id="authorizing-the-dashboard">Authorizing the Dashboard</h2>
 
-<p>You should only allow admin users to see <code class="highlighter-rouge">/graphql/dashboard</code> because it allows viewers to delete stored operations.</p>
+<p>You should only allow admin users to see <code class="language-plaintext highlighter-rouge">/graphql/dashboard</code> because it allows viewers to delete stored operations.</p>
 
 <h3 id="rails-routing-constraints">Rails Routing Constraints</h3>
 
@@ -99,7 +99,7 @@
 
 <h3 id="rack-basic-authentication">Rack Basic Authentication</h3>
 
-<p>Insert the <code class="highlighter-rouge">Rack::Auth::Basic</code> middleware, before the web view. This prompts for a username and password when visiting the dashboard.</p>
+<p>Insert the <code class="language-plaintext highlighter-rouge">Rack::Auth::Basic</code> middleware, before the web view. This prompts for a username and password when visiting the dashboard.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">graphql_dashboard</span> <span class="o">=</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Builder</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
   <span class="n">use</span><span class="p">(</span><span class="no">Rack</span><span class="o">::</span><span class="no">Auth</span><span class="o">::</span><span class="no">Basic</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">|</span>

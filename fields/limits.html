@@ -49,7 +49,7 @@
 <div class="guide-container">
   <h2 id="list-fields">List Fields</h2>
 
-<p>Always limit the number of items which can be returned from a list field. For example, use a <code class="highlighter-rouge">limit:</code> argument and make sure it’s not too big. The <code class="highlighter-rouge">prepare:</code> function provides a convenient place to cap the number of items:</p>
+<p>Always limit the number of items which can be returned from a list field. For example, use a <code class="language-plaintext highlighter-rouge">limit:</code> argument and make sure it’s not too big. The <code class="language-plaintext highlighter-rouge">prepare:</code> function provides a convenient place to cap the number of items:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">ItemType</span><span class="p">]</span> <span class="k">do</span>
   <span class="c1"># Cap the number of items at 30</span>
@@ -65,7 +65,7 @@
 
 <h2 id="relay-connections">Relay Connections</h2>
 
-<p>Relay connections accept a <a href="/relay/connections.html#maximum-page-size"><code class="highlighter-rouge">max_page_size</code> option</a> which limits the number of nodes.</p>
+<p>Relay connections accept a <a href="/relay/connections.html#maximum-page-size"><code class="language-plaintext highlighter-rouge">max_page_size</code> option</a> which limits the number of nodes.</p>
 
 </div>
 <p class="guide-footer">

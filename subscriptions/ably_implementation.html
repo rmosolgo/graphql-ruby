@@ -86,7 +86,7 @@
 <p>So, the lifecycle goes like this:</p>
 
 <ul>
-  <li>A <code class="highlighter-rouge">subscription</code> query is sent by HTTP Post to your server (just like a <code class="highlighter-rouge">query</code> or <code class="highlighter-rouge">mutation</code>)</li>
+  <li>A <code class="language-plaintext highlighter-rouge">subscription</code> query is sent by HTTP Post to your server (just like a <code class="language-plaintext highlighter-rouge">query</code> or <code class="language-plaintext highlighter-rouge">mutation</code>)</li>
   <li>The response contains a Ably channel ID (as an HTTP header) which the client may subscribe to</li>
   <li>The client opens that Ably channel</li>
   <li>When the server triggers updates, they’re delivered over the Ably channel</li>
@@ -95,7 +95,7 @@
 
 <p>Here’s another look:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. Subscription is created in your app
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. Subscription is created in your app
 
           HTTP POST
         .----------&gt;   write to Redis
@@ -126,12 +126,12 @@
 <p>By using this configuration, you can use GraphQL subscriptions without hosting a push server yourself!</p>
 
 <h2 id="ably-setup">Ably setup</h2>
-<p>Add <code class="highlighter-rouge">ably-rest</code> to your <code class="highlighter-rouge">Gemfile</code>:</p>
+<p>Add <code class="language-plaintext highlighter-rouge">ably-rest</code> to your <code class="language-plaintext highlighter-rouge">Gemfile</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'ably-rest'</span>
 </code></pre></div></div>
 
-<p>and <code class="highlighter-rouge">bundle install</code>.</p>
+<p>and <code class="language-plaintext highlighter-rouge">bundle install</code>.</p>
 
 <h2 id="database-setup">Database setup</h2>
 
@@ -148,12 +148,12 @@ appendonly <span class="nb">yes</span>
 
 <h2 id="schema-configuration">Schema configuration</h2>
 
-<p>Add <code class="highlighter-rouge">redis</code> to your <code class="highlighter-rouge">Gemfile</code>:</p>
+<p>Add <code class="language-plaintext highlighter-rouge">redis</code> to your <code class="language-plaintext highlighter-rouge">Gemfile</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'redis'</span>
 </code></pre></div></div>
 
-<p>and <code class="highlighter-rouge">bundle install</code>. Then create a Redis instance:</p>
+<p>and <code class="language-plaintext highlighter-rouge">bundle install</code>. Then create a Redis instance:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># for example, in an initializer:</span>
 <span class="vg">$graphql_subscriptions_redis</span> <span class="o">=</span> <span class="no">Redis</span><span class="p">.</span><span class="nf">new</span> <span class="c1"># default connection</span>
@@ -168,13 +168,13 @@ appendonly <span class="nb">yes</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>That connection will be used for managing subscription state. All writes to Redis are prefixed with <code class="highlighter-rouge">graphql:sub:</code>.</p>
+<p>That connection will be used for managing subscription state. All writes to Redis are prefixed with <code class="language-plaintext highlighter-rouge">graphql:sub:</code>.</p>
 
 <h2 id="execution-configuration">Execution configuration</h2>
 
-<p>During execution, GraphQL will assign a <code class="highlighter-rouge">subscription_id</code> to the <code class="highlighter-rouge">context</code> hash. The client will use that ID to listen for updates, so you must return the <code class="highlighter-rouge">subscription_id</code> in the response headers.</p>
+<p>During execution, GraphQL will assign a <code class="language-plaintext highlighter-rouge">subscription_id</code> to the <code class="language-plaintext highlighter-rouge">context</code> hash. The client will use that ID to listen for updates, so you must return the <code class="language-plaintext highlighter-rouge">subscription_id</code> in the response headers.</p>
 
-<p>Return <code class="highlighter-rouge">result.context[:subscription_id]</code> as the <code class="highlighter-rouge">X-Subscription-ID</code> header. For example:</p>
+<p>Return <code class="language-plaintext highlighter-rouge">result.context[:subscription_id]</code> as the <code class="language-plaintext highlighter-rouge">X-Subscription-ID</code> header. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="c1"># For subscriptions, return the subscription_id as a header</span>
@@ -252,9 +252,9 @@ appendonly <span class="nb">yes</span>
 
 <h2 id="serializing-context">Serializing Context</h2>
 
-<p>Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query <code class="highlighter-rouge">context</code>.</p>
+<p>Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query <code class="language-plaintext highlighter-rouge">context</code>.</p>
 
-<p>By default, this is done with <a href="/api-doc/1.10.10/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="highlighter-rouge">dump</code> and <code class="highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="highlighter-rouge">GraphQL::Pro::AblySubscriptions</code> and override <code class="highlighter-rouge">#dump_context(ctx)</code> and <code class="highlighter-rouge">#load_context(ctx_string)</code>:</p>
+<p>By default, this is done with <a href="/api-doc/1.10.10/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="language-plaintext highlighter-rouge">dump</code> and <code class="language-plaintext highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="language-plaintext highlighter-rouge">GraphQL::Pro::AblySubscriptions</code> and override <code class="language-plaintext highlighter-rouge">#dump_context(ctx)</code> and <code class="language-plaintext highlighter-rouge">#load_context(ctx_string)</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomSubscriptions</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">AblySubscriptions</span>
   <span class="k">def</span> <span class="nf">dump_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>

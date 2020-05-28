@@ -57,7 +57,7 @@
 
 <h2 id="testing-application-level-behaviors">Testing Application-Level Behaviors</h2>
 
-<p>When it comes to <em>how your application behaves</em>, you should lean on <em>unit tests</em> which exercise application primitives directly. For example, if postings require a title and a body, you should write a test for <code class="highlighter-rouge">Post</code> which asserts that invalid <code class="highlighter-rouge">Post</code>s fail to save. Several other components of the application may be tested this way:</p>
+<p>When it comes to <em>how your application behaves</em>, you should lean on <em>unit tests</em> which exercise application primitives directly. For example, if postings require a title and a body, you should write a test for <code class="language-plaintext highlighter-rouge">Post</code> which asserts that invalid <code class="language-plaintext highlighter-rouge">Post</code>s fail to save. Several other components of the application may be tested this way:</p>
 
 <ul>
   <li>Permissions: test your authorization system using example resources and actors. Dedicated, high-level frameworks like <a href="https://github.com/varvet/pundit">Pundit</a> make it easy to test authorization in isolation.</li>
@@ -69,9 +69,9 @@
 
 <h2 id="testing-interface-level-behaviors">Testing Interface-Level Behaviors</h2>
 
-<p>After building your application, you give it an interface so that people (or other software) can interact with it. Sometimes the interface is a website, other times it’s a GraphQL API. The interface has transport-specific primitives that map to your application’s primitives. For example, a React app might have components that correspond to <code class="highlighter-rouge">Post</code>, <code class="highlighter-rouge">Comment</code>, and a <code class="highlighter-rouge">Moderation</code> operation. (These components might even be context-specific, like <code class="highlighter-rouge">ThreadComment</code> or <code class="highlighter-rouge">DraftPost</code>.) Similarly, a GraphQL interface has types and fields that correspond to the underlying application primitives (like <code class="highlighter-rouge">Post</code> and <code class="highlighter-rouge">Comment</code> types, a <code class="highlighter-rouge">Post.isDraft</code> field, or a <code class="highlighter-rouge">ModerateComment</code> mutation).</p>
+<p>After building your application, you give it an interface so that people (or other software) can interact with it. Sometimes the interface is a website, other times it’s a GraphQL API. The interface has transport-specific primitives that map to your application’s primitives. For example, a React app might have components that correspond to <code class="language-plaintext highlighter-rouge">Post</code>, <code class="language-plaintext highlighter-rouge">Comment</code>, and a <code class="language-plaintext highlighter-rouge">Moderation</code> operation. (These components might even be context-specific, like <code class="language-plaintext highlighter-rouge">ThreadComment</code> or <code class="language-plaintext highlighter-rouge">DraftPost</code>.) Similarly, a GraphQL interface has types and fields that correspond to the underlying application primitives (like <code class="language-plaintext highlighter-rouge">Post</code> and <code class="language-plaintext highlighter-rouge">Comment</code> types, a <code class="language-plaintext highlighter-rouge">Post.isDraft</code> field, or a <code class="language-plaintext highlighter-rouge">ModerateComment</code> mutation).</p>
 
-<p>The best way to test a GraphQL interface is with <em>integration tests</em> which run the whole GraphQL system (using <code class="highlighter-rouge">MySchema.execute(...)</code>). By using an integration test, you can be sure that all of GraphQL-Ruby’s internal systems are engaged (validation, analysis, authorization, data loading, response type-checking, etc.).</p>
+<p>The best way to test a GraphQL interface is with <em>integration tests</em> which run the whole GraphQL system (using <code class="language-plaintext highlighter-rouge">MySchema.execute(...)</code>). By using an integration test, you can be sure that all of GraphQL-Ruby’s internal systems are engaged (validation, analysis, authorization, data loading, response type-checking, etc.).</p>
 
 <p>An basic integration test might look like:</p>
 
@@ -141,7 +141,7 @@
 
 <ul>
   <li>POST data is correctly turned into query variables</li>
-  <li>Authentication headers are used to load a <code class="highlighter-rouge">context[:viewer]</code></li>
+  <li>Authentication headers are used to load a <code class="language-plaintext highlighter-rouge">context[:viewer]</code></li>
 </ul>
 
 <p>In Rails, you might use a <a href="https://guides.rubyonrails.org/testing.html#functional-tests-for-your-controllers">functional test</a> for this, for example:</p>

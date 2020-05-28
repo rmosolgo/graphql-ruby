@@ -47,10 +47,10 @@
 
 <h1 class="guide-header">OperationStore Sync</h1>
 <div class="guide-container">
-  <p>JavaScript support for GraphQL projects using <a href="https://graphql.pro">graphql-pro</a>’s <code class="highlighter-rouge">OperationStore</code> for persisted queries.</p>
+  <p>JavaScript support for GraphQL projects using <a href="https://graphql.pro">graphql-pro</a>’s <code class="language-plaintext highlighter-rouge">OperationStore</code> for persisted queries.</p>
 
 <ul>
-  <li><a href="#sync-utility"><code class="highlighter-rouge">sync</code> CLI</a></li>
+  <li><a href="#sync-utility"><code class="language-plaintext highlighter-rouge">sync</code> CLI</a></li>
   <li><a href="#use-with-relay-2">Relay &lt;2 support</a></li>
   <li><a href="#use-with-relay-persisted-output">Relay 2+ support</a></li>
   <li><a href="#use-with-apollo-client">Apollo Client support</a></li>
@@ -62,11 +62,11 @@
 
 <p>See the <a href="/operation_store/overview">OperationStore guide</a> for server-side setup.</p>
 
-<h2 id="sync-utility"><code class="highlighter-rouge">sync</code> utility</h2>
+<h2 id="sync-utility"><code class="language-plaintext highlighter-rouge">sync</code> utility</h2>
 
-<p>This package contains a command line utility, <code class="highlighter-rouge">graphql-ruby-client sync</code>:</p>
+<p>This package contains a command line utility, <code class="language-plaintext highlighter-rouge">graphql-ruby-client sync</code>:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync # ...
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync # ...
 Authorizing with HMAC
 Syncing 4 operations to http://myapp.com/graphql/operations...
   3 added
@@ -76,7 +76,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 ✓ Done!
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">sync</code> Takes several options:</p>
+<p><code class="language-plaintext highlighter-rouge">sync</code> Takes several options:</p>
 
 <table>
   <thead>
@@ -87,55 +87,55 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
   </thead>
   <tbody>
     <tr>
-      <td><code class="highlighter-rouge">--url</code></td>
+      <td><code class="language-plaintext highlighter-rouge">--url</code></td>
       <td><a href="/operation_store/getting_started.html#add-routes">Sync API</a> url</td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">--path</code></td>
-      <td>Local directory to search for <code class="highlighter-rouge">.graphql</code> / <code class="highlighter-rouge">.graphql.js</code> files</td>
+      <td><code class="language-plaintext highlighter-rouge">--path</code></td>
+      <td>Local directory to search for <code class="language-plaintext highlighter-rouge">.graphql</code> / <code class="language-plaintext highlighter-rouge">.graphql.js</code> files</td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">--relay-persisted-output</code></td>
-      <td>Path to a <code class="highlighter-rouge">.json</code> file from <code class="highlighter-rouge">relay-compiler ... --persist-output</code></td>
+      <td><code class="language-plaintext highlighter-rouge">--relay-persisted-output</code></td>
+      <td>Path to a <code class="language-plaintext highlighter-rouge">.json</code> file from <code class="language-plaintext highlighter-rouge">relay-compiler ... --persist-output</code></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">--apollo-android-operation-output</code></td>
-      <td>Path to an <code class="highlighter-rouge">OperationOutput.json</code> file from Apollo Android</td>
+      <td><code class="language-plaintext highlighter-rouge">--apollo-android-operation-output</code></td>
+      <td>Path to an <code class="language-plaintext highlighter-rouge">OperationOutput.json</code> file from Apollo Android</td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">--client</code></td>
+      <td><code class="language-plaintext highlighter-rouge">--client</code></td>
       <td>Client ID (<a href="/operation_store/client_workflow">created on server</a>)</td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">--secret</code></td>
+      <td><code class="language-plaintext highlighter-rouge">--secret</code></td>
       <td>Client Secret (<a href="/operation_store/client_workflow">created on server</a>)</td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">--outfile</code></td>
+      <td><code class="language-plaintext highlighter-rouge">--outfile</code></td>
       <td>Destination for generated code</td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">--outfile-type</code></td>
-      <td>What kind of code to generate (<code class="highlighter-rouge">js</code> or <code class="highlighter-rouge">json</code>)</td>
+      <td><code class="language-plaintext highlighter-rouge">--outfile-type</code></td>
+      <td>What kind of code to generate (<code class="language-plaintext highlighter-rouge">js</code> or <code class="language-plaintext highlighter-rouge">json</code>)</td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">--add-typename</code></td>
-      <td>Add <code class="highlighter-rouge">__typename</code> to all selection sets (for use with Apollo Client)</td>
+      <td><code class="language-plaintext highlighter-rouge">--add-typename</code></td>
+      <td>Add <code class="language-plaintext highlighter-rouge">__typename</code> to all selection sets (for use with Apollo Client)</td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">--verbose</code></td>
+      <td><code class="language-plaintext highlighter-rouge">--verbose</code></td>
       <td>Output some debug information</td>
     </tr>
   </tbody>
 </table>
 
-<p>You can see these and a few others with <code class="highlighter-rouge">graphql-ruby-client sync --help</code>.</p>
+<p>You can see these and a few others with <code class="language-plaintext highlighter-rouge">graphql-ruby-client sync --help</code>.</p>
 
 <h2 id="use-with-relay-2">Use with Relay &lt;2</h2>
 
-<p><code class="highlighter-rouge">graphql-ruby-client</code> can persist queries from <code class="highlighter-rouge">relay-compiler</code> using the embedded <code class="highlighter-rouge">@relayHash</code> value. (This was created in Relay before 2.0.0. See below for Relay 2.0+.)</p>
+<p><code class="language-plaintext highlighter-rouge">graphql-ruby-client</code> can persist queries from <code class="language-plaintext highlighter-rouge">relay-compiler</code> using the embedded <code class="language-plaintext highlighter-rouge">@relayHash</code> value. (This was created in Relay before 2.0.0. See below for Relay 2.0+.)</p>
 
-<p>To sync your queries with the server, use the <code class="highlighter-rouge">--path</code> option to point to your <code class="highlighter-rouge">__generated__</code> directory, for example:</p>
+<p>To sync your queries with the server, use the <code class="language-plaintext highlighter-rouge">--path</code> option to point to your <code class="language-plaintext highlighter-rouge">__generated__</code> directory, for example:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># sync a Relay project</span>
 <span class="nv">$ </span>graphql-ruby-client <span class="nb">sync</span> <span class="nt">--path</span><span class="o">=</span>src/__generated__  <span class="nt">--outfile</span><span class="o">=</span>src/OperationStoreClient.js <span class="nt">--url</span><span class="o">=</span>...
@@ -176,19 +176,19 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <h2 id="use-with-relay-persisted-output">Use With Relay Persisted Output</h2>
 
-<p>Relay 2.0+ includes a <code class="highlighter-rouge">--persist-output</code> option for <code class="highlighter-rouge">relay-compiler</code> which works perfectly with GraphQL-Ruby. (Relay’s own docs, for reference: https://relay.dev/docs/en/persisted-queries.)</p>
+<p>Relay 2.0+ includes a <code class="language-plaintext highlighter-rouge">--persist-output</code> option for <code class="language-plaintext highlighter-rouge">relay-compiler</code> which works perfectly with GraphQL-Ruby. (Relay’s own docs, for reference: https://relay.dev/docs/en/persisted-queries.)</p>
 
-<p>When generating queries for Relay, include <code class="highlighter-rouge">--persist-output</code>:</p>
+<p>When generating queries for Relay, include <code class="language-plaintext highlighter-rouge">--persist-output</code>:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ relay-compiler ... --persist-output path/to/persisted-queries.json
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ relay-compiler ... --persist-output path/to/persisted-queries.json
 </code></pre></div></div>
 
-<p>Then, push Relay’s generated queries to your OperationStore server with <code class="highlighter-rouge">--relay-persisted-output</code>:</p>
+<p>Then, push Relay’s generated queries to your OperationStore server with <code class="language-plaintext highlighter-rouge">--relay-persisted-output</code>:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync --relay-persisted-output=path/to/persisted-queries.json --url=...
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync --relay-persisted-output=path/to/persisted-queries.json --url=...
 </code></pre></div></div>
 
-<p>In this case, <code class="highlighter-rouge">sync</code> <em>won’t</em> generate a JavaScript module because <code class="highlighter-rouge">relay-compiler</code> has already prepared its queries for persisted use. Instead, update your network layer to include the <em>client name</em> and <em>operation id</em> in the HTTP params:</p>
+<p>In this case, <code class="language-plaintext highlighter-rouge">sync</code> <em>won’t</em> generate a JavaScript module because <code class="language-plaintext highlighter-rouge">relay-compiler</code> has already prepared its queries for persisted use. Instead, update your network layer to include the <em>client name</em> and <em>operation id</em> in the HTTP params:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">operationStoreClientName</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">MyRelayApp</span><span class="dl">"</span><span class="p">;</span>
 
@@ -216,12 +216,12 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <h2 id="use-with-apollo-client">Use with Apollo Client</h2>
 
-<p>Use the <code class="highlighter-rouge">--path</code> option to point at your <code class="highlighter-rouge">.graphql</code> files:</p>
+<p>Use the <code class="language-plaintext highlighter-rouge">--path</code> option to point at your <code class="language-plaintext highlighter-rouge">.graphql</code> files:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync --path=src/graphql/ --url=...
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync --path=src/graphql/ --url=...
 </code></pre></div></div>
 
-<p>Then, load the generated module and add its <code class="highlighter-rouge">.apolloMiddleware</code> to your network interface with <code class="highlighter-rouge">.use([...])</code>:</p>
+<p>Then, load the generated module and add its <code class="language-plaintext highlighter-rouge">.apolloMiddleware</code> to your network interface with <code class="language-plaintext highlighter-rouge">.use([...])</code>:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// load the generated module</span>
 <span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
@@ -233,16 +233,16 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>Now, the middleware will replace query strings with <code class="highlighter-rouge">operationId</code>s.</p>
+<p>Now, the middleware will replace query strings with <code class="language-plaintext highlighter-rouge">operationId</code>s.</p>
 
 <h2 id="use-with-apollo-link">Use with Apollo Link</h2>
 
-<p>Use the <code class="highlighter-rouge">--path</code> option to point at your <code class="highlighter-rouge">.graphql</code> files:</p>
+<p>Use the <code class="language-plaintext highlighter-rouge">--path</code> option to point at your <code class="language-plaintext highlighter-rouge">.graphql</code> files:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync --path=src/graphql/ --url=...
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync --path=src/graphql/ --url=...
 </code></pre></div></div>
 
-<p>Then, load the generated module and add its <code class="highlighter-rouge">.apolloLink</code> to your Apollo Link:</p>
+<p>Then, load the generated module and add its <code class="language-plaintext highlighter-rouge">.apolloLink</code> to your Apollo Link:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// load the generated module</span>
 <span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
@@ -261,7 +261,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <span class="p">});</span>
 </code></pre></div></div>
 
-<p><strong>Update the controller</strong>: Apollo Link supports extra parameters <em>nested</em> as <code class="highlighter-rouge">params[:extensions][:operationId]</code>, so update your controller to add that param to context:</p>
+<p><strong>Update the controller</strong>: Apollo Link supports extra parameters <em>nested</em> as <code class="language-plaintext highlighter-rouge">params[:extensions][:operationId]</code>, so update your controller to add that param to context:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
 <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
@@ -271,11 +271,11 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>Now, <code class="highlighter-rouge">context[:operation_id]</code> will be used to fetch a query from the database.</p>
+<p>Now, <code class="language-plaintext highlighter-rouge">context[:operation_id]</code> will be used to fetch a query from the database.</p>
 
 <h2 id="use-with-apollo-android">Use with Apollo Android</h2>
 
-<p>Apollo Android’s <a href="https://www.apollographql.com/docs/android/advanced/persisted-queries/#operationoutputjson">generateOperationOutput option</a> builds an <code class="highlighter-rouge">OperationOutput.json</code> file which works with the OperationStore. To sync those queries, <strong>use the <code class="highlighter-rouge">--apollo-android-operation-output</code> option</strong>:</p>
+<p>Apollo Android’s <a href="https://www.apollographql.com/docs/android/advanced/persisted-queries/#operationoutputjson">generateOperationOutput option</a> builds an <code class="language-plaintext highlighter-rouge">OperationOutput.json</code> file which works with the OperationStore. To sync those queries, <strong>use the <code class="language-plaintext highlighter-rouge">--apollo-android-operation-output</code> option</strong>:</p>
 
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>graphql-ruby-client <span class="nb">sync</span> <span class="nt">--apollo-android-operation-output</span><span class="o">=</span>path/to/OperationOutput.json <span class="nt">--url</span><span class="o">=</span>...
 </code></pre></div></div>
@@ -301,11 +301,11 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>You may also have to <strong>update your app</strong> to send an identifier, so that the server can determine the “client name” used with the operation store. (Apollo Android sends a query hash, but the operation store expects IDs in the form <code class="highlighter-rouge">#{client_name}/#{query_hash}</code>.)</p>
+<p>You may also have to <strong>update your app</strong> to send an identifier, so that the server can determine the “client name” used with the operation store. (Apollo Android sends a query hash, but the operation store expects IDs in the form <code class="language-plaintext highlighter-rouge">#{client_name}/#{query_hash}</code>.)</p>
 
 <h2 id="use-with-plain-javascript">Use with plain JavaScript</h2>
 
-<p><code class="highlighter-rouge">OperationStoreClient.getOperationId</code> takes an operation name as input and returns the server-side alias for that operation:</p>
+<p><code class="language-plaintext highlighter-rouge">OperationStoreClient.getOperationId</code> takes an operation name as input and returns the server-side alias for that operation:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 
@@ -313,7 +313,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="dl">"</span><span class="s2">ProductDetailQuery</span><span class="dl">"</span><span class="p">)</span> <span class="c1">// =&gt; "my-frontend-app/6726a3b816e99b9971a1d25a1205ca81ecadc6eb1d5dd3a71028c4b01cc254c1"</span>
 </code></pre></div></div>
 
-<p>Post the <code class="highlighter-rouge">operationId</code> in your GraphQL requests:</p>
+<p>Post the <code class="language-plaintext highlighter-rouge">operationId</code> in your GraphQL requests:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Lookup the operation name:</span>
 <span class="kd">var</span> <span class="nx">operationId</span> <span class="o">=</span> <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="nx">operationName</span><span class="p">)</span>
@@ -329,9 +329,9 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <h2 id="authorization">Authorization</h2>
 
-<p><code class="highlighter-rouge">OperationStore</code> uses HMAC-SHA256 to <a href="/operation_store/access_control">authenticate requests</a>.</p>
+<p><code class="language-plaintext highlighter-rouge">OperationStore</code> uses HMAC-SHA256 to <a href="/operation_store/access_control">authenticate requests</a>.</p>
 
-<p>Pass the key to <code class="highlighter-rouge">graphql-ruby-client sync</code> as <code class="highlighter-rouge">--secret</code> to authenticate it:</p>
+<p>Pass the key to <code class="language-plaintext highlighter-rouge">graphql-ruby-client sync</code> as <code class="language-plaintext highlighter-rouge">--secret</code> to authenticate it:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">export </span><span class="nv">MY_SECRET_KEY</span><span class="o">=</span> <span class="s2">"abcdefg..."</span>
 <span class="nv">$ </span>graphql-ruby-client <span class="nb">sync</span> ... <span class="nt">--secret</span><span class="o">=</span><span class="nv">$MY_SECRET_KEY</span>

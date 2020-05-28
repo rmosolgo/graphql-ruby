@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Triggers</h1>
 <div class="guide-container">
-  <p>From your application, you can push updates to GraphQL clients with <code class="highlighter-rouge">.trigger</code>.</p>
+  <p>From your application, you can push updates to GraphQL clients with <code class="language-plaintext highlighter-rouge">.trigger</code>.</p>
 
 <p>Events are triggered <em>by name</em>, and the name must match fields on your <a href="/subscriptions/subscription_type">Subscription Type</a></p>
 
@@ -58,19 +58,19 @@
 <p>The arguments are:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">name</code>, which corresponds to the field on subscription type</li>
-  <li><code class="highlighter-rouge">arguments</code>, which corresponds to the arguments on subscription type (for example, if you subscribe to comments on a certain post, the arguments would be <code class="highlighter-rouge">{postId: comment.post_id}</code>.)</li>
-  <li><code class="highlighter-rouge">object</code>, which will be the root object of the subscription update</li>
-  <li><code class="highlighter-rouge">scope:</code> (shown below) for implicitly scoping the clients who will receive updates.</li>
+  <li><code class="language-plaintext highlighter-rouge">name</code>, which corresponds to the field on subscription type</li>
+  <li><code class="language-plaintext highlighter-rouge">arguments</code>, which corresponds to the arguments on subscription type (for example, if you subscribe to comments on a certain post, the arguments would be <code class="language-plaintext highlighter-rouge">{postId: comment.post_id}</code>.)</li>
+  <li><code class="language-plaintext highlighter-rouge">object</code>, which will be the root object of the subscription update</li>
+  <li><code class="language-plaintext highlighter-rouge">scope:</code> (shown below) for implicitly scoping the clients who will receive updates.</li>
 </ul>
 
 <h2 id="scope">Scope</h2>
 
-<p>To send updates to <em>certain clients only</em>, you can use <code class="highlighter-rouge">scope:</code> to narrow the trigger’s reach.</p>
+<p>To send updates to <em>certain clients only</em>, you can use <code class="language-plaintext highlighter-rouge">scope:</code> to narrow the trigger’s reach.</p>
 
-<p>Scopes are based on query context: a value in <code class="highlighter-rouge">context:</code> is used as the scope; an equivalent value must be passed with <code class="highlighter-rouge">.trigger(... scope:)</code> to update that client. (The value is serialized with <a href="/api-doc/1.10.10/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>)</p>
+<p>Scopes are based on query context: a value in <code class="language-plaintext highlighter-rouge">context:</code> is used as the scope; an equivalent value must be passed with <code class="language-plaintext highlighter-rouge">.trigger(... scope:)</code> to update that client. (The value is serialized with <a href="/api-doc/1.10.10/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>)</p>
 
-<p>To specify that a topic is scoped, edit the field definition on your root <code class="highlighter-rouge">Subscription</code> type. Use the <code class="highlighter-rouge">subscription_scope:</code> option to name a <code class="highlighter-rouge">context:</code> key, for example:</p>
+<p>To specify that a topic is scoped, edit the field definition on your root <code class="language-plaintext highlighter-rouge">Subscription</code> type. Use the <code class="language-plaintext highlighter-rouge">subscription_scope:</code> option to name a <code class="language-plaintext highlighter-rouge">context:</code> key, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># For a given viewer, this will be triggered</span>
 <span class="c1"># whenever one of their posts gets a new comment</span>
@@ -80,13 +80,13 @@
   <span class="ss">subscription_scope: :current_user_id</span>
 </code></pre></div></div>
 
-<p>Then, subscription operations should have a <code class="highlighter-rouge">context: { current_user_id: ... }</code> value, for example:</p>
+<p>Then, subscription operations should have a <code class="language-plaintext highlighter-rouge">context: { current_user_id: ... }</code> value, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># current_user_id will be the scope for some subscriptions:</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user_id: </span><span class="n">current_user</span><span class="p">.</span><span class="nf">id</span> <span class="p">})</span>
 </code></pre></div></div>
 
-<p>Finally, when events happen in your app, you should provide the scoping value as <code class="highlighter-rouge">scope:</code>, for example:</p>
+<p>Finally, when events happen in your app, you should provide the scoping value as <code class="language-plaintext highlighter-rouge">scope:</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># A new comment is added</span>
 <span class="n">comment</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
@@ -95,7 +95,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="s2">"commentAdded"</span><span class="p">,</span> <span class="p">{},</span> <span class="n">comment</span><span class="p">,</span> <span class="ss">scope: </span><span class="n">author_id</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>Since this trigger has a <code class="highlighter-rouge">scope:</code>, only subscribers with a matching scope value will be updated.</p>
+<p>Since this trigger has a <code class="language-plaintext highlighter-rouge">scope:</code>, only subscribers with a matching scope value will be updated.</p>
 
 </div>
 <p class="guide-footer">

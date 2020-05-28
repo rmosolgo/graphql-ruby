@@ -83,9 +83,9 @@
 
 <p>So, what new mindset will work with a GraphQL API?</p>
 
-<p>For <strong>mutations</strong>, remember that each mutation is like an API request in itself. For example, <code class="highlighter-rouge">Posts#create</code> above would map to the <code class="highlighter-rouge">createPost(...)</code> mutation in GraphQL. So, each mutation should be authorized in its own right.</p>
+<p>For <strong>mutations</strong>, remember that each mutation is like an API request in itself. For example, <code class="language-plaintext highlighter-rouge">Posts#create</code> above would map to the <code class="language-plaintext highlighter-rouge">createPost(...)</code> mutation in GraphQL. So, each mutation should be authorized in its own right.</p>
 
-<p>For <strong>queries</strong>, you can think of each individual <em>object</em> like a <code class="highlighter-rouge">GET</code> request to a REST API. So, each object should be authorized for reading in its own right.</p>
+<p>For <strong>queries</strong>, you can think of each individual <em>object</em> like a <code class="language-plaintext highlighter-rouge">GET</code> request to a REST API. So, each object should be authorized for reading in its own right.</p>
 
 <p>By applying this mindset, each part of the GraphQL query will be properly authorized before it is executed. Also, since the different units of code are each authorized on their own, you can be sure that each incoming query will be properly authorized, even if it’s a brand new query that the server has never seen before.</p>
 
@@ -94,8 +94,8 @@
 <p>As a reminder:</p>
 
 <ul>
-  <li><em>Authentication</em> is the process of determining what user is making the current request, for example, accepting a username and password, or finding a <code class="highlighter-rouge">User</code> in the database from <code class="highlighter-rouge">session[:current_user_id]</code>.</li>
-  <li><em>Authorization</em> is the process of verifying that the current user has permission to do something (or see something), for example, checking <code class="highlighter-rouge">admin?</code> status or looking up permission groups from the database.</li>
+  <li><em>Authentication</em> is the process of determining what user is making the current request, for example, accepting a username and password, or finding a <code class="language-plaintext highlighter-rouge">User</code> in the database from <code class="language-plaintext highlighter-rouge">session[:current_user_id]</code>.</li>
+  <li><em>Authorization</em> is the process of verifying that the current user has permission to do something (or see something), for example, checking <code class="language-plaintext highlighter-rouge">admin?</code> status or looking up permission groups from the database.</li>
 </ul>
 
 <p>In general, authentication is <em>not</em> addressed in GraphQL at all. Instead, your controller should get the current user based on the HTTP request (eg, an HTTP header or a cookie) and provide that information to the GraphQL query. For example:</p>
@@ -111,7 +111,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>After your HTTP handler has loaded the current user, you can access it via <code class="highlighter-rouge">context[:current_user]</code> in your GraphQL code.</p>
+<p>After your HTTP handler has loaded the current user, you can access it via <code class="language-plaintext highlighter-rouge">context[:current_user]</code> in your GraphQL code.</p>
 
 <h2 id="authorization-in-your-business-logic">Authorization in Your Business Logic</h2>
 
@@ -129,9 +129,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The downside of this is that, when <code class="highlighter-rouge">Types::Post</code> is queried in other contexts, the same authorization check may not be applied. Additionally, since the authorization code is coupled with the GraphQL API, the only way to test it is via GraphQL queries, which adds some complexity to tests.</p>
+<p>The downside of this is that, when <code class="language-plaintext highlighter-rouge">Types::Post</code> is queried in other contexts, the same authorization check may not be applied. Additionally, since the authorization code is coupled with the GraphQL API, the only way to test it is via GraphQL queries, which adds some complexity to tests.</p>
 
-<p>Alternatively, you could move the authorization to your business logic, the <code class="highlighter-rouge">Post</code> class:</p>
+<p>Alternatively, you could move the authorization to your business logic, the <code class="language-plaintext highlighter-rouge">Post</code> class:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="c1"># Return the list of posts which `user` may see</span>
@@ -155,7 +155,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>In this case, <code class="highlighter-rouge">Post.posts_for(user)</code> could be tested <em>independently</em> from GraphQL. Then, you have less to worry about in your GraphQL tests. As a bonus, you can use <code class="highlighter-rouge">Post.posts_for(user)</code> in <em>other</em> parts of the app, too, such as the web UI or REST API.</p>
+<p>In this case, <code class="language-plaintext highlighter-rouge">Post.posts_for(user)</code> could be tested <em>independently</em> from GraphQL. Then, you have less to worry about in your GraphQL tests. As a bonus, you can use <code class="language-plaintext highlighter-rouge">Post.posts_for(user)</code> in <em>other</em> parts of the app, too, such as the web UI or REST API.</p>
 
 <h2 id="graphql-rubys-authorization-framework">GraphQL-Ruby’s Authorization Framework</h2>
 

@@ -49,13 +49,13 @@
 <div class="guide-container">
   <h2 id="installation">Installation</h2>
 
-<p>You can install <code class="highlighter-rouge">graphql</code> from RubyGems by adding to your application’s <code class="highlighter-rouge">Gemfile</code>:</p>
+<p>You can install <code class="language-plaintext highlighter-rouge">graphql</code> from RubyGems by adding to your application’s <code class="language-plaintext highlighter-rouge">Gemfile</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Gemfile</span>
 <span class="n">gem</span> <span class="s2">"graphql"</span>
 </code></pre></div></div>
 
-<p>Then, running <code class="highlighter-rouge">bundle install</code>:</p>
+<p>Then, running <code class="language-plaintext highlighter-rouge">bundle install</code>:</p>
 
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>bundle <span class="nb">install</span>
 </code></pre></div></div>
@@ -126,7 +126,7 @@ rails g graphql:object Post title:String rating:Int comments:[Comment]
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, build a schema with <code class="highlighter-rouge">QueryType</code> as the query entry point:</p>
+<p>Then, build a schema with <code class="language-plaintext highlighter-rouge">QueryType</code> as the query entry point:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">query</span> <span class="no">QueryType</span>
@@ -166,17 +166,17 @@ rails g graphql:object Post title:String rating:Int comments:[Comment]
 <p>If you’re building a backend for <a href="https://facebook.github.io/relay/">Relay</a>, you’ll need:</p>
 
 <ul>
-  <li>A JSON dump of the schema, which you can get by sending <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb"><code class="highlighter-rouge">GraphQL::Introspection::INTROSPECTION_QUERY</code></a></li>
-  <li>Relay-specific helpers for GraphQL, see the <code class="highlighter-rouge">GraphQL::Relay</code> guides.</li>
+  <li>A JSON dump of the schema, which you can get by sending <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb"><code class="language-plaintext highlighter-rouge">GraphQL::Introspection::INTROSPECTION_QUERY</code></a></li>
+  <li>Relay-specific helpers for GraphQL, see the <code class="language-plaintext highlighter-rouge">GraphQL::Relay</code> guides.</li>
 </ul>
 
 <h2 id="use-with-apollo-client">Use with Apollo Client</h2>
 
-<p><a href="https://www.apollographql.com/">Apollo Client</a> is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don’t need to do anything special to connect Apollo Client to a <code class="highlighter-rouge">graphql-ruby</code> server.</p>
+<p><a href="https://www.apollographql.com/">Apollo Client</a> is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don’t need to do anything special to connect Apollo Client to a <code class="language-plaintext highlighter-rouge">graphql-ruby</code> server.</p>
 
 <h2 id="use-with-graphqljs-client">Use with GraphQL.js Client</h2>
 
-<p><a href="https://github.com/f/graphql.js">GraphQL.js Client</a> is a tiny client that is platform- and framework-agnostic. It works well with <code class="highlighter-rouge">graphql-ruby</code> servers, since GraphQL requests are simple query strings transported over HTTP.</p>
+<p><a href="https://github.com/f/graphql.js">GraphQL.js Client</a> is a tiny client that is platform- and framework-agnostic. It works well with <code class="language-plaintext highlighter-rouge">graphql-ruby</code> servers, since GraphQL requests are simple query strings transported over HTTP.</p>
 
 </div>
 <p class="guide-footer">

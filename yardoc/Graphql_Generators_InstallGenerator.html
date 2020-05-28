@@ -6,7 +6,7 @@
   <body>
     <ul>
   <li>Class: Graphql::Generators::InstallGenerator &lt; Rails::Generators::Base
-Add GraphQL to a Rails app with <code class="highlighter-rouge">rails g graphql:install</code>. 
+Add GraphQL to a Rails app with <code class="language-plaintext highlighter-rouge">rails g graphql:install</code>. 
 Setup a folder structure for GraphQL:
 ``` - app/</li>
   <li>graphql/</li>
@@ -25,15 +25,15 @@ Setup a folder structure for GraphQL:
   <li>mutations/</li>
   <li>base_mutation.rb</li>
   <li>{app_name}_schema.rb
-    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(Add `.gitkeep`s by default, support ` skip-keeps`) 
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(Add `.gitkeep`s by default, support ` skip-keeps`) 
 Add a controller for serving GraphQL queries: 
 ``` app/controllers/graphql_controller.rb ``` 
 Add a route for that controller: 
 ```ruby # config/routes.rb post "/graphql", to: "graphql#execute"
 </code></pre></div>    </div>
-    <p>Accept a ` relay<code class="highlighter-rouge"> option which adds The root </code>node(id: ID!)<code class="highlighter-rouge"> field.
-Accept a </code> batch<code class="highlighter-rouge"> option which adds </code>GraphQL::Batch<code class="highlighter-rouge"> setup. 
-Use </code> no-graphiql<code class="highlighter-rouge"> to skip </code>graphiql-rails` installation. 
+    <p>Accept a ` relay<code class="language-plaintext highlighter-rouge"> option which adds The root </code>node(id: ID!)<code class="language-plaintext highlighter-rouge"> field.
+Accept a </code> batch<code class="language-plaintext highlighter-rouge"> option which adds </code>GraphQL::Batch<code class="language-plaintext highlighter-rouge"> setup. 
+Use </code> no-graphiql<code class="language-plaintext highlighter-rouge"> to skip </code>graphiql-rails` installation. 
 TODO: also add base classes 
 Includes:
 Graphql::Generators::Core

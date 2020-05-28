@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Mutation Root</h1>
 <div class="guide-container">
-  <p>GraphQL mutations all begin with the <code class="highlighter-rouge">mutation</code> keyword:</p>
+  <p>GraphQL mutations all begin with the <code class="language-plaintext highlighter-rouge">mutation</code> keyword:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">mutation</span><span class="p">(</span><span class="nv">$accountNumber</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!,</span><span class="w"> </span><span class="nv">$newBalance</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="c"># ^^^^ here</span><span class="w">
@@ -57,17 +57,17 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>Operations that begin with <code class="highlighter-rouge">mutation</code> get special treatment by the GraphQL runtime: root fields are guaranteed
+<p>Operations that begin with <code class="language-plaintext highlighter-rouge">mutation</code> get special treatment by the GraphQL runtime: root fields are guaranteed
 to be executed sequentially. This way, the effect of a series of mutations is predictable.</p>
 
-<p>Mutations are executed by a specific GraphQL object, <code class="highlighter-rouge">Mutation</code>. This object is defined like any other GraphQL object:</p>
+<p>Mutations are executed by a specific GraphQL object, <code class="language-plaintext highlighter-rouge">Mutation</code>. This object is defined like any other GraphQL object:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Mutation</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, it must be attached to your schema with the <code class="highlighter-rouge">mutation(...)</code> configuration:</p>
+<p>Then, it must be attached to your schema with the <code class="language-plaintext highlighter-rouge">mutation(...)</code> configuration:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Schema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># ...</span>
@@ -75,7 +75,7 @@ to be executed sequentially. This way, the effect of a series of mutations is pr
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, whenever an incoming request uses the <code class="highlighter-rouge">mutation</code> keyword, it will go to <code class="highlighter-rouge">Mutation</code>.</p>
+<p>Now, whenever an incoming request uses the <code class="language-plaintext highlighter-rouge">mutation</code> keyword, it will go to <code class="language-plaintext highlighter-rouge">Mutation</code>.</p>
 
 <p>See <a href="/mutations/mutation_classes">Mutation Classes</a> for some helpers to define mutation fields.</p>
 

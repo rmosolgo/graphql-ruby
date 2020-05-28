@@ -57,19 +57,19 @@
   <li>The <strong>connection type</strong>, a GraphQL object type which implements the connection contract</li>
 </ul>
 
-<p>For this example, we’ll imagine that your application communicates with an external search engine, and expresses all search results with a <code class="highlighter-rouge">SearchEngine::Result</code> class. (There isn’t <em>really</em> any class like this; it’s an arbitrary example of an application-specific collection of items.)</p>
+<p>For this example, we’ll imagine that your application communicates with an external search engine, and expresses all search results with a <code class="language-plaintext highlighter-rouge">SearchEngine::Result</code> class. (There isn’t <em>really</em> any class like this; it’s an arbitrary example of an application-specific collection of items.)</p>
 
 <h2 id="application-object">Application Object</h2>
 
 <p>In Ruby, <em>everything</em> is an object, and that includes <em>lists of objects</em>. For example, we think of an Array as a <em>list</em> of objects, but Arrays are also objects in their own right.</p>
 
-<p>Some list objects have very fancy implementations. Think of an <code class="highlighter-rouge">ActiveRecord::Relation</code>: it gathers up the parts of a SQL query, and at the right moment, it dispatches a call to your database to fetch the objects in the list. An <code class="highlighter-rouge">ActiveRecord::Relation</code> is also a list object.</p>
+<p>Some list objects have very fancy implementations. Think of an <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code>: it gathers up the parts of a SQL query, and at the right moment, it dispatches a call to your database to fetch the objects in the list. An <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code> is also a list object.</p>
 
 <p>Your application probably has other list objects that you want to paginate via GraphQL connections. For example, you might show a user some search results, or a list of files from a fileserver. Those lists are modeled with <em>list objects</em>, and those list objects can be wrapped with connection wrappers.</p>
 
 <h2 id="connection-wrapper">Connection Wrapper</h2>
 
-<p>A connection wrapper is an adapter between a plain-Ruby list object (like an Array, Relation, or something application-specific, like <code class="highlighter-rouge">SearchEngine::Result</code>) and a GraphQL connection type. The connection wrapper implements methods which the GraphQL connection type requires, and it implements those methods based on the underlying list object.</p>
+<p>A connection wrapper is an adapter between a plain-Ruby list object (like an Array, Relation, or something application-specific, like <code class="language-plaintext highlighter-rouge">SearchEngine::Result</code>) and a GraphQL connection type. The connection wrapper implements methods which the GraphQL connection type requires, and it implements those methods based on the underlying list object.</p>
 
 <p>You can extend <a href="/api-doc/1.10.10/GraphQL/Pagination/Connection" target="_blank" title="API docs for GraphQL::Pagination::Connection"><code>GraphQL::Pagination::Connection</code></a> to get started on a custom connection wrapper, for example:</p>
 
@@ -82,10 +82,10 @@
 <p>The methods you must implement are:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">#nodes</code>, which returns a paginated slice of <code class="highlighter-rouge">@items</code> based on the given arguments</li>
-  <li><code class="highlighter-rouge">#has_next_page</code>, which returns <code class="highlighter-rouge">true</code> if there are items after the ones in <code class="highlighter-rouge">#nodes</code></li>
-  <li><code class="highlighter-rouge">#has_previous_page</code>, which returns <code class="highlighter-rouge">true</code> if there are items before the ones in <code class="highlighter-rouge">#nodes</code></li>
-  <li><code class="highlighter-rouge">#cursor_for(item)</code>, which returns a String to serve as the cursor for <code class="highlighter-rouge">item</code></li>
+  <li><code class="language-plaintext highlighter-rouge">#nodes</code>, which returns a paginated slice of <code class="language-plaintext highlighter-rouge">@items</code> based on the given arguments</li>
+  <li><code class="language-plaintext highlighter-rouge">#has_next_page</code>, which returns <code class="language-plaintext highlighter-rouge">true</code> if there are items after the ones in <code class="language-plaintext highlighter-rouge">#nodes</code></li>
+  <li><code class="language-plaintext highlighter-rouge">#has_previous_page</code>, which returns <code class="language-plaintext highlighter-rouge">true</code> if there are items before the ones in <code class="language-plaintext highlighter-rouge">#nodes</code></li>
+  <li><code class="language-plaintext highlighter-rouge">#cursor_for(item)</code>, which returns a String to serve as the cursor for <code class="language-plaintext highlighter-rouge">item</code></li>
 </ul>
 
 <p>How to implement these methods (efficiently!) depends on your backend and how you communicate with it. For inspiration, you can see the built-in connections:</p>
@@ -118,7 +118,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, any time a field returns an instance of <code class="highlighter-rouge">SearchEngine::Result</code>, it will be wrapped with <code class="highlighter-rouge">Connections::SearchResultsConnection</code></p>
+<p>Now, any time a field returns an instance of <code class="language-plaintext highlighter-rouge">SearchEngine::Result</code>, it will be wrapped with <code class="language-plaintext highlighter-rouge">Connections::SearchResultsConnection</code></p>
 
 <p>Alternatively, you can apply a connection wrapper on a case-by-case basis by applying it during the resolver (method or <a href="/api-doc/1.10.10/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>):</p>
 
@@ -142,7 +142,7 @@
 
 <ul>
   <li><a href="/api-doc/1.10.10/GraphQL/Types/Relay/BaseConnection" target="_blank" title="API docs for GraphQL::Types::Relay::BaseConnection"><code>GraphQL::Types::Relay::BaseConnection</code></a> and <a href="/api-doc/1.10.10/GraphQL/Types/Relay/BaseEdge" target="_blank" title="API docs for GraphQL::Types::Relay::BaseEdge"><code>GraphQL::Types::Relay::BaseEdge</code></a> are example implementations of the spec. They don’t inherit from your application’s base object class though, so you might not be able to use them out of the box.</li>
-  <li>Type classes respond to <code class="highlighter-rouge">.connection_type</code> which returns a generated connection type based on that class. By default, it inherits from the provided <code class="highlighter-rouge">GraphQL::Types::Relay::BaseConnection</code>, but you can override that by setting <code class="highlighter-rouge">connection_type_class(Types::MyBaseConnectionObject)</code> in your base classes.</li>
+  <li>Type classes respond to <code class="language-plaintext highlighter-rouge">.connection_type</code> which returns a generated connection type based on that class. By default, it inherits from the provided <code class="language-plaintext highlighter-rouge">GraphQL::Types::Relay::BaseConnection</code>, but you can override that by setting <code class="language-plaintext highlighter-rouge">connection_type_class(Types::MyBaseConnectionObject)</code> in your base classes.</li>
 </ul>
 
 <p>For example, you could implement a base connection class:</p>
@@ -170,12 +170,12 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, when defining fields, you could use <code class="highlighter-rouge">.connection_type</code> to use your connection class hierarchy:</p>
+<p>Then, when defining fields, you could use <code class="language-plaintext highlighter-rouge">.connection_type</code> to use your connection class hierarchy:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 </code></pre></div></div>
 
-<p>(Those fields get <code class="highlighter-rouge">connection: true</code> by default, because the generated connection type’s name ends in <code class="highlighter-rouge">*Connection</code>.)</p>
+<p>(Those fields get <code class="language-plaintext highlighter-rouge">connection: true</code> by default, because the generated connection type’s name ends in <code class="language-plaintext highlighter-rouge">*Connection</code>.)</p>
 
 </div>
 <p class="guide-footer">

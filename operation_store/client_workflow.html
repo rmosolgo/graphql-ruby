@@ -59,13 +59,13 @@
   <p>To use persisted queries with your client application, you must:</p>
 
 <ul>
-  <li>Set up <code class="highlighter-rouge">OperationStore</code>, as described in <a href="/operation_store/getting_started">Getting Started</a></li>
+  <li>Set up <code class="language-plaintext highlighter-rouge">OperationStore</code>, as described in <a href="/operation_store/getting_started">Getting Started</a></li>
   <li><a href="#add-a-client">Add the client</a> to the system</li>
   <li><a href="#syncing">Sync operations</a> from the client to the server</li>
-  <li><a href="#client-usage">Send <code class="highlighter-rouge">params[:operationId]</code></a> from the client app</li>
+  <li><a href="#client-usage">Send <code class="language-plaintext highlighter-rouge">params[:operationId]</code></a> from the client app</li>
 </ul>
 
-<p>This documentation also touches on <a href="/javascript_client/sync">graphql-ruby-client sync</a>, a JavaScript client library for using <code class="highlighter-rouge">OperationStore</code>.</p>
+<p>This documentation also touches on <a href="/javascript_client/sync">graphql-ruby-client sync</a>, a JavaScript client library for using <code class="language-plaintext highlighter-rouge">OperationStore</code>.</p>
 
 <h3 id="add-a-client">Add a Client</h3>
 
@@ -75,23 +75,23 @@
   <img src="/operation_store/add_a_client.png" title="Add a Client for Persisted Queries" alt="Add a Client for Persisted Queries" />
 </a></p>
 
-<p>A default <code class="highlighter-rouge">secret</code> is provided for you, but you can also enter your own. The <code class="highlighter-rouge">secret</code> is used for <a href="/operation_store/access_control">HMAC authentication</a>.</p>
+<p>A default <code class="language-plaintext highlighter-rouge">secret</code> is provided for you, but you can also enter your own. The <code class="language-plaintext highlighter-rouge">secret</code> is used for <a href="/operation_store/access_control">HMAC authentication</a>.</p>
 
-<p>(Are you interested in a Ruby API for this? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=OperationStore Ruby API" target="_blank">open an issue</a> or email <code class="highlighter-rouge">support@graphql.pro</code>.)</p>
+<p>(Are you interested in a Ruby API for this? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=OperationStore Ruby API" target="_blank">open an issue</a> or email <code class="language-plaintext highlighter-rouge">support@graphql.pro</code>.)</p>
 
 <h3 id="syncing">Syncing</h3>
 
 <p>Once a client is registered, it can push queries to the server via <a href="/operation_store/getting_started#add-routes">the Sync API</a>.</p>
 
-<p>The easiest way to sync is with <code class="highlighter-rouge">graphql-ruby-client sync</code>, a command-line tool written in JavaScript (<a href="/javascript_client/sync">Sync Guide</a>)</p>
+<p>The easiest way to sync is with <code class="language-plaintext highlighter-rouge">graphql-ruby-client sync</code>, a command-line tool written in JavaScript (<a href="/javascript_client/sync">Sync Guide</a>)</p>
 
 <p>In short, it:</p>
 
 <ul>
-  <li>Finds GraphQL queries from <code class="highlighter-rouge">.graphql</code> files or <code class="highlighter-rouge">relay-compiler</code> output in the provided <code class="highlighter-rouge">--path</code></li>
-  <li>Adds an <a href="/operation_store/access_control">Authentication header</a> based on the provided <code class="highlighter-rouge">--client</code> and <code class="highlighter-rouge">--secret</code></li>
-  <li>Sends the operations to the provided <code class="highlighter-rouge">--url</code></li>
-  <li>Generates a JavaScript module into the provided <code class="highlighter-rouge">--outfile</code></li>
+  <li>Finds GraphQL queries from <code class="language-plaintext highlighter-rouge">.graphql</code> files or <code class="language-plaintext highlighter-rouge">relay-compiler</code> output in the provided <code class="language-plaintext highlighter-rouge">--path</code></li>
+  <li>Adds an <a href="/operation_store/access_control">Authentication header</a> based on the provided <code class="language-plaintext highlighter-rouge">--client</code> and <code class="language-plaintext highlighter-rouge">--secret</code></li>
+  <li>Sends the operations to the provided <code class="language-plaintext highlighter-rouge">--url</code></li>
+  <li>Generates a JavaScript module into the provided <code class="language-plaintext highlighter-rouge">--outfile</code></li>
 </ul>
 
 <p>For example:</p>
@@ -100,13 +100,13 @@
   <img src="/operation_store/sync_example.png" title="OperationStore client sync" alt="OperationStore client sync" />
 </a></p>
 
-<p>For help syncing in another language, you can take inspiration from the <a href="https://github.com/rmosolgo/graphql-ruby/tree/master/javascript_client">JavaScript implementation</a>, <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Implementing operation sync in another language" target="_blank">open an issue</a>, or email <code class="highlighter-rouge">support@graphql.pro</code>.</p>
+<p>For help syncing in another language, you can take inspiration from the <a href="https://github.com/rmosolgo/graphql-ruby/tree/master/javascript_client">JavaScript implementation</a>, <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Implementing operation sync in another language" target="_blank">open an issue</a>, or email <code class="language-plaintext highlighter-rouge">support@graphql.pro</code>.</p>
 
 <h3 id="client-usage">Client Usage</h3>
 
 <p>See the <a href="/javascript_client/sync">Sync Guide</a> for using OperationStore with Relay Modern, Apollo 1.x, Apollo Link, or plain JavaScript.</p>
 
-<p>To run stored operations from another client, send a param called <code class="highlighter-rouge">operationId</code> which is composed of:</p>
+<p>To run stored operations from another client, send a param called <code class="language-plaintext highlighter-rouge">operationId</code> which is composed of:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="p">{</span>
    <span class="c1"># ...</span>
@@ -119,7 +119,7 @@
 
 <h4 id="next-steps">Next Steps</h4>
 
-<p>Learn more about <code class="highlighter-rouge">OperationStore</code>’s <a href="/operation_store/access_control">authentication</a> or read some tips for <a href="/operation_store/server_management">server management</a>.</p>
+<p>Learn more about <code class="language-plaintext highlighter-rouge">OperationStore</code>’s <a href="/operation_store/access_control">authentication</a> or read some tips for <a href="/operation_store/server_management">server management</a>.</p>
 
 </div>
 <p class="guide-footer">

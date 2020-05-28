@@ -51,11 +51,11 @@
 
 <p>Multiplex runs have their own context, analyzers and instrumentation.</p>
 
-<p><strong>NOTE:</strong> As an implementation detail, <em>all</em> queries are run inside multiplexes. That is, a stand-alone query is executed as a “multiplex of one”, so instrumentation and multiplex analyzers and instrumentation <em>will</em> apply to standalone queries run with <code class="highlighter-rouge">MySchema.execute(...)</code>.</p>
+<p><strong>NOTE:</strong> As an implementation detail, <em>all</em> queries are run inside multiplexes. That is, a stand-alone query is executed as a “multiplex of one”, so instrumentation and multiplex analyzers and instrumentation <em>will</em> apply to standalone queries run with <code class="language-plaintext highlighter-rouge">MySchema.execute(...)</code>.</p>
 
 <h2 id="concurrent-execution">Concurrent Execution</h2>
 
-<p>To run queries concurrently, build an array of query options, using <code class="highlighter-rouge">query:</code> for the query string. For example:</p>
+<p>To run queries concurrently, build an array of query options, using <code class="language-plaintext highlighter-rouge">query:</code> for the query string. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Prepare the context for each query:</span>
 <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
@@ -79,16 +79,16 @@
 <span class="p">]</span>
 </code></pre></div></div>
 
-<p>Then, pass them to <code class="highlighter-rouge">Schema#multiplex</code>:</p>
+<p>Then, pass them to <code class="language-plaintext highlighter-rouge">Schema#multiplex</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">results</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">results</code> will contain the result for each query in <code class="highlighter-rouge">queries</code>. <strong>NOTE:</strong> The results will always be in the same order that their respective requests were sent in.</p>
+<p><code class="language-plaintext highlighter-rouge">results</code> will contain the result for each query in <code class="language-plaintext highlighter-rouge">queries</code>. <strong>NOTE:</strong> The results will always be in the same order that their respective requests were sent in.</p>
 
 <h2 id="apollo-query-batching">Apollo Query Batching</h2>
 
-<p>Apollo sends the batch variables in a <code class="highlighter-rouge">_json</code> param, you also need to ensure that your schema can handle both batched and non-batched queries, below is an example of the default GraphqlController rewritten to handle Apollo batches:</p>
+<p>Apollo sends the batch variables in a <code class="language-plaintext highlighter-rouge">_json</code> param, you also need to ensure that your schema can handle both batched and non-batched queries, below is an example of the default GraphqlController rewritten to handle Apollo batches:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">execute</span>
   <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
@@ -120,16 +120,16 @@
 
 <h2 id="validation-and-error-handling">Validation and Error Handling</h2>
 
-<p>Each query is validated and <a href="/queries/ast_analysis">analyzed</a> independently. The <code class="highlighter-rouge">results</code> array may include a mix of successful results and failed results</p>
+<p>Each query is validated and <a href="/queries/ast_analysis">analyzed</a> independently. The <code class="language-plaintext highlighter-rouge">results</code> array may include a mix of successful results and failed results</p>
 
 <h2 id="multiplex-level-context">Multiplex-Level Context</h2>
 
-<p>You can add values to <a href="/api-doc/1.10.10/GraphQL/Execution/Multiplex#context-instance_method" target="_blank" title="API docs for GraphQL::Execution::Multiplex#context"><code>Execution::Multiplex#context</code></a> by providing a <code class="highlighter-rouge">context:</code> hash:</p>
+<p>You can add values to <a href="/api-doc/1.10.10/GraphQL/Execution/Multiplex#context-instance_method" target="_blank" title="API docs for GraphQL::Execution::Multiplex#context"><code>Execution::Multiplex#context</code></a> by providing a <code class="language-plaintext highlighter-rouge">context:</code> hash:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user: </span><span class="n">current_user</span> <span class="p">})</span>
 </code></pre></div></div>
 
-<p>This will be available to instrumentation as <code class="highlighter-rouge">multiplex.context[:current_user]</code> (see below).</p>
+<p>This will be available to instrumentation as <code class="language-plaintext highlighter-rouge">multiplex.context[:current_user]</code> (see below).</p>
 
 <h2 id="multiplex-level-analysis">Multiplex-Level Analysis</h2>
 
@@ -149,7 +149,7 @@
 
 <p>You can add hooks for each multiplex run with multiplex instrumentation.</p>
 
-<p>An instrumenter must implement <code class="highlighter-rouge">.before_multiplex(multiplex)</code> and <code class="highlighter-rouge">.after_multiplex(multiplex)</code>. Then, it can be mounted with <code class="highlighter-rouge">instrument(:multiplex, MyMultiplexAnalyzer)</code>. See <a href="/api-doc/1.10.10/GraphQL/Execution/Multiplex" target="_blank" title="API docs for GraphQL::Execution::Multiplex"><code>Execution::Multiplex</code></a> for available methods.</p>
+<p>An instrumenter must implement <code class="language-plaintext highlighter-rouge">.before_multiplex(multiplex)</code> and <code class="language-plaintext highlighter-rouge">.after_multiplex(multiplex)</code>. Then, it can be mounted with <code class="language-plaintext highlighter-rouge">instrument(:multiplex, MyMultiplexAnalyzer)</code>. See <a href="/api-doc/1.10.10/GraphQL/Execution/Multiplex" target="_blank" title="API docs for GraphQL::Execution::Multiplex"><code>Execution::Multiplex</code></a> for available methods.</p>
 
 <p>For example:</p>
 
@@ -171,7 +171,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, <code class="highlighter-rouge">MultiplexCounter.before_multiplex</code> will be called before each multiplex and <code class="highlighter-rouge">.after_multiplex</code> will run after each multiplex.</p>
+<p>Now, <code class="language-plaintext highlighter-rouge">MultiplexCounter.before_multiplex</code> will be called before each multiplex and <code class="language-plaintext highlighter-rouge">.after_multiplex</code> will run after each multiplex.</p>
 
 </div>
 <p class="guide-footer">

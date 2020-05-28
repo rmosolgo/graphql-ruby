@@ -15,12 +15,12 @@ Examples:</p>
 <p>private_members = -&gt; (member, ctx) { member.metadata[:private] }
 result = Schema.execute(query_string, except: private_members)</p>
 <h1 id="custom-filter-implementation">Custom filter implementation</h1>
-<h1 id="it-must-respond-to-callmember">It must respond to <code class="highlighter-rouge">#call(member)</code>.</h1>
+<h1 id="it-must-respond-to-callmember">It must respond to <code class="language-plaintext highlighter-rouge">#call(member)</code>.</h1>
 <p>class MissingRequiredFlags
 def initialize(user)
 @user = user
 end</p>
-<h1 id="return-false-if-any-required-flags-are-missing">Return <code class="highlighter-rouge">false</code> if any required flags are missing</h1>
+<h1 id="return-false-if-any-required-flags-are-missing">Return <code class="language-plaintext highlighter-rouge">false</code> if any required flags are missing</h1>
 <p>def call(member, ctx)
 member.metadata[:required_flags].any? do |flag|
 !@user.has_flag?(flag)

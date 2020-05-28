@@ -75,7 +75,7 @@
 
 <p>Besides those, you can also use the plain <a href="/type_definitions/objects#fields">field API</a> to write mutation fields.</p>
 
-<p>An additional <code class="highlighter-rouge">null</code> helper method is provided on classes inheriting from <code class="highlighter-rouge">GraphQL::Schema::Mutation</code> to allow setting the nullability of the mutation. This is not required and defaults to <code class="highlighter-rouge">true</code>.</p>
+<p>An additional <code class="language-plaintext highlighter-rouge">null</code> helper method is provided on classes inheriting from <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Mutation</code> to allow setting the nullability of the mutation. This is not required and defaults to <code class="language-plaintext highlighter-rouge">true</code>.</p>
 
 <h2 id="example-mutation-class">Example mutation class</h2>
 
@@ -123,13 +123,13 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The <code class="highlighter-rouge">#resolve</code> method should return a hash whose symbols match the <code class="highlighter-rouge">field</code> names.</p>
+<p>The <code class="language-plaintext highlighter-rouge">#resolve</code> method should return a hash whose symbols match the <code class="language-plaintext highlighter-rouge">field</code> names.</p>
 
 <p>(See <a href="/mutations/mutation_errors">Mutation Errors</a> for more information about returning errors.)</p>
 
 <h2 id="hooking-up-mutations">Hooking up mutations</h2>
 
-<p>Mutations must be attached to the mutation root using the <code class="highlighter-rouge">mutation:</code> keyword, for example:</p>
+<p>Mutations must be attached to the mutation root using the <code class="language-plaintext highlighter-rouge">mutation:</code> keyword, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Mutation</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:create_comment</span><span class="p">,</span> <span class="ss">mutation: </span><span class="no">Mutations</span><span class="o">::</span><span class="no">CreateComment</span>
@@ -140,7 +140,7 @@
 
 <p>In most cases, a GraphQL mutation will act against a given global relay ID. Loading objects from these global relay IDs can require a lot of boilerplate code in the mutation’s resolver.</p>
 
-<p>An alternative approach is to use the <code class="highlighter-rouge">loads:</code> argument when defining the argument:</p>
+<p>An alternative approach is to use the <code class="language-plaintext highlighter-rouge">loads:</code> argument when defining the argument:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::AddStar</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
@@ -157,11 +157,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>By specifying that the <code class="highlighter-rouge">post_id</code> argument loads a <code class="highlighter-rouge">Types::Post</code> object type, a <code class="highlighter-rouge">Post</code> object will be loaded via <a href="/schema/definition.html#object-identification-hooks"><code class="highlighter-rouge">Schema#object_from_id</code></a> with the provided <code class="highlighter-rouge">post_id</code>.</p>
+<p>By specifying that the <code class="language-plaintext highlighter-rouge">post_id</code> argument loads a <code class="language-plaintext highlighter-rouge">Types::Post</code> object type, a <code class="language-plaintext highlighter-rouge">Post</code> object will be loaded via <a href="/schema/definition.html#object-identification-hooks"><code class="language-plaintext highlighter-rouge">Schema#object_from_id</code></a> with the provided <code class="language-plaintext highlighter-rouge">post_id</code>.</p>
 
-<p>All arguments that end in <code class="highlighter-rouge">_id</code> and use the <code class="highlighter-rouge">loads:</code> method will have their <code class="highlighter-rouge">_id</code> suffix removed. For example, the mutation resolver above receives a <code class="highlighter-rouge">post</code> argument which contains the loaded object, instead of a <code class="highlighter-rouge">post_id</code> argument.</p>
+<p>All arguments that end in <code class="language-plaintext highlighter-rouge">_id</code> and use the <code class="language-plaintext highlighter-rouge">loads:</code> method will have their <code class="language-plaintext highlighter-rouge">_id</code> suffix removed. For example, the mutation resolver above receives a <code class="language-plaintext highlighter-rouge">post</code> argument which contains the loaded object, instead of a <code class="language-plaintext highlighter-rouge">post_id</code> argument.</p>
 
-<p>The <code class="highlighter-rouge">loads:</code> option also works with list of IDs, for example:</p>
+<p>The <code class="language-plaintext highlighter-rouge">loads:</code> option also works with list of IDs, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::AddStars</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">argument</span> <span class="ss">:post_ids</span><span class="p">,</span> <span class="p">[</span><span class="no">ID</span><span class="p">],</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
@@ -178,9 +178,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>All arguments that end in <code class="highlighter-rouge">_ids</code> and use the <code class="highlighter-rouge">loads:</code> method will have their <code class="highlighter-rouge">_ids</code> suffix removed and an <code class="highlighter-rouge">s</code> appended to their name. For example, the mutation resolver above receives a <code class="highlighter-rouge">posts</code> argument which contains all the loaded objects, instead of a <code class="highlighter-rouge">post_ids</code> argument.</p>
+<p>All arguments that end in <code class="language-plaintext highlighter-rouge">_ids</code> and use the <code class="language-plaintext highlighter-rouge">loads:</code> method will have their <code class="language-plaintext highlighter-rouge">_ids</code> suffix removed and an <code class="language-plaintext highlighter-rouge">s</code> appended to their name. For example, the mutation resolver above receives a <code class="language-plaintext highlighter-rouge">posts</code> argument which contains all the loaded objects, instead of a <code class="language-plaintext highlighter-rouge">post_ids</code> argument.</p>
 
-<p>In some cases, you may want to control the resulting argument name. This can be done using the <code class="highlighter-rouge">as:</code> argument, for example:</p>
+<p>In some cases, you may want to control the resulting argument name. This can be done using the <code class="language-plaintext highlighter-rouge">as:</code> argument, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::AddStar</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">as: :something</span>
@@ -197,7 +197,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>In the above examples, <code class="highlighter-rouge">loads:</code> is provided a concrete type, but it also supports abstract types (i.e. interfaces and unions).</p>
+<p>In the above examples, <code class="language-plaintext highlighter-rouge">loads:</code> is provided a concrete type, but it also supports abstract types (i.e. interfaces and unions).</p>
 
 </div>
 <p class="guide-footer">

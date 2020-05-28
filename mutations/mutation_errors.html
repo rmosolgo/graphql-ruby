@@ -71,7 +71,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>This kind of error handling <em>does</em> express error state (either via <code class="highlighter-rouge">HTTP 500</code> or by the top-level <code class="highlighter-rouge">"errors"</code> key), but it doesn’t take advantage of GraphQL’s type system and can only express one error at a time. It works, but a stronger solution is to treat errors as data.</p>
+<p>This kind of error handling <em>does</em> express error state (either via <code class="language-plaintext highlighter-rouge">HTTP 500</code> or by the top-level <code class="language-plaintext highlighter-rouge">"errors"</code> key), but it doesn’t take advantage of GraphQL’s type system and can only express one error at a time. It works, but a stronger solution is to treat errors as data.</p>
 
 <h2 id="errors-as-data">Errors as Data</h2>
 
@@ -95,7 +95,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>And in the mutation’s <code class="highlighter-rouge">resolve</code> method, be sure to return <code class="highlighter-rouge">errors:</code> in the hash:</p>
+<p>And in the mutation’s <code class="language-plaintext highlighter-rouge">resolve</code> method, be sure to return <code class="language-plaintext highlighter-rouge">errors:</code> in the hash:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="nb">id</span><span class="p">:,</span> <span class="n">attributes</span><span class="p">:)</span>
   <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
@@ -122,7 +122,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now that the field returns <code class="highlighter-rouge">errors</code> in its payload, it supports <code class="highlighter-rouge">errors</code> as part of the incoming mutations, for example:</p>
+<p>Now that the field returns <code class="language-plaintext highlighter-rouge">errors</code> in its payload, it supports <code class="language-plaintext highlighter-rouge">errors</code> as part of the incoming mutations, for example:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">mutation</span><span class="p">(</span><span class="nv">$postId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!,</span><span class="w"> </span><span class="nv">$postAttributes</span><span class="p">:</span><span class="w"> </span><span class="n">PostAttributes</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span><span class="w">
   </span><span class="n">updatePost</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nv">$postId</span><span class="p">,</span><span class="w"> </span><span class="n">attributes</span><span class="p">:</span><span class="w"> </span><span class="nv">$postAttributes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -161,13 +161,13 @@
 
 <h2 id="nullable-mutation-payload-fields">Nullable Mutation Payload Fields</h2>
 
-<p>To benefit from “Errors as Data” described above, mutation fields must have <code class="highlighter-rouge">null: true</code>. Why?</p>
+<p>To benefit from “Errors as Data” described above, mutation fields must have <code class="language-plaintext highlighter-rouge">null: true</code>. Why?</p>
 
-<p>Well, for <em>non-null</em> fields (which have <code class="highlighter-rouge">null: false</code>), if they return <code class="highlighter-rouge">nil</code>, then GraphQL aborts the query and removes those fields from the response altogether.</p>
+<p>Well, for <em>non-null</em> fields (which have <code class="language-plaintext highlighter-rouge">null: false</code>), if they return <code class="language-plaintext highlighter-rouge">nil</code>, then GraphQL aborts the query and removes those fields from the response altogether.</p>
 
-<p>In mutations, when errors happen, the other fields may return <code class="highlighter-rouge">nil</code>. So, if those other fields have <code class="highlighter-rouge">null: false</code>, but they return <code class="highlighter-rouge">nil</code>, the GraphQL will panic and remove the whole mutation from the response, <em>including</em> the errors!</p>
+<p>In mutations, when errors happen, the other fields may return <code class="language-plaintext highlighter-rouge">nil</code>. So, if those other fields have <code class="language-plaintext highlighter-rouge">null: false</code>, but they return <code class="language-plaintext highlighter-rouge">nil</code>, the GraphQL will panic and remove the whole mutation from the response, <em>including</em> the errors!</p>
 
-<p>In order to have the rich error data, even when other fields are <code class="highlighter-rouge">nil</code>, those fields must have <code class="highlighter-rouge">null: true</code> so that the type system can be obeyed when errors happen.</p>
+<p>In order to have the rich error data, even when other fields are <code class="language-plaintext highlighter-rouge">nil</code>, those fields must have <code class="language-plaintext highlighter-rouge">null: true</code> so that the type system can be obeyed when errors happen.</p>
 
 <p>Here’s an example of a nullable field (good!):</p>
 

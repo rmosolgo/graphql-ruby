@@ -10,7 +10,7 @@ selections.
 It assumes that the AST it’s working with is valid. (So, it’s safe
 to use during execution, but if you’re using it directly, be sure to
 validate first.) 
-A field may get access to its lookahead by adding <code class="highlighter-rouge">extras:
+A field may get access to its lookahead by adding <code class="language-plaintext highlighter-rouge">extras:
 [:lookahead]</code> to its configuration. 
 Examples:</p>
 <h1 id="looking-ahead-in-a-field">looking ahead in a field</h1>
@@ -19,7 +19,7 @@ extras: [:lookahead]</p>
 <h1 id="for-example-imagine-a-faster-database-call">For example, imagine a faster database call</h1>
 <h1 id="may-be-issued-when-only-some-fields-are-requested">may be issued when only some fields are requested.</h1>
 <p>#</p>
-<h1 id="imagine-that-full-fetch-must-be-made-to-satisfy-fullcontent">Imagine that <em>full</em> fetch must be made to satisfy <code class="highlighter-rouge">fullContent</code>,</h1>
+<h1 id="imagine-that-full-fetch-must-be-made-to-satisfy-fullcontent">Imagine that <em>full</em> fetch must be made to satisfy <code class="language-plaintext highlighter-rouge">fullContent</code>,</h1>
 <h1 id="we-can-look-ahead-to-see-if-we-need-that-field-if-we-do">we can look ahead to see if we need that field. If we do,</h1>
 <h1 id="we-make-the-expensive-database-call-instead-of-the-cheap-one">we make the expensive database call instead of the cheap one.</h1>
 <p>def articles(lookahead:)

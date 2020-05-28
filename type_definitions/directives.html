@@ -57,7 +57,7 @@
 
 <h1 class="guide-header">Directives</h1>
 <div class="guide-container">
-  <p>Directives are system-defined keywords that modify execution. All GraphQL systems have at least <em>two</em> directives, <code class="highlighter-rouge">@skip</code> and <code class="highlighter-rouge">@include</code>. For example:</p>
+  <p>Directives are system-defined keywords that modify execution. All GraphQL systems have at least <em>two</em> directives, <code class="language-plaintext highlighter-rouge">@skip</code> and <code class="language-plaintext highlighter-rouge">@include</code>. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query</span> <span class="no">ProfileView</span><span class="p">(</span><span class="vg">$renderingDetailedProfile</span><span class="p">:</span> <span class="no">Boolean</span><span class="o">!</span><span class="p">){</span>
   <span class="n">viewer</span> <span class="p">{</span>
@@ -74,8 +74,8 @@
 <p>Here’s how the two built-in directives work:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">@skip(if: ...)</code> skips the selection if the <code class="highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.10.10/GraphQL/Schema/Directive/Skip" target="_blank" title="API docs for GraphQL::Schema::Directive::Skip"><code>GraphQL::Schema::Directive::Skip</code></a>)</li>
-  <li><code class="highlighter-rouge">@include(if: ...)</code> includes the selection if the <code class="highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.10.10/GraphQL/Schema/Directive/Include" target="_blank" title="API docs for GraphQL::Schema::Directive::Include"><code>GraphQL::Schema::Directive::Include</code></a>)</li>
+  <li><code class="language-plaintext highlighter-rouge">@skip(if: ...)</code> skips the selection if the <code class="language-plaintext highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.10.10/GraphQL/Schema/Directive/Skip" target="_blank" title="API docs for GraphQL::Schema::Directive::Skip"><code>GraphQL::Schema::Directive::Skip</code></a>)</li>
+  <li><code class="language-plaintext highlighter-rouge">@include(if: ...)</code> includes the selection if the <code class="language-plaintext highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.10.10/GraphQL/Schema/Directive/Include" target="_blank" title="API docs for GraphQL::Schema::Directive::Include"><code>GraphQL::Schema::Directive::Include</code></a>)</li>
 </ul>
 
 <p>GraphQL-Ruby also supports custom directives for use with the <a href="/queries/interpreter">interpreter runtime</a>.</p>
@@ -90,7 +90,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, they’re hooked up to the schema using <code class="highlighter-rouge">directive(...)</code>:</p>
+<p>Then, they’re hooked up to the schema using <code class="language-plaintext highlighter-rouge">directive(...)</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Custom directives are only supported by the Interpreter runtime</span>
@@ -115,8 +115,8 @@
 <p>Directive classes may implement the following class methods to interact with the runtime:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">def self.include?(obj, args, ctx)</code>: If this hook returns <code class="highlighter-rouge">false</code>, the nodes flagged by this directive will be skipped at runtime.</li>
-  <li><code class="highlighter-rouge">def self.resolve(obj, args, ctx)</code>: Wraps the resolution of flagged nodes. Resolution is passed as a <strong>block</strong>, so <code class="highlighter-rouge">yield</code> will continue resolution. The return value of this method will be treated as the return value of the flagged field.</li>
+  <li><code class="language-plaintext highlighter-rouge">def self.include?(obj, args, ctx)</code>: If this hook returns <code class="language-plaintext highlighter-rouge">false</code>, the nodes flagged by this directive will be skipped at runtime.</li>
+  <li><code class="language-plaintext highlighter-rouge">def self.resolve(obj, args, ctx)</code>: Wraps the resolution of flagged nodes. Resolution is passed as a <strong>block</strong>, so <code class="language-plaintext highlighter-rouge">yield</code> will continue resolution. The return value of this method will be treated as the return value of the flagged field.</li>
 </ul>
 
 <p>Looking for a runtime hook that isn’t listed here? <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=New directive hook: @something&amp;body=&lt;!-- Describe how the directive would be used and then how you might implement it --&gt; " target="_blank">open an issue</a> to start the conversation!</p>

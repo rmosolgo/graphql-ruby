@@ -49,11 +49,11 @@
 <div class="guide-container">
   <p>GraphQL-Ruby 1.9.0 includes a new runtime module which you may use for your schema. Eventually, it will become the default.</p>
 
-<p>It’s called <code class="highlighter-rouge">GraphQL::Execution::Interpreter</code> and you can hook it up with <code class="highlighter-rouge">use ...</code> in your schema class:</p>
+<p>It’s called <code class="language-plaintext highlighter-rouge">GraphQL::Execution::Interpreter</code> and you can hook it up with <code class="language-plaintext highlighter-rouge">use ...</code> in your schema class:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Execution</span><span class="o">::</span><span class="no">Interpreter</span>
-  <span class="c1"># And, when you have updated your analyzers:</span>
+  <span class="c1"># Also required in GraphQL-Ruby 1.10+:</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -65,8 +65,8 @@
 <p>The new runtime was added to address a few specific concerns:</p>
 
 <ul>
-  <li><strong>Validation Performance</strong>: The previous runtime depended on a preparation step (<code class="highlighter-rouge">GraphQL::InternalRepresentation::Rewrite</code>) which could be very slow in some cases. In many cases, the overhead of that step provided no value.</li>
-  <li><strong>Runtime Performance</strong>: For very large results, the previous runtime was slow because it allocated a new <code class="highlighter-rouge">ctx</code> object for every field, even very simple fields that didn’t need any special tracking.</li>
+  <li><strong>Validation Performance</strong>: The previous runtime depended on a preparation step (<code class="language-plaintext highlighter-rouge">GraphQL::InternalRepresentation::Rewrite</code>) which could be very slow in some cases. In many cases, the overhead of that step provided no value.</li>
+  <li><strong>Runtime Performance</strong>: For very large results, the previous runtime was slow because it allocated a new <code class="language-plaintext highlighter-rouge">ctx</code> object for every field, even very simple fields that didn’t need any special tracking.</li>
   <li><strong>Extensibility</strong>: Although the GraphQL specification supports custom directives, GraphQL-Ruby didn’t have a good way to build them.</li>
 </ul>
 
@@ -76,7 +76,7 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Execution</span><span class="o">::</span><span class="no">Interpreter</span>
-  <span class="c1"># And, after you have updated your analyzers:</span>
+  <span class="c1"># Also required in GraphQL-Ruby 1.10+:</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -95,7 +95,7 @@
 </span><span class="gi">+ add_field(GraphQL::Types::Relay::NodeField)
 </span></code></pre></div></div>
 
-<p>(Alternatively, consider implementing <code class="highlighter-rouge">Query.node</code> in your own app, using <code class="highlighter-rouge">NodeField</code> as inspiration.)</p>
+<p>(Alternatively, consider implementing <code class="language-plaintext highlighter-rouge">Query.node</code> in your own app, using <code class="language-plaintext highlighter-rouge">NodeField</code> as inspiration.)</p>
 
 <h2 id="compatibility">Compatibility</h2>
 
@@ -109,15 +109,15 @@
       <li>Field Instrumentation</li>
       <li>Middleware</li>
       <li>Resolve procs</li>
-      <li><code class="highlighter-rouge">GraphQL::Function</code></li>
+      <li><code class="language-plaintext highlighter-rouge">GraphQL::Function</code></li>
     </ul>
 
-    <p>All these depend on the memory- and time-hungry per-field <code class="highlighter-rouge">ctx</code> object. To improve performance, only method-based resolves are supported. If need something from <code class="highlighter-rouge">ctx</code>, you can get it with the <code class="highlighter-rouge">extras: [...]</code> configuration option. To wrap resolve behaviors, try <a href="/type_definitions/field_extensions">Field Extensions</a>, <a href="/queries/tracing">Tracing</a>, or <a href="/fields/resolvers">GraphQL::Schema::Resolver</a>.</p>
+    <p>All these depend on the memory- and time-hungry per-field <code class="language-plaintext highlighter-rouge">ctx</code> object. To improve performance, only method-based resolves are supported. If need something from <code class="language-plaintext highlighter-rouge">ctx</code>, you can get it with the <code class="language-plaintext highlighter-rouge">extras: [...]</code> configuration option. To wrap resolve behaviors, try <a href="/type_definitions/field_extensions">Field Extensions</a>, <a href="/queries/tracing">Tracing</a>, or <a href="/fields/resolvers">GraphQL::Schema::Resolver</a>.</p>
   </li>
   <li>
-    <p>Query analyzers and <code class="highlighter-rouge">irep_node</code>s</p>
+    <p>Query analyzers and <code class="language-plaintext highlighter-rouge">irep_node</code>s</p>
 
-    <p>These depend on the now-removed <code class="highlighter-rouge">Rewrite</code> step, which wasted a lot of time making often-unneeded preparation. Most of the attributes you might need from an <code class="highlighter-rouge">irep_node</code> are available with <code class="highlighter-rouge">extras: [...]</code>. Query analyzers can be refactored to be static checks (custom validation rules) or dynamic checks, made at runtime. The built-in analyzers have been refactored to run as validators.</p>
+    <p>These depend on the now-removed <code class="language-plaintext highlighter-rouge">Rewrite</code> step, which wasted a lot of time making often-unneeded preparation. Most of the attributes you might need from an <code class="language-plaintext highlighter-rouge">irep_node</code> are available with <code class="language-plaintext highlighter-rouge">extras: [...]</code>. Query analyzers can be refactored to be static checks (custom validation rules) or dynamic checks, made at runtime. The built-in analyzers have been refactored to run as validators.</p>
 
     <p>For a replacement, check out:</p>
 
@@ -127,23 +127,23 @@
     </ul>
   </li>
   <li>
-    <p><code class="highlighter-rouge">rescue_from</code></p>
+    <p><code class="language-plaintext highlighter-rouge">rescue_from</code></p>
 
     <p>This was built on middleware, which is not supported anymore. For a replacement, see <a href="/errors/error_handling">Error Handling</a>.</p>
   </li>
   <li>
-    <p><code class="highlighter-rouge">.graphql_definition</code> and <code class="highlighter-rouge">def to_graphql</code></p>
+    <p><code class="language-plaintext highlighter-rouge">.graphql_definition</code> and <code class="language-plaintext highlighter-rouge">def to_graphql</code></p>
 
     <p>The interpreter uses class-based schema definitions only, and never converts them to legacy GraphQL definition objects. Any custom definitions to GraphQL objects should be re-implemented on custom base classes.</p>
   </li>
   <li>
-    <p><code class="highlighter-rouge">GraphQL::Schema::Field#resolve_field</code></p>
+    <p><code class="language-plaintext highlighter-rouge">GraphQL::Schema::Field#resolve_field</code></p>
 
-    <p>If you customized your base field’s resolution method, it needs an update. The interpreter calls a different method: <code class="highlighter-rouge">#resolve(obj, args, ctx)</code>. There are two differences with the new method:</p>
+    <p>If you customized your base field’s resolution method, it needs an update. The interpreter calls a different method: <code class="language-plaintext highlighter-rouge">#resolve(obj, args, ctx)</code>. There are two differences with the new method:</p>
 
     <ul>
-      <li><code class="highlighter-rouge">args</code> is plain ol’ Ruby Hash, with symbol keys, instead of a <code class="highlighter-rouge">GraphQL::Query::Arguments</code></li>
-      <li><code class="highlighter-rouge">ctx</code> is a <code class="highlighter-rouge">GraphQL::Query::Context</code> instead of a <code class="highlighter-rouge">GraphQL::Query::Context::FieldResolutionContext</code></li>
+      <li><code class="language-plaintext highlighter-rouge">args</code> is plain ol’ Ruby Hash, with symbol keys, instead of a <code class="language-plaintext highlighter-rouge">GraphQL::Query::Arguments</code></li>
+      <li><code class="language-plaintext highlighter-rouge">ctx</code> is a <code class="language-plaintext highlighter-rouge">GraphQL::Query::Context</code> instead of a <code class="language-plaintext highlighter-rouge">GraphQL::Query::Context::FieldResolutionContext</code></li>
     </ul>
 
     <p>But besides that, it’s largely the same.</p>
@@ -165,19 +165,21 @@
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
 </code></pre></div></div>
 
-<p>When you use <em>both</em> <code class="highlighter-rouge">Interpreter</code> and <code class="highlighter-rouge">Analysis::AST</code>, GraphQL-Ruby will skip the slow process of building <code class="highlighter-rouge">irep_nodes</code>.</p>
+<p>When you use <em>both</em> <code class="language-plaintext highlighter-rouge">Interpreter</code> and <code class="language-plaintext highlighter-rouge">Analysis::AST</code>, GraphQL-Ruby will skip the slow process of building <code class="language-plaintext highlighter-rouge">irep_nodes</code>.</p>
 
 <p>All analyzers must be migrated at once; running <em>some</em> legacy analyzers and <em>some</em> AST analyzers is not supported.</p>
 
-<p>You can migrate to <code class="highlighter-rouge">Interpreter</code> before migrating to <code class="highlighter-rouge">Analysis::AST</code>. In that case, the <code class="highlighter-rouge">irep_node</code> tree will still be constructed and used for analysis, even though it will not be used for execution.</p>
+<p>In GraphQL-Ruby 1.9, you can migrate to <code class="language-plaintext highlighter-rouge">Interpreter</code> before migrating to <code class="language-plaintext highlighter-rouge">Analysis::AST</code>. In that case, the <code class="language-plaintext highlighter-rouge">irep_node</code> tree will still be constructed and used for analysis, even though it will not be used for execution.</p>
+
+<p>In GraphQL-Ruby 1.10+, <code class="language-plaintext highlighter-rouge">Interpreter</code> <em>requires</em> <code class="language-plaintext highlighter-rouge">Analysis::AST</code> and will not work without it. (Soon, these will be the default runtime modules.)</p>
 
 <h2 id="implementation-notes">Implementation Notes</h2>
 
-<p>Instead of a tree of <code class="highlighter-rouge">irep_nodes</code>, the interpreter consumes the AST directly. This removes a complicated concept from GraphQL-Ruby (<code class="highlighter-rouge">irep_node</code>s) and simplifies the query lifecycle. The main difference relates to how fragment spreads are resolved. In the previous runtime, the possible combinations of fields for a given object were calculated ahead of time, then some of those combinations were used during runtime, but many of them may not have been. In the new runtime, no precalculation is made; instead each object is checked against each fragment at runtime.</p>
+<p>Instead of a tree of <code class="language-plaintext highlighter-rouge">irep_nodes</code>, the interpreter consumes the AST directly. This removes a complicated concept from GraphQL-Ruby (<code class="language-plaintext highlighter-rouge">irep_node</code>s) and simplifies the query lifecycle. The main difference relates to how fragment spreads are resolved. In the previous runtime, the possible combinations of fields for a given object were calculated ahead of time, then some of those combinations were used during runtime, but many of them may not have been. In the new runtime, no precalculation is made; instead each object is checked against each fragment at runtime.</p>
 
-<p>Instead of creating a <code class="highlighter-rouge">GraphQL::Query::Context::FieldResolutionContext</code> for <em>every</em> field in the response, the interpreter uses long-lived, mutable objects for execution bookkeeping. This is more complicated to manage, since the changes to those objects can be hard to predict, but it’s worth it for the performance gain. When needed, those bookkeeping objects can be “forked”, so that two parts of an operation can be resolved independently.</p>
+<p>Instead of creating a <code class="language-plaintext highlighter-rouge">GraphQL::Query::Context::FieldResolutionContext</code> for <em>every</em> field in the response, the interpreter uses long-lived, mutable objects for execution bookkeeping. This is more complicated to manage, since the changes to those objects can be hard to predict, but it’s worth it for the performance gain. When needed, those bookkeeping objects can be “forked”, so that two parts of an operation can be resolved independently.</p>
 
-<p>Instead of calling <code class="highlighter-rouge">.to_graphql</code> internally to convert class-based definitions to <code class="highlighter-rouge">.define</code>-based definitions, the interpreter operates on class-based definitions directly. This simplifies the workflow for creating custom configurations and using them at runtime.</p>
+<p>Instead of calling <code class="language-plaintext highlighter-rouge">.to_graphql</code> internally to convert class-based definitions to <code class="language-plaintext highlighter-rouge">.define</code>-based definitions, the interpreter operates on class-based definitions directly. This simplifies the workflow for creating custom configurations and using them at runtime.</p>
 
 </div>
 <p class="guide-footer">

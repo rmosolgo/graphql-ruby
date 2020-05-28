@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Subscription Type</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">Subscription</code> is the entry point for all subscriptions in a GraphQL system. Each field corresponds to an event which may be subscribed to:</p>
+  <p><code class="language-plaintext highlighter-rouge">Subscription</code> is the entry point for all subscriptions in a GraphQL system. Each field corresponds to an event which may be subscribed to:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span><span class="w"> </span><span class="n">Subscription</span><span class="w"> </span><span class="p">{</span><span class="w">
   </span><span class="c"># Triggered whenever a post is added</span><span class="w">
@@ -58,7 +58,7 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>This type is the root for <code class="highlighter-rouge">subscription</code> operations, for example:</p>
+<p>This type is the root for <code class="language-plaintext highlighter-rouge">subscription</code> operations, for example:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">subscription</span><span class="w"> </span><span class="p">{</span><span class="w">
   </span><span class="n">postWasPublished</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -72,7 +72,7 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>To add subscriptions to your system, define an <code class="highlighter-rouge">ObjectType</code> named <code class="highlighter-rouge">Subscription</code>:</p>
+<p>To add subscriptions to your system, define an <code class="language-plaintext highlighter-rouge">ObjectType</code> named <code class="language-plaintext highlighter-rouge">Subscription</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/subscription_type.rb</span>
 <span class="k">class</span> <span class="nc">Types::SubscriptionType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
@@ -85,7 +85,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, add it as the subscription root with <code class="highlighter-rouge">subscription(...)</code>:</p>
+<p>Then, add it as the subscription root with <code class="language-plaintext highlighter-rouge">subscription(...)</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/my_schema.rb</span>
 <span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
@@ -100,7 +100,7 @@
 
 <h2 id="authorizing-subscriptions">Authorizing Subscriptions</h2>
 
-<p>When a client first sends a <code class="highlighter-rouge">subscription</code> operation, the root fields are resolved, so their corresponding methods are called, for example:</p>
+<p>When a client first sends a <code class="language-plaintext highlighter-rouge">subscription</code> operation, the root fields are resolved, so their corresponding methods are called, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::SubscriptionType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="kp">extend</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">SubscriptionRoot</span>
@@ -127,7 +127,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>If the error is raised, it will be added to the response’s <code class="highlighter-rouge">"errors"</code> key and the subscription won’t be created.</p>
+<p>If the error is raised, it will be added to the response’s <code class="language-plaintext highlighter-rouge">"errors"</code> key and the subscription won’t be created.</p>
 
 <p>The return value of the method is not used; only the raised error affects the behavior of the subscription.</p>
 

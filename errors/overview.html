@@ -51,7 +51,7 @@
 
 <h2 id="validation-errors">Validation Errors</h2>
 
-<p>Because GraphQL is strongly typed, it performs validation of all queries before executing them. If an incoming query is invalid, it isn’t executed. Instead, a response is sent back with <code class="highlighter-rouge">"errors"</code>:</p>
+<p>Because GraphQL is strongly typed, it performs validation of all queries before executing them. If an incoming query is invalid, it isn’t executed. Instead, a response is sent back with <code class="language-plaintext highlighter-rouge">"errors"</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
   <span class="s2">"errors"</span> <span class="o">=&gt;</span> <span class="p">[</span> <span class="o">...</span> <span class="p">]</span>
@@ -60,38 +60,38 @@
 
 <p>Each error has a message, line, column and path.</p>
 
-<p>The validation rules are part of the GraphQL specification and built into GraphQL-Ruby, so there’s not really a way to customize this behavior, except to pass <code class="highlighter-rouge">validate: false</code> when executing a query, which skips validation altogether.</p>
+<p>The validation rules are part of the GraphQL specification and built into GraphQL-Ruby, so there’s not really a way to customize this behavior, except to pass <code class="language-plaintext highlighter-rouge">validate: false</code> when executing a query, which skips validation altogether.</p>
 
 <h2 id="analysis-errors">Analysis Errors</h2>
 
-<p>GraphQL-Ruby supports pre-execution analysis, which may return <code class="highlighter-rouge">"errors"</code> instead of running a query. You can find details in the <a href="/queries/ast_analysis">Analysis guide</a>.</p>
+<p>GraphQL-Ruby supports pre-execution analysis, which may return <code class="language-plaintext highlighter-rouge">"errors"</code> instead of running a query. You can find details in the <a href="/queries/ast_analysis">Analysis guide</a>.</p>
 
 <h2 id="graphql-invariants">GraphQL Invariants</h2>
 
 <p>While GraphQL-Ruby is executing a query, some constraints must be satisfied. For example:</p>
 
 <ul>
-  <li>Non-null fields may not return <code class="highlighter-rouge">nil</code>.</li>
+  <li>Non-null fields may not return <code class="language-plaintext highlighter-rouge">nil</code>.</li>
   <li>Interface and union types must resolve objects to types that belong to that interface/union.</li>
 </ul>
 
 <p>These constraints are part of the GraphQL specification, and when they are violated, it must be addressed somehow. Read more in <a href="/errors/type_errors">Type Errors</a>.</p>
 
-<h2 id="top-level-errors">Top-level <code class="highlighter-rouge">"errors"</code></h2>
+<h2 id="top-level-errors">Top-level <code class="language-plaintext highlighter-rouge">"errors"</code></h2>
 
-<p>The GraphQL specification provides for a top-level <code class="highlighter-rouge">"errors"</code> key which may include information about errors during query execution. <code class="highlighter-rouge">"errors"</code> and <code class="highlighter-rouge">"data"</code> may <em>both</em> be present in the case of a partial success.</p>
+<p>The GraphQL specification provides for a top-level <code class="language-plaintext highlighter-rouge">"errors"</code> key which may include information about errors during query execution. <code class="language-plaintext highlighter-rouge">"errors"</code> and <code class="language-plaintext highlighter-rouge">"data"</code> may <em>both</em> be present in the case of a partial success.</p>
 
-<p>In your own schema, you can add to the <code class="highlighter-rouge">"errors"</code> key by raising <code class="highlighter-rouge">GraphQL::ExecutionError</code> (or subclasses of it) in your code. Read more in the <a href="/errors/execution_errors">Execution Errors guide</a>.</p>
+<p>In your own schema, you can add to the <code class="language-plaintext highlighter-rouge">"errors"</code> key by raising <code class="language-plaintext highlighter-rouge">GraphQL::ExecutionError</code> (or subclasses of it) in your code. Read more in the <a href="/errors/execution_errors">Execution Errors guide</a>.</p>
 
 <h2 id="handled-errors">Handled Errors</h2>
 
-<p>A schema can be configured to handle certain errors during field execution with handlers that you give it, using <code class="highlighter-rouge">rescue_from</code>. Read more in the <a href="/errors/error_handling">Error Handling guide</a>.</p>
+<p>A schema can be configured to handle certain errors during field execution with handlers that you give it, using <code class="language-plaintext highlighter-rouge">rescue_from</code>. Read more in the <a href="/errors/error_handling">Error Handling guide</a>.</p>
 
 <h2 id="unhandled-errors-crashes">Unhandled Errors (Crashes)</h2>
 
-<p>When a <code class="highlighter-rouge">raise</code>d error is not <code class="highlighter-rouge">rescue</code>d, the GraphQL query crashes entirely and the surrounding code (like a Rails controller) must handle the exception.</p>
+<p>When a <code class="language-plaintext highlighter-rouge">raise</code>d error is not <code class="language-plaintext highlighter-rouge">rescue</code>d, the GraphQL query crashes entirely and the surrounding code (like a Rails controller) must handle the exception.</p>
 
-<p>For example, Rails will probably return a generic <code class="highlighter-rouge">500</code> page.</p>
+<p>For example, Rails will probably return a generic <code class="language-plaintext highlighter-rouge">500</code> page.</p>
 
 <h2 id="errors-as-data">Errors as Data</h2>
 

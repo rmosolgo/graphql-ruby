@@ -56,12 +56,12 @@
 
 <h1 class="guide-header">Getting Started</h1>
 <div class="guide-container">
-  <p>To use <code class="highlighter-rouge">GraphQL::Pro::OperationStore</code> with your app, follow these steps:</p>
+  <p>To use <code class="language-plaintext highlighter-rouge">GraphQL::Pro::OperationStore</code> with your app, follow these steps:</p>
 
 <ul>
-  <li><a href="#dependencies">Check the dependencies</a> to make sure <code class="highlighter-rouge">OperationStore</code> is supported</li>
-  <li><a href="#prepare-the-database">Prepare the database</a> for <code class="highlighter-rouge">OperationStore</code>’s  data</li>
-  <li><a href="#add-operationstore">Add <code class="highlighter-rouge">OperationStore</code></a> to your GraphQL schema</li>
+  <li><a href="#dependencies">Check the dependencies</a> to make sure <code class="language-plaintext highlighter-rouge">OperationStore</code> is supported</li>
+  <li><a href="#prepare-the-database">Prepare the database</a> for <code class="language-plaintext highlighter-rouge">OperationStore</code>’s  data</li>
+  <li><a href="#add-operationstore">Add <code class="language-plaintext highlighter-rouge">OperationStore</code></a> to your GraphQL schema</li>
   <li><a href="#add-routes">Add routes</a> for the Dashboard and sync API</li>
   <li><a href="#update-the-controller">Update your controller</a> to support persisted queries</li>
   <li><a href="/operation_store/client_workflow">Add a client</a> to start syncing queries</li>
@@ -69,11 +69,11 @@
 
 <h4 id="dependencies">Dependencies</h4>
 
-<p><code class="highlighter-rouge">OperationStore</code> requires two gems in your application environment:</p>
+<p><code class="language-plaintext highlighter-rouge">OperationStore</code> requires two gems in your application environment:</p>
 
 <ul>
   <li><a href="/operation_store/active_record_backend">ActiveRecord</a> or <a href="/operation_store/redis_backend">Redis</a> for persistence. (Using another ORM or backend? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Backend support request for OperationStore" target="_blank">open an issue</a> to request support!)</li>
-  <li><code class="highlighter-rouge">Rack</code>: to serve the Dashboard and Sync API. (In Rails, this is provided by <code class="highlighter-rouge">config/routes.rb</code>.)</li>
+  <li><code class="language-plaintext highlighter-rouge">Rack</code>: to serve the Dashboard and Sync API. (In Rails, this is provided by <code class="language-plaintext highlighter-rouge">config/routes.rb</code>.)</li>
 </ul>
 
 <p>These are bundled with Rails by default.</p>
@@ -82,7 +82,7 @@
 
 <p>If you’re going to store data with ActiveRecord, <a href="/operation_store/active_record_backend">migrate the database</a> to prepare tables for it.</p>
 
-<h4 id="add-operationstore">Add <code class="highlighter-rouge">OperationStore</code></h4>
+<h4 id="add-operationstore">Add <code class="language-plaintext highlighter-rouge">OperationStore</code></h4>
 
 <p>To hook up the storage to your schema, add the plugin:</p>
 
@@ -92,16 +92,16 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>By default, it uses <code class="highlighter-rouge">ActiveRecord</code>. It also accepts:</p>
+<p>By default, it uses <code class="language-plaintext highlighter-rouge">ActiveRecord</code>. It also accepts:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">redis:</code>, for using a <a href="/operation_store/redis_backend">Redis backend</a>; OR</li>
-  <li><code class="highlighter-rouge">backend_class:</code>, for implementing custom persistence.</li>
+  <li><code class="language-plaintext highlighter-rouge">redis:</code>, for using a <a href="/operation_store/redis_backend">Redis backend</a>; OR</li>
+  <li><code class="language-plaintext highlighter-rouge">backend_class:</code>, for implementing custom persistence.</li>
 </ul>
 
 <h4 id="add-routes">Add Routes</h4>
 
-<p>To use <code class="highlighter-rouge">OperationStore</code>, add two routes to your app:</p>
+<p>To use <code class="language-plaintext highlighter-rouge">OperationStore</code>, add two routes to your app:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
 
@@ -118,9 +118,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">MySchema.operation_store_sync</code> receives pushes from clients. See <a href="/operation_store/client_workflow">Client Workflow</a> for more info on how this endpoint is used.</p>
+<p><code class="language-plaintext highlighter-rouge">MySchema.operation_store_sync</code> receives pushes from clients. See <a href="/operation_store/client_workflow">Client Workflow</a> for more info on how this endpoint is used.</p>
 
-<p><code class="highlighter-rouge">MySchema.dashboard</code> includes a web view to the <code class="highlighter-rouge">OperationStore</code>, visible at <code class="highlighter-rouge">/graphql/dashboard</code>. See the <a href="/pro/dashboard">Dashboard guide</a> for more details, including authorization.</p>
+<p><code class="language-plaintext highlighter-rouge">MySchema.dashboard</code> includes a web view to the <code class="language-plaintext highlighter-rouge">OperationStore</code>, visible at <code class="language-plaintext highlighter-rouge">/graphql/dashboard</code>. See the <a href="/pro/dashboard">Dashboard guide</a> for more details, including authorization.</p>
 
 <p><a href="/operation_store/graphql_ui.png" target="_blank" class="img-link">
   <img src="/operation_store/graphql_ui.png" title="GraphQL Persisted Operations Dashboard" alt="GraphQL Persisted Operations Dashboard" />
@@ -130,7 +130,7 @@
 
 <h4 id="update-the-controller">Update the Controller</h4>
 
-<p>Add <code class="highlighter-rouge">operation_id:</code> to your GraphQL context:</p>
+<p>Add <code class="language-plaintext highlighter-rouge">operation_id:</code> to your GraphQL context:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
 <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
@@ -146,9 +146,9 @@
 <span class="p">)</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">OperationStore</code> will use <code class="highlighter-rouge">operation_id</code> to fetch the operation from the database.</p>
+<p><code class="language-plaintext highlighter-rouge">OperationStore</code> will use <code class="language-plaintext highlighter-rouge">operation_id</code> to fetch the operation from the database.</p>
 
-<p>See <a href="/operation_store/server_management">Server Management</a> for details about rejecting GraphQL from <code class="highlighter-rouge">params[:query]</code>.</p>
+<p>See <a href="/operation_store/server_management">Server Management</a> for details about rejecting GraphQL from <code class="language-plaintext highlighter-rouge">params[:query]</code>.</p>
 
 <h4 id="next-steps">Next Steps</h4>
 

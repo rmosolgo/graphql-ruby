@@ -56,24 +56,24 @@
 
 <h1 class="guide-header">Encrypted, Versioned Cursors and IDs</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">GraphQL::Pro</code> includes a mechanism for serving encrypted, versioned cursors and IDs.  This provides some benefits:</p>
+  <p><code class="language-plaintext highlighter-rouge">GraphQL::Pro</code> includes a mechanism for serving encrypted, versioned cursors and IDs.  This provides some benefits:</p>
 
 <ul>
   <li>Users can’t reverse-engineer node IDs or connection cursors, removing a possible attack vector.</li>
   <li>You can gradually transition between cursor strategies, adding encrypting while supporting any “stale” encoders which clients already have.</li>
 </ul>
 
-<p><code class="highlighter-rouge">GraphQL::Pro</code>’s encrypted encoders provide a few security features:</p>
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Pro</code>’s encrypted encoders provide a few security features:</p>
 
 <ul>
-  <li>Key-based encryption by <code class="highlighter-rouge">aes-128-gcm</code> by default</li>
+  <li>Key-based encryption by <code class="language-plaintext highlighter-rouge">aes-128-gcm</code> by default</li>
   <li>Authentication</li>
   <li>Nonces for cursors (but not IDs, that would be silly)</li>
 </ul>
 
 <h2 id="defining-an-encoder">Defining an Encoder</h2>
 
-<p>Encoders can be created with <code class="highlighter-rouge">Encoder.define { ... }</code>:</p>
+<p>Encoders can be created with <code class="language-plaintext highlighter-rouge">Encoder.define { ... }</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MyEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">key</span><span class="p">(</span><span class="s2">"f411f30..."</span><span class="p">)</span>
@@ -83,13 +83,13 @@
 </code></pre></div></div>
 
 <ul>
-  <li><code class="highlighter-rouge">key</code> is the encryption key for this encoder. You can generate one with: <code class="highlighter-rouge">require "securerandom"; SecureRandom.bytes(16)</code></li>
-  <li><code class="highlighter-rouge">tag</code>, if provided, is used as authentication data or for disambiguating versioned encoders</li>
+  <li><code class="language-plaintext highlighter-rouge">key</code> is the encryption key for this encoder. You can generate one with: <code class="language-plaintext highlighter-rouge">require "securerandom"; SecureRandom.bytes(16)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">tag</code>, if provided, is used as authentication data or for disambiguating versioned encoders</li>
 </ul>
 
 <h2 id="encrypting-cursors">Encrypting Cursors</h2>
 
-<p>Encrypt cursors by attaching an encrypted encoder to <code class="highlighter-rouge">Schema#cursor_encoder</code>:</p>
+<p>Encrypt cursors by attaching an encrypted encoder to <code class="language-plaintext highlighter-rouge">Schema#cursor_encoder</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">cursor_encoder</span><span class="p">(</span><span class="no">MyCursorEncoder</span><span class="p">)</span>
@@ -102,7 +102,7 @@
 
 <h2 id="encrypting-ids">Encrypting IDs</h2>
 
-<p>Encrypt IDs by using encoders in <code class="highlighter-rouge">Schema#id_from_object</code> and <code class="highlighter-rouge">Schema#object_from_id</code>:</p>
+<p>Encrypt IDs by using encoders in <code class="language-plaintext highlighter-rouge">Schema#id_from_object</code> and <code class="language-plaintext highlighter-rouge">Schema#object_from_id</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">id_from_object</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
@@ -122,7 +122,7 @@
 
 <h2 id="versioning">Versioning</h2>
 
-<p>You can combine several encoders into a single chain of versioned encoders. Pass them to <code class="highlighter-rouge">.versioned</code>, newest-to-oldest:</p>
+<p>You can combine several encoders into a single chain of versioned encoders. Pass them to <code class="language-plaintext highlighter-rouge">.versioned</code>, newest-to-oldest:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Define some encoders ...</span>
 <span class="no">NewSecureEncoder</span>       <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
@@ -141,7 +141,7 @@
 
 <p>When receiving an ID or cursor, a versioned encoders tries each encoder in sequence. When creating a new ID or cursor, the encoder always uses the first encoder. This way, clients will receiving <em>new</em> encoders, but the server will still accept <em>old</em> encoders (until the old one is removed from the list).</p>
 
-<p><code class="highlighter-rouge">VersionedEncoder#decode_versioned</code> returns two values: the decoded data <em>and</em> the encoder which successfully decoded it. You can use this to determine how to process decoded data. For example, you can switch on the encoder:</p>
+<p><code class="language-plaintext highlighter-rouge">VersionedEncoder#decode_versioned</code> returns two values: the decoded data <em>and</em> the encoder which successfully decoded it. You can use this to determine how to process decoded data. For example, you can switch on the encoder:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">data</span><span class="p">,</span> <span class="n">encoder</span> <span class="o">=</span> <span class="no">VersionedEncoder</span><span class="p">.</span><span class="nf">decode_versioned</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
 <span class="k">case</span> <span class="n">encoder</span>
@@ -157,7 +157,7 @@
 
 <h2 id="encoding">Encoding</h2>
 
-<p>By default, encrypted bytes is stringified as base-64. You can specific a custom encoder with the <code class="highlighter-rouge">Encoder#encoder</code> definition. For example, you could define an encode which uses URL-safe base-64 functions:</p>
+<p>By default, encrypted bytes is stringified as base-64. You can specific a custom encoder with the <code class="language-plaintext highlighter-rouge">Encoder#encoder</code> definition. For example, you could define an encode which uses URL-safe base-64 functions:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">URLSafeEncoder</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>

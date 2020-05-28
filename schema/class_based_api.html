@@ -47,9 +47,9 @@
 
 <h1 class="guide-header">Class-based API Migration</h1>
 <div class="guide-container">
-  <p>In GraphQL <code class="highlighter-rouge">1.8</code>+, you can use Ruby classes to build your schema. You can <strong>mix</strong> class-style and <code class="highlighter-rouge">.define</code>-style type definitions in a schema.</p>
+  <p>In GraphQL <code class="language-plaintext highlighter-rouge">1.8</code>+, you can use Ruby classes to build your schema. You can <strong>mix</strong> class-style and <code class="language-plaintext highlighter-rouge">.define</code>-style type definitions in a schema.</p>
 
-<p>The <code class="highlighter-rouge">.define</code> DSL is deprecated and will be removed at version 2.0.</p>
+<p>The <code class="language-plaintext highlighter-rouge">.define</code> DSL is deprecated and will be removed at version 2.0.</p>
 
 <p>You can get an overview of this new feature:</p>
 
@@ -87,11 +87,11 @@
 
 <h3 id="classes">Classes</h3>
 
-<p>In general, each <code class="highlighter-rouge">.define { ... }</code> block will be converted to a class.</p>
+<p>In general, each <code class="language-plaintext highlighter-rouge">.define { ... }</code> block will be converted to a class.</p>
 
 <ul>
-  <li>Instead of a <code class="highlighter-rouge">GraphQL::{X}Type</code>, classes inherit from <code class="highlighter-rouge">GraphQL::Schema::{X}</code>. For example, instead of <code class="highlighter-rouge">GraphQL::ObjectType.define { ... }</code>, a definition is made by extending <code class="highlighter-rouge">GraphQL::Schema::Object</code></li>
-  <li>Any class hierarchy is supported; It’s recommended to create a base class for your application, then extend the base class for each of your types (like <code class="highlighter-rouge">ApplicationController</code> in Rails, see <a href="#customizing-defintions">Customizing Definitions</a>).</li>
+  <li>Instead of a <code class="language-plaintext highlighter-rouge">GraphQL::{X}Type</code>, classes inherit from <code class="language-plaintext highlighter-rouge">GraphQL::Schema::{X}</code>. For example, instead of <code class="language-plaintext highlighter-rouge">GraphQL::ObjectType.define { ... }</code>, a definition is made by extending <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Object</code></li>
+  <li>Any class hierarchy is supported; It’s recommended to create a base class for your application, then extend the base class for each of your types (like <code class="language-plaintext highlighter-rouge">ApplicationController</code> in Rails, see <a href="#customizing-defintions">Customizing Definitions</a>).</li>
 </ul>
 
 <p>See sections below for specific information about each schema definition class.</p>
@@ -102,32 +102,32 @@
 
 <h3 id="type-instances">Type Instances</h3>
 
-<p>The previous <code class="highlighter-rouge">GraphQL::{X}Type</code> objects are still used under the hood. Each of the new <code class="highlighter-rouge">GraphQL::Schema::{X}</code> classes implements a few methods:</p>
+<p>The previous <code class="language-plaintext highlighter-rouge">GraphQL::{X}Type</code> objects are still used under the hood. Each of the new <code class="language-plaintext highlighter-rouge">GraphQL::Schema::{X}</code> classes implements a few methods:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">.to_graphql</code>: creates a new instance of <code class="highlighter-rouge">GraphQL::{X}Type</code></li>
-  <li><code class="highlighter-rouge">.graphql_definition</code>: returns a cached instance of <code class="highlighter-rouge">GraphQL::{X}Type</code></li>
+  <li><code class="language-plaintext highlighter-rouge">.to_graphql</code>: creates a new instance of <code class="language-plaintext highlighter-rouge">GraphQL::{X}Type</code></li>
+  <li><code class="language-plaintext highlighter-rouge">.graphql_definition</code>: returns a cached instance of <code class="language-plaintext highlighter-rouge">GraphQL::{X}Type</code></li>
 </ul>
 
-<p>If you have custom code which breaks on new-style definitions, try calling <code class="highlighter-rouge">.graphql_definition</code> to get the underlying type object.</p>
+<p>If you have custom code which breaks on new-style definitions, try calling <code class="language-plaintext highlighter-rouge">.graphql_definition</code> to get the underlying type object.</p>
 
-<p>As described below, <code class="highlighter-rouge">.to_graphql</code> can be overridden to customize the type system.</p>
+<p>As described below, <code class="language-plaintext highlighter-rouge">.to_graphql</code> can be overridden to customize the type system.</p>
 
 <h3 id="list-types-and-non-null-types">List Types and Non-Null Types</h3>
 
-<p>Previously, list types were expressed with <code class="highlighter-rouge">types[T]</code> and non-null types were expressed with <code class="highlighter-rouge">!T</code>. Now:</p>
+<p>Previously, list types were expressed with <code class="language-plaintext highlighter-rouge">types[T]</code> and non-null types were expressed with <code class="language-plaintext highlighter-rouge">!T</code>. Now:</p>
 
 <ul>
-  <li>List types are expressed with Ruby Arrays, <code class="highlighter-rouge">[T]</code>, for example, <code class="highlighter-rouge">field :owners, [Types::UserType]</code>
+  <li>List types are expressed with Ruby Arrays, <code class="language-plaintext highlighter-rouge">[T]</code>, for example, <code class="language-plaintext highlighter-rouge">field :owners, [Types::UserType]</code>
     <ul>
-      <li>By default, list members are <em>non-null</em>, for example, <code class="highlighter-rouge">[Types::UserType]</code> becomes <code class="highlighter-rouge">[User!]</code></li>
-      <li>If your list members may be null, add <code class="highlighter-rouge">, null: true</code> to the array: <code class="highlighter-rouge">[Types::UserType, null: true]</code> becomes <code class="highlighter-rouge">[User]</code> (the list may include <code class="highlighter-rouge">nil</code>)</li>
+      <li>By default, list members are <em>non-null</em>, for example, <code class="language-plaintext highlighter-rouge">[Types::UserType]</code> becomes <code class="language-plaintext highlighter-rouge">[User!]</code></li>
+      <li>If your list members may be null, add <code class="language-plaintext highlighter-rouge">, null: true</code> to the array: <code class="language-plaintext highlighter-rouge">[Types::UserType, null: true]</code> becomes <code class="language-plaintext highlighter-rouge">[User]</code> (the list may include <code class="language-plaintext highlighter-rouge">nil</code>)</li>
     </ul>
   </li>
-  <li>Non-null types are expressed with keyword arguments <code class="highlighter-rouge">null:</code> or <code class="highlighter-rouge">required:</code>
+  <li>Non-null types are expressed with keyword arguments <code class="language-plaintext highlighter-rouge">null:</code> or <code class="language-plaintext highlighter-rouge">required:</code>
     <ul>
-      <li><code class="highlighter-rouge">field</code> takes a keyword <code class="highlighter-rouge">null:</code>. <code class="highlighter-rouge">null: true</code> means the field is nullable, <code class="highlighter-rouge">null: false</code> means the field is non-null (equivalent to <code class="highlighter-rouge">!</code>)</li>
-      <li><code class="highlighter-rouge">argument</code> takes a keyword <code class="highlighter-rouge">required:</code>. <code class="highlighter-rouge">required: true</code> means the argument is non-null (equivalent to <code class="highlighter-rouge">!</code>), <code class="highlighter-rouge">required: false</code> means that the argument is nullable</li>
+      <li><code class="language-plaintext highlighter-rouge">field</code> takes a keyword <code class="language-plaintext highlighter-rouge">null:</code>. <code class="language-plaintext highlighter-rouge">null: true</code> means the field is nullable, <code class="language-plaintext highlighter-rouge">null: false</code> means the field is non-null (equivalent to <code class="language-plaintext highlighter-rouge">!</code>)</li>
+      <li><code class="language-plaintext highlighter-rouge">argument</code> takes a keyword <code class="language-plaintext highlighter-rouge">required:</code>. <code class="language-plaintext highlighter-rouge">required: true</code> means the argument is non-null (equivalent to <code class="language-plaintext highlighter-rouge">!</code>), <code class="language-plaintext highlighter-rouge">required: false</code> means that the argument is nullable</li>
     </ul>
   </li>
 </ul>
@@ -135,13 +135,13 @@
 <p>In legacy-style classes, you may also use plain Ruby methods to create list and non-null types:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">#to_non_null_type</code> converts a type to a non-null variant (ie, <code class="highlighter-rouge">T.to_non_null_type</code> is equivalent to <code class="highlighter-rouge">!T</code>)</li>
-  <li><code class="highlighter-rouge">#to_list_type</code> converts a type to a list variant (ie, <code class="highlighter-rouge">T.to_list_type</code> is equivalent to <code class="highlighter-rouge">types[T]</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">#to_non_null_type</code> converts a type to a non-null variant (ie, <code class="language-plaintext highlighter-rouge">T.to_non_null_type</code> is equivalent to <code class="language-plaintext highlighter-rouge">!T</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">#to_list_type</code> converts a type to a list variant (ie, <code class="language-plaintext highlighter-rouge">T.to_list_type</code> is equivalent to <code class="language-plaintext highlighter-rouge">types[T]</code>)</li>
 </ul>
 
-<p>The <code class="highlighter-rouge">!</code> method has been removed to avoid ambiguity with the built-in logical operator and related foot-gunning.</p>
+<p>The <code class="language-plaintext highlighter-rouge">!</code> method has been removed to avoid ambiguity with the built-in logical operator and related foot-gunning.</p>
 
-<p>For compatibility, you may wish to backport <code class="highlighter-rouge">!</code> to class-based type definitions. You have two options:</p>
+<p>For compatibility, you may wish to backport <code class="language-plaintext highlighter-rouge">!</code> to class-based type definitions. You have two options:</p>
 
 <p><strong>A refinement</strong>, activated in <a href="https://docs.ruby-lang.org/en/2.4.0/syntax/refinements_rdoc.html#label-Scope">file scope or class/module scope</a>:</p>
 
@@ -157,11 +157,11 @@
 
 <h3 id="connection-fields--types">Connection fields &amp; types</h3>
 
-<p>There is no <code class="highlighter-rouge">connection(...)</code> method. Instead, connection fields are inferred from the type name.</p>
+<p>There is no <code class="language-plaintext highlighter-rouge">connection(...)</code> method. Instead, connection fields are inferred from the type name.</p>
 
-<p>If the type name ends in <code class="highlighter-rouge">Connection</code>, the field is treated as a connection field.</p>
+<p>If the type name ends in <code class="language-plaintext highlighter-rouge">Connection</code>, the field is treated as a connection field.</p>
 
-<p>This default may be overridden by passing a <code class="highlighter-rouge">connection: true</code> or <code class="highlighter-rouge">connection: false</code> keyword.</p>
+<p>This default may be overridden by passing a <code class="language-plaintext highlighter-rouge">connection: true</code> or <code class="language-plaintext highlighter-rouge">connection: false</code> keyword.</p>
 
 <p>For example:</p>
 
@@ -181,13 +181,13 @@
 <span class="n">field</span> <span class="ss">:something</span><span class="p">,</span> <span class="ss">function: </span><span class="no">Functions</span><span class="o">::</span><span class="no">Something</span><span class="p">.</span><span class="nf">new</span>
 </code></pre></div></div>
 
-<p>When using these resolution implementations, they will be called with the same <code class="highlighter-rouge">(obj, args, ctx)</code> parameters as before.</p>
+<p>When using these resolution implementations, they will be called with the same <code class="language-plaintext highlighter-rouge">(obj, args, ctx)</code> parameters as before.</p>
 
 <h2 id="upgrader">Upgrader</h2>
 
-<p><code class="highlighter-rouge">1.8</code> includes an <em>auto-upgrader</em> for transforming Ruby files from the <code class="highlighter-rouge">.define</code>-based syntax to <code class="highlighter-rouge">class</code>-based syntax. The upgrader is a pipeline of sequential transform operations. It ships with default pipelines, but you may customize the upgrade process by replacing the built-in pipelines with a custom ones.</p>
+<p><code class="language-plaintext highlighter-rouge">1.8</code> includes an <em>auto-upgrader</em> for transforming Ruby files from the <code class="language-plaintext highlighter-rouge">.define</code>-based syntax to <code class="language-plaintext highlighter-rouge">class</code>-based syntax. The upgrader is a pipeline of sequential transform operations. It ships with default pipelines, but you may customize the upgrade process by replacing the built-in pipelines with a custom ones.</p>
 
-<p>The upgrader has an additional dependency, <code class="highlighter-rouge">parser</code>, which you must add to your project manually (for example, by adding to your <code class="highlighter-rouge">Gemfile</code>).</p>
+<p>The upgrader has an additional dependency, <code class="language-plaintext highlighter-rouge">parser</code>, which you must add to your project manually (for example, by adding to your <code class="language-plaintext highlighter-rouge">Gemfile</code>).</p>
 
 <p>Remember that your project may be transformed one file at a time because the two syntaxes are compatible. This way, you can convert a few files and run your tests to identify outstanding issues, and continue working incrementally.</p>
 
@@ -198,10 +198,10 @@
 <p>The upgrader ships with rake tasks, included as a railtie (<a href="https://github.com/rmosolgo/graphql-ruby/blob/v1.8.0/lib/graphql/railtie.rb">source</a>). The railtie will be automatically installed by your Rails app, and it provides the following tasks:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">graphql:upgrade:schema[path/to/schema.rb]</code>: upgrade the Schema file</li>
-  <li><code class="highlighter-rouge">graphql:upgrade:member[path/to/some/type.rb]</code>: upgrade a type definition (object, interface, union, etc)</li>
-  <li><code class="highlighter-rouge">graphql:upgrade[app/graphql/**/*]</code>: run the <code class="highlighter-rouge">member</code> upgrade on files which have a suffix of <code class="highlighter-rouge">_(type|interface|enum|union).rb</code></li>
-  <li><code class="highlighter-rouge">graphql:upgrade:create_base_objects[path/to/graphql/]</code>: add base classes to your project</li>
+  <li><code class="language-plaintext highlighter-rouge">graphql:upgrade:schema[path/to/schema.rb]</code>: upgrade the Schema file</li>
+  <li><code class="language-plaintext highlighter-rouge">graphql:upgrade:member[path/to/some/type.rb]</code>: upgrade a type definition (object, interface, union, etc)</li>
+  <li><code class="language-plaintext highlighter-rouge">graphql:upgrade[app/graphql/**/*]</code>: run the <code class="language-plaintext highlighter-rouge">member</code> upgrade on files which have a suffix of <code class="language-plaintext highlighter-rouge">_(type|interface|enum|union).rb</code></li>
+  <li><code class="language-plaintext highlighter-rouge">graphql:upgrade:create_base_objects[path/to/graphql/]</code>: add base classes to your project</li>
 </ul>
 
 <h3 id="writing-a-custom-upgrade-task">Writing a Custom Upgrade Task</h3>
@@ -230,14 +230,14 @@
 <p>In this custom code, you can pass some keywords to <a href="/api-doc/1.10.10/GraphQL/Upgrader/Member#new-class_method" target="_blank" title="API docs for GraphQL::Upgrader::Member.new"><code>GraphQL::Upgrader::Member.new</code></a>:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">type_transforms:</code> Applied to the source code as a whole, applied first</li>
-  <li><code class="highlighter-rouge">field_transforms:</code> Applied to each field/connection/argument definition (extracted from the source, transformed independently, then re-inserted)</li>
-  <li><code class="highlighter-rouge">clean_up_transforms:</code> Applied to the source code as a whole, <em>after</em> the type and field transforms</li>
+  <li><code class="language-plaintext highlighter-rouge">type_transforms:</code> Applied to the source code as a whole, applied first</li>
+  <li><code class="language-plaintext highlighter-rouge">field_transforms:</code> Applied to each field/connection/argument definition (extracted from the source, transformed independently, then re-inserted)</li>
+  <li><code class="language-plaintext highlighter-rouge">clean_up_transforms:</code> Applied to the source code as a whole, <em>after</em> the type and field transforms</li>
 </ul>
 
-<p>Keep in mind that these transforms are performed in sequence, so the text changes over time. If you want to transform the source text, use <code class="highlighter-rouge">.unshift()</code> to add transforms to the <em>beginning</em> of the pipeline instead of the end.</p>
+<p>Keep in mind that these transforms are performed in sequence, so the text changes over time. If you want to transform the source text, use <code class="language-plaintext highlighter-rouge">.unshift()</code> to add transforms to the <em>beginning</em> of the pipeline instead of the end.</p>
 
-<p>For example, in <code class="highlighter-rouge">script/graphql-upgrade</code>:</p>
+<p>For example, in <code class="language-plaintext highlighter-rouge">script/graphql-upgrade</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#!/usr/bin/env ruby</span>
 
@@ -268,13 +268,13 @@
 <p>Objects in the transform pipeline may be:</p>
 
 <ul>
-  <li>A class which responds to <code class="highlighter-rouge">.new.apply(input_text)</code> and returns the transformed code</li>
-  <li>An object which responds to <code class="highlighter-rouge">.apply(input_text)</code> and returns the transformed code</li>
+  <li>A class which responds to <code class="language-plaintext highlighter-rouge">.new.apply(input_text)</code> and returns the transformed code</li>
+  <li>An object which responds to <code class="language-plaintext highlighter-rouge">.apply(input_text)</code> and returns the transformed code</li>
 </ul>
 
 <p>The library provides a <a href="/api-doc/1.10.10/GraphQL/Upgrader/Transform" target="_blank" title="API docs for GraphQL::Upgrader::Transform"><code>GraphQL::Upgrader::Transform</code></a> base class with a few convenience methods. You can also customize the built-in transformers listed below.</p>
 
-<p>For example, here’s a transform which rewrites type definitions from a <code class="highlighter-rouge">model_type(model) do ... end</code> factory method to the class-based syntax:</p>
+<p>For example, here’s a transform which rewrites type definitions from a <code class="language-plaintext highlighter-rouge">model_type(model) do ... end</code> factory method to the class-based syntax:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Create a custom transform for our `model_type` factory:</span>
 <span class="k">class</span> <span class="nc">ModelTypeToClassTransform</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Upgrader</span><span class="o">::</span><span class="no">Transform</span>
@@ -301,29 +301,29 @@
 <p>Type transforms (<a href="/api-doc/1.10.10/GraphQL/Upgrader/Member/DEFAULT_TYPE_TRANSFORMS" target="_blank" title="API docs for GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS"><code>GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS</code></a>):</p>
 
 <ul>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/Transform" target="_blank" title="API docs for GraphQL::Upgrader::Transform"><code>GraphQL::Upgrader::Transform</code></a> base class, provides a <code class="highlighter-rouge">normalize_type_expression</code> helper</li>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/TypeDefineToClassTransform" target="_blank" title="API docs for GraphQL::Upgrader::TypeDefineToClassTransform"><code>GraphQL::Upgrader::TypeDefineToClassTransform</code></a> turns <code class="highlighter-rouge">.define</code> into <code class="highlighter-rouge">class ...</code> with a regexp substitution</li>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/NameTransform" target="_blank" title="API docs for GraphQL::Upgrader::NameTransform"><code>GraphQL::Upgrader::NameTransform</code></a> takes <code class="highlighter-rouge">name "..."</code> and removes it if it’s redundant, or converts it to <code class="highlighter-rouge">graphql_name "..."</code></li>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/InterfacesToImplementsTransform" target="_blank" title="API docs for GraphQL::Upgrader::InterfacesToImplementsTransform"><code>GraphQL::Upgrader::InterfacesToImplementsTransform</code></a> turns <code class="highlighter-rouge">interfaces [A, B...]</code> into <code class="highlighter-rouge">implements(A)\nimplements(B)...</code></li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/Transform" target="_blank" title="API docs for GraphQL::Upgrader::Transform"><code>GraphQL::Upgrader::Transform</code></a> base class, provides a <code class="language-plaintext highlighter-rouge">normalize_type_expression</code> helper</li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/TypeDefineToClassTransform" target="_blank" title="API docs for GraphQL::Upgrader::TypeDefineToClassTransform"><code>GraphQL::Upgrader::TypeDefineToClassTransform</code></a> turns <code class="language-plaintext highlighter-rouge">.define</code> into <code class="language-plaintext highlighter-rouge">class ...</code> with a regexp substitution</li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/NameTransform" target="_blank" title="API docs for GraphQL::Upgrader::NameTransform"><code>GraphQL::Upgrader::NameTransform</code></a> takes <code class="language-plaintext highlighter-rouge">name "..."</code> and removes it if it’s redundant, or converts it to <code class="language-plaintext highlighter-rouge">graphql_name "..."</code></li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/InterfacesToImplementsTransform" target="_blank" title="API docs for GraphQL::Upgrader::InterfacesToImplementsTransform"><code>GraphQL::Upgrader::InterfacesToImplementsTransform</code></a> turns <code class="language-plaintext highlighter-rouge">interfaces [A, B...]</code> into <code class="language-plaintext highlighter-rouge">implements(A)\nimplements(B)...</code></li>
 </ul>
 
 <p>Field transforms (<a href="/api-doc/1.10.10/GraphQL/Upgrader/Member/DEFAULT_FIELD_TRANSFORMS" target="_blank" title="API docs for GraphQL::Upgrader::Member::DEFAULT_FIELD_TRANSFORMS"><code>GraphQL::Upgrader::Member::DEFAULT_FIELD_TRANSFORMS</code></a>):</p>
 
 <ul>
   <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/RemoveNewlinesTransform" target="_blank" title="API docs for GraphQL::Upgrader::RemoveNewlinesTransform"><code>GraphQL::Upgrader::RemoveNewlinesTransform</code></a> removes newlines from field definitions to normalize them</li>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/PositionalTypeArgTransform" target="_blank" title="API docs for GraphQL::Upgrader::PositionalTypeArgTransform"><code>GraphQL::Upgrader::PositionalTypeArgTransform</code></a> moves <code class="highlighter-rouge">type X</code> from the <code class="highlighter-rouge">do ... end</code> block into a positional argument, to normalize the definition</li>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/ConfigurationToKwargTransform" target="_blank" title="API docs for GraphQL::Upgrader::ConfigurationToKwargTransform"><code>GraphQL::Upgrader::ConfigurationToKwargTransform</code></a> moves a <code class="highlighter-rouge">do ... end</code> configuration to a keyword argument. By default, this is used for <code class="highlighter-rouge">property</code> and <code class="highlighter-rouge">description</code>. You can add new instances of this transform to convert your custom DSL.</li>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/PropertyToMethodTransform" target="_blank" title="API docs for GraphQL::Upgrader::PropertyToMethodTransform"><code>GraphQL::Upgrader::PropertyToMethodTransform</code></a> turns <code class="highlighter-rouge">property:</code> to <code class="highlighter-rouge">method:</code></li>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/UnderscoreizeFieldNameTransform" target="_blank" title="API docs for GraphQL::Upgrader::UnderscoreizeFieldNameTransform"><code>GraphQL::Upgrader::UnderscoreizeFieldNameTransform</code></a> converts field names to underscore-case. <strong>NOTE</strong> that this conversion may be <em>wrong</em> in the case of <code class="highlighter-rouge">bodyHTML =&gt; body_html</code>. When you find it is wrong, manually revert it and preserve the camel-case field name.</li>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/ResolveProcToMethodTransform" target="_blank" title="API docs for GraphQL::Upgrader::ResolveProcToMethodTransform"><code>GraphQL::Upgrader::ResolveProcToMethodTransform</code></a> converts <code class="highlighter-rouge">resolve -&gt; { ... }</code> to <code class="highlighter-rouge">def {field_name} ... </code> method definitions</li>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/UpdateMethodSignatureTransform" target="_blank" title="API docs for GraphQL::Upgrader::UpdateMethodSignatureTransform"><code>GraphQL::Upgrader::UpdateMethodSignatureTransform</code></a> converts the type name to the new syntax, and adds <code class="highlighter-rouge">null:</code>/<code class="highlighter-rouge">required:</code> to the method signature</li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/PositionalTypeArgTransform" target="_blank" title="API docs for GraphQL::Upgrader::PositionalTypeArgTransform"><code>GraphQL::Upgrader::PositionalTypeArgTransform</code></a> moves <code class="language-plaintext highlighter-rouge">type X</code> from the <code class="language-plaintext highlighter-rouge">do ... end</code> block into a positional argument, to normalize the definition</li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/ConfigurationToKwargTransform" target="_blank" title="API docs for GraphQL::Upgrader::ConfigurationToKwargTransform"><code>GraphQL::Upgrader::ConfigurationToKwargTransform</code></a> moves a <code class="language-plaintext highlighter-rouge">do ... end</code> configuration to a keyword argument. By default, this is used for <code class="language-plaintext highlighter-rouge">property</code> and <code class="language-plaintext highlighter-rouge">description</code>. You can add new instances of this transform to convert your custom DSL.</li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/PropertyToMethodTransform" target="_blank" title="API docs for GraphQL::Upgrader::PropertyToMethodTransform"><code>GraphQL::Upgrader::PropertyToMethodTransform</code></a> turns <code class="language-plaintext highlighter-rouge">property:</code> to <code class="language-plaintext highlighter-rouge">method:</code></li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/UnderscoreizeFieldNameTransform" target="_blank" title="API docs for GraphQL::Upgrader::UnderscoreizeFieldNameTransform"><code>GraphQL::Upgrader::UnderscoreizeFieldNameTransform</code></a> converts field names to underscore-case. <strong>NOTE</strong> that this conversion may be <em>wrong</em> in the case of <code class="language-plaintext highlighter-rouge">bodyHTML =&gt; body_html</code>. When you find it is wrong, manually revert it and preserve the camel-case field name.</li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/ResolveProcToMethodTransform" target="_blank" title="API docs for GraphQL::Upgrader::ResolveProcToMethodTransform"><code>GraphQL::Upgrader::ResolveProcToMethodTransform</code></a> converts <code class="language-plaintext highlighter-rouge">resolve -&gt; { ... }</code> to <code class="language-plaintext highlighter-rouge">def {field_name} ... </code> method definitions</li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/UpdateMethodSignatureTransform" target="_blank" title="API docs for GraphQL::Upgrader::UpdateMethodSignatureTransform"><code>GraphQL::Upgrader::UpdateMethodSignatureTransform</code></a> converts the type name to the new syntax, and adds <code class="language-plaintext highlighter-rouge">null:</code>/<code class="language-plaintext highlighter-rouge">required:</code> to the method signature</li>
 </ul>
 
 <p>Clean-up transforms (<a href="/api-doc/1.10.10/GraphQL/Upgrader/Member/DEFAULT_CLEAN_UP_TRANSFORMS" target="_blank" title="API docs for GraphQL::Upgrader::Member::DEFAULT_CLEAN_UP_TRANSFORMS"><code>GraphQL::Upgrader::Member::DEFAULT_CLEAN_UP_TRANSFORMS</code></a>):</p>
 
 <ul>
   <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/RemoveExcessWhitespaceTransform" target="_blank" title="API docs for GraphQL::Upgrader::RemoveExcessWhitespaceTransform"><code>GraphQL::Upgrader::RemoveExcessWhitespaceTransform</code></a> removes redundant newlines</li>
-  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/RemoveEmptyBlocksTransform" target="_blank" title="API docs for GraphQL::Upgrader::RemoveEmptyBlocksTransform"><code>GraphQL::Upgrader::RemoveEmptyBlocksTransform</code></a> removes <code class="highlighter-rouge">do end</code> with nothing inside them</li>
+  <li><a href="/api-doc/1.10.10/GraphQL/Upgrader/RemoveEmptyBlocksTransform" target="_blank" title="API docs for GraphQL::Upgrader::RemoveEmptyBlocksTransform"><code>GraphQL::Upgrader::RemoveEmptyBlocksTransform</code></a> removes <code class="language-plaintext highlighter-rouge">do end</code> with nothing inside them</li>
 </ul>
 
 <h2 id="roadmap">Roadmap</h2>
@@ -342,10 +342,10 @@
       <li>☑ Migrate a few components of GitHub’s GraphQL schema to this new API</li>
       <li>☑ Build advanced class-based features:
         <ul>
-          <li>☑ Custom <code class="highlighter-rouge">Context</code> classes</li>
+          <li>☑ Custom <code class="language-plaintext highlighter-rouge">Context</code> classes</li>
           <li>☑ Custom introspection types</li>
           <li>☐ <del>Custom directives</del> Probably will mess with execution soon, not worth the investment now</li>
-          <li>☐ <del>Custom <code class="highlighter-rouge">Schema#execute</code> method</del> not necessary</li>
+          <li>☐ <del>Custom <code class="language-plaintext highlighter-rouge">Schema#execute</code> method</del> not necessary</li>
         </ul>
       </li>
       <li>☑ Migrate all of GitHub’s GraphQL schema to this new API</li>
@@ -358,12 +358,12 @@
   </li>
   <li>graphql 1.10:
     <ul>
-      <li>☑ Begin sunsetting <code class="highlighter-rouge">.define</code></li>
+      <li>☑ Begin sunsetting <code class="language-plaintext highlighter-rouge">.define</code></li>
     </ul>
   </li>
   <li>graphql 2.0:
     <ul>
-      <li>☐ Remove <code class="highlighter-rouge">.define</code></li>
+      <li>☐ Remove <code class="language-plaintext highlighter-rouge">.define</code></li>
     </ul>
   </li>
 </ul>
@@ -373,8 +373,8 @@
 <p>Some configurations are used for <em>all</em> types described below:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">graphql_name</code> overrides the type name. (The default value is the Ruby constant name, without any namespaces)</li>
-  <li><code class="highlighter-rouge">description</code> provides a description for GraphQL introspection.</li>
+  <li><code class="language-plaintext highlighter-rouge">graphql_name</code> overrides the type name. (The default value is the Ruby constant name, without any namespaces)</li>
+  <li><code class="language-plaintext highlighter-rouge">description</code> provides a description for GraphQL introspection.</li>
 </ul>
 
 <p>For example:</p>

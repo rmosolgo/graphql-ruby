@@ -56,7 +56,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>Like a Ruby <code class="highlighter-rouge">Hash</code>, an input object consists of keys and values. Unlike a Hash, its keys and value types must be defined statically, as part of the GraphQL system. For example, here’s an input object, expressed in the <a href="https://graphql.org/learn/schema/#type-language">GraphQL Schema Definition Language</a> (SDL):</p>
+<p>Like a Ruby <code class="language-plaintext highlighter-rouge">Hash</code>, an input object consists of keys and values. Unlike a Hash, its keys and value types must be defined statically, as part of the GraphQL system. For example, here’s an input object, expressed in the <a href="https://graphql.org/learn/schema/#type-language">GraphQL Schema Definition Language</a> (SDL):</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">input</span> <span class="no">PostAttributes</span> <span class="p">{</span>
   <span class="ss">title: </span><span class="no">String</span><span class="o">!</span>
@@ -68,14 +68,14 @@
 <p>This input object has three possible keys:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">title</code> is required (denoted by <code class="highlighter-rouge">!</code>), and must be a <code class="highlighter-rouge">String</code></li>
-  <li><code class="highlighter-rouge">fullText</code> is also a required String</li>
-  <li><code class="highlighter-rouge">categories</code> is optional (it doesn’t have <code class="highlighter-rouge">!</code>), and if present, it must be a list of <code class="highlighter-rouge">PostCategory</code> values.</li>
+  <li><code class="language-plaintext highlighter-rouge">title</code> is required (denoted by <code class="language-plaintext highlighter-rouge">!</code>), and must be a <code class="language-plaintext highlighter-rouge">String</code></li>
+  <li><code class="language-plaintext highlighter-rouge">fullText</code> is also a required String</li>
+  <li><code class="language-plaintext highlighter-rouge">categories</code> is optional (it doesn’t have <code class="language-plaintext highlighter-rouge">!</code>), and if present, it must be a list of <code class="language-plaintext highlighter-rouge">PostCategory</code> values.</li>
 </ul>
 
 <h2 id="defining-input-object-types">Defining Input Object Types</h2>
 
-<p>Input object types extend <a href="/api-doc/1.10.10/GraphQL/Schema/InputObject" target="_blank" title="API docs for GraphQL::Schema::InputObject"><code>GraphQL::Schema::InputObject</code></a> and define key-value pairs with the <code class="highlighter-rouge">argument(...)</code> method. For example:</p>
+<p>Input object types extend <a href="/api-doc/1.10.10/GraphQL/Schema/InputObject" target="_blank" title="API docs for GraphQL::Schema::InputObject"><code>GraphQL::Schema::InputObject</code></a> and define key-value pairs with the <code class="language-plaintext highlighter-rouge">argument(...)</code> method. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_input_object.rb</span>
 <span class="c1"># Add a base class</span>
@@ -90,7 +90,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>For a full description of the <code class="highlighter-rouge">argument(...)</code> method, see the <a href="/type_definitions/objects#field-arguments">argument section of the Objects guide</a>.</p>
+<p>For a full description of the <code class="language-plaintext highlighter-rouge">argument(...)</code> method, see the <a href="/type_definitions/objects#field-arguments">argument section of the Objects guide</a>.</p>
 
 <h2 id="using-input-objects">Using Input Objects</h2>
 
@@ -98,7 +98,7 @@
 
 <ul>
   <li>calling its method, corresponding to the name (underscore-cased)</li>
-  <li>calling <code class="highlighter-rouge">#[]</code> with the <em>camel-cased</em> name of the argument (this is for compatibility with previous GraphQL-Ruby versions)</li>
+  <li>calling <code class="language-plaintext highlighter-rouge">#[]</code> with the <em>camel-cased</em> name of the argument (this is for compatibility with previous GraphQL-Ruby versions)</li>
 </ul>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This field takes an argument called `attributes`</span>
@@ -121,7 +121,7 @@
 
 <h2 id="customizing-input-objects">Customizing Input Objects</h2>
 
-<p>You can customize the <code class="highlighter-rouge">GraphQL::Schema::Argument</code> class which is used for input objects:</p>
+<p>You can customize the <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Argument</code> class which is used for input objects:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span> 
   <span class="c1"># your customization here ... </span>
@@ -137,15 +137,15 @@
 <p>You can also add or override methods on input object classes to customize them.  They have two instance variables by default:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">@arguments</code>: A <a href="/api-doc/1.10.10/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a> instance</li>
-  <li><code class="highlighter-rouge">@context</code>: The current <a href="/api-doc/1.10.10/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">@arguments</code>: A <a href="/api-doc/1.10.10/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a> instance</li>
+  <li><code class="language-plaintext highlighter-rouge">@context</code>: The current <a href="/api-doc/1.10.10/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a></li>
 </ul>
 
 <p>Any extra methods you define on the class can be used for field resolution, as demonstrated above.</p>
 
 <h2 id="converting-to-other-ruby-objects">Converting to Other Ruby Objects</h2>
 
-<p>Your input objects can be automatically converted to other Ruby types before they’re passed to your application code. This is an easy way to use <code class="highlighter-rouge">Range</code>’s in your schema:</p>
+<p>Your input objects can be automatically converted to other Ruby types before they’re passed to your application code. This is an easy way to use <code class="language-plaintext highlighter-rouge">Range</code>’s in your schema:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::DateRangeInput</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInputObject</span>
   <span class="n">description</span> <span class="s2">"Range of dates"</span>

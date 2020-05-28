@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Non-Null Types</h1>
 <div class="guide-container">
-  <p>GraphQL’s concept of <em>non-null</em> is expressed in the <a href="https://graphql.org/learn/schema/#type-language">Schema Definition Language</a> (SDL) with <code class="highlighter-rouge">!</code>, for example:</p>
+  <p>GraphQL’s concept of <em>non-null</em> is expressed in the <a href="https://graphql.org/learn/schema/#type-language">Schema Definition Language</a> (SDL) with <code class="language-plaintext highlighter-rouge">!</code>, for example:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">{</span><span class="w">
   </span><span class="c"># This field _always_ returns a String, never returns `null`</span><span class="w">
@@ -57,35 +57,35 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>In Ruby, this concept is expressed with <code class="highlighter-rouge">null:</code> for fields and <code class="highlighter-rouge">required:</code> for arguments.</p>
+<p>In Ruby, this concept is expressed with <code class="language-plaintext highlighter-rouge">null:</code> for fields and <code class="language-plaintext highlighter-rouge">required:</code> for arguments.</p>
 
 <h2 id="non-null-return-types">Non-null return types</h2>
 
-<p>When <code class="highlighter-rouge">!</code> is used for field return types (like <code class="highlighter-rouge">handle: String!</code> above), it means that the field will <em>never</em> (and may never) return <code class="highlighter-rouge">nil</code>.</p>
+<p>When <code class="language-plaintext highlighter-rouge">!</code> is used for field return types (like <code class="language-plaintext highlighter-rouge">handle: String!</code> above), it means that the field will <em>never</em> (and may never) return <code class="language-plaintext highlighter-rouge">nil</code>.</p>
 
-<p>To make a field non-null in Ruby, use <code class="highlighter-rouge">null: false</code> in the field definition:</p>
+<p>To make a field non-null in Ruby, use <code class="language-plaintext highlighter-rouge">null: false</code> in the field definition:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># equivalent to `handle: String!` above</span>
 <span class="n">field</span> <span class="ss">:handle</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 </code></pre></div></div>
 
-<p>This means that the field will <em>never</em> be <code class="highlighter-rouge">nil</code> (and if it is, it will be removed from the response, as described below).</p>
+<p>This means that the field will <em>never</em> be <code class="language-plaintext highlighter-rouge">nil</code> (and if it is, it will be removed from the response, as described below).</p>
 
 <h3 id="non-null-error-propagation">Non-null error propagation</h3>
 
-<p>If a non-null field ever returns <code class="highlighter-rouge">nil</code>, then the entire selection will be removed from the response and replaced with <code class="highlighter-rouge">nil</code>. If this removal would result in <em>another</em> invalid <code class="highlighter-rouge">nil</code>, then it cascades upward, until it reaches the root <code class="highlighter-rouge">"data"</code> key. This is to support clients in strongly-typed languages. Any non-null field will <em>never</em> return <code class="highlighter-rouge">null</code>, and client developers can depend on that.</p>
+<p>If a non-null field ever returns <code class="language-plaintext highlighter-rouge">nil</code>, then the entire selection will be removed from the response and replaced with <code class="language-plaintext highlighter-rouge">nil</code>. If this removal would result in <em>another</em> invalid <code class="language-plaintext highlighter-rouge">nil</code>, then it cascades upward, until it reaches the root <code class="language-plaintext highlighter-rouge">"data"</code> key. This is to support clients in strongly-typed languages. Any non-null field will <em>never</em> return <code class="language-plaintext highlighter-rouge">null</code>, and client developers can depend on that.</p>
 
 <h2 id="non-null-argument-types">Non-null argument types</h2>
 
-<p>When <code class="highlighter-rouge">!</code> is used for arguments (like <code class="highlighter-rouge">followers(since: DateTime!)</code> above), it means that the argument is <em>required</em> for the query to execute. Any query which doesn’t have a value for that argument will be rejected immediately.</p>
+<p>When <code class="language-plaintext highlighter-rouge">!</code> is used for arguments (like <code class="language-plaintext highlighter-rouge">followers(since: DateTime!)</code> above), it means that the argument is <em>required</em> for the query to execute. Any query which doesn’t have a value for that argument will be rejected immediately.</p>
 
-<p>To make an argument non-null in Ruby, use <code class="highlighter-rouge">required: true</code>, for example:</p>
+<p>To make an argument non-null in Ruby, use <code class="language-plaintext highlighter-rouge">required: true</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># equivalent to `since: DateTime!` above</span>
 <span class="n">argument</span> <span class="ss">:since</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">DateTime</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
 </code></pre></div></div>
 
-<p>This means that any query <em>without</em> a value for <code class="highlighter-rouge">since:</code> will be rejected.</p>
+<p>This means that any query <em>without</em> a value for <code class="language-plaintext highlighter-rouge">since:</code> will be rejected.</p>
 
 </div>
 <p class="guide-footer">

@@ -56,11 +56,11 @@
 
 <h1 class="guide-header">ActiveRecord Backend</h1>
 <div class="guide-container">
-  <p>GraphQL-Pro’s <code class="highlighter-rouge">OperationStore</code> can use ActiveRecord to store persisted queries. After setting up the database, it will read and write using those tables as needed.</p>
+  <p>GraphQL-Pro’s <code class="language-plaintext highlighter-rouge">OperationStore</code> can use ActiveRecord to store persisted queries. After setting up the database, it will read and write using those tables as needed.</p>
 
 <h2 id="database-setup">Database Setup</h2>
 
-<p>To use ActiveRecord, <code class="highlighter-rouge">GraphQL::Pro::OperationStore</code> requires some database tables. You can add these with a migration:</p>
+<p>To use ActiveRecord, <code class="language-plaintext highlighter-rouge">GraphQL::Pro::OperationStore</code> requires some database tables. You can add these with a migration:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rails generate migration SetupOperationStore
 </code></pre></div></div>
@@ -109,12 +109,12 @@
 
 <p>Then run the migration:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake db:migrate
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake db:migrate
 </code></pre></div></div>
 
 <p>(You’ll have to run that migration on any staging or production servers, too.)</p>
 
-<p>Now, <code class="highlighter-rouge">OperationStore</code> has what it needs to save queries using ActiveRecord!</p>
+<p>Now, <code class="language-plaintext highlighter-rouge">OperationStore</code> has what it needs to save queries using ActiveRecord!</p>
 
 </div>
 <p class="guide-footer">
