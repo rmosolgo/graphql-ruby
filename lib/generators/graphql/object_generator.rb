@@ -63,7 +63,7 @@ module Graphql
       end
 
       def class_exists?
-        klass.is_a?(Class) && klass.ancestors.include?(ApplicationRecord)
+        klass.is_a?(Class) && klass.ancestors.include?(ActiveRecord::Base)
       rescue NameError
         return false
       end
