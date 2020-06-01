@@ -13,8 +13,10 @@ class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
     end
   end
 
+  # rubocop:disable Style/ClassAndModuleChildren
   class ::TestUser < ActiveRecord::Base
   end
+  # rubocop:enable Style/ClassAndModuleChildren
 
   test "it generates fields with types" do
     commands = [
