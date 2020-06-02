@@ -29,17 +29,7 @@ module GraphQL
         if key == "execute_query"
           set_this_txn_name = data[:query].context[:set_scout_transaction_name]
           if set_this_txn_name == true || (set_this_txn_name.nil? && @set_transaction_name)
-            query = data[:query]
-            selected_op = query.selected_operation
-            if selected_op
-              op_type = selected_op.operation_type
-              op_name = selected_op.name || "anonymous"
-            else
-              op_type = "query"
-              op_name = "anonymous"
-            end
-
-            ScoutApm::Transaction.rename("GraphQL/#{op_type}.#{op_name}")
+            ScoutApm::Transaction.rename(transaction_name(data[:query]))
           end
         end
 
