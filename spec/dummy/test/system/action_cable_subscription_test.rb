@@ -49,16 +49,16 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
 
     # Make 3 subscriptions to the same payload
     click_on("Subscribe with fingerprint 1")
+    assert_selector "#fingerprint-updates-1-connected-1"
     click_on("Subscribe with fingerprint 1")
+    assert_selector "#fingerprint-updates-1-connected-2"
     click_on("Subscribe with fingerprint 1")
+    assert_selector "#fingerprint-updates-1-connected-3"
+
     # And two to the next payload
     click_on("Subscribe with fingerprint 2")
-    click_on("Subscribe with fingerprint 2")
-
-    assert_selector "#fingerprint-updates-1-connected-1"
-    assert_selector "#fingerprint-updates-1-connected-2"
-    assert_selector "#fingerprint-updates-1-connected-3"
     assert_selector "#fingerprint-updates-2-connected-1"
+    click_on("Subscribe with fingerprint 2")
     assert_selector "#fingerprint-updates-2-connected-2"
 
     # Now trigger. We expect a total of two updates:
