@@ -175,7 +175,7 @@ module GraphQL
 
       # The channel was closed, forget about it.
       def delete_subscription(subscription_id)
-        query, events = @subscriptions.delete(subscription_id)
+        _query, events = @subscriptions.delete(subscription_id)
         events.each do |event|
           ev_by_fingerprint = @events[event.topic]
           ev_for_fingerprint = ev_by_fingerprint[event.fingerprint]
