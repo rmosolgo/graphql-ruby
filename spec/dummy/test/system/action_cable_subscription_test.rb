@@ -45,6 +45,8 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
 
 
   test "it only re-runs queries once for subscriptions with matching fingerprints" do
+    visit "/"
+
     # Make 3 subscriptions to the same payload
     click_on("Subscribe with fingerprint 1")
     click_on("Subscribe with fingerprint 1")
@@ -64,30 +66,40 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
     # - Another is built & delivered to the next two
     click_on("Trigger with fingerprint 2")
 
+    # The order here is random, I think depending on ActionCable's internal storage:
+    if page.has_css?("#fingerprint-updates-1-update-1-value-1")
+      fingerprint_1_value = 1
+      fingerprint_2_value = 2
+    else
+      fingerprint_1_value = 2
+      fingerprint_2_value = 1
+    end
+
     # These all share the first value:
-    assert_selector "#fingerprint-updates-1-update-1-value-1"
-    assert_selector "#fingerprint-updates-1-update-2-value-1"
-    assert_selector "#fingerprint-updates-1-update-3-value-1"
+    assert_selector "#fingerprint-updates-1-update-1-value-#{fingerprint_1_value}"
+    assert_selector "#fingerprint-updates-1-update-2-value-#{fingerprint_1_value}"
+    assert_selector "#fingerprint-updates-1-update-3-value-#{fingerprint_1_value}"
     # and these share the second value:
-    assert_selector "#fingerprint-updates-2-update-1-value-2"
-    assert_selector "#fingerprint-updates-2-update-2-value-2"
+    assert_selector "#fingerprint-updates-2-update-1-value-#{fingerprint_2_value}"
+    assert_selector "#fingerprint-updates-2-update-2-value-#{fingerprint_2_value}"
 
     click_on("Unsubscribe with fingerprint 2")
     click_on("Trigger with fingerprint 1")
 
     # These get an update
-    assert_selector "#fingerprint-updates-1-update-1-value-3"
-    assert_selector "#fingerprint-updates-1-update-2-value-3"
-    assert_selector "#fingerprint-updates-1-update-3-value-3"
+    assert_selector "#fingerprint-updates-1-update-1-value-#{fingerprint_1_value + 2}"
+    assert_selector "#fingerprint-updates-1-update-2-value-#{fingerprint_1_value + 2}"
+    assert_selector "#fingerprint-updates-1-update-3-value-#{fingerprint_1_value + 2}"
     # But these are unsubscribed:
-    refute_selector "#fingerprint-updates-2-update-1-value-4"
-    refute_selector "#fingerprint-updates-2-update-2-value-4"
+    refute_selector "#fingerprint-updates-2-update-1-value-#{fingerprint_2_value + 2}"
+    refute_selector "#fingerprint-updates-2-update-2-value-#{fingerprint_2_value + 2}"
     click_on("Unsubscribe with fingerprint 1")
     # Make a new subscription and make sure it's updated:
     click_on("Subscribe with fingerprint 2")
     click_on("Trigger with fingerprint 2")
-    assert_selector "#fingerprint-updates-2-update-3-value-4"
+    assert_selector "#fingerprint-updates-2-update-1-value-#{fingerprint_2_value + 2}"
     # But this one was unsubscribed:
-    refute_selector "#fingerprint-updates-1-update-1-value-5"
+    refute_selector "#fingerprint-updates-1-update-1-value-#{fingerprint_1_value + 3}"
+    refute_selector "#fingerprint-updates-1-update-1-value-#{fingerprint_1_value + 4}"
   end
 end

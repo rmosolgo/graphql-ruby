@@ -139,22 +139,6 @@ module GraphQL
       # let the listener belonging to the first event on the list be
       # the one to build and publish payloads.
       #
-      # TODO: there's still some problem. To replicate:
-      #
-      # - Load the page
-      # - Trigger 1
-      # - Trigger 2
-      # - Double-check in the logs that `1` was setup first
-      # - Unsubscribe 1
-      # - Trigger 2
-      #
-      # It should fail to update `2`, even though its still subscribed. I'm seeing:
-      #
-      # > Unsubscribing from channel: {"channel":"GraphqlChannel","id":"17239209737"}
-      # > ...
-      # > Could not execute command from ({"command"=>"message", "identifier"=>"{\"channel\":\"GraphqlChannel\",\"id\":\"17239209737\"}", "data"=>"{\"field\":\"payload\",\"arguments\":{\"id\":\"updates-2\"},\"value\":2,\"action\":\"make_trigger\"}"}) [RuntimeError - Unable to find subscription with identifier: {"channel":"GraphqlChannel","id":"17239209737"}]: /Users/rmosolgo/.rbenv/versions/2.4.2/lib/ruby/gems/2.4.0/gems/actioncable-5.2.1/lib/action_cable/connection/subscriptions.rb:78:in `find' | /Users/rmosolgo/.rbenv/versions/2.4.2/lib/ruby/gems/2.4.0/gems/actioncable-5.2.1/lib/action_cable/connection/subscriptions.rb:55:in `perform_action' | /Users/rmosolgo/.rbenv/versions/2.4.2/lib/ruby/gems/2.4.0/gems/actioncable-5.2.1/lib/action_cable/connection/subscriptions.rb:19:in `execute_command' | /Users/rmosolgo/.rbenv/versions/2.4.2/lib/ruby/gems/2.4.0/gems/actioncable-5.2.1/lib/action_cable/connection/base.rb:87:in `dispatch_websocket_message' | /Users/rmosolgo/.rbenv/versions/2.4.2/lib/ruby/gems/2.4.0/gems/actioncable-5.2.1/lib/action_cable/server/worker.rb:60:in `block in invoke'
-      #
-      # Like it's trying to send a message over a channel that has closed.
       def setup_stream(channel, initial_event)
         topic = initial_event.topic
         channel.stream_from(EVENT_PREFIX + topic, coder: ActiveSupport::JSON) do |message|
@@ -166,7 +150,6 @@ module GraphQL
               # so just run it once, then deliver the result to every subscriber
               first_event = events.first
               first_subscription_id = first_event.context.fetch(:subscription_id)
-              puts "execute_update #{first_subscription_id} -- #{first_event.fingerprint}"
               result = execute_update(first_subscription_id, first_event, object)
               # Having calculated the result _once_, send the same payload to all subscribers
               events.each do |event|
@@ -201,7 +184,6 @@ module GraphQL
             ev_by_fingerprint.delete(event.fingerprint)
           end
         end
-        puts "Deleted #{subscription_id} (#{events.map(&:fingerprint)})"
         debug = {}
         @events.each do |topic, ev_by_fingerprint|
           debug[topic] = {}
@@ -209,7 +191,6 @@ module GraphQL
             debug[topic][fp] = evs.map { |ev| ev.context[:subscription_id] }
           end
         end
-        puts "Remaining: #{debug}"
       end
     end
   end
