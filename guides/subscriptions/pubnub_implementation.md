@@ -118,7 +118,7 @@ Then, that Redis client is passed to the Subscription configuration:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  use GraphQL::Pro::AblySubscriptions,
+  use GraphQL::Pro::PubnubSubscriptions,
     redis: $graphql_subscriptions_redis,
     # Add keys from your app dashboard:
     pubnub: Pubnub.new(subscription_key: ..., publish_key: ...)
@@ -158,7 +158,7 @@ Read more here: ["Using CORS"](https://www.html5rocks.com/en/tutorials/cors/).
 
 ## Webhook configuration
 
-Your server needs to receive webhooks from Ably when clients disconnect. This keeps your local subscription database in sync with Pubnub.
+Your server needs to receive webhooks from Pubnub when clients disconnect. This keeps your local subscription database in sync with Pubnub.
 
 ### Server
 
