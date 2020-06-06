@@ -24,6 +24,7 @@
   "dependencies": {
     "@types/ably": "^1.0.0",
     "@types/actioncable": "^5.2.3",
+    "@types/pubnub": "^4.27.3",
     "@types/pusher-js": "^4.2.2",
     "apollo-link": "^1.2.12",
     "glob": "^7.1.4",

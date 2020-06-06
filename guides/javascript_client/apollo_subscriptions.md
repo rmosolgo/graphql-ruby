@@ -14,6 +14,7 @@ GraphQL-Ruby's JavaScript client includes four kinds of support for Apollo Clien
   - [Overview](#apollo-2)
   - [Pusher](#apollo-2--pusher)
   - [Ably](#apollo-2--ably)
+  - [Pubnub](#apollo-2--pubnub)
   - [ActionCable](#apollo-2--actioncable)
 - Apollo 1.x:
   - [Overview](#apollo-1)
@@ -111,6 +112,48 @@ This link will check responses for the `X-Subscription-ID` header, and if it's p
 For your __app key__, make a key with "Subscribe" and "Presence" privileges and use that:
 
 {{ "/javascript_client/ably_key.png" | link_to_img:"Ably Subscription Key Privileges" }}
+
+
+## Apollo 2 -- Pubnub
+
+`graphql-ruby-client` includes support for subscriptions with Pubnub and ApolloLink.
+
+To use it, add `PubnubLink` before your `HttpLink`.
+
+For example:
+
+```js
+// Load Apollo stuff
+import { ApolloLink } from 'apollo-link';
+import { ApolloClient } from 'apollo-client';
+import { HttpLink } from 'apollo-link-http';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+// Load Pubnub subscriptions link
+import { PubnubLink } from 'graphql-ruby-client'
+// Load Pubnub and create a client
+const Pubnub = require("pubnub")
+const pubnubClient = new Pubnub({...})
+
+// Make the HTTP link which actually sends the queries
+const httpLink = new HttpLink({
+  uri: '/graphql',
+  credentials: 'include'
+});
+
+// Make the Pubnub link which will pick up on subscriptions
+const pubnubLink = new PubnubLink({pubnub: pubnubClient})
+
+// Combine the two links to work together
+const link = ApolloLink.from([pubnubLink, httpLink])
+
+// Initialize the client
+const client = new ApolloClient({
+  link: link,
+  cache: new InMemoryCache()
+});
+```
+
+This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Pubnub for future updates.
 
 ## Apollo 2 -- ActionCable
 
