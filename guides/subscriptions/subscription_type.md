@@ -43,8 +43,7 @@ class Types::SubscriptionType < GraphQL::Schema::Object
   # If you're using the interpreter, also add:
   extend GraphQL::Subscriptions::SubscriptionRoot
 
-  field :post_was_published, Types::PostType, null: false,
-    description: "A post was published to the blog"
+  field :post_was_published, subscription: Subscriptions::PostWasPublished
   # ...
 end
 ```
@@ -63,37 +62,4 @@ end
 
 See {% internal_link "Implementing Subscriptions","subscriptions/implementation" %} for more about actually delivering updates.
 
-## Authorizing Subscriptions
-
-When a client first sends a `subscription` operation, the root fields are resolved, so their corresponding methods are called, for example:
-
-```ruby
-class Types::SubscriptionType < GraphQL::Schema::Object
-  extend GraphQL::Subscriptions::SubscriptionRoot
-
-  field :post_was_published, Types::PostType, null: false,
-    description: "A post was published to the blog" do
-      argument :topic, Types::PostTopic, required: true
-    end
-
-  def post_was_published(topic:)
-    # This will be called on the initial request
-  end
-end
-```
-
-During that method, you can raise an error to _prevent_ establishing the subscription. For example:
-
-```ruby
-def post_was_published(topic:)
-  if context[:viewer].can_subscribe_to?(topic)
-    # Allow the request
-  else
-    raise GraphQL::ExecutionError.new("Can't subscribe to this topic: #{topic}")
-  end
-end
-```
-
-If the error is raised, it will be added to the response's `"errors"` key and the subscription won't be created.
-
-The return value of the method is not used; only the raised error affects the behavior of the subscription.
+See {% internal_link "Subscription Classes", "subscriptions/subscription_classes" %} for more about implementing subscription root fields.
