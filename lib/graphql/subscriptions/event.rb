@@ -27,7 +27,7 @@ module GraphQL
         @arguments = arguments
         @context = context
         @field = field || context.field
-        scope_val = scope || (context && field.subscription_scope && context[@field.subscription_scope])
+        scope_val = scope || (context && @field.subscription_scope && context[@field.subscription_scope])
 
         @topic = self.class.serialize(name, arguments, @field, scope: scope_val)
       end
