@@ -26,7 +26,34 @@ module GraphQL
         end
 
         current_field = visitor.field_definition
-        current_field_broadcastable = current_field.broadcastable?
+        apply_broadcastable(current_field)
+
+        current_type = visitor.parent_type_definition
+        if current_type.kind.interface?
+          pt = @query.possible_types(current_type)
+          pt.each do |object_type|
+            ot_field = @query.get_field(object_type, current_field.graphql_name)
+            if !ot_field
+              binding.pry
+            end
+            # Inherited fields would be exactly the same object;
+            # only check fields that are overrides of the inherited one
+            if ot_field && ot_field != current_field
+              apply_broadcastable(ot_field)
+            end
+          end
+        end
+      end
+
+      def result
+        query.context.namespace(:subscriptions)[:subscription_broadcastable] = @subscription_broadcastable
+      end
+
+      private
+
+      # Modify `@subscription_broadcastable` based on `field_defn`'s configuration (and/or the default value)
+      def apply_broadcastable(field_defn)
+        current_field_broadcastable = field_defn.broadcastable?
         case current_field_broadcastable
         when nil
           # If the value wasn't set, mix in the default value:
@@ -43,12 +70,8 @@ module GraphQL
           # but don't _set_ it to true if it was set to false by something else.
           # Actually, just leave it!
         else
-          raise ArgumentError, "Unexpected `.broadcastable?` value for #{current_field.path}: #{current_field_broadcastable}"
+          raise ArgumentError, "Unexpected `.broadcastable?` value for #{field_defn.path}: #{current_field_broadcastable}"
         end
-      end
-
-      def result
-        query.context.namespace(:subscriptions)[:subscription_broadcastable] = @subscription_broadcastable
       end
     end
   end
