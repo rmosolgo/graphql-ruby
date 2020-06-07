@@ -15,7 +15,7 @@ module GraphQL
     class ISO8601Date < GraphQL::Schema::Scalar
       description "An ISO 8601-encoded date"
 
-      # @param value [Date,DateTime,String]
+      # @param value [Date,Time,DateTime,String]
       # @return [String]
       def self.coerce_result(value, _ctx)
         Date.parse(value.to_s).iso8601
