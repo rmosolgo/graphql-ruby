@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "securerandom"
+require "graphql/subscriptions/broadcast_analyzer"
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
@@ -35,9 +36,19 @@ module GraphQL
     end
 
     # @param schema [Class] the GraphQL schema this manager belongs to
-    def initialize(schema:, **rest)
+    def initialize(schema:, broadcast: false, default_broadcastable: true, **rest)
+      if broadcast
+        if !schema.using_ast_analysis?
+          raise ArgumentError, "`broadcast: true` requires AST analysis, add `using GraphQL::Analysis::AST` to your schema or see https://graphql-ruby.org/queries/ast_analysis.html."
+        end
+        schema.query_analyzer(Subscriptions::BroadcastAnalyzer)
+      end
+      @default_broadcastable = default_broadcastable
       @schema = schema
     end
+
+    # @return [Boolean] Used when fields don't have `broadcastable:` explicitly set
+    attr_reader :default_broadcastable
 
     # Fetch subscriptions matching this field + arguments pair
     # And pass them off to the queue.
