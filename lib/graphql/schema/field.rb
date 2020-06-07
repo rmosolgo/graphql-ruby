@@ -297,7 +297,7 @@ module GraphQL
       end
 
       # If true, subscription updates with this field can be shared between viewers
-      # @return [Boolean]
+      # @return [Boolean, nil]
       # @see GraphQL::Subscriptions::BroadcastAnalyzer
       def broadcastable?
         @broadcastable

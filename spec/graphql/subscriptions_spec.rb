@@ -3,34 +3,37 @@ require "spec_helper"
 
 class InMemoryBackend
   class Subscriptions < GraphQL::Subscriptions
-    attr_reader :deliveries, :pushes, :extra, :subscriptions, :queries
+    attr_reader :deliveries, :pushes, :extra, :subscriptions, :queries, :fingerprints
 
-    def initialize(schema:, extra:)
+    def initialize(schema:, extra:, **rest)
       super
       @extra = extra
       @queries = {}
       @subscriptions = Hash.new { |h, k| h[k] = [] }
+      @fingerprints = Hash.new { |h, k| h[k] = Set.new }
       @deliveries = Hash.new { |h, k| h[k] = [] }
       @pushes = []
     end
 
     def write_subscription(query, events)
-      @queries[query.context[:socket]] = query
+      subscription_id = query.context[:subscription_id] = build_id
+      @queries[subscription_id] = query
       events.each do |ev|
-        # The `context` is functioning as subscription data.
-        # IRL you'd have some other model that persisted the subscription
-        @subscriptions[ev.topic] << ev.context
+        @fingerprints[ev.topic] << ev.fingerprint
+        @subscriptions[ev.fingerprint] << subscription_id
       end
     end
 
     def each_subscription_id(event)
-      @subscriptions[event.topic].each do |ctx|
-        yield(ctx[:socket])
+      @fingerprints[event.topic].each do |fp|
+        @subscriptions[fp].each do |sub_id|
+          yield(sub_id)
+        end
       end
     end
 
-    def read_subscription(channel)
-      query = @queries[channel]
+    def read_subscription(subscription_id)
+      query = @queries[subscription_id]
       if query
         {
           query_string: query.query_string,
@@ -44,25 +47,31 @@ class InMemoryBackend
       end
     end
 
-    def delete_subscription(channel)
-      @queries.delete(channel)
-      @subscriptions.keys.each do |key|
-        contexts = @subscriptions[key]
-        contexts.reject! do |ctx|
-          ctx[:socket] == channel
-        end
-        if contexts.size == 0
-          @subscriptions.delete(key)
+    def delete_subscription(subscription_id)
+      @queries.delete(subscription_id)
+      @subscriptions.each do |fp, sub_ids|
+        sub_ids.delete(subscription_id)
+        if sub_ids.empty?
+          @fingerprints.each do |topic, fingerprints|
+            fingerprints.delete(fp)
+          end
         end
       end
+      @subscriptions.delete_if { |fp, ids| ids.empty? }
+      @fingerprints.delete_if { |topic, fps| fps.empty? }
     end
 
-    def deliver(channel, result)
-      @deliveries[channel] << result
+    def deliver(subscription_id, result)
+      query = @queries[subscription_id]
+      socket = query.context[:socket] || subscription_id
+      @deliveries[socket] << result
     end
 
-    def execute_update(channel, event, object)
-      @pushes << channel
+    def execute_update(subscription_id, event, object)
+      query = @queries[subscription_id]
+      if query
+        @pushes << query.context[:socket]
+      end
       super
     end
 
@@ -70,12 +79,9 @@ class InMemoryBackend
     def reset
       @queries.clear
       @subscriptions.clear
+      @fingerprints.clear
       @deliveries.clear
       @pushes.clear
-    end
-
-    def size
-      @subscriptions.size
     end
   end
   # Just a random stateful object for tracking what happens:
@@ -248,7 +254,12 @@ describe GraphQL::Subscriptions do
       let(:schema) { in_memory_backend_class::Schema }
       let(:implementation) { schema.subscriptions }
       let(:deliveries) { implementation.deliveries }
-      let(:active_subscriptions) { implementation.subscriptions }
+      let(:subscriptions_by_topic) {
+        implementation.fingerprints.each_with_object({}) do |(k, v), obj|
+          obj[k] = v.size
+        end
+      }
+
       describe "pushing updates" do
         it "sends updated data" do
           query_str = <<-GRAPHQL
@@ -363,7 +374,9 @@ describe GraphQL::Subscriptions do
 
           res = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
           assert_equal true, res.key?("errors")
-          assert_equal 0, implementation.size
+          assert_equal 0, implementation.subscriptions.size
+          assert_equal 0, implementation.queries.size
+          assert_equal 0, implementation.fingerprints.size
         end
       end
 
@@ -414,16 +427,19 @@ describe GraphQL::Subscriptions do
           GRAPHQL
 
           schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
-          assert_equal 1, implementation.size
-          channel = implementation.subscriptions.values.first.first[:socket]
+          assert_equal 1, implementation.subscriptions.size
+          sub_id = implementation.queries.keys.first
           # Mess with the private storage so that `read_subscription` will be nil
-          implementation.queries.delete(channel)
-          assert_equal 1, implementation.size
-          assert_nil implementation.read_subscription(channel)
+          implementation.queries.delete(sub_id)
+          assert_equal 1, implementation.fingerprints.size
+          assert_equal 1, implementation.subscriptions.size
+          assert_nil implementation.read_subscription(sub_id)
 
           # The trigger should clean up the lingering subscription:
           schema.subscriptions.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
-          assert_equal 0, implementation.size
+          assert_equal 0, implementation.fingerprints.size
+          assert_equal 0, implementation.subscriptions.size
+          assert_equal 0, implementation.queries.size
         end
 
         it "coerces args" do
@@ -579,11 +595,7 @@ describe GraphQL::Subscriptions do
                 ":eventSubscription:payloadType:TWO:userId:3" => 1,
               }
             end
-            count_by_topic = Hash.new(0)
-            active_subscriptions.each do |k, v|
-              count_by_topic[k] += v.size
-            end
-            assert_equal expected_sub_count, count_by_topic
+            assert_equal expected_sub_count, subscriptions_by_topic
           end
 
           it "doesn't apply for plain fields" do
@@ -628,11 +640,7 @@ describe GraphQL::Subscriptions do
                 ":event:stream:payloadType:ONE:user_id:4" => 2,
               }
             end
-            count_by_topic = Hash.new(0)
-            active_subscriptions.each do |k, v|
-              count_by_topic[k] += v.size
-            end
-            assert_equal expected_sub_count, count_by_topic
+            assert_equal expected_sub_count, subscriptions_by_topic
           end
         end
 
@@ -646,7 +654,7 @@ describe GraphQL::Subscriptions do
             assert_equal nil, res["data"]
             assert_equal "unauthorized", res["errors"][0]["message"]
 
-            assert_equal 0, active_subscriptions.size
+            assert_equal 0, subscriptions_by_topic.size
           end
 
           it "lets unhandled errors crash" do
@@ -717,6 +725,101 @@ describe GraphQL::Subscriptions do
           assert_includes err.message, "arguments of StreamInput"
         end
       end
+    end
+  end
+
+  describe "broadcast: true" do
+    let(:schema) { BroadcastTrueSchema }
+
+    before do
+      BroadcastTrueSchema::COUNTERS.clear
+    end
+
+    class BroadcastSubscriptions < InMemoryBackend::Subscriptions
+      def execute_all(event, object)
+        topic = event.topic
+        fingerprints = @fingerprints[topic]
+        fingerprints.each do |fingerprint|
+          sub_ids = @subscriptions[fingerprint]
+          result = execute_update(sub_ids.first, event, object)
+          sub_ids.each do |sub_id|
+            deliver(sub_id, result)
+          end
+        end
+      end
+    end
+
+    class BroadcastTrueSchema < GraphQL::Schema
+      COUNTERS = Hash.new(0)
+
+      class Subscription < GraphQL::Schema::Object
+        class BroadcastableCounter < GraphQL::Schema::Subscription
+          field :value, Integer, null: false
+
+          def update
+            {
+              value: COUNTERS[:broadcastable] += 1
+            }
+          end
+        end
+
+        class IsolatedCounter < GraphQL::Schema::Subscription
+          broadcastable(false)
+          field :value, Integer, null: false
+
+          def update
+            {
+              value: COUNTERS[:isolated] += 1
+            }
+          end
+        end
+
+        field :broadcastable_counter, subscription: BroadcastableCounter
+        field :isolated_counter, subscription: IsolatedCounter
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :int, Integer, null: false
+      end
+
+      query(Query)
+      subscription(Subscription)
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+      use BroadcastSubscriptions, extra: nil,
+        broadcast: true, default_broadcastable: true
+    end
+
+    def exec_query(query_str, **options)
+      BroadcastTrueSchema.execute(query_str, **options)
+    end
+
+    it "broadcasts when possible" do
+      assert_equal false, BroadcastTrueSchema.get_field("Subscription", "isolatedCounter").broadcastable?
+
+      exec_query("subscription { counter: broadcastableCounter { value } }", context: { socket: "1" })
+      exec_query("subscription { counter: broadcastableCounter { value } }", context: { socket: "2" })
+      exec_query("subscription { counter: broadcastableCounter { value __typename } }", context: { socket: "3" })
+
+      exec_query("subscription { counter: isolatedCounter { value } }", context: { socket: "1" })
+      exec_query("subscription { counter: isolatedCounter { value } }", context: { socket: "2" })
+      exec_query("subscription { counter: isolatedCounter { value } }", context: { socket: "3" })
+
+      schema.subscriptions.trigger(:broadcastable_counter, {}, {})
+      schema.subscriptions.trigger(:isolated_counter, {}, {})
+
+      expected_counters = { broadcastable: 2, isolated: 3 }
+      assert_equal expected_counters, BroadcastTrueSchema::COUNTERS
+
+      delivered_values = schema.subscriptions.deliveries.map do |channel, results|
+        results.map { |r| r["data"]["counter"]["value"] }
+      end
+
+      # Socket 1 received 1, 1
+      # Socket 2 received 1, 2 (same broadcast as Socket 1)
+      # Socket 3 received 2, 3
+      expected_values = [[1,1], [1,2], [2,3]]
+      assert_equal expected_values, delivered_values
     end
   end
 end

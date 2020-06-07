@@ -55,8 +55,20 @@ module GraphQL
         Serialize.dump_recursive([scope, name, sorted_h])
       end
 
+      # @return [String] a logical identifier for this event. (Stable when the query is broadcastable.)
       def fingerprint
-        @fingerprint ||= "#{@topic}/#{@context.query.fingerprint}"
+        @fingerprint ||= begin
+          # When this query has been flagged as broadcastable,
+          # use a generalized, stable fingerprint so that
+          # duplicate subscriptions can be evaluated and distributed in bulk.
+          # (`@topic` includes field, args, and subscription scope already.)
+          if @context.namespace(:subscriptions)[:subscription_broadcastable]
+            "#{@topic}/#{@context.query.fingerprint}"
+          else
+            # not broadcastable, build a unique ID for this event
+            @context.schema.subscriptions.build_id
+          end
+        end
       end
 
       class << self
