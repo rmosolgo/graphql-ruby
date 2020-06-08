@@ -31,7 +31,7 @@ module GraphQL
           elsif value.is_a?(GraphQL::Pagination::Connection)
             # update the connection with some things that may not have been provided
             value.context ||= context
-            value.parent ||= object
+            value.parent ||= object.object
             value.first_value ||= arguments[:first]
             value.after_value ||= arguments[:after]
             value.last_value ||= arguments[:last]
@@ -42,7 +42,7 @@ module GraphQL
             value
           elsif context.schema.new_connections?
             wrappers = context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
-            context.schema.connections.wrap(field, object, value, arguments, context, wrappers: wrappers)
+            context.schema.connections.wrap(field, object.object, value, arguments, context, wrappers: wrappers)
           else
             if object.is_a?(GraphQL::Schema::Object)
               object = object.object
