@@ -209,6 +209,16 @@ module GraphQL
       Schema::Member::BuildType.camelize(event_or_arg_name.to_s)
     end
 
+    # @return [Boolean] if true, then a query like this one would be broadcasted
+    def broadcastable?(query_str, **query_options)
+      query = GraphQL::Query.new(@schema, query_str, **query_options)
+      if !query.valid?
+        raise "Invalid query: #{query.validation_errors.map(&:to_h).inspect}"
+      end
+      GraphQL::Analysis::AST.analyze_query(query, @schema.query_analyzers)
+      query.context.namespace(:subscriptions)[:subscription_broadcastable]
+    end
+
     private
 
     # Recursively normalize `args` as belonging to `arg_owner`:

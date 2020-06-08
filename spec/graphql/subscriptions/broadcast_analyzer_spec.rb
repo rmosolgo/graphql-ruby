@@ -65,12 +65,7 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
 
 
   def broadcastable?(query_str, schema: BroadcastTestSchema)
-    query = GraphQL::Query.new(schema, query_str)
-    if !query.valid?
-      raise query.validation_errors.map(&:to_h).inspect
-    end
-    GraphQL::Analysis::AST.analyze_query(query, schema.query_analyzers)
-    query.context.namespace(:subscriptions)[:subscription_broadcastable]
+    schema.subscriptions.broadcastable?(query_str)
   end
 
   it "doesn't run for non-subscriptions" do

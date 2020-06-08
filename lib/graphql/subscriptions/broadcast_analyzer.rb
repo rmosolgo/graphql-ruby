@@ -7,6 +7,8 @@ module GraphQL
     # - Is completely broadcastable
     #
     # Assign the result to `context.namespace(:subscriptions)[:subscription_broadcastable]`
+    # @api private
+    # @see Subscriptions#broadcastable? for a public API
     class BroadcastAnalyzer < GraphQL::Analysis::AST::Analyzer
       def initialize(subject)
         super
