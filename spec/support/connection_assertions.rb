@@ -63,6 +63,12 @@ module ConnectionAssertions
       custom_item_edge = Class.new(GraphQL::Types::Relay::BaseEdge) do
         node_type item
         graphql_name "CustomItemEdge"
+
+        field :parent_class, String, null: false
+
+        def parent_class
+          object.parent.class.inspect
+        end
       end
 
       custom_item_connection = Class.new(GraphQL::Types::Relay::BaseConnection) do
@@ -248,7 +254,7 @@ module ConnectionAssertions
 
       describe "customizing" do
         it "serves custom fields" do
-          res = schema.execute <<-GRAPHQL
+          res = schema.execute <<-GRAPHQL, root_value: :something
           {
             items: customItems(first: 3) {
               nodes {
@@ -258,14 +264,16 @@ module ConnectionAssertions
                 node  {
                   name
                 }
+                parentClass
               }
               totalCount
             }
           }
           GRAPHQL
-
           assert_names(["Avocado", "Beet", "Cucumber"], res)
           assert_equal 10, res["data"]["items"]["totalCount"]
+          # Since this connection hangs off `Query`, the root value is the parent.
+          assert_equal "Symbol", res["data"]["items"]["edges"][0]["parentClass"]
         end
 
         it "applies local max-page-size settings" do
