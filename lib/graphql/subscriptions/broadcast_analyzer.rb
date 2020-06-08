@@ -47,7 +47,6 @@ module GraphQL
         end
       end
 
-
       # Assign the result to context.
       # (This method is allowed to return an error, but we don't need to)
       # @return [void]
