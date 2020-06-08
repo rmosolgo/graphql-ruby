@@ -1506,7 +1506,11 @@ module GraphQL
 
       # @return [GraphQL::Execution::Errors, Class<GraphQL::Execution::Errors::NullErrorHandler>]
       def error_handler
-        @error_handler ||= GraphQL::Execution::Errors::NullErrorHandler
+        if defined?(@error_handler)
+          @error_handler
+        else
+          find_inherited_value(:error_handler, GraphQL::Execution::Errors::NullErrorHandler)
+        end
       end
 
       def lazy_resolve(lazy_class, value_method)
