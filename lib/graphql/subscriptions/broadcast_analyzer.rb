@@ -53,7 +53,7 @@ module GraphQL
 
       # Modify `@subscription_broadcastable` based on `field_defn`'s configuration (and/or the default value)
       def apply_broadcastable(field_defn)
-        current_field_broadcastable = field_defn.broadcastable?
+        current_field_broadcastable = field_defn.introspection? || field_defn.broadcastable?
         case current_field_broadcastable
         when nil
           # If the value wasn't set, mix in the default value:

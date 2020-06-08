@@ -81,12 +81,15 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
 
   describe "when the default is false" do
     it "applies default false when any field is not tagged" do
-      assert_equal false, broadcastable?("subscription { __typename }", schema: BroadcastTestDefaultFalseSchema)
       assert_equal false, broadcastable?("subscription { throwableWasThrown { throwable { weight } } }", schema: BroadcastTestDefaultFalseSchema)
     end
 
     it "returns true when all fields are tagged true" do
       assert_equal true, broadcastable?("subscription { newMaxThrowRecord { distance } }", schema: BroadcastTestDefaultFalseSchema)
+    end
+
+    it "treats introspection fields as broadcastable" do
+      assert_equal true, broadcastable?("subscription { __typename }", schema: BroadcastTestDefaultFalseSchema)
     end
   end
 
