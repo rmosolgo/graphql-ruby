@@ -3,14 +3,14 @@ require "spec_helper"
 
 class InMemoryBackend
   class Subscriptions < GraphQL::Subscriptions
-    attr_reader :deliveries, :pushes, :extra, :subscriptions, :queries, :fingerprints
+    attr_reader :deliveries, :pushes, :extra, :queries, :events
 
     def initialize(schema:, extra:, **rest)
       super
       @extra = extra
       @queries = {}
-      @subscriptions = Hash.new { |h, k| h[k] = [] }
-      @fingerprints = Hash.new { |h, k| h[k] = Set.new }
+      # { topic => { fingerprint => [sub_id, ... ] } }
+      @events = Hash.new { |h,k| h[k] = Hash.new { |h2, k2| h2[k2] = [] } }
       @deliveries = Hash.new { |h, k| h[k] = [] }
       @pushes = []
     end
@@ -19,14 +19,13 @@ class InMemoryBackend
       subscription_id = query.context[:subscription_id] = build_id
       @queries[subscription_id] = query
       events.each do |ev|
-        @fingerprints[ev.topic] << ev.fingerprint
-        @subscriptions[ev.fingerprint] << subscription_id
+        @events[ev.topic][ev.fingerprint] << subscription_id
       end
     end
 
     def each_subscription_id(event)
-      @fingerprints[event.topic].each do |fp|
-        @subscriptions[fp].each do |sub_id|
+      @events[event.topic].each do |fp, sub_ids|
+        sub_ids.each do |sub_id|
           yield(sub_id)
         end
       end
@@ -48,17 +47,29 @@ class InMemoryBackend
     end
 
     def delete_subscription(subscription_id)
-      @queries.delete(subscription_id)
-      @subscriptions.each do |fp, sub_ids|
-        sub_ids.delete(subscription_id)
-        if sub_ids.empty?
-          @fingerprints.each do |topic, fingerprints|
-            fingerprints.delete(fp)
+      query = @queries.delete(subscription_id)
+      @events.each do |topic, sub_ids_by_fp|
+        sub_ids_by_fp.each do |fp, sub_ids|
+          sub_ids.delete(subscription_id)
+          if sub_ids.empty?
+            sub_ids_by_fp.delete(fp)
+            if sub_ids_by_fp.empty?
+              @events.delete(topic)
+            end
           end
         end
       end
-      @subscriptions.delete_if { |fp, ids| ids.empty? }
-      @fingerprints.delete_if { |topic, fps| fps.empty? }
+    end
+
+    def execute_all(event, object)
+      topic = event.topic
+      sub_ids_by_fp = @events[topic]
+      sub_ids_by_fp.each do |fingerprint, sub_ids|
+        result = execute_update(sub_ids.first, event, object)
+        sub_ids.each do |sub_id|
+          deliver(sub_id, result)
+        end
+      end
     end
 
     def deliver(subscription_id, result)
@@ -78,8 +89,7 @@ class InMemoryBackend
     # Just for testing:
     def reset
       @queries.clear
-      @subscriptions.clear
-      @fingerprints.clear
+      @events.clear
       @deliveries.clear
       @pushes.clear
     end
@@ -255,7 +265,7 @@ describe GraphQL::Subscriptions do
       let(:implementation) { schema.subscriptions }
       let(:deliveries) { implementation.deliveries }
       let(:subscriptions_by_topic) {
-        implementation.fingerprints.each_with_object({}) do |(k, v), obj|
+        implementation.events.each_with_object({}) do |(k, v), obj|
           obj[k] = v.size
         end
       }
@@ -374,9 +384,8 @@ describe GraphQL::Subscriptions do
 
           res = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
           assert_equal true, res.key?("errors")
-          assert_equal 0, implementation.subscriptions.size
+          assert_equal 0, implementation.events.size
           assert_equal 0, implementation.queries.size
-          assert_equal 0, implementation.fingerprints.size
         end
       end
 
@@ -427,18 +436,16 @@ describe GraphQL::Subscriptions do
           GRAPHQL
 
           schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
-          assert_equal 1, implementation.subscriptions.size
+          assert_equal 1, implementation.events.size
           sub_id = implementation.queries.keys.first
           # Mess with the private storage so that `read_subscription` will be nil
           implementation.queries.delete(sub_id)
-          assert_equal 1, implementation.fingerprints.size
-          assert_equal 1, implementation.subscriptions.size
+          assert_equal 1, implementation.events.size
           assert_nil implementation.read_subscription(sub_id)
 
           # The trigger should clean up the lingering subscription:
           schema.subscriptions.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
-          assert_equal 0, implementation.fingerprints.size
-          assert_equal 0, implementation.subscriptions.size
+          assert_equal 0, implementation.events.size
           assert_equal 0, implementation.queries.size
         end
 
@@ -735,20 +742,6 @@ describe GraphQL::Subscriptions do
       BroadcastTrueSchema::COUNTERS.clear
     end
 
-    class BroadcastSubscriptions < InMemoryBackend::Subscriptions
-      def execute_all(event, object)
-        topic = event.topic
-        fingerprints = @fingerprints[topic]
-        fingerprints.each do |fingerprint|
-          sub_ids = @subscriptions[fingerprint]
-          result = execute_update(sub_ids.first, event, object)
-          sub_ids.each do |sub_id|
-            deliver(sub_id, result)
-          end
-        end
-      end
-    end
-
     class BroadcastTrueSchema < GraphQL::Schema
       COUNTERS = Hash.new(0)
 
@@ -786,7 +779,7 @@ describe GraphQL::Subscriptions do
       subscription(Subscription)
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
-      use BroadcastSubscriptions, extra: nil,
+      use InMemoryBackend::Subscriptions, extra: nil,
         broadcast: true, default_broadcastable: true
     end
 

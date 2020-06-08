@@ -184,13 +184,6 @@ module GraphQL
             ev_by_fingerprint.delete(event.fingerprint)
           end
         end
-        debug = {}
-        @events.each do |topic, ev_by_fingerprint|
-          debug[topic] = {}
-          ev_by_fingerprint.each do |fp, evs|
-            debug[topic][fp] = evs.map { |ev| ev.context[:subscription_id] }
-          end
-        end
       end
     end
   end
