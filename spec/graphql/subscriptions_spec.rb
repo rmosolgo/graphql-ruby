@@ -47,7 +47,7 @@ class InMemoryBackend
     end
 
     def delete_subscription(subscription_id)
-      query = @queries.delete(subscription_id)
+      @queries.delete(subscription_id)
       @events.each do |topic, sub_ids_by_fp|
         sub_ids_by_fp.each do |fp, sub_ids|
           sub_ids.delete(subscription_id)
