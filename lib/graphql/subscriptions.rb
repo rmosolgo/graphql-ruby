@@ -133,7 +133,9 @@ module GraphQL
     # @return [void]
     def execute(subscription_id, event, object)
       res = execute_update(subscription_id, event, object)
-      deliver(subscription_id, res)
+      if !res.nil?
+        deliver(subscription_id, res)
+      end
     end
 
     # Event `event` occurred on `object`,
@@ -143,10 +145,7 @@ module GraphQL
     # @return [void]
     def execute_all(event, object)
       each_subscription_id(event) do |subscription_id|
-        result = execute_update(subscription_id, event, object)
-        if !result.nil?
-          deliver(subscription_id, result)
-        end
+        execute(subscription_id, event, object)
       end
     end
 

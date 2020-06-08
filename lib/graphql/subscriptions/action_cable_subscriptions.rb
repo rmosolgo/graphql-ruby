@@ -119,7 +119,7 @@ module GraphQL
         subscription_id = query.context[:subscription_id] ||= build_id
         stream = query.context[:action_cable_stream] ||= SUBSCRIPTION_PREFIX + subscription_id
         channel.stream_from(stream)
-        @subscriptions[subscription_id] = [query, events]
+        @subscriptions[subscription_id] = query
         events.each do |event|
           # Setup a new listener to run all events with this topic in this process
           setup_stream(channel, event)
@@ -164,7 +164,7 @@ module GraphQL
 
       # Return the query from "storage" (in memory)
       def read_subscription(subscription_id)
-        query, _events = @subscriptions[subscription_id]
+        query = @subscriptions[subscription_id]
         {
           query_string: query.query_string,
           variables: query.provided_variables,
@@ -175,7 +175,8 @@ module GraphQL
 
       # The channel was closed, forget about it.
       def delete_subscription(subscription_id)
-        _query, events = @subscriptions.delete(subscription_id)
+        query = @subscriptions.delete(subscription_id)
+        events = query.context.namespace(:subscriptions)[:events]
         events.each do |event|
           ev_by_fingerprint = @events[event.topic]
           ev_for_fingerprint = ev_by_fingerprint[event.fingerprint]

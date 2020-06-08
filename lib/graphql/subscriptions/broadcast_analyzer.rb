@@ -47,8 +47,13 @@ module GraphQL
         end
       end
 
+
+      # Assign the result to context.
+      # (This method is allowed to return an error, but we don't need to)
+      # @return [void]
       def result
         query.context.namespace(:subscriptions)[:subscription_broadcastable] = @subscription_broadcastable
+        nil
       end
 
       private
