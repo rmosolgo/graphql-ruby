@@ -118,7 +118,7 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
           }
         }
         GRAPHQL
-        assert_equal false, broadcastable?("subscription { throwableWasThrown { throwable { splitBroadcastableTest } } }")
+        assert_equal false, broadcastable?(query_str)
       end
 
       it "is ok if all explicitly-named object fields are broadcastable" do
