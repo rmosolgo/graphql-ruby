@@ -6,7 +6,6 @@ section: Subscriptions
 title: Broadcasts
 desc: Delivering the same GraphQL result to multiple subscribers
 index: 3
-pro: true
 ---
 
 GraphQL-Ruby 1.11+ introduced a new algorithm for tracking subscriptions and delivering updates, _broadcasts_.
