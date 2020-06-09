@@ -556,34 +556,36 @@ module GraphQL
         begin
           # Unwrap the GraphQL object to get the application object.
           application_object = object.object
-          if self.authorized?(application_object, args, ctx)
-            # Apply field extensions
-            with_extensions(object, args, ctx) do |extended_obj, extended_args|
-              field_receiver = if @resolver_class
-                resolver_obj = if extended_obj.is_a?(GraphQL::Schema::Object)
-                  extended_obj.object
+          ctx.schema.after_lazy(self.authorized?(application_object, args, ctx)) do |is_authorized|
+            if is_authorized
+              # Apply field extensions
+              with_extensions(object, args, ctx) do |extended_obj, extended_args|
+                field_receiver = if @resolver_class
+                  resolver_obj = if extended_obj.is_a?(GraphQL::Schema::Object)
+                    extended_obj.object
+                  else
+                    extended_obj
+                  end
+                  @resolver_class.new(object: resolver_obj, context: ctx, field: self)
                 else
                   extended_obj
                 end
-                @resolver_class.new(object: resolver_obj, context: ctx, field: self)
-              else
-                extended_obj
-              end
 
-              if field_receiver.respond_to?(@resolver_method)
-                # Call the method with kwargs, if there are any
-                if extended_args.any?
-                  field_receiver.public_send(@resolver_method, **extended_args)
+                if field_receiver.respond_to?(@resolver_method)
+                  # Call the method with kwargs, if there are any
+                  if extended_args.any?
+                    field_receiver.public_send(@resolver_method, **extended_args)
+                  else
+                    field_receiver.public_send(@resolver_method)
+                  end
                 else
-                  field_receiver.public_send(@resolver_method)
+                  resolve_field_method(field_receiver, extended_args, ctx)
                 end
-              else
-                resolve_field_method(field_receiver, extended_args, ctx)
               end
+            else
+              err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
+              ctx.schema.unauthorized_field(err)
             end
-          else
-            err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
-            ctx.schema.unauthorized_field(err)
           end
         rescue GraphQL::UnauthorizedFieldError => err
           err.field ||= self
