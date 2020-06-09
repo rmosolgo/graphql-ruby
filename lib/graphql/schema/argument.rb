@@ -154,6 +154,12 @@ module GraphQL
         raise ArgumentError, "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
       end
 
+      def statically_coercible?
+        return @statically_coercible if defined?(@statically_coercible)
+
+        @statically_coercible = !@prepare.is_a?(String) && !@prepare.is_a?(Symbol)
+      end
+
       # Apply the {prepare} configuration to `value`, using methods from `obj`.
       # Used by the runtime.
       # @api private
