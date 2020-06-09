@@ -61,6 +61,8 @@ describe GraphQL::Authorization do
         if object == :raise
           raise GraphQL::UnauthorizedFieldError.new("raised authorized field error", object: object)
         end
+        return Box.new(value: context[:lazy_field_authorized]) if context.key?(:lazy_field_authorized)
+
         super && object != :hide && object != :replace
       end
     end
@@ -436,6 +438,8 @@ describe GraphQL::Authorization do
       end
       query(Query)
 
+      lazy_resolve(Box, :value)
+
       def self.unauthorized_field(err)
         if err.object == :replace
           42
@@ -712,6 +716,20 @@ describe GraphQL::Authorization do
               query = "{ unauthorized }"
               response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :hide)
               assert_equal ["Unauthorized field unauthorized on Query: hide"], response["errors"].map { |e| e["message"] }
+            end
+          end
+
+          describe "when the field authorization resolves lazily" do
+            it "returns value if authorized" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: true })
+              assert_equal 34, response["data"].fetch("unauthorized")
+            end
+
+            it "returns nil if not authorized" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: false })
+              assert_nil response["data"].fetch("unauthorized")
             end
           end
 
