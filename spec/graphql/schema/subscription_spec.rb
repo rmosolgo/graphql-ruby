@@ -39,7 +39,7 @@ describe GraphQL::Schema::Subscription do
       field :toot, Toot, null: false
       field :user, User, null: false
       # Can't subscribe to private users
-      def authorized?(user:)
+      def authorized?(user:, **args)
         if user[:private]
           raise GraphQL::ExecutionError, "Can't subscribe to private user"
         else
@@ -47,7 +47,7 @@ describe GraphQL::Schema::Subscription do
         end
       end
 
-      def subscribe(user:)
+      def subscribe(user:, **args)
         if context[:prohibit_subscriptions]
           raise GraphQL::ExecutionError, "You don't have permission to subscribe"
         else
@@ -56,7 +56,7 @@ describe GraphQL::Schema::Subscription do
         end
       end
 
-      def update(user:)
+      def update(user:, **args)
         if context[:viewer] == user
           # don't update for one's own toots.
           # (IRL it would make more sense to implement this in `#subscribe`)
@@ -103,7 +103,7 @@ describe GraphQL::Schema::Subscription do
 
     class Subscription < GraphQL::Schema::Object
       extend GraphQL::Subscriptions::SubscriptionRoot
-      field :toot_was_tooted, subscription: TootWasTooted
+      field :toot_was_tooted, subscription: TootWasTooted, extras: [:path, :query]
       field :direct_toot_was_tooted, subscription: DirectTootWasTooted
       field :users_joined, subscription: UsersJoined
       field :new_users_joined, subscription: NewUsersJoined
