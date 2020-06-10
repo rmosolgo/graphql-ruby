@@ -15,6 +15,7 @@ describe("root module", () => {
     var expectedKeys = [
       "AblyLink",
       "ActionCableLink",
+      "PubnubLink",
       "PusherLink",
       "addGraphQLSubscriptions",
       "createRelaySubscriptionHandler",

@@ -23,7 +23,7 @@ function createPubnubHandler(options: PubnubHandlerOptions) {
     // POST the subscription like a normal query
     fetchOperation(operation, variables, cacheConfig).then(function(response: { headers: { get: Function } }) {
       channelName = response.headers.get("X-Subscription-ID")
-      handlersBySubscriptionId[channelName] = function(payload) {
+      handlersBySubscriptionId[channelName] = function(payload: { result: { data: object, errors: object[] }, more: Boolean}) {
         // TODO Extract this code
         // When we get a response, send the update to `observer`
         const result = payload.result
