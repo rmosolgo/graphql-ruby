@@ -182,8 +182,6 @@ module GraphQL
 
               kwarg_arguments = resolved_arguments.keyword_arguments
 
-              # It might turn out that making arguments for every field is slow.
-              # If we have to cache them, we'll need a more subtle approach here.
               field_defn.extras.each do |extra|
                 case extra
                 when :ast_node
@@ -460,7 +458,13 @@ module GraphQL
         end
 
         def arguments(graphql_object, arg_owner, ast_node)
-          query.arguments_for(ast_node, arg_owner, parent_object: graphql_object)
+          # Don't cache arguments if field extras are requested since extras mutate the argument data structure
+          if arg_owner.arguments_statically_coercible? && (!arg_owner.is_a?(GraphQL::Schema::Field) || arg_owner.extras.empty?)
+            query.arguments_for(ast_node, arg_owner)
+          else
+            # The arguments must be prepared in the context of the given object
+            query.arguments_for(ast_node, arg_owner, parent_object: graphql_object)
+          end
         end
 
         def write_invalid_null_in_response(path, invalid_null_error)

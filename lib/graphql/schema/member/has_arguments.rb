@@ -135,6 +135,12 @@ module GraphQL
           end
         end
 
+        def arguments_statically_coercible?
+          return @arguments_statically_coercible if defined?(@arguments_statically_coercible)
+
+          @arguments_statically_coercible = arguments.each_value.all?(&:statically_coercible?)
+        end
+
         module ArgumentClassAccessor
           def argument_class(new_arg_class = nil)
             if new_arg_class
