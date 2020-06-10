@@ -719,17 +719,19 @@ describe GraphQL::Authorization do
             end
           end
 
-          describe "when the field authorization resolves lazily" do
-            it "returns value if authorized" do
-              query = "{ unauthorized }"
-              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: true })
-              assert_equal 34, response["data"].fetch("unauthorized")
-            end
+          if TESTING_INTERPRETER
+            describe "when the field authorization resolves lazily" do
+              it "returns value if authorized" do
+                query = "{ unauthorized }"
+                response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: true })
+                assert_equal 34, response["data"].fetch("unauthorized")
+              end
 
-            it "returns nil if not authorized" do
-              query = "{ unauthorized }"
-              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: false })
-              assert_nil response["data"].fetch("unauthorized")
+              it "returns nil if not authorized" do
+                query = "{ unauthorized }"
+                response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: false })
+                assert_nil response["data"].fetch("unauthorized")
+              end
             end
           end
 
