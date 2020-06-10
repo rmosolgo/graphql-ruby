@@ -329,5 +329,27 @@ describe GraphQL::Query::Executor do
         assert_equal(expected, result.to_h)
       end
     end
+
+    describe "for input objects with nil value for a required input" do
+      let(:variables) { {"input" => [{ "source" => nil }]} }
+      let(:query_string) {%| query Q($input: [DairyProductInput]) { searchDairy(product: $input) { __typename, ... on Cheese { id, source } } } |}
+      it "returns a variable validation error" do
+        expected = {
+          "errors"=>[
+            {
+              "message" => "Variable $input of type [DairyProductInput] was provided invalid value for 0.source (Expected value to not be null)",
+              "locations" => [{ "line" => 1, "column" => 10 }],
+              "extensions" => {
+                "value" => [{ "source" => nil }],
+                "problems" => [
+                  { "path" => [0, "source"], "explanation" => "Expected value to not be null" }
+                ]
+              }
+            }
+          ]
+        }
+        assert_equal(expected, result.to_h)
+      end
+    end
   end
 end
