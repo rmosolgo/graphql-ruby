@@ -13,6 +13,7 @@ index: 3
 - [Pusher](#pusher)
 - [Ably](#ably)
 - [ActionCable](#actioncable)
+- [Pubnub](#pubnub)
 
 To use it, require `subscriptions/createHandler` and call the function with your client and optionally, your OperationStoreClient.
 
@@ -102,6 +103,40 @@ var OperationStoreClient = require("./OperationStoreClient")
 var subscriptionHandler = createRelaySubscriptionHandler({
   cable: cable,
   operations: OperationStoreClient,
+})
+
+// Create a Relay Modern network with the handler
+var network = Network.create(fetchQuery, subscriptionHandler)
+```
+
+## Pubnub
+
+Subscriptions with {% internal_link "Pubnub", "/subscriptions/pubnub_implementation" %} require two things:
+
+- A client from the [`pubnub` JS library](https://github.com/pusher/pusher-js)
+- A [`fetchOperation` function](#fetchoperation-function) for sending the `subscription` operation to the server
+
+### Pusher client
+
+Pass `pusher:` to get Subscription updates over Pusher:
+
+```js
+// Load the helper function
+import { createRelaySubscriptionHandler } from "graphql-ruby-client"
+
+// Prepare a Pusher client
+var Pusher = require("pusher-js")
+var pusherClient = new Pusher(appKey, options)
+
+// Create a fetchOperation, see below for more details
+function fetchOperation(operation, variables, cacheConfig) {
+  return fetch(...)
+}
+
+// Create a Relay Modern-compatible handler
+var subscriptionHandler = createHandler({
+  pusher: pusherClient,
+  fetchOperation: fetchOperation
 })
 
 // Create a Relay Modern network with the handler

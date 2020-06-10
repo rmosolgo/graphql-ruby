@@ -1,6 +1,8 @@
 import { createActionCableHandler, ActionCableHandlerOptions } from "./createActionCableHandler"
 import { createPusherHandler, PusherHandlerOptions } from "./createPusherHandler"
 import { createAblyHandler, AblyHandlerOptions } from "./createAblyHandler"
+import { createPubnubHandler, PubnubHandlerOptions } from "./createPubnubHandler"
+
 /**
  * Transport-agnostic wrapper for Relay Modern subscription handlers.
  * @example Add ActionCable subscriptions
@@ -12,10 +14,14 @@ import { createAblyHandler, AblyHandlerOptions } from "./createAblyHandler"
  * @param {ActionCable.Consumer} options.cable - A consumer from `.createConsumer`
  * @param {Pusher} options.pusher - A Pusher client
  * @param {Ably.Realtime} options.ably - An Ably client
+ * @param {Pubnub} options.pubnub - A Pubnub client
  * @param {OperationStoreClient} options.operations - A generated `OperationStoreClient` for graphql-pro's OperationStore
  * @return {Function} A handler for a Relay Modern network
 */
-function createHandler(options: ActionCableHandlerOptions | PusherHandlerOptions | AblyHandlerOptions) {
+
+type HandlerOptions = ActionCableHandlerOptions | PusherHandlerOptions | AblyHandlerOptions | PubnubHandlerOptions
+
+function createHandler(options: HandlerOptions) {
   if (!options) {
     return null
   }
@@ -26,6 +32,8 @@ function createHandler(options: ActionCableHandlerOptions | PusherHandlerOptions
     handler = createPusherHandler(options as PusherHandlerOptions)
   } else if ((options as AblyHandlerOptions).ably) {
     handler = createAblyHandler(options as AblyHandlerOptions)
+  } else if ((options as PubnubHandlerOptions).pubnub) {
+    handler = createPubnubHandler(options as PubnubHandlerOptions)
   }
   return handler
 }
