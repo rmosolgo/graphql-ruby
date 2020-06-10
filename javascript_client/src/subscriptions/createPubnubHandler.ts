@@ -38,12 +38,12 @@ function createPubnubHandler(options: PubnubHandlerOptions) {
           observer.onCompleted()
         }
       }
-      pubnub.subscribe(channelName)
+      pubnub.subscribe({channels: [channelName]})
     })
     return {
       dispose: function() {
         delete handlersBySubscriptionId[channelName]
-        pubnub.unsubscribe(channelName)
+        pubnub.unsubscribe({channels: [channelName]})
       }
     }
   }
