@@ -504,23 +504,11 @@ module GraphQL
         # at previous parts of the response.
         # This hash matches the response
         def type_at(path)
-          t = @types_at_paths
-          path.each do |part|
-            t = t[part] || (raise("Invariant: #{part.inspect} not found in #{t}"))
-          end
-          t = t[:__type]
-          t
+          @types_at_paths.fetch(path)
         end
 
         def set_type_at_path(path, type)
-          types = @types_at_paths
-          path.each do |part|
-            types = types[part] ||= {}
-          end
-          # Use this magic key so that the hash contains:
-          # - string keys for nested fields
-          # - :__type for the object type of a selection
-          types[:__type] ||= type
+          @types_at_paths[path] = type
           nil
         end
 
