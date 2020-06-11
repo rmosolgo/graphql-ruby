@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# A stub for the NewRelic agent, so we can make assertions about how it is used
+# A stub for the Scout agent, so we can make assertions about how it is used
 if defined?(ScoutApm)
   raise "Expected ScoutApm to be undefined, so that we could define a stub for it."
 end
