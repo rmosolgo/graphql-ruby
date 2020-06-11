@@ -102,7 +102,7 @@ module GraphQL
         schema_defn.tracer(tracer)
       end
 
-      protected
+      private
 
       # Get the transaction name based on the operation type and name
       def transaction_name(query)
@@ -117,7 +117,6 @@ module GraphQL
         "GraphQL/#{op_type}.#{op_name}"
       end
 
-      private
       attr_reader :options
 
       def platform_key_cache(ctx)
