@@ -599,6 +599,19 @@ describe GraphQL::Execution::Lookahead do
         it "returns true from selects_alias?" do
           assert true, species_lookahead.selects_alias?("similar")
         end
+
+        describe "when the aliased field is deeply nested" do
+          it "finds the deeply-nested alias" do
+            assert_equal [:name, :similar_species], species_lookahead.selections.map(&:name)
+            # TODO should this actually be true?
+            # `likesWater` is selected inside { findBirdSpecies { similar { ... } } },
+            # so should the root lookahead return true for a grandchild field?
+            #
+            # (It seems like this should be false, since none of the selections of `findBirdSpecies`
+            #  have the alias `likesWater`.)
+            assert true, species_lookahead.selects_alias?("likesWater")
+          end
+        end
       end
 
       describe "when field name is passed" do
