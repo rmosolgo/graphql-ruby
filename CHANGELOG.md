@@ -8,6 +8,25 @@
 
 ### Bug fixes
 
+## 1.10.11 (11 June 2020)
+
+### New features
+
+- Scout tracer adds transaction name to traces #2969
+- `resolve_type` can optionally return a resolved object #2976
+- DateTime scalar returns a `Time` for better timezone handling #2973
+- Interpreter memory improvements #2980, #2978
+- Support lazy values from field-level authorization hooks #2977
+- Object generator infers fields from model classes #2954
+- Add type-specific runtime errors #2957
+
+### Bug fixes
+
+- Fix for error when using `extras:` with subscription fields #2984
+- Improve Schema.error_handler inheritance #2975
+- Add raw_value to conflict warning list #2958
+- Arguments#each_value yields ArgumentValues #2956
+
 ## 1.10.10 (20 May 2020)
 
 ### Bug Fixes
