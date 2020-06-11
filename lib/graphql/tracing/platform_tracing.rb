@@ -103,6 +103,20 @@ module GraphQL
       end
 
       private
+
+      # Get the transaction name based on the operation type and name
+      def transaction_name(query)
+        selected_op = query.selected_operation
+        if selected_op
+          op_type = selected_op.operation_type
+          op_name = selected_op.name || "anonymous"
+        else
+          op_type = "query"
+          op_name = "anonymous"
+        end
+        "GraphQL/#{op_type}.#{op_name}"
+      end
+
       attr_reader :options
 
       def platform_key_cache(ctx)
