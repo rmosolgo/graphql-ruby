@@ -304,19 +304,21 @@ module GraphQL
             write_in_response(path, r)
             r
           when "UNION", "INTERFACE"
-            resolved_type_or_lazy = resolve_type(type, value, path)
+            resolved_type_or_lazy, resolved_value = resolve_type(type, value, path)
+            resolved_value ||= value
+
             after_lazy(resolved_type_or_lazy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
               possible_types = query.possible_types(type)
 
               if !possible_types.include?(resolved_type)
                 parent_type = field.owner
                 err_class = type::UnresolvedTypeError
-                type_error = err_class.new(value, field, parent_type, resolved_type, possible_types)
+                type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
                 write_in_response(path, nil)
                 nil
               else
-                continue_field(path, value, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments)
+                continue_field(path, resolved_value, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments)
               end
             end
           when "OBJECT"
@@ -538,7 +540,7 @@ module GraphQL
 
         def resolve_type(type, value, path)
           trace_payload = { context: context, type: type, object: value, path: path }
-          resolved_type = query.trace("resolve_type", trace_payload) do
+          resolved_type, resolved_value = query.trace("resolve_type", trace_payload) do
             query.resolve_type(type, value)
           end
 
@@ -549,7 +551,7 @@ module GraphQL
               end
             end
           else
-            resolved_type
+            [resolved_type, resolved_value]
           end
         end
 

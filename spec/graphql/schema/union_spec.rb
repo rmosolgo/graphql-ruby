@@ -103,5 +103,49 @@ describe GraphQL::Schema::Union do
       assert_equal 1, res.to_h["errors"].count
       assert_equal "Fragment on Ensemble can't be spread inside PerformingAct", res.to_h["errors"].first["message"]
     end
+
+    it "can cast the object after resolving the type" do
+      Box = Struct.new(:value)
+
+      class Schema < GraphQL::Schema
+        class A < GraphQL::Schema::Object
+          field :a, String, null: false, method: :itself
+        end
+
+        class MyUnion < GraphQL::Schema::Union
+          possible_types A
+
+          def self.resolve_type(object, ctx)
+            [A, object.value]
+          end
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :my_union, MyUnion, null: false
+
+          def my_union
+            Box.new(context[:value])
+          end
+        end
+
+        use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
+        query(Query)
+      end
+
+      query_str = <<-GRAPHQL
+      {
+        myUnion {
+          ... on A { a }
+        }
+      }
+      GRAPHQL
+
+      res = Schema.execute(query_str, context: { value: "unwrapped" })
+
+      assert_equal({
+        'data' => { 'myUnion' => { 'a' => 'unwrapped' } }
+      }, res.to_h)
+    end
   end
 end
