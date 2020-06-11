@@ -21,10 +21,8 @@ module GraphQL
           @ruby_style_hash = @arguments.to_kwargs
         end
         # Apply prepares, not great to have it duplicated here.
-        @arguments_by_keyword = {}
         maybe_lazies = []
-        self.class.arguments.each do |name, arg_defn|
-          @arguments_by_keyword[arg_defn.keyword] = arg_defn
+        self.class.arguments.each_value do |arg_defn|
           ruby_kwargs_key = arg_defn.keyword
 
           if @ruby_style_hash.key?(ruby_kwargs_key)
