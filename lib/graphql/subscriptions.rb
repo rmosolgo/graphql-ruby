@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "securerandom"
+require "graphql/subscriptions/broadcast_analyzer"
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
@@ -35,9 +36,19 @@ module GraphQL
     end
 
     # @param schema [Class] the GraphQL schema this manager belongs to
-    def initialize(schema:, **rest)
+    def initialize(schema:, broadcast: false, default_broadcastable: false, **rest)
+      if broadcast
+        if !schema.using_ast_analysis?
+          raise ArgumentError, "`broadcast: true` requires AST analysis, add `using GraphQL::Analysis::AST` to your schema or see https://graphql-ruby.org/queries/ast_analysis.html."
+        end
+        schema.query_analyzer(Subscriptions::BroadcastAnalyzer)
+      end
+      @default_broadcastable = default_broadcastable
       @schema = schema
     end
+
+    # @return [Boolean] Used when fields don't have `broadcastable:` explicitly set
+    attr_reader :default_broadcastable
 
     # Fetch subscriptions matching this field + arguments pair
     # And pass them off to the queue.
@@ -79,15 +90,13 @@ module GraphQL
     # `event` was triggered on `object`, and `subscription_id` was subscribed,
     # so it should be updated.
     #
-    # Load `subscription_id`'s GraphQL data, re-evaluate the query, and deliver the result.
-    #
-    # This is where a queue may be inserted to push updates in the background.
+    # Load `subscription_id`'s GraphQL data, re-evaluate the query and return the result.
     #
     # @param subscription_id [String]
     # @param event [GraphQL::Subscriptions::Event] The event which was triggered
     # @param object [Object] The value for the subscription field
-    # @return [void]
-    def execute(subscription_id, event, object)
+    # @return [GraphQL::Query::Result]
+    def execute_update(subscription_id, event, object)
       # Lookup the saved data for this subscription
       query_data = read_subscription(subscription_id)
       if query_data.nil?
@@ -118,6 +127,17 @@ module GraphQL
       nil
     end
 
+    # Run the update query for this subscription and deliver it
+    # @see {#execute_update}
+    # @see {#deliver}
+    # @return [void]
+    def execute(subscription_id, event, object)
+      res = execute_update(subscription_id, event, object)
+      if !res.nil?
+        deliver(subscription_id, res)
+      end
+    end
+
     # Event `event` occurred on `object`,
     # Update all subscribers.
     # @param event [Subscriptions::Event]
@@ -125,10 +145,7 @@ module GraphQL
     # @return [void]
     def execute_all(event, object)
       each_subscription_id(event) do |subscription_id|
-        result = execute(subscription_id, event, object)
-        if !result.nil?
-          deliver(subscription_id, result)
-        end
+        execute(subscription_id, event, object)
       end
     end
 
@@ -189,6 +206,16 @@ module GraphQL
     # @return [String]
     def normalize_name(event_or_arg_name)
       Schema::Member::BuildType.camelize(event_or_arg_name.to_s)
+    end
+
+    # @return [Boolean] if true, then a query like this one would be broadcasted
+    def broadcastable?(query_str, **query_options)
+      query = GraphQL::Query.new(@schema, query_str, **query_options)
+      if !query.valid?
+        raise "Invalid query: #{query.validation_errors.map(&:to_h).inspect}"
+      end
+      GraphQL::Analysis::AST.analyze_query(query, @schema.query_analyzers)
+      query.context.namespace(:subscriptions)[:subscription_broadcastable]
     end
 
     private

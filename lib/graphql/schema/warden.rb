@@ -91,7 +91,6 @@ module GraphQL
 
       # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`, if it exists
       def get_field(parent_type, field_name)
-
         @visible_parent_fields ||= read_through do |type|
           read_through do |f_name|
             field_defn = @schema.get_field(type, f_name)

@@ -6,7 +6,6 @@ module GraphQL
     # - Subscribed to by `subscription { ... }`
     # - Triggered by `MySchema.subscriber.trigger(name, arguments, obj)`
     #
-    # An array of `Event`s are passed to `store.register(query, events)`.
     class Event
       # @return [String] Corresponds to the Subscription root field name
       attr_reader :name
@@ -51,6 +50,22 @@ module GraphQL
 
         sorted_h = stringify_args(field, normalized_args.to_h)
         Serialize.dump_recursive([scope, name, sorted_h])
+      end
+
+      # @return [String] a logical identifier for this event. (Stable when the query is broadcastable.)
+      def fingerprint
+        @fingerprint ||= begin
+          # When this query has been flagged as broadcastable,
+          # use a generalized, stable fingerprint so that
+          # duplicate subscriptions can be evaluated and distributed in bulk.
+          # (`@topic` includes field, args, and subscription scope already.)
+          if @context.namespace(:subscriptions)[:subscription_broadcastable]
+            "#{@topic}/#{@context.query.fingerprint}"
+          else
+            # not broadcastable, build a unique ID for this event
+            @context.schema.subscriptions.build_id
+          end
+        end
       end
 
       class << self

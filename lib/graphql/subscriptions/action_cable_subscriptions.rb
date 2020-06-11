@@ -90,6 +90,7 @@ module GraphQL
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
         @subscriptions = Concurrent::Map.new
+        @events = Concurrent::Map.new { |h, k| h[k] = Concurrent::Map.new { |h2, k2| h2[k2] = Concurrent::Array.new } }
         @serializer = serializer
         super
       end
@@ -120,11 +121,44 @@ module GraphQL
         channel.stream_from(stream)
         @subscriptions[subscription_id] = query
         events.each do |event|
-          channel.stream_from(EVENT_PREFIX + event.topic, coder: ActiveSupport::JSON) do |message|
-            result = execute(subscription_id, event, @serializer.load(message))
-            deliver(subscription_id, result)
-            nil
+          # Setup a new listener to run all events with this topic in this process
+          setup_stream(channel, event)
+          # Add this event to the list of events to be updated
+          @events[event.topic][event.fingerprint] << event
+        end
+      end
+
+      # Every subscribing channel is listening here, but only one of them takes any action.
+      # This is so we can reuse payloads when possible, and make one payload to send to
+      # all subscribers.
+      #
+      # But the problem is, any channel could close at any time, so each channel has to
+      # be ready to take over the primary position.
+      #
+      # To make sure there's always one-and-only-one channel building payloads,
+      # let the listener belonging to the first event on the list be
+      # the one to build and publish payloads.
+      #
+      def setup_stream(channel, initial_event)
+        topic = initial_event.topic
+        channel.stream_from(EVENT_PREFIX + topic, coder: ActiveSupport::JSON) do |message|
+          object = @serializer.load(message)
+          events_by_fingerprint = @events[topic]
+          events_by_fingerprint.each do |_fingerprint, events|
+            if events.any? && events.first == initial_event
+              # The fingerprint has told us that this response should be shared by all subscribers,
+              # so just run it once, then deliver the result to every subscriber
+              first_event = events.first
+              first_subscription_id = first_event.context.fetch(:subscription_id)
+              result = execute_update(first_subscription_id, first_event, object)
+              # Having calculated the result _once_, send the same payload to all subscribers
+              events.each do |event|
+                subscription_id = event.context.fetch(:subscription_id)
+                deliver(subscription_id, result)
+              end
+            end
           end
+          nil
         end
       end
 
@@ -141,7 +175,16 @@ module GraphQL
 
       # The channel was closed, forget about it.
       def delete_subscription(subscription_id)
-        @subscriptions.delete(subscription_id)
+        query = @subscriptions.delete(subscription_id)
+        events = query.context.namespace(:subscriptions)[:events]
+        events.each do |event|
+          ev_by_fingerprint = @events[event.topic]
+          ev_for_fingerprint = ev_by_fingerprint[event.fingerprint]
+          ev_for_fingerprint.delete(event)
+          if ev_for_fingerprint.empty?
+            ev_by_fingerprint.delete(event.fingerprint)
+          end
+        end
       end
     end
   end
