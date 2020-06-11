@@ -8,9 +8,10 @@ describe GraphQL::Types::ISO8601DateTime do
       field :month, Integer, null: false
       field :day, Integer, null: false
       field :hour, Integer, null: false
-      field :minute, Integer, null: false
-      field :second, Integer, null: false
-      field :zone, String, null: false
+      field :minute, Integer, method: :min, null: false
+      field :second, Integer, method: :sec, null: false
+      field :zone, String, null: true
+      field :utcOffset, Integer, null: false
       field :iso8601, GraphQL::Types::ISO8601DateTime, null: false, method: :itself
     end
 
@@ -39,8 +40,8 @@ describe GraphQL::Types::ISO8601DateTime do
       end
 
       def parse_date_time(date:)
-        # Resolve a DateTime object
-        DateTime.parse(date.iso8601(3))
+        # Resolve a Time object
+        Time.parse(date.iso8601(3))
       end
 
       def parse_date_string(date:)
@@ -82,6 +83,7 @@ describe GraphQL::Types::ISO8601DateTime do
           minute
           second
           zone
+          utcOffset
         }
       }
       GRAPHQL
@@ -98,7 +100,23 @@ describe GraphQL::Types::ISO8601DateTime do
         "hour" => 9,
         "minute" => 31,
         "second" => 42,
-        "zone" => "-07:00",
+        "zone" => nil,
+        "utcOffset" => -25200,
+      }
+      assert_equal(expected_res, res)
+    end
+
+    it "parses valid dates with a timezone" do
+      res = parse_date("2018-06-07T09:31:42Z")
+      expected_res = {
+        "year" => 2018,
+        "month" => 6,
+        "day" => 7,
+        "hour" => 9,
+        "minute" => 31,
+        "second" => 42,
+        "zone" => "UTC",
+        "utcOffset" => 0,
       }
       assert_equal(expected_res, res)
     end
@@ -106,7 +124,7 @@ describe GraphQL::Types::ISO8601DateTime do
     it "adds an error for invalid dates" do
       expected_errors = ["Variable $date of type ISO8601DateTime! was provided invalid value"]
 
-      assert_equal expected_errors, parse_date("2018-06-07T99:31:42-07:00").map { |e| e["message"] }
+      assert_equal expected_errors, parse_date("2018-06-07T99:31:42Z").map { |e| e["message"] }
       assert_equal expected_errors, parse_date("xyz").map { |e| e["message"] }
       assert_equal expected_errors, parse_date(nil).map { |e| e["message"] }
       assert_equal expected_errors, parse_date([1,2,3]).map { |e| e["message"] }
@@ -129,7 +147,7 @@ describe GraphQL::Types::ISO8601DateTime do
 
   describe "as an output" do
     let(:date_str) { "2010-02-02T22:30:30-06:00" }
-    let(:date_str_midnight) { DateTime.parse(Date.parse(date_str).iso8601).iso8601 }
+    let(:date_str_midnight) { Time.parse(Date.parse(date_str).iso8601).iso8601 }
     let(:query_str) do
       <<-GRAPHQL
       query($date: ISO8601DateTime!){
@@ -204,7 +222,7 @@ describe GraphQL::Types::ISO8601DateTime do
         err = assert_raises(GraphQL::Error) do
           DateTimeTest::Schema.execute(query_str)
         end
-        assert_equal err.message, "An incompatible object (String) was given to GraphQL::Types::ISO8601DateTime. Make sure that only Dates, DateTimes, and well-formatted Strings are used with this type. (invalid date)"
+        assert_equal err.message, 'An incompatible object (String) was given to GraphQL::Types::ISO8601DateTime. Make sure that only Times, Dates, DateTimes, and well-formatted Strings are used with this type. (no time information in "abc")'
       end
     end
   end
