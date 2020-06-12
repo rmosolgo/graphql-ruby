@@ -58,6 +58,20 @@ module GraphQL
           end
         end
 
+        # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
+        def get_argument(argument_name)
+          if (a = own_arguments[argument_name])
+            a
+          else
+            for ancestor in ancestors
+              if ancestor.respond_to?(:own_arguments) && a = ancestor.own_arguments[argument_name]
+                return a
+              end
+            end
+            nil
+          end
+        end
+
         # @param new_arg_class [Class] A class to use for building argument definitions
         def argument_class(new_arg_class = nil)
           self.class.argument_class(new_arg_class)
