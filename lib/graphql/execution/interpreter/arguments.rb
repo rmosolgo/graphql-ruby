@@ -21,15 +21,11 @@ module GraphQL
           @argument_values = argument_values
         end
 
-        # Yields `ArgumentValue` instances which contain detailed metadata about each argument.
-        def each_value
-          argument_values.each { |arg_v| yield(arg_v) }
-        end
-
         # @return [Hash{Symbol => ArgumentValue}]
         attr_reader :argument_values
 
         def_delegators :@keyword_arguments, :key?, :[], :keys, :each, :values
+        def_delegators :@argument_values, :each_value
 
         def inspect
           "#<#{self.class} @keyword_arguments=#{keyword_arguments.inspect}>"

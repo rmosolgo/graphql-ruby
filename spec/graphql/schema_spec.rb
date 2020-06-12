@@ -48,6 +48,7 @@ describe GraphQL::Schema do
         instrument :field, GraphQL::Relay::EdgesInstrumentation
         middleware (Proc.new {})
         use GraphQL::Backtrace
+        self.error_handler = Object.new
       end
     end
 
@@ -76,6 +77,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.middleware.steps.size, schema.middleware.steps.size
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
       assert_equal [GraphQL::Backtrace], schema.plugins.map(&:first)
+      assert_equal base_schema.error_handler, schema.error_handler
     end
 
     it "can override configuration from its superclass" do
@@ -127,6 +129,8 @@ describe GraphQL::Schema do
       schema.rescue_from(GraphQL::ExecutionError)
       schema.tracer(GraphQL::Tracing::NewRelicTracing)
       schema.middleware(Proc.new {})
+      error_handler = Object.new
+      schema.error_handler = error_handler
 
       assert_equal query, schema.query
       assert_equal mutation, schema.mutation
@@ -150,6 +154,7 @@ describe GraphQL::Schema do
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer, GraphQL::Tracing::NewRelicTracing], schema.tracers
       # This doesn't include `RescueMiddleware`, since interpreter handles that separately.
       assert_equal 2, schema.middleware.steps.size
+      assert_equal error_handler, schema.error_handler
     end
   end
 

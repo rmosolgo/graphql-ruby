@@ -7,7 +7,7 @@ describe GraphQL::Schema::Object do
     it "tells type data" do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
-      assert_equal 7, object_class.fields.size
+      assert_equal 8, object_class.fields.size
       assert_equal ["GloballyIdentifiable", "HasMusicians", "NamedEntity", "PrivateNameEntity"], object_class.interfaces.map(&:graphql_name).sort
       # It filters interfaces, too
       assert_equal ["GloballyIdentifiable", "HasMusicians", "NamedEntity"], object_class.interfaces({}).map(&:graphql_name).sort
@@ -28,7 +28,7 @@ describe GraphQL::Schema::Object do
       end
 
       # one more than the parent class
-      assert_equal 8, new_object_class.fields.size
+      assert_equal 9, new_object_class.fields.size
       # inherited interfaces are present
       assert_equal ["GloballyIdentifiable", "HasMusicians", "NamedEntity", "PrivateNameEntity"], new_object_class.interfaces.map(&:graphql_name).sort
       # The new field is present
@@ -243,7 +243,7 @@ describe GraphQL::Schema::Object do
     it "returns a matching GraphQL::ObjectType" do
       assert_equal "Ensemble", obj_type.name
       assert_equal "A group of musicians playing together", obj_type.description
-      assert_equal 7, obj_type.all_fields.size
+      assert_equal 8, obj_type.all_fields.size
 
       name_field = obj_type.all_fields[3]
       assert_equal "name", name_field.name
@@ -392,6 +392,31 @@ describe GraphQL::Schema::Object do
           graphql_name "X"
           field :thing, String, null: true, resolver_method: :object
         end
+      end
+    end
+  end
+
+  describe "type-specific invalid null errors" do
+    class ObjectInvalidNullSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :int, Integer, null: false
+        def int
+          nil
+        end
+      end
+      query(Query)
+
+      def self.type_error(err, ctx)
+        raise err
+      end
+
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+    end
+
+    it "raises them when invalid nil is returned" do
+      assert_raises(ObjectInvalidNullSchema::Query::InvalidNullError) do
+        ObjectInvalidNullSchema.execute("{ int }")
       end
     end
   end

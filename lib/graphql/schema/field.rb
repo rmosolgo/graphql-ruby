@@ -565,11 +565,13 @@ module GraphQL
         begin
           # Unwrap the GraphQL object to get the application object.
           application_object = object.object
-          if self.authorized?(application_object, args, ctx)
-            public_send_field(object, args, ctx)
-          else
-            err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
-            ctx.schema.unauthorized_field(err)
+          ctx.schema.after_lazy(self.authorized?(application_object, args, ctx)) do |is_authorized|
+            if is_authorized
+              public_send_field(object, args, ctx)
+            else
+              err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
+              ctx.schema.unauthorized_field(err)
+            end
           end
         rescue GraphQL::UnauthorizedFieldError => err
           err.field ||= self
@@ -621,6 +623,8 @@ module GraphQL
                 else
                   load_application_object(arg_defn, loads, value, field_ctx.query.context)
                 end
+              elsif arg_defn.type.list? && value.is_a?(Array)
+                field_ctx.schema.after_any_lazies(value, &:itself)
               else
                 value
               end

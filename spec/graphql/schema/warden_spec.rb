@@ -561,8 +561,8 @@ describe GraphQL::Schema::Warden do
         unit(name: "Uvular Trill") { __typename }
       }
       |
-
-      assert_raises(GraphQL::UnresolvedTypeError) {
+      expected_class = TESTING_INTERPRETER ? MaskHelpers::EmicUnitType::UnresolvedTypeError : GraphQL::UnresolvedTypeError
+      assert_raises(expected_class) {
         MaskHelpers.run_query(query_string, only: whitelist)
       }
     end
@@ -839,7 +839,8 @@ describe GraphQL::Schema::Warden do
         unit(name: "Uvular Trill") { ... on Phoneme { manner } }
       }
       |
-      assert_raises(GraphQL::EnumType::UnresolvedValueError) {
+      expected_class = TESTING_INTERPRETER ? MaskHelpers::MannerType::UnresolvedValueError : GraphQL::EnumType::UnresolvedValueError
+      assert_raises(expected_class) {
         MaskHelpers.query_with_mask(query_string, mask)
       }
     end

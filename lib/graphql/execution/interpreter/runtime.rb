@@ -182,8 +182,6 @@ module GraphQL
 
               kwarg_arguments = resolved_arguments.keyword_arguments
 
-              # It might turn out that making arguments for every field is slow.
-              # If we have to cache them, we'll need a more subtle approach here.
               field_defn.extras.each do |extra|
                 case extra
                 when :ast_node
@@ -256,7 +254,7 @@ module GraphQL
         def continue_value(path, value, field, is_non_null, ast_node)
           if value.nil?
             if is_non_null
-              err = GraphQL::InvalidNullError.new(field.owner, field, value)
+              err = field.owner::InvalidNullError.new(field.owner, field, value)
               write_invalid_null_in_response(path, err)
             else
               write_in_response(path, nil)
@@ -306,18 +304,21 @@ module GraphQL
             write_in_response(path, r)
             r
           when "UNION", "INTERFACE"
-            resolved_type_or_lazy = resolve_type(type, value, path)
+            resolved_type_or_lazy, resolved_value = resolve_type(type, value, path)
+            resolved_value ||= value
+
             after_lazy(resolved_type_or_lazy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
               possible_types = query.possible_types(type)
 
               if !possible_types.include?(resolved_type)
                 parent_type = field.owner
-                type_error = GraphQL::UnresolvedTypeError.new(value, field, parent_type, resolved_type, possible_types)
+                err_class = type::UnresolvedTypeError
+                type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
                 write_in_response(path, nil)
                 nil
               else
-                continue_field(path, value, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments)
+                continue_field(path, resolved_value, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments)
               end
             end
           when "OBJECT"
@@ -459,7 +460,13 @@ module GraphQL
         end
 
         def arguments(graphql_object, arg_owner, ast_node)
-          query.arguments_for(ast_node, arg_owner, parent_object: graphql_object)
+          # Don't cache arguments if field extras are requested since extras mutate the argument data structure
+          if arg_owner.arguments_statically_coercible? && (!arg_owner.is_a?(GraphQL::Schema::Field) || arg_owner.extras.empty?)
+            query.arguments_for(ast_node, arg_owner)
+          else
+            # The arguments must be prepared in the context of the given object
+            query.arguments_for(ast_node, arg_owner, parent_object: graphql_object)
+          end
         end
 
         def write_invalid_null_in_response(path, invalid_null_error)
@@ -499,23 +506,11 @@ module GraphQL
         # at previous parts of the response.
         # This hash matches the response
         def type_at(path)
-          t = @types_at_paths
-          path.each do |part|
-            t = t[part] || (raise("Invariant: #{part.inspect} not found in #{t}"))
-          end
-          t = t[:__type]
-          t
+          @types_at_paths.fetch(path)
         end
 
         def set_type_at_path(path, type)
-          types = @types_at_paths
-          path.each do |part|
-            types = types[part] ||= {}
-          end
-          # Use this magic key so that the hash contains:
-          # - string keys for nested fields
-          # - :__type for the object type of a selection
-          types[:__type] ||= type
+          @types_at_paths[path] = type
           nil
         end
 
@@ -545,7 +540,7 @@ module GraphQL
 
         def resolve_type(type, value, path)
           trace_payload = { context: context, type: type, object: value, path: path }
-          resolved_type = query.trace("resolve_type", trace_payload) do
+          resolved_type, resolved_value = query.trace("resolve_type", trace_payload) do
             query.resolve_type(type, value)
           end
 
@@ -556,7 +551,7 @@ module GraphQL
               end
             end
           else
-            resolved_type
+            [resolved_type, resolved_value]
           end
         end
 

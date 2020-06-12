@@ -165,7 +165,13 @@ module GraphQL
       end
 
       def visible_field?(owner_type, field_defn)
-        visible?(field_defn) && visible_type?(field_defn.type.unwrap) && field_on_visible_interface?(field_defn, owner_type)
+        # This field is visible in its own right
+        visible?(field_defn) &&
+          # This field's return type is visible
+          visible_type?(field_defn.type.unwrap) &&
+          # This field is either defined on this object type,
+          # or the interface it's inherited from is also visible
+          ((field_defn.respond_to?(:owner) && field_defn.owner == owner_type) || field_on_visible_interface?(field_defn, owner_type))
       end
 
       # We need this to tell whether a field was inherited by an interface

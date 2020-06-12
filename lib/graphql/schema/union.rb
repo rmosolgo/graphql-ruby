@@ -3,8 +3,14 @@ module GraphQL
   class Schema
     class Union < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::AcceptsDefinition
+      extend GraphQL::Schema::Member::HasUnresolvedTypeError
 
       class << self
+        def inherited(child_class)
+          add_unresolved_type_error(child_class)
+          super
+        end
+
         def possible_types(*types, context: GraphQL::Query::NullContext, **options)
           if types.any?
             types.each do |t|

@@ -202,6 +202,31 @@ module Types::RetailItem
 end
 ```
 
+You can also optionally return a "resolved" object in addition the resolved type by returning an array:
+
+```ruby
+module Types::Claim
+  include Types::BaseInterface
+  definition_methods do
+    def resolve_type(object, context)
+      type = case object.value
+      when Success
+        Types::Approved
+      when Error
+        Types::Rejected
+      else
+        raise "Unexpected Claim: #{object.inspect}"
+      end
+
+      [type, object.value]
+    end
+  end
+end
+```
+
+The returned array must be a tuple of `[Type, object]`.
+This is useful for interface or union types which are backed by a domain object which should be unwrapped before resolving the next field.
+
 ## Orphan Types
 
 If you add an object type which implements an interface, but that object type doesn't properly appear in your schema, then you need to add that object to the interfaces's `orphan_types`, for example:

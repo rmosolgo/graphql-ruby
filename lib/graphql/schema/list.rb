@@ -44,7 +44,8 @@ module GraphQL
         if value.nil?
           nil
         else
-          ensure_array(value).map { |item| item.nil? ? item : of_type.coerce_input(item, ctx) }
+          coerced = ensure_array(value).map { |item| item.nil? ? item : of_type.coerce_input(item, ctx) }
+          ctx.schema.after_any_lazies(coerced, &:itself)
         end
       end
 

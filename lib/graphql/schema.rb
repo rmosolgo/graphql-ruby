@@ -1390,7 +1390,7 @@ module GraphQL
       # rubocop:disable Lint/DuplicateMethods
       module ResolveTypeWithType
         def resolve_type(type, obj, ctx)
-          first_resolved_type = if type.is_a?(Module) && type.respond_to?(:resolve_type)
+          first_resolved_type, resolved_value = if type.is_a?(Module) && type.respond_to?(:resolve_type)
             type.resolve_type(obj, ctx)
           else
             super
@@ -1398,7 +1398,11 @@ module GraphQL
 
           after_lazy(first_resolved_type) do |resolved_type|
             if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind)) || resolved_type.is_a?(GraphQL::BaseType)
-              resolved_type
+              if resolved_value
+                [resolved_type, resolved_value]
+              else
+                resolved_type
+              end
             else
               raise ".resolve_type should return a type definition, but got #{resolved_type.inspect} (#{resolved_type.class}) from `resolve_type(#{type}, #{obj}, #{ctx})`"
             end
@@ -1507,7 +1511,11 @@ module GraphQL
 
       # @return [GraphQL::Execution::Errors, Class<GraphQL::Execution::Errors::NullErrorHandler>]
       def error_handler
-        @error_handler ||= GraphQL::Execution::Errors::NullErrorHandler
+        if defined?(@error_handler)
+          @error_handler
+        else
+          find_inherited_value(:error_handler, GraphQL::Execution::Errors::NullErrorHandler)
+        end
       end
 
       def lazy_resolve(lazy_class, value_method)

@@ -86,6 +86,38 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
+  describe "prepare with camelized inputs" do
+    class PrepareCamelizedSchema < GraphQL::Schema
+      class CamelizedInput < GraphQL::Schema::InputObject
+        argument :inputString, String, required: true,
+          camelize: false,
+          as: :input_string,
+          prepare: ->(val, ctx) { val.upcase }
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :input_test, String, null: false do
+          argument :camelized_input, CamelizedInput, required: true
+        end
+
+        def input_test(camelized_input:)
+          camelized_input[:input_string]
+        end
+      end
+
+      query(Query)
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
+      end
+    end
+
+    it "calls the prepare proc" do
+      res = PrepareCamelizedSchema.execute("{ inputTest(camelizedInput: { inputString: \"abc\" }) }")
+      assert_equal "ABC", res["data"]["inputTest"]
+    end
+  end
+
   describe "prepare: / loads: / as:" do
     module InputObjectPrepareTest
       class InputObj < GraphQL::Schema::InputObject
@@ -113,11 +145,11 @@ describe GraphQL::Schema::InputObject do
       end
 
       class Mutation < GraphQL::Schema::Object
-        class TouchInstrument < GraphQL::Schema::Mutation
-          class InstrumentInput < GraphQL::Schema::InputObject
-            argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
-          end
+        class InstrumentInput < GraphQL::Schema::InputObject
+          argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+        end
 
+        class TouchInstrument < GraphQL::Schema::Mutation
           argument :input_obj, InstrumentInput, required: true
           field :instrument_name_method, String, null: false
           field :instrument_name_key, String, null: false
@@ -132,6 +164,19 @@ describe GraphQL::Schema::InputObject do
         end
 
         field :touch_instrument, mutation: TouchInstrument
+
+        class ListInstruments < GraphQL::Schema::Mutation
+          argument :list, [InstrumentInput], required: true
+          field :resolved_list, String, null: false
+
+          def resolve(list:)
+            {
+              resolved_list: list.map(&:to_kwargs).inspect
+            }
+          end
+        end
+
+        field :list_instruments, mutation: ListInstruments
       end
 
 
@@ -214,6 +259,20 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareTest::Schema.execute(query_str)
       assert_equal "Drum Kit", res["data"]["touchInstrument"]["instrumentNameMethod"]
       assert_equal "Drum Kit", res["data"]["touchInstrument"]["instrumentNameKey"]
+    end
+
+    it "loads nested input object arguments" do
+      query_str = <<-GRAPHQL
+      mutation {
+        listInstruments(list: [{ instrumentId: "Instrument/Drum Kit" }]) {
+          resolvedList
+        }
+      }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(query_str)
+      expected_obj = [{ instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") }].inspect
+      assert_equal expected_obj, res["data"]["listInstruments"]["resolvedList"]
     end
   end
 

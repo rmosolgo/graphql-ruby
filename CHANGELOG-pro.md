@@ -8,6 +8,18 @@
 
 ### Bug Fix
 
+## 1.13.6 (8 June 2020)
+
+### Bug Fix
+
+- Return the proper `pageInfo` values when it's requested before `edges` or `nodes` (#2972)
+
+## 1.13.5 (11 May 2020)
+
+### Bug Fix
+
+- Fix some warnings on Ruby 2.7
+
 ## 1.13.4 (17 Apr 2020)
 
 ### Bug Fix

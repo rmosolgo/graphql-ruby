@@ -1,7 +1,9 @@
+require 'time'
+
 # frozen_string_literal: true
 module GraphQL
   module Types
-    # This scalar takes `DateTime`s and transmits them as strings,
+    # This scalar takes `Time`s and transmits them as strings,
     # using ISO 8601 format.
     #
     # Use it for fields or arguments as follows:
@@ -29,28 +31,26 @@ module GraphQL
         @time_precision = value
       end
 
-      # @param value [Date,DateTime,String]
+      # @param value [Time,Date,DateTime,String]
       # @return [String]
-      def self.coerce_result(value, _ctx)\
+      def self.coerce_result(value, _ctx)
         case value
-        when DateTime
-          return value.iso8601(time_precision)
         when Date
-          return DateTime.parse(value.to_s).iso8601(time_precision)
+          return value.to_time.iso8601(time_precision)
         when ::String
-          return DateTime.parse(value).iso8601(time_precision)
+          return Time.parse(value).iso8601(time_precision)
         else
-          # In case some other API-compliant thing is given:
+          # Time, DateTime or compatible is given:
           return value.iso8601(time_precision)
         end
       rescue StandardError => error
-        raise GraphQL::Error, "An incompatible object (#{value.class}) was given to #{self}. Make sure that only Dates, DateTimes, and well-formatted Strings are used with this type. (#{error.message})"
+        raise GraphQL::Error, "An incompatible object (#{value.class}) was given to #{self}. Make sure that only Times, Dates, DateTimes, and well-formatted Strings are used with this type. (#{error.message})"
       end
 
       # @param str_value [String]
-      # @return [DateTime]
+      # @return [Time]
       def self.coerce_input(str_value, _ctx)
-        DateTime.iso8601(str_value)
+        Time.iso8601(str_value)
       rescue ArgumentError, TypeError
         # Invalid input
         nil

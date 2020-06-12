@@ -3,15 +3,54 @@
 require "spec_helper"
 
 describe GraphQL::Tracing::ScoutTracing do
-  class ScoutApm
-    module Tracer
+  module ScoutApmTest
+    class Query < GraphQL::Schema::Object
+      add_field GraphQL::Types::Relay::NodeField
+
+      field :int, Integer, null: false
+
+      def int
+        1
+      end
+    end
+
+    class ScoutSchemaBase < GraphQL::Schema
+      query(Query)
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
+      end
+    end
+
+    class SchemaWithoutTransactionName < ScoutSchemaBase
+      use(GraphQL::Tracing::ScoutTracing)
+    end
+
+    class SchemaWithTransactionName < ScoutSchemaBase
+      use(GraphQL::Tracing::ScoutTracing, set_transaction_name: true)
     end
   end
 
-  describe "Initializing" do
-    it "should include the module only after initilization" do
-      refute GraphQL::Tracing::ScoutTracing.included_modules.include?(ScoutApm::Tracer)
-      assert GraphQL::Tracing::ScoutTracing.new.class.included_modules.include?(ScoutApm::Tracer)
-    end
+  before do
+    ScoutApm.clear_all
+  end
+
+  it "can leave the transaction name in place" do
+    ScoutApmTest::SchemaWithoutTransactionName.execute "query X { int }"
+    assert_equal [], ScoutApm::TRANSACTION_NAMES
+  end
+
+  it "can override the transaction name" do
+    ScoutApmTest::SchemaWithTransactionName.execute "query X { int }"
+    assert_equal ["GraphQL/query.X"], ScoutApm::TRANSACTION_NAMES
+  end
+
+  it "can override the transaction name per query" do
+    # Override with `false`
+    ScoutApmTest::SchemaWithTransactionName.execute "{ int }", context: { set_scout_transaction_name: false }
+    assert_equal [], ScoutApm::TRANSACTION_NAMES
+    # Override with `true`
+    ScoutApmTest::SchemaWithoutTransactionName.execute "{ int }", context: { set_scout_transaction_name: true }
+    assert_equal ["GraphQL/query.anonymous"], ScoutApm::TRANSACTION_NAMES
   end
 end

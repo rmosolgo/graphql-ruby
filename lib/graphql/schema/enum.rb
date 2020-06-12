@@ -23,6 +23,9 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
       extend GraphQL::Schema::Member::ValidatesInput
 
+      class UnresolvedValueError < GraphQL::EnumType::UnresolvedValueError
+      end
+
       class << self
         # Define a value for this enum
         # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`
@@ -94,7 +97,7 @@ module GraphQL
           if enum_value
             enum_value.graphql_name
           else
-            raise(GraphQL::EnumType::UnresolvedValueError, "Can't resolve enum #{graphql_name} for #{value.inspect}")
+            raise(self::UnresolvedValueError, "Can't resolve enum #{graphql_name} for #{value.inspect}")
           end
         end
 
@@ -110,6 +113,11 @@ module GraphQL
           else
             nil
           end
+        end
+
+        def inherited(child_class)
+          child_class.const_set(:UnresolvedValueError, Class.new(Schema::Enum::UnresolvedValueError))
+          super
         end
 
         private

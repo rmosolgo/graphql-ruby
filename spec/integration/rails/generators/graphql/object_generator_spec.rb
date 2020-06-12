@@ -5,6 +5,19 @@ require "generators/graphql/object_generator"
 class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::ObjectGenerator
 
+  ActiveRecord::Schema.define do
+    create_table :test_users do |t|
+      t.datetime :created_at
+      t.date :birthday
+      t.integer :points, null: false
+    end
+  end
+
+  # rubocop:disable Style/ClassAndModuleChildren
+  class ::TestUser < ActiveRecord::Base
+  end
+  # rubocop:enable Style/ClassAndModuleChildren
+
   test "it generates fields with types" do
     commands = [
       # GraphQL-style:
@@ -47,6 +60,35 @@ RUBY
 module Types
   class PageType < Types::BaseObject
     implements GraphQL::Relay::Node.interface
+  end
+end
+RUBY
+  end
+
+  test "it generates objects based on ActiveRecord schema" do
+    run_generator(["TestUser"])
+    assert_file "app/graphql/types/test_user_type.rb", <<-RUBY
+module Types
+  class TestUserType < Types::BaseObject
+    field :id, ID, null: false
+    field :created_at, GraphQL::Types::ISO8601DateTime, null: true
+    field :birthday, GraphQL::Types::ISO8601Date, null: true
+    field :points, Integer, null: false
+  end
+end
+RUBY
+  end
+
+  test "it generates objects based on ActiveRecord schema with additional custom fields" do
+    run_generator(["TestUser", "name:!String"])
+    assert_file "app/graphql/types/test_user_type.rb", <<-RUBY
+module Types
+  class TestUserType < Types::BaseObject
+    field :id, ID, null: false
+    field :created_at, GraphQL::Types::ISO8601DateTime, null: true
+    field :birthday, GraphQL::Types::ISO8601Date, null: true
+    field :points, Integer, null: false
+    field :name, String, null: false
   end
 end
 RUBY

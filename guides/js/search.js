@@ -1,7 +1,3 @@
----
-layout: null
----
-
 var client = algoliasearch('8VO8708WUV', '1f3e2b6f6a503fa82efdec331fd9c55e');
 var index = client.initIndex('prod_graphql_ruby');
 
