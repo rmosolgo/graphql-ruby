@@ -166,9 +166,6 @@ module GraphQL
             return result
           end
 
-          # We're not actually _using_ the coerced result, we're just
-          # using these methods to make sure that the object will
-          # behave like a hash below, when we call `each` on it.
           input = begin
             input.to_h
           rescue
