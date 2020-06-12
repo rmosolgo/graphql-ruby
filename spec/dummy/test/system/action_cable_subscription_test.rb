@@ -45,7 +45,7 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
 
   test "it only re-runs queries once for subscriptions with matching fingerprints" do
     visit "/"
-    using_wait_time 10 do
+    using_wait_time 30 do
       # Make 3 subscriptions to the same payload
       click_on("Subscribe with fingerprint 1")
       assert_selector "#fingerprint-updates-1-connected-1"
