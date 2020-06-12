@@ -169,7 +169,7 @@ module GraphQL
           # We're not actually _using_ the coerced result, we're just
           # using these methods to make sure that the object will
           # behave like a hash below, when we call `each` on it.
-          begin
+          input = begin
             input.to_h
           rescue
             begin
@@ -183,7 +183,7 @@ module GraphQL
           end
 
           # Inject missing required arguments
-          required_inputs = self.arguments.reduce({}) do |m, (argument_name, argument)|
+          missing_required_inputs = self.arguments.reduce({}) do |m, (argument_name, argument)|
             if !input.key?(argument_name) && argument.type.non_null? && warden.get_argument(self, argument_name)
               m[argument_name] = nil
             end
@@ -191,7 +191,7 @@ module GraphQL
             m
           end
 
-          input.to_h.merge(required_inputs).each do |argument_name, value|
+          input.merge(missing_required_inputs).each do |argument_name, value|
             argument = warden.get_argument(self, argument_name)
             # Items in the input that are unexpected
             unless argument
