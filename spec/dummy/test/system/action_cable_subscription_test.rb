@@ -48,7 +48,17 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
     using_wait_time 30 do
       # Make 3 subscriptions to the same payload
       click_on("Subscribe with fingerprint 1")
-      assert_selector "#fingerprint-updates-1-connected-1"
+
+      # Sadly this fails sometimes, and I don't understand why. The other one never fails.
+      # Hopefully this will help debug on CI. (I can't get it to fail locally.)
+      begin
+        assert_selector "#fingerprint-updates-1-connected-1"
+      rescue StandardError => err
+        puts "#{err.class} - #{err.message}"
+        puts page.html
+        raise
+      end
+
       click_on("Subscribe with fingerprint 1")
       assert_selector "#fingerprint-updates-1-connected-2"
       click_on("Subscribe with fingerprint 1")
