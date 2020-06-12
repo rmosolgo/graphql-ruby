@@ -53,7 +53,7 @@ module GraphQL
         Time.iso8601(str_value)
       rescue ArgumentError, TypeError
         begin
-          DateTime.iso8601(str_value).to_time
+          Date.iso8601(str_value).to_time
         rescue ArgumentError, TypeError
           # Invalid input
           nil

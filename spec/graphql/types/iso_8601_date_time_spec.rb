@@ -123,6 +123,9 @@ describe GraphQL::Types::ISO8601DateTime do
 
     it "parses dates without times" do
       res = parse_date("2018-06-07")
+      # It uses the system default timezone when none is given
+      system_default_tz = Date.iso8601("2018-06-07").to_time.zone
+      system_default_offset = Date.iso8601("2018-06-07").to_time.utc_offset
       expected_res = {
         "year" => 2018,
         "month" => 6,
@@ -130,8 +133,8 @@ describe GraphQL::Types::ISO8601DateTime do
         "hour" => 0,
         "minute" => 0,
         "second" => 0,
-        "zone" => testing_rails? ? "UTC" : nil,
-        "utcOffset" => 0,
+        "zone" => system_default_tz,
+        "utcOffset" => system_default_offset,
       }
       assert_equal(expected_res, res)
     end
@@ -139,7 +142,7 @@ describe GraphQL::Types::ISO8601DateTime do
     it "adds an error for invalid dates" do
       expected_errors = ["Variable $date of type ISO8601DateTime! was provided invalid value"]
 
-      assert_equal expected_errors, parse_date("2018-06-07T99:31:42Z").map { |e| e["message"] }
+      assert_equal expected_errors, parse_date("2018-99-07T99:31:42Z").map { |e| e["message"] }
       assert_equal expected_errors, parse_date("xyz").map { |e| e["message"] }
       assert_equal expected_errors, parse_date(nil).map { |e| e["message"] }
       assert_equal expected_errors, parse_date([1,2,3]).map { |e| e["message"] }
