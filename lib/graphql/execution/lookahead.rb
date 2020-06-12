@@ -344,10 +344,9 @@ module GraphQL
 
       def lookup_alias_node(nodes, name)
         return if nodes.empty?
-        nodes.find do |node|
+
+        nodes.flat_map(&:children).compact.find do |node|
           return node if node.alias?(name)
-          child = lookup_alias_node(node.children, name)
-          return child if child
         end
       end
     end
