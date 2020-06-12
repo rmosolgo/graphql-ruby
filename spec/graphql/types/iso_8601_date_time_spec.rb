@@ -130,7 +130,7 @@ describe GraphQL::Types::ISO8601DateTime do
         "hour" => 0,
         "minute" => 0,
         "second" => 0,
-        "zone" => nil,
+        "zone" => testing_rails? ? "UTC" : nil,
         "utcOffset" => 0,
       }
       assert_equal(expected_res, res)
