@@ -52,8 +52,12 @@ module GraphQL
       def self.coerce_input(str_value, _ctx)
         Time.iso8601(str_value)
       rescue ArgumentError, TypeError
-        # Invalid input
-        nil
+        begin
+          DateTime.iso8601(str_value).to_time
+        rescue ArgumentError, TypeError
+          # Invalid input
+          nil
+        end
       end
     end
   end

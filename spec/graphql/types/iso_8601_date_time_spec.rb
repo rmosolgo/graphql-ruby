@@ -121,6 +121,21 @@ describe GraphQL::Types::ISO8601DateTime do
       assert_equal(expected_res, res)
     end
 
+    it "parses dates without times" do
+      res = parse_date("2018-06-07")
+      expected_res = {
+        "year" => 2018,
+        "month" => 6,
+        "day" => 7,
+        "hour" => 0,
+        "minute" => 0,
+        "second" => 0,
+        "zone" => nil,
+        "utcOffset" => 0,
+      }
+      assert_equal(expected_res, res)
+    end
+
     it "adds an error for invalid dates" do
       expected_errors = ["Variable $date of type ISO8601DateTime! was provided invalid value"]
 
