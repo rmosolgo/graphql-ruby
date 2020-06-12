@@ -107,7 +107,7 @@ module GraphQL
 
       # @return [GraphQL::Argument, nil] The argument named `argument_name` on `parent_type`, if it exists and is visible
       def get_argument(parent_type, argument_name)
-        argument = parent_type.arguments[argument_name]
+        argument = parent_type.get_argument(argument_name)
         return argument if argument && visible_argument?(argument)
       end
 
