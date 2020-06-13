@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.9.21 (12 June 2020)
+
+### Bug fixes
+
+- Fix `extras:` on subscription fields #2983
+
 ## 1.9.20 (20 May 2020)
 
 ### Bug fixes
