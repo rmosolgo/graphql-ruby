@@ -12,10 +12,13 @@ You can extend {{ "GraphQL::Schema::Subscription" | api_doc }} to create fields 
 
 These classes support several behaviors:
 
-- Authorizing (or rejecting) initial subscription requests and subsequent updates
-- Returning values for initial subscription requests
-- Unsubscribing from the server
-- Skipping updates for certain clients (eg, don't send updates to the person who triggered the event)
+- [Authorizing](#check-permissions-with-authorized) (or rejecting) initial subscription requests and subsequent updates
+- Returning values for [initial subscription requests](#initial-subscription-with-subscribe)
+- [Unsubscribing](#terminating-the-subscription-with-unsubscribe) from the server
+- Implicitly [scoping updates](#scope), to direct data to the right subscriber
+- [Skipping updates](#subsequent-updates-with-update) for certain clients (eg, don't send updates to the person who triggered the event)
+
+Continue reading to set up subscription classes.
 
 ## Add a base class
 
@@ -142,6 +145,53 @@ payload_type Types::MessageType
 ```
 
 (In that case, don't return a hash from `#subscribe` or `#update`, return a `message` object instead.)
+
+## Scope
+
+Usually, GraphQL-Ruby uses explicitly-passed arguments to determine when a {% internal_link "trigger", "subscriptions/triggers" %} applies to an active subscription. But, you can use `subscription_scope` to configure _implicit_ conditions on updates. When `subscription_scope` is configured, only triggers with a matching `scope:` value will cause clients to receive updates.
+
+`subscription_scope` accepts a symbol and the given symbol will be looked up in `context` to find a scope value.
+
+For example, this subscription will use `context[:current_organization_id]` as a scope:
+
+```ruby
+class Subscriptions::EmployeeHired < Subscriptions::BaseSubscription
+  # ...
+  subscription_scope :current_organization_id
+end
+```
+
+Clients subscribe _without_ any arguments:
+
+```graphql
+subscription {
+  employeeHired {
+    hireDate
+    employee {
+      name
+      department
+    }
+  }
+}
+```
+
+But `.trigger`s are routed using `scope:`. So, if the subscriber's context includes `current_organization_id: 100`, then the trigger must include the same `scope:` value:
+
+```ruby
+MyAppSchema.subscriptions.trigger(
+  # Field name
+  :employee_hired,
+  # Arguments
+  {},
+  # Object
+  { hire_date: Time.now, employee: new_employee },
+  # This corresponds to `context[:current_organization_id]`
+  # in the original subscription:
+  scope: 100
+ )
+```
+
+Scope is also used for determining whether subscribers can receive the same {% internal_link "broadcast", "subscriptions/implementation#broadcast" %}.
 
 ## Check Permissions with #authorized?
 

@@ -1075,6 +1075,7 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{new_subscription_object.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           else
             @subscription_object = new_subscription_object
+            add_subscription_extension_if_necessary
             add_type_and_traverse(new_subscription_object, root: true)
             nil
           end
@@ -1645,6 +1646,20 @@ module GraphQL
         inherited_instrumenters = find_inherited_value(:instrumenters) || Hash.new { |h,k| h[k] = [] }
         inherited_instrumenters.merge(own_instrumenters) do |_step, inherited, own|
           inherited + own
+        end
+      end
+
+      # @api private
+      def add_subscription_extension_if_necessary
+        if interpreter? && !defined?(@subscription_extension_added) && subscription && self.subscriptions
+          @subscription_extension_added = true
+          if subscription.singleton_class.ancestors.include?(Subscriptions::SubscriptionRoot)
+            warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")
+          else
+            subscription.fields.each do |name, field|
+              field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
+            end
+          end
         end
       end
 

@@ -483,7 +483,7 @@ module Dummy
       GLOBAL_VALUES
     end
 
-    field :replaceValues, [Integer], "Replace the global array with new values", null: false do
+    field :replace_values, [Integer], "Replace the global array with new values", null: false do
       argument :input, ReplaceValuesInput, required: true
     end
 

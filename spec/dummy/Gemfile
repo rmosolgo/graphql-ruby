@@ -10,3 +10,5 @@ gem 'graphql', path: File.expand_path('../../', __dir__)
 group :development do
   gem 'listen'
 end
+
+gem "webdrivers", "~> 4.1"

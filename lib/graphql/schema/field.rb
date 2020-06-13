@@ -191,9 +191,10 @@ module GraphQL
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       # @param extensions [Array<Class, Hash<Class => Object>>] Named extensions to apply to this field (see also {#extension})
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
+      # @param broadcastable [Boolean] Whether or not this field can be distributed in subscription broadcasts
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: [], extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, arguments: EMPTY_HASH, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: [], extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -237,8 +238,8 @@ module GraphQL
         end
 
         # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
-        method_name = method || hash_key || @underscored_name
-        resolver_method ||= @underscored_name.to_sym
+        method_name = method || hash_key || name_s
+        resolver_method ||= name_s.to_sym
 
         @method_str = method_name.to_s
         @method_sym = method_name.to_sym
@@ -251,6 +252,7 @@ module GraphQL
         @max_page_size = max_page_size == :not_given ? nil : max_page_size
         @introspection = introspection
         @extras = extras
+        @broadcastable = broadcastable
         @resolver_class = resolver_class
         @scope = scope
         @trace = trace
@@ -293,6 +295,13 @@ module GraphQL
             instance_eval(&definition_block)
           end
         end
+      end
+
+      # If true, subscription updates with this field can be shared between viewers
+      # @return [Boolean, nil]
+      # @see GraphQL::Subscriptions::BroadcastAnalyzer
+      def broadcastable?
+        @broadcastable
       end
 
       # @param text [String]
@@ -534,7 +543,7 @@ module GraphQL
                   @resolve_proc.call(extended_obj, args, ctx)
                 end
               else
-                public_send_field(after_obj, ruby_args, ctx)
+                public_send_field(after_obj, ruby_args, query_ctx)
               end
             else
               err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
@@ -558,30 +567,7 @@ module GraphQL
           application_object = object.object
           ctx.schema.after_lazy(self.authorized?(application_object, args, ctx)) do |is_authorized|
             if is_authorized
-              # Apply field extensions
-              with_extensions(object, args, ctx) do |extended_obj, extended_args|
-                field_receiver = if @resolver_class
-                  resolver_obj = if extended_obj.is_a?(GraphQL::Schema::Object)
-                    extended_obj.object
-                  else
-                    extended_obj
-                  end
-                  @resolver_class.new(object: resolver_obj, context: ctx, field: self)
-                else
-                  extended_obj
-                end
-
-                if field_receiver.respond_to?(@resolver_method)
-                  # Call the method with kwargs, if there are any
-                  if extended_args.any?
-                    field_receiver.public_send(@resolver_method, **extended_args)
-                  else
-                    field_receiver.public_send(@resolver_method)
-                  end
-                else
-                  resolve_field_method(field_receiver, extended_args, ctx)
-                end
-              end
+              public_send_field(object, args, ctx)
             else
               err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
               ctx.schema.unauthorized_field(err)
@@ -595,43 +581,6 @@ module GraphQL
         end
       rescue GraphQL::ExecutionError => err
         err
-      end
-
-      # Find a way to resolve this field, checking:
-      #
-      # - Hash keys, if the wrapped object is a hash;
-      # - A method on the wrapped object;
-      # - Or, raise not implemented.
-      #
-      # This can be overridden by defining a method on the object type.
-      # @param obj [GraphQL::Schema::Object]
-      # @param ruby_kwargs [Hash<Symbol => Object>]
-      # @param ctx [GraphQL::Query::Context]
-      def resolve_field_method(obj, ruby_kwargs, ctx)
-        if obj.object.is_a?(Hash)
-          inner_object = obj.object
-          if inner_object.key?(@method_sym)
-            inner_object[@method_sym]
-          else
-            inner_object[@method_str]
-          end
-        elsif obj.object.respond_to?(@method_sym)
-          if ruby_kwargs.any?
-            obj.object.public_send(@method_sym, **ruby_kwargs)
-          else
-            obj.object.public_send(@method_sym)
-          end
-        else
-          raise <<-ERR
-        Failed to implement #{@owner.graphql_name}.#{@name}, tried:
-
-        - `#{obj.class}##{@resolver_method}`, which did not exist
-        - `#{obj.object.class}##{@method_sym}`, which did not exist
-        - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
-
-        To implement this field, define one of the methods above (and check for typos)
-        ERR
-        end
       end
 
       # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
@@ -704,24 +653,52 @@ module GraphQL
         end
       end
 
-      def public_send_field(obj, ruby_kwargs, field_ctx)
-        query_ctx = field_ctx.query.context
-        with_extensions(obj, ruby_kwargs, query_ctx) do |extended_obj, extended_args|
+      def public_send_field(unextended_obj, unextended_ruby_kwargs, query_ctx)
+        with_extensions(unextended_obj, unextended_ruby_kwargs, query_ctx) do |obj, ruby_kwargs|
           if @resolver_class
-            if extended_obj.is_a?(GraphQL::Schema::Object)
-              extended_obj = extended_obj.object
+            if obj.is_a?(GraphQL::Schema::Object)
+              obj = obj.object
             end
-            extended_obj = @resolver_class.new(object: extended_obj, context: query_ctx, field: self)
+            obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
           end
 
-          if extended_obj.respond_to?(@resolver_method)
-            if extended_args.any?
-              extended_obj.public_send(@resolver_method, **extended_args)
+          # Find a way to resolve this field, checking:
+          #
+          # - A method on the type instance;
+          # - Hash keys, if the wrapped object is a hash;
+          # - A method on the wrapped object;
+          # - Or, raise not implemented.
+          #
+          if obj.respond_to?(@resolver_method)
+            # Call the method with kwargs, if there are any
+            if ruby_kwargs.any?
+              obj.public_send(@resolver_method, **ruby_kwargs)
             else
-              extended_obj.public_send(@resolver_method)
+              obj.public_send(@resolver_method)
+            end
+          elsif obj.object.is_a?(Hash)
+            inner_object = obj.object
+            if inner_object.key?(@method_sym)
+              inner_object[@method_sym]
+            else
+              inner_object[@method_str]
+            end
+          elsif obj.object.respond_to?(@method_sym)
+            if ruby_kwargs.any?
+              obj.object.public_send(@method_sym, **ruby_kwargs)
+            else
+              obj.object.public_send(@method_sym)
             end
           else
-            resolve_field_method(extended_obj, extended_args, query_ctx)
+            raise <<-ERR
+          Failed to implement #{@owner.graphql_name}.#{@name}, tried:
+
+          - `#{obj.class}##{@resolver_method}`, which did not exist
+          - `#{obj.object.class}##{@method_sym}`, which did not exist
+          - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
+
+          To implement this field, define one of the methods above (and check for typos)
+          ERR
           end
         end
       end

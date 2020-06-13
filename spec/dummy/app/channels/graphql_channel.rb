@@ -11,18 +11,25 @@ class GraphqlChannel < ActionCable::Channel::Base
     field :value, Integer, null: false
   end
 
-  class SubscriptionType < GraphQL::Schema::Object
-    if TESTING_INTERPRETER
-      extend GraphQL::Subscriptions::SubscriptionRoot
-    else
-      def payload(id:)
-        id
-      end
-    end
+  class CounterIncremented < GraphQL::Schema::Subscription
+    @@call_count = 0
+    subscription_scope :subscriber_id
 
+    field :new_value, Integer, null: false
+
+    def update
+      {
+        new_value: @@call_count += 1
+      }
+    end
+  end
+
+  class SubscriptionType < GraphQL::Schema::Object
     field :payload, PayloadType, null: false do
       argument :id, ID, required: true
     end
+
+    field :counter_incremented, subscription: CounterIncremented
   end
 
   # Wacky behavior around the number 4
@@ -48,12 +55,12 @@ class GraphqlChannel < ActionCable::Channel::Base
   class GraphQLSchema < GraphQL::Schema
     query(QueryType)
     subscription(SubscriptionType)
+    use GraphQL::Execution::Interpreter
+    use GraphQL::Analysis::AST
     use GraphQL::Subscriptions::ActionCableSubscriptions,
-      serializer: CustomSerializer
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
+      serializer: CustomSerializer,
+      broadcast: true,
+      default_broadcastable: true
   end
 
   def subscribed
@@ -91,7 +98,10 @@ class GraphqlChannel < ActionCable::Channel::Base
   end
 
   def make_trigger(data)
-    GraphQLSchema.subscriptions.trigger("payload", {"id" => data["id"]}, ExamplePayload.new(data["value"]))
+    field = data["field"]
+    args = data["arguments"]
+    value = data["value"]
+    GraphQLSchema.subscriptions.trigger(field, args, value && ExamplePayload.new(value))
   end
 
   def unsubscribed

@@ -67,7 +67,7 @@ module LazyHelpers
       end
     end
 
-    field :nestedSum, LazySum, null: false do
+    field :nested_sum, LazySum, null: false do
       argument :value, Integer, required: true
     end
 
@@ -79,7 +79,7 @@ module LazyHelpers
       end
     end
 
-    field :nullableNestedSum, LazySum, null: true do
+    field :nullable_nested_sum, LazySum, null: true do
       argument :value, Integer, required: true
     end
     alias :nullable_nested_sum :nested_sum

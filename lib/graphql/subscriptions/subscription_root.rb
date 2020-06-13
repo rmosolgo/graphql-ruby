@@ -2,9 +2,11 @@
 
 module GraphQL
   class Subscriptions
-    # Extend this module in your subscription root when using {GraphQL::Execution::Interpreter}.
+    # @api private
+    # @deprecated This module is no longer needed.
     module SubscriptionRoot
       def self.extended(child_cls)
+        warn "`extend GraphQL::Subscriptions::SubscriptionRoot` is no longer required; you can remove it from your Subscription type (#{child_cls})"
         child_cls.include(InstanceMethods)
       end
 

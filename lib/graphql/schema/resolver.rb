@@ -250,6 +250,19 @@ module GraphQL
           @complexity || (superclass.respond_to?(:complexity) ? superclass.complexity : 1)
         end
 
+        def broadcastable(new_broadcastable)
+          @broadcastable = new_broadcastable
+        end
+
+        # @return [Boolean, nil]
+        def broadcastable?
+          if defined?(@broadcastable)
+            @broadcastable
+          else
+            (superclass.respond_to?(:broadcastable?) ? superclass.broadcastable? : nil)
+          end
+        end
+
         def field_options
           {
             type: type_expr,
@@ -261,6 +274,7 @@ module GraphQL
             null: null,
             complexity: complexity,
             extensions: extensions,
+            broadcastable: broadcastable?,
           }
         end
 

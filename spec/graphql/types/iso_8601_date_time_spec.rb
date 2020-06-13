@@ -11,7 +11,7 @@ describe GraphQL::Types::ISO8601DateTime do
       field :minute, Integer, method: :min, null: false
       field :second, Integer, method: :sec, null: false
       field :zone, String, null: true
-      field :utcOffset, Integer, null: false
+      field :utc_offset, Integer, null: false
       field :iso8601, GraphQL::Types::ISO8601DateTime, null: false, method: :itself
     end
 

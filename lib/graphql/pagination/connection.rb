@@ -26,6 +26,9 @@ module GraphQL
       # @return [GraphQL::Query::Context]
       attr_accessor :context
 
+      # @return [Object] the object this collection belongs to
+      attr_accessor :parent
+
       # Raw access to client-provided values. (`max_page_size` not applied to first or last.)
       attr_accessor :before_value, :after_value, :first_value, :last_value
 
@@ -49,13 +52,15 @@ module GraphQL
 
       # @param items [Object] some unpaginated collection item, like an `Array` or `ActiveRecord::Relation`
       # @param context [Query::Context]
+      # @param parent [Object] The object this collection belongs to
       # @param first [Integer, nil] The limit parameter from the client, if it provided one
       # @param after [String, nil] A cursor for pagination, if the client provided one
       # @param last [Integer, nil] Limit parameter from the client, if provided
       # @param before [String, nil] A cursor for pagination, if the client provided one.
       # @param max_page_size [Integer, nil] A configured value to cap the result size. Applied as `first` if neither first or last are given.
-      def initialize(items, context: nil, first: nil, after: nil, max_page_size: :not_given, last: nil, before: nil)
+      def initialize(items, parent: nil, context: nil, first: nil, after: nil, max_page_size: :not_given, last: nil, before: nil)
         @items = items
+        @parent = parent
         @context = context
         @first_value = first
         @after_value = after
@@ -185,17 +190,19 @@ module GraphQL
       # A wrapper around paginated items. It includes a {cursor} for pagination
       # and could be extended with custom relationship-level data.
       class Edge
-        def initialize(item, connection)
+        attr_reader :node
+
+        def initialize(node, connection)
           @connection = connection
-          @item = item
+          @node = node
         end
 
-        def node
-          @item
+        def parent
+          @connection.parent
         end
 
         def cursor
-          @connection.cursor_for(@item)
+          @cursor ||= @connection.cursor_for(@node)
         end
       end
     end

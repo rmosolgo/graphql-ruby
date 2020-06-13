@@ -170,7 +170,7 @@ describe GraphQL::Execution::Interpreter do
         end
       end
 
-      field :findMany, [Entity, null: true], null: false do
+      field :find_many, [Entity, null: true], null: false do
         argument :ids, [ID], required: true
       end
 

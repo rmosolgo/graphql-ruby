@@ -148,8 +148,8 @@ module StarTrek
       all_bases
     end
 
-    field :basesClone, BaseType.connection_type, null: true
-    field :basesByName, BaseType.connection_type, null: true do
+    field :bases_clone, BaseType.connection_type, null: true
+    field :bases_by_name, BaseType.connection_type, null: true do
       argument :order, String, default_value: "name", required: false
     end
     def bases_by_name(order: nil)
@@ -174,7 +174,7 @@ module StarTrek
     field :basesWithDefaultMaxLimitArray, BaseType.connection_type, null: true, resolver_method: :all_bases_array
     field :basesWithLargeMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 1000, resolver_method: :all_bases
 
-    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true
+    field :bases_with_custom_edge, CustomEdgeBaseConnectionType, null: true, connection: true
     def bases_with_custom_edge
       LazyNodesWrapper.new(object.bases)
     end
@@ -304,7 +304,7 @@ module StarTrek
       Base.find(3)
     end
 
-    field :newestBasesGroupedByFaction, BaseType.connection_type, null: true
+    field :newest_bases_grouped_by_faction, BaseType.connection_type, null: true
 
     def newest_bases_grouped_by_faction
       agg = Base.collection.aggregate([{
@@ -318,7 +318,7 @@ module StarTrek
         order_by(faction_id: -1)
     end
 
-    field :basesWithNullName, BaseType.connection_type, null: false
+    field :bases_with_null_name, BaseType.connection_type, null: false
 
     def bases_with_null_name
       [OpenStruct.new(id: nil)]
@@ -363,7 +363,7 @@ module StarTrek
       )
     end
 
-    field :batchedBase, BaseType, null: true do
+    field :batched_base, BaseType, null: true do
       argument :id, ID, required: true
     end
 
