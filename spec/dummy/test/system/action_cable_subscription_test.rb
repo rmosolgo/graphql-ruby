@@ -51,13 +51,13 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
 
       # Sadly this fails sometimes, and I don't understand why. The other one never fails.
       # Hopefully this will help debug on CI. (I can't get it to fail locally.)
-      begin
-        assert_selector "#fingerprint-updates-1-connected-1"
-      rescue StandardError => err
-        puts "#{err.class} - #{err.message}"
+      if !page.has_css?("#fingerprint-updates-1-connected-1")
+        puts "FAILED TO FIND `#fingerprint-updates-1-connected-1`"
         puts page.html
         raise
       end
+
+      assert_selector "#fingerprint-updates-1-connected-1"
 
       click_on("Subscribe with fingerprint 1")
       assert_selector "#fingerprint-updates-1-connected-2"
