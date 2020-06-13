@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::Schema::Member::HasFields
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Schema::Member::HasFields";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (H)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></span>
+     &raquo; 
+    <span class="title">HasFields</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::Schema::Member::HasFields
+  
+  
+  <span class="private note title">Private</span>
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+  <dl>
+    <dt>Included in:</dt>
+    <dd><span class='object_link'><a href="../Interface/DefinitionMethods.html" title="GraphQL::Schema::Interface::DefinitionMethods (module)">Interface::DefinitionMethods</a></span>, <span class='object_link'><a href="../Mutation.html" title="GraphQL::Schema::Mutation (class)">GraphQL::Schema::Mutation</a></span>, <span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span>, <span class='object_link'><a href="../Subscription.html" title="GraphQL::Schema::Subscription (class)">Subscription</a></span></dd>
+  </dl>
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/member/has_fields.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This module is part of a private API.</strong>
+  You should avoid using this module if possible, as it may be removed or be changed in the future.
+</p>
+<p>Shared code for Object and Interface</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="RUBY_KEYWORDS-constant" class="">RUBY_KEYWORDS =
+          <div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This constant is part of a private API.</strong>
+  You should avoid using this constant if possible, as it may be removed or be changed in the future.
+</p>
+<p>A list of Ruby keywords.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbracket'>[</span><span class='symbol'>:class</span><span class='comma'>,</span> <span class='symbol'>:module</span><span class='comma'>,</span> <span class='symbol'>:def</span><span class='comma'>,</span> <span class='symbol'>:undef</span><span class='comma'>,</span> <span class='symbol'>:begin</span><span class='comma'>,</span> <span class='symbol'>:rescue</span><span class='comma'>,</span> <span class='symbol'>:ensure</span><span class='comma'>,</span> <span class='symbol'>:end</span><span class='comma'>,</span> <span class='symbol'>:if</span><span class='comma'>,</span> <span class='symbol'>:unless</span><span class='comma'>,</span> <span class='symbol'>:then</span><span class='comma'>,</span> <span class='symbol'>:elsif</span><span class='comma'>,</span> <span class='symbol'>:else</span><span class='comma'>,</span> <span class='symbol'>:case</span><span class='comma'>,</span> <span class='symbol'>:when</span><span class='comma'>,</span> <span class='symbol'>:while</span><span class='comma'>,</span> <span class='symbol'>:until</span><span class='comma'>,</span> <span class='symbol'>:for</span><span class='comma'>,</span> <span class='symbol'>:break</span><span class='comma'>,</span> <span class='symbol'>:next</span><span class='comma'>,</span> <span class='symbol'>:redo</span><span class='comma'>,</span> <span class='symbol'>:retry</span><span class='comma'>,</span> <span class='symbol'>:in</span><span class='comma'>,</span> <span class='symbol'>:do</span><span class='comma'>,</span> <span class='symbol'>:return</span><span class='comma'>,</span> <span class='symbol'>:yield</span><span class='comma'>,</span> <span class='symbol'>:super</span><span class='comma'>,</span> <span class='symbol'>:self</span><span class='comma'>,</span> <span class='symbol'>:nil</span><span class='comma'>,</span> <span class='symbol'>:true</span><span class='comma'>,</span> <span class='symbol'>:false</span><span class='comma'>,</span> <span class='symbol'>:and</span><span class='comma'>,</span> <span class='symbol'>:or</span><span class='comma'>,</span> <span class='symbol'>:not</span><span class='comma'>,</span> <span class='symbol'>:alias</span><span class='comma'>,</span> <span class='symbol'>:defined?</span><span class='comma'>,</span> <span class='symbol'>:BEGIN</span><span class='comma'>,</span> <span class='symbol'>:END</span><span class='comma'>,</span> <span class='symbol'>:__LINE__</span><span class='comma'>,</span> <span class='symbol'>:__FILE__</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="GRAPHQL_RUBY_KEYWORDS-constant" class="">GRAPHQL_RUBY_KEYWORDS =
+          <div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This constant is part of a private API.</strong>
+  You should avoid using this constant if possible, as it may be removed or be changed in the future.
+</p>
+<p>A list of GraphQL-Ruby keywords.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbracket'>[</span><span class='symbol'>:context</span><span class='comma'>,</span> <span class='symbol'>:object</span><span class='comma'>,</span> <span class='symbol'>:method</span><span class='comma'>,</span> <span class='symbol'>:raw_value</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="CONFLICT_FIELD_NAMES-constant" class="">CONFLICT_FIELD_NAMES =
+          <div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This constant is part of a private API.</strong>
+  You should avoid using this constant if possible, as it may be removed or be changed in the future.
+</p>
+<p>A list of field names that we should advise users to pick a different
+resolve method name.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#GRAPHQL_RUBY_KEYWORDS-constant" title="GraphQL::Schema::Member::HasFields::GRAPHQL_RUBY_KEYWORDS (constant)">GRAPHQL_RUBY_KEYWORDS</a></span></span> <span class='op'>+</span> <span class='const'><span class='object_link'><a href="#RUBY_KEYWORDS-constant" title="GraphQL::Schema::Member::HasFields::RUBY_KEYWORDS (constant)">RUBY_KEYWORDS</a></span></span><span class='rparen'>)</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_field-instance_method" title="#add_field (instance method)">#<strong>add_field</strong>(field_defn)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Register this field with the class, overriding a previous one if needed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#field-instance_method" title="#field (instance method)">#<strong>field</strong>(*args, **kwargs, &amp;block)  &#x21d2; GraphQL::Schema::Field </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Add a field to this object or interface with the given definition.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#field_class-instance_method" title="#field_class (instance method)">#<strong>field_class</strong>(new_field_class = nil)  &#x21d2; Class </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>The class to initialize when adding fields to this kind of schema member.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fields-instance_method" title="#fields (instance method)">#<strong>fields</strong>  &#x21d2; Hash&lt;String =&gt; GraphQL::Schema::Field&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fields on this object, keyed by name, including inherited fields.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#get_field-instance_method" title="#get_field (instance method)">#<strong>get_field</strong>(field_name)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#global_id_field-instance_method" title="#global_id_field (instance method)">#<strong>global_id_field</strong>(field_name)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#own_fields-instance_method" title="#own_fields (instance method)">#<strong>own_fields</strong>  &#x21d2; Array&lt;GraphQL::Schema::Field&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fields defined on this class <em>specifically</em>, not parent classes.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="add_field-instance_method">
+  
+    #<strong>add_field</strong>(field_defn)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p class="note returns_void">This method returns an undefined value.</p><p>Register this field with the class, overriding a previous one if needed.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>field_defn</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+61
+62
+63
+64
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/member/has_fields.rb', line 61</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_field'>add_field</span><span class='lparen'>(</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='const'><span class='object_link'><a href="#CONFLICT_FIELD_NAMES-constant" title="GraphQL::Schema::Member::HasFields::CONFLICT_FIELD_NAMES (constant)">CONFLICT_FIELD_NAMES</a></span></span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_resolver_method'>resolver_method</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_original_name'>original_name</span> <span class='op'>==</span> <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_resolver_method'>resolver_method</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_method_conflict_warning?'>method_conflict_warning?</span>
+    <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&#39;s `field :</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_resolver_method'>resolver_method</span><span class='embexpr_end'>}</span><span class='tstring_content'>` and `def resolve_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_resolver_method'>resolver_method</span><span class='embexpr_end'>}</span><span class='tstring_content'>`). Or use `method_conflict_warning: false` to suppress this warning.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_own_fields'>own_fields</span><span class='lbracket'>[</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_field_defn'>field_defn</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="field-instance_method">
+  
+    #<strong>field</strong>(*args, **kwargs, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="../Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Add a field to this object or interface with the given definition</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li>for method signature</li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+11
+12
+13
+14
+15</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/member/has_fields.rb', line 11</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_field'>field</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_kwargs'>kwargs</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_field_defn'>field_defn</span> <span class='op'>=</span> <span class='id identifier rubyid_field_class'>field_class</span><span class='period'>.</span><span class='id identifier rubyid_from_options'>from_options</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='label'>owner:</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_kwargs'>kwargs</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_add_field'>add_field</span><span class='lparen'>(</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_field_defn'>field_defn</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="field_class-instance_method">
+  
+    #<strong>field_class</strong>(new_field_class = nil)  &#x21d2; <tt>Class</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns The class to initialize when adding fields to this kind of schema member.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The class to initialize when adding fields to this kind of schema member</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/member/has_fields.rb', line 70</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_field_class'>field_class</span><span class='lparen'>(</span><span class='id identifier rubyid_new_field_class'>new_field_class</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_new_field_class'>new_field_class</span>
+    <span class='ivar'>@field_class</span> <span class='op'>=</span> <span class='id identifier rubyid_new_field_class'>new_field_class</span>
+  <span class='kw'>elsif</span> <span class='kw'>defined?</span><span class='lparen'>(</span><span class='ivar'>@field_class</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@field_class</span>
+    <span class='ivar'>@field_class</span>
+  <span class='kw'>elsif</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Class</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:field_class</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_field_class'>field_class</span> <span class='op'>:</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Field.html" title="GraphQL::Schema::Field (class)">Field</a></span></span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_ancestor'>ancestor</span> <span class='op'>=</span> <span class='id identifier rubyid_ancestors'>ancestors</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_a'>a</span><span class='op'>|</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:field_class</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_field_class'>field_class</span> <span class='rbrace'>}</span>
+    <span class='id identifier rubyid_ancestor'>ancestor</span> <span class='op'>?</span> <span class='id identifier rubyid_ancestor'>ancestor</span><span class='period'>.</span><span class='id identifier rubyid_field_class'>field_class</span> <span class='op'>:</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Field.html" title="GraphQL::Schema::Field (class)">Field</a></span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="fields-instance_method">
+  
+    #<strong>fields</strong>  &#x21d2; <tt>Hash&lt;String =&gt; <span class='object_link'><a href="../Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Fields on this object, keyed by name, including inherited fields.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash&lt;String =&gt; <span class='object_link'><a href="../Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Fields on this object, keyed by name, including inherited fields</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/member/has_fields.rb', line 18</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fields'>fields</span>
+  <span class='comment'># Local overrides take precedence over inherited fields
+</span>  <span class='id identifier rubyid_all_fields'>all_fields</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_ancestors'>ancestors</span><span class='period'>.</span><span class='id identifier rubyid_reverse_each'>reverse_each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_ancestor'>ancestor</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_ancestor'>ancestor</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:own_fields</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_all_fields'>all_fields</span><span class='period'>.</span><span class='id identifier rubyid_merge!'>merge!</span><span class='lparen'>(</span><span class='id identifier rubyid_ancestor'>ancestor</span><span class='period'>.</span><span class='id identifier rubyid_own_fields'>own_fields</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_all_fields'>all_fields</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="get_field-instance_method">
+  
+    #<strong>get_field</strong>(field_name)  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/member/has_fields.rb', line 29</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get_field'>get_field</span><span class='lparen'>(</span><span class='id identifier rubyid_field_name'>field_name</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_f'>f</span> <span class='op'>=</span> <span class='id identifier rubyid_own_fields'>own_fields</span><span class='lbracket'>[</span><span class='id identifier rubyid_field_name'>field_name</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_f'>f</span>
+  <span class='kw'>else</span>
+    <span class='kw'>for</span> <span class='id identifier rubyid_ancestor'>ancestor</span> <span class='kw'>in</span> <span class='id identifier rubyid_ancestors'>ancestors</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_ancestor'>ancestor</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:own_fields</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_f'>f</span> <span class='op'>=</span> <span class='id identifier rubyid_ancestor'>ancestor</span><span class='period'>.</span><span class='id identifier rubyid_own_fields'>own_fields</span><span class='lbracket'>[</span><span class='id identifier rubyid_field_name'>field_name</span><span class='rbracket'>]</span>
+        <span class='kw'>return</span> <span class='id identifier rubyid_f'>f</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="global_id_field-instance_method">
+  
+    #<strong>global_id_field</strong>(field_name)  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+83
+84
+85
+86
+87
+88
+89</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/member/has_fields.rb', line 83</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_global_id_field'>global_id_field</span><span class='lparen'>(</span><span class='id identifier rubyid_field_name'>field_name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_id_resolver'>id_resolver</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Relay.html" title="GraphQL::Relay (module)">Relay</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Relay/GlobalIdResolve.html" title="GraphQL::Relay::GlobalIdResolve (class)">GlobalIdResolve</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../../Relay/GlobalIdResolve.html#initialize-instance_method" title="GraphQL::Relay::GlobalIdResolve#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='kw'>self</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='id identifier rubyid_field_name'>field_name</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ID</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>null:</span> <span class='kw'>false</span>
+  <span class='id identifier rubyid_define_method'>define_method</span><span class='lparen'>(</span><span class='id identifier rubyid_field_name'>field_name</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_id_resolver'>id_resolver</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="own_fields-instance_method">
+  
+    #<strong>own_fields</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="../Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Fields defined on this class <em>specifically</em>, not parent classes.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="../Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Fields defined on this class <em>specifically</em>, not parent classes</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+92
+93
+94</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/member/has_fields.rb', line 92</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_own_fields'>own_fields</span>
+  <span class='ivar'>@own_fields</span> <span class='op'>||=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Sat Jun 13 13:53:43 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.25 (ruby-2.7.1).
+</div>
+
+    </div>
+  </body>
+</html>
