@@ -1,5 +1,5 @@
 import { createAblyHandler } from "../createAblyHandler"
-import { Realtime } from "ably"
+import { Realtime, Types } from "ably"
 
 const dummyOperation = { text: "", name: "" }
 
@@ -7,12 +7,16 @@ const channelTemplate = {
   presence: {
     enter() {},
     enterClient() {},
-    leave() {}
+    leave(callback?: (err?: Types.ErrorInfo) => void) {
+      if (callback) callback()
+    }
   },
   subscribe: () => {},
   unsubscribe: () => {},
   on: () => {},
-  detach: () => {}
+  detach: (callback?: (err?: Types.ErrorInfo) => void) => {
+    if (callback) callback()
+  }
 }
 
 const createDummyConsumer = (
@@ -50,9 +54,11 @@ describe("createAblyHandler", () => {
           unsubscribe: () => {
             wasUnsubscribed = true
           },
-          detach: () => {
+          detach: (callback?: (err?: Types.ErrorInfo) => void) => {
+            if (callback) callback()
             wasDetached = true
-          }
+          },
+          name: subscriptionId
         },
         (channelName: string) => {
           releasedChannelName = channelName
@@ -68,7 +74,7 @@ describe("createAblyHandler", () => {
     )
 
     await nextTick()
-    subscription.dispose()
+    await subscription.dispose()
     expect(wasUnsubscribed).toEqual(true)
     expect(wasDetached).toEqual(true)
     expect(releasedChannelName).toEqual(subscriptionId)
@@ -81,7 +87,10 @@ describe("createAblyHandler", () => {
     const producer = createAblyHandler({
       fetchOperation: () =>
         new Promise(resolve =>
-          resolve({ headers: new Map(), body: { data: { foo: "bar" } } })
+          resolve({
+            headers: new Map([["X-Subscription-ID", "foo"]]),
+            body: { data: { foo: "bar" } }
+          })
         ),
       ably: createDummyConsumer()
     })
@@ -116,7 +125,7 @@ describe("createAblyHandler", () => {
       fetchOperation: () =>
         new Promise(resolve =>
           resolve({
-            headers: new Map(),
+            headers: new Map([["X-Subscription-ID", "foo"]]),
             body: { errors: dummyErrors }
           })
         ),
@@ -149,7 +158,7 @@ describe("createAblyHandler", () => {
       fetchOperation: () =>
         new Promise(resolve =>
           resolve({
-            headers: new Map(),
+            headers: new Map([["X-Subscription-ID", "foo"]]),
             body: {}
           })
         ),
