@@ -6,8 +6,6 @@
   <body>
     <p>Module: GraphQL::Tracing
 Library entry point for performance metric reporting. 
-<strong>Warning:</strong> Installing/uninstalling tracers is not thread-safe. Do
-it during application boot only. 
 Events: 
 Key | Metadata  |  lex | <code class="language-plaintext highlighter-rouge">{ query_string: String }</code> parse
 | <code class="language-plaintext highlighter-rouge">{ query_string: String }</code> validate | <code class="language-plaintext highlighter-rouge">{ query: GraphQL::Query,
@@ -51,9 +49,7 @@ Defined Under Namespace:
 ActiveSupportNotificationsTracing, NullTracer, Traceable (modules)
 AppOpticsTracing, AppsignalTracing, DataDogTracing, NewRelicTracing,
 PlatformTracing, PrometheusTracing, ScoutTracing, SkylightTracing
-(classes)
-Class methods:
-install, tracers, uninstall</p>
+(classes)</p>
   </li>
 </ul>
 

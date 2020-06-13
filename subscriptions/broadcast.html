@@ -1,0 +1,160 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Broadcasts</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.10.12/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#subscriptions-guides">Subscriptions</a>
+  &raquo; Broadcasts
+</p>
+
+
+<h1 class="guide-header">Broadcasts</h1>
+<div class="guide-container">
+  <p>GraphQL-Ruby 1.11+ introduced a new algorithm for tracking subscriptions and delivering updates, <em>broadcasts</em>.</p>
+
+<p>A broadcast is a subscription update which is executed <em>once</em>, then delivered to <em>any number</em> of subscribers. This reduces the time your server spends running GraphQL queries, since it doesn’t have to re-run the query for every subscriber.</p>
+
+<p>But, <strong>take care</strong>: this approach risks leaking information to subscribers who shouldn’t receive it.</p>
+
+<h2 id="setup">Setup</h2>
+
+<p>To enable broadcasts, add <code class="language-plaintext highlighter-rouge">broadcast: true</code> to your subscription setup:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Execution</span><span class="o">::</span><span class="no">Interpreter</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
+  <span class="n">use</span> <span class="no">SomeSubscriptionImplementation</span><span class="p">,</span>
+    <span class="ss">broadcast: </span><span class="kp">true</span> <span class="c1"># &lt;----</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, any broadcastable field can be configured with <code class="language-plaintext highlighter-rouge">broadcastable: true</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+  <span class="ss">broadcastable: </span><span class="kp">true</span>
+</code></pre></div></div>
+
+<p>When a subscription comes in where <em>all</em> of its fields are <code class="language-plaintext highlighter-rouge">broadcastable: true</code>, then it will be handled as a broadcast.</p>
+
+<p>Additionally, you can set <code class="language-plaintext highlighter-rouge">default_broadcastable: true</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Execution</span><span class="o">::</span><span class="no">Interpreter</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
+  <span class="n">use</span> <span class="no">SomeSubscriptionImplementation</span><span class="p">,</span>
+    <span class="ss">broadcast: </span><span class="kp">true</span><span class="p">,</span>
+    <span class="ss">default_broadcastable: </span><span class="kp">true</span> <span class="c1"># &lt;----</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>With this setting, fields are broadcastable by default. Only a field with <code class="language-plaintext highlighter-rouge">broadcastable: false</code> in its configuration will cause a subscription to be handled on a subscriber-by-subscriber basis.</p>
+
+<h2 id="what-fields-are-broadcastable">What fields are broadcastable?</h2>
+
+<p>GraphQL-Ruby can’t infer whether a field is broadcastable or not. You must configure it explicitly with <code class="language-plaintext highlighter-rouge">broadcastable: true</code> or <code class="language-plaintext highlighter-rouge">broadcastable: false</code>. (The subscription plugin also accepts <code class="language-plaintext highlighter-rouge">default_broadcastable: true|false</code>.)</p>
+
+<p>A field is broadcastable if <em>all clients who request the field will see the same value</em>. For example:</p>
+
+<ul>
+  <li>General facts: celebrity names, laws of physics, historical dates</li>
+  <li>Public information: object names, document updated-at timestamps, boilerplate info</li>
+</ul>
+
+<p>For fields like this, you can add <code class="language-plaintext highlighter-rouge">broadcastable: true</code>.</p>
+
+<p>A field is <strong>not broadcastable</strong> if its value is different for different clients. For example:</p>
+
+<ul>
+  <li><strong>Viewer-specific information:</strong> if a field is specifically viewer-based, then it can’t be broadcasted to other viewers. For example, <code class="language-plaintext highlighter-rouge">discussion { viewerCanModerate }</code> might be true for a moderator, but it shouldn’t be broadcasted to other viewers.</li>
+  <li><strong>Context-specific information:</strong> if a field’s value takes the request context into consideration, it shouldn’t be broadcasted. For example, IP addresses or HTTP header values probably can’t be broadcasted. If a field reflects the viewer’s timezone, it can’t be broadcasted.</li>
+  <li><strong>Restricted information:</strong> if some viewers see one value, while other viewers see a different value, then it’s not broadcastable. Broadcasting this data might leak private information to unauthorized clients. (This includes filtered lists: if the filtering is viewer-by-viewer, it’s not broadcastable.)</li>
+  <li><strong>Fields with side effects:</strong> if the system requires a side effect (eg, logging a metric, updating a database, incrementing a counter) whenever a resolver is executed, it’s not a good candidate for broadcasting because some executions will be optimized away.</li>
+</ul>
+
+<p>These fields can be tagged with <code class="language-plaintext highlighter-rouge">broadcastable: false</code> so that GraphQL-Ruby will handle them on a subscriber-by-subscriber basis.</p>
+
+<p>If you want to use subscriptions but have a lot of non-broadcastable fields in your schema, consider building a new set of subscription fields with limited access to other schema objects. Instead, optimize those subscriptions for broacastability.</p>
+
+<h2 id="under-the-hood">Under the Hood</h2>
+
+<p>GraphQL-Ruby determines which subscribers can receive a broadcast by inspecting:</p>
+
+<ul>
+  <li><strong>Query string</strong>. Only exactly-matching query strings will receive the same broadcast.</li>
+  <li><strong>Variables</strong>. Only exactly-matching variable values will receive the same broadcast.</li>
+  <li><strong>Field and Arguments</strong> given to <code class="language-plaintext highlighter-rouge">.trigger</code>. They must match the ones initially sent when subscribing. (Subscriptions always worked this way.)</li>
+  <li><strong>Subscription scope</strong>. Only clients with exactly-matching subscription scope can receive the same broadcasts.</li>
+</ul>
+
+<p>So, take care to <a href="/subscriptions/subscription_classes#scope">set subscription_scope</a> whenever a subscription should be implicitly scoped!</p>
+
+<p>(See <a href="/api-doc/1.10.12/GraphQL/Subscriptions/Event#fingerprint-instance_method" target="_blank" title="API docs for GraphQL::Subscriptions::Event#fingerprint"><code>GraphQL::Subscriptions::Event#fingerprint</code></a> for the implementation of broadcast fingerprints.)</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/subscriptions/broadcast.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Broadcasts">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

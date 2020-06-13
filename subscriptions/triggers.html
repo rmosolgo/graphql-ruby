@@ -52,14 +52,14 @@
 <p>Events are triggered <em>by name</em>, and the name must match fields on your <a href="/subscriptions/subscription_type">Subscription Type</a></p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Update the system with the new blog post:</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="s2">"postAdded"</span><span class="p">,</span> <span class="p">{},</span> <span class="n">new_post</span><span class="p">)</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="ss">:post_added</span><span class="p">,</span> <span class="p">{},</span> <span class="n">new_post</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>The arguments are:</p>
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">name</code>, which corresponds to the field on subscription type</li>
-  <li><code class="language-plaintext highlighter-rouge">arguments</code>, which corresponds to the arguments on subscription type (for example, if you subscribe to comments on a certain post, the arguments would be <code class="language-plaintext highlighter-rouge">{postId: comment.post_id}</code>.)</li>
+  <li><code class="language-plaintext highlighter-rouge">arguments</code>, which corresponds to the arguments on subscription type (for example, if you subscribe to comments on a certain post, the arguments would be <code class="language-plaintext highlighter-rouge">{post_id: comment.post_id}</code>.)</li>
   <li><code class="language-plaintext highlighter-rouge">object</code>, which will be the root object of the subscription update</li>
   <li><code class="language-plaintext highlighter-rouge">scope:</code> (shown below) for implicitly scoping the clients who will receive updates.</li>
 </ul>
@@ -70,15 +70,18 @@
 
 <p>Scopes are based on query context: a value in <code class="language-plaintext highlighter-rouge">context:</code> is used as the scope; an equivalent value must be passed with <code class="language-plaintext highlighter-rouge">.trigger(... scope:)</code> to update that client. (The value is serialized with <a href="/api-doc/1.10.12/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>)</p>
 
-<p>To specify that a topic is scoped, edit the field definition on your root <code class="language-plaintext highlighter-rouge">Subscription</code> type. Use the <code class="language-plaintext highlighter-rouge">subscription_scope:</code> option to name a <code class="language-plaintext highlighter-rouge">context:</code> key, for example:</p>
+<p>To specify that a topic is scoped, add a <code class="language-plaintext highlighter-rouge">subscription_scope</code> option to the Subscription class:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># For a given viewer, this will be triggered</span>
-<span class="c1"># whenever one of their posts gets a new comment</span>
-<span class="n">field</span> <span class="ss">:comment_added</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">,</span>
-  <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
-  <span class="ss">description: </span><span class="s2">"A comment was added to one of the viewer's posts"</span>
-  <span class="ss">subscription_scope: :current_user_id</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::CommentAdded</span> <span class="o">&lt;</span> <span class="no">Subscription</span><span class="o">::</span><span class="no">BaseSubscription</span>
+  <span class="n">description</span> <span class="s2">"A comment was added to one of the viewer's posts"</span>
+  <span class="c1"># For a given viewer, this will be triggered</span>
+  <span class="c1"># whenever one of their posts gets a new comment</span>
+  <span class="n">subscription_scope</span> <span class="ss">:current_user_id</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
 </code></pre></div></div>
+
+<p>(Read more in the <a href="/subscriptions/subscription_classes#scope">Subscription Classes guide</a>.)</p>
 
 <p>Then, subscription operations should have a <code class="language-plaintext highlighter-rouge">context: { current_user_id: ... }</code> value, for example:</p>
 
@@ -92,7 +95,7 @@
 <span class="n">comment</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
 <span class="c1"># notify the author</span>
 <span class="n">author_id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">author</span><span class="p">.</span><span class="nf">id</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="s2">"commentAdded"</span><span class="p">,</span> <span class="p">{},</span> <span class="n">comment</span><span class="p">,</span> <span class="ss">scope: </span><span class="n">author_id</span><span class="p">)</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="ss">:comment_added</span><span class="p">,</span> <span class="p">{},</span> <span class="n">comment</span><span class="p">,</span> <span class="ss">scope: </span><span class="n">author_id</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>Since this trigger has a <code class="language-plaintext highlighter-rouge">scope:</code>, only subscribers with a matching scope value will be updated.</p>

@@ -51,7 +51,7 @@
 
 <p>Each method corresponds to a step in the subscription lifecycle. See the API docs for method-by-method documentation: <a href="/api-doc/1.10.12/GraphQL/Subscriptions" target="_blank" title="API docs for GraphQL::Subscriptions"><code>GraphQL::Subscriptions</code></a>.</p>
 
-<p>Also, see the <a href="/subscriptions/pusher_implementation">Pusher implementation guide</a>, the <a href="/subscriptions/action_cable_implementation">ActionCable implementation guide</a> or <a href="/api-doc/1.10.12/GraphQL/Subscriptions/ActionCableSubscriptions" target="_blank" title="API docs for GraphQL::Subscriptions::ActionCableSubscriptions"><code>GraphQL::Subscriptions::ActionCableSubscriptions</code></a> docs for an example implementation.</p>
+<p>Also, see the <a href="/subscriptions/pusher_implementation">Pusher implementation guide</a>, the <a href="/subscriptions/ably_implementation">Ably implementation guide</a>, the <a href="/subscriptions/action_cable_implementation">ActionCable implementation guide</a> or <a href="/api-doc/1.10.12/GraphQL/Subscriptions/ActionCableSubscriptions" target="_blank" title="API docs for GraphQL::Subscriptions::ActionCableSubscriptions"><code>GraphQL::Subscriptions::ActionCableSubscriptions</code></a> docs for an example implementation.</p>
 
 <h2 id="considerations">Considerations</h2>
 
@@ -63,6 +63,10 @@
   <li>How will you deliver push updates to subscribed clients? (For example, websockets, ActionCable, Pusher, webhooks, or something else?)</li>
   <li>How will you handle <a href="https://en.wikipedia.org/wiki/Thundering_herd_problem">thundering herd</a>s? When an event is triggered, how will you manage database access to update clients without swamping your system?</li>
 </ul>
+
+<h2 id="broadcasts">Broadcasts</h2>
+
+<p><em>Broadcasting</em> updates to multiple subscribers is supported by GraphQL-Ruby, but requires implementation-specific work, see more in the <a href="/subscriptions/broadcast">Broadcast guide</a>.</p>
 
 </div>
 <p class="guide-footer">

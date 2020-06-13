@@ -52,11 +52,14 @@
 <p>These classes support several behaviors:</p>
 
 <ul>
-  <li>Authorizing (or rejecting) initial subscription requests and subsequent updates</li>
-  <li>Returning values for initial subscription requests</li>
-  <li>Unsubscribing from the server</li>
-  <li>Skipping updates for certain clients (eg, don’t send updates to the person who triggered the event)</li>
+  <li><a href="#check-permissions-with-authorized">Authorizing</a> (or rejecting) initial subscription requests and subsequent updates</li>
+  <li>Returning values for <a href="#initial-subscription-with-subscribe">initial subscription requests</a></li>
+  <li><a href="#terminating-the-subscription-with-unsubscribe">Unsubscribing</a> from the server</li>
+  <li>Implicitly <a href="#scope">scoping updates</a>, to direct data to the right subscriber</li>
+  <li><a href="#subsequent-updates-with-update">Skipping updates</a> for certain clients (eg, don’t send updates to the person who triggered the event)</li>
 </ul>
+
+<p>Continue reading to set up subscription classes.</p>
 
 <h2 id="add-a-base-class">Add a base class</h2>
 
@@ -173,6 +176,50 @@
 </code></pre></div></div>
 
 <p>(In that case, don’t return a hash from <code class="language-plaintext highlighter-rouge">#subscribe</code> or <code class="language-plaintext highlighter-rouge">#update</code>, return a <code class="language-plaintext highlighter-rouge">message</code> object instead.)</p>
+
+<h2 id="scope">Scope</h2>
+
+<p>Usually, GraphQL-Ruby uses explicitly-passed arguments to determine when a <a href="/subscriptions/triggers">trigger</a> applies to an active subscription. But, you can use <code class="language-plaintext highlighter-rouge">subscription_scope</code> to configure <em>implicit</em> conditions on updates. When <code class="language-plaintext highlighter-rouge">subscription_scope</code> is configured, only triggers with a matching <code class="language-plaintext highlighter-rouge">scope:</code> value will cause clients to receive updates.</p>
+
+<p><code class="language-plaintext highlighter-rouge">subscription_scope</code> accepts a symbol and the given symbol will be looked up in <code class="language-plaintext highlighter-rouge">context</code> to find a scope value.</p>
+
+<p>For example, this subscription will use <code class="language-plaintext highlighter-rouge">context[:current_organization_id]</code> as a scope:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::EmployeeHired</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
+  <span class="c1"># ...</span>
+  <span class="n">subscription_scope</span> <span class="ss">:current_organization_id</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Clients subscribe <em>without</em> any arguments:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">subscription</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">employeeHired</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">hireDate</span><span class="w">
+    </span><span class="n">employee</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">name</span><span class="w">
+      </span><span class="n">department</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>But <code class="language-plaintext highlighter-rouge">.trigger</code>s are routed using <code class="language-plaintext highlighter-rouge">scope:</code>. So, if the subscriber’s context includes <code class="language-plaintext highlighter-rouge">current_organization_id: 100</code>, then the trigger must include the same <code class="language-plaintext highlighter-rouge">scope:</code> value:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MyAppSchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span>
+  <span class="c1"># Field name</span>
+  <span class="ss">:employee_hired</span><span class="p">,</span>
+  <span class="c1"># Arguments</span>
+  <span class="p">{},</span>
+  <span class="c1"># Object</span>
+  <span class="p">{</span> <span class="ss">hire_date: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span> <span class="ss">employee: </span><span class="n">new_employee</span> <span class="p">},</span>
+  <span class="c1"># This corresponds to `context[:current_organization_id]`</span>
+  <span class="c1"># in the original subscription:</span>
+  <span class="ss">scope: </span><span class="mi">100</span>
+ <span class="p">)</span>
+</code></pre></div></div>
+
+<p>Scope is also used for determining whether subscribers can receive the same <a href="/subscriptions/implementation#broadcast">broadcast</a>.</p>
 
 <h2 id="check-permissions-with-authorized">Check Permissions with #authorized?</h2>
 

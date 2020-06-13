@@ -81,14 +81,6 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>If you have a subscription root type, it will also need an update. Extend this new module:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Subscription</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
-  <span class="c1"># Extend this module to support subscription root fields with Interpreter</span>
-  <span class="kp">extend</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">SubscriptionRoot</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
 <p>Some Relay configurations must be updated too. For example:</p>
 
 <div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gd">- field :node, field: GraphQL::Relay::Node.field

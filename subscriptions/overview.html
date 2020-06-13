@@ -51,8 +51,10 @@
 
 <ul>
   <li>The <strong>Subscription type</strong> is the entry point for subscription queries</li>
+  <li><strong>Subscription classes</strong> are resolvers for handing initial subscription requests and subsequent updates</li>
   <li><strong>Triggers</strong> begin the update process</li>
   <li>The <strong>Implementation</strong> provides application-specific methods for executing &amp; delivering updates.</li>
+  <li><strong>Broadcasts</strong> can send the same GraphQL result to any number of subscribers.</li>
 </ul>
 
 <h3 id="subscription-type">Subscription Type</h3>
@@ -60,6 +62,12 @@
 <p><code class="language-plaintext highlighter-rouge">subscription</code> is an entry point to your GraphQL schema, like <code class="language-plaintext highlighter-rouge">query</code> or <code class="language-plaintext highlighter-rouge">mutation</code>. It is defined by your <code class="language-plaintext highlighter-rouge">SubscriptionType</code>, a root-level <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Object</code>.</p>
 
 <p>Read more in the <a href="/subscriptions/subscription_type">Subscription Type guide</a>.</p>
+
+<h3 id="subscription-classes">Subscription Classes</h3>
+
+<p><a href="/api-doc/1.10.12/GraphQL/Schema/Subscription" target="_blank" title="API docs for GraphQL::Schema::Subscription"><code>GraphQL::Schema::Subscription</code></a> is a resolver class with subscription-specific behaviors. Each subscription field should be implemented by a subscription class.</p>
+
+<p>Read more in the <a href="/subscriptions/subscription_classes">Subscription Classes guide</a></p>
 
 <h3 id="triggers">Triggers</h3>
 
@@ -77,7 +85,11 @@
   <li><strong>queueing</strong>: How does your application distribute the work of re-running subscription queries?</li>
 </ul>
 
-<p>Read more in the <a href="/subscriptions/implementation">Implementation guide</a> or check out the <a href="/subscriptions/action_cable_implementation">ActionCable implementation</a> or <a href="/subscriptions/pusher_implementation">Pusher implementation</a>.</p>
+<p>Read more in the <a href="/subscriptions/implementation">Implementation guide</a> or check out the <a href="/subscriptions/action_cable_implementation">ActionCable implementation</a>, <a href="/subscriptions/pusher_implementation">Pusher implementation</a> or <a href="/subscriptions/ably_implementation">Ably implementation</a>.</p>
+
+<h3 id="broadcasts">Broadcasts</h3>
+
+<p>By default, the subscription implementations listed above handle each subscription in total isolation. However, this behavior can be optimized by setting up broadcasts. Read more in the <a href="/subscriptions/broadcast">Broadcast guide</a>.</p>
 
 </div>
 <p class="guide-footer">
