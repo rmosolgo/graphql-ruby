@@ -8,6 +8,28 @@
 
 ### Bug fixes
 
+## 1.11.0 (13 June 2020)
+
+### Breaking changes
+
+- Global tracers are removed (deprecated since 1.7.4) #2936
+- Fields defined in camel case (`field :doStuff`) will not line up to methods that are underscore case (`def do_stuff`). Instead, the given symbol is used _verbatim_. #2938 To work around this:
+
+  - Change the name of the field to match the method
+  - Or, add `method: :do_stuff` to explicitly map the field to a method
+
+  You can probably find instances of this in your application with a regexp like `/field :[a-z]+[A-Z]/`, and review them.
+
+### New features
+
+- `extend SubscriptionRoot` is no longer necessary #2770
+- Add `broadcast: true` option to subscriptions #2959
+- Add `Edge#parent` to new connection classes #2961
+
+### Bug fixes
+
+- Use the field name as configured for hash key or method name #2906
+
 ## 1.10.12 (13 June 2020)
 
 ### Bug fixes
