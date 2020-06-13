@@ -8,6 +8,17 @@
 
 ### Bug Fix
 
+## 1.14.0 (13 June 2020)
+
+### New Features
+
+- Add PubnubSubscriptions
+- Update subscription implementations to support `broadcast: true` when available
+
+### Bug Fix
+
+- More Ruby 2.7 warning fixes
+
 ## 1.13.6 (8 June 2020)
 
 ### Bug Fix
