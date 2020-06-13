@@ -33,36 +33,53 @@ class AblyError {
 }
 
 function createAblyHandler(options: AblyHandlerOptions) {
-  var ably = options.ably
-  var fetchOperation = options.fetchOperation
+  const { ably, fetchOperation } = options
 
   const isAnonymousClient = () =>
     !ably.auth.clientId || ably.auth.clientId === "*"
 
-  return function(
+  return (
     operation: object,
     variables: object,
     cacheConfig: object,
     observer: ApolloObserver
-  ) {
-    var channelName: string
-    var channel: Types.RealtimeChannelCallbacks
+  ) => {
+    let channel: Types.RealtimeChannelCallbacks | null = null
 
-    // POST the subscription like a normal query
-    fetchOperation(operation, variables, cacheConfig)
-      .then(function(response: { headers: { get: Function }; body: any }) {
-        const dispatchResult = (result: { errors: any; data: any }) => {
-          if (result) {
-            if (result.errors) {
-              // What kind of error stuff belongs here?
-              observer.onError(result.errors)
-            } else if (result.data) {
-              observer.onNext({ data: result.data })
-            }
-          }
+    const dispatchResult = (result: { errors: any; data: any }) => {
+      if (result) {
+        if (result.errors) {
+          // What kind of error stuff belongs here?
+          observer.onError(result.errors)
+        } else if (result.data) {
+          observer.onNext({ data: result.data })
         }
+      }
+    }
+
+    const updateHandler = (message: Types.Message) => {
+      // TODO Extract this code
+      // When we get a response, send the update to `observer`
+      const payload = message.data
+
+      dispatchResult(payload.result)
+      if (!payload.more) {
+        // Subscription is finished
+        observer.onCompleted()
+      }
+    }
+
+    ;(async () => {
+      try {
+        // POST the subscription like a normal query
+        const response = await fetchOperation(operation, variables, cacheConfig)
+
         dispatchResult(response.body)
-        channelName = response.headers.get("X-Subscription-ID")
+        const channelName = response.headers.get("X-Subscription-ID")
+        if (!channelName) {
+          throw new Error("Missing X-Subscription-ID header")
+        }
+
         channel = ably.channels.get(channelName)
         channel.on("failed", function(stateChange: Types.ChannelStateChange) {
           observer.onError(
@@ -90,35 +107,68 @@ function createAblyHandler(options: AblyHandlerOptions) {
           }
         })
         // Register presence, so that we can detect empty channels and clean them up server-side
+        const enterCallback = (errorInfo: Types.ErrorInfo) => {
+          if (errorInfo) {
+            observer.onError(new AblyError(errorInfo))
+          }
+        }
         if (isAnonymousClient()) {
-          channel.presence.enterClient(anonymousClientId, "subscribed")
+          channel.presence.enterClient(
+            anonymousClientId,
+            "subscribed",
+            enterCallback
+          )
         } else {
-          channel.presence.enter("subscribed")
+          channel.presence.enter("subscribed", enterCallback)
         }
         // When you get an update from ably, give it to Relay
-        channel.subscribe("update", function(message) {
-          // TODO Extract this code
-          // When we get a response, send the update to `observer`
-          var payload = message.data
-          dispatchResult(payload.result)
-          if (!payload.more) {
-            // Subscription is finished
-            observer.onCompleted()
-          }
-        })
-      })
-      .catch((error: any) => observer.onError(error))
+        channel.subscribe("update", updateHandler)
+      } catch (error) {
+        observer.onError(error)
+      }
+    })()
+
     return {
-      dispose: function() {
-        if (channel) {
-          if (isAnonymousClient()) {
-            channel.presence.leaveClient(anonymousClientId)
-          } else {
-            channel.presence.leave()
+      dispose: async () => {
+        try {
+          if (channel) {
+            const disposedChannel = channel
+            disposedChannel.unsubscribe("update", updateHandler)
+
+            const leavePromise = new Promise((resolve, reject) => {
+              const callback = (err: Types.ErrorInfo) => {
+                if (err) {
+                  reject(new AblyError(err))
+                } else {
+                  resolve()
+                }
+              }
+
+              if (isAnonymousClient()) {
+                disposedChannel.presence.leaveClient(
+                  anonymousClientId,
+                  callback
+                )
+              } else {
+                disposedChannel.presence.leave(callback)
+              }
+            })
+
+            const detachPromise = new Promise((resolve, reject) => {
+              disposedChannel.detach((err: Types.ErrorInfo) => {
+                if (err) {
+                  reject(new AblyError(err))
+                } else {
+                  resolve()
+                }
+              })
+            })
+
+            await Promise.all([leavePromise, detachPromise])
+            ably.channels.release(disposedChannel.name)
           }
-          channel.unsubscribe()
-          channel.detach()
-          ably.channels.release(channelName)
+        } catch (error) {
+          observer.onError(error)
         }
       }
     }
