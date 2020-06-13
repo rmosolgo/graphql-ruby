@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 1.10.12 (13 June 2020)
+
+### Bug fixes
+
+- Fix compatibility of `YYYY-mm-dd` with `Types::ISO8601DateTime` #2989
+- Remove unused ivar in InputObject #2987
+
 ## 1.10.11 (11 June 2020)
 
 ### New features
