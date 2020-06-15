@@ -68,7 +68,6 @@ function createAblyHandler(options: AblyHandlerOptions) {
         observer.onCompleted()
       }
     }
-
     ;(async () => {
       try {
         // POST the subscription like a normal query
@@ -134,28 +133,9 @@ function createAblyHandler(options: AblyHandlerOptions) {
         try {
           if (channel) {
             const disposedChannel = channel
-            disposedChannel.unsubscribe("update", updateHandler)
+            disposedChannel.unsubscribe()
 
-            const leavePromise = new Promise((resolve, reject) => {
-              const callback = (err: Types.ErrorInfo) => {
-                if (err) {
-                  reject(new AblyError(err))
-                } else {
-                  resolve()
-                }
-              }
-
-              if (isAnonymousClient()) {
-                disposedChannel.presence.leaveClient(
-                  anonymousClientId,
-                  callback
-                )
-              } else {
-                disposedChannel.presence.leave(callback)
-              }
-            })
-
-            const detachPromise = new Promise((resolve, reject) => {
+            await new Promise((resolve, reject) => {
               disposedChannel.detach((err: Types.ErrorInfo) => {
                 if (err) {
                   reject(new AblyError(err))
@@ -165,7 +145,6 @@ function createAblyHandler(options: AblyHandlerOptions) {
               })
             })
 
-            await Promise.all([leavePromise, detachPromise])
             ably.channels.release(disposedChannel.name)
           }
         } catch (error) {
