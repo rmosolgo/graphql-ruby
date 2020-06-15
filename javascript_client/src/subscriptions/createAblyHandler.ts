@@ -135,6 +135,22 @@ function createAblyHandler(options: AblyHandlerOptions) {
             const disposedChannel = channel
             disposedChannel.unsubscribe()
 
+            // Ensure channel is no longer attaching, as otherwise detach does
+            // nothing
+            if (disposedChannel.state === "attaching") {
+              await new Promise((resolve, _reject) => {
+                const onStateChange = (
+                  stateChange: Types.ChannelStateChange
+                ) => {
+                  if (stateChange.current !== "attaching") {
+                    disposedChannel.off(onStateChange)
+                    resolve()
+                  }
+                }
+                disposedChannel.on(onStateChange)
+              })
+            }
+
             await new Promise((resolve, reject) => {
               disposedChannel.detach((err: Types.ErrorInfo) => {
                 if (err) {
