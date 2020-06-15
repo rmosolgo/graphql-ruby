@@ -216,6 +216,43 @@ describe("createAblyHandler", () => {
     expect(nextInvokedWith).toBeUndefined()
   })
 
+  it("detaches the channel when the subscription is disposed during initial response", async () => {
+    let detached = false
+
+    const ably = createDummyConsumer({
+      ...channelTemplate,
+      detach() {
+        detached = true
+      }
+    })
+    const producer = createAblyHandler({
+      fetchOperation: () =>
+        new Promise(resolve =>
+          resolve({
+            headers: new Map([["X-Subscription-ID", "foo"]]),
+            body: { errors: {} }
+          })
+        ),
+      ably
+    })
+
+    const { dispose } = producer(
+      dummyOperation,
+      {},
+      {},
+      {
+        onError: async () => {
+          dispose()
+        },
+        onNext: async () => {},
+        onCompleted: () => {}
+      }
+    )
+
+    await nextTick()
+    expect(detached).toBe(true)
+  })
+
   describe("integration with Ably", () => {
     const key = process.env.ABLY_KEY
     const testWithAblyKey = key ? test : test.skip

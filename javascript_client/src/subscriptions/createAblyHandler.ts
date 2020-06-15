@@ -74,7 +74,6 @@ function createAblyHandler(options: AblyHandlerOptions) {
         // POST the subscription like a normal query
         const response = await fetchOperation(operation, variables, cacheConfig)
 
-        dispatchResult(response.body)
         const channelName = response.headers.get("X-Subscription-ID")
         if (!channelName) {
           throw new Error("Missing X-Subscription-ID header")
@@ -123,6 +122,8 @@ function createAblyHandler(options: AblyHandlerOptions) {
         }
         // When you get an update from ably, give it to Relay
         channel.subscribe("update", updateHandler)
+
+        dispatchResult(response.body)
       } catch (error) {
         observer.onError(error)
       }
