@@ -122,6 +122,9 @@ function createAblyHandler(options: AblyHandlerOptions) {
         // When you get an update from ably, give it to Relay
         channel.subscribe("update", updateHandler)
 
+        // Dispatch the result _after_ setting up the channel,
+        // because Relay might immediately dispose of the subscription.
+        // (In that case, we want to make sure the channel is cleaned up properly.)
         dispatchResult(response.body)
       } catch (error) {
         observer.onError(error)

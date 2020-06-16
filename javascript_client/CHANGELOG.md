@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.7.11 (15 June 2020)
+
+- Ably: Improve channel state handling in case the initial subscription result contains errors #2993
+
 ## 1.7.10 (13 June 2020)
 
 - Ably: Improve error handling and channel cleanup #2991
