@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Analysis::AST::QueryComplexity::ScopedTypeComplexity
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Analysis::AST::QueryComplexity::ScopedTypeComplexity";
+  relpath = '../../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../../_index.html">Index (S)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../../Analysis.html" title="GraphQL::Analysis (module)">Analysis</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../AST.html" title="GraphQL::Analysis::AST (module)">AST</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../QueryComplexity.html" title="GraphQL::Analysis::AST::QueryComplexity (class)">QueryComplexity</a></span></span>
+     &raquo; 
+    <span class="title">ScopedTypeComplexity</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Analysis::AST::QueryComplexity::ScopedTypeComplexity
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Analysis::AST::QueryComplexity::ScopedTypeComplexity</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/analysis/ast/query_complexity.rb</dd>
+  </dl>
+  
+</div>
+
+
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="HASH_CHILDREN-constant" class="">HASH_CHILDREN =
+          <div class="docstring">
+  <div class="discussion">
+    <p>A single proc for <span class='object_link'><a href="#scoped_children-instance_method" title="GraphQL::Analysis::AST::QueryComplexity::ScopedTypeComplexity#scoped_children (method)">#scoped_children</a></span> hashes. Use this to avoid repeated allocations,
+since the lexical binding isn’t important.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span> <span class='rbrace'>}</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#field_definition-instance_method" title="#field_definition (instance method)">#<strong>field_definition</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute field_definition.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#query-instance_method" title="#query (instance method)">#<strong>query</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute query.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#response_path-instance_method" title="#response_path (instance method)">#<strong>response_path</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute response_path.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(node, field_definition, query, response_path)  &#x21d2; ScopedTypeComplexity </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of ScopedTypeComplexity.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#own_complexity-instance_method" title="#own_complexity (instance method)">#<strong>own_complexity</strong>(child_complexity)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scoped_children-instance_method" title="#scoped_children (instance method)">#<strong>scoped_children</strong>  &#x21d2; Hash&lt;Hash&lt;Class =&gt; ScopedTypeComplexity&gt;] </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>This value is only calculated when asked for to avoid needless hash allocations.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#terminal%3F-instance_method" title="#terminal? (instance method)">#<strong>terminal?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns true if this field has no selections, ie, it’s a scalar.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(node, field_definition, query, response_path)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Analysis::AST::QueryComplexity::ScopedTypeComplexity (class)">ScopedTypeComplexity</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of ScopedTypeComplexity.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>node</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../../Language/Nodes/Field.html" title="GraphQL::Language::Nodes::Field (class)">Language::Nodes::Field</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The AST node; used for providing argument values when necessary</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>field_definition</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../../Field.html" title="GraphQL::Field (class)">GraphQL::Field</a></span></tt>, <tt><span class='object_link'><a href="../../../Schema/Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Used for getting the <code>.complexity</code> configuration</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>query</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../../Query.html" title="GraphQL::Query (class)">GraphQL::Query</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Used for <code>query.possible_types</code></p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>response_path</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;String&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The path to the response key for the field</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+30
+31
+32
+33
+34
+35
+36</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/analysis/ast/query_complexity.rb', line 30</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_field_definition'>field_definition</span><span class='comma'>,</span> <span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_response_path'>response_path</span><span class='rparen'>)</span>
+  <span class='ivar'>@node</span> <span class='op'>=</span> <span class='id identifier rubyid_node'>node</span>
+  <span class='ivar'>@field_definition</span> <span class='op'>=</span> <span class='id identifier rubyid_field_definition'>field_definition</span>
+  <span class='ivar'>@query</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span>
+  <span class='ivar'>@response_path</span> <span class='op'>=</span> <span class='id identifier rubyid_response_path'>response_path</span>
+  <span class='ivar'>@scoped_children</span> <span class='op'>=</span> <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="field_definition-instance_method">
+  
+    #<strong>field_definition</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute field_definition.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/analysis/ast/query_complexity.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_field_definition'>field_definition</span>
+  <span class='ivar'>@field_definition</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="query-instance_method">
+  
+    #<strong>query</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute query.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/analysis/ast/query_complexity.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_query'>query</span>
+  <span class='ivar'>@query</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="response_path-instance_method">
+  
+    #<strong>response_path</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute response_path.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/analysis/ast/query_complexity.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_response_path'>response_path</span>
+  <span class='ivar'>@response_path</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="own_complexity-instance_method">
+  
+    #<strong>own_complexity</strong>(child_complexity)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/analysis/ast/query_complexity.rb', line 52</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_own_complexity'>own_complexity</span><span class='lparen'>(</span><span class='id identifier rubyid_child_complexity'>child_complexity</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_defined_complexity'>defined_complexity</span> <span class='op'>=</span> <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_complexity'>complexity</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_defined_complexity'>defined_complexity</span>
+  <span class='kw'>when</span> <span class='const'>Proc</span>
+    <span class='id identifier rubyid_arguments'>arguments</span> <span class='op'>=</span> <span class='ivar'>@query</span><span class='period'>.</span><span class='id identifier rubyid_arguments_for'>arguments_for</span><span class='lparen'>(</span><span class='ivar'>@node</span><span class='comma'>,</span> <span class='ivar'>@field_definition</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_defined_complexity'>defined_complexity</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='ivar'>@query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='period'>.</span><span class='id identifier rubyid_keyword_arguments'>keyword_arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_child_complexity'>child_complexity</span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='const'>Numeric</span>
+    <span class='id identifier rubyid_defined_complexity'>defined_complexity</span> <span class='op'>+</span> <span class='id identifier rubyid_child_complexity'>child_complexity</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid complexity: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_defined_complexity'>defined_complexity</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> on </span><span class='embexpr_beg'>#{</span><span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="scoped_children-instance_method">
+  
+    #<strong>scoped_children</strong>  &#x21d2; <tt>Hash&lt;Hash&lt;Class =&gt; <span class='object_link'><a href="" title="GraphQL::Analysis::AST::QueryComplexity::ScopedTypeComplexity (class)">ScopedTypeComplexity</a></span>&gt;]</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>This value is only calculated when asked for to avoid needless hash allocations.
+Also, if it’s never asked for, we determine that this scope complexity
+is a scalar field (<span class='object_link'><a href="#terminal%3F-instance_method" title="GraphQL::Analysis::AST::QueryComplexity::ScopedTypeComplexity#terminal? (method)">#terminal?</a></span>).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash&lt;Hash&lt;Class =&gt; <span class='object_link'><a href="" title="GraphQL::Analysis::AST::QueryComplexity::ScopedTypeComplexity (class)">ScopedTypeComplexity</a></span>&gt;]</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Hash&lt;Hash&lt;Class =&gt; ScopedTypeComplexity&gt;]</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+48
+49
+50</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/analysis/ast/query_complexity.rb', line 48</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_scoped_children'>scoped_children</span>
+  <span class='ivar'>@scoped_children</span> <span class='op'>||=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='const'><span class='object_link'><a href="#HASH_CHILDREN-constant" title="GraphQL::Analysis::AST::QueryComplexity::ScopedTypeComplexity::HASH_CHILDREN (constant)">HASH_CHILDREN</a></span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="terminal?-instance_method">
+  
+    #<strong>terminal?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns true if this field has no selections, ie, it’s a scalar.
+We need a quick way to check whether we should continue traversing.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/analysis/ast/query_complexity.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_terminal?'>terminal?</span>
+  <span class='ivar'>@scoped_children</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Jun 16 17:34:36 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.25 (ruby-2.7.1).
+</div>
+
+    </div>
+  </body>
+</html>
