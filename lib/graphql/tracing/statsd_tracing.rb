@@ -20,7 +20,6 @@ module GraphQL
         super(**rest)
       end
 
-
       def platform_trace(platform_key, key, data)
         @statsd.time(platform_key) do
           yield
