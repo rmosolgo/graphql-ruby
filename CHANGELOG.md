@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.10.13 (16 June 2020)
+
+### Feature? Bug fix?
+
+- Refactor argument validation so that `.visible?` isn't called for optional arguments that aren't present #2985
+
 ## 1.10.12 (13 June 2020)
 
 ### Bug fixes
