@@ -7,6 +7,7 @@ require "graphql/tracing/data_dog_tracing"
 require "graphql/tracing/new_relic_tracing"
 require "graphql/tracing/scout_tracing"
 require "graphql/tracing/skylight_tracing"
+require "graphql/tracing/statsd_tracing"
 require "graphql/tracing/prometheus_tracing"
 
 if defined?(PrometheusExporter::Server)

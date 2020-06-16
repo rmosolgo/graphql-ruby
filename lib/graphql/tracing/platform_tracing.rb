@@ -122,6 +122,12 @@ module GraphQL
       def platform_key_cache(ctx)
         ctx.namespace(self.class)[:platform_key_cache] ||= {}
       end
+
+      # TODO migrate to this
+      def cached_platform_key(ctx, cache_name,key)
+        cache = ctx.namespace(self.class)[cache_name] ||= {}
+        cache.fetch(key) { cache[key] = yield }
+      end
     end
   end
 end
