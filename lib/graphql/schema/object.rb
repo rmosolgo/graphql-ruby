@@ -7,6 +7,7 @@ module GraphQL
     class Object < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::AcceptsDefinition
       extend GraphQL::Schema::Member::HasFields
+      extend GraphQL::Schema::Member::HasInvalidNullError
 
       # @return [Object] the application object this type is wrapping
       attr_reader :object
@@ -71,13 +72,6 @@ module GraphQL
       end
 
       class << self
-        # Set up a type-specific invalid null error to use when this object's non-null fields wrongly return `nil`.
-        # It should help with debugging and bug tracker integrations.
-        def inherited(child_class)
-          child_class.const_set(:InvalidNullError, Class.new(GraphQL::InvalidNullError))
-          super
-        end
-
         def implements(*new_interfaces, **options)
           new_memberships = []
           new_interfaces.each do |int|

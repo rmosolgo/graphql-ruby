@@ -776,6 +776,14 @@ module Jazz
     end
   end
 
+  class ReturnInvalidNull < GraphQL::Schema::Mutation
+    field :int, Integer, null: false
+
+    def resolve
+      { int: nil }
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
@@ -796,6 +804,7 @@ module Jazz
     field :has_extras, mutation: HasExtras
     field :has_extras_stripped, mutation: HasExtrasStripped
     field :has_field_extras, mutation: HasFieldExtras, extras: [:lookahead]
+    field :return_invalid_null, mutation: ReturnInvalidNull
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
