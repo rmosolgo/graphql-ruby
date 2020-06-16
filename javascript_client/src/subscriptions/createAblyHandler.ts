@@ -68,13 +68,11 @@ function createAblyHandler(options: AblyHandlerOptions) {
         observer.onCompleted()
       }
     }
-
     ;(async () => {
       try {
         // POST the subscription like a normal query
         const response = await fetchOperation(operation, variables, cacheConfig)
 
-        dispatchResult(response.body)
         const channelName = response.headers.get("X-Subscription-ID")
         if (!channelName) {
           throw new Error("Missing X-Subscription-ID header")
@@ -123,6 +121,8 @@ function createAblyHandler(options: AblyHandlerOptions) {
         }
         // When you get an update from ably, give it to Relay
         channel.subscribe("update", updateHandler)
+
+        dispatchResult(response.body)
       } catch (error) {
         observer.onError(error)
       }
@@ -133,28 +133,25 @@ function createAblyHandler(options: AblyHandlerOptions) {
         try {
           if (channel) {
             const disposedChannel = channel
-            disposedChannel.unsubscribe("update", updateHandler)
+            disposedChannel.unsubscribe()
 
-            const leavePromise = new Promise((resolve, reject) => {
-              const callback = (err: Types.ErrorInfo) => {
-                if (err) {
-                  reject(new AblyError(err))
-                } else {
-                  resolve()
+            // Ensure channel is no longer attaching, as otherwise detach does
+            // nothing
+            if (disposedChannel.state === "attaching") {
+              await new Promise((resolve, _reject) => {
+                const onStateChange = (
+                  stateChange: Types.ChannelStateChange
+                ) => {
+                  if (stateChange.current !== "attaching") {
+                    disposedChannel.off(onStateChange)
+                    resolve()
+                  }
                 }
-              }
+                disposedChannel.on(onStateChange)
+              })
+            }
 
-              if (isAnonymousClient()) {
-                disposedChannel.presence.leaveClient(
-                  anonymousClientId,
-                  callback
-                )
-              } else {
-                disposedChannel.presence.leave(callback)
-              }
-            })
-
-            const detachPromise = new Promise((resolve, reject) => {
+            await new Promise((resolve, reject) => {
               disposedChannel.detach((err: Types.ErrorInfo) => {
                 if (err) {
                   reject(new AblyError(err))
@@ -164,7 +161,6 @@ function createAblyHandler(options: AblyHandlerOptions) {
               })
             })
 
-            await Promise.all([leavePromise, detachPromise])
             ably.channels.release(disposedChannel.name)
           }
         } catch (error) {
