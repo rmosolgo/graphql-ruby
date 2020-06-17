@@ -191,3 +191,18 @@ end
 ```sh
 bundle exec prometheus_exporter -a lib/graphql_collector.rb
 ```
+
+## Statsd
+
+You can add Statsd instrumentation by initializing a statsd client and passing it to {{ "GraphQL::Tracing::StatsdTracing" | api_doc }}:
+
+```ruby
+$statsd = Statsd.new 'localhost', 9125
+# ...
+
+class MySchema < GraphQL::Schema
+  use GraphQL::Tracing::StatsdTracing, statsd: $statsd
+end
+```
+
+Any Statsd client that implements `.time(name) { ... }` will work.
