@@ -278,7 +278,7 @@ module GraphQL
             end
             find_selections(subselections_by_type, subselections_on_type, on_type, ast_selection.selections, arguments)
           when GraphQL::Language::Nodes::FragmentSpread
-            frag_defn = @query.fragments[ast_selection.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{ast_selection.name} (found: #{@query.fragments.keys})")
+            frag_defn = lookup_fragment(ast_selection)
             # Again, assuming a valid AST
             on_type = @query.schema.get_type(frag_defn.type.name).type_class
             subselections_on_type = subselections_by_type[on_type] ||= {}
@@ -306,7 +306,7 @@ module GraphQL
         when GraphQL::Language::Nodes::InlineFragment
           node.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
         when GraphQL::Language::Nodes::FragmentSpread
-          frag_defn = @query.fragments[node.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{node.name} (found: #{@query.fragments.keys})")
+          frag_defn = lookup_fragment(node)
           frag_defn.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
         else
           raise "Unexpected selection comparison on #{node.class.name} (#{node})"
@@ -345,9 +345,24 @@ module GraphQL
       def lookup_alias_node(nodes, name)
         return if nodes.empty?
 
-        nodes.flat_map(&:children).compact.find do |node|
-          return node if node.alias?(name)
+        nodes.flat_map(&:children)
+             .flat_map { |child| unwrap_fragments(child) }
+             .find { |child| child.alias?(name) }
+      end
+
+      def unwrap_fragments(node)
+        case node
+        when GraphQL::Language::Nodes::InlineFragment
+          node.children
+        when GraphQL::Language::Nodes::FragmentSpread
+          lookup_fragment(node).children
+        else
+          [node]
         end
+      end
+
+      def lookup_fragment(ast_selection)
+        @query.fragments[ast_selection.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{ast_selection.name} (found: #{@query.fragments.keys})")
       end
     end
   end
