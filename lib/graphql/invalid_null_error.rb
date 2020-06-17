@@ -28,5 +28,23 @@ module GraphQL
     def parent_error?
       false
     end
+
+    class << self
+      attr_accessor :parent_class
+
+      def subclass_for(parent_class)
+        subclass = Class.new(self)
+        subclass.parent_class = parent_class
+        subclass
+      end
+
+      def inspect
+        if name.nil? && parent_class.respond_to?(:mutation) && (mutation = parent_class.mutation)
+          "#{mutation.inspect}::#{parent_class.graphql_name}::InvalidNullError"
+        else
+          super
+        end
+      end
+    end
   end
 end
