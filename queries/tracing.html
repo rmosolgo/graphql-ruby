@@ -259,6 +259,20 @@ tracing as follows:</p>
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle <span class="nb">exec </span>prometheus_exporter <span class="nt">-a</span> lib/graphql_collector.rb
 </code></pre></div></div>
 
+<h2 id="statsd">Statsd</h2>
+
+<p>You can add Statsd instrumentation by initializing a statsd client and passing it to <a href="/api-doc/1.11.0/GraphQL/Tracing/StatsdTracing" target="_blank" title="API docs for GraphQL::Tracing::StatsdTracing"><code>GraphQL::Tracing::StatsdTracing</code></a>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="vg">$statsd</span> <span class="o">=</span> <span class="no">Statsd</span><span class="p">.</span><span class="nf">new</span> <span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">9125</span>
+<span class="c1"># ...</span>
+
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">StatsdTracing</span><span class="p">,</span> <span class="ss">statsd: </span><span class="vg">$statsd</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Any Statsd client that implements <code class="language-plaintext highlighter-rouge">.time(name) { ... }</code> will work.</p>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
