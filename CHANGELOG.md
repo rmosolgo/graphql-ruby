@@ -8,6 +8,16 @@
 
 ### Bug fixes
 
+## 1.11.1 (17 June 2020)
+
+### New Features
+
+- Add `StatsdTracing` #2996
+
+### Bug Fixes
+
+- Raise the proper `InvalidNullError` when a mutation field returns an invalid `nil` #2997
+
 ## 1.11.0 (13 June 2020)
 
 ### Breaking changes
