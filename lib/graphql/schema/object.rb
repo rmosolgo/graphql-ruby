@@ -74,7 +74,7 @@ module GraphQL
         # Set up a type-specific invalid null error to use when this object's non-null fields wrongly return `nil`.
         # It should help with debugging and bug tracker integrations.
         def inherited(child_class)
-          child_class.const_set(:InvalidNullError, Class.new(GraphQL::InvalidNullError))
+          child_class.const_set(:InvalidNullError, GraphQL::InvalidNullError.subclass_for(child_class))
           super
         end
 

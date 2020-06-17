@@ -113,6 +113,17 @@ describe GraphQL::Schema::Mutation do
       response = Jazz::Schema.execute(query_str)
       assert_equal 2, response["errors"].length, "It should return two errors"
     end
+
+    it "raises a mutation-specific invalid null error" do
+      query_str = "mutation { returnInvalidNull { int } }"
+      response = Jazz::Schema.execute(query_str)
+      assert_equal ["Cannot return null for non-nullable field ReturnInvalidNullPayload.int"], response["errors"].map { |e| e["message"] }
+      if TESTING_INTERPRETER
+        error = response.query.context.errors.first
+        assert_instance_of Jazz::ReturnInvalidNull.payload_type::InvalidNullError, error
+        assert_equal "Jazz::ReturnInvalidNull::ReturnInvalidNullPayload::InvalidNullError", error.class.inspect
+      end
+    end
   end
 
   describe ".null" do

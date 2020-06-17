@@ -36,8 +36,17 @@ module GraphQL
       # @return [Symbol] The method on the type to look up
       attr_reader :resolver_method
 
-      # @return [Class] The type that this field belongs to
+      # @return [Class] The thing this field was defined on (type, mutation, resolver)
       attr_accessor :owner
+
+      # @return [Class] The GraphQL type this field belongs to. (For fields defined on mutations, it's the payload type)
+      def owner_type
+        @owner_type ||= if owner < GraphQL::Schema::Mutation
+          owner.payload_type
+        else
+          owner
+        end
+      end
 
       # @return [Symbol] the original name of the field, passed in by the user
       attr_reader :original_name
