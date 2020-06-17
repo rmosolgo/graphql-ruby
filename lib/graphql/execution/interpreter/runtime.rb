@@ -254,7 +254,8 @@ module GraphQL
         def continue_value(path, value, field, is_non_null, ast_node)
           if value.nil?
             if is_non_null
-              err = field.owner::InvalidNullError.new(field.owner, field, value)
+              parent_type = field.owner_type
+              err = parent_type::InvalidNullError.new(parent_type, field, value)
               write_invalid_null_in_response(path, err)
             else
               write_in_response(path, nil)
@@ -311,7 +312,7 @@ module GraphQL
               possible_types = query.possible_types(type)
 
               if !possible_types.include?(resolved_type)
-                parent_type = field.owner
+                parent_type = field.owner_type
                 err_class = type::UnresolvedTypeError
                 type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
