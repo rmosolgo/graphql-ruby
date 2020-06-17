@@ -32,16 +32,18 @@ module GraphQL
             trace_field = true # implemented with instrumenter
           else
             field = data[:field]
-            cache = platform_key_cache(data.fetch(:query).context)
-            platform_key = cache.fetch(field) do
-              cache[field] = platform_field_key(data[:owner], field)
-            end
-
             return_type = field.type.unwrap
             trace_field = if return_type.kind.scalar? || return_type.kind.enum?
               (field.trace.nil? && @trace_scalars) || field.trace
             else
               true
+            end
+
+            platform_key = if trace_field
+              context = data.fetch(:query).context
+              cached_platform_key(context, field) { platform_field_key(data[:owner], field) }
+            else
+              nil
             end
           end
 
@@ -53,20 +55,16 @@ module GraphQL
             yield
           end
         when "authorized", "authorized_lazy"
-          cache = platform_key_cache(data.fetch(:context))
           type = data.fetch(:type)
-          platform_key = cache.fetch(type) do
-            cache[type] = platform_authorized_key(type)
-          end
+          context = data.fetch(:context)
+          platform_key = cached_platform_key(context, type) { platform_authorized_key(type) }
           platform_trace(platform_key, key, data) do
             yield
           end
         when "resolve_type", "resolve_type_lazy"
-          cache = platform_key_cache(data.fetch(:context))
           type = data.fetch(:type)
-          platform_key = cache.fetch(type) do
-            cache[type] = platform_resolve_type_key(type)
-          end
+          context = data.fetch(:context)
+          platform_key = cached_platform_key(context, type) { platform_resolve_type_key(type) }
           platform_trace(platform_key, key, data) do
             yield
           end
@@ -119,8 +117,20 @@ module GraphQL
 
       attr_reader :options
 
-      def platform_key_cache(ctx)
-        ctx.namespace(self.class)[:platform_key_cache] ||= {}
+      # Different kind of schema objects have different kinds of keys:
+      #
+      # - Object types: `.authorized`
+      # - Union/Interface types: `.resolve_type`
+      # - Fields: execution
+      #
+      # So, they can all share one cache.
+      #
+      # If the key isn't present, the given block is called and the result is cached for `key`.
+      #
+      # @return [String]
+      def cached_platform_key(ctx, key)
+        cache = ctx.namespace(self.class)[:platform_key_cache] ||= {}
+        cache.fetch(key) { cache[key] = yield }
       end
     end
   end
