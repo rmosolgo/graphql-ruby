@@ -58,6 +58,10 @@ module GraphQL
       result
     end
 
+    def get_argument(argument_name)
+      arguments[argument_name]
+    end
+
     private
 
     def coerce_non_null_input(value, ctx)

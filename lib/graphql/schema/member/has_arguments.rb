@@ -60,7 +60,9 @@ module GraphQL
 
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
         def get_argument(argument_name)
-          if (a = own_arguments[argument_name])
+          a = own_arguments[argument_name]
+
+          if a || !self.is_a?(Class)
             a
           else
             for ancestor in ancestors
