@@ -95,16 +95,17 @@ module GraphQL
       def required_input_fields_are_present(type, ast_node)
         # TODO - would be nice to use these to create an error message so the caller knows
         # that required fields are missing
-        required_field_names = @warden.arguments(type)
-          .select { |f| f.type.kind.non_null? }
+        required_field_names = type.arguments.each_value
+          .select { |argument| argument.type.kind.non_null? && @warden.get_argument(type, argument.name) }
           .map(&:name)
+
         present_field_names = ast_node.arguments.map(&:name)
         missing_required_field_names = required_field_names - present_field_names
         if @context.schema.error_bubbling
           missing_required_field_names.empty? ? @valid_response : @invalid_response
         else
           results = missing_required_field_names.map do |name|
-            arg_type = @warden.arguments(type).find { |f| f.name == name }.type
+            arg_type = @warden.get_argument(type, name).type
             recursively_validate(GraphQL::Language::Nodes::NullValue.new(name: name), arg_type)
           end
           merge_results(results)
@@ -112,13 +113,12 @@ module GraphQL
       end
 
       def present_input_field_values_are_valid(type, ast_node)
-        field_map = @warden.arguments(type).reduce({}) { |m, f| m[f.name] = f; m}
         results = ast_node.arguments.map do |value|
-          field = field_map[value.name]
+          field = @warden.get_argument(type, value.name)
           # we want to call validate on an argument even if it's an invalid one
           # so that our raise exception is on it instead of the entire InputObject
-          type = field && field.type
-          recursively_validate(value.value, type)
+          field_type = field && field.type
+          recursively_validate(value.value, field_type)
         end
         merge_results(results)
       end
