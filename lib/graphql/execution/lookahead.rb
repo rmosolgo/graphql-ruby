@@ -347,7 +347,7 @@ module GraphQL
 
         nodes.flat_map(&:children)
              .flat_map { |child| unwrap_fragments(child) }
-             .find { |child| child.alias?(name) }
+             .find { |child| child.is_a?(GraphQL::Language::Nodes::Field) && child.alias == name }
       end
 
       def unwrap_fragments(node)
