@@ -117,8 +117,7 @@ module GraphQL
         return alias_selections[alias_name] if alias_selections.key?(alias_name)
 
         alias_node = lookup_alias_node(ast_nodes, alias_name)
-
-        return selection(alias_name, selected_type: selected_type, arguments: arguments) unless alias_node
+        return NULL_LOOKAHEAD unless alias_node
 
         next_field_name = alias_node.name
         next_field_defn = get_class_based_field(selected_type, next_field_name)
@@ -126,7 +125,7 @@ module GraphQL
         arguments = @query.arguments_for(alias_node, next_field_defn)
         arguments = arguments.is_a?(::GraphQL::Execution::Interpreter::Arguments) ? arguments.keyword_arguments : arguments
 
-        alias_selections[alias_name] = lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments)
+        alias_selections[alias_name] = lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments, alias_name)
       end
 
       # Like {#selection}, but for all nodes.
@@ -289,13 +288,14 @@ module GraphQL
         end
       end
 
+      NO_ALIAS = Object.new
       # If a selection on `node` matches `field_name` (which is backed by `field_defn`)
       # and matches the `arguments:` constraints, then add that node to `matches`
-      def find_selected_nodes(node, field_name, field_defn, arguments:, matches:)
+      def find_selected_nodes(node, field_name, field_defn, arguments:, matches:, alias_name: NO_ALIAS)
         return if skipped_by_directive?(node)
         case node
         when GraphQL::Language::Nodes::Field
-          if node.name == field_name
+          if node.name == field_name && (alias_name == NO_ALIAS || node.alias == alias_name)
             if arguments.nil? || arguments.empty?
               # No constraint applied
               matches << node
@@ -304,10 +304,10 @@ module GraphQL
             end
           end
         when GraphQL::Language::Nodes::InlineFragment
-          node.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
+          node.selections.each { |s|find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches, alias_name: alias_name) }
         when GraphQL::Language::Nodes::FragmentSpread
           frag_defn = lookup_fragment(node)
-          frag_defn.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
+          frag_defn.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches, alias_name: alias_name) }
         else
           raise "Unexpected selection comparison on #{node.class.name} (#{node})"
         end
@@ -322,13 +322,13 @@ module GraphQL
         end
       end
 
-      def lookahead_for_selection(field_name, field_defn, selected_type, arguments)
+      def lookahead_for_selection(field_name, field_defn, selected_type, arguments, alias_name = NO_ALIAS)
         return NULL_LOOKAHEAD unless field_defn
 
         next_nodes = []
         @ast_nodes.each do |ast_node|
           ast_node.selections.each do |selection|
-            find_selected_nodes(selection, field_name, field_defn, arguments: arguments, matches: next_nodes)
+            find_selected_nodes(selection, field_name, field_defn, arguments: arguments, matches: next_nodes, alias_name: alias_name)
           end
         end
 

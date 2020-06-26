@@ -567,14 +567,7 @@ describe GraphQL::Execution::Lookahead do
     end
 
     let(:species_lookahead) do
-      graphql_query.lookahead.alias_selection("findBirdSpecies")
-    end
-
-    it "returns selection by field name" do
-      ast_node = document.definitions.first.selections.first
-      field = LookaheadTest::Query.fields["findBirdSpecies"]
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
-      assert_selection_exists lookahead.alias_selection("similarSpecies")
+      graphql_query.lookahead.selection("findBirdSpecies")
     end
 
     describe "when alias name is passed" do
@@ -594,13 +587,38 @@ describe GraphQL::Execution::Lookahead do
       end
     end
 
+    describe "when the same field is executed with the same arguments but different aliases" do
+      let(:document) {
+        GraphQL.parse <<-GRAPHQL
+          query {
+            egret: findBirdSpecies(byName: "Great Egret") {
+              isWaterfowl
+            }
+            otherEgret: findBirdSpecies(byName: "Great Egret") {
+              name
+            }
+            findBirdSpecies(byName: "GreatEgret") {
+              __typename
+            }
+          }
+        GRAPHQL
+      }
+
+      it "distinguishes between the aliased fields" do
+        lookahead = query.lookahead
+        assert_equal [:is_waterfowl], lookahead.alias_selection("egret").selections.map(&:name)
+        assert_equal [:name], lookahead.alias_selection("otherEgret").selections.map(&:name)
+        assert_equal [], lookahead.alias_selection("findBirdSpecies").selections.map(&:name)
+      end
+    end
+
     describe "when field name is passed" do
-      it "returns selection" do
-        assert_selection_exists species_lookahead.alias_selection("similarSpecies")
+      it "returns null_lookahead" do
+        assert_selection_is_null species_lookahead.alias_selection("similarSpecies")
       end
 
-      it "returns true from selects_alias?" do
-        assert true, species_lookahead.selects_alias?("similarSpecies")
+      it "returns false from selects_alias?" do
+        assert_equal false, species_lookahead.selects_alias?("similarSpecies")
       end
     end
 
@@ -685,24 +703,12 @@ describe GraphQL::Execution::Lookahead do
         GRAPHQL
       }
 
-      describe "when field name is passed" do
-        it "returns selection" do
-          assert_selection_exists graphql_query.lookahead.alias_selection("findBirdSpecies")
-        end
-
-        it "returns true from selects_alias?" do
-          assert true, graphql_query.lookahead.selects_alias?("similarSpecies")
-        end
+      it "returns selection" do
+        assert_selection_exists graphql_query.lookahead.alias_selection("gull")
       end
 
-      describe "when alias name is passed" do
-        it "returns selection" do
-          assert_selection_exists graphql_query.lookahead.alias_selection("gull")
-        end
-
-        it "returns true from selects_alias?" do
-          assert true, graphql_query.lookahead.selects_alias?("gull")
-        end
+      it "returns true from selects_alias?" do
+        assert true, graphql_query.lookahead.selects_alias?("gull")
       end
 
       describe "when same field is selected twice" do
