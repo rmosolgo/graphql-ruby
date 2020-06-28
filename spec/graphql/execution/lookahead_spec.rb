@@ -142,7 +142,7 @@ describe GraphQL::Execution::Lookahead do
         GRAPHQL
       }
 
-      it "finds fields on object types and interface types" do
+      it "enumerates fields on object types and interface types" do
         node_lookahead = query.lookahead.selection("node")
         assert_equal [:id, :name, :latin_name], node_lookahead.selections.map(&:name)
       end
@@ -404,13 +404,189 @@ describe GraphQL::Execution::Lookahead do
         variables: { skipName: false, includeGenus: true })
       lookahead = query.lookahead.selection("findBirdSpecies")
       assert_equal [:id, :name, :genus], lookahead.selections.map(&:name)
-      assert_equal true, lookahead.selects?(:name)
 
       query = GraphQL::Query.new(LookaheadTest::Schema, document: document,
         variables: { skipName: true, includeGenus: false })
       lookahead = query.lookahead.selection("findBirdSpecies")
       assert_equal [:id], lookahead.selections.map(&:name)
+    end
+  end
+
+  describe '#selects?' do
+    let(:document) {
+      GraphQL.parse <<-GRAPHQL
+        query {
+          findBirdSpecies(byName: "Laughing Gull") {
+            name
+            similarSpecies {
+              likesWater: isWaterfowl
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    def query(doc = document)
+      GraphQL::Query.new(LookaheadTest::Schema, document: doc)
+    end
+
+    it "returns true for a field that is selected" do
+      ast_node = document.definitions.first.selections.first
+      field = LookaheadTest::Query.fields["findBirdSpecies"]
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
+      assert lookahead.selects?(:name)
+      assert lookahead.selects?(:similar_species)
+      assert_equal false, lookahead.selects?(:is_waterfowl)
+    end
+
+    it "returns false for a field that is not selected" do
+      ast_node = document.definitions.first.selections.first
+      field = LookaheadTest::Query.fields["findBirdSpecies"]
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
+      assert_equal false, lookahead.selects?(:is_waterfowl)
+    end
+
+    it "returns false for a selection which does not match arguments" do
+      ast_node = document.definitions.first
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
+      arguments = { by_name: "Cardinal" }
+
+      assert_equal false, lookahead.selects?(:name, arguments: arguments)
+    end
+
+    it "returns true for a selection which matches arguments" do
+      ast_node = document.definitions.first
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
+      arguments = { by_name: "Laughing Gull" }
+
+      assert lookahead.selects?(:find_bird_species, arguments: arguments)
+    end
+
+    it 'returns true for selection that is duplicated across fragments' do
+      doc = GraphQL.parse <<-GRAPHQL
+        query {
+          ... on Query {
+            ...MoreFields
+          }
+        }
+
+        fragment MoreFields on Query {
+          findBirdSpecies(byName: "Laughing Gull") {
+            name
+          }
+          findBirdSpecies(byName: "Laughing Gull") {
+            ...EvenMoreFields
+          }
+        }
+
+        fragment EvenMoreFields on BirdSpecies {
+          similarSpecies {
+            likesWater: isWaterfowl
+          }
+        }
+      GRAPHQL
+
+      lookahead = query(doc).lookahead
+      assert lookahead.selects?(:find_bird_species)
+
+      assert lookahead.selection(:find_bird_species).selects?(:name)
+      assert lookahead.selection(:find_bird_species).selects?(:similar_species)
+    end
+
+    it "returns true for a field name that exists on multiple distinct types" do
+      query = GraphQL::Query.new(LookaheadTest::Schema, <<-GRAPHQL)
+        query {
+          node(id: "Cardinal") {
+            ... on BirdSpecies {
+              name
+            }
+            ... on BirdGenus {
+              name
+            }
+            id
+          }
+        }
+      GRAPHQL
+
+      node_lookahead = query.lookahead.selection("node")
+      assert node_lookahead.selects?(:id)
+      assert node_lookahead.selects?(:name)
+    end
+
+    it "returns false on missing selections" do
+      ast_node = document.definitions.first.selections.first
+      field = LookaheadTest::Query.fields["findBirdSpecies"]
+      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
+      assert_equal false, lookahead.selection(:genus).selects?(:name)
+    end
+
+    it "returns true for fields enabled by directives" do
+      document = GraphQL.parse <<-GRAPHQL
+        query($skipName: Boolean!, $includeGenus: Boolean!){
+          findBirdSpecies(byName: "Cardinal") {
+            id
+            name @skip(if: $skipName)
+            genus @include(if: $includeGenus)
+          }
+        }
+      GRAPHQL
+      query = GraphQL::Query.new(LookaheadTest::Schema, document: document,
+        variables: { skipName: false, includeGenus: true })
+      lookahead = query.lookahead.selection("findBirdSpecies")
+      assert lookahead.selects?(:name)
+      assert lookahead.selects?(:genus)
+    end
+
+    it "returns false for fields disabled by directive" do
+      document = GraphQL.parse <<-GRAPHQL
+        query($skipName: Boolean!, $includeGenus: Boolean!){
+          findBirdSpecies(byName: "Cardinal") {
+            id
+            name @skip(if: $skipName)
+            genus @include(if: $includeGenus)
+          }
+        }
+      GRAPHQL
+      query = GraphQL::Query.new(LookaheadTest::Schema, document: document,
+        variables: { skipName: true, includeGenus: false })
+      lookahead = query.lookahead.selection("findBirdSpecies")
+      assert lookahead.selects?(:id)
       assert_equal false, lookahead.selects?(:name)
+      assert_equal false, lookahead.selects?(:genus)
+    end
+
+    describe "fields on interfaces" do
+      let(:document) {
+        GraphQL.parse <<-GRAPHQL
+        query {
+          node(id: "Cardinal") {
+            id
+            ... on BirdSpecies {
+              name
+            }
+            ...Other
+          }
+        }
+        fragment Other on BirdGenus {
+          latinName
+        }
+        GRAPHQL
+      }
+
+      it "returns true for fields on direct object types" do
+        node_lookahead = query.lookahead.selection("node")
+        assert node_lookahead.selects?(:id)
+      end
+
+      it "returns true for fields on interface types" do
+        node_lookahead = query.lookahead.selection("node")
+        assert node_lookahead.selects?(:name)
+      end
+
+      it "returns true for fields on interface types through fragments" do
+        node_lookahead = query.lookahead.selection("node")
+        assert node_lookahead.selects?(:latin_name)
+      end
     end
   end
 end
