@@ -207,6 +207,33 @@
 
 <p>It will require the named action (<code class="language-plaintext highlighter-rouge">:review_applicants</code>) for the object being viewed (a <code class="language-plaintext highlighter-rouge">JobPosting</code>).</p>
 
+<h3 id="authorizing-by-attribute">Authorizing by attribute</h3>
+
+<p>CanCan 3.0 added attribute-level authorization (<a href="https://github.com/CanCanCommunity/cancancan/pull/474">pull request</a>). You can leverage this in your field definitions with the <code class="language-plaintext highlighter-rouge">can_can_attribute:</code> configuration:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This will call `.can?(:read, user, :email_address)`</span>
+<span class="n">field</span> <span class="ss">:email_address</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+  <span class="ss">can_can_action: :read</span><span class="p">,</span>
+  <span class="ss">can_can_attribute: :email_address</span>
+</code></pre></div></div>
+
+<p>You could also provide a <em>default value</em> for <code class="language-plaintext highlighter-rouge">can_can_attribute</code> in your base field class:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="c1"># pass all configs to the super class:</span>
+    <span class="k">super</span>
+    <span class="c1"># Then set a new `can_can_attribute` value, if applicable</span>
+    <span class="k">if</span> <span class="n">can_can_attribute</span><span class="p">.</span><span class="nf">nil?</span> <span class="o">&amp;&amp;</span> <span class="n">can_can_action</span><span class="p">.</span><span class="nf">present?</span>
+      <span class="c1"># `method_sym` is the thing GraphQL-Ruby will use to resolve this field</span>
+      <span class="n">can_can_attribute</span><span class="p">(</span><span class="n">method_sym</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>(See <a href="/api-doc/1.11.1/GraphQL/Schema/Field" target="_blank" title="API docs for GraphQL::Schema::Field"><code>GraphQL::Schema::Field</code></a> for the different values available for defaults.)</p>
+
 <h2 id="authorizing-arguments">Authorizing Arguments</h2>
 
 <p>Similar to field-level checks, you can require certain permissions to <em>use</em> certain arguments. To do this, add the integration to your base argument class:</p>
