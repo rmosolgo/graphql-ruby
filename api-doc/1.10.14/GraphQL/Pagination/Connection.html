@@ -1,0 +1,2238 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Pagination::Connection
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Pagination::Connection";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (C)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Pagination.html" title="GraphQL::Pagination (module)">Pagination</a></span></span>
+     &raquo; 
+    <span class="title">Connection</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Pagination::Connection
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Pagination::Connection</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/pagination/connection.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>A Connection wraps a list of items and provides cursor-based pagination over it.</p>
+
+<p>Connections were introduced by Facebook’s <code>Relay</code> front-end framework, but
+proved to be generally useful for GraphQL APIs. When in doubt, use connections
+to serve lists (like Arrays, ActiveRecord::Relations) via GraphQL.</p>
+
+<p>Unlike the previous connection implementation, these default to bidirectional pagination.</p>
+
+<p>Pagination arguments and context may be provided at initialization or assigned later (see <span class='object_link'><a href="../Schema/Field/ConnectionExtension.html" title="GraphQL::Schema::Field::ConnectionExtension (class)">Schema::Field::ConnectionExtension</a></span>).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="ArrayConnection.html" title="GraphQL::Pagination::ArrayConnection (class)">ArrayConnection</a></span>, <span class='object_link'><a href="RelationConnection.html" title="GraphQL::Pagination::RelationConnection (class)">RelationConnection</a></span></p>
+</div>
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Connection/Edge.html" title="GraphQL::Pagination::Connection::Edge (class)">Edge</a></span>, <span class='object_link'><a href="Connection/PaginationImplementationMissingError.html" title="GraphQL::Pagination::Connection::PaginationImplementationMissingError (class)">PaginationImplementationMissingError</a></span>
+    
+  
+</p>
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#after_value-instance_method" title="#after_value (instance method)">#<strong>after_value</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Raw access to client-provided values.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#before_value-instance_method" title="#before_value (instance method)">#<strong>before_value</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Raw access to client-provided values.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#context-instance_method" title="#context (instance method)">#<strong>context</strong>  &#x21d2; GraphQL::Query::Context </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#first-instance_method" title="#first (instance method)">#<strong>first</strong>  &#x21d2; Integer<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A clamped <code>first</code> value.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#first_value-instance_method" title="#first_value (instance method)">#<strong>first_value</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Raw access to client-provided values.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#items-instance_method" title="#items (instance method)">#<strong>items</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A list object, from the application.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#last-instance_method" title="#last (instance method)">#<strong>last</strong>  &#x21d2; Integer<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A clamped <code>last</code> value.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#last_value-instance_method" title="#last_value (instance method)">#<strong>last_value</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Raw access to client-provided values.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#edge_class-class_method" title="edge_class (class method)">.<strong>edge_class</strong>  &#x21d2; Class </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The class to use for wrapping items as <code>edges { ... }</code>.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#after-instance_method" title="#after (instance method)">#<strong>after</strong>  &#x21d2; String<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The client-provided cursor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#before-instance_method" title="#before (instance method)">#<strong>before</strong>  &#x21d2; String<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The client-provided cursor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#cursor_for-instance_method" title="#cursor_for (instance method)">#<strong>cursor_for</strong>(item)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return a cursor for this item.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public deprecated">
+  <span class="summary_signature">
+    
+      <a href="#edge_nodes-instance_method" title="#edge_nodes (instance method)">#<strong>edge_nodes</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  <span class="deprecated note title">deprecated</span>
+  
+
+  
+    <span class="summary_desc"><strong>Deprecated.</strong> <div class='inline'><p>use <span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span> instead</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#edges-instance_method" title="#edges (instance method)">#<strong>edges</strong>  &#x21d2; Array&lt;Edge&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p><span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span>, but wrapped with Edge instances.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_cursor-instance_method" title="#end_cursor (instance method)">#<strong>end_cursor</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The cursor of the last item in <span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#has_max_page_size_override%3F-instance_method" title="#has_max_page_size_override? (instance method)">#<strong>has_max_page_size_override?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#has_next_page-instance_method" title="#has_next_page (instance method)">#<strong>has_next_page</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>True if there are more items after this page.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#has_previous_page-instance_method" title="#has_previous_page (instance method)">#<strong>has_previous_page</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>True if there were items before these items.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(items, context: nil, first: nil, after: nil, max_page_size: :not_given, last: nil, before: nil)  &#x21d2; Connection </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Connection.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#max_page_size-instance_method" title="#max_page_size (instance method)">#<strong>max_page_size</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#max_page_size=-instance_method" title="#max_page_size= (instance method)">#<strong>max_page_size=</strong>(new_value)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#nodes-instance_method" title="#nodes (instance method)">#<strong>nodes</strong>  &#x21d2; Array&lt;Object&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A slice of <span class='object_link'><a href="#items-instance_method" title="GraphQL::Pagination::Connection#items (method)">#items</a></span>, constrained by @first_value/@after_value/@last_value/@before_value.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#page_info-instance_method" title="#page_info (instance method)">#<strong>page_info</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The connection object itself implements <code>PageInfo</code> fields.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#start_cursor-instance_method" title="#start_cursor (instance method)">#<strong>start_cursor</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The cursor of the first item in <span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(items, context: nil, first: nil, after: nil, max_page_size: :not_given, last: nil, before: nil)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Pagination::Connection (class)">Connection</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Connection.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>items</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>some unpaginated collection item, like an <code>Array</code> or <code>ActiveRecord::Relation</code></p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">Query::Context</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>first</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>The limit parameter from the client, if it provided one</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>after</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>A cursor for pagination, if the client provided one</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>last</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>Limit parameter from the client, if provided</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>before</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>A cursor for pagination, if the client provided one.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>max_page_size</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>:not_given</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>A configured value to cap the result size. Applied as <code>first</code> if neither first or last are given.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 57</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_items'>items</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>first:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>after:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>max_page_size:</span> <span class='symbol'>:not_given</span><span class='comma'>,</span> <span class='label'>last:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>before:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@items</span> <span class='op'>=</span> <span class='id identifier rubyid_items'>items</span>
+  <span class='ivar'>@context</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span>
+  <span class='ivar'>@first_value</span> <span class='op'>=</span> <span class='id identifier rubyid_first'>first</span>
+  <span class='ivar'>@after_value</span> <span class='op'>=</span> <span class='id identifier rubyid_after'>after</span>
+  <span class='ivar'>@last_value</span> <span class='op'>=</span> <span class='id identifier rubyid_last'>last</span>
+  <span class='ivar'>@before_value</span> <span class='op'>=</span> <span class='id identifier rubyid_before'>before</span>
+
+  <span class='comment'># This is only true if the object was _initialized_ with an override
+</span>  <span class='comment'># or if one is assigned later.
+</span>  <span class='ivar'>@has_max_page_size_override</span> <span class='op'>=</span> <span class='id identifier rubyid_max_page_size'>max_page_size</span> <span class='op'>!=</span> <span class='symbol'>:not_given</span>
+  <span class='ivar'>@max_page_size</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_max_page_size'>max_page_size</span> <span class='op'>==</span> <span class='symbol'>:not_given</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_max_page_size'>max_page_size</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="after_value=-instance_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="after_value-instance_method">
+  
+    #<strong>after_value</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Raw access to client-provided values. (<code>max_page_size</code> not applied to first or last.)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+30
+31
+32</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 30</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_after_value'>after_value</span>
+  <span class='ivar'>@after_value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="before_value=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="before_value-instance_method">
+  
+    #<strong>before_value</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Raw access to client-provided values. (<code>max_page_size</code> not applied to first or last.)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+30
+31
+32</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 30</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_before_value'>before_value</span>
+  <span class='ivar'>@before_value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="context=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="context-instance_method">
+  
+    #<strong>context</strong>  &#x21d2; <tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_context'>context</span>
+  <span class='ivar'>@context</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="first=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="first-instance_method">
+  
+    #<strong>first</strong>  &#x21d2; <tt>Integer</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns A clamped <code>first</code> value.
+(The underlying instance variable doesn’t have limits on it.)
+If neither <code>first</code> nor <code>last</code> is given, but <code>max_page_size</code> is present, max_page_size is used for first.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A clamped <code>first</code> value.
+(The underlying instance variable doesn’t have limits on it.)
+If neither <code>first</code> nor <code>last</code> is given, but <code>max_page_size</code> is present, max_page_size is used for first.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+97
+98
+99
+100
+101
+102
+103
+104
+105</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 97</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_first'>first</span>
+  <span class='ivar'>@first</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='id identifier rubyid_capped'>capped</span> <span class='op'>=</span> <span class='id identifier rubyid_limit_pagination_argument'>limit_pagination_argument</span><span class='lparen'>(</span><span class='ivar'>@first_value</span><span class='comma'>,</span> <span class='id identifier rubyid_max_page_size'>max_page_size</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_capped'>capped</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+      <span class='id identifier rubyid_capped'>capped</span> <span class='op'>=</span> <span class='id identifier rubyid_max_page_size'>max_page_size</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_capped'>capped</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="first_value=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="first_value-instance_method">
+  
+    #<strong>first_value</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Raw access to client-provided values. (<code>max_page_size</code> not applied to first or last.)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+30
+31
+32</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 30</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_first_value'>first_value</span>
+  <span class='ivar'>@first_value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="items-instance_method">
+  
+    #<strong>items</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns A list object, from the application. This is the unpaginated value passed into the connection.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A list object, from the application. This is the unpaginated value passed into the connection.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_items'>items</span>
+  <span class='ivar'>@items</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="last=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="last-instance_method">
+  
+    #<strong>last</strong>  &#x21d2; <tt>Integer</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns A clamped <code>last</code> value. (The underlying instance variable doesn’t have limits on it).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A clamped <code>last</code> value. (The underlying instance variable doesn’t have limits on it)</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+109
+110
+111</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 109</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_last'>last</span>
+  <span class='ivar'>@last</span> <span class='op'>||=</span> <span class='id identifier rubyid_limit_pagination_argument'>limit_pagination_argument</span><span class='lparen'>(</span><span class='ivar'>@last_value</span><span class='comma'>,</span> <span class='id identifier rubyid_max_page_size'>max_page_size</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="last_value=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="last_value-instance_method">
+  
+    #<strong>last_value</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Raw access to client-provided values. (<code>max_page_size</code> not applied to first or last.)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+30
+31
+32</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 30</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_last_value'>last_value</span>
+  <span class='ivar'>@last_value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="edge_class-class_method">
+  
+    .<strong>edge_class</strong>  &#x21d2; <tt>Class</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The class to use for wrapping items as <code>edges { ... }</code>. Defaults to <code>Connection::Edge</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The class to use for wrapping items as <code>edges { ... }</code>. Defaults to <code>Connection::Edge</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+19
+20
+21</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 19</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_edge_class'>edge_class</span>
+  <span class='kw'>self</span><span class='op'>::</span><span class='const'>Edge</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="after-instance_method">
+  
+    #<strong>after</strong>  &#x21d2; <tt>String</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the client-provided cursor. <code>""</code> is treated as <code>nil</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the client-provided cursor. <code>""</code> is treated as <code>nil</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+42
+43
+44
+45
+46
+47
+48</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 42</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_after'>after</span>
+  <span class='kw'>if</span> <span class='kw'>defined?</span><span class='lparen'>(</span><span class='ivar'>@after</span><span class='rparen'>)</span>
+    <span class='ivar'>@after</span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@after</span> <span class='op'>=</span> <span class='ivar'>@after_value</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span> <span class='op'>?</span> <span class='kw'>nil</span> <span class='op'>:</span> <span class='ivar'>@after_value</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="before-instance_method">
+  
+    #<strong>before</strong>  &#x21d2; <tt>String</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the client-provided cursor. <code>""</code> is treated as <code>nil</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the client-provided cursor. <code>""</code> is treated as <code>nil</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+33
+34
+35
+36
+37
+38
+39</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 33</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_before'>before</span>
+  <span class='kw'>if</span> <span class='kw'>defined?</span><span class='lparen'>(</span><span class='ivar'>@before</span><span class='rparen'>)</span>
+    <span class='ivar'>@before</span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@before</span> <span class='op'>=</span> <span class='ivar'>@before_value</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span> <span class='op'>?</span> <span class='kw'>nil</span> <span class='op'>:</span> <span class='ivar'>@before_value</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="cursor_for-instance_method">
+  
+    #<strong>cursor_for</strong>(item)  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Return a cursor for this item.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>item</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>one of the passed in <span class='object_link'><a href="#items-instance_method" title="GraphQL::Pagination::Connection#items (method)">#items</a></span>, taken from <span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Connection/PaginationImplementationMissingError.html" title="GraphQL::Pagination::Connection::PaginationImplementationMissingError (class)">PaginationImplementationMissingError</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+157
+158
+159</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 157</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_cursor_for'>cursor_for</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Connection/PaginationImplementationMissingError.html" title="GraphQL::Pagination::Connection::PaginationImplementationMissingError (class)">PaginationImplementationMissingError</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Implement </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'>#cursor_for(item) to return the cursor for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_item'>item</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="edge_nodes-instance_method">
+  
+    #<strong>edge_nodes</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <div class="note deprecated"><strong>Deprecated.</strong> <div class='inline'><p>use <span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span> instead</p>
+</div></div>
+<p>A dynamic alias for compatibility with <span class='object_link'><a href="../Relay/BaseConnection.html" title="GraphQL::Relay::BaseConnection (class)">Relay::BaseConnection</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+125
+126
+127</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 125</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_edge_nodes'>edge_nodes</span>
+  <span class='id identifier rubyid_nodes'>nodes</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="edges-instance_method">
+  
+    #<strong>edges</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="Connection/Edge.html" title="GraphQL::Pagination::Connection::Edge (class)">Edge</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns <span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span>, but wrapped with Edge instances.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="Connection/Edge.html" title="GraphQL::Pagination::Connection::Edge (class)">Edge</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span>, but wrapped with Edge instances</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+114
+115
+116</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 114</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_edges'>edges</span>
+  <span class='ivar'>@edges</span> <span class='op'>||=</span> <span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='op'>|</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_edge_class'>edge_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_n'>n</span><span class='comma'>,</span> <span class='kw'>self</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_cursor-instance_method">
+  
+    #<strong>end_cursor</strong>  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The cursor of the last item in <span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The cursor of the last item in <span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+150
+151
+152</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 150</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_cursor'>end_cursor</span>
+  <span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_cursor_for'>cursor_for</span><span class='lparen'>(</span><span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="has_max_page_size_override?-instance_method">
+  
+    #<strong>has_max_page_size_override?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+88
+89
+90</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 88</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_has_max_page_size_override?'>has_max_page_size_override?</span>
+  <span class='ivar'>@has_max_page_size_override</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="has_next_page-instance_method">
+  
+    #<strong>has_next_page</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns True if there are more items after this page.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>True if there are more items after this page</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Connection/PaginationImplementationMissingError.html" title="GraphQL::Pagination::Connection::PaginationImplementationMissingError (class)">PaginationImplementationMissingError</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+135
+136
+137</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 135</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_has_next_page'>has_next_page</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Connection/PaginationImplementationMissingError.html" title="GraphQL::Pagination::Connection::PaginationImplementationMissingError (class)">PaginationImplementationMissingError</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Implement </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'>#has_next_page to return the next-page check</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="has_previous_page-instance_method">
+  
+    #<strong>has_previous_page</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns True if there were items before these items.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>True if there were items before these items</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Connection/PaginationImplementationMissingError.html" title="GraphQL::Pagination::Connection::PaginationImplementationMissingError (class)">PaginationImplementationMissingError</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+140
+141
+142</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 140</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_has_previous_page'>has_previous_page</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Connection/PaginationImplementationMissingError.html" title="GraphQL::Pagination::Connection::PaginationImplementationMissingError (class)">PaginationImplementationMissingError</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Implement </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'>#has_previous_page to return the previous-page check</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="max_page_size-instance_method">
+  
+    #<strong>max_page_size</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+80
+81
+82
+83
+84
+85
+86</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 80</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_max_page_size'>max_page_size</span>
+  <span class='kw'>if</span> <span class='ivar'>@has_max_page_size_override</span>
+    <span class='ivar'>@max_page_size</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_default_max_page_size'>default_max_page_size</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="max_page_size=-instance_method">
+  
+    #<strong>max_page_size=</strong>(new_value)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+75
+76
+77
+78</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 75</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_max_page_size='>max_page_size=</span><span class='lparen'>(</span><span class='id identifier rubyid_new_value'>new_value</span><span class='rparen'>)</span>
+  <span class='ivar'>@has_max_page_size_override</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='ivar'>@max_page_size</span> <span class='op'>=</span> <span class='id identifier rubyid_new_value'>new_value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="nodes-instance_method">
+  
+    #<strong>nodes</strong>  &#x21d2; <tt>Array&lt;Object&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns A slice of <span class='object_link'><a href="#items-instance_method" title="GraphQL::Pagination::Connection#items (method)">#items</a></span>, constrained by @first_value/@after_value/@last_value/@before_value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A slice of <span class='object_link'><a href="#items-instance_method" title="GraphQL::Pagination::Connection#items (method)">#items</a></span>, constrained by @first_value/@after_value/@last_value/@before_value</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Connection/PaginationImplementationMissingError.html" title="GraphQL::Pagination::Connection::PaginationImplementationMissingError (class)">PaginationImplementationMissingError</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+119
+120
+121</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 119</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_nodes'>nodes</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Connection/PaginationImplementationMissingError.html" title="GraphQL::Pagination::Connection::PaginationImplementationMissingError (class)">PaginationImplementationMissingError</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Implement </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'>#nodes to paginate `@items`</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="page_info-instance_method">
+  
+    #<strong>page_info</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The connection object itself implements <code>PageInfo</code> fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+130
+131
+132</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 130</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_page_info'>page_info</span>
+  <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="start_cursor-instance_method">
+  
+    #<strong>start_cursor</strong>  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The cursor of the first item in <span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The cursor of the first item in <span class='object_link'><a href="#nodes-instance_method" title="GraphQL::Pagination::Connection#nodes (method)">#nodes</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+145
+146
+147</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/pagination/connection.rb', line 145</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_start_cursor'>start_cursor</span>
+  <span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_cursor_for'>cursor_for</span><span class='lparen'>(</span><span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon Jun 29 19:17:03 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.25 (ruby-2.7.1).
+</div>
+
+    </div>
+  </body>
+</html>
