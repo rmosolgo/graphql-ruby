@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 1.10.14 (29 June 2020)
+
+### Bug fixes
+
+- Fix arguments caching to check for field extensions #3003
+- Remove more `visible?` calls to unused arguments #3000
+
 ## 1.10.13 (16 June 2020)
 
 ### Feature? Bug fix?
