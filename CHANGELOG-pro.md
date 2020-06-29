@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.14.1 (29 June 2020)
+
+- CanCan: Accept `can_can_attribute:` configuration, which is passed as the third input to `.can?(...)`
+
 ## 1.14.0 (13 June 2020)
 
 ### New Features
