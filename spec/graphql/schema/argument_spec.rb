@@ -63,8 +63,8 @@ describe GraphQL::Schema::Argument do
 
   describe "#keys" do
     it "is not overwritten by the 'keys' argument" do
-      expected_keys = %w[aliasedArg arg argWithBlock defaultValueArg explodingPreparedArg instrumentId instrumentIds
-                         keys preparedArg preparedByCallableArg preparedByProcArg requiredArg]
+      expected_keys = ["aliasedArg", "arg", "argWithBlock", "defaultValueArg", "explodingPreparedArg", "instrumentId", "instrumentIds",
+                       "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredArg"]
       assert_equal expected_keys, SchemaArgumentTest::Query.fields["field"].arguments.keys.sort
     end
   end
