@@ -198,7 +198,7 @@ describe GraphQL::Schema::Argument do
   end
 
   describe 'invalid:' do
-    it 'field has conflicting params' do
+    it 'raises an error when a field has conflicting params' do
       exception = assert_raises ArgumentError do
         SchemaArgumentTest::Query.fields["field"].argument(:bad_arg, Float, required: true, default_value: 1.0)
       end
