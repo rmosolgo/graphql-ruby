@@ -61,6 +61,8 @@ module GraphQL
         @from_resolver = from_resolver
         @method_access = method_access
 
+        check_conflicting_params
+
         if definition_block
           if definition_block.arity == 1
             instance_exec(self, &definition_block)
@@ -185,6 +187,15 @@ module GraphQL
         else
           raise "Invalid prepare for #{@owner.name}.name: #{@prepare.inspect}"
         end
+      end
+
+      private
+
+      def check_conflicting_params
+        return unless !@null && default_value?
+
+        raise ArgumentError, "Argument '#{@name}' has conflicting params! " \
+          "Arguments can't be required and have default values at the same time!"
       end
     end
   end
