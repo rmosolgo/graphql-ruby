@@ -98,7 +98,7 @@ module GraphQL
                 value(
                   enum_value["name"],
                   description: enum_value["description"],
-                  deprecation_reason: enum_value["deprecation_reason"],
+                  deprecation_reason: enum_value["deprecationReason"],
                 )
               end
             end
@@ -156,6 +156,7 @@ module GraphQL
               field_hash["name"],
               type: type_resolver.call(field_hash["type"]),
               description: field_hash["description"],
+              deprecation_reason: field_hash["deprecationReason"],
               null: true,
               camelize: false,
             ) do
