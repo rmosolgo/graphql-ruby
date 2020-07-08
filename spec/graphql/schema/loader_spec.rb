@@ -2,132 +2,142 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Loader do
-  let(:schema) {
-    node_type = GraphQL::InterfaceType.define do
-      name "Node"
+  Boolean = "Boolean"
+  ID = "ID"
+  Int = "Int"
 
-      field :id, !types.ID
+  let(:schema) {
+    node_type = Module.new do
+      include GraphQL::Schema::Interface
+      graphql_name "Node"
+
+      field :id, ID, null: false
     end
 
-    choice_type = GraphQL::EnumType.define do
-      name "Choice"
+    choice_type = Class.new(GraphQL::Schema::Enum) do
+      graphql_name "Choice"
 
       value "FOO", value: :foo
-      value "BAR"
+      value "BAR", deprecation_reason: "Don't use BAR"
     end
 
-    sub_input_type = GraphQL::InputObjectType.define do
-      name "Sub"
-      input_field :string, types.String
+    sub_input_type = Class.new(GraphQL::Schema::InputObject) do
+      graphql_name "Sub"
+      argument :string, String, required: false
     end
 
-    big_int_type = GraphQL::ScalarType.define do
-      name "BigInt"
-      coerce_input ->(value, _ctx) { value =~ /\d+/ ? Integer(value) : nil }
-      coerce_result ->(value, _ctx) { value.to_s }
-    end
+    big_int_type = Class.new(GraphQL::Schema::Scalar) do
+      graphql_name "BigInt"
 
-    variant_input_type = GraphQL::InputObjectType.define do
-      name "Varied"
-      input_field :id, types.ID
-      input_field :int, types.Int
-      input_field :bigint, big_int_type, default_value: 2**54
-      input_field :float, types.Float
-      input_field :bool, types.Boolean
-      input_field :enum, choice_type
-      input_field :sub, types[sub_input_type]
-    end
+      def self.coerce_input(value, _ctx)
+        value =~ /\d+/ ? Integer(value) : nil
+      end
 
-    variant_input_type_with_nulls = GraphQL::InputObjectType.define do
-      name "VariedWithNulls"
-      input_field :id, types.ID, default_value: nil
-      input_field :int, types.Int, default_value: nil
-      input_field :bigint, big_int_type, default_value: nil
-      input_field :float, types.Float, default_value: nil
-      input_field :bool, types.Boolean, default_value: nil
-      input_field :enum, choice_type, default_value: nil
-      input_field :sub, types[sub_input_type], default_value: nil
-    end
-
-    comment_type = GraphQL::ObjectType.define do
-      name "Comment"
-      description "A blog comment"
-      interfaces [node_type]
-
-      field :body, !types.String
-
-      field :fieldWithArg, types.Int do
-        argument :bigint, big_int_type, default_value: 2**54
+      def self.coerce_result(value, _ctx)
+        value.to_s
       end
     end
 
-    media_type = GraphQL::InterfaceType.define do
-      name "Media"
+    variant_input_type = Class.new(GraphQL::Schema::InputObject) do
+      graphql_name "Varied"
+      argument :id, ID, required: false
+      argument :int, Int, required: false
+      argument :bigint, big_int_type, required: false, default_value: 2**54
+      argument :float, Float, required: false
+      argument :bool, Boolean, required: false
+      argument :enum, choice_type, required: false
+      argument :sub, [sub_input_type], required: false
+    end
+
+    variant_input_type_with_nulls = Class.new(GraphQL::Schema::InputObject) do
+      graphql_name "VariedWithNulls"
+      argument :id, ID, required: false, default_value: nil
+      argument :int, Int, required: false, default_value: nil
+      argument :bigint, big_int_type, required: false, default_value: nil
+      argument :float, Float, required: false, default_value: nil
+      argument :bool, Boolean, required: false, default_value: nil
+      argument :enum, choice_type, required: false, default_value: nil
+      argument :sub, [sub_input_type], required: false, default_value: nil
+    end
+
+    comment_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Comment"
+      description "A blog comment"
+      implements node_type
+
+      field :body, String, null: false
+
+      field :field_with_arg, Int, null: true do
+        argument :bigint, big_int_type, default_value: 2**54, required: false
+      end
+    end
+
+    media_type = Module.new do
+      include GraphQL::Schema::Interface
+
+      graphql_name "Media"
       description "!!!"
-      field :type, !types.String
+      field :type, String, null: false
     end
 
-    video_type = GraphQL::ObjectType.define do
-      name "Video"
-      interfaces [media_type]
+    video_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Video"
+      implements media_type
     end
 
-    audio_type = GraphQL::ObjectType.define do
-      name "Audio"
-      interfaces [media_type]
+    audio_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Audio"
+      implements media_type
     end
 
-    post_type = GraphQL::ObjectType.define do
-      name "Post"
+    post_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Post"
       description "A blog post"
 
-      field :id, !types.ID
-      field :title, !types.String
-      field :body, !types.String
-      field :comments, types[!comment_type]
-      field :attachment, media_type
+      field :id, ID, null: false
+      field :title, String, null: false
+      field :summary, String, null: true, deprecation_reason: "Don't use Post.summary"
+      field :body, String, null: false
+      field :comments, [comment_type], null: true
+      field :attachment, media_type, null: true
     end
 
-    content_type = GraphQL::UnionType.define do
-      name "Content"
+    content_type = Class.new(GraphQL::Schema::Union) do
+      graphql_name "Content"
       description "A post or comment"
-      possible_types [post_type, comment_type]
+      possible_types post_type, comment_type
     end
 
-    query_root = GraphQL::ObjectType.define do
-      name "Query"
+    query_root = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Query"
       description "The query root of this schema"
 
-      field :post do
-        type post_type
-        argument :id, !types.ID
-        argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
-        argument :variedWithNull, variant_input_type_with_nulls, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil, bigint: nil, bool: nil }
-        argument :variedArray, types[variant_input_type], default_value: [{ id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }]
-        argument :enum, choice_type, default_value: :foo
-        argument :array, types[!types.String], default_value: ["foo", "bar"]
+      field :post, post_type, null: true do
+        argument :id, ID, required: true
+        argument :varied, variant_input_type, required: false, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
+        argument :variedWithNull, variant_input_type_with_nulls, required: false, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil, bigint: nil, bool: nil }
+        argument :variedArray, [variant_input_type], required: false, default_value: [{ id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }]
+        argument :enum, choice_type, required: false, default_value: :foo
+        argument :array, [String], required: false, default_value: ["foo", "bar"]
       end
 
-      field :content do
-        type content_type
-      end
+      field :content, content_type, null: true
     end
 
-    ping_mutation = GraphQL::Relay::Mutation.define do
-      name "Ping"
+    ping_mutation = Class.new(GraphQL::Schema::RelayClassicMutation) do
+      graphql_name "Ping"
     end
 
-    mutation_root = GraphQL::ObjectType.define do
-      name "Mutation"
-      field :ping, field: ping_mutation.field
+    mutation_root = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Mutation"
+      field :ping, mutation: ping_mutation
     end
 
-    GraphQL::Schema.define(
-      query: query_root,
-      mutation: mutation_root,
-      orphan_types: [audio_type, video_type],
-      resolve_type: ->(a,b,c) { :pass },
-    )
+    Class.new(GraphQL::Schema) do
+      query query_root
+      mutation mutation_root
+      orphan_types audio_type, video_type
+    end
   }
 
   let(:schema_json) {
@@ -136,56 +146,53 @@ describe GraphQL::Schema::Loader do
 
   describe "load" do
     def assert_deep_equal(expected_type, actual_type)
-      assert_equal expected_type.class, actual_type.class
-
-      case actual_type
-      when Array
+      if actual_type.is_a?(Array)
         actual_type.each_with_index do |obj, index|
           assert_deep_equal expected_type[index], obj
         end
-
-      when GraphQL::Schema
-        assert_equal expected_type.query.name, actual_type.query.name
-        assert_equal expected_type.directives.keys.sort, actual_type.directives.keys.sort
-        assert_equal expected_type.types.keys.sort, actual_type.types.keys.sort
-        assert_deep_equal expected_type.types.values.sort_by(&:name), actual_type.types.values.sort_by(&:name)
-
-      when GraphQL::ObjectType, GraphQL::InterfaceType
-        assert_equal expected_type.name, actual_type.name
+      elsif actual_type.is_a?(GraphQL::Schema::Field)
+        assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
-        assert_deep_equal expected_type.all_fields.sort_by(&:name), actual_type.all_fields.sort_by(&:name)
-
-      when GraphQL::Field
-        assert_equal expected_type.name, actual_type.name
+        assert_equal expected_type.deprecation_reason, actual_type.deprecation_reason
+        assert_deep_equal expected_type.arguments.values.sort_by(&:graphql_name), actual_type.arguments.values.sort_by(&:graphql_name)
+      elsif actual_type.is_a?(GraphQL::Schema::EnumValue)
+        assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
-        assert_equal expected_type.arguments.keys, actual_type.arguments.keys
-        assert_deep_equal expected_type.arguments.values, actual_type.arguments.values
-
-      when GraphQL::ScalarType
-        assert_equal expected_type.name, actual_type.name
-
-      when GraphQL::EnumType
-        assert_equal expected_type.name, actual_type.name
-        assert_equal expected_type.description, actual_type.description
-        assert_equal expected_type.values.keys, actual_type.values.keys
-        assert_deep_equal expected_type.values.values, actual_type.values.values
-
-      when GraphQL::EnumType::EnumValue
-        assert_equal expected_type.name, actual_type.name
-        assert_equal expected_type.description, actual_type.description
-
-      when GraphQL::Argument
-        assert_equal expected_type.name, actual_type.name
+        assert_equal expected_type.deprecation_reason, actual_type.deprecation_reason
+      elsif actual_type.is_a?(GraphQL::Schema::Argument)
+        assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
         assert_deep_equal expected_type.type, actual_type.type
-
-      when GraphQL::InputObjectType
-        assert_equal expected_type.arguments.keys, actual_type.arguments.keys
-        assert_deep_equal expected_type.arguments.values, actual_type.arguments.values
-
-      when GraphQL::NonNullType, GraphQL::ListType
+      elsif actual_type.is_a?(GraphQL::Schema::NonNull) || actual_type.is_a?(GraphQL::Schema::List)
+        assert_equal expected_type.class, actual_type.class
         assert_deep_equal expected_type.of_type, actual_type.of_type
-
+      elsif actual_type < GraphQL::Schema
+        assert_equal expected_type.query.graphql_name, actual_type.query.graphql_name
+        assert_equal expected_type.mutation.graphql_name, actual_type.mutation.graphql_name
+        assert_equal expected_type.directives.keys.sort, actual_type.directives.keys.sort
+        assert_deep_equal expected_type.types.values.sort_by(&:graphql_name), actual_type.types.values.sort_by(&:graphql_name)
+      elsif actual_type < GraphQL::Schema::Object
+        assert_equal expected_type.graphql_name, actual_type.graphql_name
+        assert_equal expected_type.description, actual_type.description
+        assert_deep_equal expected_type.interfaces.sort_by(&:graphql_name), actual_type.interfaces.sort_by(&:graphql_name)
+        assert_deep_equal expected_type.fields.values.sort_by(&:graphql_name), actual_type.fields.values.sort_by(&:graphql_name)
+      elsif actual_type < GraphQL::Schema::Interface
+        assert_equal expected_type.graphql_name, actual_type.graphql_name
+        assert_equal expected_type.description, actual_type.description
+        assert_deep_equal expected_type.fields.values.sort_by(&:graphql_name), actual_type.fields.values.sort_by(&:graphql_name)
+      elsif actual_type < GraphQL::Schema::Union
+        assert_equal expected_type.graphql_name, actual_type.graphql_name
+        assert_equal expected_type.description, actual_type.description
+        assert_deep_equal expected_type.possible_types.sort_by(&:graphql_name), actual_type.possible_types.sort_by(&:graphql_name)
+      elsif actual_type < GraphQL::Schema::Scalar
+        assert_equal expected_type.graphql_name, actual_type.graphql_name
+      elsif actual_type < GraphQL::Schema::Enum
+        assert_equal expected_type.graphql_name, actual_type.graphql_name
+        assert_equal expected_type.description, actual_type.description
+        assert_deep_equal expected_type.values.values.sort_by(&:graphql_name), actual_type.values.values.sort_by(&:graphql_name)
+      elsif actual_type < GraphQL::Schema::InputObject
+        assert_equal expected_type.graphql_name, actual_type.graphql_name
+        assert_deep_equal expected_type.arguments.values.sort_by(&:graphql_name), actual_type.arguments.values.sort_by(&:graphql_name)
       else
         assert_equal expected_type, actual_type
       end
@@ -194,8 +201,7 @@ describe GraphQL::Schema::Loader do
     let(:loaded_schema) { GraphQL::Schema.from_introspection(schema_json) }
 
     it "returns the schema" do
-      assert_instance_of Class, loaded_schema
-      assert_equal GraphQL::Schema, loaded_schema.superclass
+      assert_deep_equal(schema, loaded_schema)
     end
 
     it "can export the loaded schema" do
