@@ -1534,9 +1534,9 @@ module GraphQL
 
       # Add several directives at once
       # @param new_directives [Class]
-      def directives(new_directives = nil)
-        if new_directives
-          new_directives.each { |d| directive(d) }
+      def directives(*new_directives)
+        if new_directives.any?
+          new_directives.flatten.each { |d| directive(d) }
         end
 
         find_inherited_value(:directives, default_directives).merge(own_directives)
@@ -1550,11 +1550,11 @@ module GraphQL
       end
 
       def default_directives
-        {
+        @default_directives ||= {
           "include" => GraphQL::Schema::Directive::Include,
           "skip" => GraphQL::Schema::Directive::Skip,
           "deprecated" => GraphQL::Schema::Directive::Deprecated,
-        }
+        }.freeze
       end
 
       def tracer(new_tracer)

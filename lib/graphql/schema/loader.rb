@@ -25,8 +25,15 @@ module GraphQL
           types[type["name"]] = type_object
         end
 
+        directives = []
+        schema.fetch("directives", []).each do |directive|
+          next if GraphQL::Schema.default_directives.include?(directive.fetch("name"))
+          directives << define_directive(directive, type_resolver)
+        end
+
         Class.new(GraphQL::Schema) do
           orphan_types(types.values)
+          directives(directives)
 
           def self.resolve_type(*)
             raise(GraphQL::RequiredImplementationMissingError, "This schema was loaded from string, so it can't resolve types for objects")
@@ -144,6 +151,16 @@ module GraphQL
             end
           else
             fail GraphQL::RequiredImplementationMissingError, "#{type["kind"]} not implemented"
+          end
+        end
+
+        def define_directive(directive, type_resolver)
+          loader = self
+          Class.new(GraphQL::Schema::Directive) do
+            graphql_name(directive["name"])
+            description(directive["description"])
+            locations(*directive["locations"].map(&:to_sym))
+            loader.build_arguments(self, directive["args"], type_resolver)
           end
         end
 
