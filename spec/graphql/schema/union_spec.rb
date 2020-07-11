@@ -148,4 +148,40 @@ describe GraphQL::Schema::Union do
       }, res.to_h)
     end
   end
+
+  it "doesn't allow adding interface" do
+    object_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "SomeObject"
+    end
+
+    interface_type = Module.new {
+      include GraphQL::Schema::Interface
+      graphql_name "SomeInterface"
+    }
+
+    err = assert_raises ArgumentError do
+      Class.new(GraphQL::Schema::Union) do
+        graphql_name "SomeUnion"
+        possible_types object_type, interface_type
+      end
+    end
+
+    expected_message = /Union possible_types can only be object types \(not interface types\), remove SomeInterface \(#<Module:0x[a-f0-9]+>\)/
+
+    assert_match expected_message, err.message
+
+    union_type = Class.new(GraphQL::Schema::Union) do
+      graphql_name "SomeUnion"
+      possible_types object_type, GraphQL::Schema::LateBoundType.new("SomeInterface")
+    end
+
+    err2 = assert_raises ArgumentError do
+      Class.new(GraphQL::Schema) do
+        query(object_type)
+        orphan_types(union_type, interface_type)
+      end
+    end
+
+    assert_match expected_message, err2.message
+  end
 end
