@@ -1783,16 +1783,7 @@ module GraphQL
           if owner.kind.union?
             # It's a union with possible_types
             # Replace the item by class name
-            owner.type_memberships.each { |tm|
-              possible_type = tm.object_type
-              if possible_type.is_a?(String) && (possible_type == type.name)
-                # This is a match of Ruby class names, not graphql names,
-                # since strings are used to refer to constants.
-                tm.object_type = type
-              elsif possible_type.is_a?(LateBoundType) && possible_type.graphql_name == type.graphql_name
-                tm.object_type = type
-              end
-            }
+            owner.assign_type_membership_object_type(type)
             own_possible_types[owner.graphql_name] = owner.possible_types
           elsif type.kind.interface? && owner.kind.object?
             new_interfaces = []
