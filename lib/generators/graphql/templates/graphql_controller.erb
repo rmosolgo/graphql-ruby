@@ -30,8 +30,10 @@ class GraphqlController < ApplicationController
       else
         {}
       end
-    when Hash, ActionController::Parameters
+    when Hash
       ambiguous_param
+    when ActionController::Parameters
+      ambiguous_param.to_unsafe_hash
     when nil
       {}
     else
