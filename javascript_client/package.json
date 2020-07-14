@@ -35,5 +35,8 @@
   "prettier": {
     "semi": false,
     "trailingComma": "none"
+  },
+  "engines": {
+    "node": ">=10"
   }
 }
