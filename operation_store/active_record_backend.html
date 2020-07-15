@@ -82,9 +82,12 @@
     <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:graphql_client</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
     <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:graphql_operation</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
     <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:alias</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:last_used_at</span><span class="p">,</span> <span class="ss">:datetime</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:is_archived</span><span class="p">,</span> <span class="ss">:boolean</span>
     <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
   <span class="k">end</span>
   <span class="n">add_index</span> <span class="ss">:graphql_client_operations</span><span class="p">,</span> <span class="p">[</span><span class="ss">:graphql_client_id</span><span class="p">,</span> <span class="ss">:alias</span><span class="p">],</span> <span class="ss">unique: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"graphql_client_operations_pairs"</span>
+  <span class="n">add_index</span> <span class="ss">:graphql_client_operations</span><span class="p">,</span> <span class="ss">:is_archived</span>
 
   <span class="n">create_table</span> <span class="ss">:graphql_operations</span><span class="p">,</span> <span class="ss">primary_key: :id</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
     <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:digest</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
@@ -115,6 +118,14 @@
 <p>(You’ll have to run that migration on any staging or production servers, too.)</p>
 
 <p>Now, <code class="language-plaintext highlighter-rouge">OperationStore</code> has what it needs to save queries using ActiveRecord!</p>
+
+<h2 id="database-update">Database Update</h2>
+
+<p>GraphQL-Pro 1.15.0 introduced new features for the OperationStore. To enable them, add some columns to your database:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">add_column</span> <span class="ss">:graphql_client_operations</span><span class="p">,</span> <span class="ss">:is_archived</span><span class="p">,</span> <span class="ss">:boolean</span><span class="p">,</span> <span class="ss">default: </span><span class="kp">false</span>
+<span class="n">add_column</span> <span class="ss">:graphql_client_operations</span><span class="p">,</span> <span class="ss">:last_used_at</span><span class="p">,</span> <span class="ss">:datetime</span>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

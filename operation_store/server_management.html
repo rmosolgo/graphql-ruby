@@ -100,18 +100,20 @@
 <span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="deleting-data">Deleting Data</h3>
+<h3 id="archiving-and-deleting-data">Archiving and Deleting Data</h3>
 
-<p>Clients can only <em>add</em> to the database, but as an administrator, you can also delete entries from the database. (Make sure you <a href="/pro/dashboard">authorize access to the Dashboard</a>.)This is a dangerous operation: by deleting something, any clients who depend on that data will crash.</p>
+<p>Clients can only <em>add</em> to the database, but as an administrator, you can also archive or delete entries from the database. (Make sure you <a href="/pro/dashboard">authorize access to the Dashboard</a>.) This is a dangerous operation: by archiving or deleting something, any clients who depend on that data will crash.</p>
 
-<p>Some reasons to delete from the database are:</p>
+<p>Some reasons to archive or delete from the database are:</p>
 
 <ul>
   <li>Data was pushed in error; the data is not used</li>
   <li>The queries are invalid or unsafe; it’s better to remove them than to keep them</li>
 </ul>
 
-<p>If this is true, you can use “Delete” buttons to remove individual operations or entire clients.</p>
+<p>If this is true, you can use “Archive” or “Delete” buttons to remove things from production.</p>
+
+<p>When an operation is archived, it’s no longer available to clients, but it’s still in the database. It can be unarchived later, so this is lower-risk than full deletion.</p>
 
 <h3 id="integration-with-your-application">Integration with Your Application</h3>
 
