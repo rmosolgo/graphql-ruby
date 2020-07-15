@@ -37,9 +37,12 @@ def change
     t.references :graphql_client, null: false
     t.references :graphql_operation, null: false
     t.column :alias, :string, null: false
+    t.column :last_used_at, :datetime
+    t.column :is_archived, :boolean
     t.timestamps
   end
   add_index :graphql_client_operations, [:graphql_client_id, :alias], unique: true, name: "graphql_client_operations_pairs"
+  add_index :graphql_client_operations, :is_archived
 
   create_table :graphql_operations, primary_key: :id do |t|
     t.column :digest, :string, null: false
@@ -71,3 +74,12 @@ $ bundle exec rake db:migrate
 (You'll have to run that migration on any staging or production servers, too.)
 
 Now, `OperationStore` has what it needs to save queries using ActiveRecord!
+
+## Database Update
+
+GraphQL-Pro 1.15.0 introduced new features for the OperationStore. To enable them, add some columns to your database:
+
+```ruby
+add_column :graphql_client_operations, :is_archived, :boolean, default: false
+add_column :graphql_client_operations, :last_used_at, :datetime
+```

@@ -8,6 +8,28 @@
 
 ### Bug Fix
 
+## 1.15.0 (15 July 2020)
+
+- OperationStore: Store & display `last_used_at` for operation store clients and operations. To upgrade, add the column to your ActiveRecord table:
+
+  ```ruby
+  add_column :graphql_client_operations, :last_used_at, :datetime
+  ```
+
+  (It works out-of-the-box with the Redis backend.)
+
+  You can opt out of this feature by adding `use GraphQL::Pro::OperationStore, ... default_touch_last_used_at: false` to your schema setup.
+
+- OperationStore: Add archive/unarchive workflow for operations. To upgrade, add the column to your table:
+
+  ```ruby
+  add_column :graphql_client_operations, :is_archived, :boolean, index: true
+  ```
+
+  (It works out-of-the-box with the Redis backend.)
+
+- OperationStore: Fix indexing of enum values
+
 ## 1.14.1 (29 June 2020)
 
 - CanCan: Accept `can_can_attribute:` configuration, which is passed as the third input to `.can?(...)`
