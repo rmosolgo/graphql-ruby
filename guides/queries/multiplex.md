@@ -8,7 +8,7 @@ desc: Run multiple queries concurrently
 index: 10
 ---
 
-Some clients may send _several_ queries to the server at once (for example, [Apollo Client's query batching](https://www.apollographql.com/docs/react/advanced/network-layer.html#query-batching)). You can execute them concurrently with {{ "Schema#multiplex" | api_doc }}.
+Some clients may send _several_ queries to the server at once (for example, [Apollo Client's query batching](https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/)). You can execute them concurrently with {{ "Schema#multiplex" | api_doc }}.
 
 Multiplex runs have their own context, analyzers and instrumentation.
 
@@ -51,14 +51,14 @@ results = MySchema.multiplex(queries)
 
 ## Apollo Query Batching
 
-Apollo sends the batch variables in a `_json` param, you also need to ensure that your schema can handle both batched and non-batched queries, below is an example of the default GraphqlController rewritten to handle Apollo batches:
+Apollo sends batches of queries as an array of queries. Rails' ActionDispatch will parse the request and put the result into the `_json` field of the `params` variable. You also need to ensure that your schema can handle both batched and non-batched queries, below is an example of the default GraphqlController rewritten to handle Apollo batches:
 
 ```ruby
 def execute
   context = {}
 
-  # Apollo sends the params in a _json variable when batching is enabled
-  # see the Apollo Documentation about query batching: https://www.apollographql.com/docs/react/advanced/network-layer.html#query-batching
+  # Apollo sends the queries in an array when batching is enabled. The data ends up in the _json field of the params variable.
+  # see the Apollo Documentation about query batching: https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/
   result = if params[:_json]
     queries = params[:_json].map do |param|
       {
