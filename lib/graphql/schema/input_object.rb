@@ -166,10 +166,7 @@ module GraphQL
             return result
           end
 
-          # We're not actually _using_ the coerced result, we're just
-          # using these methods to make sure that the object will
-          # behave like a hash below, when we call `each` on it.
-          begin
+          input = begin
             input.to_h
           rescue
             begin
@@ -182,21 +179,25 @@ module GraphQL
             end
           end
 
-          visible_arguments_map = warden.arguments(self).reduce({}) { |m, f| m[f.name] = f; m}
-
-          # Items in the input that are unexpected
-          input.each do |name, value|
-            if visible_arguments_map[name].nil?
-              result.add_problem("Field is not defined on #{self.graphql_name}", [name])
+          # Inject missing required arguments
+          missing_required_inputs = self.arguments.reduce({}) do |m, (argument_name, argument)|
+            if !input.key?(argument_name) && argument.type.non_null? && warden.get_argument(self, argument_name)
+              m[argument_name] = nil
             end
+
+            m
           end
 
-          # Items in the input that are expected, but have invalid values
-          visible_arguments_map.map do |name, argument|
-            argument_result = argument.type.validate_input(input[name], ctx)
-            if !argument_result.valid?
-              result.merge_result!(name, argument_result)
+          input.merge(missing_required_inputs).each do |argument_name, value|
+            argument = warden.get_argument(self, argument_name)
+            # Items in the input that are unexpected
+            unless argument
+              result.add_problem("Field is not defined on #{self.graphql_name}", [argument_name])
+              next
             end
+            # Items in the input that are expected, but have invalid values
+            argument_result = argument.type.validate_input(value, ctx)
+            result.merge_result!(argument_name, argument_result) unless argument_result.valid?
           end
 
           result
