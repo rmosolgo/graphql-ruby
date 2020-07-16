@@ -110,33 +110,33 @@
 <p>You can apply <code class="language-plaintext highlighter-rouge">max_page_size</code> to limit the number of items returned, regardless of what the client requests.</p>
 
 <ul>
-  <li>
-    <p><strong>For the whole schema</strong>, you can add it to your schema definition:</p>
+  <li><strong>For the whole schema</strong>, you can add it to your schema definition:</li>
+</ul>
 
-    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">default_max_page_size</span> <span class="mi">50</span>
 <span class="k">end</span>
-</code></pre></div>    </div>
+</code></pre></div></div>
 
-    <p>At runtime, that value will be applied to <em>every</em> connection, unless an override is provided as described below.</p>
-  </li>
-  <li>
-    <p><strong>For a given field</strong>, add it to the field definition with a keyword:</p>
+<p>At runtime, that value will be applied to <em>every</em> connection, unless an override is provided as described below.</p>
 
-    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="no">Item</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+<ul>
+  <li><strong>For a given field</strong>, add it to the field definition with a keyword:</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="no">Item</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
   <span class="ss">max_page_size: </span><span class="mi">25</span>
-</code></pre></div>    </div>
-  </li>
-  <li>
-    <p><strong>Dynamically</strong>, you can add <code class="language-plaintext highlighter-rouge">max_page_size:</code> when you apply custom connection wrappers:</p>
+</code></pre></div></div>
 
-    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">items</span>
+<ul>
+  <li><strong>Dynamically</strong>, you can add <code class="language-plaintext highlighter-rouge">max_page_size:</code> when you apply custom connection wrappers:</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">items</span>
   <span class="n">relation</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">items</span>
   <span class="no">Connections</span><span class="o">::</span><span class="no">ItemsConnection</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">relation</span><span class="p">,</span> <span class="ss">max_page_size: </span><span class="mi">10</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre></div>    </div>
-  </li>
-</ul>
+</code></pre></div></div>
 
 <p>To <em>remove</em> a <code class="language-plaintext highlighter-rouge">max_page_size</code> setting, you can pass <code class="language-plaintext highlighter-rouge">nil</code>. That will allow unbounded collections to be returned to clients.</p>
 
