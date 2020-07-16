@@ -100,7 +100,6 @@ Persisted queries improve _visibility_ because you can track GraphQL usage from 
 
 {{ "/operation_store/operation_index.png" | link_to_img:"Index of GraphQL usage with persisted queries" }}
 
-
 ### How it Works
 
 `OperationStore` uses tables in your database to store normalized, deduplicated GraphQL strings. The database is immutable: new operations may be added, but operations are never modified or removed.

@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+## 1.15.2 (16 July 2020)
+
+### New Features
+
+- OperationStore: improve handling of archived operations in index views
+
+## 1.15.1 (16 July 2020)
+
+(Oops, bad release!)
+
 ## 1.15.0 (15 July 2020)
 
 - OperationStore: Store & display `last_used_at` for operation store clients and operations. To upgrade, add the column to your ActiveRecord table:
