@@ -33,7 +33,7 @@ class GraphqlController < ApplicationController
     when Hash
       ambiguous_param
     when ActionController::Parameters
-      ambiguous_param.to_unsafe_hash
+      ambiguous_param.to_unsafe_hash # GraphQL-Ruby will validate name and type of incoming variables.
     when nil
       {}
     else
