@@ -77,28 +77,28 @@ You can apply `max_page_size` to limit the number of items returned, regardless 
 
 - __For the whole schema__, you can add it to your schema definition:
 
-  ```ruby
-  class MyAppSchema < GraphQL::Schema
-    default_max_page_size 50
-  end
-  ```
+```ruby
+class MyAppSchema < GraphQL::Schema
+  default_max_page_size 50
+end
+```
 
   At runtime, that value will be applied to _every_ connection, unless an override is provided as described below.
 
 - __For a given field__, add it to the field definition with a keyword:
 
-  ```ruby
-  field :items, Item.connection_type, null: false,
-    max_page_size: 25
-  ```
+```ruby
+field :items, Item.connection_type, null: false,
+  max_page_size: 25
+```
 
 - __Dynamically__, you can add `max_page_size:` when you apply custom connection wrappers:
 
-  ```ruby
-  def items
-    relation = object.items
-    Connections::ItemsConnection.new(relation, max_page_size: 10)
-  end
-  ```
+```ruby
+def items
+  relation = object.items
+  Connections::ItemsConnection.new(relation, max_page_size: 10)
+end
+```
 
 To _remove_ a `max_page_size` setting, you can pass `nil`. That will allow unbounded collections to be returned to clients.
