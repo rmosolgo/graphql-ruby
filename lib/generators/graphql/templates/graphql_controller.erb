@@ -5,7 +5,6 @@ class GraphqlController < ApplicationController
   # protect_from_forgery with: :null_session
 
   def execute
-    variables = ensure_hash(params[:variables])
     query = params[:query]
     operation_name = params[:operationName]
     context = {
@@ -21,8 +20,9 @@ class GraphqlController < ApplicationController
 
   private
 
-  # Handle form data, JSON body, or a blank value
-  def ensure_hash(ambiguous_param)
+  # Handle variables in form data, JSON body, or a blank value
+  def variables
+    ambiguous_param = params[:variables]
     case ambiguous_param
     when String
       if ambiguous_param.present?
