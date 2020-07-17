@@ -58,7 +58,6 @@ module GraphQL
         @schema.ancestors.reverse_each do |schema_class|
           if schema_class.respond_to?(:connections) && (c = schema_class.connections)
             all_wrappers.merge!(c.wrappers)
-
           end
         end
         all_wrappers
