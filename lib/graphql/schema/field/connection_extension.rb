@@ -39,6 +39,9 @@ module GraphQL
             if field.has_max_page_size? && !value.has_max_page_size_override?
               value.max_page_size = field.max_page_size
             end
+            if (custom_t = context.schema.connections.edge_class_for_field(@field))
+              value.edge_class = custom_t
+            end
             value
           elsif context.schema.new_connections?
             wrappers = context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
