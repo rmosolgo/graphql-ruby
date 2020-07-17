@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.15.3 (17 July 2020)
+
+### Bug Fix
+
+- Subscriptions: don't send empty updates when subscriptions return `:no_update`
+
 ## 1.15.2 (16 July 2020)
 
 ### New Features
