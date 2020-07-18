@@ -203,7 +203,7 @@ describe GraphQL::Schema::Argument do
         SchemaArgumentTest::Query.fields["field"].argument(:bad_arg, Float, required: true, default_value: 1.0)
       end
 
-      error_message = "Argument 'badArg' has conflicting params! Arguments can't be required and have default values at the same time!"
+      error_message = "Argument 'badArg' has conflicting params, either use `required: false` or remove `default_value:`."
       assert_equal(error_message, exception.message)
     end
   end
