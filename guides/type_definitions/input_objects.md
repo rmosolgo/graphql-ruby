@@ -12,7 +12,7 @@ Input object types are complex inputs for GraphQL operations. They're great for 
 
 ```ruby
 mutation {
-  createPost(attributes: { title: "Hello World", fullText: "This is my first post", categories: [GENERAL] }) {
+  createPost(input: {attributes: { title: "Hello World", fullText: "This is my first post", categories: [GENERAL] } }) {
     #                    ^ Here is the input object ..................................................... ^
   }
 }
