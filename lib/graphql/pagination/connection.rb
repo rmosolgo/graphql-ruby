@@ -15,11 +15,6 @@ module GraphQL
       class PaginationImplementationMissingError < GraphQL::Error
       end
 
-      # @return [Class] The class to use for wrapping items as `edges { ... }`. Defaults to `Connection::Edge`
-      def self.edge_class
-        self::Edge
-      end
-
       # @return [Object] A list object, from the application. This is the unpaginated value passed into the connection.
       attr_reader :items
 
@@ -58,7 +53,7 @@ module GraphQL
       # @param last [Integer, nil] Limit parameter from the client, if provided
       # @param before [String, nil] A cursor for pagination, if the client provided one.
       # @param max_page_size [Integer, nil] A configured value to cap the result size. Applied as `first` if neither first or last are given.
-      def initialize(items, parent: nil, context: nil, first: nil, after: nil, max_page_size: :not_given, last: nil, before: nil)
+      def initialize(items, parent: nil, context: nil, first: nil, after: nil, max_page_size: :not_given, last: nil, before: nil, edge_class: nil)
         @items = items
         @parent = parent
         @context = context
@@ -66,7 +61,7 @@ module GraphQL
         @after_value = after
         @last_value = last
         @before_value = before
-
+        @edge_class = edge_class || self.class::Edge
         # This is only true if the object was _initialized_ with an override
         # or if one is assigned later.
         @has_max_page_size_override = max_page_size != :not_given
@@ -117,8 +112,11 @@ module GraphQL
 
       # @return [Array<Edge>] {nodes}, but wrapped with Edge instances
       def edges
-        @edges ||= nodes.map { |n| self.class.edge_class.new(n, self) }
+        @edges ||= nodes.map { |n| @edge_class.new(n, self) }
       end
+
+      # @return [Class] A wrapper class for edges of this connection
+      attr_accessor :edge_class
 
       # @return [Array<Object>] A slice of {items}, constrained by {@first_value}/{@after_value}/{@last_value}/{@before_value}
       def nodes

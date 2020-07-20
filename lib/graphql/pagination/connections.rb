@@ -86,9 +86,21 @@ module GraphQL
           after: arguments[:after],
           last: arguments[:last],
           before: arguments[:before],
+          edge_class: edge_class_for_field(field),
         )
       end
 
+      # use an override if there is one
+      # @api private
+      def edge_class_for_field(field)
+        conn_type = field.type.unwrap
+        conn_type_edge_type = conn_type.respond_to?(:edge_class) && conn_type.edge_class
+        if conn_type_edge_type && conn_type_edge_type != Relay::Edge
+          conn_type_edge_type
+        else
+          nil
+        end
+      end
       protected
 
       attr_reader :wrappers
