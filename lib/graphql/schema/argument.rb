@@ -61,6 +61,11 @@ module GraphQL
         @from_resolver = from_resolver
         @method_access = method_access
 
+        if !@null && default_value?
+          raise ArgumentError, "Argument '#{@name}' has conflicting params, " \
+            "either use `required: false` or remove `default_value:`."
+        end
+
         if definition_block
           if definition_block.arity == 1
             instance_exec(self, &definition_block)
