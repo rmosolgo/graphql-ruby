@@ -127,7 +127,7 @@ module GraphQL
         end
       end
 
-      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered wtih {#lazy_resolve}.
+      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered with {#lazy_resolve}.
       def lazy_method_name(obj)
         lazy_methods.get(obj)
       end
