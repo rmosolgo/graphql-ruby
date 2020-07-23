@@ -524,6 +524,7 @@ module GraphQL
 
       # Usage of a variable in a query. Name does _not_ include `$`.
       class VariableIdentifier < NameOnlyNode
+        self.children_method_name = :value
       end
 
       class SchemaDefinition < AbstractNode
