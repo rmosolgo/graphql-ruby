@@ -164,7 +164,6 @@ module GraphQL
       # @api private
       attr_writer :value
 
-      # @api private
       attr_accessor :scoped_context
 
       def_delegators :@provided_values, :[]=
