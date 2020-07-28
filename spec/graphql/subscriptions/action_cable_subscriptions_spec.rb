@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-if testing_rails?
+if testing_rails? && defined?(ActionCable) # not all rails versions have ActionCable
   describe GraphQL::Subscriptions::ActionCableSubscriptions do
     class ActionCableSchema < GraphQL::Schema
       class Tick < GraphQL::Schema::Subscription
