@@ -165,24 +165,35 @@ module GraphQL
       # Return the query from "storage" (in memory)
       def read_subscription(subscription_id)
         query = @subscriptions[subscription_id]
-        {
-          query_string: query.query_string,
-          variables: query.provided_variables,
-          context: query.context.to_h,
-          operation_name: query.operation_name,
-        }
+        if query.nil?
+          # This can happen when a subscription is triggered from an unsubscribed channel,
+          # see https://github.com/rmosolgo/graphql-ruby/issues/2478.
+          # (This `nil` is handled by `#execute_update`)
+          nil
+        else
+          {
+            query_string: query.query_string,
+            variables: query.provided_variables,
+            context: query.context.to_h,
+            operation_name: query.operation_name,
+          }
+        end
       end
 
       # The channel was closed, forget about it.
       def delete_subscription(subscription_id)
         query = @subscriptions.delete(subscription_id)
-        events = query.context.namespace(:subscriptions)[:events]
-        events.each do |event|
-          ev_by_fingerprint = @events[event.topic]
-          ev_for_fingerprint = ev_by_fingerprint[event.fingerprint]
-          ev_for_fingerprint.delete(event)
-          if ev_for_fingerprint.empty?
-            ev_by_fingerprint.delete(event.fingerprint)
+        # This can be `nil` when `.trigger` happens inside an unsubscribed ActionCable channel,
+        # see https://github.com/rmosolgo/graphql-ruby/issues/2478
+        if query
+          events = query.context.namespace(:subscriptions)[:events]
+          events.each do |event|
+            ev_by_fingerprint = @events[event.topic]
+            ev_for_fingerprint = ev_by_fingerprint[event.fingerprint]
+            ev_for_fingerprint.delete(event)
+            if ev_for_fingerprint.empty?
+              ev_by_fingerprint.delete(event.fingerprint)
+            end
           end
         end
       end
