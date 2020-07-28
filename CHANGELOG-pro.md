@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.15.4 (28 July 2020)
+
+### New Features
+
+- Pundit: add `pundit_policy_class_for(object, context)` and `pundit_role_for(object, context)` for runtime lookups
+
 ## 1.15.3 (17 July 2020)
 
 ### Bug Fix

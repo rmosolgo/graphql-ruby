@@ -46,6 +46,7 @@ And read on about the different features of the integration:
 - [Authorizing Arguments](#authorizing-arguments)
 - [Authorizing Mutations](#authorizing-mutations)
 - [Custom Policy Lookup](#custom-policy-lookup)
+- [Custom User Lookup](#custom-user-lookup)
 
 ## Authorizing Objects
 
@@ -416,7 +417,8 @@ By default, the integration uses `Pundit`'s top-level methods to interact with p
 
 You can override these by defining the following methods in your schema:
 
-- `pundit_policy(context, object)` to find a policy (or raise an error if one isn't found)
+- `pundit_policy_class_for(object, context)` to return a policy class (or raise an error if one isn't found)
+- `pundit_role_for(object, context)` to return a role method (Symbol), or `nil` to bypass authorization
 - `scope_by_pundit_policy(context, items)` to apply a scope to `items` (or raise an error if one isn't found)
 
 Since different objects have different lifecycles, the hooks are installed slightly different ways:
@@ -429,13 +431,22 @@ Here's an example of how the custom hooks can be installed:
 ```ruby
 module CustomPolicyLookup
   # Lookup policies in the `SystemAdmin::` namespace for system_admin users
-  def pundit_policy(context, object)
+  def pundit_policy_class_for(object, context)
     current_user = context[:current_user]
     if current_user.system_admin?
       policy_class = SystemAdmin.const_get("#{object.class.name}Policy")
       policy_class.new(current_user, object)
     else
       super
+    end
+  end
+
+  # Require admin permissions if the object is pending_approval
+  def pundit_role_for(object, context)
+    if object.pending_approval?
+      :admin
+    else
+      super # fall back to the normally-configured role
     end
   end
 end
