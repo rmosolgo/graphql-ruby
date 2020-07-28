@@ -32,7 +32,7 @@ describe GraphQL::StaticValidation::Validator do
 
     it "includes message, locations, and fields keys" do
       expected_errors = [{
-        "message" => "Variable $undefinedVar is used by  but not declared",
+        "message" => "Variable $undefinedVar is used by anonymous query but not declared",
         "locations" => [{"line" => 1, "column" => 14, "filename" => "not_a_real.graphql"}],
         "path" => ["query", "cheese", "id"],
         "extensions"=>{"code"=>"variableNotDefined", "variableName"=>"undefinedVar"}

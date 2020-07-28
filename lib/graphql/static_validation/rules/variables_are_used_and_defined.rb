@@ -126,8 +126,9 @@ module GraphQL
         node_variables
           .select { |name, usage| usage.declared? && !usage.used? }
           .each { |var_name, usage|
+            declared_by_error_name = usage.declared_by.name || "anonymous #{usage.declared_by.operation_type}"
             add_error(GraphQL::StaticValidation::VariablesAreUsedAndDefinedError.new(
-              "Variable $#{var_name} is declared by #{usage.declared_by.name} but not used",
+              "Variable $#{var_name} is declared by #{declared_by_error_name} but not used",
               nodes: usage.declared_by,
               path: usage.path,
               name: var_name,
@@ -139,8 +140,9 @@ module GraphQL
         node_variables
           .select { |name, usage| usage.used? && !usage.declared? }
           .each { |var_name, usage|
+            used_by_error_name = usage.used_by.name || "anonymous #{usage.used_by.operation_type}"
             add_error(GraphQL::StaticValidation::VariablesAreUsedAndDefinedError.new(
-              "Variable $#{var_name} is used by #{usage.used_by.name} but not declared",
+              "Variable $#{var_name} is used by #{used_by_error_name} but not declared",
               nodes: usage.ast_node,
               path: usage.path,
               name: var_name,
