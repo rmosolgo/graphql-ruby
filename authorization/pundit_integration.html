@@ -95,6 +95,7 @@
   <li><a href="#authorizing-arguments">Authorizing Arguments</a></li>
   <li><a href="#authorizing-mutations">Authorizing Mutations</a></li>
   <li><a href="#custom-policy-lookup">Custom Policy Lookup</a></li>
+  <li><a href="#custom-user-lookup">Custom User Lookup</a></li>
 </ul>
 
 <h2 id="authorizing-objects">Authorizing Objects</h2>
@@ -449,7 +450,8 @@
 <p>You can override these by defining the following methods in your schema:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">pundit_policy(context, object)</code> to find a policy (or raise an error if one isn’t found)</li>
+  <li><code class="language-plaintext highlighter-rouge">pundit_policy_class_for(object, context)</code> to return a policy class (or raise an error if one isn’t found)</li>
+  <li><code class="language-plaintext highlighter-rouge">pundit_role_for(object, context)</code> to return a role method (Symbol), or <code class="language-plaintext highlighter-rouge">nil</code> to bypass authorization</li>
   <li><code class="language-plaintext highlighter-rouge">scope_by_pundit_policy(context, items)</code> to apply a scope to <code class="language-plaintext highlighter-rouge">items</code> (or raise an error if one isn’t found)</li>
 </ul>
 
@@ -464,13 +466,22 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">CustomPolicyLookup</span>
   <span class="c1"># Lookup policies in the `SystemAdmin::` namespace for system_admin users</span>
-  <span class="k">def</span> <span class="nf">pundit_policy</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">object</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">pundit_policy_class_for</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
     <span class="n">current_user</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">system_admin?</span>
       <span class="n">policy_class</span> <span class="o">=</span> <span class="no">SystemAdmin</span><span class="p">.</span><span class="nf">const_get</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">object</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">Policy"</span><span class="p">)</span>
       <span class="n">policy_class</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="n">object</span><span class="p">)</span>
     <span class="k">else</span>
       <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Require admin permissions if the object is pending_approval</span>
+  <span class="k">def</span> <span class="nf">pundit_role_for</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">object</span><span class="p">.</span><span class="nf">pending_approval?</span>
+      <span class="ss">:admin</span>
+    <span class="k">else</span>
+      <span class="k">super</span> <span class="c1"># fall back to the normally-configured role</span>
     <span class="k">end</span>
   <span class="k">end</span>
 <span class="k">end</span>
