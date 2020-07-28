@@ -12,7 +12,7 @@
 
 ### New Features
 
-- Pundit: add `pundit_policy_class_for(object, context)` and `pundit_role_for(object, context)` for runtime lookups
+- Pundit: add `pundit_policy_class_for(object, context)` and `pundit_role_for(object, context)` for custom runtime lookups
 
 ## 1.15.3 (17 July 2020)
 
