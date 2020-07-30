@@ -89,7 +89,7 @@ module GraphQL
       # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
       # @return [Array, nil] If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
       def on_abstract_node(node, parent)
-        if node == DELETE_NODE
+        if node.equal?(DELETE_NODE)
           # This might be passed to `super(DELETE_NODE, ...)`
           # by a user hook, don't want to keep visiting in that case.
           nil
@@ -179,7 +179,7 @@ module GraphQL
             # The user-provided hook returned a new node.
             new_parent = new_parent && new_parent.replace_child(node, new_node)
             return new_node, new_parent
-          elsif new_node == DELETE_NODE
+          elsif new_node.equal?(DELETE_NODE)
             # The user-provided hook requested to remove this node
             new_parent = new_parent && new_parent.delete_child(node)
             return nil, new_parent
