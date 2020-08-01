@@ -9,6 +9,9 @@ module GraphQL
       GLOBALID_KEY = "__gid__"
       SYMBOL_KEY = "__sym__"
       SYMBOL_KEYS_KEY = "__sym_keys__"
+      TIMESTAMP_KEY = "__timestamp__"
+      TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%N%Z" # eg '2020-01-01 23:59:59.123456789+05:00'
+      OPEN_STRUCT_KEY = "__ostruct__"
 
       module_function
 
@@ -55,10 +58,20 @@ module GraphQL
           if value.is_a?(Array)
             value.map{|item| load_value(item)}
           elsif value.is_a?(Hash)
-            if value.size == 1 && value.key?(GLOBALID_KEY)
-              GlobalID::Locator.locate(value[GLOBALID_KEY])
-            elsif value.size == 1 && value.key?(SYMBOL_KEY)
-              value[SYMBOL_KEY].to_sym
+            if value.size == 1
+              case value.keys.first # there's only 1 key
+              when GLOBALID_KEY
+                GlobalID::Locator.locate(value[GLOBALID_KEY])
+              when SYMBOL_KEY
+                value[SYMBOL_KEY].to_sym
+              when TIMESTAMP_KEY
+                timestamp_class_name, timestamp_s = value[TIMESTAMP_KEY]
+                timestamp_class = Object.const_get(timestamp_class_name)
+                timestamp_class.strptime(timestamp_s, TIMESTAMP_FORMAT)
+              when OPEN_STRUCT_KEY
+                ostruct_values = load_value(value[OPEN_STRUCT_KEY])
+                OpenStruct.new(ostruct_values)
+              end
             else
               loaded_h = {}
               sym_keys = value.fetch(SYMBOL_KEYS_KEY, [])
@@ -101,6 +114,11 @@ module GraphQL
             { SYMBOL_KEY => obj.to_s }
           elsif obj.respond_to?(:to_gid_param)
             {GLOBALID_KEY => obj.to_gid_param}
+          elsif obj.is_a?(Date) || obj.is_a?(Time)
+            # DateTime extends Date; for TimeWithZone, call `.utc` first.
+            { TIMESTAMP_KEY => [obj.class.name, obj.strftime(TIMESTAMP_FORMAT)] }
+          elsif obj.is_a?(OpenStruct)
+            { OPEN_STRUCT_KEY => dump_value(obj.to_h) }
           else
             obj
           end
