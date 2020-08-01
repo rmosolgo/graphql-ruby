@@ -8,6 +8,31 @@
 
 ### Bug fixes
 
+## 1.11.2 (1 August 2020)
+
+### Breaking changes
+
+- Previously, GraphQL-Ruby allowed _both_ `default_value: ...` and `required: true` in argument definitions. However, this definition doesn't make sense -- a default value is never used for a `required: true` argument. This configuration now raises an error. Remove the `default_value:` to get rid of the error. #3011
+
+### New features
+
+- Support Date, Time and OpenStruct in Subscription::Serialize #3057
+
+### Bug fixes
+
+- Speed up `DELETE_NODE` check #3053
+- Reject invalid enum values during definition #3055
+- Fix `.trigger` from unsubscribed ActionCable channel #3051
+- Fix error message from VariablesAreUsedAndDefined for anonymous queries #3050
+- Fix renaming variable identifiers in AST visitor #3045
+- Reject `default_value: ...` used with `required: true` during definition #3011
+- Use the configured `edge_class:` with new connections #3036
+- Don't call visible for unused arguments #3030, #3031
+- Properly load directives from introspection results #3021
+- Reject interfaces as members of unions #3024
+- Load deprecation reason from introspection results #3014
+- Fix arguments caching when extension modify arguments #3009
+
 ## 1.11.1 (17 June 2020)
 
 ### New Features
