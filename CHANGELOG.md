@@ -25,8 +25,9 @@
 - Global tracers are removed (deprecated since 1.7.4) #2936
 - Fields defined in camel case (`field :doStuff`) will not line up to methods that are underscore case (`def do_stuff`). Instead, the given symbol is used _verbatim_. #2938 To work around this:
 
-  - Change the name of the field to match the method
-  - Or, add `method: :do_stuff` to explicitly map the field to a method
+  - Change the name of the method to match the field (eg, `def doStuff`)
+  - Change the name of the field to match the method (eg, `field :do_stuff`, let graphql-ruby camelize it for you)
+  - Or, add `resolver_method: :do_stuff` to explicitly map the field to a method on the object type definition
 
   You can probably find instances of this in your application with a regexp like `/field :[a-z]+[A-Z]/`, and review them.
 
