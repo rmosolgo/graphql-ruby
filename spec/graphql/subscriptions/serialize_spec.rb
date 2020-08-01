@@ -46,4 +46,22 @@ describe GraphQL::Subscriptions::Serialize do
     loaded = serialize_load(dumped)
     assert_equal value, loaded
   end
+
+  it "can deserialize date/times" do
+    datetime = DateTime.parse("2020-01-03 10:11:12")
+    time = Time.new
+    date = Date.today
+    [datetime, time, date].each do |timestamp|
+      serialized = serialize_dump(timestamp)
+      reloaded = serialize_load(serialized)
+      assert_equal timestamp, reloaded, "#{timestamp.inspect} is serialized to #{serialized.inspect} and reloaded"
+    end
+  end
+
+  it "can deserialize openstructs" do
+    os = OpenStruct.new(a: 1.2, b: :c, d: Time.new, e: OpenStruct.new(f: [1, 2, 3]))
+    serialized = serialize_dump(os)
+    reloaded = serialize_load(serialized)
+    assert_equal os, reloaded, "It reloads #{os.inspect} from #{serialized.inspect}"
+  end
 end
