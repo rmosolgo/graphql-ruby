@@ -40,6 +40,17 @@ describe GraphQL::Schema::Enum do
       value = enum.values["STRING"]
       assert_equal enum, value.owner
     end
+
+    it "disallows invalid names" do
+      err = assert_raises GraphQL::InvalidNameError do
+        Class.new(GraphQL::Schema::Enum) do
+          graphql_name "Thing"
+          value "IN/VALID"
+        end
+      end
+
+      assert_includes err.message, "but 'IN/VALID' does not"
+    end
   end
 
   it "uses a custom enum value class" do

@@ -41,6 +41,7 @@ module GraphQL
 
       def initialize(graphql_name, desc = nil, owner:, ast_node: nil, description: nil, value: nil, deprecation_reason: nil, &block)
         @graphql_name = graphql_name.to_s
+        GraphQL::NameValidator.validate!(@graphql_name)
         @description = desc || description
         @value = value.nil? ? @graphql_name : value
         @deprecation_reason = deprecation_reason
