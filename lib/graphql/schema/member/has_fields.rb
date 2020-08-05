@@ -53,7 +53,7 @@ module GraphQL
         # resolve method name.
         #
         # @api private
-        CONFLICT_FIELD_NAMES = Set.new(GRAPHQL_RUBY_KEYWORDS + RUBY_KEYWORDS)
+        CONFLICT_FIELD_NAMES = Set.new(GRAPHQL_RUBY_KEYWORDS + RUBY_KEYWORDS + Object.instance_methods)
 
         # Register this field with the class, overriding a previous one if needed.
         # @param field_defn [GraphQL::Schema::Field]
