@@ -47,13 +47,13 @@ module GraphQL
         # A list of GraphQL-Ruby keywords.
         #
         # @api private
-        GRAPHQL_RUBY_KEYWORDS = [:context, :object, :method, :raw_value]
+        GRAPHQL_RUBY_KEYWORDS = [:context, :object, :raw_value]
 
         # A list of field names that we should advise users to pick a different
         # resolve method name.
         #
         # @api private
-        CONFLICT_FIELD_NAMES = Set.new(GRAPHQL_RUBY_KEYWORDS + RUBY_KEYWORDS)
+        CONFLICT_FIELD_NAMES = Set.new(GRAPHQL_RUBY_KEYWORDS + RUBY_KEYWORDS + Object.instance_methods)
 
         # Register this field with the class, overriding a previous one if needed.
         # @param field_defn [GraphQL::Schema::Field]

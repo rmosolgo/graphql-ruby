@@ -405,8 +405,9 @@ module Jazz
 
     def now_playing; Models.data["Ensemble"].first; end
 
-    # For asserting that the object is initialized once:
-    field :object_id, String, null: false
+    # For asserting that the *resolver* object is initialized once:
+    # `method_conflict_warning: false` tells graphql-ruby that exposing Object#object_id was intentional
+    field :object_id, String, null: false, method_conflict_warning: false
     field :inspect_context, [String], null: false
     field :hashy_ensemble, Ensemble, null: false
 
