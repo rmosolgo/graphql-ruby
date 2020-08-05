@@ -47,7 +47,7 @@ module GraphQL
         # A list of GraphQL-Ruby keywords.
         #
         # @api private
-        GRAPHQL_RUBY_KEYWORDS = [:context, :object, :method, :raw_value]
+        GRAPHQL_RUBY_KEYWORDS = [:context, :object, :raw_value]
 
         # A list of field names that we should advise users to pick a different
         # resolve method name.
