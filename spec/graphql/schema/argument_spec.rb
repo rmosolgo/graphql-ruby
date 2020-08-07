@@ -6,12 +6,11 @@ describe GraphQL::Schema::Argument do
     class Query < GraphQL::Schema::Object
       field :field, String, null: true do
         argument :arg, String, description: "test", required: false
+
         argument :arg_with_block, String, required: false do
           description "test"
         end
-
-        argument :required_arg, Int, required: true
-        argument :default_value_arg, Int, required: false, default_value: 1
+        argument :required_with_default_arg, Int, required: true, default_value: 1
         argument :aliased_arg, String, required: false, as: :renamed
         argument :prepared_arg, Int, required: false, prepare: :multiply
         argument :prepared_by_proc_arg, Int, required: false, prepare: ->(val, context) { context[:multiply_by] * val }
@@ -63,8 +62,7 @@ describe GraphQL::Schema::Argument do
 
   describe "#keys" do
     it "is not overwritten by the 'keys' argument" do
-      expected_keys = ["aliasedArg", "arg", "argWithBlock", "defaultValueArg", "explodingPreparedArg", "instrumentId", "instrumentIds",
-                       "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredArg"]
+      expected_keys = ["aliasedArg", "arg", "argWithBlock", "explodingPreparedArg", "instrumentId", "instrumentIds", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
       assert_equal expected_keys, SchemaArgumentTest::Query.fields["field"].arguments.keys.sort
     end
   end
@@ -114,53 +112,53 @@ describe GraphQL::Schema::Argument do
   describe "as:" do
     it "uses that Symbol for Ruby kwargs" do
       query_str = <<-GRAPHQL
-      { field(aliasedArg: "x", requiredArg: 1) }
+      { field(aliasedArg: "x") }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:default_value_arg=>1, :renamed=>"x", :required_arg=>1}', res["data"]["field"]
+      assert_equal '{:renamed=>"x", :required_with_default_arg=>1}', res["data"]["field"]
     end
   end
 
   describe "prepare:" do
     it "calls the method on the field's owner" do
       query_str = <<-GRAPHQL
-      { field(preparedArg: 5, requiredArg: 1) }
+      { field(preparedArg: 5) }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:default_value_arg=>1, :prepared_arg=>15, :required_arg=>1}', res["data"]["field"]
+      assert_equal '{:prepared_arg=>15, :required_with_default_arg=>1}', res["data"]["field"]
     end
 
     it "calls the method on the provided Proc" do
       query_str = <<-GRAPHQL
-      { field(preparedByProcArg: 5, requiredArg: 1) }
+      { field(preparedByProcArg: 5) }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:default_value_arg=>1, :prepared_by_proc_arg=>15, :required_arg=>1}', res["data"]["field"]
+      assert_equal '{:prepared_by_proc_arg=>15, :required_with_default_arg=>1}', res["data"]["field"]
     end
 
     it "calls the method on the provided callable object" do
       query_str = <<-GRAPHQL
-      { field(preparedByCallableArg: 5, requiredArg: 1) }
+      { field(preparedByCallableArg: 5) }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:default_value_arg=>1, :prepared_by_callable_arg=>15, :required_arg=>1}', res["data"]["field"]
+      assert_equal '{:prepared_by_callable_arg=>15, :required_with_default_arg=>1}', res["data"]["field"]
     end
 
     it "handles exceptions raised by prepare" do
       query_str = <<-GRAPHQL
-        { f1: field(arg: "echo", requiredArg: 1), f2: field(explodingPreparedArg: 5, requiredArg: 1) }
+        { f1: field(arg: "echo"), f2: field(explodingPreparedArg: 5) }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
-      assert_equal({ 'f1' => '{:arg=>"echo", :default_value_arg=>1, :required_arg=>1}', 'f2' => nil }, res['data'])
+      assert_equal({ 'f1' => '{:arg=>"echo", :required_with_default_arg=>1}', 'f2' => nil }, res['data'])
       assert_equal(res['errors'][0]['message'], 'boom!')
       assert_equal(res['errors'][0]['path'], ['f2'])
     end
@@ -169,60 +167,47 @@ describe GraphQL::Schema::Argument do
   describe "default_value:" do
     it 'uses default_value: with no input' do
       query_str = <<-GRAPHQL
-      { field(requiredArg: 1) }
+      { field }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
-      assert_equal '{:default_value_arg=>1, :required_arg=>1}', res["data"]["field"]
+      assert_equal '{:required_with_default_arg=>1}', res["data"]["field"]
     end
 
     it 'uses provided input value' do
       query_str = <<-GRAPHQL
-      { field(defaultValueArg: 2, requiredArg: 1) }
+      { field(requiredWithDefaultArg: 2) }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
-      assert_equal '{:default_value_arg=>2, :required_arg=>1}', res["data"]["field"]
+      assert_equal '{:required_with_default_arg=>2}', res["data"]["field"]
     end
-  end
 
-  describe 'required:' do
     it 'respects non-null type' do
       query_str = <<-GRAPHQL
-      { field(requiredArg: null) }
+      { field(requiredWithDefaultArg: null) }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
-      assert_equal "Argument 'requiredArg' on Field 'field' has an invalid value (null). Expected type 'Int!'.", res['errors'][0]['message']
-    end
-  end
-
-  describe 'invalid:' do
-    it 'raises an error when a field has conflicting params' do
-      exception = assert_raises ArgumentError do
-        SchemaArgumentTest::Query.fields["field"].argument(:bad_arg, Float, required: true, default_value: 1.0)
-      end
-
-      error_message = "Argument 'badArg' has conflicting params, either use `required: false` or remove `default_value:`."
-      assert_equal(error_message, exception.message)
+      assert_equal "Argument 'requiredWithDefaultArg' on Field 'field' has an invalid value (null). Expected type 'Int!'.", res['errors'][0]['message']
     end
   end
 
   describe 'loads' do
     it "loads input object arguments" do
       query_str = <<-GRAPHQL
-      query { field(instrumentId: "Instrument/Drum Kit", requiredArg: 1) }
+      query { field(instrumentId: "Instrument/Drum Kit") }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
-      assert_equal "{:default_value_arg=>1, :instrument=>#{Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION").inspect}, :required_arg=>1}", res["data"]["field"]
+      assert_equal "{:instrument=>#{Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION").inspect}, :required_with_default_arg=>1}", res["data"]["field"]
 
       query_str2 = <<-GRAPHQL
-      query { field(instrumentIds: ["Instrument/Organ"], requiredArg: 1) }
+      query { field(instrumentIds: ["Instrument/Organ"]) }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str2)
-      assert_equal "{:default_value_arg=>1, :instruments=>[#{Jazz::Models::Instrument.new("Organ", "KEYS").inspect}], :required_arg=>1}", res["data"]["field"]
+      assert_equal "{:instruments=>[#{Jazz::Models::Instrument.new("Organ", "KEYS").inspect}], :required_with_default_arg=>1}", res["data"]["field"]
     end
 
     it "returns nil when no ID is given and `required: false`" do
