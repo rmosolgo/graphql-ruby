@@ -165,4 +165,24 @@ describe GraphQL::Schema::Mutation do
       assert override_mutation.field_options[:null]
     end
   end
+
+  it "warns once for possible conflict methods" do
+    expected_warning = "X's `field :module` conflicts with a built-in method, use `hash_key:` or `method:` to pick a different resolve behavior for this field (for example, `hash_key: :module_value`, and modify the return hash). Or use `method_conflict_warning: false` to suppress this warning.\n"
+    assert_output "", expected_warning do
+      # This should warn:
+      mutation = Class.new(GraphQL::Schema::Mutation) do
+        graphql_name "X"
+        field :module, String, null: true
+      end
+      # This should not warn again, when generating the payload type with the same fields:
+      mutation.payload_type
+    end
+
+    assert_output "", "" do
+      mutation = Class.new(GraphQL::Schema::Mutation) do
+        graphql_name "X"
+        field :module, String, null: true, hash_key: :module_value
+      end
+    end
+  end
 end
