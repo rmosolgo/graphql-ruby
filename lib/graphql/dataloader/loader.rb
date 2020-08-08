@@ -114,7 +114,13 @@ module GraphQL
       def sync
         # Promises might be added in the meantime, but they won't be included in this list.
         keys_to_load = @promises.keys - @loaded_values.keys
-        perform(keys_to_load)
+        if threaded?
+          Concurrent::Future.execute do
+            perform(keys_to_load)
+          end
+        else
+          perform(keys_to_load)
+        end
         nil
       end
 
