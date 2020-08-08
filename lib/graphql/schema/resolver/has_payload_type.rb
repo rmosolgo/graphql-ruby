@@ -58,7 +58,8 @@ module GraphQL
             resolver_fields.each do |name, f|
               # Reattach the already-defined field here
               # (The field's `.owner` will still point to the mutation, not the object type, I think)
-              add_field(f)
+              # Don't re-warn about a method conflict. Since this type is generated, it should be fixed in the resolver instead.
+              add_field(f, method_conflict_warning: false)
             end
           end
         end

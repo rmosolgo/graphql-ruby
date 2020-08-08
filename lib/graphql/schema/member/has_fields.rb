@@ -58,9 +58,11 @@ module GraphQL
         # Register this field with the class, overriding a previous one if needed.
         # @param field_defn [GraphQL::Schema::Field]
         # @return [void]
-        def add_field(field_defn)
-          if CONFLICT_FIELD_NAMES.include?(field_defn.resolver_method) && field_defn.original_name == field_defn.resolver_method && field_defn.method_conflict_warning?
-            warn "#{self.graphql_name}'s `field :#{field_defn.name}` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.resolver_method}` and `def resolve_#{field_defn.resolver_method}`). Or use `method_conflict_warning: false` to suppress this warning."
+        def add_field(field_defn, method_conflict_warning: field_defn.method_conflict_warning?)
+          # Check that `field_defn.original_name` equals `resolver_method` and `method_sym` --
+          # that shows that no override value was given manually.
+          if method_conflict_warning && CONFLICT_FIELD_NAMES.include?(field_defn.resolver_method) && field_defn.original_name == field_defn.resolver_method && field_defn.original_name == field_defn.method_sym
+            warn(conflict_field_name_warning(field_defn))
           end
           own_fields[field_defn.name] = field_defn
           nil
@@ -91,6 +93,14 @@ module GraphQL
         # @return [Array<GraphQL::Schema::Field>] Fields defined on this class _specifically_, not parent classes
         def own_fields
           @own_fields ||= {}
+        end
+
+        private
+
+        # @param [GraphQL::Schema::Field]
+        # @return [String] A warning to give when this field definition might conflict with a built-in method
+        def conflict_field_name_warning(field_defn)
+          "#{self.graphql_name}'s `field :#{field_defn.original_name}` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.resolver_method}` and `def resolve_#{field_defn.resolver_method}`). Or use `method_conflict_warning: false` to suppress this warning."
         end
       end
     end

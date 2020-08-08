@@ -357,11 +357,20 @@ describe GraphQL::Schema::Object do
       end
     end
 
-    it "doesn't warn with an override" do
+    it "doesn't warn with a resolver_method: override" do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
           field :method, String, null: true, resolver_method: :resolve_method
+        end
+      end
+    end
+
+    it "doesn't warn with a method: override" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :module, String, null: true, method: :mod
         end
       end
     end
