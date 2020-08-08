@@ -100,7 +100,25 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
+<p>And you can reference them in the query with <code class="language-plaintext highlighter-rouge">@directive_name(...)</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query</span> <span class="p">{</span>
+  <span class="n">field</span> <span class="vi">@directive_name</span> <span class="p">{</span>
+    <span class="nb">id</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
 <p><a href="/api-doc/1.11.2/GraphQL/Schema/Directive/Feature" target="_blank" title="API docs for GraphQL::Schema::Directive::Feature"><code>GraphQL::Schema::Directive::Feature</code></a> and <a href="/api-doc/1.11.2/GraphQL/Schema/Directive/Transform" target="_blank" title="API docs for GraphQL::Schema::Directive::Transform"><code>GraphQL::Schema::Directive::Transform</code></a> are included in the library as examples.</p>
+
+<h3 id="custom-name">Custom Name</h3>
+
+<p>By default, the directive’s name is taken from the class name. You can override this with <code class="language-plaintext highlighter-rouge">graphql_name</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Directives::IsPrivate</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Directive</span>
+  <span class="n">graphql_name</span> <span class="s2">"someOtherName"</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 <h3 id="arguments">Arguments</h3>
 
