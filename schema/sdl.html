@@ -1,0 +1,184 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Parsing GraphQL Schema Definition Language into a Ruby Schema</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.11.2/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#schema-guides">Schema</a>
+  &raquo; Parsing GraphQL Schema Definition Language into a Ruby Schema
+</p>
+
+
+<h1 class="guide-header">Parsing GraphQL Schema Definition Language into a Ruby Schema</h1>
+<div class="guide-container">
+  <p>GraphQL-Ruby includes a way to build a runable schema from the GraphQL Schema Definition Language (SDL). <a href="/api-doc/1.11.2/GraphQL/Schema#from_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.from_definition"><code>GraphQL::Schema.from_definition</code></a> returns a schema class based on a filename or string containing GraphQL SDL. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># From a file:</span>
+<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">from_definition</span><span class="p">(</span><span class="s2">"path/to/schema.graphql"</span><span class="p">)</span>
+<span class="c1"># Or, from a string:</span>
+<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">from_definition</span><span class="p">(</span><span class="o">&lt;&lt;~</span><span class="no">GRAPHQL</span><span class="p">)</span><span class="sh">
+  type Query {
+    # ...
+  }
+  # ...
+</span><span class="no">GRAPHQL</span>
+</code></pre></div></div>
+
+<p>Definitions from the SDL are converted into Ruby classes, similar to those defined in plain Ruby code.</p>
+
+<h2 id="execution">Execution</h2>
+
+<p>You can provide execution behaviors to a generated schema as <code class="language-plaintext highlighter-rouge">default_resolve:</code>, which accepts two kinds of values:</p>
+
+<ul>
+  <li><strong>Implementation Object</strong>: an object that implements several methods used at runtime</li>
+  <li><strong>Implementation Hash</strong>: keys and nested hashes provide procs for execution</li>
+</ul>
+
+<h3 id="implementation-object">Implementation Object</h3>
+
+<p>By providing an object that implements several runtime methods, you can define the execution behaviors of a schema loaded from SDL:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SchemaImplementation</span>
+  <span class="c1"># see below for methods</span>
+<span class="k">end</span>
+
+<span class="c1"># Pass the object as `default_resolve:`</span>
+<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">from_definition</span><span class="p">(</span>
+  <span class="s2">"path/to/schema.graphql"</span><span class="p">,</span>
+  <span class="ss">default_resolve: </span><span class="no">SchemaImplementation</span><span class="p">.</span><span class="nf">new</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">default_resolve:</code> object may implement:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">#call(type, field, obj, args, ctx)</code> for resolving fields</li>
+  <li><code class="language-plaintext highlighter-rouge">#resolve_type(abstract_type, obj, ctx)</code> for resolving <code class="language-plaintext highlighter-rouge">obj</code> as one of <code class="language-plaintext highlighter-rouge">abstract_type</code>’s possible object types</li>
+  <li><code class="language-plaintext highlighter-rouge">#coerce_input(type, value, ctx)</code> for coercing scalar input</li>
+  <li><code class="language-plaintext highlighter-rouge">#coerce_result(type, value, ctx)</code> for coercing scalar return values</li>
+</ul>
+
+<h3 id="implementation-hash">Implementation Hash</h3>
+
+<p>Alternatively, you can provide a Hash containing callable behaviors, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">schema_implementation</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="c1"># ... see below for hash structure</span>
+<span class="p">}</span>
+
+<span class="c1"># Pass the hash as `default_resolve:`</span>
+<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">from_definition</span><span class="p">(</span>
+  <span class="s2">"path/to/schema.graphql"</span><span class="p">,</span>
+  <span class="ss">default_resolve: </span><span class="n">schema_implementation</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p>The hash may contain:</p>
+
+<ul>
+  <li>A key for each object type name, containing a sub-hash of <code class="language-plaintext highlighter-rouge">{ field_name =&gt; -&gt;(obj, args, ctx) { ... } }</code> for resolving object fields</li>
+  <li>A key for each scalar type name, containing a sub-hash with keys <code class="language-plaintext highlighter-rouge">"coerce_result"</code> and <code class="language-plaintext highlighter-rouge">"coerce_input"</code>, each pointing to a <code class="language-plaintext highlighter-rouge">-&gt;(value, ctx) { ... }</code> for handling scalar values at runtime</li>
+  <li>A <code class="language-plaintext highlighter-rouge">"resolve_type"</code> key pointing to a <code class="language-plaintext highlighter-rouge">-&gt;(abstract_type, object, ctx) { ... }</code> callable, used for resolving <code class="language-plaintext highlighter-rouge">object</code> to one of <code class="language-plaintext highlighter-rouge">abstract_type</code>’s possible types</li>
+</ul>
+
+<h2 id="plugins">Plugins</h2>
+
+<table>
+  <tbody>
+    <tr>
+      <td>{ “GraphQL::Schema.from_definition”</td>
+      <td>api_doc }} accepts a <code class="language-plaintext highlighter-rouge">using:</code> argument, which may be given as a map of <code class="language-plaintext highlighter-rouge">plugin =&gt; args</code> pairs. For example:</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">from_definition</span><span class="p">(</span><span class="s2">"path/to/schema.graphql"</span><span class="p">,</span> <span class="ss">using: </span><span class="p">{</span>
+  <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PusherSubscriptions</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="ss">redis: </span><span class="vg">$redis</span> <span class="p">},</span>
+  <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">OperationStore</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">,</span> <span class="c1"># no options here</span>
+<span class="p">})</span>
+</code></pre></div></div>
+
+<h2 id="directives">Directives</h2>
+
+<p>Although GraphQL-Ruby doesn’t have special handling for directives in the SDL, you can build custom behavior in your own app. If part of the schema had a directive, you can access it using <code class="language-plaintext highlighter-rouge">.ast_node.directives</code>. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">from_definition</span> <span class="o">&lt;&lt;-</span><span class="no">GRAPHQL</span><span class="sh">
+type Query @flagged {
+  secret: Boolean @privacy(secret: true)
+}
+</span><span class="no">GRAPHQL</span>
+
+<span class="n">pp</span> <span class="n">schema</span><span class="p">.</span><span class="nf">query</span><span class="p">.</span><span class="nf">ast_node</span><span class="p">.</span><span class="nf">directives</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:to_query_string</span><span class="p">)</span>
+<span class="c1"># =&gt; ["@flagged"]</span>
+<span class="n">pp</span> <span class="n">schema</span><span class="p">.</span><span class="nf">get_field</span><span class="p">(</span><span class="s2">"Query"</span><span class="p">,</span> <span class="s2">"secret"</span><span class="p">).</span><span class="nf">ast_node</span><span class="p">.</span><span class="nf">directives</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:to_query_string</span><span class="p">)</span>
+<span class="c1"># =&gt; ["@privacy(secret: true)"]</span>
+</code></pre></div></div>
+
+<p>See <a href="/api-doc/1.11.2/GraphQL/Language/Nodes/Directive" target="_blank" title="API docs for GraphQL::Language::Nodes::Directive"><code>GraphQL::Language::Nodes::Directive</code></a> for available methods.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/schema/sdl.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Parsing GraphQL Schema Definition Language into a Ruby Schema">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
