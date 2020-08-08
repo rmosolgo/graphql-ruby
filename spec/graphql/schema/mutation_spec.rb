@@ -183,6 +183,7 @@ describe GraphQL::Schema::Mutation do
         graphql_name "X"
         field :module, String, null: true, hash_key: :module_value
       end
+      mutation.payload_type
     end
   end
 end
