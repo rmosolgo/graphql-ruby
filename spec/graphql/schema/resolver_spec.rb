@@ -334,7 +334,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class ResolverWithAuthArgs < GraphQL::Schema::RelayClassicMutation
-      argument :number_s, String, required: true, prepare: -> (v, ctx) { v.to_i }
+      argument :number_s, String, required: true, prepare: ->(v, ctx) { v.to_i }
       argument :loads_id, ID, required: true, loads: IntegerWrapper
 
       field :result, Integer, null: false
