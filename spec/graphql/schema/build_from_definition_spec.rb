@@ -743,10 +743,16 @@ enum MyEnum {
   VALUE
 }
 
+input MyInput {
+  int: Int @deprecated(reason: "This is not the argument you're looking for")
+  string: String
+}
+
 type Query {
   enum: MyEnum
   field1: String @deprecated
   field2: Int @deprecated(reason: "Because I said so")
+  field3(deprecatedArg: MyInput @deprecated(reason: "Use something else")): String
 }
       SCHEMA
 

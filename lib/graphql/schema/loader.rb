@@ -189,6 +189,7 @@ module GraphQL
             kwargs = {
               type: type_resolver.call(arg["type"]),
               description: arg["description"],
+              deprecation_reason: arg["deprecationReason"],
               required: false,
               method_access: false,
               camelize: false,

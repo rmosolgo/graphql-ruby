@@ -342,8 +342,8 @@ describe GraphQL::InputObjectType do
     it "shallow-copies internal state" do
       input_object_2 = input_object.dup
       input_object_2.arguments["nonsense"] = GraphQL::Argument.define(name: "int", type: GraphQL::INT_TYPE)
-      assert_equal 5, input_object.arguments.size
-      assert_equal 6, input_object_2.arguments.size
+      assert_equal 6, input_object.arguments.size
+      assert_equal 7, input_object_2.arguments.size
     end
   end
 end

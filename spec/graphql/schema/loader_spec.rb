@@ -47,6 +47,7 @@ describe GraphQL::Schema::Loader do
       argument :bool, Boolean, required: false
       argument :enum, choice_type, required: false
       argument :sub, [sub_input_type], required: false
+      argument :deprecated_arg, String, required: false, deprecation_reason: "Don't use Varied.deprecatedArg"
     end
 
     variant_input_type_with_nulls = Class.new(GraphQL::Schema::InputObject) do
@@ -119,6 +120,7 @@ describe GraphQL::Schema::Loader do
         argument :variedArray, [variant_input_type], required: false, default_value: [{ id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }]
         argument :enum, choice_type, required: false, default_value: :foo
         argument :array, [String], required: false, default_value: ["foo", "bar"]
+        argument :deprecated_arg, String, required: false, deprecation_reason: "Don't use Varied.deprecatedArg"
       end
 
       field :content, content_type, null: true
@@ -142,7 +144,7 @@ describe GraphQL::Schema::Loader do
   }
 
   let(:schema_json) {
-    schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+    schema.execute(GraphQL::Introspection.query(include_deprecated_args: true))
   }
 
   describe "load" do
@@ -164,6 +166,7 @@ describe GraphQL::Schema::Loader do
       elsif actual_type.is_a?(GraphQL::Schema::Argument)
         assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
+        assert_equal expected_type.deprecation_reason, actual_type.deprecation_reason
         assert_deep_equal expected_type.type, actual_type.type
       elsif actual_type.is_a?(GraphQL::Schema::NonNull) || actual_type.is_a?(GraphQL::Schema::List)
         assert_equal expected_type.class, actual_type.class

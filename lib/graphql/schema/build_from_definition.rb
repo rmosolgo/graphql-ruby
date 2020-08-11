@@ -261,6 +261,7 @@ module GraphQL
               type: type_resolver.call(argument_defn.type),
               required: false,
               description: argument_defn.description,
+              deprecation_reason: builder.build_deprecation_reason(argument_defn.directives),
               ast_node: argument_defn,
               camelize: false,
               method_access: false,
