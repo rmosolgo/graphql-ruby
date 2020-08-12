@@ -8,6 +8,20 @@
 
 ### Bug fixes
 
+## 1.11.3 (12 August 2020)
+
+### Breaking changes
+
+- Reverted the `required` and `default_value` argument behaviour change in 1.11.2 since it was not spec compliant #3066
+
+### New features
+
+- Improve resolver method conflict warning #3069, #3062
+
+### Bug fixes
+
+- Fix connection wrappers on lazy lists #3070
+
 ## 1.11.2 (1 August 2020)
 
 ### Breaking changes
