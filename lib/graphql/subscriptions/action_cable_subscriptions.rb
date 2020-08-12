@@ -82,23 +82,22 @@ module GraphQL
     #   end
     #
     class ActionCableSubscriptions < GraphQL::Subscriptions
-      SUBSCRIPTION_PREFIX = "graphql-subscription:"
-      EVENT_PREFIX = "graphql-event:"
-
       # @param serializer [<#dump(obj), #load(string)] Used for serializing messages before handing them to `.broadcast(msg)`
-      def initialize(serializer: Serialize, **rest)
+      def initialize(serializer: Serialize, subscription_prefix: 'graphql-subscription:', event_prefix: 'graphql-event:', **rest)
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
         @subscriptions = Concurrent::Map.new
         @events = Concurrent::Map.new { |h, k| h[k] = Concurrent::Map.new { |h2, k2| h2[k2] = Concurrent::Array.new } }
         @serializer = serializer
+        @subscription_prefix = subscription_prefix
+        @event_prefix = event_prefix
         super
       end
 
       # An event was triggered; Push the data over ActionCable.
       # Subscribers will re-evaluate locally.
       def execute_all(event, object)
-        stream = EVENT_PREFIX + event.topic
+        stream = stream_event_name(event)
         message = @serializer.dump(object)
         ActionCable.server.broadcast(stream, message)
       end
@@ -107,7 +106,7 @@ module GraphQL
       # Send it to the specific stream where this client was waiting.
       def deliver(subscription_id, result)
         payload = { result: result.to_h, more: true }
-        ActionCable.server.broadcast(SUBSCRIPTION_PREFIX + subscription_id, payload)
+        ActionCable.server.broadcast(stream_subscription_name(subscription_id), payload)
       end
 
       # A query was run where these events were subscribed to.
@@ -117,7 +116,7 @@ module GraphQL
       def write_subscription(query, events)
         channel = query.context.fetch(:channel)
         subscription_id = query.context[:subscription_id] ||= build_id
-        stream = query.context[:action_cable_stream] ||= SUBSCRIPTION_PREFIX + subscription_id
+        stream = stream_subscription_name(subscription_id)
         channel.stream_from(stream)
         @subscriptions[subscription_id] = query
         events.each do |event|
@@ -141,7 +140,7 @@ module GraphQL
       #
       def setup_stream(channel, initial_event)
         topic = initial_event.topic
-        channel.stream_from(EVENT_PREFIX + topic, coder: ActiveSupport::JSON) do |message|
+        channel.stream_from(stream_event_name(initial_event), coder: ActiveSupport::JSON) do |message|
           object = @serializer.load(message)
           events_by_fingerprint = @events[topic]
           events_by_fingerprint.each do |_fingerprint, events|
@@ -196,6 +195,16 @@ module GraphQL
             end
           end
         end
+      end
+
+      private
+
+      def stream_subscription_name(subscription_id)
+        @subscription_prefix + subscription_id
+      end
+
+      def stream_event_name(event)
+        @event_prefix + event.topic
       end
     end
   end
