@@ -8,7 +8,7 @@
 
 ### Bug fixes
 
-## 1.11.3 (12 August 2020)
+## 1.11.3 (13 August 2020)
 
 ### Breaking changes
 
@@ -17,6 +17,7 @@
 ### New features
 
 - Improve resolver method conflict warning #3069, #3062
+- Store arguments on `Mutation` instances after they're loaded #3073
 
 ### Bug fixes
 
