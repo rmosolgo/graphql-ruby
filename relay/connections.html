@@ -123,8 +123,6 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><strong>Note:</strong>  If you use <em>classes</em> for an object’s connection or edge types, then all of that object’s connection and edge types should be classes. Otherwise, the auto-generated types from the <code class="language-plaintext highlighter-rouge">.edge_type</code> or <code class="language-plaintext highlighter-rouge">.connection_type</code> helpers will conflict with the class-based types.</p>
-
 <p>Now, you can use <code class="language-plaintext highlighter-rouge">PostConnectionWithTotalCountType</code> to define a connection with the “totalCount” field:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::AuthorType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
