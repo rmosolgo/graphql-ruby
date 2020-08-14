@@ -126,6 +126,11 @@ describe GraphQL::Schema::Subscription do
     subscription(Subscription)
     use GraphQL::Execution::Interpreter
     use GraphQL::Analysis::AST
+    use GraphQL::Execution::Errors
+
+    rescue_from(StandardError) { |err, *rest|
+      raise "This should never happen: #{err.class}: #{err.message}"
+    }
 
     def self.object_from_id(id, ctx)
       USERS[id]
@@ -397,6 +402,8 @@ describe GraphQL::Schema::Subscription do
       assert_equal "Merry Christmas, here's a new Ruby version", mailbox1.first["data"]["tootWasTooted"]["toot"]["body"]
       # But not matz:
       assert_equal [], mailbox2
+      # `:no_update` doesn't cause an unsubscribe
+      assert_equal 2, in_memory_subscription_count
     end
 
     it "unsubscribes if a `loads:` argument is not found" do
