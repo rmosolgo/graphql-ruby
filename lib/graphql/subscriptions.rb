@@ -101,8 +101,9 @@ module GraphQL
       query_data = read_subscription(subscription_id)
       if query_data.nil?
         delete_subscription(subscription_id)
-        nil
+        return nil
       end
+
       # Fetch the required keys from the saved data
       query_string = query_data.fetch(:query_string)
       variables = query_data.fetch(:variables)
