@@ -82,15 +82,18 @@ module GraphQL
     #   end
     #
     class ActionCableSubscriptions < GraphQL::Subscriptions
+      SUBSCRIPTION_PREFIX = "graphql-subscription:"
+      EVENT_PREFIX = "graphql-event:"
+
       # @param serializer [<#dump(obj), #load(string)] Used for serializing messages before handing them to `.broadcast(msg)`
-      def initialize(serializer: Serialize, subscription_prefix: 'graphql-subscription:', event_prefix: 'graphql-event:', **rest)
+      # @param namespace [string] Used to namespace events and subscriptions (default: '')
+      def initialize(serializer: Serialize, namespace: '', **rest)
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
         @subscriptions = Concurrent::Map.new
         @events = Concurrent::Map.new { |h, k| h[k] = Concurrent::Map.new { |h2, k2| h2[k2] = Concurrent::Array.new } }
         @serializer = serializer
-        @subscription_prefix = subscription_prefix
-        @event_prefix = event_prefix
+        @transmit_ns = namespace
         super
       end
 
@@ -200,11 +203,11 @@ module GraphQL
       private
 
       def stream_subscription_name(subscription_id)
-        @subscription_prefix + subscription_id
+        [SUBSCRIPTION_PREFIX, @transmit_ns, subscription_id].join
       end
 
       def stream_event_name(event)
-        @event_prefix + event.topic
+        [EVENT_PREFIX, @transmit_ns, event.topic].join
       end
     end
   end
