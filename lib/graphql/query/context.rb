@@ -168,7 +168,6 @@ module GraphQL
       attr_accessor :scoped_context
 
       def_delegators :@provided_values, :[]=
-      def_delegators :to_h, :dig
       def_delegators :@query, :trace, :interpreter?
 
       # @!method []=(key, value)
@@ -194,6 +193,10 @@ module GraphQL
         else
           raise KeyError.new(key: key)
         end
+      end
+
+      def dig(key, *other_keys)
+        @scoped_context.key?(key) ? @scoped_context.dig(key, *other_keys) : @provided_values.dig(key, *other_keys)
       end
 
       def to_h
