@@ -91,15 +91,10 @@ module GraphQL
           private
 
           def define_nodes_field(nullable = true)
-            if nullable
-              field :nodes, [@node_type, null: true],
-                null: true,
-                description: "A list of nodes."
-            else
-              field :nodes, [@node_type],
-                null: false,
-                description: "A list of nodes."
-            end
+            type = nullable ? [@node_type, null: true] : [@node_type]
+            field :nodes, type,
+              null: nullable,
+              description: "A list of nodes."
           end
         end
 
