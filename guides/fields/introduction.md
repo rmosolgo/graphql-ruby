@@ -52,7 +52,7 @@ field :scores, [Integer, null: true], null: true # `[Int]`, may return a list or
 
 ### Field Documentation
 
-Fields maybe documented with a __description__ and may be __deprecated__.
+Fields may be documented with a __description__ and may be __deprecated__.
 
 __Descriptions__ can be added with the `field(...)` method as a positional argument, a keyword argument, or inside the block:
 
