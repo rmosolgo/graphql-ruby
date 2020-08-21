@@ -424,7 +424,19 @@ describe GraphQL::Schema::Object do
 
   describe "type-specific invalid null errors" do
     class ObjectInvalidNullSchema < GraphQL::Schema
+      module Numberable
+        include GraphQL::Schema::Interface
+
+        field :float, Float, null: false
+
+        def float
+          nil
+        end
+      end
+
       class Query < GraphQL::Schema::Object
+        implements Numberable
+
         field :int, Integer, null: false
         def int
           nil
@@ -443,6 +455,12 @@ describe GraphQL::Schema::Object do
     it "raises them when invalid nil is returned" do
       assert_raises(ObjectInvalidNullSchema::Query::InvalidNullError) do
         ObjectInvalidNullSchema.execute("{ int }")
+      end
+    end
+
+    it "raises them for fields inherited from interfaces" do
+      assert_raises(ObjectInvalidNullSchema::Query::InvalidNullError) do
+        ObjectInvalidNullSchema.execute("{ float }")
       end
     end
   end
