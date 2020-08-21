@@ -199,7 +199,7 @@ module GraphQL
             if (iface_field_defn = interface_type.get_field(field_defn.graphql_name))
               any_interface_has_field = true
 
-              if visible?(interface_type) && visible_field?(interface_type, iface_field_defn)
+              if interfaces(type_defn).include?(interface_type) && visible_field?(interface_type, iface_field_defn)
                 any_interface_has_visible_field = true
               end
             end
