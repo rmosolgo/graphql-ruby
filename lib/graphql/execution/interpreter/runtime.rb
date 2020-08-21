@@ -170,13 +170,13 @@ module GraphQL
             begin
               kwarg_arguments = arguments(object, field_defn, ast_node)
             rescue GraphQL::ExecutionError => e
-              continue_value(next_path, e, field_defn, return_type.non_null?, ast_node)
+              continue_value(next_path, e, owner_type, field_defn, return_type.non_null?, ast_node)
               next
             end
 
             after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
               if resolved_arguments.is_a? GraphQL::ExecutionError
-                continue_value(next_path, resolved_arguments, field_defn, return_type.non_null?, ast_node)
+                continue_value(next_path, resolved_arguments, owner_type, field_defn, return_type.non_null?, ast_node)
                 next
               end
 
@@ -228,12 +228,12 @@ module GraphQL
                   err
                 end
                 after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |inner_result|
-                  continue_value = continue_value(next_path, inner_result, field_defn, return_type.non_null?, ast_node)
+                  continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node)
                   if RawValue === continue_value
                     # Write raw value directly to the response without resolving nested objects
                     write_in_response(next_path, continue_value.resolve)
                   elsif HALT != continue_value
-                    continue_field(next_path, continue_value, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments)
+                    continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments)
                   end
                 end
               end
@@ -251,10 +251,9 @@ module GraphQL
         end
 
         HALT = Object.new
-        def continue_value(path, value, field, is_non_null, ast_node)
+        def continue_value(path, value, parent_type, field, is_non_null, ast_node)
           if value.nil?
             if is_non_null
-              parent_type = field.owner_type
               err = parent_type::InvalidNullError.new(parent_type, field, value)
               write_invalid_null_in_response(path, err)
             else
@@ -282,7 +281,7 @@ module GraphQL
               err
             end
 
-            continue_value(path, next_value, field, is_non_null, ast_node)
+            continue_value(path, next_value, parent_type, field, is_non_null, ast_node)
           elsif GraphQL::Execution::Execute::SKIP == value
             HALT
           else
@@ -298,49 +297,49 @@ module GraphQL
         # Location information from `path` and `ast_node`.
         #
         # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
-        def continue_field(path, value, field, type, ast_node, next_selections, is_non_null, owner_object, arguments) # rubocop:disable Metrics/ParameterLists
-          case type.kind.name
+        def continue_field(path, value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments) # rubocop:disable Metrics/ParameterLists
+          case current_type.kind.name
           when "SCALAR", "ENUM"
-            r = type.coerce_result(value, context)
+            r = current_type.coerce_result(value, context)
             write_in_response(path, r)
             r
           when "UNION", "INTERFACE"
-            resolved_type_or_lazy, resolved_value = resolve_type(type, value, path)
+            resolved_type_or_lazy, resolved_value = resolve_type(current_type, value, path)
             resolved_value ||= value
 
-            after_lazy(resolved_type_or_lazy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
-              possible_types = query.possible_types(type)
+            after_lazy(resolved_type_or_lazy, owner: current_type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
+              possible_types = query.possible_types(current_type)
 
               if !possible_types.include?(resolved_type)
                 parent_type = field.owner_type
-                err_class = type::UnresolvedTypeError
+                err_class = current_type::UnresolvedTypeError
                 type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
                 write_in_response(path, nil)
                 nil
               else
-                continue_field(path, resolved_value, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments)
+                continue_field(path, resolved_value, owner_type, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments)
               end
             end
           when "OBJECT"
             object_proxy = begin
-              authorized_new(type, value, context, path)
+              authorized_new(current_type, value, context, path)
             rescue GraphQL::ExecutionError => err
               err
             end
-            after_lazy(object_proxy, owner: type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |inner_object|
-              continue_value = continue_value(path, inner_object, field, is_non_null, ast_node)
+            after_lazy(object_proxy, owner: current_type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |inner_object|
+              continue_value = continue_value(path, inner_object, owner_type, field, is_non_null, ast_node)
               if HALT != continue_value
                 response_hash = {}
                 write_in_response(path, response_hash)
-                evaluate_selections(path, context.scoped_context, continue_value, type, next_selections)
+                evaluate_selections(path, context.scoped_context, continue_value, current_type, next_selections)
                 response_hash
               end
             end
           when "LIST"
             response_list = []
             write_in_response(path, response_list)
-            inner_type = type.of_type
+            inner_type = current_type.of_type
             idx = 0
             scoped_context = context.scoped_context
             begin
@@ -352,9 +351,9 @@ module GraphQL
                 set_type_at_path(next_path, inner_type)
                 # This will update `response_list` with the lazy
                 after_lazy(inner_value, owner: inner_type, path: next_path, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
-                  continue_value = continue_value(next_path, inner_inner_value, field, inner_type.non_null?, ast_node)
+                  continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node)
                   if HALT != continue_value
-                    continue_field(next_path, continue_value, field, inner_type, ast_node, next_selections, false, owner_object, arguments)
+                    continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments)
                   end
                 end
               end
@@ -371,12 +370,12 @@ module GraphQL
 
             response_list
           when "NON_NULL"
-            inner_type = type.of_type
+            inner_type = current_type.of_type
             # Don't `set_type_at_path` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
-            continue_field(path, value, field, inner_type, ast_node, next_selections, true, owner_object, arguments)
+            continue_field(path, value, owner_type, field, inner_type, ast_node, next_selections, true, owner_object, arguments)
           else
-            raise "Invariant: Unhandled type kind #{type.kind} (#{type})"
+            raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
           end
         end
 
