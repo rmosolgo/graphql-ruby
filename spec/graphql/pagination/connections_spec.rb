@@ -112,4 +112,23 @@ describe GraphQL::Pagination::Connections do
 
     assert_includes err.message, "undefined method `no_such_method' for <BadThing!>"
   end
+
+  class SingleNewConnectionSchema < GraphQL::Schema
+    class Query < GraphQL::Schema::Object
+      field :strings, GraphQL::Types::String.connection_type, null: false
+
+      def strings
+        GraphQL::Pagination::ArrayConnection.new(["a", "b", "c"])
+      end
+    end
+
+    query(Query)
+    use GraphQL::Execution::Interpreter
+    use GraphQL::Analysis::AST
+  end
+
+  it "works when new connections are not installed" do
+    res = SingleNewConnectionSchema.execute("{ strings(first: 2) { edges { node } } }")
+    assert_equal ["a", "b"], res["data"]["strings"]["edges"].map { |e| e["node"] }
+  end
 end
