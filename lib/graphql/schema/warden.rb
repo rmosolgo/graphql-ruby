@@ -40,7 +40,6 @@ module GraphQL
       # @param filter [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
-      # @param deep_check [Boolean]
       def initialize(filter, context:, schema:)
         @schema = schema.interpreter? ? schema : schema.graphql_definition
         # Cache these to avoid repeated hits to the inheritance chain when one isn't present
@@ -51,7 +50,7 @@ module GraphQL
         @visibility_cache = read_through { |m| filter.call(m, context) }
       end
 
-      # @return [Array<GraphQL::BaseType>] Visible types in the schema
+      # @return [Hash<String, GraphQL::BaseType>] Visible types in the schema
       def types
         @types ||= begin
           vis_types = {}
