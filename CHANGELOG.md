@@ -8,6 +8,27 @@
 
 ### Bug fixes
 
+## 1.11.4 (24 August 2020)
+
+### Breaking changes
+
+### New features
+
+- Add `node_nullable` option for `edge_type` #3083
+- Use module namespacing for template generators #3098
+
+### Bug fixes
+
+- Rescue `SystemStackError`s during validation #3107
+- Add `require 'digest/sha2'` for fingerprint #3103
+- Optimize `GraphQL::Query::Context#dig` #3090
+- Check if new connections before calling method on it (fixes #3059) #3100
+- Thread field owner type through interpreter runtime (fixes #3086) #3099
+- Check for visible interfaces on the type in warden #3096
+- Update `AppOpticsTracing` with latest changes in `PlatformTracing` #3097
+- Use throw instead of raise to halt subscriptions early #3084
+- Optimize `GraphQL::Query::Context#fetch` #3081
+
 ## 1.11.3 (13 August 2020)
 
 ### Breaking changes
