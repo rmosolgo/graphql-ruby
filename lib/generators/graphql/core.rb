@@ -41,6 +41,14 @@ module Graphql
         end
       end
 
+      def module_namespacing_when_supported
+        if defined?(module_namespacing)
+          module_namespacing { yield }
+        else
+          yield
+        end
+      end
+
       private
 
       def schema_name
