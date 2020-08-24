@@ -131,4 +131,20 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
       assert_equal "Query has depth of 7, which exceeds max depth of 4", result.message
     end
   end
+
+  describe "when the query would cause a stack error" do
+    let(:query_string) {
+      str = "query { cheese(id: 1) { ".dup
+      n = 10_000
+      n.times { str << "similarCheese(source: SHEEP) { " }
+      str << "id "
+      n.times { str << "} " }
+      str << "} }"
+      str
+    }
+
+    it "returns an error" do
+      assert_equal ["This query is too large to execute."], query.static_errors.map(&:message)
+    end
+  end
 end
