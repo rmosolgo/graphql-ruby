@@ -172,6 +172,15 @@ end
 
 Note that `resolver_method` _cannot_ be used in combination with `method` or `hash_key`.
 
+### Field as an input
+
+An Input object can be generated from an Object using `generate_from_object_type` and all fields are exposed by default.
+If you would like to skip certain fields when generating an Input object, you have to set `as_input` flag to false.
+
+```ruby
+field :id, ID, null: false, as_input: false
+```
+
 ### Field Arguments
 
 _Arguments_ allow fields to take input to their resolution. For example:

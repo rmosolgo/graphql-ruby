@@ -148,6 +148,19 @@ module GraphQL
           type_defn
         end
 
+        # generate an InputObject based on the ObjectType
+        def generate_from_object_type(object)
+          object_ancestors = object.respond_to?(:ancestors) ? object.ancestors : []
+          raise("Unexpected argument type, GraphQL::Schema::Object successor expected") unless
+              object_ancestors.include?(GraphQL::Schema::Object)
+
+          object.fields.each do |name, field_defn|
+            if field_defn.as_input && field_defn.type.unwrap.kind.input?
+              argument(name, field_defn.type, required: false)
+            end
+          end
+        end
+
         def kind
           GraphQL::TypeKinds::INPUT_OBJECT
         end
