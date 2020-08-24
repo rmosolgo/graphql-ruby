@@ -90,6 +90,9 @@ module GraphQL
         end
 
         @valid = @validation_errors.empty?
+      rescue SystemStackError => err
+        @valid = false
+        @schema.query_stack_error(@query, err)
       end
 
       # If there are max_* values, add them,

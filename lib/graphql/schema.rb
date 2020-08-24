@@ -1663,6 +1663,10 @@ module GraphQL
         end
       end
 
+      def query_stack_error(query, err)
+        query.analysis_errors.push(GraphQL::AnalysisError.new("This query is too large to execute."))
+      end
+
       private
 
       def lazy_methods
