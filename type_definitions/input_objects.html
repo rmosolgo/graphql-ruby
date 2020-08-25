@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -75,7 +75,7 @@
 
 <h2 id="defining-input-object-types">Defining Input Object Types</h2>
 
-<p>Input object types extend <a href="/api-doc/1.11.3/GraphQL/Schema/InputObject" target="_blank" title="API docs for GraphQL::Schema::InputObject"><code>GraphQL::Schema::InputObject</code></a> and define key-value pairs with the <code class="language-plaintext highlighter-rouge">argument(...)</code> method. For example:</p>
+<p>Input object types extend <a href="/api-doc/1.11.4/GraphQL/Schema/InputObject" target="_blank" title="API docs for GraphQL::Schema::InputObject"><code>GraphQL::Schema::InputObject</code></a> and define key-value pairs with the <code class="language-plaintext highlighter-rouge">argument(...)</code> method. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_input_object.rb</span>
 <span class="c1"># Add a base class</span>
@@ -137,8 +137,8 @@
 <p>You can also add or override methods on input object classes to customize them.  They have two instance variables by default:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">@arguments</code>: A <a href="/api-doc/1.11.3/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a> instance</li>
-  <li><code class="language-plaintext highlighter-rouge">@context</code>: The current <a href="/api-doc/1.11.3/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">@arguments</code>: A <a href="/api-doc/1.11.4/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a> instance</li>
+  <li><code class="language-plaintext highlighter-rouge">@context</code>: The current <a href="/api-doc/1.11.4/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a></li>
 </ul>
 
 <p>Any extra methods you define on the class can be used for field resolution, as demonstrated above.</p>

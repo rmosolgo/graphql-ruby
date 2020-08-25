@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -62,13 +62,13 @@
 
 <h2 id="parse">Parse</h2>
 
-<p><a href="/api-doc/1.11.3/GraphQL#parse-class_method" target="_blank" title="API docs for GraphQL.parse"><code>GraphQL.parse</code></a> turns a string into a GraphQL document:</p>
+<p><a href="/api-doc/1.11.4/GraphQL#parse-class_method" target="_blank" title="API docs for GraphQL.parse"><code>GraphQL.parse</code></a> turns a string into a GraphQL document:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">parsed_doc</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="s2">"{ user(id: </span><span class="se">\"</span><span class="s2">1</span><span class="se">\"</span><span class="s2">) { userName } }"</span><span class="p">)</span>
 <span class="c1"># =&gt; #&lt;GraphQL::Language::Nodes::Document ...&gt;</span>
 </code></pre></div></div>
 
-<p>Also, <a href="/api-doc/1.11.3/GraphQL#parse_file-class_method" target="_blank" title="API docs for GraphQL.parse_file"><code>GraphQL.parse_file</code></a> parses the contents of the named file and includes a <code class="language-plaintext highlighter-rouge">filename</code> in the parsed document.</p>
+<p>Also, <a href="/api-doc/1.11.4/GraphQL#parse_file-class_method" target="_blank" title="API docs for GraphQL.parse_file"><code>GraphQL.parse_file</code></a> parses the contents of the named file and includes a <code class="language-plaintext highlighter-rouge">filename</code> in the parsed document.</p>
 
 <h4 id="ast-nodes">AST Nodes</h4>
 
@@ -94,16 +94,16 @@
 
 <h2 id="analyzemodify">Analyze/Modify</h2>
 
-<p>To inspect or modify a parsed document, extend <a href="/api-doc/1.11.3/GraphQL/Language/Visitor" target="_blank" title="API docs for GraphQL::Language::Visitor"><code>GraphQL::Language::Visitor</code></a> and implement its various hooks. It’s an implementation of the <a href="https://en.wikipedia.org/wiki/Visitor_pattern">visitor pattern</a>. In short, each node of the tree will be “visited” by calling a method, and those methods can gather information and perform modifications.</p>
+<p>To inspect or modify a parsed document, extend <a href="/api-doc/1.11.4/GraphQL/Language/Visitor" target="_blank" title="API docs for GraphQL::Language::Visitor"><code>GraphQL::Language::Visitor</code></a> and implement its various hooks. It’s an implementation of the <a href="https://en.wikipedia.org/wiki/Visitor_pattern">visitor pattern</a>. In short, each node of the tree will be “visited” by calling a method, and those methods can gather information and perform modifications.</p>
 
 <p>In the visitor, each node class has a hook, for example:</p>
 
 <ul>
-  <li><a href="/api-doc/1.11.3/GraphQL/Language/Nodes/Field" target="_blank" title="API docs for GraphQL::Language::Nodes::Field"><code>GraphQL::Language::Nodes::Field</code></a>s are routed to <code class="language-plaintext highlighter-rouge">#on_field</code></li>
-  <li><a href="/api-doc/1.11.3/GraphQL/Language/Nodes/Argument" target="_blank" title="API docs for GraphQL::Language::Nodes::Argument"><code>GraphQL::Language::Nodes::Argument</code></a>s are routed to <code class="language-plaintext highlighter-rouge">#on_argument</code></li>
+  <li><a href="/api-doc/1.11.4/GraphQL/Language/Nodes/Field" target="_blank" title="API docs for GraphQL::Language::Nodes::Field"><code>GraphQL::Language::Nodes::Field</code></a>s are routed to <code class="language-plaintext highlighter-rouge">#on_field</code></li>
+  <li><a href="/api-doc/1.11.4/GraphQL/Language/Nodes/Argument" target="_blank" title="API docs for GraphQL::Language::Nodes::Argument"><code>GraphQL::Language::Nodes::Argument</code></a>s are routed to <code class="language-plaintext highlighter-rouge">#on_argument</code></li>
 </ul>
 
-<p>See the <a href="/api-doc/1.11.3/GraphQL/Language/Visitor" target="_blank" title="API docs for GraphQL::Language::Visitor"><code>GraphQL::Language::Visitor</code></a> API docs for a full list of methods.</p>
+<p>See the <a href="/api-doc/1.11.4/GraphQL/Language/Visitor" target="_blank" title="API docs for GraphQL::Language::Visitor"><code>GraphQL::Language::Visitor</code></a> API docs for a full list of methods.</p>
 
 <p>Each method is called with <code class="language-plaintext highlighter-rouge">(node, parent)</code>, where:</p>
 
@@ -170,17 +170,17 @@
 
 <p>This will add <code class="language-plaintext highlighter-rouge">emailAddress</code> the fields selection on <code class="language-plaintext highlighter-rouge">node</code>.</p>
 
-<p>(These <code class="language-plaintext highlighter-rouge">.add_*</code> helpers are wrappers around <a href="/api-doc/1.11.3/GraphQL/Language/Nodes/AbstractNode#merge-instance_method" target="_blank" title="API docs for GraphQL::Language::Nodes::AbstractNode#merge"><code>GraphQL::Language::Nodes::AbstractNode#merge</code></a>.)</p>
+<p>(These <code class="language-plaintext highlighter-rouge">.add_*</code> helpers are wrappers around <a href="/api-doc/1.11.4/GraphQL/Language/Nodes/AbstractNode#merge-instance_method" target="_blank" title="API docs for GraphQL::Language::Nodes::AbstractNode#merge"><code>GraphQL::Language::Nodes::AbstractNode#merge</code></a>.)</p>
 
 <h2 id="print">Print</h2>
 
-<p>The easiest way to turn an AST back into a string of GraphQL is <a href="/api-doc/1.11.3/GraphQL/Language/Nodes/AbstractNode#to_query_string-instance_method" target="_blank" title="API docs for GraphQL::Language::Nodes::AbstractNode#to_query_string"><code>GraphQL::Language::Nodes::AbstractNode#to_query_string</code></a>, for example:</p>
+<p>The easiest way to turn an AST back into a string of GraphQL is <a href="/api-doc/1.11.4/GraphQL/Language/Nodes/AbstractNode#to_query_string-instance_method" target="_blank" title="API docs for GraphQL::Language::Nodes::AbstractNode#to_query_string"><code>GraphQL::Language::Nodes::AbstractNode#to_query_string</code></a>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">parsed_doc</span><span class="p">.</span><span class="nf">to_query_string</span>
 <span class="c1"># =&gt; '{ user(id: "1") { userName } }'</span>
 </code></pre></div></div>
 
-<p>You can also create a subclass of <a href="/api-doc/1.11.3/GraphQL/Language/Printer" target="_blank" title="API docs for GraphQL::Language::Printer"><code>GraphQL::Language::Printer</code></a> to customize how nodes are printed.</p>
+<p>You can also create a subclass of <a href="/api-doc/1.11.4/GraphQL/Language/Printer" target="_blank" title="API docs for GraphQL::Language::Printer"><code>GraphQL::Language::Printer</code></a> to customize how nodes are printed.</p>
 
 </div>
 <p class="guide-footer">

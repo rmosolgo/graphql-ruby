@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -56,7 +56,7 @@
   <li>A field returned a value as a union or interface, but that value couldn’t be resolved to a member of that union or interface.</li>
 </ul>
 
-<p>You can specify behavior in these cases by defining a <a href="/api-doc/1.11.3/GraphQL/Schema#type_error-class_method" target="_blank" title="API docs for GraphQL::Schema.type_error"><code>Schema.type_error</code></a> hook:</p>
+<p>You can specify behavior in these cases by defining a <a href="/api-doc/1.11.4/GraphQL/Schema#type_error-class_method" target="_blank" title="API docs for GraphQL::Schema.type_error"><code>Schema.type_error</code></a> hook:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">type_error</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
@@ -65,13 +65,13 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>It is called with an instance of <a href="/api-doc/1.11.3/GraphQL/UnresolvedTypeError" target="_blank" title="API docs for GraphQL::UnresolvedTypeError"><code>GraphQL::UnresolvedTypeError</code></a> or <a href="/api-doc/1.11.3/GraphQL/InvalidNullError" target="_blank" title="API docs for GraphQL::InvalidNullError"><code>GraphQL::InvalidNullError</code></a> and the query context (a <a href="/api-doc/1.11.3/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>).</p>
+<p>It is called with an instance of <a href="/api-doc/1.11.4/GraphQL/UnresolvedTypeError" target="_blank" title="API docs for GraphQL::UnresolvedTypeError"><code>GraphQL::UnresolvedTypeError</code></a> or <a href="/api-doc/1.11.4/GraphQL/InvalidNullError" target="_blank" title="API docs for GraphQL::InvalidNullError"><code>GraphQL::InvalidNullError</code></a> and the query context (a <a href="/api-doc/1.11.4/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>).</p>
 
 <p>If you don’t specify a hook, you get the default behavior:</p>
 
 <ul>
   <li>Unexpected <code class="language-plaintext highlighter-rouge">nil</code>s add an error the response’s <code class="language-plaintext highlighter-rouge">"errors"</code> key</li>
-  <li>Unresolved Union / Interface types raise <a href="/api-doc/1.11.3/GraphQL/UnresolvedTypeError" target="_blank" title="API docs for GraphQL::UnresolvedTypeError"><code>GraphQL::UnresolvedTypeError</code></a></li>
+  <li>Unresolved Union / Interface types raise <a href="/api-doc/1.11.4/GraphQL/UnresolvedTypeError" target="_blank" title="API docs for GraphQL::UnresolvedTypeError"><code>GraphQL::UnresolvedTypeError</code></a></li>
 </ul>
 
 <p>An object that fails type resolution is treated as <code class="language-plaintext highlighter-rouge">nil</code>.</p>

@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Executing Queries</h1>
 <div class="guide-container">
-  <p>You can execute queries with your <a href="/api-doc/1.11.3/GraphQL/Schema" target="_blank" title="API docs for GraphQL::Schema"><code>GraphQL::Schema</code></a> and get a Ruby Hash as a result. For example, to execute a query from a string:</p>
+  <p>You can execute queries with your <a href="/api-doc/1.11.4/GraphQL/Schema" target="_blank" title="API docs for GraphQL::Schema"><code>GraphQL::Schema</code></a> and get a Ruby Hash as a result. For example, to execute a query from a string:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"{ ... }"</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
@@ -77,12 +77,12 @@
   <li><code class="language-plaintext highlighter-rouge">context:</code> accepts application-specific data to pass to <code class="language-plaintext highlighter-rouge">resolve</code> functions</li>
   <li><code class="language-plaintext highlighter-rouge">root_value:</code> will be provided to root-level <code class="language-plaintext highlighter-rouge">resolve</code> functions as <code class="language-plaintext highlighter-rouge">obj</code></li>
   <li><code class="language-plaintext highlighter-rouge">operation_name:</code> picks a <a href="https://graphql.org/learn/queries/#operation-name">named operation</a> from the incoming string to execute</li>
-  <li><code class="language-plaintext highlighter-rouge">document:</code> accepts an already-parsed query (instead of a string), see <a href="/api-doc/1.11.3/GraphQL#parse-class_method" target="_blank" title="API docs for GraphQL.parse"><code>GraphQL.parse</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">document:</code> accepts an already-parsed query (instead of a string), see <a href="/api-doc/1.11.4/GraphQL#parse-class_method" target="_blank" title="API docs for GraphQL.parse"><code>GraphQL.parse</code></a></li>
   <li><code class="language-plaintext highlighter-rouge">validate:</code> may be <code class="language-plaintext highlighter-rouge">false</code> to skip static validation for this query</li>
   <li><code class="language-plaintext highlighter-rouge">max_depth:</code> and <code class="language-plaintext highlighter-rouge">max_complexity:</code> may override schema-level values</li>
 </ul>
 
-<p>Some of these options are described in more detail below, see <a href="/api-doc/1.11.3/GraphQL/Query#initialize-instance_method" target="_blank" title="API docs for GraphQL::Query#initialize"><code>GraphQL::Query#initialize</code></a> for more information.</p>
+<p>Some of these options are described in more detail below, see <a href="/api-doc/1.11.4/GraphQL/Query#initialize-instance_method" target="_blank" title="API docs for GraphQL::Query#initialize"><code>GraphQL::Query#initialize</code></a> for more information.</p>
 
 <h2 id="variables">Variables</h2>
 
@@ -102,7 +102,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">variables: </span><span class="n">variables</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>If the variable is a <a href="/api-doc/1.11.3/GraphQL/InputObjectType" target="_blank" title="API docs for GraphQL::InputObjectType"><code>GraphQL::InputObjectType</code></a>, you can provide a nested hash, for example:</p>
+<p>If the variable is a <a href="/api-doc/1.11.4/GraphQL/InputObjectType" target="_blank" title="API docs for GraphQL::InputObjectType"><code>GraphQL::InputObjectType</code></a>, you can provide a nested hash, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
 mutation createPost($postParams: PostInput!, $createdById: ID!){
@@ -157,7 +157,7 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Note that <code class="language-plaintext highlighter-rouge">context</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="/api-doc/1.11.3/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>, but it delegates <code class="language-plaintext highlighter-rouge">#[]</code>, <code class="language-plaintext highlighter-rouge">#[]=</code>, and a few other methods to the hash you provide.</p>
+<p>Note that <code class="language-plaintext highlighter-rouge">context</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="/api-doc/1.11.4/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>, but it delegates <code class="language-plaintext highlighter-rouge">#[]</code>, <code class="language-plaintext highlighter-rouge">#[]=</code>, and a few other methods to the hash you provide.</p>
 
 <h2 id="root-value">Root Value</h2>
 
@@ -179,7 +179,7 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><a href="/api-doc/1.11.3/GraphQL/Relay/Mutation" target="_blank" title="API docs for GraphQL::Relay::Mutation"><code>GraphQL::Relay::Mutation</code></a> fields will also receive <code class="language-plaintext highlighter-rouge">root_value:</code> as <code class="language-plaintext highlighter-rouge">obj</code> (assuming they’re attached directly to your <code class="language-plaintext highlighter-rouge">MutationType</code>).</p>
+<p><a href="/api-doc/1.11.4/GraphQL/Relay/Mutation" target="_blank" title="API docs for GraphQL::Relay::Mutation"><code>GraphQL::Relay::Mutation</code></a> fields will also receive <code class="language-plaintext highlighter-rouge">root_value:</code> as <code class="language-plaintext highlighter-rouge">obj</code> (assuming they’re attached directly to your <code class="language-plaintext highlighter-rouge">MutationType</code>).</p>
 
 </div>
 <p class="guide-footer">

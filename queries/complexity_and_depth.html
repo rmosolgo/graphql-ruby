@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -95,7 +95,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_complexity: </span><span class="kp">nil</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>To get a feeling for complexity of queries in your system, you can extend <a href="/api-doc/1.11.3/GraphQL/Analysis/AST/QueryComplexity" target="_blank" title="API docs for GraphQL::Analysis::AST::QueryComplexity"><code>GraphQL::Analysis::AST::QueryComplexity</code></a>. Hook it up to log out values from each query:</p>
+<p>To get a feeling for complexity of queries in your system, you can extend <a href="/api-doc/1.11.4/GraphQL/Analysis/AST/QueryComplexity" target="_blank" title="API docs for GraphQL::Analysis::AST::QueryComplexity"><code>GraphQL::Analysis::AST::QueryComplexity</code></a>. Hook it up to log out values from each query:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">LogQueryComplexityAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">QueryComplexity</span>
   <span class="c1"># Override this method to _do something_ with the calculated complexity value</span>
@@ -131,7 +131,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_depth: </span><span class="kp">nil</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>To get a feeling for depth of queries in your system, you can extend <a href="/api-doc/1.11.3/GraphQL/Analysis/AST/QueryDepth" target="_blank" title="API docs for GraphQL::Analysis::AST::QueryDepth"><code>GraphQL::Analysis::AST::QueryDepth</code></a>. Hook it up to log out values from each query:</p>
+<p>To get a feeling for depth of queries in your system, you can extend <a href="/api-doc/1.11.4/GraphQL/Analysis/AST/QueryDepth" target="_blank" title="API docs for GraphQL::Analysis::AST::QueryDepth"><code>GraphQL::Analysis::AST::QueryDepth</code></a>. Hook it up to log out values from each query:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">LogQueryDepth</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">QueryDepth</span>
   <span class="k">def</span> <span class="nf">result</span>

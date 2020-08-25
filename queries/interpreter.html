@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -114,8 +114,8 @@
     <p>For a replacement, check out:</p>
 
     <ul>
-      <li><a href="/api-doc/1.11.3/GraphQL/Execution/Lookahead" target="_blank" title="API docs for GraphQL::Execution::Lookahead"><code>GraphQL::Execution::Lookahead</code></a> for field-level info about child selections</li>
-      <li><a href="/api-doc/1.11.3/GraphQL/Analysis/AST" target="_blank" title="API docs for GraphQL::Analysis::AST"><code>GraphQL::Analysis::AST</code></a> for query analysis which is compatible with the new interpreter</li>
+      <li><a href="/api-doc/1.11.4/GraphQL/Execution/Lookahead" target="_blank" title="API docs for GraphQL::Execution::Lookahead"><code>GraphQL::Execution::Lookahead</code></a> for field-level info about child selections</li>
+      <li><a href="/api-doc/1.11.4/GraphQL/Analysis/AST" target="_blank" title="API docs for GraphQL::Analysis::AST"><code>GraphQL::Analysis::AST</code></a> for query analysis which is compatible with the new interpreter</li>
     </ul>
   </li>
   <li>
@@ -152,7 +152,7 @@
 
 <p>GraphQL-Ruby has “analyzers” that run <em>before</em> execution and may reject a query. With the interpreter, you can use <a href="/queries/ast_analysis">AST Analyzers</a> to get better performance.</p>
 
-<p>To make the migration, convert your previous analyzers to extend <a href="/api-doc/1.11.3/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a> as described in the guide, then add to your schema:</p>
+<p>To make the migration, convert your previous analyzers to extend <a href="/api-doc/1.11.4/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a> as described in the guide, then add to your schema:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
 </code></pre></div></div>

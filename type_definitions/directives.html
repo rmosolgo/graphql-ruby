@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -74,15 +74,15 @@
 <p>Here’s how the two built-in directives work:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">@skip(if: ...)</code> skips the selection if the <code class="language-plaintext highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.11.3/GraphQL/Schema/Directive/Skip" target="_blank" title="API docs for GraphQL::Schema::Directive::Skip"><code>GraphQL::Schema::Directive::Skip</code></a>)</li>
-  <li><code class="language-plaintext highlighter-rouge">@include(if: ...)</code> includes the selection if the <code class="language-plaintext highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.11.3/GraphQL/Schema/Directive/Include" target="_blank" title="API docs for GraphQL::Schema::Directive::Include"><code>GraphQL::Schema::Directive::Include</code></a>)</li>
+  <li><code class="language-plaintext highlighter-rouge">@skip(if: ...)</code> skips the selection if the <code class="language-plaintext highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.11.4/GraphQL/Schema/Directive/Skip" target="_blank" title="API docs for GraphQL::Schema::Directive::Skip"><code>GraphQL::Schema::Directive::Skip</code></a>)</li>
+  <li><code class="language-plaintext highlighter-rouge">@include(if: ...)</code> includes the selection if the <code class="language-plaintext highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.11.4/GraphQL/Schema/Directive/Include" target="_blank" title="API docs for GraphQL::Schema::Directive::Include"><code>GraphQL::Schema::Directive::Include</code></a>)</li>
 </ul>
 
 <p>GraphQL-Ruby also supports custom directives for use with the <a href="/queries/interpreter">interpreter runtime</a>.</p>
 
 <h2 id="custom-directives">Custom Directives</h2>
 
-<p>Custom directives extend <a href="/api-doc/1.11.3/GraphQL/Schema/Directive" target="_blank" title="API docs for GraphQL::Schema::Directive"><code>GraphQL::Schema::Directive</code></a>:</p>
+<p>Custom directives extend <a href="/api-doc/1.11.4/GraphQL/Schema/Directive" target="_blank" title="API docs for GraphQL::Schema::Directive"><code>GraphQL::Schema::Directive</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/directives/my_directive.rb</span>
 <span class="k">class</span> <span class="nc">Directives::MyDirective</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Directive</span>
@@ -109,7 +109,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p><a href="/api-doc/1.11.3/GraphQL/Schema/Directive/Feature" target="_blank" title="API docs for GraphQL::Schema::Directive::Feature"><code>GraphQL::Schema::Directive::Feature</code></a> and <a href="/api-doc/1.11.3/GraphQL/Schema/Directive/Transform" target="_blank" title="API docs for GraphQL::Schema::Directive::Transform"><code>GraphQL::Schema::Directive::Transform</code></a> are included in the library as examples.</p>
+<p><a href="/api-doc/1.11.4/GraphQL/Schema/Directive/Feature" target="_blank" title="API docs for GraphQL::Schema::Directive::Feature"><code>GraphQL::Schema::Directive::Feature</code></a> and <a href="/api-doc/1.11.4/GraphQL/Schema/Directive/Transform" target="_blank" title="API docs for GraphQL::Schema::Directive::Transform"><code>GraphQL::Schema::Directive::Transform</code></a> are included in the library as examples.</p>
 
 <h3 id="custom-name">Custom Name</h3>
 

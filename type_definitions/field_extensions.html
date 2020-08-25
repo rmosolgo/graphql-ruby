@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -47,11 +47,11 @@
 
 <h1 class="guide-header">Field Extensions</h1>
 <div class="guide-container">
-  <p><a href="/api-doc/1.11.3/GraphQL/Schema/FieldExtension" target="_blank" title="API docs for GraphQL::Schema::FieldExtension"><code>GraphQL::Schema::FieldExtension</code></a> provides a way to modify user-defined fields in a programmatic way. For example, Relay connections are implemented as a field extension (<a href="/api-doc/1.11.3/GraphQL/Schema/Field/ConnectionExtension" target="_blank" title="API docs for GraphQL::Schema::Field::ConnectionExtension"><code>GraphQL::Schema::Field::ConnectionExtension</code></a>).</p>
+  <p><a href="/api-doc/1.11.4/GraphQL/Schema/FieldExtension" target="_blank" title="API docs for GraphQL::Schema::FieldExtension"><code>GraphQL::Schema::FieldExtension</code></a> provides a way to modify user-defined fields in a programmatic way. For example, Relay connections are implemented as a field extension (<a href="/api-doc/1.11.4/GraphQL/Schema/Field/ConnectionExtension" target="_blank" title="API docs for GraphQL::Schema::Field::ConnectionExtension"><code>GraphQL::Schema::Field::ConnectionExtension</code></a>).</p>
 
 <h3 id="making-a-new-extension">Making a new extension</h3>
 
-<p>Field extensions are subclasses of <a href="/api-doc/1.11.3/GraphQL/Schema/FieldExtension" target="_blank" title="API docs for GraphQL::Schema::FieldExtension"><code>GraphQL::Schema::FieldExtension</code></a>:</p>
+<p>Field extensions are subclasses of <a href="/api-doc/1.11.4/GraphQL/Schema/FieldExtension" target="_blank" title="API docs for GraphQL::Schema::FieldExtension"><code>GraphQL::Schema::FieldExtension</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyExtension</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">FieldExtension</span>
 <span class="k">end</span>
@@ -88,9 +88,9 @@
 
 <p>Extensions have two hooks that wrap field resolution. Since GraphQL-Ruby supports deferred execution, these hooks <em>might not</em> be called back-to-back.</p>
 
-<p>First, <a href="/api-doc/1.11.3/GraphQL/Schema/FieldExtension#resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension#resolve"><code>GraphQL::Schema::FieldExtension#resolve</code></a> is called. <code class="language-plaintext highlighter-rouge">resolve</code> should <code class="language-plaintext highlighter-rouge">yield(object, arguments)</code> to continue execution. If it doesn’t <code class="language-plaintext highlighter-rouge">yield</code>, then the underlying field won’t be called. Whatever <code class="language-plaintext highlighter-rouge">#resolve</code> returns will be used for continuing execution.</p>
+<p>First, <a href="/api-doc/1.11.4/GraphQL/Schema/FieldExtension#resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension#resolve"><code>GraphQL::Schema::FieldExtension#resolve</code></a> is called. <code class="language-plaintext highlighter-rouge">resolve</code> should <code class="language-plaintext highlighter-rouge">yield(object, arguments)</code> to continue execution. If it doesn’t <code class="language-plaintext highlighter-rouge">yield</code>, then the underlying field won’t be called. Whatever <code class="language-plaintext highlighter-rouge">#resolve</code> returns will be used for continuing execution.</p>
 
-<p>After resolution and <em>after</em> syncing lazy values (like <code class="language-plaintext highlighter-rouge">Promise</code>s from <code class="language-plaintext highlighter-rouge">graphql-batch</code>), <a href="/api-doc/1.11.3/GraphQL/Schema/FieldExtension#after_resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension#after_resolve"><code>GraphQL::Schema::FieldExtension#after_resolve</code></a> is called. Whatever that method returns will be used as the field’s return value.</p>
+<p>After resolution and <em>after</em> syncing lazy values (like <code class="language-plaintext highlighter-rouge">Promise</code>s from <code class="language-plaintext highlighter-rouge">graphql-batch</code>), <a href="/api-doc/1.11.4/GraphQL/Schema/FieldExtension#after_resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension#after_resolve"><code>GraphQL::Schema::FieldExtension#after_resolve</code></a> is called. Whatever that method returns will be used as the field’s return value.</p>
 
 <p>See the linked API docs for the parameters of those methods.</p>
 

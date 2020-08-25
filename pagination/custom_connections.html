@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -71,7 +71,7 @@
 
 <p>A connection wrapper is an adapter between a plain-Ruby list object (like an Array, Relation, or something application-specific, like <code class="language-plaintext highlighter-rouge">SearchEngine::Result</code>) and a GraphQL connection type. The connection wrapper implements methods which the GraphQL connection type requires, and it implements those methods based on the underlying list object.</p>
 
-<p>You can extend <a href="/api-doc/1.11.3/GraphQL/Pagination/Connection" target="_blank" title="API docs for GraphQL::Pagination::Connection"><code>GraphQL::Pagination::Connection</code></a> to get started on a custom connection wrapper, for example:</p>
+<p>You can extend <a href="/api-doc/1.11.4/GraphQL/Pagination/Connection" target="_blank" title="API docs for GraphQL::Pagination::Connection"><code>GraphQL::Pagination::Connection</code></a> to get started on a custom connection wrapper, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/connections/search_results_connection.rb</span>
 <span class="k">class</span> <span class="nc">Connections::SearchResultsConnection</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pagination</span><span class="o">::</span><span class="no">Connection</span>
@@ -91,10 +91,10 @@
 <p>How to implement these methods (efficiently!) depends on your backend and how you communicate with it. For inspiration, you can see the built-in connections:</p>
 
 <ul>
-  <li><a href="/api-doc/1.11.3/GraphQL/Pagination/ArrayConnection" target="_blank" title="API docs for GraphQL::Pagination::ArrayConnection"><code>GraphQL::Pagination::ArrayConnection</code></a></li>
-  <li><a href="/api-doc/1.11.3/GraphQL/Pagination/ActiveRecordRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::ActiveRecordRelationConnection"><code>GraphQL::Pagination::ActiveRecordRelationConnection</code></a></li>
-  <li><a href="/api-doc/1.11.3/GraphQL/Pagination/SequelDatasetConnection" target="_blank" title="API docs for GraphQL::Pagination::SequelDatasetConnection"><code>GraphQL::Pagination::SequelDatasetConnection</code></a></li>
-  <li><a href="/api-doc/1.11.3/GraphQL/Pagination/MongoidRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::MongoidRelationConnection"><code>GraphQL::Pagination::MongoidRelationConnection</code></a></li>
+  <li><a href="/api-doc/1.11.4/GraphQL/Pagination/ArrayConnection" target="_blank" title="API docs for GraphQL::Pagination::ArrayConnection"><code>GraphQL::Pagination::ArrayConnection</code></a></li>
+  <li><a href="/api-doc/1.11.4/GraphQL/Pagination/ActiveRecordRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::ActiveRecordRelationConnection"><code>GraphQL::Pagination::ActiveRecordRelationConnection</code></a></li>
+  <li><a href="/api-doc/1.11.4/GraphQL/Pagination/SequelDatasetConnection" target="_blank" title="API docs for GraphQL::Pagination::SequelDatasetConnection"><code>GraphQL::Pagination::SequelDatasetConnection</code></a></li>
+  <li><a href="/api-doc/1.11.4/GraphQL/Pagination/MongoidRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::MongoidRelationConnection"><code>GraphQL::Pagination::MongoidRelationConnection</code></a></li>
 </ul>
 
 <h3 id="using-a-custom-connection">Using a Custom Connection</h3>
@@ -120,7 +120,7 @@
 
 <p>Now, any time a field returns an instance of <code class="language-plaintext highlighter-rouge">SearchEngine::Result</code>, it will be wrapped with <code class="language-plaintext highlighter-rouge">Connections::SearchResultsConnection</code></p>
 
-<p>Alternatively, you can apply a connection wrapper on a case-by-case basis by applying it during the resolver (method or <a href="/api-doc/1.11.3/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>):</p>
+<p>Alternatively, you can apply a connection wrapper on a case-by-case basis by applying it during the resolver (method or <a href="/api-doc/1.11.4/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>):</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">SearchResult</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:query</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
@@ -141,7 +141,7 @@
 <p>Connection types are GraphQL object types which comply to the <a href="https://relay.dev/graphql/connections.htm">Relay connection specification</a>. GraphQL-Ruby ships with some tools to help you create those object types:</p>
 
 <ul>
-  <li><a href="/api-doc/1.11.3/GraphQL/Types/Relay/BaseConnection" target="_blank" title="API docs for GraphQL::Types::Relay::BaseConnection"><code>GraphQL::Types::Relay::BaseConnection</code></a> and <a href="/api-doc/1.11.3/GraphQL/Types/Relay/BaseEdge" target="_blank" title="API docs for GraphQL::Types::Relay::BaseEdge"><code>GraphQL::Types::Relay::BaseEdge</code></a> are example implementations of the spec. They don’t inherit from your application’s base object class though, so you might not be able to use them out of the box.</li>
+  <li><a href="/api-doc/1.11.4/GraphQL/Types/Relay/BaseConnection" target="_blank" title="API docs for GraphQL::Types::Relay::BaseConnection"><code>GraphQL::Types::Relay::BaseConnection</code></a> and <a href="/api-doc/1.11.4/GraphQL/Types/Relay/BaseEdge" target="_blank" title="API docs for GraphQL::Types::Relay::BaseEdge"><code>GraphQL::Types::Relay::BaseEdge</code></a> are example implementations of the spec. They don’t inherit from your application’s base object class though, so you might not be able to use them out of the box.</li>
   <li>Type classes respond to <code class="language-plaintext highlighter-rouge">.connection_type</code> which returns a generated connection type based on that class. By default, it inherits from the provided <code class="language-plaintext highlighter-rouge">GraphQL::Types::Relay::BaseConnection</code>, but you can override that by setting <code class="language-plaintext highlighter-rouge">connection_type_class(Types::MyBaseConnectionObject)</code> in your base classes.</li>
 </ul>
 

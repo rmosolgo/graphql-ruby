@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -115,8 +115,8 @@
 
 <ul>
   <li>Automatically remove <code class="language-plaintext highlighter-rouge">_id</code> from the name and pass that name for the <code class="language-plaintext highlighter-rouge">as:</code> option</li>
-  <li>Add a prepare hook to fetch an object with the given <code class="language-plaintext highlighter-rouge">ID</code> (using <a href="/api-doc/1.11.3/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a>)</li>
-  <li>Check that the fetched object’s type matches the <code class="language-plaintext highlighter-rouge">loads:</code> type (using <a href="/api-doc/1.11.3/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a>)</li>
+  <li>Add a prepare hook to fetch an object with the given <code class="language-plaintext highlighter-rouge">ID</code> (using <a href="/api-doc/1.11.4/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a>)</li>
+  <li>Check that the fetched object’s type matches the <code class="language-plaintext highlighter-rouge">loads:</code> type (using <a href="/api-doc/1.11.4/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a>)</li>
   <li>Run the fetched object through its type’s <code class="language-plaintext highlighter-rouge">.authorized?</code> hook (see <a href="/authorization/authorization">Authorization</a>)</li>
   <li>Inject it into <code class="language-plaintext highlighter-rouge">#resolve</code> using the object-style name (<code class="language-plaintext highlighter-rouge">employee:</code>)</li>
 </ul>

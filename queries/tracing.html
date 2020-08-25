@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Tracing</h1>
 <div class="guide-container">
-  <p><a href="/api-doc/1.11.3/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> provides a <code class="language-plaintext highlighter-rouge">.trace</code> hook to observe events from the GraphQL runtime.</p>
+  <p><a href="/api-doc/1.11.4/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> provides a <code class="language-plaintext highlighter-rouge">.trace</code> hook to observe events from the GraphQL runtime.</p>
 
 <p>A tracer must implement <code class="language-plaintext highlighter-rouge">.trace</code>, for example:</p>
 
@@ -81,7 +81,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">tracers: </span><span class="p">[</span><span class="no">MyCustomTracer</span><span class="p">]})</span>
 </code></pre></div></div>
 
-<p>For a full list of events, see the <a href="/api-doc/1.11.3/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> API docs.</p>
+<p>For a full list of events, see the <a href="/api-doc/1.11.4/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> API docs.</p>
 
 <h2 id="activesupportnotifications">ActiveSupport::Notifications</h2>
 
@@ -101,7 +101,7 @@
 
 <p>Leaf fields are <em>not</em> monitored (to avoid high cardinality in the metrics service).</p>
 
-<p>Implementations are based on <a href="/api-doc/1.11.3/GraphQL/Tracing/PlatformTracing" target="_blank" title="API docs for GraphQL::Tracing::PlatformTracing"><code>Tracing::PlatformTracing</code></a>.</p>
+<p>Implementations are based on <a href="/api-doc/1.11.4/GraphQL/Tracing/PlatformTracing" target="_blank" title="API docs for GraphQL::Tracing::PlatformTracing"><code>Tracing::PlatformTracing</code></a>.</p>
 
 <h2 id="appoptics">AppOptics</h2>
 
@@ -261,7 +261,7 @@ tracing as follows:</p>
 
 <h2 id="statsd">Statsd</h2>
 
-<p>You can add Statsd instrumentation by initializing a statsd client and passing it to <a href="/api-doc/1.11.3/GraphQL/Tracing/StatsdTracing" target="_blank" title="API docs for GraphQL::Tracing::StatsdTracing"><code>GraphQL::Tracing::StatsdTracing</code></a>:</p>
+<p>You can add Statsd instrumentation by initializing a statsd client and passing it to <a href="/api-doc/1.11.4/GraphQL/Tracing/StatsdTracing" target="_blank" title="API docs for GraphQL::Tracing::StatsdTracing"><code>GraphQL::Tracing::StatsdTracing</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="vg">$statsd</span> <span class="o">=</span> <span class="no">Statsd</span><span class="p">.</span><span class="nf">new</span> <span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">9125</span>
 <span class="c1"># ...</span>

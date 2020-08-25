@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -95,7 +95,7 @@
 
 <h2 id="custom-scalars">Custom Scalars</h2>
 
-<p>You can implement your own scalars by extending <a href="/api-doc/1.11.3/GraphQL/Schema/Scalar" target="_blank" title="API docs for GraphQL::Schema::Scalar"><code>GraphQL::Schema::Scalar</code></a>. For example:</p>
+<p>You can implement your own scalars by extending <a href="/api-doc/1.11.4/GraphQL/Schema/Scalar" target="_blank" title="API docs for GraphQL::Schema::Scalar"><code>GraphQL::Schema::Scalar</code></a>. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_scalar.rb</span>
 <span class="c1"># Make a base class:</span>
@@ -131,7 +131,7 @@
   <li><code class="language-plaintext highlighter-rouge">self.coerce_result</code> takes the return value of a field and prepares it for the GraphQL response JSON</li>
 </ul>
 
-<p>When incoming data is incorrect, the method may raise <a href="/api-doc/1.11.3/GraphQL/CoercionError" target="_blank" title="API docs for GraphQL::CoercionError"><code>GraphQL::CoercionError</code></a>, which will be returned to the client in the <code class="language-plaintext highlighter-rouge">"errors"</code> key.</p>
+<p>When incoming data is incorrect, the method may raise <a href="/api-doc/1.11.4/GraphQL/CoercionError" target="_blank" title="API docs for GraphQL::CoercionError"><code>GraphQL::CoercionError</code></a>, which will be returned to the client in the <code class="language-plaintext highlighter-rouge">"errors"</code> key.</p>
 
 <p>Scalar classes are never initialized; only their <code class="language-plaintext highlighter-rouge">.coerce_*</code> methods are called at runtime.</p>
 

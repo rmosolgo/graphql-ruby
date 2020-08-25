@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -64,7 +64,7 @@
 
 <h2 id="whats-the-difference">What’s the difference?</h2>
 
-<p>The default <a href="/api-doc/1.11.3/GraphQL/Pagination/ActiveRecordRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::ActiveRecordRelationConnection"><code>GraphQL::Pagination::ActiveRecordRelationConnection</code></a> (which turns an <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code> into a GraphQL-ready connection) uses <em>offset</em> as a cursor. This naive approach is sufficient for many cases, but it’s subject to a specific set of bugs.</p>
+<p>The default <a href="/api-doc/1.11.4/GraphQL/Pagination/ActiveRecordRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::ActiveRecordRelationConnection"><code>GraphQL::Pagination::ActiveRecordRelationConnection</code></a> (which turns an <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code> into a GraphQL-ready connection) uses <em>offset</em> as a cursor. This naive approach is sufficient for many cases, but it’s subject to a specific set of bugs.</p>
 
 <p>Let’s say you’re looking at the second page of 10 items (<code class="language-plaintext highlighter-rouge">LIMIT 10 OFFSET 10</code>). During that time, one of the items on page 1 is deleted. When you navigate to page 3 (<code class="language-plaintext highlighter-rouge">LIMIT 10 OFFSET 20</code>), you’ll actually <em>miss</em> one item. The entire list shifted “up” one position when a previous item was deleted.</p>
 

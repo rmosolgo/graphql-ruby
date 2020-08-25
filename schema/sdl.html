@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -47,7 +47,7 @@
 
 <h1 class="guide-header">Parsing GraphQL Schema Definition Language into a Ruby Schema</h1>
 <div class="guide-container">
-  <p>GraphQL-Ruby includes a way to build a runable schema from the GraphQL Schema Definition Language (SDL). <a href="/api-doc/1.11.3/GraphQL/Schema#from_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.from_definition"><code>GraphQL::Schema.from_definition</code></a> returns a schema class based on a filename or string containing GraphQL SDL. For example:</p>
+  <p>GraphQL-Ruby includes a way to build a runable schema from the GraphQL Schema Definition Language (SDL). <a href="/api-doc/1.11.4/GraphQL/Schema#from_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.from_definition"><code>GraphQL::Schema.from_definition</code></a> returns a schema class based on a filename or string containing GraphQL SDL. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># From a file:</span>
 <span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">from_definition</span><span class="p">(</span><span class="s2">"path/to/schema.graphql"</span><span class="p">)</span>
@@ -151,7 +151,7 @@ type Query @flagged {
 <span class="c1"># =&gt; ["@privacy(secret: true)"]</span>
 </code></pre></div></div>
 
-<p>See <a href="/api-doc/1.11.3/GraphQL/Language/Nodes/Directive" target="_blank" title="API docs for GraphQL::Language::Nodes::Directive"><code>GraphQL::Language::Nodes::Directive</code></a> for available methods.</p>
+<p>See <a href="/api-doc/1.11.4/GraphQL/Language/Nodes/Directive" target="_blank" title="API docs for GraphQL::Language::Nodes::Directive"><code>GraphQL::Language::Nodes::Directive</code></a> for available methods.</p>
 
 </div>
 <p class="guide-footer">

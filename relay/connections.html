@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -148,7 +148,7 @@
 
 <h3 id="customizing-base-classes">Customizing Base Classes</h3>
 
-<p>The provided classes in <a href="/api-doc/1.11.3/GraphQL/Types/Relay" target="_blank" title="API docs for GraphQL::Types::Relay"><code>GraphQL::Types::Relay</code></a> extend <a href="/api-doc/1.11.3/GraphQL/Schema/Object" target="_blank" title="API docs for GraphQL::Schema::Object"><code>Schema::Object</code></a>, but if you want to add your own extensions, you can build your own type system using the built-in ones for inspiration.</p>
+<p>The provided classes in <a href="/api-doc/1.11.4/GraphQL/Types/Relay" target="_blank" title="API docs for GraphQL::Types::Relay"><code>GraphQL::Types::Relay</code></a> extend <a href="/api-doc/1.11.4/GraphQL/Schema/Object" target="_blank" title="API docs for GraphQL::Schema::Object"><code>Schema::Object</code></a>, but if you want to add your own extensions, you can build your own type system using the built-in ones for inspiration.</p>
 
 <p>For example, to make your connection classes extend your <em>own</em> base object, you could add a base connection class to your app:</p>
 
@@ -157,9 +157,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then take code from <a href="/api-doc/1.11.3/GraphQL/Types/Relay/BaseConnection" target="_blank" title="API docs for GraphQL::Types::Relay::BaseConnection"><code>GraphQL::Types::Relay::BaseConnection</code></a> and adapt it to your app.</p>
+<p>Then take code from <a href="/api-doc/1.11.4/GraphQL/Types/Relay/BaseConnection" target="_blank" title="API docs for GraphQL::Types::Relay::BaseConnection"><code>GraphQL::Types::Relay::BaseConnection</code></a> and adapt it to your app.</p>
 
-<p>You can mix-and-match customized and built-in types. For example, if you customize the base <code class="language-plaintext highlighter-rouge">Edge</code> class, you can still use the built-in <a href="/api-doc/1.11.3/GraphQL/Types/Relay/PageInfo" target="_blank" title="API docs for GraphQL::Types::Relay::PageInfo"><code>Types::Relay::PageInfo</code></a> class.</p>
+<p>You can mix-and-match customized and built-in types. For example, if you customize the base <code class="language-plaintext highlighter-rouge">Edge</code> class, you can still use the built-in <a href="/api-doc/1.11.4/GraphQL/Types/Relay/PageInfo" target="_blank" title="API docs for GraphQL::Types::Relay::PageInfo"><code>Types::Relay::PageInfo</code></a> class.</p>
 
 <h3 id="custom-edge-classes">Custom Edge classes</h3>
 
@@ -300,7 +300,7 @@
 
 <p>Now, all connections will use URL-safe base-64 encoding.</p>
 
-<p>From a connection instance, the <code class="language-plaintext highlighter-rouge">cursor_encoders</code> methods available via <a href="/api-doc/1.11.3/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#encode"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="/api-doc/1.11.3/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#decode"><code>GraphQL::Relay::BaseConnection#decode</code></a></p>
+<p>From a connection instance, the <code class="language-plaintext highlighter-rouge">cursor_encoders</code> methods available via <a href="/api-doc/1.11.4/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#encode"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="/api-doc/1.11.4/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#decode"><code>GraphQL::Relay::BaseConnection#decode</code></a></p>
 
 </div>
 <p class="guide-footer">

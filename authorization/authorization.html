@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -84,7 +84,7 @@
 
 <h2 id="handling-unauthorized-objects">Handling Unauthorized Objects</h2>
 
-<p>By default, GraphQL-Ruby silently replaces unauthorized objects with <code class="language-plaintext highlighter-rouge">nil</code>, as if they didn’t exist. You can customize this behavior by implementing <a href="/api-doc/1.11.3/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> in your schema class, for example:</p>
+<p>By default, GraphQL-Ruby silently replaces unauthorized objects with <code class="language-plaintext highlighter-rouge">nil</code>, as if they didn’t exist. You can customize this behavior by implementing <a href="/api-doc/1.11.4/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> in your schema class, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Override this hook to handle cases when `authorized?` returns false for an object:</span>

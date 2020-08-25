@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -94,13 +94,13 @@
   <li><strong><code class="language-plaintext highlighter-rouge">obj</code></strong> is the object which was having a field resolved against it</li>
   <li><strong><code class="language-plaintext highlighter-rouge">args</code></strong> is the Hash of arguments passed to the resolver</li>
   <li><strong><code class="language-plaintext highlighter-rouge">ctx</code></strong> is the query context</li>
-  <li><strong><code class="language-plaintext highlighter-rouge">field</code></strong> is the <a href="/api-doc/1.11.3/GraphQL/Schema/Field" target="_blank" title="API docs for GraphQL::Schema::Field"><code>GraphQL::Schema::Field</code></a> instance for the field where the error was rescued</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">field</code></strong> is the <a href="/api-doc/1.11.4/GraphQL/Schema/Field" target="_blank" title="API docs for GraphQL::Schema::Field"><code>GraphQL::Schema::Field</code></a> instance for the field where the error was rescued</li>
 </ul>
 
 <p>Inside the handler, you can:</p>
 
 <ul>
-  <li>Raise a GraphQL-friendly <a href="/api-doc/1.11.3/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> to return to the user</li>
+  <li>Raise a GraphQL-friendly <a href="/api-doc/1.11.4/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> to return to the user</li>
   <li>Re-raise the given <code class="language-plaintext highlighter-rouge">err</code> to crash the query and halt execution. (The error will propagate to your application, eg, the controller.)</li>
   <li>Report some metrics from the error, if applicable</li>
   <li>Return a new value to be used for the error case (if not raising another error)</li>

@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.3/">API</a>
+          <a href="/api-doc/1.11.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -54,7 +54,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The instrumenter must implement <code class="language-plaintext highlighter-rouge">#before_query(query)</code> and <code class="language-plaintext highlighter-rouge">#after_query(query)</code>. The return values of these methods are not used. They receive the <a href="/api-doc/1.11.3/GraphQL/Query" target="_blank" title="API docs for GraphQL::Query"><code>GraphQL::Query</code></a> instance.</p>
+<p>The instrumenter must implement <code class="language-plaintext highlighter-rouge">#before_query(query)</code> and <code class="language-plaintext highlighter-rouge">#after_query(query)</code>. The return values of these methods are not used. They receive the <a href="/api-doc/1.11.4/GraphQL/Query" target="_blank" title="API docs for GraphQL::Query"><code>GraphQL::Query</code></a> instance.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">QueryTimerInstrumentation</span>
   <span class="kp">module_function</span>
