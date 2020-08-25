@@ -12,6 +12,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasAstNode
 
       NO_DEFAULT = :__no_default__
+      REPLACE_ALLOWED_VALUES = [:blank, :none, :nil]
 
       # @return [String] the GraphQL name for this argument, camelized unless `camelize: false` is provided
       attr_reader :name
@@ -29,6 +30,9 @@ module GraphQL
       # @return [Class, Module, nil] If this argument should load an application object, this is the type of object to load
       attr_reader :loads
 
+      # @return [Symbol] Symbol of the replace flag value, describes when the default_value should be used
+      attr_reader :replace
+
       # @return [Boolean] true if a resolver defined this argument
       def from_resolver?
         @from_resolver
@@ -45,7 +49,9 @@ module GraphQL
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
       # @param from_resolver [Boolean] if true, a Resolver class defined this argument
       # @param method_access [Boolean] If false, don't build method access on legacy {Query::Arguments} instances.
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, &definition_block)
+      # @param replace[Symbol] Represents which values should be replaced with default_value
+
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, replace: :none, owner:, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -67,6 +73,12 @@ module GraphQL
           else
             instance_eval(&definition_block)
           end
+        end
+
+        if REPLACE_ALLOWED_VALUES.include?(replace)
+          @replace = replace
+        else
+          raise "The replace flag in the #{@name} argument was set to #{replace}, but one of: #{REPLACE_ALLOWED_VALUES} was expected"
         end
       end
 
@@ -140,6 +152,7 @@ module GraphQL
         argument.as = @as
         argument.ast_node = ast_node
         argument.method_access = @method_access
+        argument.replace = @replace
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value
         end

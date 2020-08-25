@@ -47,5 +47,45 @@ describe GraphQL::InputObjectType do
         assert_equal "{}", res["data"]["f"]
       end
     end
+
+    describe "when value is provided" do
+      it "replaces null values when :null or :blank replace flag values are provided" do
+        input_obj_schema = Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "InputObj"
+          argument :a, String, default_value: "default_value_a", replace: :nil, required: false
+          argument :b, String, default_value: "default_value_b", replace: :blank, required: false
+        end
+
+        test_input_type = input_obj_schema.to_graphql
+        default_test_input_values = test_input_type.coerce_isolated_input({"a" => nil, "b" => nil})
+        assert_equal default_test_input_values.values, ['default_value_a', 'default_value_b']
+      end
+
+      it "replaces blank values only when :blank replace flag value is provided" do
+        input_obj_schema = Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "InputObj"
+          argument :a, String, default_value: "default_value_a", replace: :nil, required: false
+          argument :b, String, default_value: "b_was_replaced", replace: :blank, required: false
+          argument :c, [String], default_value: ["default_value_c"], replace: :nil, required: false
+          argument :d, [String], default_value: ["d_was_replaced"], replace: :blank, required: false
+        end
+
+        test_input_type = input_obj_schema.to_graphql
+        default_test_input_values = test_input_type.coerce_isolated_input({"a" => '', "b" => '', "c" => [], "d" => []})
+        assert_equal default_test_input_values.values, ['', 'b_was_replaced', [], ['d_was_replaced']]
+      end
+
+      it "doesn't replace provided values when the replace flag is set to :none" do
+        input_obj_schema = Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "InputObj"
+          argument :a, String, default_value: "default_value_a", replace: :none, required: false
+          argument :b, [String], default_value: ["default_value_b"], replace: :none, required: false
+        end
+
+        test_input_type = input_obj_schema.to_graphql
+        default_test_input_values = test_input_type.coerce_isolated_input({"a" => '', "b" => nil})
+        assert_equal default_test_input_values.values, ['', nil]
+      end
+    end
   end
 end

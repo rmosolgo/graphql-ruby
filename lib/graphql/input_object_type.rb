@@ -72,6 +72,7 @@ module GraphQL
         field_value = value[input_key]
 
         if value.key?(input_key)
+          field_value = input_field_defn.default_value if value_should_be_replaced?(field_value, input_field_defn)
           coerced_value = input_field_defn.type.coerce_input(field_value, ctx)
           input_values[input_key] = input_field_defn.prepare(coerced_value, ctx)
         elsif input_field_defn.default_value?
@@ -83,6 +84,16 @@ module GraphQL
 
       result = arguments_class.new(input_values, context: ctx, defaults_used: defaults_used)
       result.prepare
+    end
+
+    def value_should_be_replaced?(value, input_field_defn)
+      return false if !input_field_defn.default_value? || input_field_defn.replace == :none
+
+      value.nil? || (is_blank?(value) && input_field_defn.replace == :blank)
+    end
+
+    def is_blank?(value)
+      value.respond_to?(:empty?) ? !!value.empty? : !value
     end
 
     # @api private
