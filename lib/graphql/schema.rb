@@ -1112,7 +1112,14 @@ module GraphQL
           if type.kind.union?
             type.possible_types(context: context)
           else
-            own_possible_types[type.graphql_name] ||
+            stored_possible_types = own_possible_types[type.graphql_name]
+            visible_possible_types = stored_possible_types.select do |possible_type|
+              next true unless type.kind.interface?
+              next true unless possible_type.kind.object?
+
+              possible_type.interfaces(context).any? { |interface| interface.graphql_name == type.graphql_name }
+            end if stored_possible_types
+            visible_possible_types ||
               introspection_system.possible_types[type.graphql_name] ||
               (
                 superclass.respond_to?(:possible_types) ?
