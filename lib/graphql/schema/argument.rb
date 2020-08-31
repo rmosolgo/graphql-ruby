@@ -149,9 +149,18 @@ module GraphQL
       attr_writer :type
 
       def type
-        @type ||= Member::BuildType.parse_type(@type_expr, null: @null)
-      rescue StandardError => err
-        raise ArgumentError, "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
+        @type ||= begin
+          parsed_type = begin
+            Member::BuildType.parse_type(@type_expr, null: @null)
+          rescue StandardError => err
+            raise ArgumentError, "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
+          end
+          unwrapped_parsed_type = parsed_type.unwrap
+          if !unwrapped_parsed_type.kind.input?
+            raise ArgumentError, "Invalid input type for #{path}: #{unwrapped_parsed_type.graphql_name}. Must be scalar, enum, or input object, not #{unwrapped_parsed_type.kind.name}."
+          end
+          parsed_type
+        end
       end
 
       def statically_coercible?
