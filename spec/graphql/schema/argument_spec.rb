@@ -266,4 +266,46 @@ describe GraphQL::Schema::Argument do
       assert_nil res5["data"].fetch("nullableEnsemble")
     end
   end
+
+  describe "invalid input types" do
+    class InvalidArgumentTypeSchema < GraphQL::Schema
+      class InvalidArgumentType < GraphQL::Schema::Object
+      end
+
+      class InvalidArgumentObject < GraphQL::Schema::Object
+        field :invalid, Boolean, null: false do
+          argument :object_ref, InvalidArgumentType, required: false
+        end
+      end
+
+      class InvalidLazyArgumentObject < GraphQL::Schema::Object
+        field :invalid, Boolean, null: false do
+          argument :lazy_object_ref, "InvalidArgumentTypeSchema::InvalidArgumentType", required: false
+        end
+      end
+
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+    end
+
+    it "rejects them" do
+      err = assert_raises ArgumentError do
+        Class.new(InvalidArgumentTypeSchema) do
+          query(InvalidArgumentTypeSchema::InvalidArgumentObject)
+        end
+      end
+
+      expected_message = "Invalid input type for InvalidArgumentObject.invalid.objectRef: InvalidArgument. Must be scalar, enum, or input object, not OBJECT."
+      assert_equal expected_message, err.message
+
+      err = assert_raises ArgumentError do
+        Class.new(InvalidArgumentTypeSchema) do
+          query(InvalidArgumentTypeSchema::InvalidLazyArgumentObject)
+        end
+      end
+
+      expected_message = "Invalid input type for InvalidLazyArgumentObject.invalid.lazyObjectRef: InvalidArgument. Must be scalar, enum, or input object, not OBJECT."
+      assert_equal expected_message, err.message
+    end
+  end
 end

@@ -146,12 +146,21 @@ module GraphQL
         argument
       end
 
-      attr_writer :type
+      def type=(new_type)
+        validate_input_type(new_type)
+        @type = new_type
+      end
 
       def type
-        @type ||= Member::BuildType.parse_type(@type_expr, null: @null)
-      rescue StandardError => err
-        raise ArgumentError, "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
+        @type ||= begin
+          parsed_type = begin
+            Member::BuildType.parse_type(@type_expr, null: @null)
+          rescue StandardError => err
+            raise ArgumentError, "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
+          end
+          validate_input_type(parsed_type)
+          parsed_type
+        end
       end
 
       def statically_coercible?
@@ -184,6 +193,18 @@ module GraphQL
           @prepare.call(value, context || obj.context)
         else
           raise "Invalid prepare for #{@owner.name}.name: #{@prepare.inspect}"
+        end
+      end
+
+      def validate_input_type(input_type)
+        if input_type.is_a?(String) || input_type.is_a?(GraphQL::Schema::LateBoundType)
+          # Do nothing; assume this will be validated later
+        elsif input_type.kind.non_null? || input_type.kind.list?
+          validate_input_type(input_type.unwrap)
+        elsif !input_type.kind.input?
+          raise ArgumentError, "Invalid input type for #{path}: #{input_type.graphql_name}. Must be scalar, enum, or input object, not #{input_type.kind.name}."
+        else
+          # It's an input type, we're OK
         end
       end
     end
