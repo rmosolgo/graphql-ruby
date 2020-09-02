@@ -395,6 +395,16 @@ describe GraphQL::Schema do
       unknown_union = Class.new(GraphQL::Schema::Union) { graphql_name("Unknown") }
       assert_equal [], Dummy::Schema.possible_types(unknown_union)
     end
+
+    it "returns correct types for interfaces based on the context" do
+      assert_equal [], Jazz::Schema.possible_types(Jazz::PrivateNameEntity, { private: false })
+      assert_equal [Jazz::Ensemble], Jazz::Schema.possible_types(Jazz::PrivateNameEntity, { private: true })
+    end
+
+    it "returns correct types for unions based on the context" do
+      assert_equal [Jazz::Musician], Jazz::Schema.possible_types(Jazz::PerformingAct, { hide_ensemble: true })
+      assert_equal [Jazz::Musician, Jazz::Ensemble], Jazz::Schema.possible_types(Jazz::PerformingAct, { hide_ensemble: false })
+    end
   end
 
   describe "duplicate type names" do
