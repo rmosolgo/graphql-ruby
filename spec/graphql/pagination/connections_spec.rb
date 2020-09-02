@@ -45,6 +45,9 @@ describe GraphQL::Pagination::Connections do
 
     array_wrapper = schema.connections.wrap(field_defn, nil, [1,2,3], {}, nil)
     assert_instance_of OtherArrayConnection, array_wrapper
+
+    raw_value = schema.connections.wrap(field_defn, nil, GraphQL::Execution::Interpreter::RawValue.new([1,2,3]), {}, nil)
+    assert_instance_of GraphQL::Execution::Interpreter::RawValue, raw_value
   end
 
   it "uses passed-in wrappers" do
