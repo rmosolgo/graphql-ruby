@@ -16,7 +16,7 @@ The primitive for analysis is {{ "GraphQL::Analysis::AST::Analyzer" | api_doc }}
 
 ### Using Analyzers
 
-Query analyzers are added to the schema the same one as before with `query_analyzer`. However, to use the new analysis engine, you must opt in by using `use GraphQL::Analysis::AST`, for example:
+Query analyzers are added to the schema with `query_analyzer`; however, to use the new analysis engine, you must opt in by using `use GraphQL::Analysis::AST`, for example:
 
 ```ruby
 class MySchema < GraphQL::Schema
