@@ -78,6 +78,10 @@ class GraphqlChannel < ActionCable::Channel::Base
       channel: self,
     }
 
+    puts  "GraphQLSchema.execute"
+    puts query
+    puts variables.inspect
+    puts "-----------------------"
     result = GraphQLSchema.execute({
       query: query,
       context: context,
@@ -95,7 +99,9 @@ class GraphqlChannel < ActionCable::Channel::Base
     if result.context[:subscription_id]
       @subscription_ids << result.context[:subscription_id]
     end
-
+    puts "Transmitting payload:"
+    puts payload
+    puts "----.....-----"
     transmit(payload)
   end
 
