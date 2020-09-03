@@ -1,3 +1,4 @@
+<% module_namespacing_when_supported do -%>
 module Loaders
   class <%= class_name %> < GraphQL::Batch::Loader
     # Define `initialize` to store grouping arguments, eg
@@ -15,3 +16,4 @@ module Loaders
     end
   end
 end
+<% end -%>

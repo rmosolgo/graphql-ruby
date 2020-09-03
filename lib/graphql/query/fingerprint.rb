@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'digest/sha2'
+
 module GraphQL
   class Query
     # @api private

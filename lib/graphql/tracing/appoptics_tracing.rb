@@ -55,7 +55,15 @@ module GraphQL
       end
 
       def platform_field_key(type, field)
-        "graphql.#{type.name}.#{field.name}"
+        "graphql.#{type.graphql_name}.#{field.graphql_name}"
+      end
+      
+      def platform_authorized_key(type)
+        "graphql.authorized.#{type.graphql_name}"
+      end
+
+      def platform_resolve_type_key(type)
+        "graphql.resolve_type.#{type.graphql_name}"
       end
 
       private
@@ -107,7 +115,7 @@ module GraphQL
           else
             [key, data[key]]
           end
-        end.flatten.each_slice(2).to_h.merge(Spec: 'graphql')
+        end.flatten(2).each_slice(2).to_h.merge(Spec: 'graphql')
       end
       # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 

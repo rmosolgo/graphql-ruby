@@ -168,7 +168,6 @@ module GraphQL
       attr_accessor :scoped_context
 
       def_delegators :@provided_values, :[]=
-      def_delegators :to_h, :fetch, :dig
       def_delegators :@query, :trace, :interpreter?
 
       # @!method []=(key, value)
@@ -178,6 +177,26 @@ module GraphQL
       def [](key)
         return @scoped_context[key] if @scoped_context.key?(key)
         @provided_values[key]
+      end
+
+      UNSPECIFIED_FETCH_DEFAULT = Object.new
+
+      def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
+        if @scoped_context.key?(key)
+          @scoped_context[key]
+        elsif @provided_values.key?(key)
+          @provided_values[key]
+        elsif default != UNSPECIFIED_FETCH_DEFAULT
+          default
+        elsif block_given?
+          yield(self, key)
+        else
+          raise KeyError.new(key: key)
+        end
+      end
+
+      def dig(key, *other_keys)
+        @scoped_context.key?(key) ? @scoped_context.dig(key, *other_keys) : @provided_values.dig(key, *other_keys)
       end
 
       def to_h
