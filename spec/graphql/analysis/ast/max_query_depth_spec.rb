@@ -144,7 +144,7 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
     }
 
     it "returns an error" do
-      assert_equal ["This query is too large to execute."], query.static_errors.map(&:message)
+      assert_equal ["This query is too large to execute."], query.result["errors"].map { |err| err["message"] }
     end
   end
 end
