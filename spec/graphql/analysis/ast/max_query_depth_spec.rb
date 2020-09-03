@@ -145,6 +145,10 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
 
     it "returns an error" do
       assert_equal ["This query is too large to execute."], query.result["errors"].map { |err| err["message"] }
+
+      # Make sure `Schema.execute` works too
+      execute_result = schema.execute(query_string)
+      assert_equal ["This query is too large to execute."], execute_result["errors"].map { |err| err["message"] }
     end
   end
 end
