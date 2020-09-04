@@ -7,7 +7,7 @@
     <p>Class: GraphQL::Subscriptions::ActionCableSubscriptions &lt; GraphQL::S…
 A subscriptions implementation that sends data as ActionCable
 broadcastings. 
-Experimental, some things to keep in mind:</p>
+Some things to keep in mind:</p>
 <ul>
   <li>No queueing system; ActiveJob should be added - Take care to
 reload context when re-delivering the subscription. (see
@@ -78,7 +78,8 @@ end
 end
 Instance methods:
 delete_subscription, deliver, execute_all, initialize,
-read_subscription, setup_stream, write_subscription</p>
+read_subscription, setup_stream, stream_event_name,
+stream_subscription_name, write_subscription</p>
   </li>
 </ul>
 
