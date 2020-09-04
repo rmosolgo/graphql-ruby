@@ -1117,7 +1117,7 @@ module GraphQL
               next true unless type.kind.interface?
               next true unless possible_type.kind.object?
 
-              # Use `.graphql_name` comparison to match legacy vs class-based types. 
+              # Use `.graphql_name` comparison to match legacy vs class-based types.
               # When we don't need to support legacy `.define` types, use `.include?(type)` instead.
               possible_type.interfaces(context).any? { |interface| interface.graphql_name == type.graphql_name }
             end if stored_possible_types
@@ -1673,7 +1673,7 @@ module GraphQL
       end
 
       def query_stack_error(query, err)
-        query.analysis_errors.push(GraphQL::AnalysisError.new("This query is too large to execute."))
+        query.context.errors.push(GraphQL::ExecutionError.new("This query is too large to execute."))
       end
 
       private
