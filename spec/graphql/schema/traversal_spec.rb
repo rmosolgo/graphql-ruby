@@ -97,6 +97,28 @@ describe GraphQL::Schema::Traversal do
     it "raises an InvalidTypeError when passed an object that isnt a GraphQL::BaseType" do
       assert_raises(GraphQL::Schema::InvalidTypeError) {  traversal([another_invalid_type]) }
     end
+
+    it "raises an InvalidTypeError for object field arguments referencing invalid input objects" do
+      other_type = GraphQL::ObjectType.define do
+        name "MyOtherType"
+        field :someField, GraphQL::STRING_TYPE
+      end
+
+      invalid_input_type = GraphQL::InputObjectType.define do
+        name "MyInput"
+        input_field :someField, other_type
+      end
+
+      type = GraphQL::ObjectType.define do
+        name "MyType"
+        field :anotherField, !GraphQL::STRING_TYPE do |field|
+          field.argument :anArgument, invalid_input_type
+        end
+      end
+
+      error = assert_raises(GraphQL::Schema::InvalidTypeError) {  traversal([type]) }
+      assert_equal("MyInput is invalid: argument \"someField\" type must be a valid input type (Scalar or InputObject), not GraphQL::ObjectType (MyOtherType)", error.message)
+    end
   end
 
   describe "when a schema has multiple types with the same name" do

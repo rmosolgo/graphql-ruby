@@ -139,7 +139,7 @@ Some late-bound types couldn't be resolved:
           prev_type = @type_map[type_defn.name]
           # Continue to visit this type if it's the first time we've seen it:
           if prev_type.nil?
-            validate_type(type_defn, context_description)
+            validate_type(type_defn)
             @type_map[type_defn.name] = type_defn
             case type_defn
             when GraphQL::ObjectType
@@ -217,10 +217,10 @@ Some late-bound types couldn't be resolved:
         GraphQL::Query::Arguments.construct_arguments_class(instrumented_field_defn)
       end
 
-      def validate_type(member, context_description)
-        error_message = GraphQL::Schema::Validation.validate(member)
+      def validate_type(type)
+        error_message = GraphQL::Schema::Validation.validate(type)
         if error_message
-          raise GraphQL::Schema::InvalidTypeError.new("#{context_description} is invalid: #{error_message}")
+          raise GraphQL::Schema::InvalidTypeError.new("#{type.name} is invalid: #{error_message}")
         end
       end
     end
