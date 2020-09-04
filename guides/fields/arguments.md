@@ -62,6 +62,15 @@ def search_posts(category:)
 end
 ```
 
+If you still want to replace a value even if it was provided, you can set the `replace: value` flag to one of the following values: `:none, :nil, :blank`.
+The default value is `:none`.
+
+```ruby
+field :search_posts, [PostType], null: false do
+  argument :category, String, required: false, default_value: "Programming", replace: :nil
+end
+```
+
 Use `as: :alternate_name` to use a different key from within your resolvers while
 exposing another key to clients.
 

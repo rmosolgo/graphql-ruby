@@ -3,14 +3,15 @@ module GraphQL
   # @api deprecated
   class Argument
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :type, :description, :default_value, :as, :prepare, :method_access
+    accepts_definitions :name, :type, :description, :default_value, :as, :prepare, :method_access, :replace
     attr_reader :default_value
     attr_accessor :description, :name, :as
     attr_accessor :ast_node
     attr_accessor :method_access
+    attr_accessor :replace
     alias :graphql_name :name
 
-    ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as, :prepare, :method_access)
+    ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as, :prepare, :method_access, :replace)
 
     # @api private
     module DefaultPrepare
