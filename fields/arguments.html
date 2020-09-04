@@ -97,6 +97,15 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
+<p><strong>Experimental:</strong> <strong>Deprecated</strong> arguments can be marked by adding a <code class="language-plaintext highlighter-rouge">deprecation_reason:</code> keyword argument:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">deprecation_reason: </span><span class="s2">"Use `query` instead."</span>
+  <span class="n">argument</span> <span class="ss">:query</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
+<span class="k">end</span>
+</code></pre></div></div>
+<p>Note argument deprecation is a stage 2 GraphQL <a href="https://github.com/graphql/graphql-spec/pull/525">proposal</a> so not all clients will leverage this information.</p>
+
 <p>Use <code class="language-plaintext highlighter-rouge">as: :alternate_name</code> to use a different key from within your resolvers while
 exposing another key to clients.</p>
 
