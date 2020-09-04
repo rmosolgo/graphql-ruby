@@ -597,7 +597,7 @@ describe GraphQL::Execution::Lookahead do
             otherEgret: findBirdSpecies(byName: "Great Egret") {
               name
             }
-            findBirdSpecies(byName: "GreatEgret") {
+            findBirdSpecies(byName: "Great Egret") {
               __typename
             }
           }
@@ -609,6 +609,18 @@ describe GraphQL::Execution::Lookahead do
         assert_equal [:is_waterfowl], lookahead.alias_selection("egret").selections.map(&:name)
         assert_equal [:name], lookahead.alias_selection("otherEgret").selections.map(&:name)
         assert_equal [], lookahead.alias_selection("findBirdSpecies").selections.map(&:name)
+      end
+
+      it "filters aliased fields by arguments" do
+        lookahead = query.lookahead
+        # No `arguments:` performs no filtering
+        assert_equal [:is_waterfowl], lookahead.alias_selection("egret").selections.map(&:name)
+        # Matching arguments filters to the expected field:
+        assert_equal [:is_waterfowl], lookahead.alias_selection("egret", arguments: {by_name: "Great Egret"}).selections.map(&:name)
+        # Empty `arguments:` matches nothing:
+        assert_equal [], lookahead.alias_selection("egret", arguments: {}).selections.map(&:name)
+        # Mismatching `arguments:` filters to nothing:
+        assert_equal [], lookahead.alias_selection("egret", arguments: {by_name: "Macaw"}).selections.map(&:name)
       end
     end
 
