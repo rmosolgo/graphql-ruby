@@ -45,7 +45,8 @@ module GraphQL
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
       # @param from_resolver [Boolean] if true, a Resolver class defined this argument
       # @param method_access [Boolean] If false, don't build method access on legacy {Query::Arguments} instances.
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, &definition_block)
+      # @param deprecation_reason [String]
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, deprecation_reason: nil, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -60,6 +61,7 @@ module GraphQL
         @ast_node = ast_node
         @from_resolver = from_resolver
         @method_access = method_access
+        @deprecation_reason = deprecation_reason
 
         if definition_block
           if definition_block.arity == 1
@@ -86,6 +88,17 @@ module GraphQL
           @description = text
         else
           @description
+        end
+      end
+
+      attr_writer :deprecation_reason
+
+      # @return [String] Deprecation reason for this argument
+      def deprecation_reason(text = nil)
+        if text
+          @deprecation_reason = text
+        else
+          @deprecation_reason
         end
       end
 
@@ -142,6 +155,9 @@ module GraphQL
         argument.method_access = @method_access
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value
+        end
+        if @deprecation_reason
+          argument.deprecation_reason = @deprecation_reason
         end
         argument
       end

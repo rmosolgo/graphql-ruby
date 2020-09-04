@@ -832,7 +832,7 @@ module GraphQL
     # @param except [<#call(member, ctx)>]
     # @return [Hash] GraphQL result
     def as_json(only: nil, except: nil, context: {})
-      execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context).to_h
+      execute(Introspection.query(include_deprecated_args: true), only: only, except: except, context: context).to_h
     end
 
     # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
@@ -880,7 +880,7 @@ module GraphQL
       # @param except [<#call(member, ctx)>]
       # @return [Hash] GraphQL result
       def as_json(only: nil, except: nil, context: {})
-        execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context).to_h
+        execute(Introspection.query(include_deprecated_args: true), only: only, except: except, context: context).to_h
       end
 
       # Return the GraphQL IDL for the schema

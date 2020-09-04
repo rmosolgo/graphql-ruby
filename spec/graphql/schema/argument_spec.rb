@@ -6,6 +6,7 @@ describe GraphQL::Schema::Argument do
     class Query < GraphQL::Schema::Object
       field :field, String, null: true do
         argument :arg, String, description: "test", required: false
+        argument :deprecated_arg, String, deprecation_reason: "don't use me!", required: false
 
         argument :arg_with_block, String, required: false do
           description "test"
@@ -62,7 +63,7 @@ describe GraphQL::Schema::Argument do
 
   describe "#keys" do
     it "is not overwritten by the 'keys' argument" do
-      expected_keys = ["aliasedArg", "arg", "argWithBlock", "explodingPreparedArg", "instrumentId", "instrumentIds", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
+      expected_keys = ["aliasedArg", "arg", "argWithBlock", "deprecatedArg", "explodingPreparedArg", "instrumentId", "instrumentIds", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
       assert_equal expected_keys, SchemaArgumentTest::Query.fields["field"].arguments.keys.sort
     end
   end
@@ -264,6 +265,23 @@ describe GraphQL::Schema::Argument do
 
       res5 = Jazz::Schema.execute(query_str4)
       assert_nil res5["data"].fetch("nullableEnsemble")
+    end
+  end
+
+  describe "deprecation_reason:" do
+    let(:arg) { SchemaArgumentTest::Query.fields["field"].arguments["arg"] }
+    it "sets deprecation reason" do
+      arg.deprecation_reason "new deprecation reason"
+      assert_equal "new deprecation reason", arg.deprecation_reason
+    end
+
+    it "returns the deprecation reason" do
+      assert_equal "don't use me!", SchemaArgumentTest::Query.fields["field"].arguments["deprecatedArg"].deprecation_reason
+    end
+
+    it "has an assignment method" do
+      arg.deprecation_reason = "another new deprecation reason"
+      assert_equal "another new deprecation reason", arg.deprecation_reason
     end
   end
 

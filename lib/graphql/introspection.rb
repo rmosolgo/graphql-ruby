@@ -1,6 +1,102 @@
 # frozen_string_literal: true
 module GraphQL
   module Introspection
+    def self.query(include_deprecated_args: false)
+      # The introspection query to end all introspection queries, copied from
+      # https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js
+      <<-QUERY
+query IntrospectionQuery {
+  __schema {
+    queryType { name }
+    mutationType { name }
+    subscriptionType { name }
+    types {
+      ...FullType
+    }
+    directives {
+      name
+      description
+      locations
+      args {
+        ...InputValue
+      }
+    }
+  }
+}
+fragment FullType on __Type {
+  kind
+  name
+  description
+  fields(includeDeprecated: true) {
+    name
+    description
+    args#{include_deprecated_args ? '(includeDeprecated: true)' : ''} {
+      ...InputValue
+    }
+    type {
+      ...TypeRef
+    }
+    isDeprecated
+    deprecationReason
+  }
+  inputFields#{include_deprecated_args ? '(includeDeprecated: true)' : ''} {
+    ...InputValue
+  }
+  interfaces {
+    ...TypeRef
+  }
+  enumValues(includeDeprecated: true) {
+    name
+    description
+    isDeprecated
+    deprecationReason
+  }
+  possibleTypes {
+    ...TypeRef
+  }
+}
+fragment InputValue on __InputValue {
+  name
+  description
+  type { ...TypeRef }
+  defaultValue
+  #{include_deprecated_args ? 'isDeprecated' : ''}
+  #{include_deprecated_args ? 'deprecationReason' : ''}
+}
+fragment TypeRef on __Type {
+  kind
+  name
+  ofType {
+    kind
+    name
+    ofType {
+      kind
+      name
+      ofType {
+        kind
+        name
+        ofType {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+      QUERY
+    end
   end
 end
 
