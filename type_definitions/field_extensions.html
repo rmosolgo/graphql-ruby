@@ -128,7 +128,7 @@
 
 <p>For example, options can be used for modifying execution:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">after_resolve</span><span class="p">(</span><span class="n">value</span><span class="p">:,</span> <span class="o">**</span><span class="n">rest</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">after_resolve</span><span class="p">(</span><span class="n">value</span><span class="p">:,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
   <span class="c1"># Apply the limit from the options</span>
   <span class="n">value</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="ss">:limit</span><span class="p">])</span>
 <span class="k">end</span>
