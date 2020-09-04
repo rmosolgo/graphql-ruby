@@ -4,9 +4,7 @@ require "graphql/subscriptions/broadcast_analyzer"
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
-if defined?(ActionCable)
-  require "graphql/subscriptions/action_cable_subscriptions"
-end
+require "graphql/subscriptions/action_cable_subscriptions"
 require "graphql/subscriptions/subscription_root"
 require "graphql/subscriptions/default_subscription_resolve_extension"
 
