@@ -163,7 +163,7 @@ end
 self.graphql_lexer_en_main  = 23;
 
 def self.run_lexer(query_string)
-	data = query_string.unpack("c*")
+	data = query_string.unpack(PACK_DIRECTIVE)
 	eof = data.length
 	
 	# Since `Lexer` is a module, store all lexer state
@@ -1421,7 +1421,7 @@ def self.emit_string(ts, te, meta, block:)
 quotes_length = block ? 3 : 1
 value = meta[:data][ts + quotes_length, te - ts - 2 * quotes_length].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING) || ''
 line_incr = 0
-if block && !value.length.zero?
+if block && !value.empty?
 line_incr = value.count("\n")
 value = GraphQL::Language::BlockString.trim_whitespace(value)
 end
