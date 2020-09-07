@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.15.5
+
+### New Features
+
+- Stable Connections: use `.to_sql` to handle orderings that use complex Arel expressions (#3109)
+
 ## 1.15.4 (28 July 2020)
 
 ### New Features
