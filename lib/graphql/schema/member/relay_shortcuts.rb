@@ -31,13 +31,13 @@ module GraphQL
           end
         end
 
-        def connection_type
+        def connection_type(node_nullable: true)
           @connection_type ||= begin
             conn_name = self.graphql_name + "Connection"
             edge_type_class = self.edge_type
             Class.new(connection_type_class) do
               graphql_name(conn_name)
-              edge_type(edge_type_class)
+              edge_type(edge_type_class, node_nullable: node_nullable)
             end
           end
         end
