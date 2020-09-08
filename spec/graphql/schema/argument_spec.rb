@@ -270,6 +270,8 @@ describe GraphQL::Schema::Argument do
 
   describe "deprecation_reason:" do
     let(:arg) { SchemaArgumentTest::Query.fields["field"].arguments["arg"] }
+    let(:required_arg) {  SchemaArgumentTest::Query.fields["field"].arguments["requiredWithDefaultArg"] }
+
     it "sets deprecation reason" do
       arg.deprecation_reason "new deprecation reason"
       assert_equal "new deprecation reason", arg.deprecation_reason
@@ -282,6 +284,28 @@ describe GraphQL::Schema::Argument do
     it "has an assignment method" do
       arg.deprecation_reason = "another new deprecation reason"
       assert_equal "another new deprecation reason", arg.deprecation_reason
+    end
+
+    it "disallows deprecating required arguments in the constructor" do
+      err = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema::InputObject) do
+          graphql_name 'MyInput'
+          argument :foo, String, required: true, deprecation_reason: "Don't use me"
+        end
+      end
+      assert_equal "Required arguments cannot be deprecated: MyInput.foo.", err.message
+    end
+
+    it "disallows deprecating required arguments in deprecation_reason=" do
+      assert_raises ArgumentError do
+        required_arg.deprecation_reason = "Don't use me"
+      end
+    end
+
+    it "disallows deprecating required arguments in deprecation_reason" do
+      assert_raises ArgumentError do
+        required_arg.deprecation_reason("Don't use me")
+      end
     end
   end
 

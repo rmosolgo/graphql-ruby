@@ -61,7 +61,7 @@ module GraphQL
         @ast_node = ast_node
         @from_resolver = from_resolver
         @method_access = method_access
-        @deprecation_reason = deprecation_reason
+        self.deprecation_reason = deprecation_reason
 
         if definition_block
           if definition_block.arity == 1
@@ -91,16 +91,17 @@ module GraphQL
         end
       end
 
-      attr_writer :deprecation_reason
-
       # @return [String] Deprecation reason for this argument
       def deprecation_reason(text = nil)
         if text
+          raise ArgumentError, "Required arguments cannot be deprecated: #{path}." unless @null
           @deprecation_reason = text
         else
           @deprecation_reason
         end
       end
+
+      alias_method :deprecation_reason=, :deprecation_reason
 
       def visible?(context)
         true
