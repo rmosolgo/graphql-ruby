@@ -114,7 +114,8 @@ module GraphQL
       # It returns a null object (check with {#selected?})
       # @return [GraphQL::Execution::Lookahead]
       def alias_selection(alias_name, selected_type: @selected_type, arguments: nil)
-        return alias_selections[alias_name] if alias_selections.key?(alias_name)
+        alias_cache_key = [alias_name, arguments]
+        return alias_selections[key] if alias_selections.key?(alias_name)
 
         alias_node = lookup_alias_node(ast_nodes, alias_name)
         return NULL_LOOKAHEAD unless alias_node
@@ -122,10 +123,14 @@ module GraphQL
         next_field_name = alias_node.name
         next_field_defn = get_class_based_field(selected_type, next_field_name)
 
-        arguments = @query.arguments_for(alias_node, next_field_defn)
-        arguments = arguments.is_a?(::GraphQL::Execution::Interpreter::Arguments) ? arguments.keyword_arguments : arguments
+        alias_arguments = @query.arguments_for(alias_node, next_field_defn)
+        if alias_arguments.is_a?(::GraphQL::Execution::Interpreter::Arguments)
+          alias_arguments = alias_arguments.keyword_arguments
+        end
 
-        alias_selections[alias_name] = lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments, alias_name)
+        return NULL_LOOKAHEAD if arguments && arguments != alias_arguments
+
+        alias_selections[alias_cache_key] = lookahead_for_selection(next_field_name, next_field_defn, selected_type, alias_arguments, alias_name)
       end
 
       # Like {#selection}, but for all nodes.
