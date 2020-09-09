@@ -86,7 +86,7 @@ describe GraphQL::Execution::Interpreter do
       implements GraphQL::Types::Relay::Node
 
       field :field_counter, FieldCounter, null: false
-      def field_counter; :field_counter; end
+      def field_counter; self.class.generate_tag(context); end
 
       field :calls, Integer, null: false do
         argument :expected, Integer, required: true
@@ -101,16 +101,45 @@ describe GraphQL::Execution::Interpreter do
         end
       end
 
-      field :runtime_info, String, null: false
-      def runtime_info
-        "#{context.namespace(:interpreter)[:current_path]} -> #{context.namespace(:interpreter)[:current_field].path}"
+      field :runtime_info, String, null: false do
+        argument :a, Integer, required: false
+        argument :b, Integer, required: false
       end
 
-      field :lazy_runtime_info, String, null: false
-      def lazy_runtime_info
-        Box.new {
-          "#{context.namespace(:interpreter)[:current_path]} -> #{context.namespace(:interpreter)[:current_field].path}"
-        }
+      def runtime_info(a: nil, b: nil)
+        inspect_context
+      end
+
+      field :lazy_runtime_info, String, null: false do
+        argument :a, Integer, required: false
+        argument :b, Integer, required: false
+      end
+
+      def lazy_runtime_info(a: nil, b: nil)
+        Box.new { inspect_context }
+      end
+
+      def self.generate_tag(context)
+        context[:field_counters_count] ||= 0
+        current_count = context[:field_counters_count] += 1
+        "field_counter_#{current_count}"
+      end
+
+      private
+
+      def inspect_context
+        "<#{interpreter_context_for(:current_object).object.inspect}> #{interpreter_context_for(:current_path)} -> #{interpreter_context_for(:current_field).path}(#{interpreter_context_for(:current_arguments).size})"
+      end
+
+      def interpreter_context_for(key)
+        # Make sure it's set in query context and interpreter namespace.
+        base_ctx_value = context[key]
+        interpreter_ctx_value = context.namespace(:interpreter)[key]
+        if base_ctx_value != interpreter_ctx_value
+          raise "Context mismatch for #{key} -> #{base_ctx_value} / intepreter: #{interpreter_ctx_value}"
+        else
+          base_ctx_value
+        end
       end
     end
 
@@ -179,7 +208,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       field :field_counter, FieldCounter, null: false
-      def field_counter; :field_counter; end
+      def field_counter; FieldCounter.generate_tag(context) ; end
 
       field :node, field: GraphQL::Relay::Node.field
       field :nodes, field: GraphQL::Relay::Node.plural_field
@@ -340,18 +369,19 @@ describe GraphQL::Execution::Interpreter do
       res = InterpreterTest::Schema.execute <<-GRAPHQL
       {
         fieldCounter {
-          runtimeInfo
+          runtimeInfo(a: 1, b: 2)
           fieldCounter {
             runtimeInfo
-            lazyRuntimeInfo
+            lazyRuntimeInfo(a: 1)
           }
         }
       }
       GRAPHQL
 
-      assert_equal '["fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo', res["data"]["fieldCounter"]["runtimeInfo"]
-      assert_equal '["fieldCounter", "fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo', res["data"]["fieldCounter"]["fieldCounter"]["runtimeInfo"]
-      assert_equal '["fieldCounter", "fieldCounter", "lazyRuntimeInfo"] -> FieldCounter.lazyRuntimeInfo', res["data"]["fieldCounter"]["fieldCounter"]["lazyRuntimeInfo"]
+      assert_equal '<"field_counter_1"> ["fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo(2)', res["data"]["fieldCounter"]["runtimeInfo"]
+      # These are both `field_counter_2`, but one is lazy
+      assert_equal '<"field_counter_2"> ["fieldCounter", "fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo(0)', res["data"]["fieldCounter"]["fieldCounter"]["runtimeInfo"]
+      assert_equal '<"field_counter_2"> ["fieldCounter", "fieldCounter", "lazyRuntimeInfo"] -> FieldCounter.lazyRuntimeInfo(1)', res["data"]["fieldCounter"]["fieldCounter"]["lazyRuntimeInfo"]
     end
   end
 
