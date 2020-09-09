@@ -468,7 +468,7 @@ module GraphQL
         end
 
         def arguments(graphql_object, arg_owner, ast_node)
-          if arg_owner.arguments_statically_coercible? && !arg_owner.is_a?(GraphQL::Schema::Field)
+          if arg_owner.arguments_statically_coercible?
             query.arguments_for(ast_node, arg_owner)
           else
             # The arguments must be prepared in the context of the given object
