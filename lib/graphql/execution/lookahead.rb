@@ -80,9 +80,9 @@ module GraphQL
         selection(field_name, arguments: arguments).selected?
       end
 
-      # True if this node has a selection on `alias`.
-      # If `alias` is a String, it is treated as a GraphQL-style (camelized)
-      # field name and used verbatim. If `field_name` is a Symbol, it is
+      # True if this node has a selection with alias matching `alias_name`.
+      # If `alias_name` is a String, it is treated as a GraphQL-style (camelized)
+      # field name and used verbatim. If `alias_name` is a Symbol, it is
       # treated as a Ruby-style (underscored) name and camelized before comparing.
       #
       # If `arguments:` is provided, each provided key/value will be matched
