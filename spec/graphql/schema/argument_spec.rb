@@ -307,6 +307,28 @@ describe GraphQL::Schema::Argument do
         required_arg.deprecation_reason("Don't use me")
       end
     end
+
+    it "disallows deprecated required arguments whose type is a string" do
+      input_obj = Class.new(GraphQL::Schema::InputObject) do
+        graphql_name 'MyInput2'
+        argument :foo, "String!", required: false, deprecation_reason: "Don't use me"
+      end
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :f, String, null: true do
+          argument :arg, input_obj, required: false
+        end
+      end
+
+      err = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema) do
+          query(query_type)
+        end
+      end
+
+      assert_equal "Required arguments cannot be deprecated: MyInput2.foo.", err.message
+    end
   end
 
   describe "invalid input types" do

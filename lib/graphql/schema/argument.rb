@@ -94,7 +94,7 @@ module GraphQL
       # @return [String] Deprecation reason for this argument
       def deprecation_reason(text = nil)
         if text
-          raise ArgumentError, "Required arguments cannot be deprecated: #{path}." unless @null
+          validate_deprecated_or_optional(null: @null, deprecation_reason: text)
           @deprecation_reason = text
         else
           @deprecation_reason
@@ -165,6 +165,11 @@ module GraphQL
 
       def type=(new_type)
         validate_input_type(new_type)
+        # This isn't true for LateBoundTypes, but we can assume those will
+        # be updated via this codepath later in schema setup.
+        if new_type.respond_to?(:non_null?)
+          validate_deprecated_or_optional(null: !new_type.non_null?, deprecation_reason: deprecation_reason)
+        end
         @type = new_type
       end
 
@@ -175,8 +180,8 @@ module GraphQL
           rescue StandardError => err
             raise ArgumentError, "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
           end
-          validate_input_type(parsed_type)
-          parsed_type
+          # Use the setter method to get validations
+          self.type = parsed_type
         end
       end
 
@@ -213,6 +218,8 @@ module GraphQL
         end
       end
 
+      private
+
       def validate_input_type(input_type)
         if input_type.is_a?(String) || input_type.is_a?(GraphQL::Schema::LateBoundType)
           # Do nothing; assume this will be validated later
@@ -222,6 +229,12 @@ module GraphQL
           raise ArgumentError, "Invalid input type for #{path}: #{input_type.graphql_name}. Must be scalar, enum, or input object, not #{input_type.kind.name}."
         else
           # It's an input type, we're OK
+        end
+      end
+
+      def validate_deprecated_or_optional(null:, deprecation_reason:)
+        if deprecation_reason && !null
+          raise ArgumentError, "Required arguments cannot be deprecated: #{path}."
         end
       end
     end
