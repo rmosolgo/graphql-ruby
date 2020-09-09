@@ -468,9 +468,7 @@ module GraphQL
         end
 
         def arguments(graphql_object, arg_owner, ast_node)
-          # Don't cache arguments if field extras or extensions are requested since they can mutate the argument data structure
-          if arg_owner.arguments_statically_coercible? &&
-              (!arg_owner.is_a?(GraphQL::Schema::Field) || (arg_owner.extras.empty? && arg_owner.extensions.empty?))
+          if arg_owner.arguments_statically_coercible? && !arg_owner.is_a?(GraphQL::Schema::Field)
             query.arguments_for(ast_node, arg_owner)
           else
             # The arguments must be prepared in the context of the given object
