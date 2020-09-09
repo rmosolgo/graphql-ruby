@@ -180,32 +180,40 @@ module GraphQL
                 next
               end
 
-              kwarg_arguments = resolved_arguments.keyword_arguments
-
-              field_defn.extras.each do |extra|
-                case extra
-                when :ast_node
-                  kwarg_arguments[:ast_node] = ast_node
-                when :execution_errors
-                  kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
-                when :path
-                  kwarg_arguments[:path] = next_path
-                when :lookahead
-                  if !field_ast_nodes
-                    field_ast_nodes = [ast_node]
+              if field_defn.extras.any?
+                # Bundle up the extras, then make a new arguments instance
+                # that includes the extras, too.
+                extra_args = {}
+                field_defn.extras.each do |extra|
+                  case extra
+                  when :ast_node
+                    extra_args[:ast_node] = ast_node
+                  when :execution_errors
+                    extra_args[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
+                  when :path
+                    extra_args[:path] = next_path
+                  when :lookahead
+                    if !field_ast_nodes
+                      field_ast_nodes = [ast_node]
+                    end
+                    extra_args[:lookahead] = Execution::Lookahead.new(
+                      query: query,
+                      ast_nodes: field_ast_nodes,
+                      field: field_defn,
+                    )
+                  when :argument_details
+                    # Use this flag to tell Interpreter::Arguments to add itself
+                    # to the keyword args hash _before_ freezing everything.
+                    extra_args[:argument_details] = :__arguments_add_self
+                  else
+                    extra_args[extra] = field_defn.fetch_extra(extra, context)
                   end
-                  kwarg_arguments[:lookahead] = Execution::Lookahead.new(
-                    query: query,
-                    ast_nodes: field_ast_nodes,
-                    field: field_defn,
-                  )
-                when :argument_details
-                  kwarg_arguments[:argument_details] = resolved_arguments
-                else
-                  kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
                 end
+
+                resolved_arguments = resolved_arguments.merge_extras(extra_args)
               end
 
+              kwarg_arguments = resolved_arguments.keyword_arguments
               @interpreter_context[:current_arguments] = kwarg_arguments
 
               # Optimize for the case that field is selected only once
