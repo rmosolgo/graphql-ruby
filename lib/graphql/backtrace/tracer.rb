@@ -15,7 +15,8 @@ module GraphQL
         when "validate", "analyze_query", "execute_query", "execute_query_lazy"
           metadata[:query] || metadata[:queries]
         when "execute_field", "execute_field_lazy"
-          metadata[:context]
+          # The interpreter passes `query:`, legacy passes `context:`
+          metadata[:context] || ((q = metadata[:query]) && q.context)
         else
           # Custom key, no backtrace data for this
           nil
