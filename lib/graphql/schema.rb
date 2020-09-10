@@ -1940,8 +1940,9 @@ module GraphQL
       end
     end
 
-    # Install this here so that subclasses will also install it.
+    # Install these here so that subclasses will also install it.
     use(GraphQL::Execution::Errors)
+    use(GraphQL::Pagination::Connections)
 
     protected
 

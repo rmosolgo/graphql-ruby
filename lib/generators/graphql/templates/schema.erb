@@ -2,8 +2,6 @@
 class <%= schema_name %> < GraphQL::Schema
   query(Types::QueryType)
 
-  # Add built-in connections for pagination
-  use GraphQL::Pagination::Connections
 <% if options[:relay] %>
   # Relay Object Identification:
 

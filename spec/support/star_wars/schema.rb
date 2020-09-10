@@ -432,7 +432,6 @@ module StarWars
     mutation(MutationType)
     default_max_page_size 3
 
-    use GraphQL::Pagination::Connections
     connections.add(LazyNodesWrapper, LazyNodesRelationConnection)
 
     def self.resolve_type(type, object, ctx)

@@ -61,8 +61,6 @@ describe GraphQL::Pagination::Connections do
   # Simulate a schema with a `*Connection` type that _isn't_
   # supposed to be a connection. Help debug, see https://github.com/rmosolgo/graphql-ruby/issues/2588
   class ConnectionErrorTestSchema < GraphQL::Schema
-    use GraphQL::Pagination::Connections
-
     class BadThing
       def name
         self.no_such_method # raise a NoMethodError
