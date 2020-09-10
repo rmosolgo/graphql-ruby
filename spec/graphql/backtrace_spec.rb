@@ -8,15 +8,11 @@ describe GraphQL::Backtrace do
     end
   end
 
-  class ErrorAnalyzer < GraphQL::Analysis::AST::Analyzer
-    def on_enter_operation_definition(node, parent, visitor)
-      if node.name == "raiseError"
+  class ErrorAnalyzer
+    def call(_memo, visit_type, irep_node)
+      if irep_node.name == "raiseError"
         raise GraphQL::AnalysisError, "this should not be wrapped by a backtrace, but instead, returned to the client"
       end
-    end
-
-    def result
-      nil
     end
   end
 
@@ -70,7 +66,9 @@ describe GraphQL::Backtrace do
     schema_class = GraphQL::Schema.from_definition(defn, default_resolve: resolvers)
     schema_class.class_exec {
       lazy_resolve(LazyError, :raise_err)
-      query_analyzer(ErrorAnalyzer)
+      use GraphQL::Execution::Execute
+      use GraphQL::Analysis
+      query_analyzer(ErrorAnalyzer.new)
     }
     schema_class
   }
@@ -87,7 +85,7 @@ describe GraphQL::Backtrace do
         backtrace_schema.execute("query BrokenList { field1 { listField { strField } } }")
       }
 
-      assert_raises(GraphQL::Execution::Interpreter::ListResultFailedError) {
+      assert_raises(NoMethodError) {
         schema.execute("query BrokenList { field1 { listField { strField } } }")
       }
     end
@@ -107,8 +105,9 @@ describe GraphQL::Backtrace do
       assert_instance_of RuntimeError, err.cause
       b = err.cause.backtrace
       assert_backtrace_includes(b, file: "backtrace_spec.rb", method: "block")
-      assert_backtrace_includes(b, file: "execution/interpreter/runtime.rb", method: "after_lazy")
-      assert_backtrace_includes(b, file: "execution/interpreter/runtime.rb", method: "evaluate_selections")
+      assert_backtrace_includes(b, file: "execute.rb", method: "resolve_field")
+      assert_backtrace_includes(b, file: "execute.rb", method: "resolve_field")
+      assert_backtrace_includes(b, file: "execute.rb", method: "resolve_root_selection")
 
       # GraphQL backtrace is present
       expected_graphql_backtrace = [
@@ -151,7 +150,8 @@ describe GraphQL::Backtrace do
       assert_instance_of RuntimeError, err.cause
       b = err.cause.backtrace
       assert_backtrace_includes(b, file: "backtrace_spec.rb", method: "raise_err")
-      assert_backtrace_includes(b, file: "execution/interpreter/runtime.rb", method: "block in after_lazy")
+      assert_backtrace_includes(b, file: "field.rb", method: "lazy_resolve")
+      assert_backtrace_includes(b, file: "lazy/resolve.rb", method: "block")
 
       expected_graphql_backtrace = [
         "1:27: OtherThing.strField",
@@ -207,6 +207,6 @@ describe GraphQL::Backtrace do
   # but I'm not sure how to be sure that the backtrace contains the right stuff!
   def assert_backtrace_includes(backtrace, file:, method:)
     includes_tag = backtrace.any? { |s| s.include?(file) && s.include?("`" + method) }
-    assert includes_tag, "Backtrace should include #{file} inside method #{method}:\n\n#{backtrace.join("\n")}\n"
+    assert includes_tag, "Backtrace should include #{file} inside method #{method}"
   end
 end
