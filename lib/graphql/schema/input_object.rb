@@ -37,14 +37,15 @@ module GraphQL
                 load_application_object(arg_defn, loads, value, context)
               end
               maybe_lazies << context.schema.after_lazy(loaded_value) do |loaded_value|
-                @ruby_style_hash[ruby_kwargs_key] = loaded_value
+                overwrite_argument(ruby_kwargs_key, loaded_value)
               end
             end
 
             # Weirdly, procs are applied during coercion, but not methods.
             # Probably because these methods require a `self`.
             if arg_defn.prepare.is_a?(Symbol) || context.nil? || !context.interpreter?
-              @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
+              prepared_value = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
+              overwrite_argument(ruby_kwargs_key, prepared_value)
             end
           end
         end
@@ -237,6 +238,16 @@ module GraphQL
 
           result
         end
+      end
+
+      private
+
+      def overwrite_argument(key, value)
+        # Argument keywords come in frozen from the interpreter, dup them before modifying them.
+        if @ruby_style_hash.frozen?
+          @ruby_style_hash = @ruby_style_hash.dup
+        end
+        @ruby_style_hash[key] = value
       end
     end
   end

@@ -41,4 +41,17 @@ describe "GraphQL::Execution::Interpreter::Arguments" do
     assert_nil args.dig(:params, :nothing)
     assert_nil args.dig(:nothing, :nothing, :nothing)
   end
+
+  it "is frozen, and so are its constituent hashes" do
+    query_str = <<-GRAPHQL
+    {
+      search(limit: 10, params: { query: "abcde" } )
+    }
+    GRAPHQL
+    args = arguments(query_str)
+
+    assert args.frozen?
+    assert args.argument_values.frozen?
+    assert args.keyword_arguments.frozen?
+  end
 end
