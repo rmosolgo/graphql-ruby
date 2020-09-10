@@ -34,7 +34,7 @@ module GraphQL
         # Remove this child from the result value
         # (used for null propagation and skip)
         # @api private
-        def delete(child_ctx)
+        def delete_child(child_ctx)
           @value.delete(child_ctx.key)
         end
 
@@ -179,6 +179,14 @@ module GraphQL
         @provided_values[key]
       end
 
+      def delete(key)
+        if @scoped_context.key?(key)
+          @scoped_context.delete(key)
+        else
+          @provided_values.delete(key)
+        end
+      end
+
       UNSPECIFIED_FETCH_DEFAULT = Object.new
 
       def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
@@ -312,7 +320,7 @@ module GraphQL
             end
           when GraphQL::Execution::Execute::SKIP
             @parent.skipped = true
-            @parent.delete(self)
+            @parent.delete_child(self)
           else
             @value = new_value
           end
