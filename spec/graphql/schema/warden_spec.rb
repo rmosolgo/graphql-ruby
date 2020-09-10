@@ -250,7 +250,7 @@ describe GraphQL::Schema::Warden do
   end
 
   describe "hiding root types" do
-    let(:mask) { ->(m, ctx) { TESTING_INTERPRETER ? m == MaskHelpers::MutationType : m == MaskHelpers::MutationType.graphql_definition  } }
+    let(:mask) { ->(m, ctx) { m == MaskHelpers::MutationType } }
 
     it "acts as if the root doesn't exist" do
       query_string = %|mutation { addPhoneme(symbol: "ϕ") { name } }|

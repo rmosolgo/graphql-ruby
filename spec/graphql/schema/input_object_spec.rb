@@ -214,15 +214,8 @@ describe GraphQL::Schema::InputObject do
                                                    variables: { input: input})
       assert_nil(res["data"])
 
-      if TESTING_INTERPRETER
-        assert_equal("boom!", res["errors"][0]["message"])
-        assert_equal([{ "line" => 1, "column" => 33 }], res["errors"][0]["locations"])
-      else
-        assert_equal("Variable $input of type InputObj! was provided invalid value", res["errors"][0]["message"])
-        assert_equal([{ "line" => 1, "column" => 13 }], res["errors"][0]["locations"])
-        assert_equal("boom!", res["errors"][0]["extensions"]["problems"][0]["explanation"])
-        assert_equal(input, res["errors"][0]["extensions"]["value"])
-      end
+      assert_equal("boom!", res["errors"][0]["message"])
+      assert_equal([{ "line" => 1, "column" => 33 }], res["errors"][0]["locations"])
     end
 
     it "handles not-found with max complexity analyzer running" do

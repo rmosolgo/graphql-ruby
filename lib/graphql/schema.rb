@@ -708,7 +708,7 @@ module GraphQL
     alias :_schema_class :class
     def_delegators :_schema_class, :unauthorized_object, :unauthorized_field, :inaccessible_fields
     def_delegators :_schema_class, :directive
-    def_delegators :_schema_class, :error_handler
+    def_delegators :_schema_class, :error_handler, :rescues
 
 
     # Given this schema member, find the class-based definition object
