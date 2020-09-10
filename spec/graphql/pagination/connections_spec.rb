@@ -61,8 +61,6 @@ describe GraphQL::Pagination::Connections do
   # Simulate a schema with a `*Connection` type that _isn't_
   # supposed to be a connection. Help debug, see https://github.com/rmosolgo/graphql-ruby/issues/2588
   class ConnectionErrorTestSchema < GraphQL::Schema
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
     use GraphQL::Pagination::Connections
 
     class BadThing
@@ -126,8 +124,6 @@ describe GraphQL::Pagination::Connections do
     end
 
     query(Query)
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
   end
 
   it "works when new connections are not installed" do

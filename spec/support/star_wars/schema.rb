@@ -432,12 +432,8 @@ module StarWars
     mutation(MutationType)
     default_max_page_size 3
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-      use GraphQL::Pagination::Connections
-      connections.add(LazyNodesWrapper, LazyNodesRelationConnection)
-    end
+    use GraphQL::Pagination::Connections
+    connections.add(LazyNodesWrapper, LazyNodesRelationConnection)
 
     def self.resolve_type(type, object, ctx)
       if object == :test_error

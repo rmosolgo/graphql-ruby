@@ -16,10 +16,6 @@ describe GraphQL::Tracing::ScoutTracing do
 
     class ScoutSchemaBase < GraphQL::Schema
       query(Query)
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
 
     class SchemaWithoutTransactionName < ScoutSchemaBase

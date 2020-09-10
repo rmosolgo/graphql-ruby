@@ -47,8 +47,6 @@ Then, they're hooked up to the schema using `directive(...)`:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  # Custom directives are only supported by the Interpreter runtime
-  use GraphQL::Execution::Interpreter
   # Attach the custom directive to the schema
   directive(Directives::MyDirective)
 end

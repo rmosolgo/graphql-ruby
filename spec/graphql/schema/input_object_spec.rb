@@ -106,10 +106,6 @@ describe GraphQL::Schema::InputObject do
       end
 
       query(Query)
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
 
     it "calls the prepare proc" do
@@ -184,10 +180,6 @@ describe GraphQL::Schema::InputObject do
         query(Query)
         mutation(Mutation)
         lazy_resolve(Proc, :call)
-        if TESTING_INTERPRETER
-          use GraphQL::Execution::Interpreter
-          use GraphQL::Analysis::AST
-        end
 
         def self.object_from_id(id, ctx)
           -> { Jazz::GloballyIdentifiableType.find(id) }
@@ -299,11 +291,6 @@ describe GraphQL::Schema::InputObject do
 
       class Schema < GraphQL::Schema
         query(Query)
-
-        if TESTING_INTERPRETER
-          use GraphQL::Execution::Interpreter
-          use GraphQL::Analysis::AST
-        end
       end
     end
 
@@ -384,11 +371,6 @@ describe GraphQL::Schema::InputObject do
 
         def self.resolve_type(type, obj, ctx)
           type
-        end
-
-        if TESTING_INTERPRETER
-          use GraphQL::Analysis::AST
-          use GraphQL::Execution::Interpreter
         end
       end
     end
@@ -534,8 +516,6 @@ describe GraphQL::Schema::InputObject do
         end
 
         query(Query)
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
       end
 
       res = InputDefaultSchema.execute "
@@ -718,8 +698,6 @@ describe GraphQL::Schema::InputObject do
       end
 
       mutation(Mutation)
-      use GraphQL::Analysis::AST
-      use GraphQL::Execution::Interpreter
     end
 
     it "properly wraps them in instances" do

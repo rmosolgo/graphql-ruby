@@ -63,7 +63,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
     query(Query)
   end
 
-  let(:schema) { RewriteSchema.graphql_definition }
+  let(:schema) { RewriteSchema.graphql_definition.redefine { use(GraphQL::Analysis); use(GraphQL::Execution::Execute) } }
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: schema) }
   let(:query) { GraphQL::Query.new(schema, query_string) }
   let(:rewrite_result) {

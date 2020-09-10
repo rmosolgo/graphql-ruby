@@ -213,8 +213,6 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class Schema < GraphQL::Schema
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
       query(Query)
       mutation(Mutation)
       lazy_resolve(Box, :value)

@@ -40,8 +40,6 @@ module ConnectionAssertions
     end
 
     Class.new(base_schema) do
-      use GraphQL::Execution::Interpreter
-
       default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
       cursor_encoder(NonceEnabledEncoder)
 
@@ -139,9 +137,6 @@ module ConnectionAssertions
       end
 
       query(query)
-
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
   end
 

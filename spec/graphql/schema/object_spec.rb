@@ -447,9 +447,6 @@ describe GraphQL::Schema::Object do
       def self.type_error(err, ctx)
         raise err
       end
-
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
 
     it "raises them when invalid nil is returned" do

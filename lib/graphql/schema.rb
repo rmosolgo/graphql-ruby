@@ -281,11 +281,11 @@ module GraphQL
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
-      # Default to the built-in execution strategy:
+      # For schema instances, default to legacy runtime modules
       @analysis_engine = GraphQL::Analysis
-      @query_execution_strategy = self.class.default_execution_strategy
-      @mutation_execution_strategy = self.class.default_execution_strategy
-      @subscription_execution_strategy = self.class.default_execution_strategy
+      @query_execution_strategy = GraphQL::Execution::Execute
+      @mutation_execution_strategy = GraphQL::Execution::Execute
+      @subscription_execution_strategy = GraphQL::Execution::Execute
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
       @context_class = GraphQL::Query::Context
@@ -300,11 +300,10 @@ module GraphQL
 
     # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
     def interpreter?
-      @interpreter
+      query_execution_strategy == GraphQL::Execution::Interpreter &&
+        mutation_execution_strategy == GraphQL::Execution::Interpreter &&
+        subscription_execution_strategy == GraphQL::Execution::Interpreter
     end
-
-    # @api private
-    attr_writer :interpreter
 
     def inspect
       "#<#{self.class.name} ...>"
@@ -789,7 +788,7 @@ module GraphQL
     # @param using [Hash] Plugins to attach to the created schema with `use(key, value)`
     # @param interpreter [Boolean] If false, the legacy {Execution::Execute} runtime will be used
     # @return [Class] the schema described by `document`
-    def self.from_definition(definition_or_path, default_resolve: nil, interpreter: true, parser: BuildFromDefinition::DefaultParser, using: {})
+    def self.from_definition(definition_or_path, default_resolve: nil, parser: BuildFromDefinition::DefaultParser, using: {})
       # If the file ends in `.graphql`, treat it like a filepath
       definition = if definition_or_path.end_with?(".graphql")
         File.read(definition_or_path)
@@ -801,7 +800,6 @@ module GraphQL
         default_resolve: default_resolve,
         parser: parser,
         using: using,
-        interpreter: interpreter,
       )
     end
 
@@ -1282,7 +1280,7 @@ module GraphQL
       attr_writer :analysis_engine
 
       def analysis_engine
-        @analysis_engine || find_inherited_value(:analysis_engine, GraphQL::Analysis)
+        @analysis_engine || find_inherited_value(:analysis_engine, self.default_analysis_engine)
       end
 
       def using_ast_analysis?
@@ -1290,11 +1288,9 @@ module GraphQL
       end
 
       def interpreter?
-        if defined?(@interpreter)
-          @interpreter
-        else
-          find_inherited_value(:interpreter?, false)
-        end
+        query_execution_strategy == GraphQL::Execution::Interpreter &&
+          mutation_execution_strategy == GraphQL::Execution::Interpreter &&
+          subscription_execution_strategy == GraphQL::Execution::Interpreter
       end
 
       attr_writer :interpreter
@@ -1378,7 +1374,15 @@ module GraphQL
         if superclass <= GraphQL::Schema
           superclass.default_execution_strategy
         else
-          @default_execution_strategy ||= GraphQL::Execution::Execute
+          @default_execution_strategy ||= GraphQL::Execution::Interpreter
+        end
+      end
+
+      def default_analysis_engine
+        if superclass <= GraphQL::Schema
+          superclass.default_analysis_engine
+        else
+          @default_analysis_engine ||= GraphQL::Analysis::AST
         end
       end
 
@@ -1935,6 +1939,9 @@ module GraphQL
         end
       end
     end
+
+    # Install this here so that subclasses will also install it.
+    use(GraphQL::Execution::Errors)
 
     protected
 

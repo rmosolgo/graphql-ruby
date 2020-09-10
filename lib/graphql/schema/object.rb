@@ -14,6 +14,12 @@ module GraphQL
       # @return [GraphQL::Query::Context] the context instance for this query
       attr_reader :context
 
+      # Call this in a field method to return a value that should be returned to the client
+      # without any further handling by GraphQL.
+      def raw_value(obj)
+        GraphQL::Execution::Interpreter::RawValue.new(obj)
+      end
+
       class << self
         # This is protected so that we can be sure callers use the public method, {.authorized_new}
         # @see authorized_new to make instances

@@ -39,7 +39,8 @@ describe GraphQL::Execution::Execute do
     end
 
     describe "when root fields are non-nullable" do
-      let(:schema) { GraphQL::Schema.from_definition <<-GRAPHQL, interpreter: false
+      let(:schema) {
+        schema_class = GraphQL::Schema.from_definition <<-GRAPHQL
         type Mutation {
           push(int: Int!): Int!
         }
@@ -48,6 +49,13 @@ describe GraphQL::Execution::Execute do
           ints: [Int!]
         }
       GRAPHQL
+
+      schema_class.class_exec {
+        use GraphQL::Execution::Execute
+        use GraphQL::Analysis
+      }
+
+      schema_class
       }
 
       it "propagates null to the root mutation and halts mutation execution" do
@@ -131,6 +139,8 @@ describe GraphQL::Execution::Execute do
 
       GraphQL::Schema.define do
         query query_type
+        use GraphQL::Execution::Execute
+        use GraphQL::Analysis
         lazy_resolve(LazyHelpers::Wrapper, :item)
       end
     }
@@ -204,6 +214,8 @@ describe GraphQL::Execution::Execute do
 
       GraphQL::Schema.define do
         query query_type
+        use GraphQL::Execution::Execute
+        use GraphQL::Analysis
         lazy_resolve(Proc, :call)
       end
     }

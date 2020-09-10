@@ -15,9 +15,6 @@ describe "GraphQL::Execution::Interpreter::Arguments" do
     end
 
     query(Query)
-
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
   end
 
   def arguments(query_str)

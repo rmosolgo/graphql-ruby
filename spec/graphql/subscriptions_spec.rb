@@ -172,9 +172,9 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     query(Query)
     subscription(Subscription)
     use InMemoryBackend::Subscriptions, extra: 123
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
+    if !TESTING_INTERPRETER
+      use GraphQL::Execution::Execute
+      use GraphQL::Analysis
     end
   end
 end
@@ -233,7 +233,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
   }
-  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }}, interpreter: TESTING_INTERPRETER)
+  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }})
   # TODO don't hack this (no way to add metadata from IDL parser right now)
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
@@ -777,8 +777,6 @@ describe GraphQL::Subscriptions do
 
       query(Query)
       subscription(Subscription)
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
       use InMemoryBackend::Subscriptions, extra: nil,
         broadcast: true, default_broadcastable: true
     end

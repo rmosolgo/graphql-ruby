@@ -18,6 +18,12 @@ module GraphQL
       # @api private
       PROPAGATE_NULL = PropagateNull.new
 
+      def self.use(schema_class)
+        schema_class.query_execution_strategy(self)
+        schema_class.mutation_execution_strategy(self)
+        schema_class.subscription_execution_strategy(self)
+      end
+
       def execute(ast_operation, root_type, query)
         result = resolve_root_selection(query)
         lazy_resolve_root_selection(result, **{query: query})

@@ -13,7 +13,12 @@ module GraphQL
       module_function
 
       def use(schema_class)
-        schema_class.analysis_engine = GraphQL::Analysis::AST
+        if schema_class.analysis_engine == self
+          definition_line = caller(2, 1).first
+          warn("GraphQL::Analysis::AST is now the default; remove `use GraphQL::Analysis::AST` from the schema definition (#{definition_line})")
+        else
+          schema_class.analysis_engine = self
+        end
       end
 
       # Analyze a multiplex, and all queries within.

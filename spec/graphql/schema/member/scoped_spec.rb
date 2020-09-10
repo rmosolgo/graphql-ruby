@@ -108,10 +108,6 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     query(Query)
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
     lazy_resolve(Proc, :call)
   end
 

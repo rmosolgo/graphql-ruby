@@ -30,8 +30,6 @@ describe GraphQL::Tracing::StatsdTracing do
 
     query(Query)
 
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
     use GraphQL::Tracing::StatsdTracing, statsd: MockStatsd
   end
 
