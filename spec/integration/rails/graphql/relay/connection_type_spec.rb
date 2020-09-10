@@ -25,7 +25,7 @@ describe GraphQL::Relay::ConnectionType do
       |}
 
       it "uses the custom edge and custom connection" do
-        result = star_wars_query(query_string, { "testNames" => !TESTING_INTERPRETER })
+        result = star_wars_query(query_string, { "testNames" => true })
         bases = result["data"]["rebels"]["basesWithCustomEdge"]
         assert_equal 300, bases["totalCountTimes100"]
         assert_equal 'basesWithCustomEdge', bases["fieldName"]
