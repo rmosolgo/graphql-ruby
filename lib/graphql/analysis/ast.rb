@@ -72,7 +72,11 @@ module GraphQL
 
             visitor.visit
 
-            query_analyzers.map(&:result)
+            if visitor.rescued_errors.any?
+              visitor.rescued_errors
+            else
+              query_analyzers.map(&:result)
+            end
           else
             []
           end

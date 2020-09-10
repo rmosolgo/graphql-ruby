@@ -19,6 +19,7 @@ module GraphQL
           @field_definitions = []
           @argument_definitions = []
           @directive_definitions = []
+          @rescued_errors = []
           @query = query
           @schema = query.schema
           @response_path = []
@@ -31,6 +32,9 @@ module GraphQL
 
         # @return [Array<GraphQL::ObjectType>] Types whose scope we've entered
         attr_reader :object_types
+
+        # @return [Array<GraphQL::AnalysisError]
+        attr_reader :rescued_errors
 
         def visit
           return unless @document
@@ -239,7 +243,11 @@ module GraphQL
 
         def call_analyzers(method, node, parent)
           @analyzers.each do |analyzer|
-            analyzer.public_send(method, node, parent, self)
+            begin
+              analyzer.public_send(method, node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
           end
         end
 
