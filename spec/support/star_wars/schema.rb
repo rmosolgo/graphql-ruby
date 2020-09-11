@@ -48,15 +48,11 @@ module StarWars
     field :total_count, Integer, null: true
 
     def total_count
-      if TESTING_INTERPRETER
-        object.items.count
-      else
-        object.nodes.count
-      end
+      object.items.count
     end
   end
 
-  class CustomBaseEdge < GraphQL::Relay::Edge
+  class CustomBaseEdge < GraphQL::Pagination::Connection::Edge
     def upcased_name
       node.name.upcase
     end
@@ -81,7 +77,7 @@ module StarWars
     edge_type(CustomBaseEdgeType, edge_class: CustomBaseEdge, nodes_field: true)
     field :total_count_times_100, Integer, null: true
     def total_count_times_100
-      object.nodes.count * 100
+      object.items.count * 100
     end
 
     field :field_name, String, null: true
@@ -308,12 +304,12 @@ module StarWars
   end
 
   LazyNodesWrapper = Struct.new(:relation)
-  class LazyNodesRelationConnection < GraphQL::Relay::RelationConnection
+  class LazyNodesRelationConnection < GraphQL::Pagination::ActiveRecordRelationConnection
     def initialize(wrapper, *args, **kwargs)
       super(wrapper.relation, *args, **kwargs)
     end
 
-    def edge_nodes
+    def edges
       LazyWrapper.new { super }
     end
   end
@@ -354,43 +350,23 @@ module StarWars
       [OpenStruct.new(id: nil)]
     end
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodeField)
-    else
-      field :node, field: GraphQL::Relay::Node.field
+    add_field(GraphQL::Types::Relay::NodeField)
+
+    field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
+      argument :id, ID, required: true
+    end
+    def node_with_custom_resolver(id:)
+      StarWars::DATA["Faction"]["1"]
     end
 
-    if TESTING_INTERPRETER
-      field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
-        argument :id, ID, required: true
-      end
-      def node_with_custom_resolver(id:)
-        StarWars::DATA["Faction"]["1"]
-      end
-    else
-      custom_node_field = GraphQL::Relay::Node.field do
-        resolve ->(_, _, _) { StarWars::DATA["Faction"]["1"] }
-      end
-      field :nodeWithCustomResolver, field: custom_node_field
-    end
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodesField)
-    else
-      field :nodes, field: GraphQL::Relay::Node.plural_field
-    end
+    add_field(GraphQL::Types::Relay::NodesField)
 
-    if TESTING_INTERPRETER
-      field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
-        argument :ids, [ID], required: true
-      end
-      def nodes_with_custom_resolver(ids:)
-        [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]]
-      end
-    else
-      field :nodesWithCustomResolver, field: GraphQL::Relay::Node.plural_field(
-        resolve: ->(_, _, _) { [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]] }
-      )
+    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
+      argument :ids, [ID], required: true
+    end
+    def nodes_with_custom_resolver(ids:)
+      [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]]
     end
 
     field :batched_base, BaseType, null: true do
@@ -432,12 +408,7 @@ module StarWars
     mutation(MutationType)
     default_max_page_size 3
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-      use GraphQL::Pagination::Connections
-      connections.add(LazyNodesWrapper, LazyNodesRelationConnection)
-    end
+    connections.add(LazyNodesWrapper, LazyNodesRelationConnection)
 
     def self.resolve_type(type, object, ctx)
       if object == :test_error

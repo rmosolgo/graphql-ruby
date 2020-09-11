@@ -6,10 +6,10 @@ module GraphQL
     module BuildFromDefinition
       class << self
         # @see {Schema.from_definition}
-        def from_definition(definition_string, default_resolve:, using: {}, relay: false, interpreter: true, parser: DefaultParser)
+        def from_definition(definition_string, default_resolve:, using: {}, relay: false, parser: DefaultParser)
           document = parser.parse(definition_string)
           default_resolve ||= {}
-          Builder.build(document, default_resolve: default_resolve, relay: relay, using: using, interpreter: interpreter)
+          Builder.build(document, default_resolve: default_resolve, relay: relay, using: using)
         end
       end
 
@@ -20,7 +20,7 @@ module GraphQL
       module Builder
         extend self
 
-        def build(document, default_resolve:, using: {}, interpreter: true, relay:)
+        def build(document, default_resolve:, using: {}, relay:)
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
 
           if default_resolve.is_a?(Hash)
@@ -124,11 +124,6 @@ module GraphQL
 
             if schema_definition
               ast_node(schema_definition)
-            end
-
-            if interpreter
-              use GraphQL::Execution::Interpreter
-              use GraphQL::Analysis::AST
             end
 
             using.each do |plugin, options|

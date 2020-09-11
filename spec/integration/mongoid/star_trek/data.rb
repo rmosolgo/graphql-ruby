@@ -56,29 +56,29 @@ module StarTrek
     end
   end
 
-  federation = FactionRecord.new({
+  federation = FactionRecord.new(
     id: '1',
     name: 'United Federation of Planets',
     ships:  ['1', '2', '3'],
     bases: Base.where(faction_id: 1),
     bases_clone: Base.where(faction_id: 1),
-  })
+  )
 
-  klingon = FactionRecord.new({
+  klingon = FactionRecord.new(
     id: '2',
     name: 'Klingon Empire',
     ships: ['4', '5'],
     bases: Base.where(faction_id: 2),
     bases_clone: Base.where(faction_id: 2),
-  })
+  )
 
-  romulan = FactionRecord.new({
+  romulan = FactionRecord.new(
     id: '2',
     name: 'Romulan Star Empire',
     ships: ['6', '7'],
     bases: Base.where(faction_id: 3),
     bases_clone: Base.where(faction_id: 3),
-  })
+  )
 
   DATA = {
     "Faction" => {

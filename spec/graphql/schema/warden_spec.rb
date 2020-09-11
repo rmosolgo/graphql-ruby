@@ -197,10 +197,6 @@ module MaskHelpers
     end
 
     instrument :query, FilterInstrumentation
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
   end
 
   module Data
@@ -254,7 +250,7 @@ describe GraphQL::Schema::Warden do
   end
 
   describe "hiding root types" do
-    let(:mask) { ->(m, ctx) { TESTING_INTERPRETER ? m == MaskHelpers::MutationType : m == MaskHelpers::MutationType.graphql_definition  } }
+    let(:mask) { ->(m, ctx) { m == MaskHelpers::MutationType } }
 
     it "acts as if the root doesn't exist" do
       query_string = %|mutation { addPhoneme(symbol: "ϕ") { name } }|
@@ -469,17 +465,17 @@ describe GraphQL::Schema::Warden do
       assert_equal ["bag"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
       # Hide the union when all its possible types are gone. This will cause the field to be hidden too.
-      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.name) })
+      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) })
       assert_nil res["data"]["BagOfThings"]
       assert_equal [], res["data"]["Query"]["fields"]
 
-      res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
+      res = schema.execute(query_string, except: ->(m, _) { m.graphql_name == "bag" })
       assert_nil res["data"]["BagOfThings"]
       assert_equal [], res["data"]["Query"]["fields"]
 
       # Unreferenced but still visible because orphan type
-      schema.graphql_definition.orphan_types = [schema.find("BagOfThings").graphql_definition]
-      res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
+      schema.orphan_types([schema.find("BagOfThings")])
+      res = schema.execute(query_string, except: ->(m, _) { m.graphql_name == "bag" })
       assert res["data"]["BagOfThings"]
     end
 

@@ -6,11 +6,6 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
     accepts_definition :set_metadata
     set_metadata :a, 999
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
-
     class BaseField < GraphQL::Schema::Field
       class BaseField < GraphQL::Schema::Argument
         accepts_definition :metadata

@@ -132,55 +132,18 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal 2, result["data"]["empire"]["bases"]["edges"].size
     end
 
-    if TESTING_INTERPRETER
-      it "does bidirectional pagination by default" do
-        result = star_wars_query(query_string, { "first" => 1 })
-        last_cursor = get_last_cursor(result)
-        result = star_wars_query(query_string, { "first" => 1, "after" => last_cursor })
-        assert_equal true, get_page_info(result)["hasNextPage"]
-        assert_equal true, get_page_info(result)["hasPreviousPage"]
+    it "does bidirectional pagination by default" do
+      result = star_wars_query(query_string, { "first" => 1 })
+      last_cursor = get_last_cursor(result)
+      result = star_wars_query(query_string, { "first" => 1, "after" => last_cursor })
+      assert_equal true, get_page_info(result)["hasNextPage"]
+      assert_equal true, get_page_info(result)["hasPreviousPage"]
 
-        result = star_wars_query(query_string, { "first" => 100 })
-        last_cursor = get_last_cursor(result)
-        result = star_wars_query(query_string, { "last" => 1, "before" => last_cursor })
-        assert_equal true, get_page_info(result)["hasNextPage"]
-        assert_equal true, get_page_info(result)["hasPreviousPage"]
-      end
-    else
-      it "provides bidirectional_pagination" do
-        result = star_wars_query(query_string, { "first" => 1 })
-        last_cursor = get_last_cursor(result)
-
-        result = star_wars_query(query_string, { "first" => 1, "after" => last_cursor })
-        assert_equal true, get_page_info(result)["hasNextPage"]
-        assert_equal false, get_page_info(result)["hasPreviousPage"]
-
-        result = with_bidirectional_pagination {
-          star_wars_query(query_string, { "first" => 1, "after" => last_cursor })
-        }
-        assert_equal true, get_page_info(result)["hasNextPage"]
-        assert_equal true, get_page_info(result)["hasPreviousPage"]
-
-        last_cursor = get_last_cursor(result)
-        result = with_bidirectional_pagination {
-          star_wars_query(query_string, { "last" => 1, "before" => last_cursor })
-        }
-        assert_equal true, get_page_info(result)["hasNextPage"]
-        assert_equal false, get_page_info(result)["hasPreviousPage"]
-
-        result = star_wars_query(query_string, { "first" => 100 })
-        last_cursor = get_last_cursor(result)
-
-        result = star_wars_query(query_string, { "last" => 1, "before" => last_cursor })
-        assert_equal false, get_page_info(result)["hasNextPage"]
-        assert_equal true, get_page_info(result)["hasPreviousPage"]
-
-        result = with_bidirectional_pagination {
-          star_wars_query(query_string, { "last" => 1, "before" => last_cursor })
-        }
-        assert_equal true, get_page_info(result)["hasNextPage"]
-        assert_equal true, get_page_info(result)["hasPreviousPage"]
-      end
+      result = star_wars_query(query_string, { "first" => 100 })
+      last_cursor = get_last_cursor(result)
+      result = star_wars_query(query_string, { "last" => 1, "before" => last_cursor })
+      assert_equal true, get_page_info(result)["hasNextPage"]
+      assert_equal true, get_page_info(result)["hasPreviousPage"]
     end
 
     it 'slices the result' do

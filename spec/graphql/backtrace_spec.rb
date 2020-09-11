@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-if !TESTING_INTERPRETER
-describe GraphQL::Backtrace do # rubocop:disable Layout/IndentationWidth
+describe GraphQL::Backtrace do
   class LazyError
     def raise_err
       raise "Lazy Boom"
@@ -64,14 +63,20 @@ describe GraphQL::Backtrace do # rubocop:disable Layout/IndentationWidth
       strField: String
     }
     GRAPHQL
-    GraphQL::Schema.from_definition(defn, default_resolve: resolvers, interpreter: false).redefine {
+    schema_class = GraphQL::Schema.from_definition(defn, default_resolve: resolvers)
+    schema_class.class_exec {
       lazy_resolve(LazyError, :raise_err)
+      use GraphQL::Execution::Execute
+      use GraphQL::Analysis
       query_analyzer(ErrorAnalyzer.new)
     }
+    schema_class
   }
 
   let(:backtrace_schema) {
-    schema.redefine(use: GraphQL::Backtrace)
+    Class.new(schema) do
+      use GraphQL::Backtrace
+    end
   }
 
   describe "GraphQL backtrace helpers" do
@@ -123,7 +128,7 @@ describe GraphQL::Backtrace do # rubocop:disable Layout/IndentationWidth
       assert_includes err.message, rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:43", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:42", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
@@ -204,5 +209,4 @@ describe GraphQL::Backtrace do # rubocop:disable Layout/IndentationWidth
     includes_tag = backtrace.any? { |s| s.include?(file) && s.include?("`" + method) }
     assert includes_tag, "Backtrace should include #{file} inside method #{method}"
   end
-end
 end

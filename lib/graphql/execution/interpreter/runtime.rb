@@ -43,23 +43,25 @@ module GraphQL
         # might be stored up in lazies.
         # @return [void]
         def run_eager
-
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
           root_type = schema.root_type_for_operation(root_op_type)
           path = []
-          @interpreter_context[:current_object] = query.root_value
-          @interpreter_context[:current_path] = path
+          set_interpreter_context(:current_object, query.root_value)
+          set_interpreter_context(:current_path, path)
           object_proxy = authorized_new(root_type, query.root_value, context, path)
           object_proxy = schema.sync_lazy(object_proxy)
           if object_proxy.nil?
             # Root .authorized? returned false.
             write_in_response(path, nil)
-            nil
           else
             evaluate_selections(path, context.scoped_context, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
-            nil
           end
+          delete_interpreter_context(:current_path)
+          delete_interpreter_context(:current_field)
+          delete_interpreter_context(:current_object)
+          delete_interpreter_context(:current_arguments)
+          nil
         end
 
         def gather_selections(owner_object, owner_type, selections, selections_by_name)
@@ -117,8 +119,8 @@ module GraphQL
         end
 
         def evaluate_selections(path, scoped_context, owner_object, owner_type, selections, root_operation_type: nil)
-          @interpreter_context[:current_object] = owner_object
-          @interpreter_context[:current_path] = path
+          set_interpreter_context(:current_object, owner_object)
+          set_interpreter_context(:current_path, path)
           selections_by_name = {}
           gather_selections(owner_object, owner_type, selections, selections_by_name)
           selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
@@ -157,8 +159,8 @@ module GraphQL
             # to propagate `null`
             set_type_at_path(next_path, return_type)
             # Set this before calling `run_with_directives`, so that the directive can have the latest path
-            @interpreter_context[:current_path] = next_path
-            @interpreter_context[:current_field] = field_defn
+            set_interpreter_context(:current_path, next_path)
+            set_interpreter_context(:current_field, field_defn)
 
             context.scoped_context = scoped_context
             object = owner_object
@@ -214,7 +216,7 @@ module GraphQL
               end
 
               kwarg_arguments = resolved_arguments.keyword_arguments
-              @interpreter_context[:current_arguments] = kwarg_arguments
+              set_interpreter_context(:current_arguments, kwarg_arguments)
 
               # Optimize for the case that field is selected only once
               if field_ast_nodes.nil? || field_ast_nodes.size == 1
@@ -427,16 +429,16 @@ module GraphQL
         # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false, trace: true, &block)
-          @interpreter_context[:current_object] = owner_object
-          @interpreter_context[:current_arguments] = arguments
-          @interpreter_context[:current_path] = path
-          @interpreter_context[:current_field] = field
+          set_interpreter_context(:current_object, owner_object)
+          set_interpreter_context(:current_arguments, arguments)
+          set_interpreter_context(:current_path, path)
+          set_interpreter_context(:current_field, field)
           if schema.lazy?(lazy_obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
-              @interpreter_context[:current_path] = path
-              @interpreter_context[:current_field] = field
-              @interpreter_context[:current_object] = owner_object
-              @interpreter_context[:current_arguments] = arguments
+              set_interpreter_context(:current_path, path)
+              set_interpreter_context(:current_field, field)
+              set_interpreter_context(:current_object, owner_object)
+              set_interpreter_context(:current_arguments, arguments)
               context.scoped_context = scoped_context
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
@@ -543,6 +545,18 @@ module GraphQL
             end
           end
           res && res[:__dead]
+        end
+
+        # Set this pair in the Query context, but also in the interpeter namespace,
+        # for compatibility.
+        def set_interpreter_context(key, value)
+          @interpreter_context[key] = value
+          @context[key] = value
+        end
+
+        def delete_interpreter_context(key)
+          @interpreter_context.delete(key)
+          @context.delete(key)
         end
 
         def resolve_type(type, value, path)

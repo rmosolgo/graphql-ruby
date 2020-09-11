@@ -38,9 +38,6 @@ You can use a stable connection for _all_ `ActiveRecord::Relation`s by installin
 
 ```ruby
 class MyAppSchema < GraphQL::Schema
-  # Add the connection plugin
-  use GraphQL::Pagination::Connections
-
   # Hook up the stable connection that matches your database
   connections.add(ActiveRecord::Relation, GraphQL::Pro::PostgresStableRelationConnection)
   # Or...
