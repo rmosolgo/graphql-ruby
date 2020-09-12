@@ -46,22 +46,22 @@ module GraphQL
       # @param from_resolver [Boolean] if true, a Resolver class defined this argument
       # @param method_access [Boolean] If false, don't build method access on legacy {Query::Arguments} instances.
       # @param deprecation_reason [String]
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, deprecation_reason: nil, &definition_block)
-        arg_name ||= name
-        @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
-        @type_expr = type_expr || type
-        @description = desc || description
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, owner:, **kwargs, &definition_block)
+        arg_name ||= kwargs[:name]
+        @name = -(kwargs.fetch(:camelize, true) ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
+        @type_expr = type_expr || kwargs[:type]
+        @description = desc || kwargs[:description]
         @null = !required
-        @default_value = default_value
+        @default_value = kwargs.fetch(:default_value, NO_DEFAULT)
         @owner = owner
-        @as = as
-        @loads = loads
-        @keyword = as || (arg_name.is_a?(Symbol) ? arg_name : Schema::Member::BuildType.underscore(@name).to_sym)
-        @prepare = prepare
-        @ast_node = ast_node
-        @from_resolver = from_resolver
-        @method_access = method_access
-        self.deprecation_reason = deprecation_reason
+        @as = kwargs[:as]
+        @loads = kwargs[:loads]
+        @keyword = @as || (arg_name.is_a?(Symbol) ? arg_name : Schema::Member::BuildType.underscore(@name).to_sym)
+        @prepare = kwargs[:prepare]
+        @ast_node = kwargs[:ast_node]
+        @from_resolver = kwargs.fetch(:from_resolver, false)
+        @method_access = kwargs.fetch(:method_access, true)
+        self.deprecation_reason = kwargs[:deprecation_reason]
 
         if definition_block
           if definition_block.arity == 1
