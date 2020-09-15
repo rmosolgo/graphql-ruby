@@ -54,6 +54,18 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
     assert_selector(selector)
   end
 
+  # It seems like ActionCable's order of evaluation here is non-deterministic,
+  # so detect which order to make the assertions.
+  # (They still both have to pass, but we don't know exactly what order the evaluations went in.)
+  def detect_update_values(possibility_1, possibility_2)
+    if page.has_css?("#fingerprint-updates-1-update-1-value-#{possibility_1}")
+      [possibility_1, possibility_2]
+    else
+      [possibility_2, possibility_1]
+    end
+  end
+
+
   test "it only re-runs queries once for subscriptions with matching fingerprints" do
     visit "/"
     using_wait_time 30 do
@@ -80,13 +92,7 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
       click_on("Trigger with fingerprint 2")
 
       # The order here is random, I think depending on ActionCable's internal storage:
-      if page.has_css?("#fingerprint-updates-1-update-1-value-1")
-        fingerprint_1_value = 1
-        fingerprint_2_value = 2
-      else
-        fingerprint_1_value = 2
-        fingerprint_2_value = 1
-      end
+      fingerprint_1_value, fingerprint_2_value = detect_update_values(1, 2)
 
       # These all share the first value:
       debug_assert_selector "#fingerprint-updates-1-update-1-value-#{fingerprint_1_value}"
@@ -99,13 +105,7 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
       click_on("Unsubscribe with fingerprint 2")
       click_on("Trigger with fingerprint 1")
 
-      if page.has_css?("#fingerprint-updates-1-update-1-value-3")
-        fingerprint_1_value_2 = 3
-        fingerprint_2_value_2 = 4
-      else
-        fingerprint_1_value_2 = 4
-        fingerprint_2_value_2 = 3
-      end
+      fingerprint_1_value_2, fingerprint_2_value_2 = detect_update_values(3, 4)
 
       # These get an update
       debug_assert_selector "#fingerprint-updates-1-update-1-value-#{fingerprint_1_value_2}"
