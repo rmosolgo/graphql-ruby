@@ -3,6 +3,10 @@
 module GraphQL
 module Language
 module Lexer
+if !String.method_defined?(:match?)
+	using GraphQL::StringMatchBackport
+end
+
 def self.tokenize(query_string)
 	run_lexer(query_string)
 end
@@ -1427,7 +1431,7 @@ value = GraphQL::Language::BlockString.trim_whitespace(value)
 end
 # TODO: replace with `String#match?` when we support only Ruby 2.4+
 # (It's faster: https://bugs.ruby-lang.org/issues/8110)
-if !value.valid_encoding? || value !~ VALID_STRING
+if !value.valid_encoding? || !value.match?(VALID_STRING)
 meta[:tokens] << token = GraphQL::Language::Token.new(
 :BAD_UNICODE_ESCAPE,
 value,

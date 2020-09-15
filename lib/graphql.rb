@@ -61,6 +61,14 @@ module GraphQL
       end
     end
   end
+
+  module StringMatchBackport
+    refine String do
+      def match?(pattern)
+        self =~ pattern
+      end
+    end
+  end
 end
 
 # Order matters for these:

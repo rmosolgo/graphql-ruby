@@ -5,7 +5,14 @@ module GraphQL
       # Remove leading and trailing whitespace from a block string.
       # See "Block Strings" in https://github.com/facebook/graphql/blob/master/spec/Section%202%20--%20Language.md
       def self.trim_whitespace(str)
-        lines = str.split("\n")
+        # Early return for the most common cases:
+        if str == ""
+          return ""
+        elsif !(has_newline = str.include?("\n")) && !(begins_with_whitespace = str.start_with?(" "))
+          return str
+        end
+
+        lines = has_newline ? str.split("\n") : [str]
         common_indent = nil
 
         # find the common whitespace
@@ -14,33 +21,43 @@ module GraphQL
             next
           end
           line_length = line.size
-          line_indent = line[/\A */].size
+          line_indent = if line.match?(/\A  [^ ]/)
+            2
+          elsif line.match?(/\A    [^ ]/)
+            4
+          elsif line.match?(/\A[^ ]/)
+            0
+          else
+            line[/\A */].size
+          end
           if line_indent < line_length && (common_indent.nil? || line_indent < common_indent)
             common_indent = line_indent
           end
         end
 
         # Remove the common whitespace
-        if common_indent
+        if common_indent && common_indent > 0
           lines.each_with_index do |line, idx|
             if idx == 0
               next
             else
-              line[0, common_indent] = ""
+              line.slice!(0, common_indent)
             end
           end
         end
 
         # Remove leading & trailing blank lines
-        while lines.size > 0 && lines[0].empty?
+        while lines.size > 0 &&
+          lines[0].empty?
           lines.shift
         end
-        while lines.size > 0 && lines[-1].empty?
+        while lines.size > 0 &&
+          lines[-1].empty?
           lines.pop
         end
 
         # Rebuild the string
-        lines.join("\n")
+        lines.size > 1 ? lines.join("\n") : (lines.first || "")
       end
 
       def self.print(str, indent: '')
