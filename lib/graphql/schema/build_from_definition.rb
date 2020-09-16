@@ -6,15 +6,18 @@ module GraphQL
     module BuildFromDefinition
       class << self
         # @see {Schema.from_definition}
-        def from_definition(definition_string, default_resolve:, using: {}, relay: false, interpreter: true, parser: DefaultParser)
-          document = parser.parse(definition_string)
-          default_resolve ||= {}
-          Builder.build(document, default_resolve: default_resolve, relay: relay, using: using, interpreter: interpreter)
+        def from_definition(definition_string, parser: GraphQL.default_parser, **kwargs)
+          from_document(parser.parse(definition_string), **kwargs)
+        end
+
+        def from_definition_path(definition_path, parser: GraphQL.default_parser, **kwargs)
+          from_document(parser.parse_file(definition_path), **kwargs)
+        end
+
+        def from_document(document, default_resolve:, using: {}, relay: false, interpreter: true)
+          Builder.build(document, default_resolve: default_resolve || {}, relay: relay, using: using, interpreter: interpreter)
         end
       end
-
-      # @api private
-      DefaultParser = GraphQL::Language::Parser
 
       # @api private
       module Builder
