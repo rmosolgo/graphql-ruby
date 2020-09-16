@@ -818,6 +818,30 @@ type Type implements Interface {
       assert_equal [28, 3], schema.directives["Directive"].arguments["argument"].ast_node.position
       assert_equal [31, 22], schema.types["Type"].ast_node.interfaces[0].position
     end
+
+    it 'can build a schema from a file path' do
+      schema = <<-SCHEMA
+schema {
+  query: HelloScalars
+}
+
+type HelloScalars {
+  bool: Boolean
+  float: Float
+  id: ID
+  int: Int
+  str: String!
+}
+      SCHEMA
+
+      Tempfile.create(['test', '.graphql']) do |file|
+        file.write(schema)
+        file.close
+
+        built_schema = GraphQL::Schema.from_definition(file.path)
+        assert_equal schema.strip, GraphQL::Schema::Printer.print_schema(built_schema)
+      end
+    end
   end
 
   describe 'Failures' do
