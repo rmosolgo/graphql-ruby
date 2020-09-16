@@ -224,20 +224,21 @@ rake bench:validate        <span class="c"># Benchmark validation of several que
 
 <p>This is not meant to be a step by step guide and will likely not work as the documentation ages.</p>
 
-<p>Download colm from http://www.colm.net/files/colm/colm-0.13.0.4.tar.gz
-Download ragel from http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz</p>
+<p>Download colm from <a href="http://www.colm.net/files/colm/colm-0.13.0.4.tar.gz">http://www.colm.net/files/colm/colm-0.13.0.4.tar.gz</a></p>
+
+<p>Download ragel from <a href="http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz">http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz</a></p>
 
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># In colm directory</span>
 <span class="nb">cat </span>README <span class="c"># for install instructions</span>
 <span class="c"># The author who added this documentation succeeded with these steps</span>
 ./configure
-./make
-./make <span class="nb">install</span>
+make
+make <span class="nb">install</span>
 
 <span class="c"># After installing colm, in ragel directory</span>
 ./configure
-./make
-./make <span class="nb">install</span>
+make
+make <span class="nb">install</span>
 </code></pre></div></div>
 
 <h3 id="website">Website</h3>
