@@ -188,21 +188,22 @@ GraphQL Ruby requires Ragel 7.0.0.9 which is not available on Homebrew. To insta
 
 This is not meant to be a step by step guide and will likely not work as the documentation ages.
 
-Download colm from http://www.colm.net/files/colm/colm-0.13.0.4.tar.gz
-Download ragel from http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz
+Download colm from [http://www.colm.net/files/colm/colm-0.13.0.4.tar.gz](http://www.colm.net/files/colm/colm-0.13.0.4.tar.gz)
+
+Download ragel from [http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz](http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz)
 
 ```sh
 # In colm directory
 cat README # for install instructions
 # The author who added this documentation succeeded with these steps
 ./configure
-./make
-./make install
+make
+make install
 
 # After installing colm, in ragel directory
 ./configure
-./make
-./make install
+make
+make install
 ```
 
 ### Website
