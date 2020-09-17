@@ -733,4 +733,100 @@ describe GraphQL::Schema::InputObject do
       assert_equal "NestedInputObjectSchema::ItemInput, NestedInputObjectSchema::ItemInput", res["data"]["nestedStuff"]["str"]
     end
   end
+
+  describe ".generate_from_object_type" do
+    it "is defined as a class method" do
+      assert_equal true, input_object.respond_to?(:generate_from_object_type) &&
+                 !input_object.instance_methods.include?(:generate_from_object_type)
+    end
+
+    it "expects only GraphQL::Schema::Object successor" do
+      assert_raises('Unexpected argument type, GraphQL::Schema::Object successor expected') {
+        input_object.generate_from_object_type(12) }
+
+    end
+
+    it "generates arguments based on provided object" do
+      example_object_type = Class.new(GraphQL::Schema::Object) do
+        field :id, ID, null: false
+        field :points , Integer, null: true
+        field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+      end
+
+      example_input = Class.new(GraphQL::Schema::InputObject) do
+        generate_from_object_type(example_object_type)
+      end
+
+      object_fields = example_object_type.fields.map do |_name, field_defn|
+        { name: field_defn.name,
+          keyword: field_defn.instance_variable_get("@underscored_name"),
+          null: field_defn.instance_variable_get("@return_type_null"),
+          type: field_defn.type.unwrap }
+      end.sort_by { |h| h[:name] }
+
+      input_arguments = example_input.arguments.map do |_name, argument_defn|
+        { name: argument_defn.name,
+          keyword: argument_defn.keyword.to_s,
+          null: argument_defn.instance_variable_get("@null"),
+          type: argument_defn.type.unwrap }
+      end.sort_by { |h| h[:name] }
+
+      assert_equal object_fields, input_arguments
+    end
+
+    it "skips unsupported field types" do
+      nested_object_class = Class.new(GraphQL::Schema::Object) do
+        graphql_name("Nested Object")
+      end
+
+      nested_union_class = Class.new(GraphQL::Schema::Union) do
+        graphql_name("Nested Union")
+      end
+
+      example_object_type = Class.new(GraphQL::Schema::Object) do
+        field :id, ID, null: false
+        field :points , Integer, null: true
+        field :birth, GraphQL::Types::ISO8601Date, null: true
+        field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+        field :nested_objects, [nested_object_class], null: true
+        field :nested_unions, [nested_union_class], null: true
+      end
+
+      example_input =  Class.new(GraphQL::Schema::InputObject) do
+        generate_from_object_type example_object_type
+      end
+
+      assert_equal example_input.arguments.keys, ["id", "points", "birth", "updatedAt"]
+    end
+
+    it "overrides automatically generated fields if the manual definition is provided" do
+      example_object_type = Class.new(GraphQL::Schema::Object) do
+        field :id, ID, null: false
+      end
+
+      example_input = Class.new(GraphQL::Schema::InputObject) do
+        generate_from_object_type example_object_type
+
+        argument :id, String, required: false
+      end
+
+      id_argument = example_input.arguments["id"]
+
+      assert_equal [id_argument.instance_variable_get("@null"), id_argument.type.unwrap],
+                   [true, GraphQL::Types::String]
+    end
+
+    it "skips fields with 'as_input' flag set to false" do
+      example_object_type = Class.new(GraphQL::Schema::Object) do
+        field :id, ID, null: false
+        field :name, String, null: true, as_input: false
+      end
+
+      example_input = Class.new(GraphQL::Schema::InputObject) do
+        generate_from_object_type example_object_type
+      end
+
+      assert_equal example_input.arguments.keys, ["id"]
+    end
+  end
 end
