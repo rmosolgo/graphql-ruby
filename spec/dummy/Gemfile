@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 source 'https://rubygems.org'
 
+gem 'bootsnap'
 gem 'rails', '~> 5.2.1'
 gem 'puma'
 gem 'capybara', '3.34.0'
