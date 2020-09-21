@@ -155,6 +155,10 @@ module GraphQL
             def definition_default_resolve
               self.class.definition_default_resolve
             end
+
+            def self.inherited(child_class)
+              child_class.definition_default_resolve = self.definition_default_resolve
+            end
           end
         end
 
