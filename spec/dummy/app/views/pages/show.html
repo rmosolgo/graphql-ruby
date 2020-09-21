@@ -29,7 +29,18 @@
 <button onClick="triggerWithFingerprint('2')">Trigger with fingerprint 2</button>
 <button onClick="unsubscribeWithFingerprint('2')">Unsubscribe with fingerprint 2</button>
 
+<div id="body-log">
+</div>
 <script>
+
+// Add `text` to the HTML body, for debugging
+function logToBody(text) {
+  var bodyLog = document.getElementById("body-log")
+  var logEntry = document.createElement("p")
+  logEntry.innerText = text
+  bodyLog.appendChild(logEntry)
+}
+
 function appendItem(parentId, text) {
   var list = document.getElementById(parentId)
   var child = document.createElement("li")
@@ -65,6 +76,7 @@ var val2 = 1
 
 var fingerprintSubscriptions = {}
 function subscribeWithFingerprint(key) {
+  logToBody("subscribing to " + key)
   if (!fingerprintSubscriptions[key]) {
     fingerprintSubscriptions[key] = []
   }
@@ -73,6 +85,8 @@ function subscribeWithFingerprint(key) {
     query: "subscription fingerprint" + key + " { counterIncremented { newValue } }",
     variables: {},
     received: function(data) {
+      logToBody("received from " + key + " " + JSON.stringify(data))
+
       if (data.result.data.counterIncremented) {
         appendItem("fingerprint-updates-" + key, "update-" + newSub.number + "-value-" + data.result.data.counterIncremented.newValue)
       } else {
@@ -85,6 +99,7 @@ function subscribeWithFingerprint(key) {
 }
 
 function triggerWithFingerprint(key) {
+  logToBody("triggering " + key)
   var sub = fingerprintSubscriptions[key][0]
   sub.trigger({field: "counterIncremented", arguments: {}, value: null})
 }
