@@ -56,8 +56,8 @@ describe GraphQL::Schema::Timeout do
     schema.use timeout_class, max_seconds: max_seconds
     schema
   }
-
-  let(:result) { timeout_schema.execute(query_string) }
+  let(:query_context) { {} }
+  let(:result) { timeout_schema.execute(query_string, context: query_context) }
 
   describe "timeout part-way through" do
     let(:query_string) {%|
@@ -202,6 +202,43 @@ describe GraphQL::Schema::Timeout do
     it "calls the block" do
       err = assert_raises(RuntimeError) { result }
       assert_equal "Query timed out after 2s: Timeout on Query.sleepFor", err.message
+    end
+  end
+
+  describe "query-specific timeout duration" do
+    let(:timeout_class) {
+      Class.new(GraphQL::Schema::Timeout) do
+        def max_seconds(query)
+          query.context[:max_seconds]
+        end
+
+        def handle_timeout(err, query)
+          max_s = query.context[:max_seconds]
+          raise(GraphQL::ExecutionError, "Query timed out after #{max_s}s: #{err.message}")
+        end
+      end
+    }
+
+    let(:query_context) {
+      { max_seconds: 2.9 }
+    }
+
+    let(:query_string) {%|
+      {
+        a: sleepFor(seconds: 0.8)
+        b: sleepFor(seconds: 0.8)
+        c: sleepFor(seconds: 0.8)
+        d: sleepFor(seconds: 0.8)
+        e: sleepFor(seconds: 0.8)
+      }
+    |}
+
+    it "uses the configured #max_seconds(query) method" do
+      expected_data = {"a"=>0.8, "b"=>0.8, "c"=>0.8, "d"=>0.8, "e"=>nil}
+      assert_equal(expected_data, result["data"])
+      errors = result["errors"]
+      expected_message = "Query timed out after 2.9s: Timeout on Query.sleepFor"
+      assert_equal [expected_message], errors.map { |e| e["message"] }
     end
   end
 end
