@@ -58,6 +58,8 @@
 
 <p><strong>Note</strong> that this <em>does not interrupt</em> field execution (doing so is <a href="https://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/">buggy</a>). If you’re making external calls (eg, HTTP requests or database queries), make sure to use a library-specific timeout for that operation (eg, <a href="https://github.com/redis/redis-rb#timeouts">Redis timeout</a>, <a href="https://ruby-doc.org/stdlib-2.4.1/libdoc/net/http/rdoc/Net/HTTP.html">Net::HTTP</a>’s <code class="language-plaintext highlighter-rouge">ssl_timeout</code>, <code class="language-plaintext highlighter-rouge">open_timeout</code>, and <code class="language-plaintext highlighter-rouge">read_timeout</code>).</p>
 
+<h3 id="custom-error-handling">Custom Error Handling</h3>
+
 <p>To log the error, provide a subclass of <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Timeout</code> with an overridden <code class="language-plaintext highlighter-rouge">handle_timeout</code> method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyTimeout</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Timeout</span>
@@ -68,6 +70,32 @@
 
 <span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">use</span> <span class="no">MyTimeout</span><span class="p">,</span> <span class="ss">max_seconds: </span><span class="mi">2</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="customizing-the-timeout-window">Customizing the Timeout Window</h3>
+
+<p>To dynamically pick a timeout duration (or bypass it), override <a href="/api-doc/1.11.4/GraphQL/Schema/Timeout#max_seconds-instance_method" target="_blank" title="API docs for GraphQL::Schema::Timeout#max_seconds"><code>GraphQL::Schema::Timeout#max_seconds</code></a> in your subclass. To bypass the timeout altogether, <code class="language-plaintext highlighter-rouge">max_seconds</code> can return <code class="language-plaintext highlighter-rouge">false</code>.</p>
+
+<p>For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyTimeout</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Timeout</span>
+  <span class="c1"># Allow 10s for an incoming mutation, but don't apply any timeout for an admin user.</span>
+  <span class="k">def</span> <span class="nf">max_seconds</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">admin?</span>
+      <span class="kp">false</span>
+    <span class="k">elsif</span> <span class="n">query</span><span class="p">.</span><span class="nf">mutation?</span>
+      <span class="mi">10</span>
+    <span class="k">else</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">use</span> <span class="no">MyTimeout</span><span class="p">,</span> <span class="ss">max_seconds: </span><span class="mi">5</span>
 <span class="k">end</span>
 </code></pre></div></div>
 

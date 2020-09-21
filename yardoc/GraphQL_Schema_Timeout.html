@@ -9,9 +9,9 @@ This plugin will stop resolving new fields after <code class="language-plaintext
 elapsed. After the time has passed, any remaining fields will be
 <code class="language-plaintext highlighter-rouge">nil</code>, with errors added to the <code class="language-plaintext highlighter-rouge">errors</code> key. Any already-resolved
 fields will be in the <code class="language-plaintext highlighter-rouge">data</code> key, so you’ll get a partial response. 
-You can subclass <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Timeout</code> and override the
-<code class="language-plaintext highlighter-rouge">handle_timeout</code> method to provide custom logic when a timeout error
-occurs. 
+You can subclass <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Timeout</code> and override
+<code class="language-plaintext highlighter-rouge">max_seconds</code> and/or <code class="language-plaintext highlighter-rouge">handle_timeout</code> to provide custom logic when a
+timeout error occurs. 
 Note that this will stop a query <em>in between</em> field resolutions, but
 it doesn’t interrupt long-running <code class="language-plaintext highlighter-rouge">resolve</code> functions. Be sure to
 use timeout options for external connections. For more info, see
@@ -34,7 +34,7 @@ end
 Class methods:
 use
 Instance methods:
-handle_timeout, initialize, trace</p>
+handle_timeout, initialize, max_seconds, trace</p>
 
 
   </body>
