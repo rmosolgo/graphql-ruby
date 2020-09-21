@@ -47,12 +47,18 @@ module GraphQL
         case key
         when 'execute_multiplex'
           data.fetch(:multiplex).queries.each do |query|
-            now = Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond)
-            timeout_at = now + (max_seconds(query) * 1000)
-            timeout_state = {
-              timeout_at: timeout_at,
-              timed_out: false
-            }
+            timeout_duration_s = max_seconds(query)
+            timeout_state = if timeout_duration_s == false
+              # if the method returns `false`, don't apply a timeout
+              false
+            else
+              now = Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond)
+              timeout_at = now + (max_seconds(query) * 1000)
+              {
+                timeout_at: timeout_at,
+                timed_out: false
+              }
+            end
             query.context.namespace(self.class)[:state] = timeout_state
           end
 
@@ -60,7 +66,8 @@ module GraphQL
         when 'execute_field', 'execute_field_lazy'
           query_context = data[:context] || data[:query].context
           timeout_state = query_context.namespace(self.class).fetch(:state)
-          if Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond) > timeout_state.fetch(:timeout_at)
+          # If the `:state` is `false`, then `max_seconds(query)` opted out of timeout for this query.
+          if timeout_state != false && Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond) > timeout_state.fetch(:timeout_at)
             error = if data[:context]
               GraphQL::Schema::Timeout::TimeoutError.new(query_context.parent_type, query_context.field)
             else
@@ -87,7 +94,7 @@ module GraphQL
       # The default implementation returns the `max_seconds:` value from installing this plugin.
       #
       # @param query [GraphQL::Query] The query that's about to run
-      # @return [Integer] The number of seconds after which to interrupt query execution and call {#handle_error}
+      # @return [Integer, false] The number of seconds after which to interrupt query execution and call {#handle_error}, or `false` to bypass the timeout.
       def max_seconds(query)
         @max_seconds
       end

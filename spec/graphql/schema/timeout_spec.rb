@@ -220,25 +220,33 @@ describe GraphQL::Schema::Timeout do
     }
 
     let(:query_context) {
-      { max_seconds: 2.9 }
+      { max_seconds: 1.9 }
     }
 
     let(:query_string) {%|
       {
-        a: sleepFor(seconds: 0.8)
-        b: sleepFor(seconds: 0.8)
-        c: sleepFor(seconds: 0.8)
-        d: sleepFor(seconds: 0.8)
-        e: sleepFor(seconds: 0.8)
+        a: sleepFor(seconds: 0.5)
+        b: sleepFor(seconds: 0.5)
+        c: sleepFor(seconds: 0.5)
+        d: sleepFor(seconds: 0.5)
+        e: sleepFor(seconds: 0.5)
       }
     |}
 
     it "uses the configured #max_seconds(query) method" do
-      expected_data = {"a"=>0.8, "b"=>0.8, "c"=>0.8, "d"=>0.8, "e"=>nil}
+      expected_data = {"a"=>0.5, "b"=>0.5, "c"=>0.5, "d"=>0.5, "e"=>nil}
       assert_equal(expected_data, result["data"])
       errors = result["errors"]
-      expected_message = "Query timed out after 2.9s: Timeout on Query.sleepFor"
+      expected_message = "Query timed out after 1.9s: Timeout on Query.sleepFor"
       assert_equal [expected_message], errors.map { |e| e["message"] }
+    end
+
+    describe "when max_seconds returns false" do
+      let(:query_context) { {max_seconds: false} }
+      it "doesn't apply any timeout" do
+        expected_data = {"a"=>0.5, "b"=>0.5, "c"=>0.5, "d"=>0.5, "e"=>0.5}
+        assert_equal(expected_data, result["data"])
+      end
     end
   end
 end
