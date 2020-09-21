@@ -12,7 +12,7 @@ module GraphQL
         # Early return for the most common cases:
         if str == ""
           return ""
-        elsif !(has_newline = str.include?("\n")) && !(begins_with_whitespace = str.start_with?(" "))
+        elsif !(has_newline = str.include?("\n")) && !(str.start_with?(" "))
           return str
         end
 
