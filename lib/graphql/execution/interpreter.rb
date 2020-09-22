@@ -91,8 +91,11 @@ module GraphQL
         end
         final_values.compact!
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
+          multiplex.context[:current_query] = query
           Interpreter::Resolve.resolve_all(final_values)
         end
+        multiplex.context[:current_query] = nil
+
         queries.each do |query|
           runtime = query.context.namespace(:interpreter)[:runtime]
           if runtime

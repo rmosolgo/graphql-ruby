@@ -9,9 +9,14 @@ describe "GraphQL::Dataloader" do
         "b1" => { title: "Remembering", author_id: "a1" },
         "b2" => { title: "That Distant Land", author_id: "a1" },
         "b3" => { title: "Doggies", author_id: "a2" },
+        "b4" => { title: "The Cloud of Unknowing", author_id: "a3" }, # This author intentionally missing
         "a1" => { name: "Wendell Berry", book_ids: ["b1", "b2"] },
         "a2" => { name: "Sandra Boynton", book_ids: ["b3"] },
-      }
+      }.freeze
+
+      def self.reset
+        self.data = DEFAULT_DATA.dup
+      end
 
       class << self
         attr_accessor :data
@@ -19,7 +24,7 @@ describe "GraphQL::Dataloader" do
 
       def self.mget(keys)
         LOG << "MGET #{keys}"
-        keys.map { |k| self.data[k] }
+        keys.map { |k| self.data[k] || raise("Key not found: #{k}") }
       end
 
       def self.set(id, object)
@@ -119,7 +124,7 @@ describe "GraphQL::Dataloader" do
   let(:log) { DataloaderTest::Backend::LOG }
 
   before do
-    DataloaderTest::Backend.data = DataloaderTest::Backend::DEFAULT_DATA
+    DataloaderTest::Backend.reset
     log.clear
   end
 
@@ -221,5 +226,14 @@ describe "GraphQL::Dataloader" do
       'MGET ["b1", "b2", "b3"]',
     ]
     assert_equal expected_log, log
+  end
+
+  it "raises helpful errors" do
+    err = assert_raises GraphQL::Dataloader::LoadError do
+      exec_query('query GetBook { book4: book(id: "b4") { author { name } } }')
+    end
+    assert_equal "Key not found: a3", err.cause.message
+    assert_equal "Error from DataloaderTest::BackendLoader#perform(\"a3\") at GetBook.book4.author", err.message
+    assert_equal ["book4", "author"], err.graphql_path
   end
 end

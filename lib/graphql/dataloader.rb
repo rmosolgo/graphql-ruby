@@ -3,6 +3,16 @@ require "graphql/dataloader/loader"
 
 module GraphQL
   class Dataloader
+    class LoadError < GraphQL::Error
+      attr_accessor :graphql_path
+
+      attr_writer :message
+
+      def message
+        @message || super
+      end
+    end
+
     def self.use(schema, default_loaders: true, threaded: true, loaders: {})
       dataloader_class = self.class_for(loaders: loaders, default_loaders: default_loaders, threaded: threaded)
       schema.const_set(:Dataloader, dataloader_class)

@@ -103,6 +103,7 @@ module GraphQL
         # @param query [GraphQL::Query]
         # @return [Hash] The initial result (may not be finished if there are lazy values)
         def begin_query(query, multiplex)
+          multiplex.context[:current_query] = query
           operation = query.selected_operation
           if operation.nil? || !query.valid? || query.context.errors.any?
             NO_OPERATION
@@ -115,12 +116,15 @@ module GraphQL
               NO_OPERATION
             end
           end
+        ensure
+          multiplex.context[:current_query] = nil
         end
 
         # @param data_result [Hash] The result for the "data" key, if any
         # @param query [GraphQL::Query] The query which was run
         # @return [Hash] final result of this query, including all values and errors
         def finish_query(data_result, query, multiplex)
+          multiplex.context[:current_query] = query
           # Assign the result so that it can be accessed in instrumentation
           query.result_values = if data_result.equal?(NO_OPERATION)
             if !query.valid? || query.context.errors.any?
@@ -140,6 +144,8 @@ module GraphQL
 
             result
           end
+        ensure
+          multiplex.context[:current_query] = nil
         end
 
         # use the old `query_execution_strategy` etc to run this query
