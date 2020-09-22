@@ -33,8 +33,8 @@ describe "GraphQL::Dataloader" do
     end
 
     class BackendLoader < GraphQL::Dataloader::Loader
-      def self.load_object(ctx, id)
-        load(ctx, nil, id)
+      def self.load_object(id)
+        load(nil, id)
       end
 
       def perform(ids)
@@ -51,7 +51,7 @@ describe "GraphQL::Dataloader" do
         field :books, [GraphQL::Schema::LateBoundType.new("Book")], null: false
 
         def books
-          BackendLoader.load_all(context, nil, object[:book_ids])
+          BackendLoader.load_all(nil, object[:book_ids])
         end
       end
 
@@ -60,7 +60,7 @@ describe "GraphQL::Dataloader" do
         field :author, Author, null: false
 
         def author
-          BackendLoader.load_object(context, object[:author_id])
+          BackendLoader.load_object(object[:author_id])
         end
       end
 
@@ -70,7 +70,7 @@ describe "GraphQL::Dataloader" do
         end
 
         def book(id:)
-          BackendLoader.load_object(@context, id)
+          BackendLoader.load_object(id)
         end
 
         field :author, Author, null: true do
@@ -78,7 +78,7 @@ describe "GraphQL::Dataloader" do
         end
 
         def author(id:)
-          BackendLoader.load_object(@context, id)
+          BackendLoader.load_object(id)
         end
 
         field :books_count, Integer, null: false do
@@ -87,8 +87,8 @@ describe "GraphQL::Dataloader" do
 
         def books_count(author_id:)
           # Of course this could be done without a nested load, but I want to test nested loaders
-          BackendLoader.load_object(@context, author_id).then do |author|
-            BackendLoader.load_all(@context, nil, author[:book_ids]).then do |books|
+          BackendLoader.load_object(author_id).then do |author|
+            BackendLoader.load_all(nil, author[:book_ids]).then do |books|
               books.size
             end
           end

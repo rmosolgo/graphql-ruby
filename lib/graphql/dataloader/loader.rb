@@ -10,9 +10,6 @@ module GraphQL
         attr_writer :loaded
         attr_reader :pending_thens
 
-        # @return [Array<String, Integer>] The runtime result path where this loader was initialized
-        attr_reader :path
-
         # @return [GraphQL::Query]
         attr_reader :query
 
@@ -20,7 +17,6 @@ module GraphQL
           @loader = loader
           @key = key
           @query = query
-          @path = query.context[:current_path]
           @loaded = false
           @pending_thens = []
           @fully_loaded = false
@@ -36,7 +32,9 @@ module GraphQL
           @loader.fulfilled_value_for(@key)
         rescue GraphQL::Dataloader::LoadError => err
           local_err = err.dup
-          local_err.message = err.message + " at #{query.selected_operation_name || query.selected_operation.operation_type || "query"}.#{path.join(".")}"
+          path = query.context[:current_path]
+          op_name = query.selected_operation_name || query.selected_operation.operation_type || "query"
+          local_err.message = err.message + " at #{op_name}.#{path.join(".")}"
           local_err.graphql_path = path
           raise local_err
         end
@@ -81,10 +79,6 @@ module GraphQL
           @value = nil
         end
 
-        def path
-          @pending_load.path
-        end
-
         def query
           @pending_load.query
         end
@@ -117,26 +111,22 @@ module GraphQL
         end
 
         # TODO better than nothing, but not a great implementation
-        def path
-          pending_loads.first.path
-        end
-
         def query
           pending_loads.first.query
         end
       end
 
-      def self.load(context, *key, value)
-        self.for(context, *key).load(value)
+      def self.load(*key, value)
+        self.for(*key).load(value)
       end
 
-      def self.for(context, *key_parts)
-        dl = context[:dataloader]
+      def self.for(*key_parts)
+        dl = Dataloader.current
         dl.loaders[self][key_parts]
       end
 
-      def self.load_all(context, key, values)
-        pending_loads = values.map { |value| load(context, key, value) }
+      def self.load_all(key, values)
+        pending_loads = values.map { |value| load(key, value) }
         AllPendingLoads.new(pending_loads)
       end
 

@@ -46,6 +46,7 @@ module GraphQL
 
       def before_multiplex(multiplex)
         dl = @dataloader_class.new(multiplex)
+        Dataloader.current = dl
         multiplex.context[:dataloader] = dl
         multiplex.queries.each do |q|
           q.context[:dataloader] = dl
@@ -53,6 +54,7 @@ module GraphQL
       end
 
       def after_multiplex(_m)
+        Dataloader.current = nil
       end
     end
 
@@ -88,6 +90,14 @@ module GraphQL
           # Return a new instance of this class, initialized with these keys (or key)
           @loaders[loader_class][key_parts]
         end
+      end
+
+      def current
+        Thread.current[:graphql_dataloader]
+      end
+
+      def current=(dataloader)
+        Thread.current[:graphql_dataloader] = dataloader
       end
     end
 
