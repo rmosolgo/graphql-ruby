@@ -200,10 +200,11 @@ module GraphQL
 
       def with_error_handling(keys_to_load)
         yield
-      rescue GraphQL::ExecutionError => graphql_err
+      rescue GraphQL::ExecutionError
         # Allow client-facing errors to keep propagating
         raise
-      rescue StandardError => err
+      rescue StandardError
+        # The raised error will automatically be available as `.cause`
         raise GraphQL::Dataloader::LoadError, "Error from #{self.class}#perform(#{keys_to_load.map(&:inspect).join(", ")})"
       end
     end
