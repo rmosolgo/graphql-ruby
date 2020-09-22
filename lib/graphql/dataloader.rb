@@ -11,8 +11,9 @@ module GraphQL
       )
       schema.instrument(:multiplex, instrumenter)
       schema.lazy_resolve(Dataloader::Loader::PendingLoad, :sync)
+      # TODO this won't work if the mutation is hooked up after this
       schema.mutation.fields.each do |name, field|
-        field.metadata[:type_class].extension(MutationFieldExtension)
+        field.extension(MutationFieldExtension)
       end
     end
 
@@ -50,9 +51,9 @@ module GraphQL
         Class.new(self) do
           self.threaded = threaded
           if default_loaders
-            loader(GraphQL::Dataloader::HttpLoader)
-            loader(GraphQL::Dataloader::ActiveRecordLoader)
-            loader(GraphQL::Dataloader::RedisLoader)
+            # loader(GraphQL::Dataloader::HttpLoader)
+            # loader(GraphQL::Dataloader::ActiveRecordLoader)
+            # loader(GraphQL::Dataloader::RedisLoader)
           end
           loaders.each do |custom_loader|
             loader(custom_loader)
@@ -89,6 +90,8 @@ module GraphQL
         end
       end
     end
+
+    attr_reader :loaders
 
     def clear
       @loaders.clear

@@ -111,6 +111,10 @@ module GraphQL
         @promises[key] ||= PendingLoad.new(self, key)
       end
 
+      def threaded?
+        false
+      end
+
       def sync
         # Promises might be added in the meantime, but they won't be included in this list.
         keys_to_load = @promises.keys - @loaded_values.keys
