@@ -58,15 +58,25 @@ describe GraphQL::Language::SanitizedPrinter do
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
     end
+
+    class CustomSanitizedPrinter < GraphQL::Language::SanitizedPrinter
+      def redact_argument_value?(argument, value)
+        true
+      end
+
+      def redacted_argument_value(argument)
+        "<#{argument.graphql_name}-redacted>"
+      end
+    end
   end
 
-  def sanitize_string(query_string, **options)
+  def sanitize_string(query_string, inline_variables: true, **options)
     query = GraphQL::Query.new(
       SanitizeTest::Schema,
       query_string,
       **options
     )
-    query.sanitized_query_string
+    query.sanitized_query_string(inline_variables: inline_variables)
   end
 
   it "replaces strings with redacted" do
@@ -139,6 +149,52 @@ describe GraphQL::Language::SanitizedPrinter do
     'string: "<REDACTED>", id: "id3", int: 3, float: 3.3, url: "<REDACTED>", enum: BLUE}})
 }'
     assert_equal expected_query_string, sanitize_string(query_str, variables: variables)
+  end
+
+  it "doesn't inline variables when inline_variables is false" do
+    query_str = '
+    query($string1: String!, $string2: String = "str2", $inputObject: ExampleInput!, $strings: [String!]!) {
+      inputs(
+        string: $string1,
+        id: "id1",
+        int: 1,
+        float: 1.0,
+        url: "http://graphqliscool.com",
+        enum: RED
+        inputObject: {
+          string: $string2
+          id: "id2"
+          int: 2
+          float: 2.0
+          url: "http://graphqliscool.com"
+          enum: RED
+          inputObject: $inputObject
+        }
+      )
+      strings(strings: $strings)
+    }
+    '
+
+    variables = {
+      "string1" => "str1",
+      "strings" => ["str1", "str2"],
+      "inputObject" => {
+        "string" => "str3",
+        "id" => "id3",
+        "int" => 3,
+        "float" => 3.3,
+        "url" => "three.com",
+        "enum" => "BLUE"
+      }
+    }
+
+    expected_query_string = 'query($string1: String!, $string2: String = "str2", $inputObject: ExampleInput!, $strings: [String!]!) {
+  inputs(' +
+      'string: $string1, id: "id1", int: 1, float: 1.0, url: "<REDACTED>", enum: RED, inputObject: {' +
+      'string: $string2, id: "id2", int: 2, float: 2.0, url: "<REDACTED>", enum: RED, inputObject: $inputObject})
+  strings(strings: $strings)
+}'
+    assert_equal expected_query_string, sanitize_string(query_str, variables: variables, inline_variables: false)
   end
 
   it "redacts from lists" do
@@ -221,6 +277,38 @@ describe GraphQL::Language::SanitizedPrinter do
 
   it "returns nil on invalid queries" do
     assert_nil sanitize_string "{ __typename "
+  end
+
+  it "provides hooks to override the redaction behavior" do
+    query_str = '
+    {
+      inputs(
+        string: "string",
+        id: "id",
+        int: 1,
+        float: 2.0,
+        url: "http://graphqliscool.com",
+        enum: RED
+        inputObject: {
+          string: "string"
+          id: "id"
+          int: 1
+          float: 2.0
+          url: "http://graphqliscool.com"
+          enum: RED
+        }
+      )
+    }
+    '
+
+    expected_query_string = 'query {
+  inputs(' +
+      'string: <string-redacted>, id: <id-redacted>, int: <int-redacted>, float: <float-redacted>, url: <url-redacted>, enum: RED, inputObject: {' +
+      'string: <string-redacted>, id: <id-redacted>, int: <int-redacted>, float: <float-redacted>, url: <url-redacted>, enum: RED})
+}'
+    query = GraphQL::Query.new(SanitizeTest::Schema, query_str)
+    sanitized_query = SanitizeTest::CustomSanitizedPrinter.new(query).sanitized_query_string
+    assert_equal expected_query_string, sanitized_query
   end
 end
 

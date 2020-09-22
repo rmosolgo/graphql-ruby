@@ -259,9 +259,9 @@ module GraphQL
     # - Variables inlined to the query
     # - Strings replaced with `<REDACTED>`
     # @return [String, nil] Returns nil if the query is invalid.
-    def sanitized_query_string
+    def sanitized_query_string(inline_variables: true)
       with_prepared_ast {
-        GraphQL::Language::SanitizedPrinter.new(self).sanitized_query_string
+        GraphQL::Language::SanitizedPrinter.new(self, inline_variables: inline_variables).sanitized_query_string
       }
     end
 
