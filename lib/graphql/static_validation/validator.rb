@@ -32,10 +32,13 @@ module GraphQL
 
             context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class)
 
-            # Attach legacy-style rules
-            rules_to_use.each do |rule_class_or_module|
-              if rule_class_or_module.method_defined?(:validate)
-                rule_class_or_module.new.validate(context)
+            # Attach legacy-style rules.
+            # Only loop through rules if it has legacy-style rules
+            unless (legacy_rules = rules_to_use - GraphQL::StaticValidation::ALL_RULES).empty?
+              legacy_rules.each do |rule_class_or_module|
+                if rule_class_or_module.method_defined?(:validate)
+                  rule_class_or_module.new.validate(context)
+                end
               end
             end
 

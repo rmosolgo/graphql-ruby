@@ -30,7 +30,7 @@ module GraphQL
 
         # The interface is accessible if any of its possible types are accessible
         def accessible?(context)
-          context.schema.possible_types(self).each do |type|
+          context.schema.possible_types(self, context).each do |type|
             if context.schema.accessible?(type, context)
               return true
             end

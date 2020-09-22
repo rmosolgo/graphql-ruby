@@ -191,14 +191,20 @@ module Jazz
     type_membership_class PrivateMembership
 
     field :private_name, String, null: false
-    field :overridden_name, String, null: false
 
     def private_name
       "private name"
     end
+  end
+
+  module InvisibleNameEntity
+    include BaseInterface
+
+    field :invisible_name, String, null: false
+    field :overridden_name, String, null: false
 
     def self.visible?(ctx)
-      ctx[:private] == true
+      ctx[:private]
     end
   end
 
@@ -222,7 +228,7 @@ module Jazz
     # Test string type names
     # This method should override inherited one
     field :name, "String", null: false, resolver_method: :overridden_name
-    implements GloballyIdentifiableType, NamedEntity, HasMusicians
+    implements GloballyIdentifiableType, NamedEntity, HasMusicians, InvisibleNameEntity
     implements PrivateNameEntity, visibility: { private: true }
     description "A group of musicians playing together"
     config :config, :configged
@@ -405,8 +411,9 @@ module Jazz
 
     def now_playing; Models.data["Ensemble"].first; end
 
-    # For asserting that the object is initialized once:
-    field :object_id, String, null: false
+    # For asserting that the *resolver* object is initialized once:
+    # `method_conflict_warning: false` tells graphql-ruby that exposing Object#object_id was intentional
+    field :object_id, String, null: false, method_conflict_warning: false
     field :inspect_context, [String], null: false
     field :hashy_ensemble, Ensemble, null: false
 

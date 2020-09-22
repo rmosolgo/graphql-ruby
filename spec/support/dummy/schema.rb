@@ -264,6 +264,7 @@ module Dummy
     argument :fat_content, Float, required: false, description: "How much fat it has", default_value: 0.3
     argument :organic, Boolean, required: false, default_value: false
     argument :order_by, ResourceOrder, required: false, default_value: { direction: "ASC" }, camelize: false
+    argument :old_source, String, required: false, deprecation_reason: "No longer supported"
   end
 
   class DeepNonNull < BaseObject
@@ -344,6 +345,7 @@ module Dummy
     field :dairy, resolver: GetSingleton.build(type: Dairy, data: DAIRY)
     field :from_source, [Cheese, null: true], null: true, description: "Cheese from source" do
       argument :source, DairyAnimal, required: false, default_value: 1
+      argument :old_source, String, required: false, deprecation_reason: "No longer supported"
     end
     def from_source(source:)
       CHEESES.values.select { |c| c.source == source }

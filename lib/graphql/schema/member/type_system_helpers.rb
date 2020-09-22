@@ -6,12 +6,12 @@ module GraphQL
       module TypeSystemHelpers
         # @return [Schema::NonNull] Make a non-null-type representation of this type
         def to_non_null_type
-          GraphQL::Schema::NonNull.new(self)
+          @to_non_null_type ||= GraphQL::Schema::NonNull.new(self)
         end
 
         # @return [Schema::List] Make a list-type representation of this type
         def to_list_type
-          GraphQL::Schema::List.new(self)
+          @to_list_type ||= GraphQL::Schema::List.new(self)
         end
 
         # @return [Boolean] true if this is a non-nullable type. A nullable list of non-nullables is considered nullable.

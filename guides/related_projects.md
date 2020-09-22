@@ -16,6 +16,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - [`graphql-batch`](https://github.com/shopify/graphql-batch), a batched query execution strategy
 - [`graphql-cache`](https://github.com/stackshareio/graphql-cache), a resolver-level caching solution
 - [`graphql-libgraphqlparser`](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby), bindings to [libgraphqlparser](https://github.com/graphql/libgraphqlparser), a C-level parser.
+- [`graphql-devise`](https://github.com/graphql-devise/graphql_devise), a gql interface to handle authentication with Devise
 - [`graphql-docs`](https://github.com/gjtorikian/graphql-docs), a tool to automatically generate static HTML documentation from your GraphQL implementation
 - [`graphql-metrics`](https://github.com/Shopify/graphql-metrics), a plugin to extract fine-grain metrics of GraphQL queries received by your server
 - [`graphql-groups`](https://github.com/hschne/graphql-groups), a DSL to define group- and aggregation queries with graphql-ruby

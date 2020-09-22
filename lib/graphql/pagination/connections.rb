@@ -66,6 +66,8 @@ module GraphQL
       # Used by the runtime to wrap values in connection wrappers.
       # @api Private
       def wrap(field, parent, items, arguments, context, wrappers: all_wrappers)
+        return items if GraphQL::Execution::Interpreter::RawValue === items
+
         impl = nil
 
         items.class.ancestors.each { |cls|

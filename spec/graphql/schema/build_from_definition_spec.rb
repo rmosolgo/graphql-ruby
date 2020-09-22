@@ -578,7 +578,7 @@ type Root {
 
       built_schema = assert_schema_and_compare_output(schema.chop)
       id_scalar = built_schema.types["ID"]
-      assert_equal true, id_scalar.valid_isolated_input?("123")
+      assert_equal true, id_scalar.valid_input?("123", OpenStruct.new(schema: built_schema))
     end
 
     it 'supports custom scalar' do
@@ -596,8 +596,9 @@ type Root {
 
       built_schema = assert_schema_and_compare_output(schema.chop)
       custom_scalar = built_schema.types["CustomScalar"]
-      assert_equal true, custom_scalar.valid_isolated_input?("anything")
-      assert_equal true, custom_scalar.valid_isolated_input?(12345)
+      dummy_ctx = OpenStruct.new(schema: built_schema)
+      assert_equal true, custom_scalar.valid_input?("anything", dummy_ctx)
+      assert_equal true, custom_scalar.valid_input?(12345, dummy_ctx)
     end
 
     it 'supports input object' do
@@ -743,10 +744,16 @@ enum MyEnum {
   VALUE
 }
 
+input MyInput {
+  int: Int @deprecated(reason: "This is not the argument you're looking for")
+  string: String
+}
+
 type Query {
   enum: MyEnum
   field1: String @deprecated
   field2: Int @deprecated(reason: "Because I said so")
+  field3(deprecatedArg: MyInput @deprecated(reason: "Use something else")): String
 }
       SCHEMA
 
@@ -811,6 +818,30 @@ type Type implements Interface {
       assert_equal [26, 1], schema.directives["Directive"].ast_node.position
       assert_equal [28, 3], schema.directives["Directive"].arguments["argument"].ast_node.position
       assert_equal [31, 22], schema.types["Type"].ast_node.interfaces[0].position
+    end
+
+    it 'can build a schema from a file path' do
+      schema = <<-SCHEMA
+schema {
+  query: HelloScalars
+}
+
+type HelloScalars {
+  bool: Boolean
+  float: Float
+  id: ID
+  int: Int
+  str: String!
+}
+      SCHEMA
+
+      Tempfile.create(['test', '.graphql']) do |file|
+        file.write(schema)
+        file.close
+
+        built_schema = GraphQL::Schema.from_definition(file.path)
+        assert_equal schema.strip, GraphQL::Schema::Printer.print_schema(built_schema)
+      end
     end
   end
 

@@ -26,7 +26,7 @@ REASON
       name "Sub"
       description "Test"
       input_field :string, types.String, 'Something'
-      input_field :int, types.Int, 'Something'
+      input_field :int, types.Int, 'Something', deprecation_reason: 'Do something else'
     end
 
     variant_input_type = GraphQL::InputObjectType.define do
@@ -91,6 +91,7 @@ REASON
         argument :id, !types.ID, 'Post ID'
         argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
         argument :variedWithNulls, variant_input_type, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil }
+        argument :deprecatedArg, types.String, deprecation_reason: 'Use something else'
         resolve ->(obj, args, ctx) { Post.find(args["id"]) }
       end
     end
@@ -150,7 +151,7 @@ directive @deprecated(
   [Markdown](https://daringfireball.net/projects/markdown/).
   """
   reason: String = "No longer supported"
-) on FIELD_DEFINITION | ENUM_VALUE
+) on FIELD_DEFINITION | ENUM_VALUE | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 """
 Directs the executor to include this field or fragment only when the `if` argument is true.
@@ -303,7 +304,7 @@ Object and Interface types are described by a list of Fields, each of which has
 a name, potentially a list of arguments, and a return type.
 """
 type __Field {
-  args: [__InputValue!]!
+  args(includeDeprecated: Boolean = false): [__InputValue!]!
   deprecationReason: String
   description: String
   isDeprecated: Boolean!
@@ -321,7 +322,9 @@ type __InputValue {
   A GraphQL-formatted string representing the default value for this input value.
   """
   defaultValue: String
+  deprecationReason: String
   description: String
+  isDeprecated: Boolean!
   name: String!
   type: __Type!
 }
@@ -372,7 +375,7 @@ type __Type {
   description: String
   enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
   fields(includeDeprecated: Boolean = false): [__Field!]
-  inputFields: [__InputValue!]
+  inputFields(includeDeprecated: Boolean = false): [__InputValue!]
   interfaces: [__Type!]
   kind: __TypeKind!
   name: String
@@ -559,6 +562,8 @@ The query root of this schema
 """
 type Query {
   post(
+    deprecatedArg: String @deprecated(reason: "Use something else")
+
     """
     Post ID
     """
@@ -575,7 +580,7 @@ input Sub {
   """
   Something
   """
-  int: Int
+  int: Int @deprecated(reason: "Do something else")
 
   """
   Something
@@ -636,7 +641,7 @@ type Post {
 The query root of this schema
 """
 type Query {
-  post: Post
+  post(deprecatedArg: String @deprecated(reason: "Use something else")): Post
 }
 SCHEMA
 
@@ -776,7 +781,7 @@ input Sub {
   """
   Something
   """
-  int: Int
+  int: Int @deprecated(reason: "Do something else")
 
   """
   Something

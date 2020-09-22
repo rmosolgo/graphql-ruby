@@ -4,6 +4,10 @@ module GraphQL
     class Member
       # @api private
       module BuildType
+        if !String.method_defined?(:match?)
+          using GraphQL::StringMatchBackport
+        end
+
         LIST_TYPE_ERROR = "Use an array of [T] or [T, null: true] for list types; other arrays are not supported"
 
         module_function
@@ -162,10 +166,16 @@ module GraphQL
         end
 
         def underscore(string)
-          string
-            .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
-            .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
-            .downcase
+          if string.match?(/\A[a-z_]+\Z/)
+            return string
+          end
+          string2 = string.dup
+
+          string2.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
+          string2.gsub!(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+          string2.downcase!
+
+          string2
         end
       end
     end

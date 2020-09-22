@@ -7,7 +7,9 @@ module GraphQL
                   "a name, potentially a list of arguments, and a return type."
       field :name, String, null: false
       field :description, String, null: true
-      field :args, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: false
+      field :args, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: false do
+        argument :include_deprecated, Boolean, required: false, default_value: false
+      end
       field :type, GraphQL::Schema::LateBoundType.new("__Type"), null: false
       field :is_deprecated, Boolean, null: false
       field :deprecation_reason, String, null: true
@@ -16,8 +18,10 @@ module GraphQL
         !!@object.deprecation_reason
       end
 
-      def args
-        @context.warden.arguments(@object)
+      def args(include_deprecated:)
+        args = @context.warden.arguments(@object)
+        args = args.reject(&:deprecation_reason) unless include_deprecated
+        args
       end
     end
   end

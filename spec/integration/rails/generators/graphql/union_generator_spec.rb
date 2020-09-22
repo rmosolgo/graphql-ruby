@@ -16,7 +16,7 @@ class GraphQLGeneratorsUnionGeneratorTest < BaseGeneratorTest
     expected_content = <<-RUBY
 module Types
   class WingedCreatureType < Types::BaseUnion
-    possible_types [Types::InsectType, Types::BirdType]
+    possible_types Types::InsectType, Types::BirdType
   end
 end
 RUBY

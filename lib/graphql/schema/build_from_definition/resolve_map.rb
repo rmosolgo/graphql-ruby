@@ -45,8 +45,10 @@ module GraphQL
                 @resolve_hash[type_name_s][field_name.to_s] = resolve_fn
               end
             when Proc
-              # for example, __resolve_type
+              # for example, "resolve_type"
               @resolve_hash[type_name_s] = fields
+            else
+              raise ArgumentError, "Unexpected resolve hash value for #{type_name.inspect}: #{fields.inspect} (#{fields.class})"
             end
           end
 

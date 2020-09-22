@@ -1,3 +1,4 @@
+<% module_namespacing_when_supported do -%>
 class <%= schema_name %> < GraphQL::Schema
   query(Types::QueryType)
 
@@ -38,3 +39,4 @@ class <%= schema_name %> < GraphQL::Schema
   # GraphQL::Batch setup:
   use GraphQL::Batch
 <% end %>end
+<% end -%>

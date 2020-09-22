@@ -120,6 +120,8 @@ end
 
 Those object types will _inherit_ field definitions from those interfaces.
 
+If you add an object type which implements an interface, but that object type doesn't appear in your schema as a field return type, a union member, or a root type, then you need to add that object to the interfaces's `orphan_types`.
+
 ### Implementing Fields
 
 Interfaces may provide field implementations along with the signatures. For example:

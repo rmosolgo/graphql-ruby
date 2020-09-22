@@ -789,20 +789,25 @@ module GraphQL
     # @param using [Hash] Plugins to attach to the created schema with `use(key, value)`
     # @param interpreter [Boolean] If false, the legacy {Execution::Execute} runtime will be used
     # @return [Class] the schema described by `document`
-    def self.from_definition(definition_or_path, default_resolve: nil, interpreter: true, parser: BuildFromDefinition::DefaultParser, using: {})
+    def self.from_definition(definition_or_path, default_resolve: nil, interpreter: true, parser: GraphQL.default_parser, using: {})
       # If the file ends in `.graphql`, treat it like a filepath
-      definition = if definition_or_path.end_with?(".graphql")
-        File.read(definition_or_path)
+      if definition_or_path.end_with?(".graphql")
+        GraphQL::Schema::BuildFromDefinition.from_definition_path(
+          definition_or_path,
+          default_resolve: default_resolve,
+          parser: parser,
+          using: using,
+          interpreter: interpreter,
+        )
       else
-        definition_or_path
+        GraphQL::Schema::BuildFromDefinition.from_definition(
+          definition_or_path,
+          default_resolve: default_resolve,
+          parser: parser,
+          using: using,
+          interpreter: interpreter,
+        )
       end
-      GraphQL::Schema::BuildFromDefinition.from_definition(
-        definition,
-        default_resolve: default_resolve,
-        parser: parser,
-        using: using,
-        interpreter: interpreter,
-      )
     end
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
@@ -832,7 +837,7 @@ module GraphQL
     # @param except [<#call(member, ctx)>]
     # @return [Hash] GraphQL result
     def as_json(only: nil, except: nil, context: {})
-      execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context).to_h
+      execute(Introspection.query(include_deprecated_args: true), only: only, except: except, context: context).to_h
     end
 
     # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
@@ -880,7 +885,7 @@ module GraphQL
       # @param except [<#call(member, ctx)>]
       # @return [Hash] GraphQL result
       def as_json(only: nil, except: nil, context: {})
-        execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context).to_h
+        execute(Introspection.query(include_deprecated_args: true), only: only, except: except, context: context).to_h
       end
 
       # Return the GraphQL IDL for the schema
@@ -1112,7 +1117,16 @@ module GraphQL
           if type.kind.union?
             type.possible_types(context: context)
           else
-            own_possible_types[type.graphql_name] ||
+            stored_possible_types = own_possible_types[type.graphql_name]
+            visible_possible_types = stored_possible_types.select do |possible_type|
+              next true unless type.kind.interface?
+              next true unless possible_type.kind.object?
+
+              # Use `.graphql_name` comparison to match legacy vs class-based types.
+              # When we don't need to support legacy `.define` types, use `.include?(type)` instead.
+              possible_type.interfaces(context).any? { |interface| interface.graphql_name == type.graphql_name }
+            end if stored_possible_types
+            visible_possible_types ||
               introspection_system.possible_types[type.graphql_name] ||
               (
                 superclass.respond_to?(:possible_types) ?
@@ -1661,6 +1675,10 @@ module GraphQL
             end
           end
         end
+      end
+
+      def query_stack_error(query, err)
+        query.context.errors.push(GraphQL::ExecutionError.new("This query is too large to execute."))
       end
 
       private

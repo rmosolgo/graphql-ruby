@@ -7,10 +7,21 @@ describe GraphQL::Schema::Object do
     it "tells type data" do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
-      assert_equal 8, object_class.fields.size
-      assert_equal ["GloballyIdentifiable", "HasMusicians", "NamedEntity", "PrivateNameEntity"], object_class.interfaces.map(&:graphql_name).sort
+      assert_equal 9, object_class.fields.size
+      assert_equal [
+          "GloballyIdentifiable",
+          "HasMusicians",
+          "InvisibleNameEntity",
+          "NamedEntity",
+          "PrivateNameEntity",
+        ], object_class.interfaces.map(&:graphql_name).sort
       # It filters interfaces, too
-      assert_equal ["GloballyIdentifiable", "HasMusicians", "NamedEntity"], object_class.interfaces({}).map(&:graphql_name).sort
+      assert_equal [
+          "GloballyIdentifiable",
+          "HasMusicians",
+          "InvisibleNameEntity",
+          "NamedEntity"
+        ], object_class.interfaces({}).map(&:graphql_name).sort
       # Compatibility methods are delegated to the underlying BaseType
       assert object_class.respond_to?(:connection_type)
     end
@@ -28,9 +39,15 @@ describe GraphQL::Schema::Object do
       end
 
       # one more than the parent class
-      assert_equal 9, new_object_class.fields.size
+      assert_equal 10, new_object_class.fields.size
       # inherited interfaces are present
-      assert_equal ["GloballyIdentifiable", "HasMusicians", "NamedEntity", "PrivateNameEntity"], new_object_class.interfaces.map(&:graphql_name).sort
+      assert_equal [
+          "GloballyIdentifiable",
+          "HasMusicians",
+          "InvisibleNameEntity",
+          "NamedEntity",
+          "PrivateNameEntity",
+        ], new_object_class.interfaces.map(&:graphql_name).sort
       # The new field is present
       assert new_object_class.fields.key?("newField")
       # The overridden field is present:
@@ -51,7 +68,7 @@ describe GraphQL::Schema::Object do
 
     it "implements visibility constrained interface when context is private" do
       found_interfaces = object_class.interfaces({ private: true })
-      assert_equal 4, found_interfaces.count
+      assert_equal 5, found_interfaces.count
       assert found_interfaces.any? { |int| int.graphql_name == 'PrivateNameEntity' }
     end
 
@@ -243,7 +260,7 @@ describe GraphQL::Schema::Object do
     it "returns a matching GraphQL::ObjectType" do
       assert_equal "Ensemble", obj_type.name
       assert_equal "A group of musicians playing together", obj_type.description
-      assert_equal 8, obj_type.all_fields.size
+      assert_equal 9, obj_type.all_fields.size
 
       name_field = obj_type.all_fields[3]
       assert_equal "name", name_field.name
@@ -357,11 +374,20 @@ describe GraphQL::Schema::Object do
       end
     end
 
-    it "doesn't warn with an override" do
+    it "doesn't warn with a resolver_method: override" do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
           field :method, String, null: true, resolver_method: :resolve_method
+        end
+      end
+    end
+
+    it "doesn't warn with a method: override" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "X"
+          field :module, String, null: true, method: :mod
         end
       end
     end
@@ -398,7 +424,19 @@ describe GraphQL::Schema::Object do
 
   describe "type-specific invalid null errors" do
     class ObjectInvalidNullSchema < GraphQL::Schema
+      module Numberable
+        include GraphQL::Schema::Interface
+
+        field :float, Float, null: false
+
+        def float
+          nil
+        end
+      end
+
       class Query < GraphQL::Schema::Object
+        implements Numberable
+
         field :int, Integer, null: false
         def int
           nil
@@ -417,6 +455,12 @@ describe GraphQL::Schema::Object do
     it "raises them when invalid nil is returned" do
       assert_raises(ObjectInvalidNullSchema::Query::InvalidNullError) do
         ObjectInvalidNullSchema.execute("{ int }")
+      end
+    end
+
+    it "raises them for fields inherited from interfaces" do
+      assert_raises(ObjectInvalidNullSchema::Query::InvalidNullError) do
+        ObjectInvalidNullSchema.execute("{ float }")
       end
     end
   end
