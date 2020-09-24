@@ -186,9 +186,9 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
         variant_image_queries = variants.map do |variant|
           AssociationLoader.for(ProductVariant, :images).load(variant)
         end
-        GraphQL::Dataloader::Promise.all(variant_image_queries).then(&:flatten)
+        GraphQL::Execution::Lazy.all(variant_image_queries).then(&:flatten)
       end
-      GraphQL::Dataloader::Promise.all([product_image_query, variant_images_query]).then do |product_image, variant_images|
+      GraphQL::Execution::Lazy.all([product_image_query, variant_images_query]).then do |product_image, variant_images|
         # TODO this previously used `.value` to get inner values
         [product_image] + variant_images
       end

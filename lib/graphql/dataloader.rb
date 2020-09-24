@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "graphql/dataloader/loader"
-require "graphql/dataloader/promise"
 
 module GraphQL
   class Dataloader
@@ -21,7 +20,6 @@ module GraphQL
         dataloader_class: dataloader_class,
       )
       schema.instrument(:multiplex, instrumenter)
-      schema.lazy_resolve(Dataloader::Promise, :sync)
       # TODO this won't work if the mutation is hooked up after this
       schema.mutation.fields.each do |name, field|
         field.extension(MutationFieldExtension)

@@ -5,7 +5,7 @@ module GraphQL
     class Loader
       module BackgroundThreaded
         def wait
-          # Promises might be added in the meantime, but they won't be included in this list.
+          # loads might be added in the meantime, but they won't be included in this list.
           keys_to_load = (@pending_loads ? @pending_loads.keys : []) - (@loaded_values ? @loaded_values.keys : [])
           f = Concurrent::Future.new do
             with_error_handling(keys_to_load) {
@@ -38,7 +38,7 @@ module GraphQL
 
       def self.load_all(key, values)
         pending_loads = values.map { |value| load(key, value) }
-        Promise.all(pending_loads)
+        Execution::Lazy.all(pending_loads)
       end
 
       def initialize(*key)
@@ -47,11 +47,11 @@ module GraphQL
 
       def load(key)
         @pending_loads ||= {}
-        @pending_loads[key] ||= Promise.new(self)
+        @pending_loads[key] ||= Execution::Lazy.new(self)
       end
 
       def wait
-        # Promises might be added in the meantime, but they won't be included in this list.
+        # loads might be added in the meantime, but they won't be included in this list.
         keys_to_load = @pending_loads ? @pending_loads.keys : []
         if @loaded_values
           keys_to_load -= @loaded_values.keys
