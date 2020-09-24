@@ -48,10 +48,14 @@ module GraphQL
       end
 
       # @return [Object] The wrapped value, calling the lazy block if necessary
+      # @raise [StandardError] if this lazy was {#fulfill}ed with an error
       def value
-        # TODO I think this capture is pointless
-        partial_value = wait
-        @value || partial_value
+        wait
+        if @value.is_a?(StandardError)
+          raise @value
+        else
+          @value
+        end
       end
 
       alias :sync :value
@@ -76,19 +80,18 @@ module GraphQL
           end
         end
       rescue GraphQL::Dataloader::LoadError => err
-        local_err = err.dup
-        query = Dataloader.current.current_query
-        local_err.graphql_path = query.context[:current_path]
-        op_name = query.selected_operation_name || query.selected_operation.operation_type || "query"
-        local_err.message = err.message.sub("),", ") at #{op_name}.#{local_err.graphql_path.join(".")},")
-        raise local_err
+        raise tag_error(err)
       end
 
       def resolved?
         @resolved
       end
 
-      # TODO also reject?
+      # Set this Lazy's resolved value, if it hasn't already been resolved.
+      #
+      # @param value [Object] If this is a `StandardError`, it will be raised by {#value}
+      # @param call_then [Boolean] When `true`, this Lazy's `@then_block` will be called with `value` before passing it along
+      # @return [void]
       def fulfill(value, call_then: false)
         if @resolved
           return
@@ -106,9 +109,6 @@ module GraphQL
           else
             @source = value
             value.subscribe(self, call_then: false)
-            # return this so it can be returned by {#value}, even though the it's not resolved
-            # That's because `Lazy::Resolve` uses `value` to keep resolving recursively
-            value
           end
         else
           @source = nil
@@ -146,6 +146,17 @@ module GraphQL
 
       def inspect
         "#<#{self.class.name}##{object_id} from \"#{@caller}\" #{@field.respond_to?(:path) ? @field.path : ""} #{@path || ""} @resolved=#{@resolved} @value=#{@value.inspect}>"
+      end
+
+      private
+
+      def tag_error(err)
+        local_err = err.dup
+        query = Dataloader.current.current_query
+        local_err.graphql_path = query.context[:current_path]
+        op_name = query.selected_operation_name || query.selected_operation.operation_type || "query"
+        local_err.message = err.message.sub("),", ") at #{op_name}.#{local_err.graphql_path.join(".")},")
+        local_err
       end
 
       # This can be used for fields which _had no_ lazy results

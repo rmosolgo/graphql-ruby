@@ -298,10 +298,15 @@ describe "GraphQL::Dataloader" do
     ended_at = Time.now
     expected_data = {"o1"=>{"name"=>"Wendell Berry"}, "o2"=>{"name"=>"Sandra Boynton"}, "o3"=>{"title"=>"Remembering"}}
     assert_equal(expected_data, res["data"])
-    assert_in_delta 0.5, ended_at - started_at, 0.02
+    assert_in_delta 0.5, ended_at - started_at, 0.1
   end
 
   it "raises helpful errors from background threads" do
-    skip "This should make sure that Dataloader.current is correct in background threads"
+    err = assert_raises GraphQL::Dataloader::LoadError do
+      exec_query('query GetBook { book4: book(id: "b4") { author { name } } }', context: { background_threaded: true })
+    end
+    assert_equal "Key not found: a3", err.cause.message
+    assert_equal "Error from DataloaderTest::BackgroundThreadBackendLoader#perform(\"a3\") at GetBook.book4.author, RuntimeError: \"Key not found: a3\"", err.message
+    assert_equal ["book4", "author"], err.graphql_path
   end
 end

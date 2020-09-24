@@ -8,9 +8,7 @@ module GraphQL
           # loads might be added in the meantime, but they won't be included in this list.
           keys_to_load = (@pending_loads ? @pending_loads.keys : []) - (@loaded_values ? @loaded_values.keys : [])
           f = Concurrent::Future.new do
-            with_error_handling(keys_to_load) {
-              perform(keys_to_load)
-            }
+            perform_with_error_handling(keys_to_load)
           end
           keys_to_load.each do |key|
             lazy = GraphQL::Execution::Lazy.new do
@@ -56,10 +54,26 @@ module GraphQL
         if @loaded_values
           keys_to_load -= @loaded_values.keys
         end
+        perform_with_error_handling(keys_to_load)
+      end
 
-        with_error_handling(keys_to_load) {
+      def perform_with_error_handling(keys_to_load)
+        begin
           perform(keys_to_load)
-        }
+        rescue GraphQL::ExecutionError
+          # Allow client-facing errors to keep propagating
+          raise
+        rescue StandardError => cause
+          message = "Error from #{self.class}#perform(#{keys_to_load.map(&:inspect).join(", ")}), #{cause.class}: #{cause.message.inspect}"
+          load_err = GraphQL::Dataloader::LoadError.new(message)
+          load_err.set_backtrace(cause.backtrace)
+          load_err.cause = cause
+
+          keys_to_load.each do |key|
+            fulfill(key, load_err)
+          end
+          raise load_err
+        end
         nil
       end
 
@@ -81,19 +95,6 @@ module GraphQL
 
       def perform(values)
         raise NotImplementedError, "`#{self.class}#perform` should call `fulfill(v, loaded_value)` for each of `values`"
-      end
-
-      private
-
-      def with_error_handling(keys_to_load)
-        yield
-      rescue GraphQL::ExecutionError
-        # Allow client-facing errors to keep propagating
-        raise
-      rescue StandardError => cause
-        message = "Error from #{self.class}#perform(#{keys_to_load.map(&:inspect).join(", ")}), #{cause.class}: #{cause.message.inspect}"
-        # The raised error will automatically be available as `.cause`
-        raise GraphQL::Dataloader::LoadError, message, cause.backtrace
       end
     end
   end

@@ -11,6 +11,12 @@ module GraphQL
       def message
         @message || super
       end
+
+      attr_writer :cause
+
+      def cause
+        @cause || super
+      end
     end
 
     def self.use(schema, default_loaders: true, loaders: {})
