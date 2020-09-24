@@ -309,4 +309,21 @@ describe "GraphQL::Dataloader" do
     assert_equal "Error from DataloaderTest::BackgroundThreadBackendLoader#perform(\"a3\") at GetBook.book4.author, RuntimeError: \"Key not found: a3\"", err.message
     assert_equal ["book4", "author"], err.graphql_path
   end
+
+  it "works with backgrounded, nested loaders" do
+    query_str = <<-GRAPHQL
+    {
+      a1: booksCount(authorId: "a1")
+      a2: booksCount(authorId: "a2")
+    }
+    GRAPHQL
+
+    res = exec_query(query_str, context: { background_threaded: true })
+    assert_equal({"data"=>{"a1"=>2, "a2"=>1}}, res)
+    expected_log = [
+      'MGET ["a1", "a2"]',
+      'MGET ["b1", "b2", "b3"]',
+    ]
+    assert_equal expected_log, log
+  end
 end

@@ -29,6 +29,18 @@ module GraphQL
         end
       end
 
+      class OnlyBlockSource
+        def initialize(block, promise)
+          @block = block
+          @promise = promise
+        end
+
+        def wait
+          value = @block.call
+          @promise.fulfill(value)
+        end
+      end
+
       attr_reader :path, :field
 
       # Create a {Lazy} which will get its inner value from `source,` and/or by calling the block
@@ -37,9 +49,9 @@ module GraphQL
       # @param field [GraphQL::Schema::Field]
       # @param then_block [Proc] a block to get the inner value (later)
       def initialize(source = nil, path: nil, field: nil, caller_offset: 0, &then_block)
-        @source = source || :__block_only__
+        @source = source || OnlyBlockSource.new(then_block, self)
         @caller = caller(2 + caller_offset, 1).first
-        @then_block = then_block
+        @then_block = source.nil? ? nil : then_block
         @resolved = false
         @value = nil
         @pending_lazies = nil
@@ -64,18 +76,13 @@ module GraphQL
       # @return [void]
       def wait
         if !@resolved
-          if @source == :__block_only__
-            @resolved = true
-            @value = @then_block.call
-          else
-            while (current_source = @source)
-              current_source.wait
-              # Only care if these are the same object,
-              # which shows that the lazy didn't start
-              # waiting on something else
-              if current_source.equal?(@source)
-                break
-              end
+          while (current_source = @source)
+            current_source.wait
+            # Only care if these are the same object,
+            # which shows that the lazy didn't start
+            # waiting on something else
+            if current_source.equal?(@source)
+              break
             end
           end
         end
@@ -101,9 +108,7 @@ module GraphQL
           value = @then_block.call(value)
         end
 
-        # TODO why is it that `:__block_only__` doesn't play nice here?
-        # It causes parallelism to not work
-        if value.is_a?(Lazy) && value.source != :__block_only__
+        if value.is_a?(Lazy)
           if value.resolved?
             fulfill(value.value)
           else
@@ -115,17 +120,15 @@ module GraphQL
           @resolved = true
           @value = value
           if @pending_lazies
+            non_error = !value.is_a?(StandardError)
             lazies = @pending_lazies
             @pending_lazies = nil
             lazies.each { |lazy, call_then|
-              lazy.fulfill(value, call_then: call_then)
+              lazy.fulfill(value, call_then: non_error && call_then)
             }
           end
         end
       end
-
-      attr_reader :source
-      attr_reader :then_block
 
       # @return [Lazy] A {Lazy} whose value depends on another {Lazy}, plus any transformations in `block`
       def then(&block)

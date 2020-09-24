@@ -32,9 +32,9 @@ module GraphQL
       end
     end
 
-    def self.load
+    def self.load(dataloader = Dataloader.new(nil))
       result = begin
-        begin_dataloading(nil)
+        begin_dataloading(dataloader)
         yield
       ensure
         end_dataloading
@@ -43,8 +43,8 @@ module GraphQL
       GraphQL::Execution::Lazy.sync(result)
     end
 
-    def self.begin_dataloading(multiplex)
-      self.current ||= self.new(multiplex)
+    def self.begin_dataloading(dataloader)
+      self.current ||= dataloader
       self.increment_level
     end
 
@@ -74,7 +74,8 @@ module GraphQL
       end
 
       def before_multiplex(multiplex)
-        Dataloader.begin_dataloading(multiplex)
+        dataloader = @dataloader_class.new(multiplex)
+        Dataloader.begin_dataloading(dataloader)
       end
 
       def after_multiplex(_m)

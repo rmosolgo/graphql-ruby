@@ -6,9 +6,14 @@ module GraphQL
       module BackgroundThreaded
         def wait
           # loads might be added in the meantime, but they won't be included in this list.
-          keys_to_load = (@pending_loads ? @pending_loads.keys : []) - (@loaded_values ? @loaded_values.keys : [])
+          keys_to_load = @load_queue
+          @load_queue = nil
+          this_dl = Dataloader.current
           f = Concurrent::Future.new do
-            perform_with_error_handling(keys_to_load)
+              Dataloader.load(this_dl) do
+                perform_with_error_handling(keys_to_load)
+              end
+            end
           end
           keys_to_load.each do |key|
             lazy = GraphQL::Execution::Lazy.new do
@@ -44,16 +49,18 @@ module GraphQL
       end
 
       def load(key)
-        @pending_loads ||= {}
-        @pending_loads[key] ||= Execution::Lazy.new(self)
+        pending_loads[key] ||= begin
+          @load_queue ||= []
+          @load_queue << key
+          # return this lazy:
+          Execution::Lazy.new(self)
+        end
       end
 
       def wait
         # loads might be added in the meantime, but they won't be included in this list.
-        keys_to_load = @pending_loads ? @pending_loads.keys : []
-        if @loaded_values
-          keys_to_load -= @loaded_values.keys
-        end
+        keys_to_load = @load_queue
+        @load_queue = nil
         perform_with_error_handling(keys_to_load)
       end
 
@@ -78,23 +85,25 @@ module GraphQL
       end
 
       def fulfill(key, value)
-        @loaded_values ||= {}
-        @loaded_values[key] = value
-        @pending_loads[key].fulfill(value)
-        value
+        pending_loads[key].fulfill(value)
+        nil
       end
 
       def fulfilled?(key)
-        @loaded_values && @loaded_values.key?(key)
+        (lazy = pending_loads[key]) && lazy.resolved?
       end
 
       def fulfilled_value_for(key)
         # TODO raise if not loaded?
-        @loaded_values && @loaded_values[key]
+        (lazy = pending_loads[key]) && lazy.value
       end
 
       def perform(values)
-        raise NotImplementedError, "`#{self.class}#perform` should call `fulfill(v, loaded_value)` for each of `values`"
+        raise NotImplementedError, "`#{self.class}#perform(values)` should call `fulfill(v, loaded_value)` for each of `values`"
+      end
+
+      def pending_loads
+        @pending_loads ||= {}
       end
     end
   end
