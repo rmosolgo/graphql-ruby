@@ -122,7 +122,7 @@ module GraphQL
         lazy_method = lazy_method_name(value)
         if lazy_method
           synced_value = value.public_send(lazy_method)
-          if recursive || synced_value.is_a?(GraphQL::Execution::Lazy)
+          if recursive
             sync_lazy(synced_value)
           else
             synced_value

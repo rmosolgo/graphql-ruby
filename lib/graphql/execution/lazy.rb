@@ -20,10 +20,10 @@ module GraphQL
         Resolve.resolve(val)
       end
 
-      # If `maybe_lazy` is a Lazy, sync it
+      # If `maybe_lazy` is a Lazy, sync it recursively. (Never returns another Lazy)
       def self.sync(maybe_lazy)
         if maybe_lazy.is_a?(Lazy)
-          maybe_lazy.value
+          sync(maybe_lazy.value)
         else
           maybe_lazy
         end
@@ -72,7 +72,9 @@ module GraphQL
       # @return [Lazy] A lazy which will sync all of `lazies`
       def self.all(lazies)
         self.new {
-          lazies.map { |l| l.is_a?(Lazy) ? l.value : l }
+          # TODO: this makes input lists work, but it's going to break parallel loading,
+          # since it halts for a depth-first resolution.
+          lazies.map { |l| self.sync(l) }
         }
       end
 

@@ -121,9 +121,7 @@ describe "GraphQL::Dataloader" do
         end
 
         def load_object(type:, id:)
-          loader_class.load(type, id).then do |obj|
-            obj
-          end
+          loader_class.load(type, id)
         end
       end
 
@@ -298,9 +296,9 @@ describe "GraphQL::Dataloader" do
     started_at = Time.now
     res = exec_query(query_str, context: { background_threaded: true })
     ended_at = Time.now
-    p res
-    p [ended_at - started_at]
-    assert_in_delta 0.5, ended_at - started_at, 0.01
+    expected_data = {"o1"=>{"name"=>"Wendell Berry"}, "o2"=>{"name"=>"Sandra Boynton"}, "o3"=>{"title"=>"Remembering"}}
+    assert_equal(expected_data, res["data"])
+    assert_in_delta 0.5, ended_at - started_at, 0.02
   end
 
   it "raises helpful errors from background threads" do

@@ -4,7 +4,7 @@ module GraphQL
   class Dataloader
     # Let's start with a close reading of promise.rb
     # Then improve it to match GraphQL-Ruby's requirements
-    class Promise
+    class Promise < GraphQL::Execution::Lazy
       # @param source [<#wait>]
       def initialize(source, then_block: nil)
         @caller = caller(3, 1).first
@@ -23,7 +23,10 @@ module GraphQL
         @synced
       end
 
-      attr_reader :value
+      def value
+        wait
+        @value
+      end
 
       # TODO also reject?
       # TODO better api than `call_then = true`

@@ -4,10 +4,9 @@ module GraphQL
   class Dataloader
     class Loader
       module BackgroundThreaded
-        def sync
+        def wait
           # Promises might be added in the meantime, but they won't be included in this list.
           keys_to_load = @pending_loads.keys - @loaded_values.keys
-          p "Future for #{keys_to_load}"
           f = Concurrent::Future.new do
             with_error_handling(keys_to_load) {
               perform(keys_to_load)
