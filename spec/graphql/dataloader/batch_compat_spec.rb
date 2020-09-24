@@ -104,7 +104,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
   ].each_with_object({}){ |p, h| h[p.id] = p }
 
   class RecordLoader < GraphQL::Dataloader::Loader
-    def initialize(ctx, model)
+    def initialize(model)
       super
       @model = model
     end
@@ -120,7 +120,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
   end
 
   class AssociationLoader < GraphQL::Dataloader::Loader
-    def initialize(ctx, model, association)
+    def initialize(model, association)
       super
       @model = model
       @association = association

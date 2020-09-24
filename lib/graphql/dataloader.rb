@@ -28,14 +28,38 @@ module GraphQL
       end
     end
 
+    def self.load
+      result = begin
+        begin_dataloading(nil)
+        yield
+      ensure
+        end_dataloading
+      end
+
+      GraphQL::Execution::Lazy.sync(result)
+    end
+
+    def self.begin_dataloading(multiplex)
+      self.current ||= self.new(multiplex)
+      self.increment_level
+    end
+
+    def self.end_dataloading
+      self.decrement_level
+      if self.level < 1
+        self.current = nil
+      end
+    end
+
+
     class MutationFieldExtension < GraphQL::Schema::FieldExtension
       def resolve(object:, arguments:, context:, **_rest)
-        context[:dataloader].clear
+        Dataloader.current.clear
         begin
           return_value = yield(object, arguments)
           GraphQL::Execution::Lazy.sync(return_value)
         ensure
-          context[:dataloader].clear
+          Dataloader.current.clear
         end
       end
     end
@@ -46,16 +70,11 @@ module GraphQL
       end
 
       def before_multiplex(multiplex)
-        dl = @dataloader_class.new(multiplex)
-        Dataloader.current = dl
-        multiplex.context[:dataloader] = dl
-        multiplex.queries.each do |q|
-          q.context[:dataloader] = dl
-        end
+        Dataloader.begin_dataloading(multiplex)
       end
 
       def after_multiplex(_m)
-        Dataloader.current = nil
+        Dataloader.end_dataloading
       end
     end
 
@@ -93,6 +112,20 @@ module GraphQL
       def current=(dataloader)
         Thread.current[:graphql_dataloader] = dataloader
       end
+
+      def level
+        @level || 0
+      end
+
+      def increment_level
+        @level ||= 0
+        @level += 1
+      end
+
+      def decrement_level
+        @level ||= 0
+        @level -= 1
+      end
     end
 
     def initialize(multiplex)
@@ -100,7 +133,7 @@ module GraphQL
 
       @loaders = Hash.new do |h, loader_cls|
         h[loader_cls] = Hash.new do |h2, loader_key|
-          h2[loader_key] = loader_cls.new(@multiplex.context, *loader_key)
+          h2[loader_key] = loader_cls.new(*loader_key)
         end
       end
     end

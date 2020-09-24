@@ -49,8 +49,11 @@ module GraphQL
           @source = nil
           @synced = true
           @value = value
-          @pending_promises&.each { |pr, call_then| pr.fulfill(value, call_then) }
-          @pending_promises = nil
+          if @pending_promises
+            prs = @pending_promises
+            @pending_promises = nil
+            prs.each { |pr, call_then| pr.fulfill(value, call_then) }
+          end
         end
       end
 

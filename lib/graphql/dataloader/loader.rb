@@ -6,7 +6,7 @@ module GraphQL
       module BackgroundThreaded
         def wait
           # Promises might be added in the meantime, but they won't be included in this list.
-          keys_to_load = @pending_loads.keys - @loaded_values.keys
+          keys_to_load = (@pending_loads ? @pending_loads.keys : []) - (@loaded_values ? @loaded_values.keys : [])
           f = Concurrent::Future.new do
             with_error_handling(keys_to_load) {
               perform(keys_to_load)
@@ -30,6 +30,9 @@ module GraphQL
 
       def self.for(*key_parts)
         dl = Dataloader.current
+        if !dl
+          raise "Can't initialize a loader without a Dataloader, use `Dataloader.load { ... }` or add `use GraphQL::Dataloader` to your schema"
+        end
         dl.loaders[self][key_parts]
       end
 
@@ -40,17 +43,20 @@ module GraphQL
 
       def initialize(*key)
         @key = key
-        @pending_loads = {}
-        @loaded_values = {}
       end
 
       def load(key)
+        @pending_loads ||= {}
         @pending_loads[key] ||= Promise.new(self)
       end
 
       def wait
         # Promises might be added in the meantime, but they won't be included in this list.
-        keys_to_load = @pending_loads.keys - @loaded_values.keys
+        keys_to_load = @pending_loads ? @pending_loads.keys : []
+        if @loaded_values
+          keys_to_load -= @loaded_values.keys
+        end
+
         with_error_handling(keys_to_load) {
           perform(keys_to_load)
         }
@@ -58,18 +64,19 @@ module GraphQL
       end
 
       def fulfill(key, value)
+        @loaded_values ||= {}
         @loaded_values[key] = value
         @pending_loads[key].fulfill(value)
         value
       end
 
       def fulfilled?(key)
-        @loaded_values.key?(key)
+        @loaded_values && @loaded_values.key?(key)
       end
 
       def fulfilled_value_for(key)
         # TODO raise if not loaded?
-        @loaded_values[key]
+        @loaded_values && @loaded_values[key]
       end
 
       def perform(values)
