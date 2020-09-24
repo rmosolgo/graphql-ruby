@@ -115,13 +115,18 @@ module GraphQL
 
       # Override this method to handle lazy objects in a custom way.
       # @param value [Object] an instance of a class registered with {.lazy_resolve}
+      # @param recursive [Boolean] if true, continue resolving if the sync'd value has a lazy method
       # @return [Object] A GraphQL-ready (non-lazy) object
       # @api private
-      def sync_lazy(value)
+      def sync_lazy(value, recursive: true)
         lazy_method = lazy_method_name(value)
         if lazy_method
           synced_value = value.public_send(lazy_method)
-          sync_lazy(synced_value)
+          if recursive || synced_value.is_a?(GraphQL::Execution::Lazy)
+            sync_lazy(synced_value)
+          else
+            synced_value
+          end
         else
           value
         end

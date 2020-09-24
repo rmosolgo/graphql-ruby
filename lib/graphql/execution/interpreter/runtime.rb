@@ -438,10 +438,10 @@ module GraphQL
                 query.with_error_handling do
                   if trace
                     query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
-                      schema.sync_lazy(lazy_obj)
+                      schema.sync_lazy(lazy_obj, recursive: false)
                     end
                   else
-                    schema.sync_lazy(lazy_obj)
+                    schema.sync_lazy(lazy_obj, recursive: false)
                   end
                 end
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err

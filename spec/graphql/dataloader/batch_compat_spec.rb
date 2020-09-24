@@ -143,8 +143,8 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
   end
 
   class NilLoader < GraphQL::Dataloader::Loader
-    def self.load(ctx)
-      self.for(ctx, nil).load(nil)
+    def self.load
+      self.for(nil).load(nil)
     end
 
     def perform(nils)
@@ -163,7 +163,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     field :image_ids, [ID, null: true], null: false
 
     def image_ids
-      AssociationLoader.for(context, ProductVariant, :images).load(object).then do |images|
+      AssociationLoader.for(ProductVariant, :images).load(object).then do |images|
         images.map(&:id)
       end
     end
@@ -171,7 +171,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     field :product, GraphQL::Schema::LateBoundType.new('Product'), null: false
 
     def product
-      RecordLoader.for(context, Product).load(object.product_id)
+      RecordLoader.for(Product).load(object.product_id)
     end
   end
 
@@ -181,16 +181,16 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     field :images, [ImageType], null: true
 
     def images
-      product_image_query = RecordLoader.for(context, Image).load(object.image_id)
-      variant_images_query = AssociationLoader.for(context, Product, :variants).load(object).then do |variants|
+      product_image_query = RecordLoader.for(Image).load(object.image_id)
+      variant_images_query = AssociationLoader.for(Product, :variants).load(object).then do |variants|
         variant_image_queries = variants.map do |variant|
-          AssociationLoader.for(context, ProductVariant, :images).load(variant)
+          AssociationLoader.for(ProductVariant, :images).load(variant)
         end
-        # TODO this is not good -- needs a good public API
-        GraphQL::Dataloader::Loader::AllPendingLoads.new(variant_image_queries).then(&:flatten)
+        GraphQL::Dataloader::Promise.all(variant_image_queries).then(&:flatten)
       end
-      GraphQL::Dataloader::Loader::AllPendingLoads.new([product_image_query, variant_images_query]).then do
-        [product_image_query.value] + variant_images_query.value
+      GraphQL::Dataloader::Promise.all([product_image_query, variant_images_query]).then do |product_image, variant_images|
+        # TODO this previously used `.value` to get inner values
+        [product_image] + variant_images
       end
     end
 
@@ -203,14 +203,14 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     field :variants, [ProductVariantType], null: true
 
     def variants
-      AssociationLoader.for(context, Product, :variants).load(object)
+      AssociationLoader.for(Product, :variants).load(object)
     end
 
     field :variants_count, Int, null: true
 
     def variants_count
-      query = AssociationLoader.for(context, Product, :variants).load(object)
-      GraphQL::Execution::Lazy.all([query]).then { query.value.size }
+      query = AssociationLoader.for(Product, :variants).load(object)
+      GraphQL::Execution::Lazy.all([query]).then { query.sync.size }
     end
   end
 
@@ -224,7 +224,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     field :load_execution_error, String, null: true
 
     def load_execution_error
-      RecordLoader.for(context, Product).load(1).then do |product|
+      RecordLoader.for(Product).load(1).then do |product|
         raise GraphQL::ExecutionError, "test error message"
       end
     end
@@ -238,7 +238,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     field :non_null_but_promise_raises, String, null: false
 
     def non_null_but_promise_raises
-      NilLoader.load(context).then do
+      NilLoader.load.then do
         raise GraphQL::ExecutionError, 'Error'
       end
     end
@@ -248,7 +248,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     end
 
     def product(id:)
-      RecordLoader.for(context, Product).load(id)
+      RecordLoader.for(Product).load(id)
     end
 
     field :products, [ProductType], null: true do
@@ -264,8 +264,8 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     end
 
     def product_variants_count(id:)
-      RecordLoader.for(context, Product).load(id).then do |product|
-        AssociationLoader.for(context, Product, :variants).load(product).then(&:size)
+      RecordLoader.for(Product).load(id).then do |product|
+        AssociationLoader.for(Product, :variants).load(product).then(&:size)
       end
     end
   end
@@ -280,7 +280,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     field :load_value, Int, null: false
 
     def load_value
-      CounterLoader.load(context, context[:counter])
+      CounterLoader.load(context[:counter])
     end
   end
 
@@ -290,7 +290,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
 
     def resolve
       context[:counter][0] += 1
-      CounterLoader.load(context, context[:counter])
+      CounterLoader.load(context[:counter])
     end
   end
 
@@ -299,7 +299,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     payload_type Int
 
     def resolve
-      CounterLoader.load(context, context[:counter])
+      CounterLoader.load(context[:counter])
     end
   end
 

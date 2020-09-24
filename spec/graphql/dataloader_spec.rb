@@ -45,32 +45,53 @@ describe "GraphQL::Dataloader" do
       end
     end
 
+    class BackgroundThreadBackendLoader < BackendLoader
+      include GraphQL::Dataloader::Loader::BackgroundThreaded
+
+      def perform(ids)
+        sleep 0.5
+        super
+      end
+    end
+
     class Schema < GraphQL::Schema
-      class Author < GraphQL::Schema::Object
+      class BaseObject < GraphQL::Schema::Object
+        private
+
+        def loader_class
+          @context[:background_threaded] ? BackgroundThreadBackendLoader : BackendLoader
+        end
+      end
+
+      class Author < BaseObject
         field :name, String, null: false
         field :books, [GraphQL::Schema::LateBoundType.new("Book")], null: false
 
         def books
-          BackendLoader.load_all(nil, object[:book_ids])
+          loader_class.load_all(nil, object[:book_ids])
         end
       end
 
-      class Book < GraphQL::Schema::Object
+      class Book < BaseObject
         field :title, String, null: false
         field :author, Author, null: false
 
         def author
-          BackendLoader.load_object(object[:author_id])
+          loader_class.load_object(object[:author_id])
         end
       end
 
-      class Query < GraphQL::Schema::Object
+      class ObjectUnion < GraphQL::Schema::Union
+        possible_types Book, Author
+      end
+
+      class Query < BaseObject
         field :book, Book, null: true do
           argument :id, ID, required: true
         end
 
         def book(id:)
-          BackendLoader.load_object(id)
+          loader_class.load_object(id)
         end
 
         field :author, Author, null: true do
@@ -78,7 +99,7 @@ describe "GraphQL::Dataloader" do
         end
 
         def author(id:)
-          BackendLoader.load_object(id)
+          loader_class.load_object(id)
         end
 
         field :books_count, Integer, null: false do
@@ -87,15 +108,26 @@ describe "GraphQL::Dataloader" do
 
         def books_count(author_id:)
           # Of course this could be done without a nested load, but I want to test nested loaders
-          BackendLoader.load_object(author_id).then do |author|
-            BackendLoader.load_all(nil, author[:book_ids]).then do |books|
+          loader_class.load_object(author_id).then do |author|
+            loader_class.load_all(nil, author[:book_ids]).then do |books|
               books.size
             end
           end
         end
+
+        field :object, ObjectUnion, null: true, resolver_method: :load_object do
+          argument :type, String, required: true
+          argument :id, ID, required: true
+        end
+
+        def load_object(type:, id:)
+          loader_class.load(type, id).then do |obj|
+            obj
+          end
+        end
       end
 
-      class Mutation < GraphQL::Schema::Object
+      class Mutation < BaseObject
         field :add_author, Author, null: true do
           argument :id, ID, required: true
           argument :name, String, required: true
@@ -114,11 +146,22 @@ describe "GraphQL::Dataloader" do
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
       use GraphQL::Dataloader
+      lazy_resolve Concurrent::Future, :value
+
+      def self.resolve_type(type, obj, ctx)
+        if obj.key?(:name)
+          Author
+        elsif obj.key?(:title)
+          Book
+        else
+          raise "Unknown object: #{obj.inspect}"
+        end
+      end
     end
   end
 
-  def exec_query(*args)
-    DataloaderTest::Schema.execute(*args)
+  def exec_query(*args, **kwargs)
+    DataloaderTest::Schema.execute(*args, **kwargs)
   end
 
   let(:log) { DataloaderTest::Backend::LOG }
@@ -233,7 +276,30 @@ describe "GraphQL::Dataloader" do
       exec_query('query GetBook { book4: book(id: "b4") { author { name } } }')
     end
     assert_equal "Key not found: a3", err.cause.message
-    assert_equal "Error from DataloaderTest::BackendLoader#perform(\"a3\") at GetBook.book4.author", err.message
+    assert_equal "Error from DataloaderTest::BackendLoader#perform(\"a3\") at GetBook.book4.author, RuntimeError: \"Key not found: a3\"", err.message
     assert_equal ["book4", "author"], err.graphql_path
+  end
+
+  it "runs background thread loads in parallel" do
+    query_str = <<-GRAPHQL
+    {
+      o1: object(type: "Author", id: "a1") { ... AuthorFields }
+      o2: object(type: "Author", id: "a2") { ... AuthorFields }
+      o3: object(type: "Book", id: "b1") { ... BookFields }
+    }
+
+    fragment AuthorFields on Author {
+      name
+    }
+    fragment BookFields on Book {
+      title
+    }
+    GRAPHQL
+    started_at = Time.now
+    res = exec_query(query_str, context: { background_threaded: true })
+    ended_at = Time.now
+    p res
+    p [ended_at - started_at]
+    assert_in_delta 0.5, ended_at - started_at, 0.01
   end
 end

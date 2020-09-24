@@ -36,6 +36,7 @@ module GraphQL
       # @param field [GraphQL::Schema::Field]
       # @param get_value_func [Proc] a block to get the inner value (later)
       def initialize(path: nil, field: nil, &get_value_func)
+        @caller = caller(2, 1).first
         @get_value_func = get_value_func
         @resolved = false
         @path = path
@@ -47,11 +48,7 @@ module GraphQL
         if !@resolved
           @resolved = true
           @value = begin
-            v = @get_value_func.call
-            if v.is_a?(Lazy)
-              v = v.value
-            end
-            v
+            @get_value_func.call
           rescue GraphQL::ExecutionError => err
             err
           end
@@ -80,7 +77,7 @@ module GraphQL
       end
 
       def inspect
-        "#<#{self.class.name} #{@field || "unknown-field"} / #{@path || "unknown-path"} @resolved=#{@resolved} @value=#{@value.inspect}>"
+        "#<#{self.class.name} from \"#{@caller}\" #{@field || "unknown-field"} / #{@path || "unknown-path"} @resolved=#{@resolved} @value=#{@value.inspect}>"
       end
 
       # This can be used for fields which _had no_ lazy results

@@ -17,6 +17,8 @@ class MySchema < GraphQL::Schema
 end
 ```
 
+### TODO this isn't the case anymore
+
 By default, {{ "GraphQL::Dataloader" | api_doc }} will load data in different threads. To disable this (for example, if your application isn't threadsafe), add `threaded: false`:
 
 ```ruby

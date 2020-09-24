@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/dataloader/loader"
+require "graphql/dataloader/promise"
 
 module GraphQL
   class Dataloader
@@ -13,14 +14,14 @@ module GraphQL
       end
     end
 
-    def self.use(schema, default_loaders: true, threaded: true, loaders: {})
-      dataloader_class = self.class_for(loaders: loaders, default_loaders: default_loaders, threaded: threaded)
+    def self.use(schema, default_loaders: true, loaders: {})
+      dataloader_class = self.class_for(loaders: loaders, default_loaders: default_loaders)
       schema.const_set(:Dataloader, dataloader_class)
       instrumenter = Dataloader::Instrumentation.new(
         dataloader_class: dataloader_class,
       )
       schema.instrument(:multiplex, instrumenter)
-      schema.lazy_resolve(Dataloader::Loader::PendingLoad, :sync)
+      schema.lazy_resolve(Dataloader::Promise, :sync)
       # TODO this won't work if the mutation is hooked up after this
       schema.mutation.fields.each do |name, field|
         field.extension(MutationFieldExtension)
@@ -59,9 +60,8 @@ module GraphQL
     end
 
     class << self
-      def class_for(loaders:, threaded:, default_loaders:)
+      def class_for(loaders:, default_loaders:)
         Class.new(self) do
-          self.threaded = threaded
           if default_loaders
             # loader(GraphQL::Dataloader::HttpLoader)
             # loader(GraphQL::Dataloader::ActiveRecordLoader)
@@ -71,12 +71,6 @@ module GraphQL
             loader(custom_loader)
           end
         end
-      end
-
-      attr_writer :threaded
-
-      def threaded?
-        @threaded
       end
 
       def loader_map
