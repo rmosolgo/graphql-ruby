@@ -103,7 +103,7 @@ module GraphQL
       # @api private
       def after_lazy(value, &block)
         if lazy?(value)
-          GraphQL::Execution::Lazy.new do
+          GraphQL::Execution::Lazy.new(caller_offset: 1) do
             result = sync_lazy(value)
             # The returned result might also be lazy, so check it, too
             after_lazy(result, &block)

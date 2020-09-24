@@ -36,9 +36,9 @@ module GraphQL
       # @param path [Array<String, Integer>]
       # @param field [GraphQL::Schema::Field]
       # @param then_block [Proc] a block to get the inner value (later)
-      def initialize(source = nil, path: nil, field: nil, &then_block)
+      def initialize(source = nil, path: nil, field: nil, caller_offset: 0, &then_block)
         @source = source || :__block_only__
-        @caller = caller(2, 1).first
+        @caller = caller(2 + caller_offset, 1).first
         @then_block = then_block
         @resolved = false
         @value = nil
@@ -49,6 +49,7 @@ module GraphQL
 
       # @return [Object] The wrapped value, calling the lazy block if necessary
       def value
+        # TODO I think this capture is pointless
         partial_value = wait
         @value || partial_value
       end

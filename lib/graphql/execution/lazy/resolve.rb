@@ -31,13 +31,13 @@ module GraphQL
 
         def self.resolve_in_place(value)
           acc = each_lazy(NullAccumulator, value)
-
           if acc.empty?
             Lazy::NullResult
           else
             Lazy.new {
               acc.each_with_index { |ctx, idx|
-                acc[idx] = ctx.value.value
+                v = Lazy.sync(ctx.value.value)
+                acc[idx] = v
               }
               resolve_in_place(acc)
             }
