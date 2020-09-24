@@ -77,6 +77,14 @@ module GraphQL
       def wait
         if !@resolved
           while (current_source = @source)
+            # The problem here is that, when a lazy is returned from Loader#load,
+            # its source is the loader. Then it calls `.wait` on the loader, which:
+            #  - starts the background-threaded process
+            #  - `.fulfill(...)`s _this_ lazy with block-only lazy, which becomes this lazy's source
+            # Then the next iteration here finds that block-only lazy, and waits on it,
+            # which makes Ruby wait for the background thread, which defeats the whole purpose.
+            #
+            # Somehow, gotta kick off all the background threaded loaders before waiting on those individual block-only lazies.
             current_source.wait
             # Only care if these are the same object,
             # which shows that the lazy didn't start
