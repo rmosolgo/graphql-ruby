@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql/execution/lazy/lazy_method_map"
 require "graphql/execution/lazy/resolve"
+require "graphql/execution/lazy/group"
 
 module GraphQL
   module Execution
@@ -48,8 +49,8 @@ module GraphQL
 
       # @return [Object] The wrapped value, calling the lazy block if necessary
       def value
-        wait
-        @value
+        partial_value = wait
+        @value || partial_value
       end
 
       alias :sync :value
@@ -59,7 +60,8 @@ module GraphQL
       def wait
         if !@resolved
           if @source == :__block_only__
-            fulfill(nil)
+            @resolved = true
+            @value = @then_block.call
           else
             while (current_source = @source)
               current_source.wait
@@ -86,25 +88,26 @@ module GraphQL
       end
 
       # TODO also reject?
-      # TODO better api than `call_then = true`
-      def fulfill(value, call_then = true )
+      def fulfill(value, call_then: false)
         if @resolved
           return
         end
 
-        if @then_block && call_then
+        if call_then && @then_block
           value = @then_block.call(value)
         end
 
-        if value.is_a?(self.class)
+        # TODO why is it that `:__block_only__` doesn't play nice here?
+        # It causes parallelism to not work
+        if value.is_a?(Lazy) && value.source != :__block_only__
           if value.resolved?
             fulfill(value.value)
           else
             @source = value
-            # set this so it can be returned by {#value}, even though the it's not resolved
+            value.subscribe(self, call_then: false)
+            # return this so it can be returned by {#value}, even though the it's not resolved
             # That's because `Lazy::Resolve` uses `value` to keep resolving recursively
-            @value = value
-            value.subscribe(self, false)
+            value
           end
         else
           @source = nil
@@ -113,19 +116,24 @@ module GraphQL
           if @pending_lazies
             lazies = @pending_lazies
             @pending_lazies = nil
-            lazies.each { |lazy, call_then| lazy.fulfill(value, call_then) }
+            lazies.each { |lazy, call_then|
+              lazy.fulfill(value, call_then: call_then)
+            }
           end
         end
       end
 
+      attr_reader :source
+      attr_reader :then_block
+
       # @return [Lazy] A {Lazy} whose value depends on another {Lazy}, plus any transformations in `block`
       def then(&block)
         new_lazy = self.class.new(self, &block)
-        subscribe(new_lazy)
+        subscribe(new_lazy, call_then: true)
         new_lazy
       end
 
-      def subscribe(other_lazy, call_then = true )
+      def subscribe(other_lazy, call_then:)
         @pending_lazies ||= []
         @pending_lazies.push([other_lazy, call_then])
       end
@@ -136,38 +144,13 @@ module GraphQL
       end
 
       def inspect
-        "#<#{self.class.name} from \"#{@caller}\" #{@field || "unknown-field"} / #{@path || "unknown-path"} @resolved=#{@resolved} @value=#{@value.inspect}>"
+        "#<#{self.class.name}##{object_id} from \"#{@caller}\" #{@field.respond_to?(:path) ? @field.path : ""} #{@path || ""} @resolved=#{@resolved} @value=#{@value.inspect}>"
       end
 
       # This can be used for fields which _had no_ lazy results
       # @api private
       NullResult = Lazy.new(){}
       NullResult.value
-
-      class Group
-        attr_reader :lazy
-
-        def initialize(maybe_lazies)
-          @lazy = Lazy.new(self)
-          @maybe_lazies = maybe_lazies
-          @waited = false
-        end
-
-        def wait
-          if !@waited
-            @waited = true
-            results = @maybe_lazies.map { |maybe_lazy|
-              if maybe_lazy.respond_to?(:wait)
-                maybe_lazy.wait
-                maybe_lazy.value
-              else
-                maybe_lazy
-              end
-            }
-            lazy.fulfill(results)
-          end
-        end
-      end
     end
   end
 end
