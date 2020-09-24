@@ -302,4 +302,8 @@ describe "GraphQL::Dataloader" do
     p [ended_at - started_at]
     assert_in_delta 0.5, ended_at - started_at, 0.01
   end
+
+  it "raises helpful errors from background threads" do
+    skip "This should make sure that Dataloader.current is correct in background threads"
+  end
 end

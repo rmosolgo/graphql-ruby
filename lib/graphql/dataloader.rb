@@ -107,6 +107,10 @@ module GraphQL
 
     attr_reader :loaders
 
+    def current_query
+      @multiplex.context[:current_query]
+    end
+
     def clear
       @loaders.clear
     end

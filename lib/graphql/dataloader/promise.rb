@@ -2,14 +2,13 @@
 
 module GraphQL
   class Dataloader
-    # TODO let's start with a close reading of promise.rb
+    # Let's start with a close reading of promise.rb
     # Then improve it to match GraphQL-Ruby's requirements
     class Promise
       # @param source [<#wait>]
-      def initialize(source, query: nil, then_block: nil)
+      def initialize(source, then_block: nil)
         @caller = caller(3, 1).first
         @source = source
-        @query = query
         @then_block = then_block
         @pending_promises = nil
         @synced = false
@@ -27,6 +26,7 @@ module GraphQL
       attr_reader :value
 
       # TODO also reject?
+      # TODO better api than `call_then = true`
       def fulfill(value, call_then = true )
         if @then_block && call_then
           value = @then_block.call(value)
@@ -58,6 +58,13 @@ module GraphQL
         end
         # TODO Also raise
         @value
+      rescue GraphQL::Dataloader::LoadError => err
+        local_err = err.dup
+        query = Dataloader.current.current_query
+        local_err.graphql_path = query.context[:current_path]
+        op_name = query.selected_operation_name || query.selected_operation.operation_type || "query"
+        local_err.message = err.message.sub("),", ") at #{op_name}.#{local_err.graphql_path.join(".")},")
+        raise local_err
       end
 
       # resolve this promise's dependencies as long as one can be found

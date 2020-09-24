@@ -39,8 +39,7 @@ module GraphQL
         Promise.all(pending_loads)
       end
 
-      def initialize(context, *key)
-        @context = context
+      def initialize(*key)
         @key = key
         @pending_loads = {}
         @loaded_values = {}
@@ -86,7 +85,7 @@ module GraphQL
         # Allow client-facing errors to keep propagating
         raise
       rescue StandardError => cause
-        message = "Error from #{self.class}#perform(#{keys_to_load.map(&:inspect).join(", ")}), #{cause.class}: #{cause.message}"
+        message = "Error from #{self.class}#perform(#{keys_to_load.map(&:inspect).join(", ")}), #{cause.class}: #{cause.message.inspect}"
         # The raised error will automatically be available as `.cause`
         raise GraphQL::Dataloader::LoadError, message, cause.backtrace
       end
