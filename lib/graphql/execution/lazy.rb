@@ -48,10 +48,14 @@ module GraphQL
         end
       end
 
-      attr_reader :path, :field
+      # @return [Array<String, Integer>] The runtime path where this lazy was created
+      attr_reader :path
+
+      # @return [GraphQL::Schema::Field] The field that was executing when this lazy was created
+      attr_reader :field
 
       # Create a {Lazy} which will get its inner value from `source,` and/or by calling the block
-      # @param source [<#wait>]
+      # @param source [<#wait>] Some object that this Lazy depends on, if there is one
       # @param path [Array<String, Integer>]
       # @param field [GraphQL::Schema::Field]
       # @param then_block [Proc] a block to get the inner value (later)
@@ -103,6 +107,7 @@ module GraphQL
         raise tag_error(err)
       end
 
+      # @return [Boolean] true if this value has received a finished value, by a direct call to {#fulfill} or by {#wait}, which might trigger a call to {#fulfill}
       def resolved?
         @resolved
       end
@@ -164,6 +169,10 @@ module GraphQL
 
       private
 
+      # Copy `err` and update the copy with Lazy-specfic details.
+      # (The error probably came from a Source, which has any number of pending Lazies.)
+      # @param err [Dataloader::LoadError]
+      # @return [Dataloader::LoadError] An updated copy
       def tag_error(err)
         local_err = err.dup
         query = Dataloader.current.current_query

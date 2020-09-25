@@ -2,6 +2,7 @@
 module GraphQL
   module Execution
     class Lazy
+      # @see Lazy.all, this is an implementation detail of that method
       class Group
         attr_reader :lazy
 
