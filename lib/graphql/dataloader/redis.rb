@@ -29,7 +29,7 @@ module GraphQL
 
         commands.each_with_index do |command, idx|
           result = results[idx]
-          fulfill(command, idx)
+          fulfill(command, result)
         end
       end
     end
