@@ -60,6 +60,9 @@ module GraphQL
       end
 
       def print_argument(argument)
+        # We won't have type information if we're recursing into a custom scalar
+        return super if @current_input_type && @current_input_type.kind.scalar?
+
         arg_owner = @current_input_type || @current_directive || @current_field
         arg_def = arg_owner.arguments[argument.name]
 

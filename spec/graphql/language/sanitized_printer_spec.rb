@@ -35,6 +35,10 @@ describe GraphQL::Language::SanitizedPrinter do
       field :strings, String, null: false do
         argument :strings, [String], required: true
       end
+
+      field :custom_scalar, String, null: false do
+        argument :scalar, GraphQL::Types::JSON, required: true
+      end
     end
 
     class Schema < GraphQL::Schema
@@ -134,6 +138,52 @@ describe GraphQL::Language::SanitizedPrinter do
 
     assert_equal expected_query_string, sanitize_string(query_str_1)
     assert_equal expected_query_string, sanitize_string(query_str_2, variables: { "strings" => ["s1", "s2"]})
+  end
+
+  it "redacts from coerced lists" do
+    query_str = '{ strings(strings: "s1") }'
+    expected_query_string = 'query {
+  strings(strings: "<REDACTED>")
+}'
+
+    assert_equal expected_query_string, sanitize_string(query_str)
+  end
+
+  it "redacts strings from custom scalars" do
+    query_str_1 = '
+    query {
+      s1: customScalar(scalar: "s1")
+      s2: customScalar(scalar: 1)
+      s3: customScalar(scalar: {string: "s2"})
+      s4: customScalar(scalar: [{string: "s3"}])
+    }
+    '
+    query_str_2 = '
+    query($jsonString: JSON!, $jsonInt: JSON!, $jsonObject: JSON!, $jsonArray: JSON!) {
+      s1: customScalar(scalar: $jsonString)
+      s2: customScalar(scalar: $jsonInt)
+      s3: customScalar(scalar: $jsonObject)
+      s4: customScalar(scalar: $jsonArray)
+    }
+    '
+    expected_query_string = 'query {
+  s1: customScalar(scalar: "<REDACTED>")
+  s2: customScalar(scalar: 1)
+  s3: customScalar(scalar: {string: "<REDACTED>"})
+  s4: customScalar(scalar: [{string: "<REDACTED>"}])
+}'
+    assert_equal expected_query_string, sanitize_string(query_str_1)
+    variables = {
+      "jsonString" => "s1",
+      "jsonInt" => 1,
+      "jsonObject" => {
+        "string" => "s2"
+      },
+      "jsonArray" => [{
+        "string" => "s3"
+      }]
+    }
+    assert_equal expected_query_string, sanitize_string(query_str_2, variables: variables)
   end
 
   it "returns nil on invalid queries" do
