@@ -138,14 +138,6 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`lazy_resolve`__ registers classes with {% internal_link "lazy execution", "/schema/lazy_execution" %}:
-
-```ruby
-class MySchema < GraphQL::Schema
-  lazy_resolve Promise, :sync
-end
-```
-
 __`type_error`__ handles type errors at runtime, read more in the {% internal_link "Invariants guide", "/errors/type_errors" %}.
 
 ```ruby

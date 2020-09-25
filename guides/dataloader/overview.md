@@ -6,9 +6,11 @@ section: Dataloader
 title: Overview
 desc: Data loading in GraphQL
 index: 0
+redirect_from:
+  - /schema/lazy_execution
 ---
 
-Because GraphQL queries are very dynamic, GraphQL systems require a different approach to fetching data into your application. Here, we'll discuss the problem and solution at a conceptual level. Later, the {% internal_link "Using Dataloader", "/dataloader/usage" %} and {% internal_link "Custom Loaders", "/dataloader/custom_loaders" %} guides provide concrete implementation advice.
+Because GraphQL queries are very dynamic, GraphQL systems require a different approach to fetching data into your application. Here, we'll discuss the problem and solution at a conceptual level. Later, the {% internal_link "Using Dataloader", "/dataloader/usage" %} and {% internal_link "Custom Sources", "/dataloader/custom_sources" %} guides provide concrete implementation advice.
 
 ## Dynamic Data Requirements
 
@@ -43,4 +45,14 @@ The solution is to dispatch service calls in _batches_. As a GraphQL query runs,
 SELECT * FROM directors WHERE id IN(1,2,3,...);
 ```
 
-This technique was demonstrated in [graphql/dataloader](https://github.com/graphql/dataloader) and implemented in Ruby by [shopify/graphql-batch](https://github.com/shopify/graphql-batch) and [exaspark/batch-loader](https://github.com/exAspArk/batch-loader/). Now, GraphQL-Ruby has a built-in implementation, {{ "GraphQL::Dataloader" | api_doc }}. Learn how to use it in the {% internal_link "usage guide", "/dataloader/usage" %}.
+This technique was demonstrated in [graphql/dataloader](https://github.com/graphql/dataloader) and implemented in Ruby by [shopify/graphql-batch](https://github.com/shopify/graphql-batch) and [exaspark/batch-loader](https://github.com/exAspArk/batch-loader/). Now, GraphQL-Ruby has a built-in implementation, {{ "GraphQL::Dataloader" | api_doc }}.
+
+## GraphQL::Dataloader
+
+{{ "GraphQL::Dataloader" | api_doc }} is an implementation of batch loading for GraphQL-Ruby. It consists of several components:
+
+- {{ "GraphQL::Dataloader" | api_doc }} instances, which manage a cache of sources during query execution
+- {{ "GraphQL::Dataloader::Source" | api_doc }}, a base class for batching calls to data layers and caching the results
+- {{ "GrpahQL::Execution::Lazy" | api_doc }}, a Promise-like object which can be chained with `.then { ... }` or zipped with `GraphQL::Execution::Lazy.all(...)`.
+
+Check out the {% internal_link "Usage guide", "dataloader/usage" %} to get started with it.
