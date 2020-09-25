@@ -59,8 +59,8 @@ module GraphQL
       end
 
       # @return [GraphQL::Execution::Lazy]
-      def self.load_all(key, values)
-        pending_loads = values.map { |value| load(key, value) }
+      def self.load_all(*key_parts, values)
+        pending_loads = values.map { |value| load(*key_parts, value) }
         Execution::Lazy.all(pending_loads)
       end
 
