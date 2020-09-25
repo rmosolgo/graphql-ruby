@@ -32,7 +32,7 @@ describe "GraphQL::Dataloader" do
       end
     end
 
-    class BackendLoader < GraphQL::Dataloader::Loader
+    class BackendSource < GraphQL::Dataloader::Source
       def initialize(key)
         @key = key
       end
@@ -49,8 +49,8 @@ describe "GraphQL::Dataloader" do
       end
     end
 
-    class BackgroundThreadBackendLoader < BackendLoader
-      include GraphQL::Dataloader::Loader::BackgroundThreaded
+    class BackgroundThreadBackendSource < BackendSource
+      include GraphQL::Dataloader::Source::BackgroundThreaded
 
       def perform(ids)
         sleep 0.5
@@ -62,8 +62,8 @@ describe "GraphQL::Dataloader" do
       class BaseObject < GraphQL::Schema::Object
         private
 
-        def loader_class
-          @context[:background_threaded] ? BackgroundThreadBackendLoader : BackendLoader
+        def source_class
+          @context[:background_threaded] ? BackgroundThreadBackendSource : BackendSource
         end
       end
 
@@ -72,7 +72,7 @@ describe "GraphQL::Dataloader" do
         field :books, [GraphQL::Schema::LateBoundType.new("Book")], null: false
 
         def books
-          loader_class.load_all(nil, object[:book_ids])
+          source_class.load_all(nil, object[:book_ids])
         end
       end
 
@@ -81,7 +81,7 @@ describe "GraphQL::Dataloader" do
         field :author, Author, null: false
 
         def author
-          loader_class.load_object(object[:author_id])
+          source_class.load_object(object[:author_id])
         end
       end
 
@@ -95,7 +95,7 @@ describe "GraphQL::Dataloader" do
         end
 
         def book(id:)
-          loader_class.load_object(id)
+          source_class.load_object(id)
         end
 
         field :author, Author, null: true do
@@ -103,7 +103,7 @@ describe "GraphQL::Dataloader" do
         end
 
         def author(id:)
-          loader_class.load_object(id)
+          source_class.load_object(id)
         end
 
         field :books_count, Integer, null: false do
@@ -112,8 +112,8 @@ describe "GraphQL::Dataloader" do
 
         def books_count(author_id:)
           # Of course this could be done without a nested load, but I want to test nested loaders
-          loader_class.load_object(author_id).then do |author|
-            loader_class.load_all(nil, author[:book_ids]).then do |books|
+          source_class.load_object(author_id).then do |author|
+            source_class.load_all(nil, author[:book_ids]).then do |books|
               books.size
             end
           end
@@ -125,7 +125,7 @@ describe "GraphQL::Dataloader" do
         end
 
         def load_object(type:, id:)
-          loader_class.load(type, id)
+          source_class.load(type, id)
         end
       end
 
@@ -255,7 +255,7 @@ describe "GraphQL::Dataloader" do
     assert_equal expected_log, log
   end
 
-  it "works with nested loaders" do
+  it "works with nested sources" do
     query_str = <<-GRAPHQL
     {
       a1: booksCount(authorId: "a1")
@@ -277,7 +277,7 @@ describe "GraphQL::Dataloader" do
       exec_query('query GetBook { book4: book(id: "b4") { author { name } } }')
     end
     assert_equal "Key not found: a3", err.cause.message
-    assert_equal "Error from DataloaderTest::BackendLoader#perform(\"a3\") at GetBook.book4.author, RuntimeError: \"Key not found: a3\"", err.message
+    assert_equal "Error from DataloaderTest::BackendSource#perform(\"a3\") at GetBook.book4.author, RuntimeError: \"Key not found: a3\"", err.message
     assert_equal ["book4", "author"], err.graphql_path
   end
 
@@ -309,11 +309,11 @@ describe "GraphQL::Dataloader" do
       exec_query('query GetBook { book4: book(id: "b4") { author { name } } }', context: { background_threaded: true })
     end
     assert_equal "Key not found: a3", err.cause.message
-    assert_equal "Error from DataloaderTest::BackgroundThreadBackendLoader#perform(\"a3\") at GetBook.book4.author, RuntimeError: \"Key not found: a3\"", err.message
+    assert_equal "Error from DataloaderTest::BackgroundThreadBackendSource#perform(\"a3\") at GetBook.book4.author, RuntimeError: \"Key not found: a3\"", err.message
     assert_equal ["book4", "author"], err.graphql_path
   end
 
-  it "works with backgrounded, nested loaders" do
+  it "works with backgrounded, nested sources" do
     query_str = <<-GRAPHQL
     {
       a1: booksCount(authorId: "a1")

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require "graphql/dataloader/loader"
+require "graphql/dataloader/source"
 
 module GraphQL
   class Dataloader
@@ -19,12 +19,8 @@ module GraphQL
       end
     end
 
-    def self.use(schema, default_loaders: true, loaders: {})
-      dataloader_class = self.class_for(loaders: loaders, default_loaders: default_loaders)
-      schema.const_set(:Dataloader, dataloader_class)
-      instrumenter = Dataloader::Instrumentation.new(
-        dataloader_class: dataloader_class,
-      )
+    def self.use(schema)
+      instrumenter = Dataloader::Instrumentation.new
       schema.instrument(:multiplex, instrumenter)
       # TODO this won't work if the mutation is hooked up after this
       schema.mutation.fields.each do |name, field|
@@ -45,16 +41,15 @@ module GraphQL
 
     def self.begin_dataloading(dataloader)
       self.current ||= dataloader
-      self.increment_level
+      increment_level
     end
 
     def self.end_dataloading
-      self.decrement_level
-      if self.level < 1
+      decrement_level
+      if level < 1
         self.current = nil
       end
     end
-
 
     class MutationFieldExtension < GraphQL::Schema::FieldExtension
       def resolve(object:, arguments:, context:, **_rest)
@@ -69,12 +64,8 @@ module GraphQL
     end
 
     class Instrumentation
-      def initialize(dataloader_class:)
-        @dataloader_class = dataloader_class
-      end
-
       def before_multiplex(multiplex)
-        dataloader = @dataloader_class.new(multiplex)
+        dataloader = Dataloader.new(multiplex)
         Dataloader.begin_dataloading(dataloader)
       end
 
@@ -84,32 +75,6 @@ module GraphQL
     end
 
     class << self
-      def class_for(loaders:, default_loaders:)
-        Class.new(self) do
-          if default_loaders
-            # loader(GraphQL::Dataloader::HttpLoader)
-            # loader(GraphQL::Dataloader::ActiveRecordLoader)
-            # loader(GraphQL::Dataloader::RedisLoader)
-          end
-          loaders.each do |custom_loader|
-            loader(custom_loader)
-          end
-        end
-      end
-
-      def loader_map
-        @loader_map ||= {}
-      end
-
-      def loader(loader_class)
-        loader_map[loader_class.dataloader_key] = loader_class
-        # Add shortcut access
-        define_method(loader_class.dataloader_key) do  |*key_parts|
-          # Return a new instance of this class, initialized with these keys (or key)
-          @loaders[loader_class][key_parts]
-        end
-      end
-
       def current
         Thread.current[:graphql_dataloader]
       end
@@ -136,34 +101,37 @@ module GraphQL
     def initialize(multiplex)
       @multiplex = multiplex
 
-      @loaders = Concurrent::Map.new do |h, loader_cls|
-        h[loader_cls] = Concurrent::Map.new do |h2, loader_key|
-          h2[loader_key] = loader_cls.new(*loader_key)
+      @sources = Concurrent::Map.new do |h, source_class|
+        h[source_class] = Concurrent::Map.new do |h2, source_key|
+          h2[source_key] = source_class.new(*source_key)
         end
       end
 
-      @async_loader_queue = []
+      @async_source_queue = []
     end
 
-    attr_reader :loaders
+    # @return [Dataloader::Source] an instance of `source_class` for `key`, cached for the duration of the multiplex
+    def source_for(source_class, source_key)
+      @sources[source_class][source_key]
+    end
 
     def current_query
       @multiplex.context[:current_query]
     end
 
     def clear
-      @loaders.clear
+      @sources.clear
     end
 
-    def enqueue_async_loader(loader)
-      if !@async_loader_queue.include?(loader)
-        @async_loader_queue << loader
+    def enqueue_async_source(source)
+      if !@async_source_queue.include?(source)
+        @async_source_queue << source
       end
     end
 
-    def process_async_loader_queue
-      queue = @async_loader_queue
-      @async_loader_queue = []
+    def process_async_source_queue
+      queue = @async_source_queue
+      @async_source_queue = []
       queue.each(&:wait)
     end
   end

@@ -29,6 +29,13 @@ module GraphQL
         end
       end
 
+      # @param maybe_lazies [Array<Lazy, Object>]
+      # @return [Lazy] A single lazy wrapping any number of maybe-lazy objects
+      def self.all(maybe_lazies)
+        group = Group.new(maybe_lazies)
+        group.lazy
+      end
+
       class OnlyBlockSource
         def initialize(block, promise)
           @block = block
@@ -49,9 +56,15 @@ module GraphQL
       # @param field [GraphQL::Schema::Field]
       # @param then_block [Proc] a block to get the inner value (later)
       def initialize(source = nil, path: nil, field: nil, caller_offset: 0, &then_block)
-        @tag = "#{object_id} from #{caller(2 + caller_offset, 1).first.inspect}"
-        @source = source || OnlyBlockSource.new(then_block, self)
-        @then_block = source.nil? ? nil : then_block
+        @caller = caller(2 + caller_offset, 1).first
+        if source.nil?
+          # This lazy is just a deferred block
+          @source = OnlyBlockSource.new(then_block, self)
+          @then_block = nil
+        else
+          @source = source
+          @then_block = then_block
+        end
         @resolved = false
         @value = nil
         @pending_lazies = nil
@@ -130,25 +143,23 @@ module GraphQL
         end
       end
 
-      # @return [Lazy] A {Lazy} whose value depends on another {Lazy}, plus any transformations in `block`
+      # @return [Lazy] A {Lazy} whose value depends on `self`, plus any transformations in `block`
       def then(&block)
         new_lazy = self.class.new(self, &block)
         subscribe(new_lazy, call_then: true)
         new_lazy
       end
 
+      def inspect
+        "#<#{self.class.name}##{object_id} from #{@caller.inspect} / #{@field.respond_to?(:path) ? "#{@field.path} " : ""}#{@path ? "#{@path} " : ""}@source=#<#{@source.class}> @resolved=#{@resolved} @value=#{@value.inspect}>"
+      end
+
+      protected
+
+      # Add `other_lazy` to this Lazy's dependencies. It will be `.fulfill(...)`ed with the value of this lazy, eventually.
       def subscribe(other_lazy, call_then:)
         @pending_lazies ||= []
         @pending_lazies.push([other_lazy, call_then])
-      end
-
-      def self.all(maybe_lazy)
-        group = Group.new(maybe_lazy)
-        group.lazy
-      end
-
-      def inspect
-        "#<#{self.class.name}##{@tag} #{@field.respond_to?(:path) ? "#{@field.path} " : ""}#{@path ? "#{@path} " : ""}@source=#<#{@source.class}> @resolved=#{@resolved} @value=#{@value.inspect}>"
       end
 
       private

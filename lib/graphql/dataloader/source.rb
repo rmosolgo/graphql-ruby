@@ -2,32 +2,29 @@
 
 module GraphQL
   class Dataloader
-    class Loader
+    class Source
       module BackgroundThreaded
         def make_lazy(key)
           lazy = super
-          Dataloader.current.enqueue_async_loader(self)
+          Dataloader.current.enqueue_async_source(self)
           lazy
         end
 
-        def wait
-          # loads might be added in the meantime, but they won't be included in this list.
-          keys_to_load = @load_queue
-          @load_queue = nil
+        def perform_with_error_handling(keys_to_load)
           this_dl = Dataloader.current
-          f = Concurrent::Promises.future do
+          future = Concurrent::Promises.future do
             Dataloader.load(this_dl) do
-              perform_with_error_handling(keys_to_load)
+              super(keys_to_load)
             end
           end
+
           keys_to_load.each do |key|
             lazy = GraphQL::Execution::Lazy.new do
-              f.value # force waiting for it to be finished
+              future.value # force waiting for it to be finished
               fulfilled_value_for(key)
             end
             fulfill(key, lazy)
           end
-          nil
         end
       end
 
@@ -38,9 +35,9 @@ module GraphQL
       def self.for(*key_parts)
         dl = Dataloader.current
         if !dl
-          raise "Can't initialize a loader without a Dataloader, use `Dataloader.load { ... }` or add `use GraphQL::Dataloader` to your schema"
+          raise "Can't initialize a Source without a Dataloader, use `Dataloader.load { ... }` or add `use GraphQL::Dataloader` to your schema"
         end
-        dl.loaders[self][key_parts]
+        dl.source_for(self, key_parts)
       end
 
       def self.load_all(key, values)
@@ -57,6 +54,30 @@ module GraphQL
         keys_to_load = @load_queue
         @load_queue = nil
         perform_with_error_handling(keys_to_load)
+      end
+
+      def fulfill(key, value)
+        pending_loads[key].fulfill(value)
+        nil
+      end
+
+      def fulfilled?(key)
+        (lazy = pending_loads[key]) && lazy.resolved?
+      end
+
+      def perform(values)
+        raise NotImplementedError, "`#{self.class}#perform(values)` should call `fulfill(v, loaded_value)` for each of `values`"
+      end
+
+      private
+
+      def fulfilled_value_for(key)
+        # TODO raise if not loaded?
+        (lazy = pending_loads[key]) && lazy.value
+      end
+
+      def pending_loads
+        @pending_loads ||= Concurrent::Map.new
       end
 
       def perform_with_error_handling(keys_to_load)
@@ -76,30 +97,6 @@ module GraphQL
         end
         raise load_err
       end
-
-      def fulfill(key, value)
-        pending_loads[key].fulfill(value)
-        nil
-      end
-
-      def fulfilled?(key)
-        (lazy = pending_loads[key]) && lazy.resolved?
-      end
-
-      def fulfilled_value_for(key)
-        # TODO raise if not loaded?
-        (lazy = pending_loads[key]) && lazy.value
-      end
-
-      def perform(values)
-        raise NotImplementedError, "`#{self.class}#perform(values)` should call `fulfill(v, loaded_value)` for each of `values`"
-      end
-
-      def pending_loads
-        @pending_loads ||= Concurrent::Map.new
-      end
-
-      private
 
       def make_lazy(key)
         @load_queue ||= []

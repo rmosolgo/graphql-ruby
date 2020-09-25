@@ -27,8 +27,8 @@ module GraphQL
         # @param results [Array]
         # @return [Array] The next round of lazies to resolve
         def self.resolve(results)
-          # First, kick off any loaders that will resolve in background threads
-          Dataloader.current && Dataloader.current.process_async_loader_queue
+          # First, kick off any sources that will resolve in background threads
+          Dataloader.current && Dataloader.current.process_async_source_queue
           next_results = []
 
           # Work through the queue until it's empty

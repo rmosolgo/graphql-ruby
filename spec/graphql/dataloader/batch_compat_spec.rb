@@ -103,7 +103,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     Image.new(6, 'ProductVariant', 3, "small-pants.jpg"),
   ].each_with_object({}){ |p, h| h[p.id] = p }
 
-  class RecordLoader < GraphQL::Dataloader::Loader
+  class RecordLoader < GraphQL::Dataloader::Source
     def initialize(model)
       @model = model
     end
@@ -118,7 +118,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     end
   end
 
-  class AssociationLoader < GraphQL::Dataloader::Loader
+  class AssociationLoader < GraphQL::Dataloader::Source
     def initialize(model, association)
       @model = model
       @association = association
@@ -130,7 +130,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     end
   end
 
-  class CounterLoader < GraphQL::Dataloader::Loader
+  class CounterLoader < GraphQL::Dataloader::Source
     def cache_key(counter_array)
       counter_array.object_id
     end
@@ -140,7 +140,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
     end
   end
 
-  class NilLoader < GraphQL::Dataloader::Loader
+  class NilLoader < GraphQL::Dataloader::Source
     def self.load
       self.for().load(nil)
     end
