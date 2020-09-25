@@ -48,10 +48,6 @@ module GraphQL
         Execution::Lazy.all(pending_loads)
       end
 
-      def initialize(*key)
-        @key = key
-      end
-
       def load(key)
         pending_loads.compute_if_absent(key) { make_lazy(key) }
       end

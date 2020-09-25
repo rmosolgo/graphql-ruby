@@ -105,7 +105,6 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
 
   class RecordLoader < GraphQL::Dataloader::Loader
     def initialize(model)
-      super
       @model = model
     end
 
@@ -121,7 +120,6 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
 
   class AssociationLoader < GraphQL::Dataloader::Loader
     def initialize(model, association)
-      super
       @model = model
       @association = association
     end
@@ -144,7 +142,7 @@ class GraphQLDataloaderBatchCompatTest < Minitest::Test
 
   class NilLoader < GraphQL::Dataloader::Loader
     def self.load
-      self.for(nil).load(nil)
+      self.for().load(nil)
     end
 
     def perform(nils)

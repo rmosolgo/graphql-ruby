@@ -33,6 +33,10 @@ describe "GraphQL::Dataloader" do
     end
 
     class BackendLoader < GraphQL::Dataloader::Loader
+      def initialize(key)
+        @key = key
+      end
+
       def self.load_object(id)
         load(nil, id)
       end
