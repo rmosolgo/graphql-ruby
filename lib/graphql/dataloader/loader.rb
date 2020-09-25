@@ -53,7 +53,7 @@ module GraphQL
       end
 
       def load(key)
-        pending_loads[key] ||= make_lazy(key)
+        pending_loads.compute_if_absent(key) { make_lazy(key) }
       end
 
       def wait
@@ -100,7 +100,7 @@ module GraphQL
       end
 
       def pending_loads
-        @pending_loads ||= {}
+        @pending_loads ||= Concurrent::Map.new
       end
 
       private

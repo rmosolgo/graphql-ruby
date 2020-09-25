@@ -136,8 +136,8 @@ module GraphQL
     def initialize(multiplex)
       @multiplex = multiplex
 
-      @loaders = Hash.new do |h, loader_cls|
-        h[loader_cls] = Hash.new do |h2, loader_key|
+      @loaders = Concurrent::Map.new do |h, loader_cls|
+        h[loader_cls] = Concurrent::Map.new do |h2, loader_key|
           h2[loader_key] = loader_cls.new(*loader_key)
         end
       end
