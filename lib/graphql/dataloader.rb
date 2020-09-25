@@ -141,6 +141,8 @@ module GraphQL
           h2[loader_key] = loader_cls.new(*loader_key)
         end
       end
+
+      @async_loader_queue = []
     end
 
     attr_reader :loaders
@@ -151,6 +153,18 @@ module GraphQL
 
     def clear
       @loaders.clear
+    end
+
+    def enqueue_async_loader(loader)
+      if !@async_loader_queue.include?(loader)
+        @async_loader_queue << loader
+      end
+    end
+
+    def process_async_loader_queue
+      queue = @async_loader_queue
+      @async_loader_queue = []
+      queue.each(&:wait)
     end
   end
 end

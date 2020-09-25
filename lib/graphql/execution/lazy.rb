@@ -49,8 +49,8 @@ module GraphQL
       # @param field [GraphQL::Schema::Field]
       # @param then_block [Proc] a block to get the inner value (later)
       def initialize(source = nil, path: nil, field: nil, caller_offset: 0, &then_block)
+        @tag = "#{object_id} from #{caller(2 + caller_offset, 1).first.inspect}"
         @source = source || OnlyBlockSource.new(then_block, self)
-        @caller = caller(2 + caller_offset, 1).first
         @then_block = source.nil? ? nil : then_block
         @resolved = false
         @value = nil
@@ -156,7 +156,7 @@ module GraphQL
       end
 
       def inspect
-        "#<#{self.class.name}##{object_id} from \"#{@caller}\" #{@field.respond_to?(:path) ? @field.path : ""} #{@path || ""} @resolved=#{@resolved} @value=#{@value.inspect}>"
+        "#<#{self.class.name}##{@tag} #{@field.respond_to?(:path) ? "#{@field.path} " : ""}#{@path ? "#{@path} " : ""}@source=#<#{@source.class}> @resolved=#{@resolved} @value=#{@value.inspect}>"
       end
 
       private

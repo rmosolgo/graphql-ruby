@@ -144,7 +144,6 @@ describe "GraphQL::Dataloader" do
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
       use GraphQL::Dataloader
-      lazy_resolve Concurrent::Future, :value
 
       def self.resolve_type(type, obj, ctx)
         if obj.key?(:name)

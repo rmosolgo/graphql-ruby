@@ -4,15 +4,20 @@ module GraphQL
   class Dataloader
     class Loader
       module BackgroundThreaded
+        def make_lazy(key)
+          lazy = super
+          Dataloader.current.enqueue_async_loader(self)
+          lazy
+        end
+
         def wait
           # loads might be added in the meantime, but they won't be included in this list.
           keys_to_load = @load_queue
           @load_queue = nil
           this_dl = Dataloader.current
-          f = Concurrent::Future.new do
-              Dataloader.load(this_dl) do
-                perform_with_error_handling(keys_to_load)
-              end
+          f = Concurrent::Promises.future do
+            Dataloader.load(this_dl) do
+              perform_with_error_handling(keys_to_load)
             end
           end
           keys_to_load.each do |key|
@@ -22,7 +27,6 @@ module GraphQL
             end
             fulfill(key, lazy)
           end
-          f.execute
           nil
         end
       end
@@ -49,12 +53,7 @@ module GraphQL
       end
 
       def load(key)
-        pending_loads[key] ||= begin
-          @load_queue ||= []
-          @load_queue << key
-          # return this lazy:
-          Execution::Lazy.new(self)
-        end
+        pending_loads[key] ||= make_lazy(key)
       end
 
       def wait
@@ -65,23 +64,21 @@ module GraphQL
       end
 
       def perform_with_error_handling(keys_to_load)
-        begin
-          perform(keys_to_load)
-        rescue GraphQL::ExecutionError
-          # Allow client-facing errors to keep propagating
-          raise
-        rescue StandardError => cause
-          message = "Error from #{self.class}#perform(#{keys_to_load.map(&:inspect).join(", ")}), #{cause.class}: #{cause.message.inspect}"
-          load_err = GraphQL::Dataloader::LoadError.new(message)
-          load_err.set_backtrace(cause.backtrace)
-          load_err.cause = cause
-
-          keys_to_load.each do |key|
-            fulfill(key, load_err)
-          end
-          raise load_err
-        end
+        perform(keys_to_load)
         nil
+      rescue GraphQL::ExecutionError
+        # Allow client-facing errors to keep propagating
+        raise
+      rescue StandardError => cause
+        message = "Error from #{self.class}#perform(#{keys_to_load.map(&:inspect).join(", ")}), #{cause.class}: #{cause.message.inspect}"
+        load_err = GraphQL::Dataloader::LoadError.new(message)
+        load_err.set_backtrace(cause.backtrace)
+        load_err.cause = cause
+
+        keys_to_load.each do |key|
+          fulfill(key, load_err)
+        end
+        raise load_err
       end
 
       def fulfill(key, value)
@@ -104,6 +101,14 @@ module GraphQL
 
       def pending_loads
         @pending_loads ||= {}
+      end
+
+      private
+
+      def make_lazy(key)
+        @load_queue ||= []
+        @load_queue << key
+        Execution::Lazy.new(self)
       end
     end
   end

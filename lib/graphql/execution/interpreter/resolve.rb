@@ -25,8 +25,10 @@ module GraphQL
         # or return {Hash}/{Array} if the query should be continued.
         #
         # @param results [Array]
-        # @return [Array] Same size, filled with finished values
+        # @return [Array] The next round of lazies to resolve
         def self.resolve(results)
+          # First, kick off any loaders that will resolve in background threads
+          Dataloader.current && Dataloader.current.process_async_loader_queue
           next_results = []
 
           # Work through the queue until it's empty
