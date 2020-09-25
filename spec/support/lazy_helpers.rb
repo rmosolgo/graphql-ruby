@@ -174,7 +174,7 @@ module LazyHelpers
     use GraphQL::Execution::Interpreter
     use GraphQL::Analysis::AST
 
-    def self.sync_lazy(lazy, recursive: true)
+    def self.sync_lazy(lazy)
       if lazy.is_a?(SumAll) && lazy.own_value > 1000
         lazy.value # clear the previous set
         lazy.own_value - 900
