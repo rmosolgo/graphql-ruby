@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 require "graphql/dataloader/source"
+# require "graphql/dataloader/active_record"
+# require "graphql/dataloader/active_record_association"
+require "graphql/dataloader/http"
+require "graphql/dataloader/redis"
 
 module GraphQL
   class Dataloader

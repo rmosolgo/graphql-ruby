@@ -47,7 +47,7 @@ class Types::User < Types::BaseObject
 
   def github_repos_count
     # Fetch some JSON, then return one of the values from it.
-    GraphQL::Dataloader::Http.get("https://api.github.com/users/#{object.github_login}").then do |data|
+    GraphQL::Dataloader::Http.load("https://api.github.com/users/#{object.github_login}").then do |data|
       data["public_repos"]
     end
   end
