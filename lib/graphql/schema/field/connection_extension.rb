@@ -22,43 +22,49 @@ module GraphQL
         end
 
         def after_resolve(value:, object:, arguments:, context:, memo:)
-          if value.is_a? GraphQL::ExecutionError
-            # This isn't even going to work because context doesn't have ast_node anymore
-            context.add_error(value)
-            nil
-          elsif value.nil?
-            nil
-          elsif value.is_a?(GraphQL::Pagination::Connection)
-            # update the connection with some things that may not have been provided
-            value.context ||= context
-            value.parent ||= object.object
-            value.first_value ||= arguments[:first]
-            value.after_value ||= arguments[:after]
-            value.last_value ||= arguments[:last]
-            value.before_value ||= arguments[:before]
-            if field.has_max_page_size? && !value.has_max_page_size_override?
-              value.max_page_size = field.max_page_size
+          # rename some inputs to avoid conflicts inside the block
+          maybe_lazy = value
+          value = nil
+          context.schema.after_lazy(maybe_lazy) do |resolved_value|
+            value = resolved_value
+            if value.is_a? GraphQL::ExecutionError
+              # This isn't even going to work because context doesn't have ast_node anymore
+              context.add_error(value)
+              nil
+            elsif value.nil?
+              nil
+            elsif value.is_a?(GraphQL::Pagination::Connection)
+              # update the connection with some things that may not have been provided
+              value.context ||= context
+              value.parent ||= object.object
+              value.first_value ||= arguments[:first]
+              value.after_value ||= arguments[:after]
+              value.last_value ||= arguments[:last]
+              value.before_value ||= arguments[:before]
+              if field.has_max_page_size? && !value.has_max_page_size_override?
+                value.max_page_size = field.max_page_size
+              end
+              if context.schema.new_connections? && (custom_t = context.schema.connections.edge_class_for_field(@field))
+                value.edge_class = custom_t
+              end
+              value
+            elsif context.schema.new_connections?
+              wrappers = context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
+              context.schema.connections.wrap(field, object.object, value, arguments, context, wrappers: wrappers)
+            else
+              if object.is_a?(GraphQL::Schema::Object)
+                object = object.object
+              end
+              connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(value)
+              connection_class.new(
+                value,
+                arguments,
+                field: field,
+                max_page_size: field.max_page_size,
+                parent: object,
+                context: context,
+              )
             end
-            if (custom_t = context.schema.connections.edge_class_for_field(@field))
-              value.edge_class = custom_t
-            end
-            value
-          elsif context.schema.new_connections?
-            wrappers = context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
-            context.schema.connections.wrap(field, object.object, value, arguments, context, wrappers: wrappers)
-          else
-            if object.is_a?(GraphQL::Schema::Object)
-              object = object.object
-            end
-            connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(value)
-            connection_class.new(
-              value,
-              arguments,
-              field: field,
-              max_page_size: field.max_page_size,
-              parent: object,
-              context: context,
-            )
           end
         end
       end

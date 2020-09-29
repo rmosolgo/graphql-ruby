@@ -184,10 +184,11 @@ end
 4. Click on the "+ New Reactor Rule" button
 5. Click on the "Choose" button for "Reactor Event"
 6. Click on the "Choose" button for "WebHooks"
-7. Enter your url (including the webhooks path from above) in the URL field
-8. Under "Source" select "Channel Lifecycle"
-9. Under "Sign with key" select the API Key prefix that matches the prefix of the ABLY_API_KEY you provided.
-10. Click "Create"
+7. Enter your url (including the webhooks path from above) in the URL field.
+8. Select "Batch request" for "Request Mode"
+9. Under "Source" select "Channel Lifecycle"
+10. Under "Sign with key" select the API Key prefix that matches the prefix of the ABLY_API_KEY you provided.
+11. Click "Create"
 
 ## Authorization
 

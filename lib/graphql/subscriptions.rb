@@ -4,9 +4,7 @@ require "graphql/subscriptions/broadcast_analyzer"
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
-if defined?(ActionCable)
-  require "graphql/subscriptions/action_cable_subscriptions"
-end
+require "graphql/subscriptions/action_cable_subscriptions"
 require "graphql/subscriptions/subscription_root"
 require "graphql/subscriptions/default_subscription_resolve_extension"
 
@@ -100,31 +98,43 @@ module GraphQL
       # Lookup the saved data for this subscription
       query_data = read_subscription(subscription_id)
       if query_data.nil?
-        # Jump down to the `delete_subscription` call
-        raise GraphQL::Schema::Subscription::UnsubscribedError
+        delete_subscription(subscription_id)
+        return nil
       end
+
       # Fetch the required keys from the saved data
       query_string = query_data.fetch(:query_string)
       variables = query_data.fetch(:variables)
       context = query_data.fetch(:context)
       operation_name = query_data.fetch(:operation_name)
-      # Re-evaluate the saved query
-      @schema.execute(
-        query: query_string,
-        context: context,
-        subscription_topic: event.topic,
-        operation_name: operation_name,
-        variables: variables,
-        root_value: object,
-      )
-    rescue GraphQL::Schema::Subscription::NoUpdateError
-      # This update was skipped in user code; do nothing.
-      nil
-    rescue GraphQL::Schema::Subscription::UnsubscribedError
-      # `unsubscribe` was called, clean up on our side
-      # TODO also send `{more: false}` to client?
-      delete_subscription(subscription_id)
-      nil
+      result = nil
+      # this will be set to `false` unless `.execute` is terminated
+      # with a `throw :graphql_subscription_unsubscribed`
+      unsubscribed = true
+      catch(:graphql_subscription_unsubscribed) do
+        catch(:graphql_no_subscription_update) do
+          # Re-evaluate the saved query,
+          # but if it terminates early with a `throw`,
+          # it will stay `nil`
+          result = @schema.execute(
+            query: query_string,
+            context: context,
+            subscription_topic: event.topic,
+            operation_name: operation_name,
+            variables: variables,
+            root_value: object,
+          )
+        end
+        unsubscribed = false
+      end
+
+      if unsubscribed
+        # `unsubscribe` was called, clean up on our side
+        # TODO also send `{more: false}` to client?
+        delete_subscription(subscription_id)
+      end
+
+      result
     end
 
     # Run the update query for this subscription and deliver it

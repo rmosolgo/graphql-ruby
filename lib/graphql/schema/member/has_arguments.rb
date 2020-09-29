@@ -43,6 +43,7 @@ module GraphQL
         # @param arg_defn [GraphQL::Schema::Argument]
         # @return [GraphQL::Schema::Argument]
         def add_argument(arg_defn)
+          @own_arguments ||= {}
           own_arguments[arg_defn.name] = arg_defn
           arg_defn
         end
@@ -229,8 +230,9 @@ module GraphQL
           end
         end
 
+        NO_ARGUMENTS = {}.freeze
         def own_arguments
-          @own_arguments ||= {}
+          @own_arguments || NO_ARGUMENTS
         end
       end
     end

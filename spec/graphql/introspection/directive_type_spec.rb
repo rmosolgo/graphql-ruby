@@ -53,7 +53,7 @@ describe GraphQL::Introspection::DirectiveType do
             "args" => [
               {"name"=>"reason", "type"=>{"kind"=>"SCALAR", "name"=>"String", "ofType"=>nil}}
             ],
-            "locations"=>["FIELD_DEFINITION", "ENUM_VALUE"],
+            "locations"=>["FIELD_DEFINITION", "ENUM_VALUE", "ARGUMENT_DEFINITION", "INPUT_FIELD_DEFINITION"],
             "onField" => false,
             "onFragment" => false,
             "onOperation" => false,

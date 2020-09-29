@@ -4,7 +4,7 @@ module GraphQL
     # A subscriptions implementation that sends data
     # as ActionCable broadcastings.
     #
-    # Experimental, some things to keep in mind:
+    # Some things to keep in mind:
     #
     # - No queueing system; ActiveJob should be added
     # - Take care to reload context when re-delivering the subscription. (see {Query#subscription_update?})
@@ -86,28 +86,32 @@ module GraphQL
       EVENT_PREFIX = "graphql-event:"
 
       # @param serializer [<#dump(obj), #load(string)] Used for serializing messages before handing them to `.broadcast(msg)`
-      def initialize(serializer: Serialize, **rest)
+      # @param namespace [string] Used to namespace events and subscriptions (default: '')
+      def initialize(serializer: Serialize, namespace: '', action_cable: ActionCable, action_cable_coder: ActiveSupport::JSON, **rest)
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
         @subscriptions = Concurrent::Map.new
         @events = Concurrent::Map.new { |h, k| h[k] = Concurrent::Map.new { |h2, k2| h2[k2] = Concurrent::Array.new } }
+        @action_cable = action_cable
+        @action_cable_coder = action_cable_coder
         @serializer = serializer
+        @transmit_ns = namespace
         super
       end
 
       # An event was triggered; Push the data over ActionCable.
       # Subscribers will re-evaluate locally.
       def execute_all(event, object)
-        stream = EVENT_PREFIX + event.topic
+        stream = stream_event_name(event)
         message = @serializer.dump(object)
-        ActionCable.server.broadcast(stream, message)
+        @action_cable.server.broadcast(stream, message)
       end
 
       # This subscription was re-evaluated.
       # Send it to the specific stream where this client was waiting.
       def deliver(subscription_id, result)
         payload = { result: result.to_h, more: true }
-        ActionCable.server.broadcast(SUBSCRIPTION_PREFIX + subscription_id, payload)
+        @action_cable.server.broadcast(stream_subscription_name(subscription_id), payload)
       end
 
       # A query was run where these events were subscribed to.
@@ -117,7 +121,7 @@ module GraphQL
       def write_subscription(query, events)
         channel = query.context.fetch(:channel)
         subscription_id = query.context[:subscription_id] ||= build_id
-        stream = query.context[:action_cable_stream] ||= SUBSCRIPTION_PREFIX + subscription_id
+        stream = stream_subscription_name(subscription_id)
         channel.stream_from(stream)
         @subscriptions[subscription_id] = query
         events.each do |event|
@@ -141,7 +145,7 @@ module GraphQL
       #
       def setup_stream(channel, initial_event)
         topic = initial_event.topic
-        channel.stream_from(EVENT_PREFIX + topic, coder: ActiveSupport::JSON) do |message|
+        channel.stream_from(stream_event_name(initial_event), coder: @action_cable_coder) do |message|
           object = @serializer.load(message)
           events_by_fingerprint = @events[topic]
           events_by_fingerprint.each do |_fingerprint, events|
@@ -196,6 +200,16 @@ module GraphQL
             end
           end
         end
+      end
+
+      private
+
+      def stream_subscription_name(subscription_id)
+        [SUBSCRIPTION_PREFIX, @transmit_ns, subscription_id].join
+      end
+
+      def stream_event_name(event)
+        [EVENT_PREFIX, @transmit_ns, event.topic].join
       end
     end
   end

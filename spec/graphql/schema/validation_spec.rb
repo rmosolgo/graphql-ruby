@@ -344,6 +344,30 @@ describe GraphQL::Schema::Validation do
       end
     }
 
+    let(:deprecated_optional_argument) {
+      GraphQL::Argument.define do
+        name "Something"
+        deprecation_reason "Don't use me"
+        type GraphQL::INT_TYPE
+      end
+    }
+
+    let(:deprecated_required_argument) {
+      GraphQL::Argument.define do
+        name "Something"
+        deprecation_reason "Don't use me"
+        type !GraphQL::INT_TYPE
+      end
+    }
+
+    let(:invalid_deprecation_reason_argument) {
+      GraphQL::Argument.define do
+        name "Something"
+        deprecation_reason 1
+        type GraphQL::INT_TYPE
+      end
+    }
+
     it "requires the type is a Base type" do
       assert_error_includes untyped_argument, "must be a valid input type (Scalar or InputObject), not Symbol"
     end
@@ -358,6 +382,18 @@ describe GraphQL::Schema::Validation do
 
     it "allows null default value for nullable argument" do
       assert_nil GraphQL::Schema::Validation.validate(null_default_value)
+    end
+
+    it "allows deprecated optional arguments" do
+      assert_nil GraphQL::Schema::Validation.validate(deprecated_optional_argument)
+    end
+
+    it "disallows deprecated required arguments" do
+      assert_error_includes deprecated_required_argument, "must be optional because it's deprecated"
+    end
+
+    it "disallows non-string deprecation reasons" do
+      assert_error_includes invalid_deprecation_reason_argument, "deprecation_reason must return String or NilClass, not #{integer_class_name} (1)"
     end
   end
 

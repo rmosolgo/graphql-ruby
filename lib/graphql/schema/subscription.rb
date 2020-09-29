@@ -12,16 +12,6 @@ module GraphQL
     #
     # Also, `#unsubscribe` terminates the subscription.
     class Subscription < GraphQL::Schema::Resolver
-      class EarlyTerminationError < StandardError
-      end
-
-      # Raised when `unsubscribe` is called; caught by `subscriptions.rb`
-      class UnsubscribedError < EarlyTerminationError
-      end
-
-      # Raised when `no_update` is returned; caught by `subscriptions.rb`
-      class NoUpdateError < EarlyTerminationError
-      end
       extend GraphQL::Schema::Resolver::HasPayloadType
       extend GraphQL::Schema::Member::HasFields
 
@@ -65,7 +55,7 @@ module GraphQL
       def resolve_update(**args)
         ret_val = args.any? ? update(**args) : update
         if ret_val == :no_update
-          raise NoUpdateError
+          throw :graphql_no_subscription_update
         else
           ret_val
         end
@@ -90,7 +80,7 @@ module GraphQL
 
       # Call this to halt execution and remove this subscription from the system
       def unsubscribe
-        raise UnsubscribedError
+        throw :graphql_subscription_unsubscribed
       end
 
       READING_SCOPE = ::Object.new

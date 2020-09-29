@@ -133,6 +133,12 @@ module GraphQL
           end
         }
 
+        DEPRECATED_ARGUMENTS_ARE_OPTIONAL = ->(argument) {
+          if argument.deprecation_reason && argument.type.non_null?
+            "must be optional because it's deprecated"
+          end
+        }
+
         TYPE_IS_VALID_INPUT_TYPE = ->(type) {
           outer_type = type.type
           inner_type = outer_type.respond_to?(:unwrap) ? outer_type.unwrap : nil
@@ -265,8 +271,10 @@ module GraphQL
           Rules::NAME_IS_STRING,
           Rules::RESERVED_NAME,
           Rules::DESCRIPTION_IS_STRING_OR_NIL,
+          Rules.assert_property(:deprecation_reason, String, NilClass),
           Rules::TYPE_IS_VALID_INPUT_TYPE,
           Rules::DEFAULT_VALUE_IS_VALID_FOR_TYPE,
+          Rules::DEPRECATED_ARGUMENTS_ARE_OPTIONAL,
         ],
         GraphQL::BaseType => [
           Rules::NAME_IS_STRING,

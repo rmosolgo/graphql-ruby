@@ -93,6 +93,16 @@ module GraphQL
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
           Interpreter::Resolve.resolve_all(final_values)
         end
+        queries.each do |query|
+          runtime = query.context.namespace(:interpreter)[:runtime]
+          if runtime
+            runtime.delete_interpreter_context(:current_path)
+            runtime.delete_interpreter_context(:current_field)
+            runtime.delete_interpreter_context(:current_object)
+            runtime.delete_interpreter_context(:current_arguments)
+          end
+        end
+        nil
       end
 
       class ListResultFailedError < GraphQL::Error

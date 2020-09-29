@@ -29,7 +29,7 @@ module GraphQL
           # It's called when you subclass this base connection, trying to use the
           # class name to set defaults. You can call it again in the class definition
           # to override the default (or provide a value, if the default lookup failed).
-          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: true)
+          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: true, node_nullable: true)
             # Set this connection's graphql name
             node_type_name = node_type.graphql_name
 
@@ -42,7 +42,7 @@ module GraphQL
               description: "A list of edges.",
               edge_class: edge_class
 
-            define_nodes_field if nodes_field
+            define_nodes_field(node_nullable) if nodes_field
 
             description("The connection type for #{node_type_name}.")
           end
@@ -71,9 +71,9 @@ module GraphQL
 
           private
 
-          def define_nodes_field
-            field :nodes, [@node_type, null: true],
-              null: true,
+          def define_nodes_field(nullable)
+            field :nodes, [@node_type, null: nullable],
+              null: nullable,
               description: "A list of nodes."
           end
         end

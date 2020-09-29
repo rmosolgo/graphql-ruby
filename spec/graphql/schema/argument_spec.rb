@@ -6,6 +6,7 @@ describe GraphQL::Schema::Argument do
     class Query < GraphQL::Schema::Object
       field :field, String, null: true do
         argument :arg, String, description: "test", required: false
+        argument :deprecated_arg, String, deprecation_reason: "don't use me!", required: false
 
         argument :arg_with_block, String, required: false do
           description "test"
@@ -62,7 +63,7 @@ describe GraphQL::Schema::Argument do
 
   describe "#keys" do
     it "is not overwritten by the 'keys' argument" do
-      expected_keys = ["aliasedArg", "arg", "argWithBlock", "explodingPreparedArg", "instrumentId", "instrumentIds", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
+      expected_keys = ["aliasedArg", "arg", "argWithBlock", "deprecatedArg", "explodingPreparedArg", "instrumentId", "instrumentIds", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
       assert_equal expected_keys, SchemaArgumentTest::Query.fields["field"].arguments.keys.sort
     end
   end
@@ -264,6 +265,111 @@ describe GraphQL::Schema::Argument do
 
       res5 = Jazz::Schema.execute(query_str4)
       assert_nil res5["data"].fetch("nullableEnsemble")
+    end
+  end
+
+  describe "deprecation_reason:" do
+    let(:arg) { SchemaArgumentTest::Query.fields["field"].arguments["arg"] }
+    let(:required_arg) {  SchemaArgumentTest::Query.fields["field"].arguments["requiredWithDefaultArg"] }
+
+    it "sets deprecation reason" do
+      arg.deprecation_reason "new deprecation reason"
+      assert_equal "new deprecation reason", arg.deprecation_reason
+    end
+
+    it "returns the deprecation reason" do
+      assert_equal "don't use me!", SchemaArgumentTest::Query.fields["field"].arguments["deprecatedArg"].deprecation_reason
+    end
+
+    it "has an assignment method" do
+      arg.deprecation_reason = "another new deprecation reason"
+      assert_equal "another new deprecation reason", arg.deprecation_reason
+    end
+
+    it "disallows deprecating required arguments in the constructor" do
+      err = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema::InputObject) do
+          graphql_name 'MyInput'
+          argument :foo, String, required: true, deprecation_reason: "Don't use me"
+        end
+      end
+      assert_equal "Required arguments cannot be deprecated: MyInput.foo.", err.message
+    end
+
+    it "disallows deprecating required arguments in deprecation_reason=" do
+      assert_raises ArgumentError do
+        required_arg.deprecation_reason = "Don't use me"
+      end
+    end
+
+    it "disallows deprecating required arguments in deprecation_reason" do
+      assert_raises ArgumentError do
+        required_arg.deprecation_reason("Don't use me")
+      end
+    end
+
+    it "disallows deprecated required arguments whose type is a string" do
+      input_obj = Class.new(GraphQL::Schema::InputObject) do
+        graphql_name 'MyInput2'
+        argument :foo, "String!", required: false, deprecation_reason: "Don't use me"
+      end
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :f, String, null: true do
+          argument :arg, input_obj, required: false
+        end
+      end
+
+      err = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema) do
+          query(query_type)
+        end
+      end
+
+      assert_equal "Required arguments cannot be deprecated: MyInput2.foo.", err.message
+    end
+  end
+
+  describe "invalid input types" do
+    class InvalidArgumentTypeSchema < GraphQL::Schema
+      class InvalidArgumentType < GraphQL::Schema::Object
+      end
+
+      class InvalidArgumentObject < GraphQL::Schema::Object
+        field :invalid, Boolean, null: false do
+          argument :object_ref, InvalidArgumentType, required: false
+        end
+      end
+
+      class InvalidLazyArgumentObject < GraphQL::Schema::Object
+        field :invalid, Boolean, null: false do
+          argument :lazy_object_ref, "InvalidArgumentTypeSchema::InvalidArgumentType", required: false
+        end
+      end
+
+      use GraphQL::Execution::Interpreter
+      use GraphQL::Analysis::AST
+    end
+
+    it "rejects them" do
+      err = assert_raises ArgumentError do
+        Class.new(InvalidArgumentTypeSchema) do
+          query(InvalidArgumentTypeSchema::InvalidArgumentObject)
+        end
+      end
+
+      expected_message = "Invalid input type for InvalidArgumentObject.invalid.objectRef: InvalidArgument. Must be scalar, enum, or input object, not OBJECT."
+      assert_equal expected_message, err.message
+
+      err = assert_raises ArgumentError do
+        Class.new(InvalidArgumentTypeSchema) do
+          query(InvalidArgumentTypeSchema::InvalidLazyArgumentObject)
+        end
+      end
+
+      expected_message = "Invalid input type for InvalidLazyArgumentObject.invalid.lazyObjectRef: InvalidArgument. Must be scalar, enum, or input object, not OBJECT."
+      assert_equal expected_message, err.message
     end
   end
 end

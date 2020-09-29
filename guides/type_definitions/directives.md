@@ -54,7 +54,27 @@ class MySchema < GraphQL::Schema
 end
 ```
 
+And you can reference them in the query with `@directive_name(...)`:
+
+```ruby
+query {
+  field @directive_name {
+    id
+  }
+}
+```
+
 {{ "GraphQL::Schema::Directive::Feature" | api_doc }} and {{ "GraphQL::Schema::Directive::Transform" | api_doc }} are included in the library as examples.
+
+### Custom Name
+
+By default, the directive's name is taken from the class name. You can override this with `graphql_name`, for example:
+
+```ruby
+class Directives::IsPrivate < GraphQL::Schema::Directive
+  graphql_name "someOtherName"
+end
+```
 
 ### Arguments
 

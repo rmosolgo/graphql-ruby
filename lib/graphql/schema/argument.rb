@@ -45,7 +45,8 @@ module GraphQL
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
       # @param from_resolver [Boolean] if true, a Resolver class defined this argument
       # @param method_access [Boolean] If false, don't build method access on legacy {Query::Arguments} instances.
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, &definition_block)
+      # @param deprecation_reason [String]
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, deprecation_reason: nil, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -60,6 +61,7 @@ module GraphQL
         @ast_node = ast_node
         @from_resolver = from_resolver
         @method_access = method_access
+        self.deprecation_reason = deprecation_reason
 
         if definition_block
           if definition_block.arity == 1
@@ -88,6 +90,18 @@ module GraphQL
           @description
         end
       end
+
+      # @return [String] Deprecation reason for this argument
+      def deprecation_reason(text = nil)
+        if text
+          validate_deprecated_or_optional(null: @null, deprecation_reason: text)
+          @deprecation_reason = text
+        else
+          @deprecation_reason
+        end
+      end
+
+      alias_method :deprecation_reason=, :deprecation_reason
 
       def visible?(context)
         true
@@ -143,15 +157,32 @@ module GraphQL
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value
         end
+        if @deprecation_reason
+          argument.deprecation_reason = @deprecation_reason
+        end
         argument
       end
 
-      attr_writer :type
+      def type=(new_type)
+        validate_input_type(new_type)
+        # This isn't true for LateBoundTypes, but we can assume those will
+        # be updated via this codepath later in schema setup.
+        if new_type.respond_to?(:non_null?)
+          validate_deprecated_or_optional(null: !new_type.non_null?, deprecation_reason: deprecation_reason)
+        end
+        @type = new_type
+      end
 
       def type
-        @type ||= Member::BuildType.parse_type(@type_expr, null: @null)
-      rescue StandardError => err
-        raise ArgumentError, "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
+        @type ||= begin
+          parsed_type = begin
+            Member::BuildType.parse_type(@type_expr, null: @null)
+          rescue StandardError => err
+            raise ArgumentError, "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
+          end
+          # Use the setter method to get validations
+          self.type = parsed_type
+        end
       end
 
       def statically_coercible?
@@ -184,6 +215,26 @@ module GraphQL
           @prepare.call(value, context || obj.context)
         else
           raise "Invalid prepare for #{@owner.name}.name: #{@prepare.inspect}"
+        end
+      end
+
+      private
+
+      def validate_input_type(input_type)
+        if input_type.is_a?(String) || input_type.is_a?(GraphQL::Schema::LateBoundType)
+          # Do nothing; assume this will be validated later
+        elsif input_type.kind.non_null? || input_type.kind.list?
+          validate_input_type(input_type.unwrap)
+        elsif !input_type.kind.input?
+          raise ArgumentError, "Invalid input type for #{path}: #{input_type.graphql_name}. Must be scalar, enum, or input object, not #{input_type.kind.name}."
+        else
+          # It's an input type, we're OK
+        end
+      end
+
+      def validate_deprecated_or_optional(null:, deprecation_reason:)
+        if deprecation_reason && !null
+          raise ArgumentError, "Required arguments cannot be deprecated: #{path}."
         end
       end
     end

@@ -21,6 +21,14 @@ module GraphQL
   class RequiredImplementationMissingError < Error
   end
 
+  class << self
+    def default_parser
+      @default_parser ||= GraphQL::Language::Parser
+    end
+
+    attr_writer :default_parser
+  end
+
   # Turn a query string or schema definition into an AST
   # @param graphql_string [String] a GraphQL query string or schema definition
   # @return [GraphQL::Language::Nodes::Document]
@@ -58,6 +66,14 @@ module GraphQL
         else
           self.dup.freeze
         end
+      end
+    end
+  end
+
+  module StringMatchBackport
+    refine String do
+      def match?(pattern)
+        self =~ pattern
       end
     end
   end

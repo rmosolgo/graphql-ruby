@@ -60,22 +60,31 @@ module GraphQL
       end
 
       def print_argument(argument)
+        # We won't have type information if we're recursing into a custom scalar
+        return super if @current_input_type && @current_input_type.kind.scalar?
+
         arg_owner = @current_input_type || @current_directive || @current_field
         arg_def = arg_owner.arguments[argument.name]
 
         old_input_type = @current_input_type
         @current_input_type = arg_def.type.non_null? ? arg_def.type.of_type : arg_def.type
-        res = super
+
+        argument_value = if coerce_argument_value_to_list?(@current_input_type, argument.value)
+          [argument.value]
+        else
+          argument.value
+        end
+        res = "#{argument.name}: #{print_node(argument_value)}".dup
+
         @current_input_type = old_input_type
         res
       end
 
-      def print_list_type(list_type)
-        old_input_type = @current_input_type
-        @current_input_type = old_input_type.of_type
-        res = super
-        @current_input_type = old_input_type
-        res
+      def coerce_argument_value_to_list?(type, value)
+        type.list? &&
+          !value.is_a?(Array) &&
+          !value.nil? &&
+          !value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
       end
 
       def print_variable_identifier(variable_id)
@@ -171,10 +180,10 @@ module GraphQL
             arguments: arguments
           )
         when "LIST"
-          if value.respond_to?(:each)
-            value.each { |v| value_to_ast(v, type.of_type) }
+          if value.is_a?(Array)
+            value.map { |v| value_to_ast(v, type.of_type) }
           else
-            [value].each { |v| value_to_ast(v, type.of_type) }
+            [value].map { |v| value_to_ast(v, type.of_type) }
           end
         when "ENUM"
           GraphQL::Language::Nodes::Enum.new(name: value)

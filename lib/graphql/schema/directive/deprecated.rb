@@ -4,7 +4,7 @@ module GraphQL
     class Directive < GraphQL::Schema::Member
       class Deprecated < GraphQL::Schema::Directive
         description "Marks an element of a GraphQL schema as no longer supported."
-        locations(GraphQL::Schema::Directive::FIELD_DEFINITION, GraphQL::Schema::Directive::ENUM_VALUE)
+        locations(GraphQL::Schema::Directive::FIELD_DEFINITION, GraphQL::Schema::Directive::ENUM_VALUE, GraphQL::Schema::Directive::ARGUMENT_DEFINITION, GraphQL::Schema::Directive::INPUT_FIELD_DEFINITION)
 
         reason_description = "Explains why this element was deprecated, usually also including a "\
         "suggestion for how to access supported similar data. Formatted "\

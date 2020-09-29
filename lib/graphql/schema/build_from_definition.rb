@@ -4,17 +4,24 @@ require "graphql/schema/build_from_definition/resolve_map"
 module GraphQL
   class Schema
     module BuildFromDefinition
-      class << self
-        # @see {Schema.from_definition}
-        def from_definition(definition_string, default_resolve:, using: {}, relay: false, interpreter: true, parser: DefaultParser)
-          document = parser.parse(definition_string)
-          default_resolve ||= {}
-          Builder.build(document, default_resolve: default_resolve, relay: relay, using: using, interpreter: interpreter)
-        end
+      if !String.method_defined?(:-@)
+        using GraphQL::StringDedupBackport
       end
 
-      # @api private
-      DefaultParser = GraphQL::Language::Parser
+      class << self
+        # @see {Schema.from_definition}
+        def from_definition(definition_string, parser: GraphQL.default_parser, **kwargs)
+          from_document(parser.parse(definition_string), **kwargs)
+        end
+
+        def from_definition_path(definition_path, parser: GraphQL.default_parser, **kwargs)
+          from_document(parser.parse_file(definition_path), **kwargs)
+        end
+
+        def from_document(document, default_resolve:, using: {}, relay: false, interpreter: true)
+          Builder.build(document, default_resolve: default_resolve || {}, relay: relay, using: using, interpreter: interpreter)
+        end
+      end
 
       # @api private
       module Builder
@@ -43,7 +50,7 @@ module GraphQL
             when GraphQL::Language::Nodes::EnumTypeDefinition
               types[definition.name] = build_enum_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ObjectTypeDefinition
-              types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve)
+              types[definition.name] = build_object_type(definition, type_resolver)
             when GraphQL::Language::Nodes::InterfaceTypeDefinition
               types[definition.name] = build_interface_type(definition, type_resolver)
             when GraphQL::Language::Nodes::UnionTypeDefinition
@@ -111,11 +118,11 @@ module GraphQL
             end
 
             if default_resolve.respond_to?(:resolve_type)
-              define_singleton_method(:resolve_type) do |*args|
-                default_resolve.resolve_type(*args)
+              def self.resolve_type(*args)
+                self.definition_default_resolve.resolve_type(*args)
               end
             else
-              define_singleton_method(:resolve_type) do |*args|
+              def self.resolve_type(*args)
                 NullResolveType.call(*args)
               end
             end
@@ -141,6 +148,20 @@ module GraphQL
 
             # Empty `orphan_types` -- this will make unreachable types ... unreachable.
             own_orphan_types.clear
+
+            class << self
+              attr_accessor :definition_default_resolve
+            end
+
+            self.definition_default_resolve = default_resolve
+
+            def definition_default_resolve
+              self.class.definition_default_resolve
+            end
+
+            def self.inherited(child_class)
+              child_class.definition_default_resolve = self.definition_default_resolve
+            end
           end
         end
 
@@ -182,12 +203,12 @@ module GraphQL
             ast_node(scalar_type_definition)
 
             if default_resolve.respond_to?(:coerce_input)
-              define_singleton_method(:coerce_input) do |val, ctx|
-                default_resolve.coerce_input(self, val, ctx)
+              def self.coerce_input(val, ctx)
+                ctx.schema.definition_default_resolve.coerce_input(self, val, ctx)
               end
 
-              define_singleton_method(:coerce_result) do |val, ctx|
-                default_resolve.coerce_result(self, val, ctx)
+              def self.coerce_result(val, ctx)
+                ctx.schema.definition_default_resolve.coerce_result(self, val, ctx)
               end
             end
           end
@@ -202,13 +223,10 @@ module GraphQL
           end
         end
 
-        def build_object_type(object_type_definition, type_resolver, default_resolve:)
+        def build_object_type(object_type_definition, type_resolver)
           builder = self
-          type_def = nil
-          typed_resolve_fn = ->(field, obj, args, ctx) { default_resolve.call(type_def, field, obj, args, ctx) }
 
           Class.new(GraphQL::Schema::Object) do
-            type_def = self
             graphql_name(object_type_definition.name)
             description(object_type_definition.description)
             ast_node(object_type_definition)
@@ -218,7 +236,7 @@ module GraphQL
               implements(interface_defn)
             end
 
-            builder.build_fields(self, object_type_definition.fields, type_resolver, default_resolve: typed_resolve_fn)
+            builder.build_fields(self, object_type_definition.fields, type_resolver, default_resolve: true)
           end
         end
 
@@ -247,13 +265,16 @@ module GraphQL
           end
         end
 
+        NO_DEFAULT_VALUE = {}.freeze
+
         def build_arguments(type_class, arguments, type_resolver)
           builder = self
 
           arguments.each do |argument_defn|
-            default_value_kwargs = {}
-            if !argument_defn.default_value.nil?
-              default_value_kwargs[:default_value] = builder.build_default_value(argument_defn.default_value)
+            default_value_kwargs = if !argument_defn.default_value.nil?
+              { default_value: builder.build_default_value(argument_defn.default_value) }
+            else
+              NO_DEFAULT_VALUE
             end
 
             type_class.argument(
@@ -261,6 +282,7 @@ module GraphQL
               type: type_resolver.call(argument_defn.type),
               required: false,
               description: argument_defn.description,
+              deprecation_reason: builder.build_deprecation_reason(argument_defn.directives),
               ast_node: argument_defn,
               camelize: false,
               method_access: false,
@@ -295,10 +317,10 @@ module GraphQL
         def build_fields(owner, field_definitions, type_resolver, default_resolve:)
           builder = self
 
-          field_definitions.map do |field_definition|
+          field_definitions.each do |field_definition|
             type_name = resolve_type_name(field_definition.type)
-            resolve_method_name = "resolve_field_#{field_definition.name}"
-            owner.field(
+            resolve_method_name = -"resolve_field_#{field_definition.name}"
+            schema_field_defn = owner.field(
               field_definition.name,
               description: field_definition.description,
               type: type_resolver.call(field_definition.type),
@@ -310,16 +332,19 @@ module GraphQL
               method_conflict_warning: false,
               camelize: false,
               resolver_method: resolve_method_name,
-            ) do
-              builder.build_arguments(self, field_definition.arguments, type_resolver)
+            )
 
-              # Don't do this for interfaces
-              if default_resolve
-                owner.send(:define_method, resolve_method_name) do |**args|
-                  field_instance = self.class.get_field(field_definition.name)
-                  default_resolve.call(field_instance, object, args, context)
+            builder.build_arguments(schema_field_defn, field_definition.arguments, type_resolver)
+
+            # Don't do this for interfaces
+            if default_resolve
+              owner.class_eval <<-RUBY, __FILE__, __LINE__
+                # frozen_string_literal: true
+                def #{resolve_method_name}(**args)
+                  field_instance = self.class.get_field("#{field_definition.name}")
+                  context.schema.definition_default_resolve.call(self.class, field_instance, object, args, context)
                 end
-              end
+              RUBY
             end
           end
         end
