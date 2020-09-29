@@ -27,8 +27,7 @@ module GraphQL
       #   end
       #
       # @see Relay::BaseEdge for edge types
-      class BaseConnection < Types::Relay::BaseObject
-        # TODO this is also getting behavior from Relay::BaseObject
+      class BaseConnection < Schema::Object
         include ConnectionBehaviors
       end
     end

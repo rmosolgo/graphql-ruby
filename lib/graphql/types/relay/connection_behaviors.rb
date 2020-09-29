@@ -9,6 +9,8 @@ module GraphQL
 
         def self.included(child_class)
           child_class.extend(ClassMethods)
+          child_class.extend(Relay::DefaultRelay)
+          child_class.default_relay(true)
           add_page_info_field(child_class)
         end
 
@@ -39,8 +41,7 @@ module GraphQL
 
             field :edges, [edge_type_class, null: true],
               null: true,
-              description: "A list of edges.",
-              edge_class: edge_class
+              description: "A list of edges."
 
             define_nodes_field(node_nullable) if nodes_field
 

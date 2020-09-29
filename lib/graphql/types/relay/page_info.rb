@@ -3,8 +3,9 @@ module GraphQL
   module Types
     module Relay
       # The return type of a connection's `pageInfo` field
-      class PageInfo < Types::Relay::BaseObject
-        default_relay true
+      class PageInfo < GraphQL::Schema::Object
+        extend GraphQL::Types::Relay::DefaultRelay
+
         description "Information about pagination in a connection."
         field :has_next_page, Boolean, null: false,
           description: "When paginating forwards, are there more items?"
