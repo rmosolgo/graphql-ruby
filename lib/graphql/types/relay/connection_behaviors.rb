@@ -53,8 +53,8 @@ module GraphQL
           end
 
           # Add the shortcut `nodes` field to this connection and its subclasses
-          def nodes_field
-            define_nodes_field
+          def nodes_field(node_nullable: true)
+            define_nodes_field(node_nullable)
           end
 
           def authorized?(obj, ctx)
