@@ -49,6 +49,22 @@ describe GraphQL::Schema::FieldExtension do
       end
     end
 
+    class MultiplyByArgumentUsingAfterResolve < GraphQL::Schema::FieldExtension
+      def apply
+        field.argument(:factor, Integer, required: true)
+      end
+
+      def resolve(object:, arguments:, context:)
+        original_arguments = arguments.dup
+        arguments.delete(:factor)
+        yield(object, arguments, { original_arguments: original_arguments})
+      end
+
+      def after_resolve(object:, value:, arguments:, context:, memo:)
+        value * memo[:original_arguments][:factor]
+      end
+    end
+
     class BaseObject < GraphQL::Schema::Object
     end
 
@@ -87,6 +103,15 @@ describe GraphQL::Schema::FieldExtension do
 
       def pass_thru(input:, **args)
         input # return it as-is, it will be modified by extensions
+      end
+
+      field :multiply_input3, Integer, null: false, resolver_method: :pass_thru_without_splat, extensions: [MultiplyByArgumentUsingAfterResolve] do
+        argument :input, Integer, required: true
+      end
+
+      # lack of kwargs splat demonstrates the extended arguments are passed to the resolver method
+      def pass_thru_without_splat(input:)
+        input
       end
 
       field :multiple_extensions, Integer, null: false, resolver_method: :pass_thru,
@@ -149,6 +174,11 @@ describe GraphQL::Schema::FieldExtension do
     it "can hide arguments from resolve methods" do
       res = exec_query("{ multiplyInput(input: 3, factor: 5) }")
       assert_equal 15, res["data"]["multiplyInput"]
+    end
+
+    it "calls the resolver method with the extended arguments" do
+      res = exec_query("{ multiplyInput3(input: 3, factor: 5) }")
+      assert_equal 15, res["data"]["multiplyInput3"]
     end
 
     it "supports multiple extensions via extensions kwarg" do
