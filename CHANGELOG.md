@@ -28,6 +28,9 @@
 - Use `.empty?` instead of `.length.zero?` in lexer #3134
 - Return a proper error when a stack error happens #3129
 - Assert valid input types on arguments #3120
+- Improve Validator#validate performance #3125
+- Don't wrap `RawValue` in ConnectionExtension #3122
+- Fix interface possible types visibility #3124
 
 ## 1.11.4 (24 August 2020)
 
