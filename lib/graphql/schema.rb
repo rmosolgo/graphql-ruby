@@ -1118,14 +1118,15 @@ module GraphQL
             type.possible_types(context: context)
           else
             stored_possible_types = own_possible_types[type.graphql_name]
-            visible_possible_types = stored_possible_types.select do |possible_type|
-              next true unless type.kind.interface?
-              next true unless possible_type.kind.object?
-
-              # Use `.graphql_name` comparison to match legacy vs class-based types.
-              # When we don't need to support legacy `.define` types, use `.include?(type)` instead.
-              possible_type.interfaces(context).any? { |interface| interface.graphql_name == type.graphql_name }
-            end if stored_possible_types
+            visible_possible_types = if stored_possible_types && type.kind.interface?
+              stored_possible_types.select do |possible_type|
+                # Use `.graphql_name` comparison to match legacy vs class-based types.
+                # When we don't need to support legacy `.define` types, use `.include?(type)` instead.
+                possible_type.interfaces(context).any? { |interface| interface.graphql_name == type.graphql_name }
+              end
+            else
+              stored_possible_types
+            end
             visible_possible_types ||
               introspection_system.possible_types[type.graphql_name] ||
               (
