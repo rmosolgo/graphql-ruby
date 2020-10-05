@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.8.18  (5 Oct 2020)
+
+### Bug fixes
+
+- Use `.graphql_name` for unauthorized error messages #3174
+
 ## 1.8.17 (14 Feb 2019)
 
 ### Bug fixes
