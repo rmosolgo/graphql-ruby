@@ -8,6 +8,8 @@
 
 ### Bug fixes
 
+- Use `graphql_name` in `UnauthorizedError` default message #3174
+
 ## 1.11.5 (30 September 2020)
 
 ### New features
