@@ -303,7 +303,7 @@ module GraphQL
           if definition_block.arity == 1
             yield self
           else
-            instance_eval(&definition_block)
+            instance_exec(&definition_block)
           end
         end
       end
