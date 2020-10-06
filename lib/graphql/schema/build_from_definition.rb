@@ -197,20 +197,24 @@ module GraphQL
         end
 
         def build_scalar_type(scalar_type_definition, type_resolver, default_resolve:)
+          builder = self
           Class.new(GraphQL::Schema::Scalar) do
             graphql_name(scalar_type_definition.name)
             description(scalar_type_definition.description)
             ast_node(scalar_type_definition)
 
             if default_resolve.respond_to?(:coerce_input)
-              def self.coerce_input(val, ctx)
-                ctx.schema.definition_default_resolve.coerce_input(self, val, ctx)
-              end
-
-              def self.coerce_result(val, ctx)
-                ctx.schema.definition_default_resolve.coerce_result(self, val, ctx)
-              end
+              # Put these method definitions in another method to avoid retaining `type_resolve`
+              # from this method's bindiing
+              builder.build_scalar_type_coerce_method(self, :coerce_input, default_resolve)
+              builder.build_scalar_type_coerce_method(self, :coerce_result, default_resolve)
             end
+          end
+        end
+
+        def build_scalar_type_coerce_method(scalar_class, method_name, default_definition_resolve)
+          scalar_class.define_singleton_method(method_name) do |val, ctx|
+            default_definition_resolve.public_send(method_name, self, val, ctx)
           end
         end
 
