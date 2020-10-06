@@ -203,7 +203,8 @@ module GraphQL
       # @param broadcastable [Boolean] Whether or not this field can be distributed in subscription broadcasts
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, &definition_block)
+      # @param legacy_edge_class [Class, nil] (DEPRECATED) If present, pass this along to the legacy field definition
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, legacy_edge_class: nil, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -269,6 +270,7 @@ module GraphQL
         @relay_nodes_field = relay_nodes_field
         @ast_node = ast_node
         @method_conflict_warning = method_conflict_warning
+        @legacy_edge_class = legacy_edge_class
 
         arguments.each do |name, arg|
           if arg.is_a?(Hash)
@@ -459,6 +461,10 @@ module GraphQL
 
         if @relay_nodes_field
           field_defn.relay_nodes_field = @relay_nodes_field
+        end
+
+        if @legacy_edge_class
+          field_defn.edge_class = @legacy_edge_class
         end
 
         field_defn.resolve = self.method(:resolve_field)

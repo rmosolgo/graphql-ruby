@@ -41,7 +41,8 @@ module GraphQL
 
             field :edges, [edge_type_class, null: true],
               null: true,
-              description: "A list of edges."
+              description: "A list of edges.",
+              legacy_edge_class: edge_class # This is used by the old runtime only, for EdgesInstrumentation
 
             define_nodes_field(node_nullable) if nodes_field
 
