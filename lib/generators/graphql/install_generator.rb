@@ -43,6 +43,7 @@ module Graphql
     # post "/graphql", to: "graphql#execute"
     # ```
     #
+    # TODO more than this:
     # Accept a `--relay` option which adds
     # The root `node(id: ID!)` field.
     #
@@ -80,7 +81,7 @@ module Graphql
       class_option :relay,
         type: :boolean,
         default: false,
-        desc: "Include GraphQL::Relay installation"
+        desc: "Include installation of Relay conventions (nodes, connections, edges)"
 
       class_option :batch,
         type: :boolean,
