@@ -10,8 +10,6 @@ module Types
     def test_field
       "Hello World!"
     end
-<% if options[:relay] %>
-    field :node, field: GraphQL::Relay::Node.field
-<% end %>  end
+  end
 end
 <% end -%>

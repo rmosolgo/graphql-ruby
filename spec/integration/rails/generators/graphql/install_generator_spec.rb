@@ -15,7 +15,7 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
   end
 
   test "it generates a folder structure" do
-    run_generator
+    run_generator([ "--relay", "false"])
 
     assert_file "app/graphql/types/.keep"
     assert_file "app/graphql/mutations/.keep"
@@ -49,8 +49,12 @@ class DummySchema < GraphQL::Schema
   use GraphQL::Execution::Interpreter
   use GraphQL::Analysis::AST
 
-  # Add built-in connections for pagination
-  use GraphQL::Pagination::Connections
+  # Union and Interface Resolution
+  def self.resolve_type(abstract_type, obj, ctx)
+    # TODO: Implement this function
+    # to return the correct object type for `obj`
+    raise(GraphQL::RequiredImplementationMissingError)
+  end
 end
 RUBY
     assert_file "app/graphql/dummy_schema.rb", expected_schema
@@ -124,14 +128,14 @@ RUBY
   end
 
   test "it allows for a user-specified install directory" do
-    run_generator(["--directory", "app/mydirectory"])
+    run_generator(["--directory", "app/mydirectory", "--relay", "false"])
 
     assert_file "app/mydirectory/types/.keep"
     assert_file "app/mydirectory/mutations/.keep"
   end
 
   test "it generates graphql-batch and relay boilerplate" do
-    run_generator(["--batch", "--relay"])
+    run_generator(["--batch"])
     assert_file "app/graphql/loaders/.keep"
     assert_file "Gemfile" do |contents|
       assert_match %r{gem ('|")graphql-batch('|")}, contents
@@ -140,6 +144,10 @@ RUBY
     expected_query_type = <<-RUBY
 module Types
   class QueryType < Types::BaseObject
+    # Add `node(id: ID!) and `nodes(ids: [ID!]!)`
+    include GraphQL::Types::Relay::HasNodeField
+    include GraphQL::Types::Relay::HasNodesField
+
     # Add root-level fields here.
     # They will be entry points for queries on your schema.
 
@@ -149,8 +157,6 @@ module Types
     def test_field
       \"Hello World!\"
     end
-
-    field :node, field: GraphQL::Relay::Node.field
   end
 end
 RUBY
@@ -269,10 +275,20 @@ class DummySchema < GraphQL::Schema
   use GraphQL::Execution::Interpreter
   use GraphQL::Analysis::AST
 
+  # GraphQL::Batch setup:
+  use GraphQL::Batch
+
+  # Union and Interface Resolution
+  def self.resolve_type(abstract_type, obj, ctx)
+    # TODO: Implement this function
+    # to return the correct object type for `obj`
+    raise(GraphQL::RequiredImplementationMissingError)
+  end
+
   # Add built-in connections for pagination
   use GraphQL::Pagination::Connections
 
-  # Relay Object Identification:
+  # Relay-style Object Identification:
 
   # Return a string UUID for `object`
   def self.id_from_object(object, type_definition, query_ctx)
@@ -291,16 +307,6 @@ class DummySchema < GraphQL::Schema
     # find an object in your application
     # ...
   end
-
-  # Object Resolution
-  def self.resolve_type(type, obj, ctx)
-    # TODO: Implement this function
-    # to return the correct type for `obj`
-    raise(GraphQL::RequiredImplementationMissingError)
-  end
-
-  # GraphQL::Batch setup:
-  use GraphQL::Batch
 end
 RUBY
 end

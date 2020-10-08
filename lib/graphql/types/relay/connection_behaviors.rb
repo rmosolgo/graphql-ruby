@@ -11,6 +11,7 @@ module GraphQL
           child_class.extend(ClassMethods)
           child_class.extend(Relay::DefaultRelay)
           child_class.default_relay(true)
+          child_class.node_nullable(true)
           add_page_info_field(child_class)
         end
 
@@ -31,7 +32,7 @@ module GraphQL
           # It's called when you subclass this base connection, trying to use the
           # class name to set defaults. You can call it again in the class definition
           # to override the default (or provide a value, if the default lookup failed).
-          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: true, node_nullable: true)
+          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: true, node_nullable: self.node_nullable)
             # Set this connection's graphql name
             node_type_name = node_type.graphql_name
 
@@ -55,7 +56,7 @@ module GraphQL
           end
 
           # Add the shortcut `nodes` field to this connection and its subclasses
-          def nodes_field(node_nullable: true)
+          def nodes_field(node_nullable: self.node_nullable)
             define_nodes_field(node_nullable)
           end
 
@@ -71,6 +72,16 @@ module GraphQL
             node_type.visible?(ctx)
           end
 
+          # Set the default `node_nullable` for this class and its child classes. (Defaults to `true`.)
+          # Use `node_nullable(false)` in your base class to make non-null `node` and `nodes` fields.
+          def node_nullable(new_value = nil)
+            if new_value.nil?
+              @node_nullable || superclass.node_nullable
+            else
+              @node_nullable ||= new_value
+            end
+          end
+
           private
 
           def define_nodes_field(nullable)
@@ -81,8 +92,6 @@ module GraphQL
         end
 
         class << self
-          private
-
           def add_page_info_field(obj_type)
             obj_type.field :page_info, GraphQL::Types::Relay::PageInfo, null: false, description: "Information to aid in pagination."
           end
