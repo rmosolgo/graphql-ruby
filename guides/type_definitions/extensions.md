@@ -122,7 +122,7 @@ class Types::MyCustomConnection < GraphQL::Types::Relay::BaseConnection
   field :total_count, Integer, null: false
 
   def total_count
-    object.items.size
+    nodes.size
   end
 end
 ```
