@@ -73,7 +73,7 @@
 
 <p>The best way to test a GraphQL interface is with <em>integration tests</em> which run the whole GraphQL system (using <code class="language-plaintext highlighter-rouge">MySchema.execute(...)</code>). By using an integration test, you can be sure that all of GraphQL-Ruby’s internal systems are engaged (validation, analysis, authorization, data loading, response type-checking, etc.).</p>
 
-<p>An basic integration test might look like:</p>
+<p>A basic integration test might look like:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">it</span> <span class="s2">"loads posts by ID"</span> <span class="k">do</span>
   <span class="n">query_string</span> <span class="o">=</span> <span class="o">&lt;&lt;-</span><span class="no">GRAPHQL</span><span class="sh">
