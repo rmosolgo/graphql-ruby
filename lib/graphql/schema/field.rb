@@ -705,17 +705,22 @@ module GraphQL
               obj.object.public_send(@method_sym)
             end
           else
-            raise <<-ERR
-          Failed to implement #{@owner.graphql_name}.#{@name}, tried:
-
-          - `#{obj.class}##{@resolver_method}`, which did not exist
-          - `#{obj.object.class}##{@method_sym}`, which did not exist
-          - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
-
-          To implement this field, define one of the methods above (and check for typos)
-          ERR
+            field_lookup(obj, ruby_kwargs)
           end
         end
+      end
+
+      # May be overwritten in custom field class to do some custom field lookup
+      def field_lookup(obj, ruby_kwargs)
+        raise <<-ERR
+      Failed to implement #{@owner.graphql_name}.#{@name}, tried:
+
+      - `#{obj.class}##{@resolver_method}`, which did not exist
+      - `#{obj.object.class}##{@method_sym}`, which did not exist
+      - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
+
+      To implement this field, define one of the methods above (and check for typos)
+      ERR
       end
 
       # Wrap execution with hooks.
