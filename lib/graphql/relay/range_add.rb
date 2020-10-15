@@ -35,9 +35,16 @@ module GraphQL
       # @param context [GraphQL::Query::Context] The surrounding `ctx`, will be passed to the connection if provided (this is required for cursor encoders)
       # @param edge_class [Class] The class to wrap `item` with
       def initialize(collection:, item:, parent: nil, context: nil, edge_class: Relay::Edge)
-        connection_class = BaseConnection.connection_for_nodes(collection)
+        @connection = if context && context.schema.new_connections?
+          conn_class = context.schema.connections.wrapper_for(collection)
+          # The rest will be added by ConnectionExtension
+          conn_class.new(collection)
+        else
+          connection_class = BaseConnection.connection_for_nodes(collection)
+          connection_class.new(collection, {}, parent: parent, context: context)
+        end
         @parent = parent
-        @connection = connection_class.new(collection, {}, parent: parent, context: context)
+
         @edge = edge_class.new(item, @connection)
       end
     end
