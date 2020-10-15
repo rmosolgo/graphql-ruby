@@ -280,9 +280,9 @@
 <span class="k">class</span> <span class="nc">ModelTypeToClassTransform</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Upgrader</span><span class="o">::</span><span class="no">Transform</span>
   <span class="k">def</span> <span class="nf">initialize</span>
     <span class="c1"># Find calls to the factory method, which have a type class inside</span>
-    <span class="vi">@find_pattern</span> <span class="o">=</span> <span class="sr">/^( +)([a-zA-Z_0-9:]*) = model_type\(-&gt; ?\{ ?:{0,2}([a-zA-Z_0-9:]*) ?\} ?\) do/</span>
-    <span class="c1"># Replace them with a class definition and a `model_name("...")` call:</span>
-    <span class="vi">@replace_pattern</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">1class </span><span class="se">\\</span><span class="s2">2 &lt; Platform::Objects::Base</span><span class="se">\n\\</span><span class="s2">1  model_name </span><span class="se">\"\\</span><span class="s2">3</span><span class="se">\"</span><span class="s2">"</span>
+    <span class="vi">@find_pattern</span> <span class="o">=</span> <span class="sr">/^( +)([a-zA-Z_0-9:]*) = model_type\(-&gt; ?\{ ?:{0,2}([a-zA-Z_0-9:]*) ?\} ?\) do/</span><span class="err">
+    # R</span><span class="sr">e</span><span class="n">place</span> <span class="n">them</span> <span class="n">with</span> <span class="n">a</span> <span class="k">class</span> <span class="n">definition</span> <span class="n">and</span> <span class="n">a</span> <span class="sb">`model_name("...")`</span> <span class="ss">call:
+    </span><span class="vi">@replace_pattern</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">1class </span><span class="se">\\</span><span class="s2">2 &lt; Platform::Objects::Base</span><span class="se">\n\\</span><span class="s2">1  model_name </span><span class="se">\"\\</span><span class="s2">3</span><span class="se">\"</span><span class="s2">"</span>
   <span class="k">end</span>
 
   <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="n">input_text</span><span class="p">)</span>

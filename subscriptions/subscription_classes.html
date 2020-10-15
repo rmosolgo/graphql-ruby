@@ -136,8 +136,8 @@
 <p>Like mutations, you can use a generated return type for subscriptions. When you add <code class="language-plaintext highlighter-rouge">field(...)</code>s to a subscription, they’ll be added to the subscription’s generated return type. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
-  <span class="n">field</span> <span class="ss">:room</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
-  <span class="n">field</span> <span class="ss">:message</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">MessageType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:room</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="n">field</span> <span class="ss">:message</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">MessageType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
