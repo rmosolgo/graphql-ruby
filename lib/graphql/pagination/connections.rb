@@ -79,7 +79,7 @@ module GraphQL
       def wrap(field, parent, items, arguments, context, wrappers: all_wrappers)
         return items if GraphQL::Execution::Interpreter::RawValue === items
 
-        impl = wrapper_for(itmems, wrappers: wrappers)
+        impl = wrapper_for(items, wrappers: wrappers)
 
         if impl.nil?
           raise ImplementationMissingError, "Couldn't find a connection wrapper for #{items.class} during #{field.path} (#{items.inspect})"
