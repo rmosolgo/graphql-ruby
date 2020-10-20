@@ -95,13 +95,14 @@ describe GraphQL::Schema::Interface do
     object = Module.new do
       include GraphQL::Schema::Interface
       graphql_name 'GlobalIdFieldTest'
-      global_id_field :uuid
+      global_id_field :uuid, description: 'The UUID field'
     end.to_graphql
 
     uuid_field = object.fields["uuid"]
 
     assert_equal GraphQL::NonNullType, uuid_field.type.class
     assert_equal GraphQL::ScalarType, uuid_field.type.unwrap.class
+    assert_equal 'The UUID field', uuid_field.description
     assert_equal(
       GraphQL::Schema::Member::GraphQLTypeNames::ID,
       uuid_field.type.unwrap.name
