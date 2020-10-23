@@ -1,7 +1,15 @@
 # frozen_string_literal: true
-require "graphql/types/relay/base_field"
-require "graphql/types/relay/base_object"
-require "graphql/types/relay/base_interface"
+
+# behavior modules:
+require "graphql/types/relay/default_relay"
+require "graphql/types/relay/connection_behaviors"
+require "graphql/types/relay/edge_behaviors"
+require "graphql/types/relay/node_behaviors"
+require "graphql/types/relay/page_info_behaviors"
+require "graphql/types/relay/has_node_field"
+require "graphql/types/relay/has_nodes_field"
+
+# concrete classes based on the gem defaults:
 require "graphql/types/relay/page_info"
 require "graphql/types/relay/base_connection"
 require "graphql/types/relay/base_edge"

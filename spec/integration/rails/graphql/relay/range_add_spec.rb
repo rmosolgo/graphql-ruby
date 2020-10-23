@@ -82,6 +82,10 @@ describe GraphQL::Relay::RangeAdd do
     Class.new(GraphQL::Schema) do
       self.query(query)
       self.mutation(mutation)
+      if TESTING_INTERPRETER
+        self.use(GraphQL::Analysis::AST)
+        self.use(GraphQL::Execution::Interpreter)
+      end
       self.cursor_encoder(PassThroughEncoder)
 
       if TESTING_INTERPRETER
