@@ -11,6 +11,10 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 
     FileUtils.cd(File.join(destination_root, '..')) do
       `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle`
+      # Rails 3.2 loads the rails app between `install` and `relay`, and without this,
+      # there ends up being a
+      `mkdir -p lib/graphql/batch.rb`
+      `echo "module GraphQL::Batch; end" > lib/graphql/batch.rb`
     end
   end
 
