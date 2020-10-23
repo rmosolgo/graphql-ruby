@@ -466,6 +466,10 @@ def self.parse(query_string, filename: nil, tracer: GraphQL::Tracing::NullTracer
   self.new(query_string, filename: filename, tracer: tracer).parse_document
 end
 
+def self.parse_file(filename, tracer: GraphQL::Tracing::NullTracer)
+  self.parse(File.read(filename), filename: filename, tracer: tracer)
+end
+
 private
 
 def next_token

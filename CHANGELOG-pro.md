@@ -8,6 +8,20 @@
 
 ### Bug Fix
 
+## 1.15.7 (29 Sept 2020)
+
+### Bug Fix
+
+- Encoder: fix Ruby 2.7 warning #3161
+- Stable connections: Handle `ARRAY[...]` selections and cursors on Postgres #3166
+- Pundit: properly lookup policies for list inputs #3146
+
+## 1.15.6 (17 Sept 2020)
+
+### Bug Fix
+
+- Stable Connections: Use method access to get `.cursor_#{idx}` values instead of `.attributes[:cursor_#{idx}]`, fixes #3149
+
 ## 1.15.5
 
 ### New Features

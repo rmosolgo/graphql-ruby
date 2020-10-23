@@ -786,21 +786,24 @@ module GraphQL
     # @param default_resolve [<#call(type, field, obj, args, ctx)>] A callable for handling field resolution
     # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
     # @param using [Hash] Plugins to attach to the created schema with `use(key, value)`
-    # @param interpreter [Boolean] If false, the legacy {Execution::Execute} runtime will be used
     # @return [Class] the schema described by `document`
-    def self.from_definition(definition_or_path, default_resolve: nil, parser: BuildFromDefinition::DefaultParser, using: {})
+    def self.from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {})
       # If the file ends in `.graphql`, treat it like a filepath
-      definition = if definition_or_path.end_with?(".graphql")
-        File.read(definition_or_path)
+      if definition_or_path.end_with?(".graphql")
+        GraphQL::Schema::BuildFromDefinition.from_definition_path(
+          definition_or_path,
+          default_resolve: default_resolve,
+          parser: parser,
+          using: using,
+        )
       else
-        definition_or_path
+        GraphQL::Schema::BuildFromDefinition.from_definition(
+          definition_or_path,
+          default_resolve: default_resolve,
+          parser: parser,
+          using: using,
+        )
       end
-      GraphQL::Schema::BuildFromDefinition.from_definition(
-        definition,
-        default_resolve: default_resolve,
-        parser: parser,
-        using: using,
-      )
     end
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.

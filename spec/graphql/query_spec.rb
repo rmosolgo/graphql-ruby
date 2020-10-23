@@ -914,6 +914,7 @@ describe GraphQL::Query do
       source_arg_value = detailed_args.argument_values[:source]
       assert_equal false, source_arg_value.default_used?
       assert_equal "SHEEP", detailed_args[:source]
+      assert_equal "SHEEP", detailed_args.fetch(:source)
       assert_equal "SHEEP", source_arg_value.value
       assert_equal "source", source_arg_value.definition.graphql_name
 

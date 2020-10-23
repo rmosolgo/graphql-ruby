@@ -18,9 +18,11 @@ class GraphqlChannel < ActionCable::Channel::Base
     field :new_value, Integer, null: false
 
     def update
-      {
+      result = {
         new_value: @@call_count += 1
       }
+      puts "  -> CounterIncremented#update(#{context[:subscriber_id]}): #{result}"
+      result
     end
   end
 
@@ -74,6 +76,7 @@ class GraphqlChannel < ActionCable::Channel::Base
       channel: self,
     }
 
+    puts "[GraphQLSchema.execute] #{query} || #{variables}"
     result = GraphQLSchema.execute({
       query: query,
       context: context,
@@ -91,7 +94,7 @@ class GraphqlChannel < ActionCable::Channel::Base
     if result.context[:subscription_id]
       @subscription_ids << result.context[:subscription_id]
     end
-
+    puts "  -> [transmit(#{result.context[:subscription_id]})] #{payload.inspect}"
     transmit(payload)
   end
 
@@ -99,11 +102,14 @@ class GraphqlChannel < ActionCable::Channel::Base
     field = data["field"]
     args = data["arguments"]
     value = data["value"]
-    GraphQLSchema.subscriptions.trigger(field, args, value && ExamplePayload.new(value))
+    value = value && ExamplePayload.new(value)
+    puts "[make_trigger] #{[field, args, value]}"
+    GraphQLSchema.subscriptions.trigger(field, args, value)
   end
 
   def unsubscribed
     @subscription_ids.each { |sid|
+      puts "[delete_subscription] #{sid}"
       GraphQLSchema.subscriptions.delete_subscription(sid)
     }
   end

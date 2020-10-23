@@ -127,9 +127,11 @@ module GraphQL
           argument_defn = super(*args, **kwargs, &block)
           # Add a method access
           method_name = argument_defn.keyword
-          define_method(method_name) do
-            self[method_name]
-          end
+          class_eval <<-RUBY, __FILE__, __LINE__
+            def #{method_name}
+              self[#{method_name.inspect}]
+            end
+          RUBY
         end
 
         def to_graphql

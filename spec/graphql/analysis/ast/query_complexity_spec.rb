@@ -286,8 +286,8 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       class SingleComplexity < GraphQL::Schema::Object
         field :value, Int, null: true, complexity: 0.1
         field :complexity, SingleComplexity, null: true do
-          argument :value, Int, required: false
-          complexity(->(ctx, args, child_complexity) { args[:value] + child_complexity })
+          argument :int_value, Int, required: false
+          complexity(->(ctx, args, child_complexity) { args[:int_value] + child_complexity })
         end
         implements ComplexityInterface
       end
@@ -299,8 +299,8 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
       class Query < GraphQL::Schema::Object
         field :complexity, SingleComplexity, null: true do
-          argument :value, Int, required: false
-          complexity ->(ctx, args, child_complexity) { args[:value] + child_complexity }
+          argument :int_value, Int, required: false
+          complexity ->(ctx, args, child_complexity) { args[:int_value] + child_complexity }
         end
 
         field :inner_complexity, ComplexityInterface, null: true do
@@ -316,10 +316,10 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     let(:complexity_schema) { CustomComplexitySchema }
     let(:query_string) {%|
       {
-        a: complexity(value: 3) { value }
-        b: complexity(value: 6) {
+        a: complexity(intValue: 3) { value }
+        b: complexity(intValue: 6) {
           value
-          complexity(value: 1) {
+          complexity(intValue: 1) {
             value
           }
         }
@@ -335,7 +335,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     describe "same field on multiple types" do
       let(:query_string) {%|
       {
-        innerComplexity(value: 2) {
+        innerComplexity(intValue: 2) {
           ... on SingleComplexity { value }
           ... on DoubleComplexity { value }
         }

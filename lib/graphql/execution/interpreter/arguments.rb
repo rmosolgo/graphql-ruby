@@ -41,7 +41,7 @@ module GraphQL
         # @return [Hash{Symbol => ArgumentValue}]
         attr_reader :argument_values
 
-        def_delegators :@keyword_arguments, :key?, :[], :keys, :each, :values
+        def_delegators :@keyword_arguments, :key?, :[], :fetch, :keys, :each, :values
         def_delegators :@argument_values, :each_value
 
         def inspect

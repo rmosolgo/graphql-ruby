@@ -18,10 +18,11 @@ module GraphQL
           next_args.delete(:last)
           next_args.delete(:before)
           next_args.delete(:after)
-          yield(object, next_args)
+          yield(object, next_args, arguments)
         end
 
         def after_resolve(value:, object:, arguments:, context:, memo:)
+          original_arguments = memo
           # rename some inputs to avoid conflicts inside the block
           maybe_lazy = value
           value = nil
@@ -37,10 +38,10 @@ module GraphQL
               # update the connection with some things that may not have been provided
               value.context ||= context
               value.parent ||= object.object
-              value.first_value ||= arguments[:first]
-              value.after_value ||= arguments[:after]
-              value.last_value ||= arguments[:last]
-              value.before_value ||= arguments[:before]
+              value.first_value ||= original_arguments[:first]
+              value.after_value ||= original_arguments[:after]
+              value.last_value ||= original_arguments[:last]
+              value.before_value ||= original_arguments[:before]
               value.field ||= field
               if field.has_max_page_size? && !value.has_max_page_size_override?
                 value.max_page_size = field.max_page_size
@@ -51,7 +52,7 @@ module GraphQL
               value
             elsif context.schema.new_connections?
               wrappers = context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
-              context.schema.connections.wrap(field, object.object, value, arguments, context, wrappers: wrappers)
+              context.schema.connections.wrap(field, object.object, value, original_arguments, context, wrappers: wrappers)
             else
               if object.is_a?(GraphQL::Schema::Object)
                 object = object.object
@@ -59,7 +60,7 @@ module GraphQL
               connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(value)
               connection_class.new(
                 value,
-                arguments,
+                original_arguments,
                 field: field,
                 max_page_size: field.max_page_size,
                 parent: object,

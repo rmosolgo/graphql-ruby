@@ -52,17 +52,23 @@ module GraphQL
         all_wrappers
       end
 
-      # Used by the runtime to wrap values in connection wrappers.
-      # @api Private
-      def wrap(field, parent, items, arguments, context, wrappers: all_wrappers)
-        return items if GraphQL::Execution::Interpreter::RawValue === items
-
+      def wrapper_for(items, wrappers: all_wrappers)
         impl = nil
 
         items.class.ancestors.each { |cls|
           impl = wrappers[cls]
           break if impl
         }
+
+        impl
+      end
+
+      # Used by the runtime to wrap values in connection wrappers.
+      # @api Private
+      def wrap(field, parent, items, arguments, context, wrappers: all_wrappers)
+        return items if GraphQL::Execution::Interpreter::RawValue === items
+
+        impl = wrapper_for(items, wrappers: wrappers)
 
         if impl.nil?
           raise ImplementationMissingError, "Couldn't find a connection wrapper for #{items.class} during #{field.path} (#{items.inspect})"

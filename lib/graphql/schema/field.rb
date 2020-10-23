@@ -203,7 +203,7 @@ module GraphQL
       # @param broadcastable [Boolean] Whether or not this field can be distributed in subscription broadcasts
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: [], extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -250,7 +250,7 @@ module GraphQL
         method_name = method || hash_key || name_s
         resolver_method ||= name_s.to_sym
 
-        @method_str = method_name.to_s
+        @method_str = -method_name.to_s
         @method_sym = method_name.to_sym
         @resolver_method = resolver_method
         @complexity = complexity
@@ -274,7 +274,7 @@ module GraphQL
           if arg.is_a?(Hash)
             argument(name: name, **arg)
           else
-            own_arguments[name] = arg
+            add_argument(arg)
           end
         end
 
@@ -282,7 +282,7 @@ module GraphQL
         @subscription_scope = subscription_scope
 
         # Do this last so we have as much context as possible when initializing them:
-        @extensions = []
+        @extensions = EMPTY_ARRAY
         if extensions.any?
           self.extensions(extensions)
         end
@@ -343,6 +343,9 @@ module GraphQL
           # Read the value
           @extensions
         else
+          if @extensions.frozen?
+            @extensions = @extensions.dup
+          end
           new_extensions.each do |extension|
             if extension.is_a?(Hash)
               extension = extension.to_a[0]
@@ -380,6 +383,9 @@ module GraphQL
           # Read the value
           @extras
         else
+          if @extras.frozen?
+            @extras = @extras.dup
+          end
           # Append to the set of extras on this field
           @extras.concat(new_extras)
         end
@@ -719,20 +725,21 @@ module GraphQL
         if @extensions.empty?
           yield(obj, args)
         else
-          # Save these so that the originals can be re-given to `after_resolve` handlers.
-          original_args = args
-          original_obj = obj
+          extended_obj = obj
+          extended_args = args
 
           memos = []
-          value = run_extensions_before_resolve(memos, obj, args, ctx) do |extended_obj, extended_args|
-            yield(extended_obj, extended_args)
+          value = run_extensions_before_resolve(memos, obj, args, ctx) do |obj, args|
+            extended_obj = obj
+            extended_args = args
+            yield(obj, args)
           end
 
           ctx.schema.after_lazy(value) do |resolved_value|
             @extensions.each_with_index do |ext, idx|
               memo = memos[idx]
               # TODO after_lazy?
-              resolved_value = ext.after_resolve(object: original_obj, arguments: original_args, context: ctx, value: resolved_value, memo: memo)
+              resolved_value = ext.after_resolve(object: extended_obj, arguments: extended_args, context: ctx, value: resolved_value, memo: memo)
             end
             resolved_value
           end

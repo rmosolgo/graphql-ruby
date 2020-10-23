@@ -8,6 +8,32 @@
 
 ### Bug fixes
 
+- Use `graphql_name` in `UnauthorizedError` default message #3174
+
+## 1.11.5 (30 September 2020)
+
+### New features
+
+- SanitizedPrinter: accept `inline_variables: false` option and add `#redact_argument_value?` and `#redacted_argument_value` hooks #3167
+- GraphQL::Schema::Timeoout#max_seconds(query) can provide a per-query timeout duration #3167
+- Implement Interpreter::Arguments#fetch
+- Assign `current_{path,field,arguments,object}` in `query.context` #3139. The values at these keys change while the query is running.
+- ActionCableSubscriptions: accept `use(..., namespace: "...")` for running multiple schemas in the same application #3076
+- Add `deprecation_reason:` to arguments #3015
+
+### Bug fixes
+
+- SanitizedPrinter: Fix lists and JSON scalars #3171
+- Improve retained memory in Schema.from_definition #3153
+- Make it easier to cache schema parsing #3153
+- Make sure deprecated arguments aren't required #3137
+- Use `.empty?` instead of `.length.zero?` in lexer #3134
+- Return a proper error when a stack error happens #3129
+- Assert valid input types on arguments #3120
+- Improve Validator#validate performance #3125
+- Don't wrap `RawValue` in ConnectionExtension #3122
+- Fix interface possible types visibility #3124
+
 ## 1.11.4 (24 August 2020)
 
 ### Breaking changes
