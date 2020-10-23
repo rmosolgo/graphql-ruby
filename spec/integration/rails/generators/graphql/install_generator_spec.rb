@@ -11,10 +11,6 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 
     FileUtils.cd(File.join(destination_root, '..')) do
       `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle`
-      # Rails 3.2 loads the rails app between `install` and `relay`, and without this,
-      # there ends up being a
-      `mkdir -p lib/graphql/`
-      `echo "module GraphQL::Batch; end" > lib/graphql/batch.rb`
     end
   end
 
@@ -138,14 +134,18 @@ RUBY
     assert_file "app/mydirectory/mutations/.keep"
   end
 
-  test "it generates graphql-batch and relay boilerplate" do
-    run_generator(["--batch"])
-    assert_file "app/graphql/loaders/.keep"
-    assert_file "Gemfile" do |contents|
-      assert_match %r{gem ('|")graphql-batch('|")}, contents
-    end
+  if Rails::VERSION::STRING > "3.9"
+    # This test doesn't work on Rails 3 because it tries to boot the app
+    # between the batch and relay generators, but `bundle install`
+    # hasn't run yet, so graphql-batch isn't present
+    test "it generates graphql-batch and relay boilerplate" do
+      run_generator(["--batch"])
+      assert_file "app/graphql/loaders/.keep"
+      assert_file "Gemfile" do |contents|
+        assert_match %r{gem ('|")graphql-batch('|")}, contents
+      end
 
-    expected_query_type = <<-RUBY
+      expected_query_type = <<-RUBY
 module Types
   class QueryType < Types::BaseObject
     # Add `node(id: ID!) and `nodes(ids: [ID!]!)`
@@ -165,8 +165,9 @@ module Types
 end
 RUBY
 
-    assert_file "app/graphql/types/query_type.rb", expected_query_type
-    assert_file "app/graphql/dummy_schema.rb", EXPECTED_RELAY_BATCH_SCHEMA
+      assert_file "app/graphql/types/query_type.rb", expected_query_type
+      assert_file "app/graphql/dummy_schema.rb", EXPECTED_RELAY_BATCH_SCHEMA
+    end
   end
 
   test "it doesn't install graphiql when API Only" do
