@@ -21,7 +21,7 @@ module GraphQL
           end
 
           def field_block
-            -> {
+            Proc.new {
               argument :ids, "[ID!]!", required: true,
                 description: "IDs of the objects."
 
