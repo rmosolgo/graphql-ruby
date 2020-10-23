@@ -161,6 +161,8 @@ describe GraphQL::Schema::Object do
 
       schema = Class.new(GraphQL::Schema) do
         query(new_object_class)
+        use GraphQL::Execution::Execute
+        use GraphQL::Analysis
       end
 
       query_str = <<-GRAPHQL
@@ -191,7 +193,11 @@ describe GraphQL::Schema::Object do
 
       schema = Class.new(GraphQL::Schema) do
         query(new_object_class)
+        use GraphQL::Execution::Execute
+        use GraphQL::Analysis
       end
+      # disable new connections
+      schema.connections = nil
 
       query_str = <<-GRAPHQL
       {
@@ -447,9 +453,6 @@ describe GraphQL::Schema::Object do
       def self.type_error(err, ctx)
         raise err
       end
-
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
 
     it "raises them when invalid nil is returned" do

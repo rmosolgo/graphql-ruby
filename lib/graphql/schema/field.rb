@@ -731,20 +731,21 @@ module GraphQL
         if @extensions.empty?
           yield(obj, args)
         else
-          # Save these so that the originals can be re-given to `after_resolve` handlers.
-          original_args = args
-          original_obj = obj
+          extended_obj = obj
+          extended_args = args
 
           memos = []
-          value = run_extensions_before_resolve(memos, obj, args, ctx) do |extended_obj, extended_args|
-            yield(extended_obj, extended_args)
+          value = run_extensions_before_resolve(memos, obj, args, ctx) do |obj, args|
+            extended_obj = obj
+            extended_args = args
+            yield(obj, args)
           end
 
           ctx.schema.after_lazy(value) do |resolved_value|
             @extensions.each_with_index do |ext, idx|
               memo = memos[idx]
               # TODO after_lazy?
-              resolved_value = ext.after_resolve(object: original_obj, arguments: original_args, context: ctx, value: resolved_value, memo: memo)
+              resolved_value = ext.after_resolve(object: extended_obj, arguments: extended_args, context: ctx, value: resolved_value, memo: memo)
             end
             resolved_value
           end

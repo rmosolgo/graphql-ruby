@@ -16,10 +16,6 @@ describe "GraphQL::Execution::Errors" do
 
     class ErrorASubclass < ErrorA; end
 
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
-    use GraphQL::Execution::Errors
-
     rescue_from(ErrorA) do |err, obj, args, ctx, field|
       ctx[:errors] << "#{err.message} (#{field.owner.name}.#{field.graphql_name}, #{obj.inspect}, #{args.inspect})"
       nil

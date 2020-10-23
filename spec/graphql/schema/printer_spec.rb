@@ -618,7 +618,6 @@ SCHEMA
 
       schema = Class.new(GraphQL::Schema) do
         query query_type
-        use GraphQL::Execution::Interpreter
       end
 
       expected = "type Query {\n  foobar: Int!\n}"
@@ -851,7 +850,6 @@ SCHEMA
       end
 
       query(OddlyNamedQuery)
-      use GraphQL::Execution::Interpreter
     end
 
 

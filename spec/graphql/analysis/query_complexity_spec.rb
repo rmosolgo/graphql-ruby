@@ -6,7 +6,8 @@ describe GraphQL::Analysis::QueryComplexity do
   let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |this_query, complexity|  complexities << this_query << complexity } }
   let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [query_complexity]) }
   let(:variables) { {} }
-  let(:query) { GraphQL::Query.new(Dummy::Schema.graphql_definition, query_string, variables: variables) }
+  let(:schema) { Dummy::Schema.graphql_definition.redefine { use(GraphQL::Analysis); use(GraphQL::Execution::Execute) } }
+  let(:query) { GraphQL::Query.new(schema, query_string, variables: variables) }
 
   describe "simple queries" do
     let(:query_string) {%|

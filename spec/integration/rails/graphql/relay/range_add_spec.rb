@@ -51,7 +51,8 @@ describe GraphQL::Relay::RangeAdd do
       argument :menu_idx, Integer, required: true
 
       field :item_edge, item.edge_type, null: false
-      field :items, item.connection_type, null: false, connection: false
+      # On the old runtime, connection: false was required here:
+      field :items, item.connection_type, null: false, connection: TESTING_INTERPRETER
       field :menu, menu, null: false
 
       define_method :resolve do |input|
@@ -86,6 +87,12 @@ describe GraphQL::Relay::RangeAdd do
         self.use(GraphQL::Execution::Interpreter)
       end
       self.cursor_encoder(PassThroughEncoder)
+
+      if TESTING_INTERPRETER
+        use GraphQL::Execution::Interpreter
+        use GraphQL::Analysis::AST
+        use GraphQL::Pagination::Connections
+      end
     end
   }
 

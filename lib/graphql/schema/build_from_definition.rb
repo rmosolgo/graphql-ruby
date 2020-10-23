@@ -18,8 +18,8 @@ module GraphQL
           from_document(parser.parse_file(definition_path), **kwargs)
         end
 
-        def from_document(document, default_resolve:, using: {}, relay: false, interpreter: true)
-          Builder.build(document, default_resolve: default_resolve || {}, relay: relay, using: using, interpreter: interpreter)
+        def from_document(document, default_resolve:, using: {}, relay: false)
+          Builder.build(document, default_resolve: default_resolve || {}, relay: relay, using: using)
         end
       end
 
@@ -27,7 +27,7 @@ module GraphQL
       module Builder
         extend self
 
-        def build(document, default_resolve:, using: {}, interpreter: true, relay:)
+        def build(document, default_resolve:, using: {}, relay:)
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
 
           if default_resolve.is_a?(Hash)
@@ -133,11 +133,6 @@ module GraphQL
               ast_node(schema_definition)
             end
 
-            if interpreter
-              use GraphQL::Execution::Interpreter
-              use GraphQL::Analysis::AST
-            end
-
             using.each do |plugin, options|
               if options
                 use(plugin, **options)
@@ -197,20 +192,24 @@ module GraphQL
         end
 
         def build_scalar_type(scalar_type_definition, type_resolver, default_resolve:)
+          builder = self
           Class.new(GraphQL::Schema::Scalar) do
             graphql_name(scalar_type_definition.name)
             description(scalar_type_definition.description)
             ast_node(scalar_type_definition)
 
             if default_resolve.respond_to?(:coerce_input)
-              def self.coerce_input(val, ctx)
-                ctx.schema.definition_default_resolve.coerce_input(self, val, ctx)
-              end
-
-              def self.coerce_result(val, ctx)
-                ctx.schema.definition_default_resolve.coerce_result(self, val, ctx)
-              end
+              # Put these method definitions in another method to avoid retaining `type_resolve`
+              # from this method's bindiing
+              builder.build_scalar_type_coerce_method(self, :coerce_input, default_resolve)
+              builder.build_scalar_type_coerce_method(self, :coerce_result, default_resolve)
             end
+          end
+        end
+
+        def build_scalar_type_coerce_method(scalar_class, method_name, default_definition_resolve)
+          scalar_class.define_singleton_method(method_name) do |val, ctx|
+            default_definition_resolve.public_send(method_name, self, val, ctx)
           end
         end
 

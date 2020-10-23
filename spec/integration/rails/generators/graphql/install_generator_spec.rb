@@ -45,10 +45,6 @@ class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
-  # Opt in to the new runtime (default in future graphql-ruby versions)
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
-
   # Union and Interface Resolution
   def self.resolve_type(abstract_type, obj, ctx)
     # TODO: Implement this function
@@ -276,10 +272,6 @@ class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
-  # Opt in to the new runtime (default in future graphql-ruby versions)
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
-
   # GraphQL::Batch setup:
   use GraphQL::Batch
 
@@ -289,9 +281,6 @@ class DummySchema < GraphQL::Schema
     # to return the correct object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
-
-  # Add built-in connections for pagination
-  use GraphQL::Pagination::Connections
 
   # Relay-style Object Identification:
 

@@ -3,6 +3,11 @@ module GraphQL
   module Analysis
     module_function
 
+    def use(schema_class)
+      schema = schema_class.is_a?(Class) ? schema_class : schema_class.target
+      schema.analysis_engine = self
+    end
+
     # @return [void]
     def analyze_multiplex(multiplex, analyzers)
       multiplex.trace("analyze_multiplex", { multiplex: multiplex }) do

@@ -128,8 +128,6 @@ describe GraphQL::Schema::Union do
           end
         end
 
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
         query(Query)
       end
 

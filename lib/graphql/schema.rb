@@ -281,11 +281,11 @@ module GraphQL
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
-      # Default to the built-in execution strategy:
+      # For schema instances, default to legacy runtime modules
       @analysis_engine = GraphQL::Analysis
-      @query_execution_strategy = self.class.default_execution_strategy
-      @mutation_execution_strategy = self.class.default_execution_strategy
-      @subscription_execution_strategy = self.class.default_execution_strategy
+      @query_execution_strategy = GraphQL::Execution::Execute
+      @mutation_execution_strategy = GraphQL::Execution::Execute
+      @subscription_execution_strategy = GraphQL::Execution::Execute
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
       @context_class = GraphQL::Query::Context
@@ -300,11 +300,10 @@ module GraphQL
 
     # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
     def interpreter?
-      @interpreter
+      query_execution_strategy == GraphQL::Execution::Interpreter &&
+        mutation_execution_strategy == GraphQL::Execution::Interpreter &&
+        subscription_execution_strategy == GraphQL::Execution::Interpreter
     end
-
-    # @api private
-    attr_writer :interpreter
 
     def inspect
       "#<#{self.class.name} ...>"
@@ -709,7 +708,7 @@ module GraphQL
     alias :_schema_class :class
     def_delegators :_schema_class, :unauthorized_object, :unauthorized_field, :inaccessible_fields
     def_delegators :_schema_class, :directive
-    def_delegators :_schema_class, :error_handler
+    def_delegators :_schema_class, :error_handler, :rescues
 
 
     # Given this schema member, find the class-based definition object
@@ -787,9 +786,8 @@ module GraphQL
     # @param default_resolve [<#call(type, field, obj, args, ctx)>] A callable for handling field resolution
     # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
     # @param using [Hash] Plugins to attach to the created schema with `use(key, value)`
-    # @param interpreter [Boolean] If false, the legacy {Execution::Execute} runtime will be used
     # @return [Class] the schema described by `document`
-    def self.from_definition(definition_or_path, default_resolve: nil, interpreter: true, parser: GraphQL.default_parser, using: {})
+    def self.from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {})
       # If the file ends in `.graphql`, treat it like a filepath
       if definition_or_path.end_with?(".graphql")
         GraphQL::Schema::BuildFromDefinition.from_definition_path(
@@ -797,7 +795,6 @@ module GraphQL
           default_resolve: default_resolve,
           parser: parser,
           using: using,
-          interpreter: interpreter,
         )
       else
         GraphQL::Schema::BuildFromDefinition.from_definition(
@@ -805,7 +802,6 @@ module GraphQL
           default_resolve: default_resolve,
           parser: parser,
           using: using,
-          interpreter: interpreter,
         )
       end
     end
@@ -1287,7 +1283,7 @@ module GraphQL
       attr_writer :analysis_engine
 
       def analysis_engine
-        @analysis_engine || find_inherited_value(:analysis_engine, GraphQL::Analysis)
+        @analysis_engine || find_inherited_value(:analysis_engine, self.default_analysis_engine)
       end
 
       def using_ast_analysis?
@@ -1295,11 +1291,9 @@ module GraphQL
       end
 
       def interpreter?
-        if defined?(@interpreter)
-          @interpreter
-        else
-          find_inherited_value(:interpreter?, false)
-        end
+        query_execution_strategy == GraphQL::Execution::Interpreter &&
+          mutation_execution_strategy == GraphQL::Execution::Interpreter &&
+          subscription_execution_strategy == GraphQL::Execution::Interpreter
       end
 
       attr_writer :interpreter
@@ -1383,7 +1377,15 @@ module GraphQL
         if superclass <= GraphQL::Schema
           superclass.default_execution_strategy
         else
-          @default_execution_strategy ||= GraphQL::Execution::Execute
+          @default_execution_strategy ||= GraphQL::Execution::Interpreter
+        end
+      end
+
+      def default_analysis_engine
+        if superclass <= GraphQL::Schema
+          superclass.default_analysis_engine
+        else
+          @default_analysis_engine ||= GraphQL::Analysis::AST
         end
       end
 
@@ -1940,6 +1942,10 @@ module GraphQL
         end
       end
     end
+
+    # Install these here so that subclasses will also install it.
+    use(GraphQL::Execution::Errors)
+    use(GraphQL::Pagination::Connections)
 
     protected
 

@@ -932,9 +932,9 @@ module Jazz
       GloballyIdentifiableType.find(id)
     end
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
+    if !TESTING_INTERPRETER
+      use GraphQL::Execution::Execute
+      use GraphQL::Analysis
     end
 
     use MetadataPlugin, value: "xyz"
@@ -945,9 +945,9 @@ module Jazz
 
     disable_introspection_entry_points
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
+    if !TESTING_INTERPRETER
+      use GraphQL::Execution::Execute
+      use GraphQL::Analysis
     end
   end
 

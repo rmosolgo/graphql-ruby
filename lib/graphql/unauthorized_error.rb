@@ -22,7 +22,7 @@ module GraphQL
       @object = object
       @type = type
       @context = context
-      message ||= "An instance of #{object.class} failed #{type.name}'s authorization check"
+      message ||= "An instance of #{object.class} failed #{type.graphql_name}'s authorization check"
       super(message)
     end
   end

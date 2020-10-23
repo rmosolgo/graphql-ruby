@@ -36,9 +36,6 @@ module Graphql
         # Add object ID hooks & connection plugin
         schema_code = <<-RUBY
 
-  # Add built-in connections for pagination
-  use GraphQL::Pagination::Connections
-
   # Relay-style Object Identification:
 
   # Return a string UUID for `object`

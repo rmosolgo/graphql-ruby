@@ -310,8 +310,6 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
       query(Query)
       orphan_types(DoubleComplexity)
-      use(GraphQL::Execution::Interpreter)
-      use(GraphQL::Analysis::AST)
     end
 
     let(:query) { GraphQL::Query.new(complexity_schema, query_string) }

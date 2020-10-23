@@ -189,7 +189,6 @@ describe GraphQL::Query::Executor do
     describe "if the schema has a rescue handler" do
       let(:schema) {
         Class.new(Dummy::Schema) do
-          use GraphQL::Execution::Errors
           rescue_from(RuntimeError) { raise GraphQL::ExecutionError, "Error was handled!" }
         end
       }
@@ -212,7 +211,6 @@ describe GraphQL::Query::Executor do
     describe "if the schema has a rescue handler with an instance of GraphQL::ExecutionError as an argument" do
       let(:schema) {
         Class.new(Dummy::Schema) do
-          use GraphQL::Execution::Errors
           rescue_from(RuntimeError) { GraphQL::ExecutionError.new("Error was handled!", extensions: { code: "DUMMY_ERROR" }) }
         end
       }

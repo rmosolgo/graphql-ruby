@@ -1,10 +1,6 @@
 <% module_namespacing_when_supported do -%>
 class <%= schema_name %> < GraphQL::Schema
   query(Types::QueryType)
-
-  # Opt in to the new runtime (default in future graphql-ruby versions)
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
 <% if options[:batch] %>
   # GraphQL::Batch setup:
   use GraphQL::Batch

@@ -48,10 +48,6 @@ describe GraphQL::Schema::Timeout do
 
     schema = Class.new(GraphQL::Schema) do
       query query_type
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
     schema.use timeout_class, max_seconds: max_seconds
     schema
