@@ -57,7 +57,6 @@ class GraphQLGeneratorsRelayGeneratorTest < Rails::Generators::TestCase
     end
 
     assert_file "app/graphql/dummy_schema.rb" do |content|
-      assert_includes content, "GraphQL::Pagination::Connections"
       assert_includes content, "def self.object_from_id"
     end
   end
