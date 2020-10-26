@@ -68,7 +68,7 @@ Fields are generated in a different way. Instead of using classes, they are gene
 field :name, String, null: false
 # ...
 # Leads to:
-field_config = GraphQL::Schema::Field.new(:name, String, null: false)
+field_config = GraphQL::Schema::Field.new(name: :name, type: String, null: false)
 ```
 
 So, you can customize this process by:
