@@ -139,10 +139,14 @@
   <span class="n">field_class</span> <span class="no">AuthorizedField</span>
 <span class="k">end</span>
 
-<span class="c1"># And/Or</span>
+<span class="c1"># And....</span>
 <span class="k">class</span> <span class="nc">Types::BaseInterface</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
   <span class="n">field_class</span> <span class="no">AuthorizedField</span>
 <span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+  <span class="n">field_class</span> <span class="no">AuthorizedField</span> 
+<span class="k">end</span> 
 </code></pre></div></div>
 
 <p>Now, <code class="language-plaintext highlighter-rouge">AuthorizedField.new(*args, &amp;block)</code> will be used to create <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Field</code>s on those types. At runtime <code class="language-plaintext highlighter-rouge">field.required_permission</code> will return the configured value.</p>
@@ -194,7 +198,7 @@
 
 <ul>
   <li>Create a new class extending <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Argument</code></li>
-  <li>Assign it to your field class with <code class="language-plaintext highlighter-rouge">argument_class(MyArgClass)</code></li>
+  <li>Use <code class="language-plaintext highlighter-rouge">argument_class(MyArgClass)</code> to assign it to your base field class, base resolver class, and base mutation class</li>
 </ul>
 
 <p>Then, in your custom argument class, you can use <code class="language-plaintext highlighter-rouge">#initialize(name, type, desc = nil, **kwargs)</code> to take input from the DSL.</p>
