@@ -7,7 +7,7 @@ describe GraphQL::Schema::Validator::NumericalityValidator do
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
       field :validated, arg_type, null: true do
-        argument :value, arg_type, required: true, validates: validates_config
+        argument :value, arg_type, required: false, validates: validates_config
       end
 
       def validated(value:)
@@ -20,11 +20,12 @@ describe GraphQL::Schema::Validator::NumericalityValidator do
 
   expectations = [
     {
-      config: { less_than: 10, greater_than: 2 },
+      config: { less_than: 10, greater_than: 2, allow_null: true },
       cases: [
         { query: "{ validated(value: 8) }", result: 8, error_messages: [] },
         { query: "{ validated(value: 12) }", result: nil, error_messages: ["value must be less than 10"] },
         { query: "{ validated(value: 1) }", result: nil, error_messages: ["value must be greater than 2"] },
+        { query: "{ validated(value: null) }", result: nil, error_messages: [] },
       ]
     },
     {

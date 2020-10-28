@@ -7,10 +7,10 @@ module GraphQL
             less_than: nil, less_than_or_equal_to: nil,
             equal_to: nil, other_than: nil,
             odd: nil, even: nil,
-            message: "%{argument} must be %{comparison} %{target}"
+            message: "%{argument} must be %{comparison} %{target}",
+            **default_options
           )
 
-          @argument = argument
           @greater_than = greater_than
           @greater_than_or_equal_to = greater_than_or_equal_to
           @less_than = less_than
@@ -20,6 +20,7 @@ module GraphQL
           @odd = odd
           @even = even
           @message = message
+          super(argument, **default_options)
         end
 
         def validate(object, context, value)

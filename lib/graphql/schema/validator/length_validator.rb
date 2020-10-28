@@ -10,18 +10,19 @@ module GraphQL
           maximum: nil, too_long: "%{argument} is too long (maximum is %{count})",
           minimum: nil, too_short: "%{argument} is too short (minimum is %{count})",
           is: nil, within: nil, wrong_length: "%{argument} is the wrong length (should be %{count})",
-          message: nil
+          message: nil,
+          **default_options
         )
           if within && (minimum || maximum)
             raise ArgumentError, "`length: { ... }` may include `within:` _or_ `minimum:`/`maximum:`, but not both"
           end
-          @argument = argument
           @maximum = maximum || (within && within.max)
           @too_long = message || too_long
           @minimum = minimum || (within && within.min)
           @too_short = message || too_short
           @is = is
           @wrong_length = message || wrong_length
+          super(argument, **default_options)
         end
 
         def validate(_object, _context, value)

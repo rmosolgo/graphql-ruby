@@ -7,7 +7,7 @@ describe GraphQL::Schema::Validator::LengthValidator do
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
       field :validated, arg_type, null: true do
-        argument :value, arg_type, required: true, validates: validates_config
+        argument :value, arg_type, required: false, validates: validates_config
       end
 
       def validated(value:)
@@ -16,6 +16,47 @@ describe GraphQL::Schema::Validator::LengthValidator do
     end
     schema.query(query_type)
     schema
+  end
+
+  class BlankString < String
+    def blank?
+      true
+    end
+  end
+
+  class NonBlankString < String
+    if method_defined?(:blank?)
+      undef :blank?
+    end
+  end
+
+  it "allows blank and null" do
+    schema = build_schema(String, {length: { minimum: 5, allow_blank: true}})
+
+    blank_string = BlankString.new("")
+    assert blank_string.blank?
+    result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: blank_string })
+    assert_equal "", result["data"]["validated"]
+    refute result.key?("errors")
+
+    result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: nil })
+    refute result.key?("data")
+    assert_equal ["Variable $str of type String! was provided invalid value"],  result["errors"].map { |e| e["message"] }
+
+    schema = build_schema(String, {length: { minimum: 5, allow_null: true}})
+    result = schema.execute("{ validated(value: null) }")
+    assert_equal nil, result["data"]["validated"]
+    refute result.key?("errors")
+
+    result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: blank_string })
+    assert_nil result["data"].fetch("validated")
+    assert_equal ["value can't be blank"], result["errors"].map { |e| e["message"] }
+
+    # This string doesn't respond to blank:
+    non_blank_string = NonBlankString.new("")
+    result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: non_blank_string })
+    assert_nil result["data"].fetch("validated")
+    assert_equal ["value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
   end
 
   it "validates minimum length" do

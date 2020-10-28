@@ -5,14 +5,15 @@ module GraphQL
     class Validator
       # @return [GraphQL::Schema::Argument]
       attr_reader :argument
-      # @return [Hash<Symbol => Object>]
-      attr_reader :options
 
+      # TODO should this implement `if:` and `unless:` ?
       # @param argument [GraphQL::Schema::Argument] The argument this validator is attached to
-      # @param options [Hash] Any other validation-specific options provided to this validator
-      def initialize(argument, **options)
+      # @param allow_blank [Boolean] if `true`, then objects that respond to `.blank?` and return true for `.blank?` will skip this validation
+      # @param allow_null [Boolean] if `true`, then incoming `null`s will skip this validation
+      def initialize(argument, allow_blank: false, allow_null: false)
         @argument = argument
-        @options = options
+        @allow_blank = allow_blank
+        @allow_null = allow_null
       end
 
       # @param object [Object] The application object that this argument's field is being resolved for
@@ -20,7 +21,27 @@ module GraphQL
       # @param value [Object] The client-provided value for this argument (after parsing and coercing by the input type)
       # @return [nil, Array<String>, String] Error message or messages to add
       def validate(object, context, value)
-        nil
+        raise GraphQL::RequiredImplementationMissingError, "Validator classes should implement #validate"
+      end
+
+      # This is called by the validation system and eventually calls {#validate}.
+      # @api private
+      def apply(object, context, value)
+        if value.nil?
+          if @allow_null
+            nil # skip this
+          else
+            "#{argument.graphql_name} can't be null"
+          end
+        elsif value.respond_to?(:blank?) && value.blank?
+          if @allow_blank
+            nil # skip this
+          else
+            "#{argument.graphql_name} can't be blank"
+          end
+        else
+          validate(object, context, value)
+        end
       end
 
       # @param validates_hash [Hash, nil] A configuration passed as `validates:`
@@ -69,7 +90,7 @@ module GraphQL
         all_errors = EMPTY_ARRAY
 
         validators.each do |validator|
-          errors = validator.validate(object, context, value)
+          errors = validator.apply(object, context, value)
           if errors &&
             (errors.is_a?(Array) && errors != EMPTY_ARRAY) ||
             (errors.is_a?(String))
