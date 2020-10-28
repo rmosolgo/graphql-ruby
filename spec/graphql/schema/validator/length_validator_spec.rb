@@ -1,22 +1,9 @@
 # frozen_string_literal: true
 require "spec_helper"
+require_relative "./validator_helpers"
 
 describe GraphQL::Schema::Validator::LengthValidator do
-  def build_schema(arg_type, validates_config)
-    schema = Class.new(GraphQL::Schema)
-    query_type = Class.new(GraphQL::Schema::Object) do
-      graphql_name "Query"
-      field :validated, arg_type, null: true do
-        argument :value, arg_type, required: false, validates: validates_config
-      end
-
-      def validated(value:)
-        value
-      end
-    end
-    schema.query(query_type)
-    schema
-  end
+  include ValidatorHelpers
 
   class BlankString < String
     def blank?
@@ -132,4 +119,30 @@ describe GraphQL::Schema::Validator::LengthValidator do
     assert_nil result["data"].fetch("validated")
     assert_equal ["NO, BAD! value 50"], result["errors"].map { |e| e["message"] }
   end
+
+  list_expectations = [
+    {
+      config: { minimum: 3 },
+      cases: [
+        { query: "{ validated(value: [1, 2, 3, 4]) }", result: [1, 2, 3, 4], error_messages: [] },
+        { query: "{ validated(value: [1, 2]) }", result: nil, error_messages: ["value is too short (minimum is 3)"] },
+      ]
+    },
+    {
+      config: { maximum: 3 },
+      cases: [
+        { query: "{ validated(value: [1, 2]) }", result: [1, 2], error_messages: [] },
+        { query: "{ validated(value: [1, 2, 3, 4]) }", result: nil, error_messages: ["value is too long (maximum is 3)"] },
+      ]
+    },
+    {
+      config: { is: 3 },
+      cases: [
+        { query: "{ validated(value: [1, 2, 3]) }", result: [1, 2, 3], error_messages: [] },
+        { query: "{ validated(value: [1, 2]) }", result: nil, error_messages: ["value is the wrong length (should be 3)"] },
+      ]
+    },
+  ]
+
+  build_tests(:length, [Integer], list_expectations)
 end
