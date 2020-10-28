@@ -95,5 +95,6 @@ end
 
 
 require "graphql/schema/validator/length_validator"
-
 GraphQL::Schema::Validator.install(:length, GraphQL::Schema::Validator::LengthValidator)
+require "graphql/schema/validator/numericality_validator"
+GraphQL::Schema::Validator.install(:numericality, GraphQL::Schema::Validator::NumericalityValidator)
