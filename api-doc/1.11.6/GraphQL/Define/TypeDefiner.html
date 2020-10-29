@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Define::TypeDefiner
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Define::TypeDefiner";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (T)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Define.html" title="GraphQL::Define (module)">Define</a></span></span>
+     &raquo; 
+    <span class="title">TypeDefiner</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Define::TypeDefiner
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Define::TypeDefiner</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd>Singleton</dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/define/type_definer.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Some conveniences for definining return &amp; argument types.</p>
+
+<p>Passed into initialization blocks, eg <span class='object_link'><a href="../ObjectType.html#initialize-instance_method" title="GraphQL::ObjectType#initialize (method)">ObjectType#initialize</a></span>, <span class='object_link'><a href="../Field.html#initialize-instance_method" title="GraphQL::Field#initialize (method)">Field#initialize</a></span></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#[]-instance_method" title="#[] (instance method)">#<strong>[]</strong>(type)  &#x21d2; GraphQL::ListType </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Make a <span class='object_link'><a href="../ListType.html" title="GraphQL::ListType (class)">ListType</a></span> which wraps the input type.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#Boolean-instance_method" title="#Boolean (instance method)">#<strong>Boolean</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#Float-instance_method" title="#Float (instance method)">#<strong>Float</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#ID-instance_method" title="#ID (instance method)">#<strong>ID</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#Int-instance_method" title="#Int (instance method)">#<strong>Int</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>rubocop:disable Naming/MethodName.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#String-instance_method" title="#String (instance method)">#<strong>String</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="[]-instance_method">
+  
+    #<strong>[]</strong>(type)  &#x21d2; <tt><span class='object_link'><a href="../ListType.html" title="GraphQL::ListType (class)">GraphQL::ListType</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Make a <span class='object_link'><a href="../ListType.html" title="GraphQL::ListType (class)">ListType</a></span> which wraps the input type</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'><p>making a list type</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='id identifier rubyid_list_of_strings'>list_of_strings</span> <span class='op'>=</span> <span class='id identifier rubyid_types'>types</span><span class='lbracket'>[</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span><span class='rbracket'>]</span>
+<span class='id identifier rubyid_list_of_strings'>list_of_strings</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span>
+<span class='comment'># =&gt; &quot;[String]&quot;</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>type</span>
+      
+      
+        <span class='type'>(<tt>Type</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A type to be wrapped in a ListType</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../ListType.html" title="GraphQL::ListType (class)">GraphQL::ListType</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A ListType wrapping <code>type</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+26
+27
+28</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/define/type_definer.rb', line 26</span>
+
+<span class='kw'>def</span> <span class='op'>[]</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_to_list_type'>to_list_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="Boolean-instance_method">
+  
+    #<strong>Boolean</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/define/type_definer.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='const'>Boolean</span><span class='semicolon'>;</span>  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../GraphQL.html#BOOLEAN_TYPE-constant" title="GraphQL::BOOLEAN_TYPE (constant)">BOOLEAN_TYPE</a></span></span><span class='semicolon'>;</span>  <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="Float-instance_method">
+  
+    #<strong>Float</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+12</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/define/type_definer.rb', line 12</span>
+
+<span class='kw'>def</span> <span class='const'>Float</span><span class='semicolon'>;</span>    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../GraphQL.html#FLOAT_TYPE-constant" title="GraphQL::FLOAT_TYPE (constant)">FLOAT_TYPE</a></span></span><span class='semicolon'>;</span>    <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="ID-instance_method">
+  
+    #<strong>ID</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+14</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/define/type_definer.rb', line 14</span>
+
+<span class='kw'>def</span> <span class='const'>ID</span><span class='semicolon'>;</span>       <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../GraphQL.html#ID_TYPE-constant" title="GraphQL::ID_TYPE (constant)">ID_TYPE</a></span></span><span class='semicolon'>;</span>       <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="Int-instance_method">
+  
+    #<strong>Int</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>rubocop:disable Naming/MethodName</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+10</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/define/type_definer.rb', line 10</span>
+
+<span class='kw'>def</span> <span class='const'>Int</span><span class='semicolon'>;</span>      <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../GraphQL.html#INT_TYPE-constant" title="GraphQL::INT_TYPE (constant)">INT_TYPE</a></span></span><span class='semicolon'>;</span>      <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="String-instance_method">
+  
+    #<strong>String</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+11</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/define/type_definer.rb', line 11</span>
+
+<span class='kw'>def</span> <span class='const'>String</span><span class='semicolon'>;</span>   <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../GraphQL.html#STRING_TYPE-constant" title="GraphQL::STRING_TYPE (constant)">STRING_TYPE</a></span></span><span class='semicolon'>;</span>   <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu Oct 29 16:09:05 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.25 (ruby-2.7.2).
+</div>
+
+    </div>
+  </body>
+</html>
