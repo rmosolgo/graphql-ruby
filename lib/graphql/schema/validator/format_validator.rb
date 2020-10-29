@@ -3,11 +3,28 @@
 module GraphQL
   class Schema
     class Validator
+      # Use this to assert that string values match (or don't match) the given RegExp.
+      #
+      # @example requiring input to match a pattern
+      #
+      #   argument :handle, String, required: true,
+      #     validates: { format: { with: /\A[a-z0-9_]+\Z/ } }
+      #
+      # @example reject inputs that match a pattern
+      #
+      #   argument :word_that_doesnt_begin_with_a_vowel, String, required: true,
+      #     validates: { format: { without: /\A[aeiou]/ } }
+      #
+      #   # It's pretty hard to come up with a legitimate use case for `without:`
+      #
       class FormatValidator < Validator
         if !String.method_defined?(:match?)
           using GraphQL::StringMatchBackport
         end
 
+        # @param with [RegExp, nil]
+        # @param without [Regexp, nil]
+        # @param message [String]
         def initialize(argument,
           with: nil,
           without: nil,

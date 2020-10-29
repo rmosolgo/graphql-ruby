@@ -1,7 +1,30 @@
 module GraphQL
   class Schema
     class Validator
+      # Use this to assert numerical comparisons hold true for inputs.
+      #
+      # @example Require a number between 0 and 1
+      #
+      #   argument :batting_average, Float, required: true, validates: { numericality: { within: 0..1 } }
+      #
+      # @example Require the number 42
+      #
+      #   argument :the_answer, Integer, required: true, validates: { numericality: { equal_to: 42 } }
+      #
+      # @example Require a real number
+      #
+      #   argument :items_count, Integer, required: true, validates: { numericality: { greater_than_or_equal_to: 0 } }
+      #
       class NumericalityValidator < Validator
+        # @param greater_than [Integer]
+        # @param greater_than_or_equal_to [Integer]
+        # @param less_than [Integer]
+        # @param less_than_or_equal_to [Integer]
+        # @param equal_to [Integer]
+        # @param other_than [Integer]
+        # @param odd [Boolean]
+        # @param even [Boolean]
+        # @param message [String] used for all validation failures
         def initialize(argument,
             greater_than: nil, greater_than_or_equal_to: nil,
             less_than: nil, less_than_or_equal_to: nil,
