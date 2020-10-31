@@ -14,7 +14,7 @@ module GraphQL
         # @param message [String]
         # @param in [Array] The values to reject
         def initialize(argument,
-          message: "%{argument} is reserved",
+          message: "%{validated} is reserved",
           in:,
           **default_options
         )
@@ -26,7 +26,7 @@ module GraphQL
 
         def validate(_object, _context, value)
           if @in_list.include?(value)
-            @message % { argument: argument.graphql_name }
+            @message
           end
         end
       end

@@ -23,9 +23,9 @@ module GraphQL
         # @param within [Range] An allowed range (becomes `minimum:` and `maximum:` under the hood)
         # @param message [String]
         def initialize(argument,
-          maximum: nil, too_long: "%{argument} is too long (maximum is %{count})",
-          minimum: nil, too_short: "%{argument} is too short (minimum is %{count})",
-          is: nil, within: nil, wrong_length: "%{argument} is the wrong length (should be %{count})",
+          maximum: nil, too_long: "%{validated} is too long (maximum is %{count})",
+          minimum: nil, too_short: "%{validated} is too short (minimum is %{count})",
+          is: nil, within: nil, wrong_length: "%{validated} is the wrong length (should be %{count})",
           message: nil,
           **default_options
         )
@@ -44,11 +44,11 @@ module GraphQL
 
         def validate(_object, _context, value)
           if @maximum && value.length > @maximum
-            @too_long % { argument: @argument.graphql_name, count: @maximum }
+            partial_format(@too_long, { count: @maximum })
           elsif @minimum && value.length < @minimum
-            @too_short % { argument: @argument.graphql_name, count: @minimum }
+            partial_format(@too_short, { count: @minimum })
           elsif @is && value.length != @is
-            @wrong_length % { argument: @argument.graphql_name, count: @is }
+            partial_format(@wrong_length, { count: @is })
           end
         end
       end

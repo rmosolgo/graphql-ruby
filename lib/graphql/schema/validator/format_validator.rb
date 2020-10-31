@@ -28,7 +28,7 @@ module GraphQL
         def initialize(argument,
           with: nil,
           without: nil,
-          message: "%{argument} is invalid",
+          message: "%{validated} is invalid",
           **default_options
         )
           @with_pattern = with
@@ -40,7 +40,7 @@ module GraphQL
         def validate(_object, _context, value)
           if (@with_pattern && !value.match?(@with_pattern)) ||
               (@without_pattern && value.match?(@without_pattern))
-            @message % { argument: argument.graphql_name }
+            @message
           end
         end
       end

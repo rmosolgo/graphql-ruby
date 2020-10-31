@@ -30,7 +30,7 @@ module GraphQL
             less_than: nil, less_than_or_equal_to: nil,
             equal_to: nil, other_than: nil,
             odd: nil, even: nil,
-            message: "%{argument} must be %{comparison} %{target}",
+            message: "%{validated} must be %{comparison} %{target}",
             **default_options
           )
 
@@ -48,21 +48,21 @@ module GraphQL
 
         def validate(object, context, value)
           if @greater_than && value <= @greater_than
-            @message % { argument: @argument.graphql_name, comparison: "greater than", target: @greater_than }
+            partial_format(@message, { comparison: "greater than", target: @greater_than })
           elsif @greater_than_or_equal_to && value < @greater_than_or_equal_to
-            @message % { argument: @argument.graphql_name, comparison: "greater than or equal to", target: @greater_than_or_equal_to }
+            partial_format(@message, { comparison: "greater than or equal to", target: @greater_than_or_equal_to })
           elsif @less_than && value >= @less_than
-            @message % { argument: @argument.graphql_name, comparison: "less than", target: @less_than }
+            partial_format(@message, { comparison: "less than", target: @less_than })
           elsif @less_than_or_equal_to && value > @less_than_or_equal_to
-            @message % { argument: @argument.graphql_name, comparison: "less than or equal to", target: @less_than_or_equal_to }
+            partial_format(@message, { comparison: "less than or equal to", target: @less_than_or_equal_to })
           elsif @equal_to && value != @equal_to
-            @message % { argument: @argument.graphql_name, comparison: "equal to", target: @equal_to }
+            partial_format(@message, { comparison: "equal to", target: @equal_to })
           elsif @other_than && value == @other_than
-            @message % { argument: @argument.graphql_name, comparison: "something other than", target: @other_than }
+            partial_format(@message, { comparison: "something other than", target: @other_than })
           elsif @even && !value.even?
-            (@message % { argument: @argument.graphql_name, comparison: "even", target: "" }).strip
+            (partial_format(@message, { comparison: "even", target: "" })).strip
           elsif @odd && !value.odd?
-            (@message % { argument: @argument.graphql_name, comparison: "odd", target: "" }).strip
+            (partial_format(@message, { comparison: "odd", target: "" })).strip
           end
         end
       end
