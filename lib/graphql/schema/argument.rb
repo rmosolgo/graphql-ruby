@@ -10,6 +10,7 @@ module GraphQL
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
+      include GraphQL::Schema::Member::HasValidators
       include GraphQL::Schema::FindInheritedValue::EmptyObjects
 
       NO_DEFAULT = :__no_default__
@@ -65,7 +66,7 @@ module GraphQL
         @method_access = method_access
         self.deprecation_reason = deprecation_reason
 
-        @validators = Schema::Validator.from_config(self, validates)
+        self.validates(validates)
 
         if definition_block
           if definition_block.arity == 1
@@ -203,7 +204,7 @@ module GraphQL
           value = value.prepare
         end
 
-        Schema::Validator.validate!(@validators, obj, context, value)
+        Schema::Validator.validate!(validators, obj, context, value)
 
         if @prepare.nil?
           value

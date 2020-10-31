@@ -3,11 +3,15 @@
 module GraphQL
   class Schema
     class Validator
+      # Use this validator to require _one_ of the named arguments to be present.
+      # Or, use Arrays of symbols to name a valid _set_ of arguments.
+      #
+      # (This is for specifying mutually exclusive sets of arguments.)
+      #
       # @example Require exactly one of these arguments
       #
       #   field :update_amount, IngredientAmount, null: false do
       #     argument :ingredient_id, ID, required: true
-
       #     argument :cups, Integer, required: false
       #     argument :tablespoons, Integer, required: false
       #     argument :teaspoons, Integer, required: true

@@ -24,6 +24,7 @@ module GraphQL
       # Really we only need description from here, but:
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
+      extend GraphQL::Schema::Member::HasValidators
       include Schema::Member::HasPath
       extend Schema::Member::HasPath
 
@@ -80,10 +81,7 @@ module GraphQL
             load_arguments_val = load_arguments(args)
             context.schema.after_lazy(load_arguments_val) do |loaded_args|
               @prepared_arguments = loaded_args
-              if (v = self.class.validators)
-                Schema::Validator.validate!(v, object, context, loaded_args, as: @field)
-              end
-
+              Schema::Validator.validate!(self.class.validators, object, context, loaded_args, as: @field)
               # Then call `authorized?`, which may raise or may return a lazy object
               authorized_val = if loaded_args.any?
                 authorized?(**loaded_args)
@@ -213,20 +211,6 @@ module GraphQL
           end
           own_extras = @own_extras || []
           own_extras + (superclass.respond_to?(:extras) ? superclass.extras : [])
-        end
-
-        # @param validates_config [Hash{Symbol => Hash}] Validation configuration
-        # @return [void]
-        def validates(validates_config)
-          new_validators = Schema::Validator.from_config(self, validates_config)
-          @validators ||= []
-          @validators.concat(new_validators)
-          nil
-        end
-
-        # @api private
-        def validators
-          @validators
         end
 
         # Specifies whether or not the field is nullable. Defaults to `true`

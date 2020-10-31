@@ -15,6 +15,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasArguments
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
+      include GraphQL::Schema::Member::HasValidators
       extend GraphQL::Schema::FindInheritedValue
       include GraphQL::Schema::FindInheritedValue::EmptyObjects
 
@@ -298,7 +299,7 @@ module GraphQL
           self.extension(connection_extension)
         end
 
-        @validators = Schema::Validator.from_config(self, validates)
+        self.validates(validates)
 
         if definition_block
           if definition_block.arity == 1
@@ -584,7 +585,7 @@ module GraphQL
           # Unwrap the GraphQL object to get the application object.
           application_object = object.object
 
-          Schema::Validator.validate!(@validators, application_object, ctx, args)
+          Schema::Validator.validate!(validators, application_object, ctx, args)
 
           ctx.schema.after_lazy(self.authorized?(application_object, args, ctx)) do |is_authorized|
             if is_authorized

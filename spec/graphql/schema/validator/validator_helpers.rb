@@ -10,9 +10,9 @@ module ValidatorHelpers
 
     validated_input = Class.new(GraphQL::Schema::InputObject) do
       graphql_name "ValidatedInput"
-      argument :a, arg_type, required: false, default_value: 0
-      argument :b, arg_type, required: false, default_value: 0
-      argument :c, arg_type, required: false, default_value: 0
+      argument :a, arg_type, required: false
+      argument :b, arg_type, required: false
+      argument :c, arg_type, required: false
       validates(validates_config)
     end
 
@@ -52,7 +52,7 @@ module ValidatorHelpers
       end
 
       def validated_input(input:)
-        input[:a] + input[:b] + input[:c]
+        (input[:a] || 0) + (input[:b] || 0) + (input[:c] || 0)
       end
 
       field :validated_resolver, resolver: validated_resolver

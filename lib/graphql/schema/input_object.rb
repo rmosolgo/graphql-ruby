@@ -7,6 +7,7 @@ module GraphQL
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader
       extend GraphQL::Schema::Member::ValidatesInput
+      extend GraphQL::Schema::Member::HasValidators
 
       include GraphQL::Dig
 
@@ -75,13 +76,8 @@ module GraphQL
       def prepare
         if context
           context.schema.after_any_lazies(@maybe_lazies) do
-            if (v = validators) # Might be nil if none configured
-              object = context[:current_object]
-              # don't count default values as user input
-              validated_kwargs = self.to_kwargs
-              defaults_used_keywords.each { |kw| validated_kwargs.delete(kw) }
-              Schema::Validator.validate!(validators, object, context, validated_kwargs)
-            end
+            object = context[:current_object]
+            Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash)
             self
           end
         else
@@ -139,21 +135,6 @@ module GraphQL
               self[#{method_name.inspect}]
             end
           RUBY
-        end
-
-        # @param validates_config [Hash{Symbol => Hash}] Validation configuration
-        # @return [void]
-        def validates(validates_config)
-          @validators ||= []
-          new_validators = Schema::Validator.from_config(self, validates_config)
-          @validators.concat(new_validators)
-          nil
-        end
-
-        # @return [Array<GraphQL::Schema::Validator>, nil]
-        # @api private
-        def validators
-          @validators
         end
 
         def to_graphql
@@ -272,22 +253,6 @@ module GraphQL
           @ruby_style_hash = @ruby_style_hash.dup
         end
         @ruby_style_hash[key] = value
-      end
-
-      def validators
-        self.class.validators
-      end
-
-      def defaults_used_keywords
-        @defaults_used_keywords ||= begin
-          du_keywords = []
-          @arguments.each_value do |arg_value|
-            if arg_value.default_used?
-              du_keywords << arg_value.definition.keyword
-            end
-          end
-          du_keywords
-        end
       end
     end
   end
