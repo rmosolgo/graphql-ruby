@@ -1,5 +1,10 @@
 # graphql-ruby-client
 
+## 1.7.12
+
+- Ably: Add `rewind:` config so messages aren't lost between subscribe and registration of listener. #3210
+- Ably: Fix race condition where error was raised before the channel was available. #3210
+
 ## 1.7.11 (15 June 2020)
 
 - Ably: Improve channel state handling in case the initial subscription result contains errors #2993
