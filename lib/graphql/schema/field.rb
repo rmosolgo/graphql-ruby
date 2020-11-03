@@ -746,10 +746,8 @@ module GraphQL
 
       def run_extensions_before_resolve(memos, obj, args, ctx, idx: 0)
         extension = @extensions[idx]
-        yielded = false
         return_value = if extension
           extension.resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
-            yielded = true
             memos << memo
             next_obj, next_args, next_val = run_extensions_before_resolve(memos, extended_obj, extended_args, ctx, idx: idx + 1) { |o, a| yield(o, a) }
             next_val
