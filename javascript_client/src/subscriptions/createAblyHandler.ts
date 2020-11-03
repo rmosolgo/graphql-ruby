@@ -86,7 +86,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
 
         channel = ably.channels.get(channelName, {
           params: { rewind: String(maxNumRewindMessages) },
-          cipher: null,
+          cipher: undefined,
           modes: ["SUBSCRIBE", "PRESENCE"]
         })
 
