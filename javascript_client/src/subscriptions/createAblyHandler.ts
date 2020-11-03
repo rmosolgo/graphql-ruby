@@ -16,6 +16,12 @@ interface ApolloObserver {
 
 const anonymousClientId = "graphql-subscriber"
 
+// Current max. number of rewound messages in the initial response to
+// subscribe. See
+// https://github.com/ably/docs/blob/baa0a4666079abba3a3e19e82eb99ca8b8a735d0/content/realtime/channels/channel-parameters/rewind.textile#additional-information
+// Note that using a higher value emits a warning.
+const maxNumRewindMessages = 100
+
 class AblyError {
   constructor(reason: Types.ErrorInfo) {
     const error = Error(reason.message)
@@ -78,7 +84,12 @@ function createAblyHandler(options: AblyHandlerOptions) {
           throw new Error("Missing X-Subscription-ID header")
         }
 
-        channel = ably.channels.get(channelName)
+        channel = ably.channels.get(channelName, {
+          params: { rewind: String(maxNumRewindMessages) },
+          cipher: null,
+          modes: ["SUBSCRIBE", "PRESENCE"]
+        })
+
         channel.on("failed", function(stateChange: Types.ChannelStateChange) {
           observer.onError(
             stateChange.reason
@@ -104,9 +115,10 @@ function createAblyHandler(options: AblyHandlerOptions) {
             )
           }
         })
+
         // Register presence, so that we can detect empty channels and clean them up server-side
         const enterCallback = (errorInfo: Types.ErrorInfo) => {
-          if (errorInfo) {
+          if (errorInfo && channel) {
             observer.onError(new AblyError(errorInfo))
           }
         }
@@ -119,6 +131,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
         } else {
           channel.presence.enter("subscribed", enterCallback)
         }
+
         // When you get an update from ably, give it to Relay
         channel.subscribe("update", updateHandler)
 
@@ -136,6 +149,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
         try {
           if (channel) {
             const disposedChannel = channel
+            channel = null
             disposedChannel.unsubscribe()
 
             // Ensure channel is no longer attaching, as otherwise detach does
