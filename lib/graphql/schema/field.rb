@@ -725,13 +725,17 @@ module GraphQL
         if @extensions.empty?
           yield(obj, args)
         else
-          extended_obj = obj
-          extended_args = args
-
           memos = []
-          extended_obj, extended_args, value = run_extensions_before_resolve(memos, obj, args, ctx) do |obj, args|
+          # This is a hack to get the _last_ value for extended obj and args,
+          # in case one of the extensions doesn't `yield`.
+          # (There's another implementation that uses multiple-return, but I'm wary of the perf cost of the extra arrays)
+          extended = { args: args, obj: obj }
+          value = run_extensions_before_resolve(memos, obj, args, ctx, extended) do |obj, args|
             yield(obj, args)
           end
+
+          extended_obj = extended[:obj]
+          extended_args = extended[:args]
 
           ctx.schema.after_lazy(value) do |resolved_value|
             @extensions.each_with_index do |ext, idx|
@@ -744,19 +748,18 @@ module GraphQL
         end
       end
 
-      def run_extensions_before_resolve(memos, obj, args, ctx, idx: 0)
+      def run_extensions_before_resolve(memos, obj, args, ctx, extended, idx: 0)
         extension = @extensions[idx]
-        return_value = if extension
+        if extension
           extension.resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
             memos << memo
-            next_obj, next_args, next_val = run_extensions_before_resolve(memos, extended_obj, extended_args, ctx, idx: idx + 1) { |o, a| yield(o, a) }
-            next_val
+            extended[:obj] = extended_obj
+            extended[:args] = extended_args
+            run_extensions_before_resolve(memos, extended_obj, extended_args, ctx, extended, idx: idx + 1) { |o, a| yield(o, a) }
           end
         else
           yield(obj, args)
         end
-
-        [obj, args, return_value]
       end
     end
   end
