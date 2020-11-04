@@ -56,6 +56,12 @@ module ValidatorHelpers
       end
 
       field :validated_resolver, resolver: validated_resolver
+
+      field :list, [self], null: false
+
+      def list
+        [:a, :b, :c]
+      end
     end
 
     schema.query(query_type)
