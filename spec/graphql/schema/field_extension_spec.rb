@@ -167,6 +167,7 @@ describe GraphQL::Schema::FieldExtension do
 
   describe "passing along extended arguments" do
     it "works even when shortcut" do
+      ctx = {}
       res =  exec_query("{ extendedThenShortcut }", context: ctx)
       assert_equal 3, res["data"]["extendedThenShortcut"]
       assert_equal true, ctx[:extended_args]
