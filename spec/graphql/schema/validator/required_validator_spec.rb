@@ -5,13 +5,22 @@ require_relative "./validator_helpers"
 describe GraphQL::Schema::Validator::RequiredValidator do
   include ValidatorHelpers
 
+  # When rails is loaded, the blank validator kicks in:
+  if {}.respond_to?(:blank?)
+    no_args_message = "Query.multiValidated can't be blank"
+    resolver_no_args_message = "Query.validatedResolver can't be blank"
+  else
+    no_args_message = "Query.multiValidated has the wrong arguments"
+    resolver_no_args_message = "Query.validatedResolver has the wrong arguments"
+  end
+
   expectations = [
     {
       config: { one_of: [:a, :b] },
       cases: [
         { query: "{ validated: multiValidated(a: 1, b: 2) }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
         { query: "{ validated: multiValidated(a: 1, b: 2, c: 3) }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
-        { query: "{ validated: multiValidated }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
+        { query: "{ validated: multiValidated }", result: nil, error_messages: [no_args_message] },
         { query: "{ validated: multiValidated(c: 3) }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
         { query: "{ validated: multiValidated(a: 1) }", result: 1, error_messages: [] },
         { query: "{ validated: multiValidated(a: 1, c: 3) }", result: 4, error_messages: [] },
@@ -25,7 +34,7 @@ describe GraphQL::Schema::Validator::RequiredValidator do
         { query: "{ validated: multiValidated(a: 1) }", result: 1, error_messages: [] },
         { query: "{ validated: multiValidated(b: 2, c: 3) }", result: 5, error_messages: [] },
         { query: "{ validated: multiValidated }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
-        { query: "{ validated: multiValidated(a: 1, b: 2, c: 3) }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
+        { query: "{ validated: multiValidated(a: 1, b: 2, c: 3) }", result: nil, error_messages: [no_args_message] },
         { query: "{ validated: multiValidated(c: 3) }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
         { query: "{ validated: multiValidated(b: 2) }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
       ]
@@ -50,7 +59,7 @@ describe GraphQL::Schema::Validator::RequiredValidator do
         { query: "{ validated: validatedResolver(a: 1, b: 2, c: 3) }", result: nil, error_messages: ["Query.validatedResolver has the wrong arguments"] },
         { query: "{ validated: validatedResolver(c: 3) }", result: nil, error_messages: ["Query.validatedResolver has the wrong arguments"] },
         { query: "{ validated: validatedResolver(b: 2) }", result: nil, error_messages: ["Query.validatedResolver has the wrong arguments"] },
-        { query: "{ validated: validatedResolver }", result: nil, error_messages: ["Query.validatedResolver has the wrong arguments"] },
+        { query: "{ validated: validatedResolver }", result: nil, error_messages: [resolver_no_args_message] },
       ]
     }
   ]
