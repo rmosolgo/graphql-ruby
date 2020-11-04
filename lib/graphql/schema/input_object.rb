@@ -77,7 +77,8 @@ module GraphQL
         if context
           context.schema.after_any_lazies(@maybe_lazies) do
             object = context[:current_object]
-            Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash)
+            # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
+            Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash, as: self.class)
             self
           end
         else

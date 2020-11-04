@@ -122,4 +122,65 @@ describe GraphQL::Schema::Validator do
     }
     assert_equal expected_response, res
   end
+
+  describe "Validator inheritance" do
+    class ValidationInheritanceSchema < GraphQL::Schema
+      class BaseValidatedInput < GraphQL::Schema::InputObject
+        argument :int, Integer, required: false
+        argument :other_int, Integer, required: false
+        validates required: { one_of: [:int, :other_int] }
+      end
+
+      class IntInput < BaseValidatedInput
+        graphql_name "IntInput"
+      end
+
+      class BaseValidatedResolver < GraphQL::Schema::Resolver
+        argument :int, Integer, required: false
+        argument :other_int, Integer, required: false
+        validates required: { one_of: [:int, :other_int] }
+        type Integer, null: true
+
+        def resolve(int: nil, other_int: nil)
+          int || other_int
+        end
+      end
+
+      class IntResolver < BaseValidatedResolver
+      end
+
+
+      class Query < GraphQL::Schema::Object
+        field :int_input, Int, null: true do
+          argument :input, IntInput, required: true
+        end
+
+        def int_input(input:)
+          input[:int] || input[:other_int]
+        end
+
+        field :int, resolver: IntResolver
+      end
+
+      query(Query)
+    end
+
+    it "works with input objects" do
+      res = ValidationInheritanceSchema.execute("{ intInput(input: { int: 1 }) }")
+      assert_equal 1, res["data"]["intInput"]
+
+      res = ValidationInheritanceSchema.execute("{ intInput(input: { int: 1, otherInt: 2 }) }")
+      assert_nil res["data"]["intInput"]
+      assert_equal ["IntInput has the wrong arguments"], res["errors"].map { |e| e["message"] }
+    end
+
+    it "works with resolvers" do
+      res = ValidationInheritanceSchema.execute("{ int(int: 1) }")
+      assert_equal 1, res["data"]["int"]
+
+      res = ValidationInheritanceSchema.execute("{ int(int: 1, otherInt: 2) }")
+      assert_nil res["data"]["int"]
+      assert_equal ["Query.int has the wrong arguments"], res["errors"].map { |e| e["message"] }
+    end
+  end
 end
