@@ -25,7 +25,7 @@ module GraphQL
         # @param with [RegExp, nil]
         # @param without [Regexp, nil]
         # @param message [String]
-        def initialize(argument,
+        def initialize(
           with: nil,
           without: nil,
           message: "%{validated} is invalid",
@@ -34,7 +34,7 @@ module GraphQL
           @with_pattern = with
           @without_pattern = without
           @message = message
-          super(argument, **default_options)
+          super(**default_options)
         end
 
         def validate(_object, _context, value)

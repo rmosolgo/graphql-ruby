@@ -25,7 +25,7 @@ module GraphQL
         # @param odd [Boolean]
         # @param even [Boolean]
         # @param message [String] used for all validation failures
-        def initialize(argument,
+        def initialize(
             greater_than: nil, greater_than_or_equal_to: nil,
             less_than: nil, less_than_or_equal_to: nil,
             equal_to: nil, other_than: nil,
@@ -43,7 +43,7 @@ module GraphQL
           @odd = odd
           @even = even
           @message = message
-          super(argument, **default_options)
+          super(**default_options)
         end
 
         def validate(object, context, value)

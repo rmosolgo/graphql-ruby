@@ -8,10 +8,10 @@ module GraphQL
       attr_reader :validated
 
       # TODO should this implement `if:` and `unless:` ?
-      # @param argument [GraphQL::Schema::Argument, GraphQL::Schema::Field, GraphQL::Schema::Resolver, Class<GraphQL::Schema::InputObject>] The argument or argument owner this validator is attached to
+      # @param validated [GraphQL::Schema::Argument, GraphQL::Schema::Field, GraphQL::Schema::Resolver, Class<GraphQL::Schema::InputObject>] The argument or argument owner this validator is attached to
       # @param allow_blank [Boolean] if `true`, then objects that respond to `.blank?` and return true for `.blank?` will skip this validation
       # @param allow_null [Boolean] if `true`, then incoming `null`s will skip this validation
-      def initialize(validated, allow_blank: false, allow_null: false)
+      def initialize(validated:, allow_blank: false, allow_null: false)
         @validated = validated
         @allow_blank = allow_blank
         @allow_null = allow_null
@@ -55,21 +55,41 @@ module GraphQL
         string
       end
 
-      # @param validates_hash [Hash, nil] A configuration passed as `validates:`
+      # @param schema_member [GraphQL::Schema::Field, GraphQL::Schema::Argument, Class<GraphQL::Schema::InputObject>]
+      # @param validates_hash [Hash{Symbol => Hash}, Hash{Class => Hash} nil] A configuration passed as `validates:`
       # @return [Array<Validator>]
       def self.from_config(schema_member, validates_hash)
         if validates_hash.nil? || validates_hash.empty?
           EMPTY_ARRAY
         else
           validates_hash.map do |validator_name, options|
-            validator_class = all_validators[validator_name] || raise(ArgumentError, "unknown validation: #{validator_name.inspect}")
-            validator_class.new(schema_member, **options)
+            validator_class = case validator_name
+            when Class
+              validator_name
+            else
+              all_validators[validator_name] || raise(ArgumentError, "unknown validation: #{validator_name.inspect}")
+            end
+            validator_class.new(validated: schema_member, **options)
           end
         end
       end
 
-      def self.install(name, validator)
-        all_validators[name] = validator
+      # Add `validator_class` to be initialized when `validates:` is given `name`.
+      # (It's initialized with whatever options are given by the key `name`).
+      # @param name [Symbol]
+      # @param validator_class [Class]
+      # @return [void]
+      def self.install(name, validator_class)
+        all_validators[name] = validator_class
+        nil
+      end
+
+      # Remove whatever validator class is {.install}ed at `name`, if there is one
+      # @param name [Symbol]
+      # @return [void]
+      def self.uninstall(name)
+        all_validators.delete(name)
+        nil
       end
 
       class << self

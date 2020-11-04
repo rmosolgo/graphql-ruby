@@ -13,15 +13,11 @@ module GraphQL
       class ExclusionValidator < Validator
         # @param message [String]
         # @param in [Array] The values to reject
-        def initialize(argument,
-          message: "%{validated} is reserved",
-          in:,
-          **default_options
-        )
+        def initialize(message: "%{validated} is reserved", in:, **default_options)
           # `in` is a reserved word, so work around that
           @in_list = binding.local_variable_get(:in)
           @message = message
-          super(argument, **default_options)
+          super(**default_options)
         end
 
         def validate(_object, _context, value)

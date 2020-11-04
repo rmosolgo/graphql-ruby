@@ -31,10 +31,10 @@ module GraphQL
       class RequiredValidator < Validator
         # @param one_of [Symbol, Array<Symbol>] An argument, or a list of arguments, that represents a valid set of inputs for this field
         # @param message [String]
-        def initialize(argument_owner, one_of:, message: "%{validated} has the wrong arguments", **default_options)
+        def initialize(one_of:, message: "%{validated} has the wrong arguments", **default_options)
           @one_of = one_of
           @message = message
-          super(argument_owner, **default_options)
+          super(**default_options)
         end
 
         def validate(_object, _context, value)

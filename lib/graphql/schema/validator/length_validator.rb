@@ -22,7 +22,7 @@ module GraphQL
         # @param wrong_length [String] Used when value doesn't match `is`
         # @param within [Range] An allowed range (becomes `minimum:` and `maximum:` under the hood)
         # @param message [String]
-        def initialize(argument,
+        def initialize(
           maximum: nil, too_long: "%{validated} is too long (maximum is %{count})",
           minimum: nil, too_short: "%{validated} is too short (minimum is %{count})",
           is: nil, within: nil, wrong_length: "%{validated} is the wrong length (should be %{count})",
@@ -39,7 +39,7 @@ module GraphQL
           @too_short = message || too_short
           @is = is
           @wrong_length = message || wrong_length
-          super(argument, **default_options)
+          super(**default_options)
         end
 
         def validate(_object, _context, value)
