@@ -3,9 +3,9 @@ layout: guide
 doc_stub: false
 search: true
 title: Object Identification
-section: Relay
+section: Schema
 desc: Working with Relay-style global IDs
-index: 0
+index: 8
 ---
 
 Relay uses [global object identification](https://facebook.github.io/relay/graphql/objectidentification.htm) to support some of its features:
@@ -65,7 +65,7 @@ class Types::PostType < GraphQL::Schema::Object
 end
 ```
 
-To tell GraphQL how to resolve members of the `"Node"` interface, you must also define `Schema.resolve_type`:
+To tell GraphQL how to resolve members of the `Node` interface, you must also define `Schema.resolve_type`:
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -102,24 +102,26 @@ This field will call the previously-defined `id_from_object` class method.
 
 ### `node` field (find-by-UUID)
 
-You should also provide a root-level `node` field so that Relay can refetch objects from your schema. It is provided as `GraphQL::Relay::Node.field`, so you can attach it like this:
+You should also provide a root-level `node` field so that Relay can refetch objects from your schema. You can attach it like this:
 
 ```ruby
 class Types::QueryType < GraphQL::Schema::Object
   # Used by Relay to lookup objects by UUID:
-  add_field(GraphQL::Types::Relay::NodeField)
+  # Add `node(id: ID!)
+  include GraphQL::Types::Relay::HasNodeField
   # ...
 end
 ```
 
 ### `nodes` field
 
-You can also provide a root-level `nodes` field so that Relay can refetch objects by IDs. Similarly, it is provided as `GraphQL::Relay::Node.plural_field`:
+You can also provide a root-level `nodes` field so that Relay can refetch objects by IDs:
 
 ```ruby
 class Types::QueryType < GraphQL::Schema::Object
   # Fetches a list of objects given a list of IDs
-  add_field(GraphQL::Types::Relay::NodesField)
+  # Add `nodes(ids: [ID!]!)`
+  include GraphQL::Types::Relay::HasNodesField
   # ...
 end
 ```
