@@ -33,8 +33,8 @@ describe GraphQL::Schema::Validator::RequiredValidator do
       cases: [
         { query: "{ validated: multiValidated(a: 1) }", result: 1, error_messages: [] },
         { query: "{ validated: multiValidated(b: 2, c: 3) }", result: 5, error_messages: [] },
-        { query: "{ validated: multiValidated }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
-        { query: "{ validated: multiValidated(a: 1, b: 2, c: 3) }", result: nil, error_messages: [no_args_message] },
+        { query: "{ validated: multiValidated }", result: nil, error_messages: [no_args_message] },
+        { query: "{ validated: multiValidated(a: 1, b: 2, c: 3) }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
         { query: "{ validated: multiValidated(c: 3) }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
         { query: "{ validated: multiValidated(b: 2) }", result: nil, error_messages: ["Query.multiValidated has the wrong arguments"] },
       ]
