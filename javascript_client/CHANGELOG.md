@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.8.0
+
+- Ably: Support server-side `cipher_base:` config in the client
+
 ## 1.7.12
 
 - Ably: Add `rewind:` config so messages aren't lost between subscribe and registration of listener. #3210
