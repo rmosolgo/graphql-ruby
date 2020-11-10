@@ -84,9 +84,11 @@ function createAblyHandler(options: AblyHandlerOptions) {
           throw new Error("Missing X-Subscription-ID header")
         }
 
+        const channelKey = response.headers.get("X-Subscription-Key")
+
         channel = ably.channels.get(channelName, {
           params: { rewind: String(maxNumRewindMessages) },
-          cipher: undefined,
+          cipher: channelKey ? { key: channelKey } : undefined,
           modes: ["SUBSCRIBE", "PRESENCE"]
         })
 
@@ -117,7 +119,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
         })
 
         // Register presence, so that we can detect empty channels and clean them up server-side
-        const enterCallback = (errorInfo: Types.ErrorInfo) => {
+        const enterCallback = (errorInfo: Types.ErrorInfo | undefined) => {
           if (errorInfo && channel) {
             observer.onError(new AblyError(errorInfo))
           }
@@ -169,7 +171,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
             }
 
             await new Promise((resolve, reject) => {
-              disposedChannel.detach((err: Types.ErrorInfo) => {
+              disposedChannel.detach((err) => {
                 if (err) {
                   reject(new AblyError(err))
                 } else {
