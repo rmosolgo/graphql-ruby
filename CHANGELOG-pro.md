@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.16.0 (10 Nov 2020)
+
+### New Features
+
+- Ably Subscriptions: `cipher_base:` sets up end-to-end encryption
+
 ## 1.15.7 (29 Sept 2020)
 
 ### Bug Fix
