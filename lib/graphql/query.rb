@@ -88,7 +88,7 @@ module GraphQL
         schema = schema.graphql_definition
       end
       @schema = schema
-      @interpreter = schema.interpreter?
+      @interpreter = @schema.interpreter?
       @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       @warden = warden

@@ -167,7 +167,10 @@ module GraphQL
       # @api private
       attr_accessor :scoped_context
 
-      def_delegators :@provided_values, :[]=
+      def []=(key, value)
+        @provided_values[key] = value
+      end
+
       def_delegators :@query, :trace, :interpreter?
 
       # @!method []=(key, value)

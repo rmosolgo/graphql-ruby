@@ -738,33 +738,42 @@ module GraphQL
         if @extensions.empty?
           yield(obj, args)
         else
-          extended_obj = obj
-          extended_args = args
-
-          memos = []
-          value = run_extensions_before_resolve(memos, obj, args, ctx) do |obj, args|
-            extended_obj = obj
-            extended_args = args
+          # This is a hack to get the _last_ value for extended obj and args,
+          # in case one of the extensions doesn't `yield`.
+          # (There's another implementation that uses multiple-return, but I'm wary of the perf cost of the extra arrays)
+          extended = { args: args, obj: obj, memos: nil }
+          value = run_extensions_before_resolve(obj, args, ctx, extended) do |obj, args|
             yield(obj, args)
           end
 
+          extended_obj = extended[:obj]
+          extended_args = extended[:args]
+          memos = extended[:memos] || EMPTY_HASH
+
           ctx.schema.after_lazy(value) do |resolved_value|
-            @extensions.each_with_index do |ext, idx|
+            idx = 0
+            @extensions.each do |ext|
               memo = memos[idx]
               # TODO after_lazy?
               resolved_value = ext.after_resolve(object: extended_obj, arguments: extended_args, context: ctx, value: resolved_value, memo: memo)
+              idx += 1
             end
             resolved_value
           end
         end
       end
 
-      def run_extensions_before_resolve(memos, obj, args, ctx, idx: 0)
+      def run_extensions_before_resolve(obj, args, ctx, extended, idx: 0)
         extension = @extensions[idx]
         if extension
           extension.resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
-            memos << memo
-            run_extensions_before_resolve(memos, extended_obj, extended_args, ctx, idx: idx + 1) { |o, a| yield(o, a) }
+            if memo
+              memos = extended[:memos] ||= {}
+              memos[idx] = memo
+            end
+            extended[:obj] = extended_obj
+            extended[:args] = extended_args
+            run_extensions_before_resolve(extended_obj, extended_args, ctx, extended, idx: idx + 1) { |o, a| yield(o, a) }
           end
         else
           yield(obj, args)

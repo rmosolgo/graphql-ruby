@@ -55,10 +55,10 @@ class AblyLink extends ApolloLink {
       // Check the result of the operation
       forward(operation).subscribe({ next: (data) => {
         // If the operation has the subscription header, it's a subscription
-        const subscriptionChannel = this._getSubscriptionChannel(operation)
-        if (subscriptionChannel) {
+        const subscriptionChannelConfig = this._getSubscriptionChannel(operation)
+        if (subscriptionChannelConfig) {
           // This will keep pushing to `.next`
-          this._createSubscription(subscriptionChannel, observer)
+          this._createSubscription(subscriptionChannelConfig, observer)
         }
         else {
           // This isn't a subscription,
@@ -74,11 +74,16 @@ class AblyLink extends ApolloLink {
     const response = operation.getContext().response
     // Check to see if the response has the header
     const subscriptionChannel = response.headers.get("X-Subscription-ID")
-    return subscriptionChannel
+    // The server returns this header when encryption is enabled.
+    const cipherKey = response.headers.get("X-Subscription-Key")
+    return { channel: subscriptionChannel, key: cipherKey }
   }
 
-  _createSubscription(subscriptionChannel: string, observer: { next: Function, complete: Function}) {
-    const ablyChannel = this.ably.channels.get(subscriptionChannel)
+  _createSubscription(subscriptionChannelConfig: { channel: string, key: string }, observer: { next: Function, complete: Function}) {
+    const subscriptionChannel = subscriptionChannelConfig["channel"]
+    const subscriptionKey = subscriptionChannelConfig["key"]
+    const ablyOptions = subscriptionKey ? { cipher: { key: subscriptionKey } } : {}
+    const ablyChannel = this.ably.channels.get(subscriptionChannel, ablyOptions)
     const ablyClientId = this.ably.auth.clientId
     // Register presence, so that we can detect empty channels and clean them up server-side
     if (ablyClientId) {

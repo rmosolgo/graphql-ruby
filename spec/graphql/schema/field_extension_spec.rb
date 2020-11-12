@@ -65,6 +65,25 @@ describe GraphQL::Schema::FieldExtension do
       end
     end
 
+    class ExtendsArguments < GraphQL::Schema::FieldExtension
+      def resolve(object:, arguments:, **_rest)
+        new_args = arguments.dup
+        new_args[:extended] = true
+        yield(object, new_args)
+      end
+
+      def after_resolve(arguments:, context:, value:, **_rest)
+        context[:extended_args] = arguments[:extended]
+        value
+      end
+    end
+
+    class ShortcutsResolve < GraphQL::Schema::FieldExtension
+      def resolve(**_args)
+        options[:shortcut_value]
+      end
+    end
+
     class BaseObject < GraphQL::Schema::Object
     end
 
@@ -118,6 +137,11 @@ describe GraphQL::Schema::FieldExtension do
         extensions: [DoubleFilter, { MultiplyByOption => { factor: 3 } }] do
           argument :input, Integer, required: true
         end
+
+      field :extended_then_shortcut, Integer, null: true do
+        extension ExtendsArguments
+        extension ShortcutsResolve, shortcut_value: 3
+      end
     end
 
     class Schema < GraphQL::Schema
@@ -134,6 +158,15 @@ describe GraphQL::Schema::FieldExtension do
       field = FilterTestSchema::Query.fields["multiplyInput"]
       assert_equal 1, field.extensions.size
       assert_instance_of FilterTestSchema::MultiplyByArgument, field.extensions.first
+    end
+  end
+
+  describe "passing along extended arguments" do
+    it "works even when shortcut" do
+      ctx = {}
+      res =  exec_query("{ extendedThenShortcut }", context: ctx)
+      assert_equal 3, res["data"]["extendedThenShortcut"]
+      assert_equal true, ctx[:extended_args]
     end
   end
 

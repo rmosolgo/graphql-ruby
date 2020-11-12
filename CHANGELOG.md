@@ -8,7 +8,25 @@
 
 ### Bug fixes
 
-- Use `graphql_name` in `UnauthorizedError` default message #3174
+## 1.11.6 (29 October 2020)
+
+### Breaking changes
+
+FieldExtension: pass extended values instead of originals to `after_resolve` #3168
+
+### Deprecations
+
+### New features
+
+- Accept additional options in `global_id_field` macro #3196
+
+### Bug fixes
+
+- Use `graphql_name` in `UnauthorizedError` default message (fixes #3174) #3176
+- Improve error handling for base 64 decoding (in `UniqueWithinType`) #3179
+- Fix `.valid_isolated_input?` on parsed schemas (fixes #3181) #3182
+- Fix fields nullability in subscriptions documentation #3194
+- Update `RangeAdd` to use new connections when available #3195
 
 ## 1.11.5 (30 September 2020)
 

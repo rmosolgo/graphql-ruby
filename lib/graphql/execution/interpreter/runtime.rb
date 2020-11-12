@@ -47,8 +47,7 @@ module GraphQL
           root_op_type = root_operation.operation_type || "query"
           root_type = schema.root_type_for_operation(root_op_type)
           path = []
-          set_interpreter_context(:current_object, query.root_value)
-          set_interpreter_context(:current_path, path)
+          set_all_interpreter_context(query.root_value, nil, nil, path)
           object_proxy = authorized_new(root_type, query.root_value, context, path)
           object_proxy = schema.sync_lazy(object_proxy)
           if object_proxy.nil?
@@ -118,9 +117,10 @@ module GraphQL
           end
         end
 
+        NO_ARGS = {}.freeze
+
         def evaluate_selections(path, scoped_context, owner_object, owner_type, selections, root_operation_type: nil)
-          set_interpreter_context(:current_object, owner_object)
-          set_interpreter_context(:current_path, path)
+          set_all_interpreter_context(owner_object, nil, nil, path)
           selections_by_name = {}
           gather_selections(owner_object, owner_type, selections, selections_by_name)
           selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
@@ -159,8 +159,7 @@ module GraphQL
             # to propagate `null`
             set_type_at_path(next_path, return_type)
             # Set this before calling `run_with_directives`, so that the directive can have the latest path
-            set_interpreter_context(:current_path, next_path)
-            set_interpreter_context(:current_field, field_defn)
+            set_all_interpreter_context(nil, field_defn, nil, next_path)
 
             context.scoped_context = scoped_context
             object = owner_object
@@ -182,7 +181,10 @@ module GraphQL
                 next
               end
 
-              if field_defn.extras.any?
+              kwarg_arguments = if resolved_arguments.empty? && field_defn.extras.empty?
+                # We can avoid allocating the `{ Symbol => Object }` hash in this case
+                NO_ARGS
+              else
                 # Bundle up the extras, then make a new arguments instance
                 # that includes the extras, too.
                 extra_args = {}
@@ -198,6 +200,7 @@ module GraphQL
                     if !field_ast_nodes
                       field_ast_nodes = [ast_node]
                     end
+
                     extra_args[:lookahead] = Execution::Lookahead.new(
                       query: query,
                       ast_nodes: field_ast_nodes,
@@ -213,10 +216,10 @@ module GraphQL
                 end
 
                 resolved_arguments = resolved_arguments.merge_extras(extra_args)
+                resolved_arguments.keyword_arguments
               end
 
-              kwarg_arguments = resolved_arguments.keyword_arguments
-              set_interpreter_context(:current_arguments, kwarg_arguments)
+              set_all_interpreter_context(nil, nil, kwarg_arguments, nil)
 
               # Optimize for the case that field is selected only once
               if field_ast_nodes.nil? || field_ast_nodes.size == 1
@@ -422,6 +425,21 @@ module GraphQL
           true
         end
 
+        def set_all_interpreter_context(object, field, arguments, path)
+          if object
+            @context[:current_object] = @interpreter_context[:current_object] = object
+          end
+          if field
+            @context[:current_field] = @interpreter_context[:current_field] = field
+          end
+          if arguments
+            @context[:current_arguments] = @interpreter_context[:current_arguments] = arguments
+          end
+          if path
+            @context[:current_path] = @interpreter_context[:current_path] = path
+          end
+        end
+
         # @param obj [Object] Some user-returned value that may want to be batched
         # @param path [Array<String>]
         # @param field [GraphQL::Schema::Field]
@@ -429,16 +447,10 @@ module GraphQL
         # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false, trace: true, &block)
-          set_interpreter_context(:current_object, owner_object)
-          set_interpreter_context(:current_arguments, arguments)
-          set_interpreter_context(:current_path, path)
-          set_interpreter_context(:current_field, field)
+          set_all_interpreter_context(owner_object, field, arguments, path)
           if schema.lazy?(lazy_obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
-              set_interpreter_context(:current_path, path)
-              set_interpreter_context(:current_field, field)
-              set_interpreter_context(:current_object, owner_object)
-              set_interpreter_context(:current_arguments, arguments)
+              set_all_interpreter_context(owner_object, field, arguments, path)
               context.scoped_context = scoped_context
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below

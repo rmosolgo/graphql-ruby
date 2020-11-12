@@ -1,6 +1,6 @@
 {
   "name": "graphql-ruby-client",
-  "version": "1.7.11",
+  "version": "1.8.0",
   "description": "JavaScript client for graphql-ruby",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,6 +13,7 @@
     "@types/jest": "^25.1.2",
     "@types/minimist": "^1.2.0",
     "@types/node": "^13.7.1",
+    "ably": "^1.2.4",
     "jest": "^25.0.0",
     "nock": "^11.0.0",
     "ts-jest": "^25.2.0",
