@@ -34,6 +34,7 @@ module GraphQL
       GraphQL::StaticValidation::VariableUsagesAreAllowed,
       GraphQL::StaticValidation::MutationRootExists,
       GraphQL::StaticValidation::SubscriptionRootExists,
+      GraphQL::StaticValidation::InputObjectNamesAreUnique,
     ]
   end
 end
