@@ -62,11 +62,13 @@
 
 <ul>
   <li><a href="#how-it-works">How it Works</a></li>
+  <li><a href="#ably-setup">Ably setup</a></li>
   <li><a href="#database-setup">Database setup</a></li>
   <li><a href="#schema-configuration">Schema configuration</a></li>
   <li><a href="#execution-configuration">Execution configuration</a></li>
   <li><a href="#webhook-configuration">Webhook configuration</a></li>
   <li><a href="#authorization">Authorization</a></li>
+  <li><a href="#encryption">End-to-end encryption</a></li>
   <li><a href="#serializing-context">Serializing context</a></li>
   <li><a href="#dashboard">Dashboard</a></li>
   <li><a href="#development-tips">Development tips</a></li>
@@ -250,6 +252,43 @@ appendonly <span class="nb">yes</span>
 </code></pre></div></div>
 
 <p><a href="https://www.ably.io/tutorials/webhook-chuck-norris#tutorial-step-4">Ably’s tutorial</a> also demonstrates some of the setup for this.</p>
+
+<h2 id="encryption">Encryption</h2>
+
+<p>You can use Ably’s <a href="https://www.ably.io/documentation/realtime/encryption">end-to-end encryption</a> with GraphQL subscriptions. To enable it, add <code class="language-plaintext highlighter-rouge">cipher_base:</code> to your setup:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">AblySubscriptions</span><span class="p">,</span>
+    <span class="ss">redis: </span><span class="vg">$graphql_subscriptions_redis</span><span class="p">,</span>
+    <span class="ss">ably: </span><span class="no">Ably</span><span class="o">::</span><span class="no">Rest</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">key: </span><span class="no">ABLY_API_KEY</span><span class="p">),</span>
+    <span class="c1"># Add `cipher_base:` to enable end-to-end encryption</span>
+    <span class="ss">cipher_base: </span><span class="s2">"ff16381ae2f2b6c6de6ff696226009f3"</span>
+</code></pre></div></div>
+
+<p>(Any random string will do, eg <code class="language-plaintext highlighter-rouge">ruby -e "require 'securerandom'; puts SecureRandom.hex"</code>.)</p>
+
+<p>Also, return a header to client so that it can decrypt subscription updates. The key is put in <code class="language-plaintext highlighter-rouge">context[:ably_cipher_base64]</code>, and <code class="language-plaintext highlighter-rouge">graphql-ruby-client</code> expects to find it in the <code class="language-plaintext highlighter-rouge">X-Subscription-Key</code> header:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="c1"># For subscriptions, return the subscription_id as a header</span>
+<span class="k">if</span> <span class="n">result</span><span class="p">.</span><span class="nf">subscription?</span>
+  <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s2">"X-Subscription-ID"</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:subscription_id</span><span class="p">]</span>
+  <span class="c1"># Also return the encryption key so that clients</span>
+  <span class="c1"># can decode subscription updates</span>
+  <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s2">"X-Subscription-Key"</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:ably_cipher_base64</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>(Also, if you’re using CORS requests, update <code class="language-plaintext highlighter-rouge">Access-Control-Expose-Headers</code> to include <code class="language-plaintext highlighter-rouge">X-Subscription-Key</code>)</p>
+
+<p>With this setup,</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">GraphQL::Pro::AblySubscriptions</code> will generate per-subscription keys (using <code class="language-plaintext highlighter-rouge">cipher_base</code> and the subscription ID) and use them to encrypt Ably payloads</li>
+  <li>Those keys will be returned to clients in <code class="language-plaintext highlighter-rouge">X-Subscription-Key</code></li>
+  <li>Clients will use those keys to decrypt incoming messages</li>
+</ul>
+
+<p><strong>Backwards compatibility:</strong> <code class="language-plaintext highlighter-rouge">GraphQL::Pro::AblySubscriptions</code> will only encrypt payloads whose <code class="language-plaintext highlighter-rouge">query.context[:ably_cipher_base64]</code> is present. Any subscriptions created <em>before</em> <code class="language-plaintext highlighter-rouge">cipher_base:</code> was added to the setup will <em>not</em> be encrypted. (There was no key to encrypt them, and clients don’t have a key to <em>decrypt</em> them!)</p>
 
 <h2 id="serializing-context">Serializing Context</h2>
 
