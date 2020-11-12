@@ -88,6 +88,7 @@ module GraphQL
         schema = schema.graphql_definition
       end
       @schema = schema
+      @interpreter = @schema.interpreter?
       @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       @warden = warden
@@ -148,7 +149,9 @@ module GraphQL
       @query_string ||= (document ? document.to_query_string : nil)
     end
 
-    def_delegators :@schema, :interpreter?
+    def interpreter?
+      @interpreter
+    end
 
     def subscription_update?
       @subscription_topic && subscription?

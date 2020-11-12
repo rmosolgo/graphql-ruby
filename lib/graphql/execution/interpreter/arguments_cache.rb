@@ -29,11 +29,16 @@ module GraphQL
 
         private
 
+        NO_ARGUMENTS = {}.freeze
+
         NO_VALUE_GIVEN = Object.new
 
         def prepare_args_hash(ast_arg_or_hash_or_value)
           case ast_arg_or_hash_or_value
           when Hash
+            if ast_arg_or_hash_or_value.empty?
+              return NO_ARGUMENTS
+            end
             args_hash = {}
             ast_arg_or_hash_or_value.each do |k, v|
               args_hash[k] = prepare_args_hash(v)
@@ -42,6 +47,9 @@ module GraphQL
           when Array
             ast_arg_or_hash_or_value.map { |v| prepare_args_hash(v) }
           when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject, GraphQL::Language::Nodes::Directive
+            if ast_arg_or_hash_or_value.arguments.empty?
+              return NO_ARGUMENTS
+            end
             args_hash = {}
             ast_arg_or_hash_or_value.arguments.each do |arg|
               v = prepare_args_hash(arg.value)
