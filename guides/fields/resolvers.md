@@ -5,7 +5,7 @@ search: true
 section: Fields
 title: Resolvers
 desc: Reusable, extendable resolution logic for complex fields
-index: 9
+index: 2
 redirect_from:
   - /fields/functions
 ---
@@ -183,7 +183,7 @@ module Resolvers
 end
 ```
 
-The above can produce the following error: `Failed to build return type for Task.tasks from nil: Unexpected type input:  (NilClass)`. 
+The above can produce the following error: `Failed to build return type for Task.tasks from nil: Unexpected type input:  (NilClass)`.
 
 A simple solution is to express the type as a string in the resolver:
 
