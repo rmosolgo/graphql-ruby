@@ -8,7 +8,7 @@ interface SyncOptions {
   relayPersistedOutput?: string,
   apolloAndroidOperationOutput?: string,
   secret?: string
-  url: string,
+  url?: string,
   mode?: string,
   outfile?: string,
   outfileType?: string,
@@ -27,7 +27,7 @@ interface SyncOptions {
  * @param {String} options.path - A glob to recursively search for `.graphql` files (Default is `./`)
  * @param {String} options.relayPersistedOutput - A path to a `.json` file from `relay-compiler`'s  `--persist-output` option
  * @param {String} options.secret - HMAC-SHA256 key which must match the server secret (default is no encryption)
- * @param {String} options.url - Target URL for sending prepared queries
+ * @param {String} options.url - Target URL for sending prepared queries. If omitted, then an outfile is generated without sending operations to the server.
  * @param {String} options.mode - If `"file"`, treat each file separately. If `"project"`, concatenate all files and extract each operation. If `"relay"`, treat it as relay-compiler output
  * @param {Boolean} options.addTypename - Indicates if the "__typename" field are automatically added to your queries
  * @param {String} options.outfile - Where the generated code should be written
@@ -43,7 +43,7 @@ function sync(options: SyncOptions) {
   var verbose = !!options.verbose
   var url = options.url
   if (!url) {
-    throw new Error("URL must be provided for sync")
+    logger.log("No URL; Generating artifacts without syncing them")
   }
   var clientName = options.client
   if (!clientName) {
@@ -112,9 +112,13 @@ function sync(options: SyncOptions) {
     outfile = "OperationStoreClient.js"
   }
 
-  return new Promise(function(resolve, reject) {
+  var syncPromise = new Promise(function(resolve, reject) {
     if (payload.operations.length === 0) {
       logger.log("No operations found in " + options.path + ", not syncing anything")
+      resolve(null)
+      return
+    } else if(!url) {
+      // This is a local-only run to generate an artifact
       resolve(payload)
       return
     } else {
@@ -179,22 +183,7 @@ function sync(options: SyncOptions) {
             return
           }
         }
-
-        // Don't generate a new file when we're using relay-comipler's --persist-output
-        if (outfile) {
-          var generatedCode = generateClientCode(clientName, payload.operations, clientType)
-          var finishedPayload = {
-            operations: payload.operations,
-            generatedCode,
-          }
-          logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
-          fs.writeFileSync(outfile, generatedCode, "utf8")
-          logger.log(logger.green("✓ Done!"))
-          resolve(finishedPayload)
-        } else {
-          logger.log(logger.green("✓ Done!"))
-          resolve(payload)
-        }
+        resolve(payload)
         return
       }).catch(function(err) {
         logger.error(logger.red("Sync failed:"))
@@ -202,6 +191,27 @@ function sync(options: SyncOptions) {
         reject(err)
         return
       })
+    }
+  })
+
+  return syncPromise.then(function(_payload) {
+    // The payload is yielded when sync was successful, but typescript had
+    // trouble using it from ^^ here. So instead, just use its presence as a signal to continue.
+
+    // Don't generate a new file when we're using relay-comipler's --persist-output
+    if (_payload && outfile) {
+      var generatedCode = generateClientCode(clientName, payload.operations, clientType)
+      var finishedPayload = {
+        operations: payload.operations,
+        generatedCode,
+      }
+      logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
+      fs.writeFileSync(outfile, generatedCode, "utf8")
+      logger.log(logger.green("✓ Done!"))
+      return finishedPayload
+    } else {
+      logger.log(logger.green("✓ Done!"))
+      return payload
     }
   })
 }
