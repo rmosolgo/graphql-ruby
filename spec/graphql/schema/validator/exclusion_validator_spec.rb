@@ -9,7 +9,7 @@ describe GraphQL::Schema::Validator::ExclusionValidator do
     {
       config: { in: [1, 2, 3] },
       cases: [
-        { query: "{ validated(value: 1) }", result: nil, error_messages: ["Query.validated.value is reserved"] },
+        { query: "{ validated(value: 1) }", result: nil, error_messages: ["value is reserved"] },
         { query: "{ validated(value: 10) }", result: 10, error_messages: [] },
       ]
     },

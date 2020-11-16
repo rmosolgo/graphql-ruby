@@ -10,8 +10,8 @@ describe GraphQL::Schema::Validator::NumericalityValidator do
       config: { less_than: 10, greater_than: 2, allow_null: true },
       cases: [
         { query: "{ validated(value: 8) }", result: 8, error_messages: [] },
-        { query: "{ validated(value: 12) }", result: nil, error_messages: ["Query.validated.value must be less than 10"] },
-        { query: "{ validated(value: 1) }", result: nil, error_messages: ["Query.validated.value must be greater than 2"] },
+        { query: "{ validated(value: 12) }", result: nil, error_messages: ["value must be less than 10"] },
+        { query: "{ validated(value: 1) }", result: nil, error_messages: ["value must be greater than 2"] },
         { query: "{ validated(value: null) }", result: nil, error_messages: [] },
       ]
     },
@@ -21,36 +21,36 @@ describe GraphQL::Schema::Validator::NumericalityValidator do
         { query: "{ validated(value: 8) }", result: 8, error_messages: [] },
         { query: "{ validated(value: 10) }", result: 10, error_messages: [] },
         { query: "{ validated(value: 2) }", result: 2, error_messages: [] },
-        { query: "{ validated(value: 12) }", result: nil, error_messages: ["Query.validated.value must be less than or equal to 10"] },
-        { query: "{ validated(value: 1) }", result: nil, error_messages: ["Query.validated.value must be greater than or equal to 2"] },
+        { query: "{ validated(value: 12) }", result: nil, error_messages: ["value must be less than or equal to 10"] },
+        { query: "{ validated(value: 1) }", result: nil, error_messages: ["value must be greater than or equal to 2"] },
       ]
     },
     {
       config: { odd: true },
       cases: [
         { query: "{ validated(value: 9) }", result: 9, error_messages: [] },
-        { query: "{ validated(value: 8) }", result: nil, error_messages: ["Query.validated.value must be odd"] },
+        { query: "{ validated(value: 8) }", result: nil, error_messages: ["value must be odd"] },
       ]
     },
     {
       config: { even: true },
       cases: [
         { query: "{ validated(value: 8) }", result: 8, error_messages: [] },
-        { query: "{ validated(value: 9) }", result: nil, error_messages: ["Query.validated.value must be even"] },
+        { query: "{ validated(value: 9) }", result: nil, error_messages: ["value must be even"] },
       ]
     },
     {
       config: { equal_to: 8 },
       cases: [
         { query: "{ validated(value: 8) }", result: 8, error_messages: [] },
-        { query: "{ validated(value: 9) }", result: nil, error_messages: ["Query.validated.value must be equal to 8"] },
+        { query: "{ validated(value: 9) }", result: nil, error_messages: ["value must be equal to 8"] },
       ]
     },
     {
       config: { other_than: 9 },
       cases: [
         { query: "{ validated(value: 8) }", result: 8, error_messages: [] },
-        { query: "{ validated(value: 9) }", result: nil, error_messages: ["Query.validated.value must be something other than 9"] },
+        { query: "{ validated(value: 9) }", result: nil, error_messages: ["value must be something other than 9"] },
       ]
     },
   ]

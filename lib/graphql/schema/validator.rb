@@ -27,18 +27,18 @@ module GraphQL
 
       # This is called by the validation system and eventually calls {#validate}.
       # @api private
-      def apply(object, context, value, as:)
+      def apply(object, context, value)
         if value.nil?
           if @allow_null
             nil # skip this
           else
-            "#{as.path} can't be null"
+            "%{validated} can't be null"
           end
         elsif value.respond_to?(:blank?) && value.blank?
           if @allow_blank
             nil # skip this
           else
-            "#{as.path} can't be blank"
+            "%{validated} can't be blank"
           end
         else
           validate(object, context, value)
@@ -122,14 +122,14 @@ module GraphQL
 
         validators.each do |validator|
           validated = as || validator.validated
-          errors = validator.apply(object, context, value, as: validated)
+          errors = validator.apply(object, context, value)
           if errors &&
             (errors.is_a?(Array) && errors != EMPTY_ARRAY) ||
             (errors.is_a?(String))
             if all_errors.frozen? # It's empty
               all_errors = []
             end
-            interpolation_vars = { validated: validated.path }
+            interpolation_vars = { validated: validated.graphql_name }
             if errors.is_a?(String)
               all_errors << (errors % interpolation_vars)
             else

@@ -34,7 +34,7 @@ describe GraphQL::Schema::Validator do
       config: { equal_to: 2 },
       cases: [
         { query: "{ validated(value: 2) }", error_messages: [], result: 2 },
-        { query: "{ validated(value: 3) }", error_messages: ["Query.validated.value doesn't have the right the right value"], result: nil },
+        { query: "{ validated(value: 3) }", error_messages: ["value doesn't have the right the right value"], result: nil },
       ]
     }
   ])
@@ -45,7 +45,7 @@ describe GraphQL::Schema::Validator do
       config: { equal_to: 4 },
       cases: [
         { query: "{ validated(value: 4) }", error_messages: [], result: 4 },
-        { query: "{ validated(value: 3) }", error_messages: ["Query.validated.value doesn't have the right the right value"], result: nil },
+        { query: "{ validated(value: 3) }", error_messages: ["value doesn't have the right the right value"], result: nil },
       ]
     }
   ])
@@ -60,18 +60,18 @@ describe GraphQL::Schema::Validator do
     # The length validator fails:
     res2 = schema.execute("{ validated(value: \"0\") }")
     assert_nil res2["data"]["validated"]
-    assert_equal ["Query.validated.value is too short (minimum is 5)"], res2["errors"].map { |e| e["message"] }
+    assert_equal ["value is too short (minimum is 5)"], res2["errors"].map { |e| e["message"] }
 
     # The inclusion validator fails:
     res3 = schema.execute("{ validated(value: \"00000000\") }")
     assert_nil res3["data"]["validated"]
-    assert_equal ["Query.validated.value is not included in the list"], res3["errors"].map { |e| e["message"] }
+    assert_equal ["value is not included in the list"], res3["errors"].map { |e| e["message"] }
 
     # Both validators fail:
     res4 = schema.execute("{ validated(value: \"1\") }")
     assert_nil res4["data"]["validated"]
     errs = [
-      "Query.validated.value is too short (minimum is 5), Query.validated.value is not included in the list",
+      "value is too short (minimum is 5), value is not included in the list",
     ]
     assert_equal errs, res4["errors"].map { |e| e["message"] }
 
@@ -81,11 +81,11 @@ describe GraphQL::Schema::Validator do
     assert_equal expected_data, res5["data"]
     errs = [
       {
-        "message" => "Query.validated.value is too short (minimum is 5)",
+        "message" => "value is too short (minimum is 5)",
         "locations" => [{"line"=>1, "column"=>3}],
         "path" => ["v1"]
       }, {
-        "message" => "Query.validated.value is not included in the list",
+        "message" => "value is not included in the list",
         "locations" => [{"line"=>1, "column"=>60}],
         "path" => ["v3"]
       }
@@ -115,9 +115,9 @@ describe GraphQL::Schema::Validator do
         ]
       },
       "errors" => [
-        {"message"=>"Query.validated.value must be greater than 5", "locations"=>[{"line"=>1, "column"=>10}], "path"=>["list", 0, "validated"]},
-        {"message"=>"Query.validated.value must be greater than 5", "locations"=>[{"line"=>1, "column"=>10}], "path"=>["list", 1, "validated"]},
-        {"message"=>"Query.validated.value must be greater than 5", "locations"=>[{"line"=>1, "column"=>10}], "path"=>["list", 2, "validated"]},
+        {"message"=>"value must be greater than 5", "locations"=>[{"line"=>1, "column"=>10}], "path"=>["list", 0, "validated"]},
+        {"message"=>"value must be greater than 5", "locations"=>[{"line"=>1, "column"=>10}], "path"=>["list", 1, "validated"]},
+        {"message"=>"value must be greater than 5", "locations"=>[{"line"=>1, "column"=>10}], "path"=>["list", 2, "validated"]},
       ]
     }
     assert_equal expected_response, res
@@ -180,7 +180,7 @@ describe GraphQL::Schema::Validator do
 
       res = ValidationInheritanceSchema.execute("{ int(int: 1, otherInt: 2) }")
       assert_nil res["data"]["int"]
-      assert_equal ["Query.int has the wrong arguments"], res["errors"].map { |e| e["message"] }
+      assert_equal ["int has the wrong arguments"], res["errors"].map { |e| e["message"] }
     end
   end
 end

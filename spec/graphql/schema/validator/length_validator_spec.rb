@@ -37,13 +37,13 @@ describe GraphQL::Schema::Validator::LengthValidator do
 
     result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: blank_string })
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Query.validated.value can't be blank"], result["errors"].map { |e| e["message"] }
+    assert_equal ["value can't be blank"], result["errors"].map { |e| e["message"] }
 
     # This string doesn't respond to blank:
     non_blank_string = NonBlankString.new("")
     result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: non_blank_string })
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Query.validated.value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
+    assert_equal ["value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
   end
 
   it "validates minimum length" do
@@ -54,7 +54,7 @@ describe GraphQL::Schema::Validator::LengthValidator do
 
     result = schema.execute("{ validated(value: \"nono\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Query.validated.value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
+    assert_equal ["value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
   end
 
   it "validates maximum length" do
@@ -65,7 +65,7 @@ describe GraphQL::Schema::Validator::LengthValidator do
 
     result = schema.execute("{ validated(value: \"is-invalid\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Query.validated.value is too long (maximum is 8)"], result["errors"].map { |e| e["message"] }
+    assert_equal ["value is too long (maximum is 8)"], result["errors"].map { |e| e["message"] }
   end
 
   it "validates within length" do
@@ -76,11 +76,11 @@ describe GraphQL::Schema::Validator::LengthValidator do
 
     result = schema.execute("{ validated(value: \"nono\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Query.validated.value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
+    assert_equal ["value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
 
     result = schema.execute("{ validated(value: \"is-invalid\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Query.validated.value is too long (maximum is 8)"], result["errors"].map { |e| e["message"] }
+    assert_equal ["value is too long (maximum is 8)"], result["errors"].map { |e| e["message"] }
   end
 
   it "validates length is" do
@@ -91,33 +91,33 @@ describe GraphQL::Schema::Validator::LengthValidator do
 
     result = schema.execute("{ validated(value: \"nono\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Query.validated.value is the wrong length (should be 8)"], result["errors"].map { |e| e["message"] }
+    assert_equal ["value is the wrong length (should be 8)"], result["errors"].map { |e| e["message"] }
 
     result = schema.execute("{ validated(value: \"is-invalid\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Query.validated.value is the wrong length (should be 8)"], result["errors"].map { |e| e["message"] }
+    assert_equal ["value is the wrong length (should be 8)"], result["errors"].map { |e| e["message"] }
   end
 
   it "applies custom messages" do
     schema = build_schema(String, {length: { is: 8, wrong_length: "Instead, make %{validated} have length %{count}" }})
     result = schema.execute("{ validated(value: \"is-invalid\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Instead, make Query.validated.value have length 8"], result["errors"].map { |e| e["message"] }
+    assert_equal ["Instead, make value have length 8"], result["errors"].map { |e| e["message"] }
 
     schema = build_schema(String, {length: { minimum: 50, too_short: "Instead, make %{validated} have length at least %{count}" }})
     result = schema.execute("{ validated(value: \"is-invalid\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Instead, make Query.validated.value have length at least 50"], result["errors"].map { |e| e["message"] }
+    assert_equal ["Instead, make value have length at least 50"], result["errors"].map { |e| e["message"] }
 
     schema = build_schema(String, {length: { maximum: 5, too_long: "Instead, make %{validated} have length less than %{count}" }})
     result = schema.execute("{ validated(value: \"is-invalid\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["Instead, make Query.validated.value have length less than 5"], result["errors"].map { |e| e["message"] }
+    assert_equal ["Instead, make value have length less than 5"], result["errors"].map { |e| e["message"] }
 
     schema = build_schema(String, {length: { minimum: 50, message: "NO, BAD! %{validated} %{count}" }})
     result = schema.execute("{ validated(value: \"is-invalid\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["NO, BAD! Query.validated.value 50"], result["errors"].map { |e| e["message"] }
+    assert_equal ["NO, BAD! value 50"], result["errors"].map { |e| e["message"] }
   end
 
   list_expectations = [
@@ -125,21 +125,21 @@ describe GraphQL::Schema::Validator::LengthValidator do
       config: { minimum: 3 },
       cases: [
         { query: "{ validated(value: [1, 2, 3, 4]) }", result: [1, 2, 3, 4], error_messages: [] },
-        { query: "{ validated(value: [1, 2]) }", result: nil, error_messages: ["Query.validated.value is too short (minimum is 3)"] },
+        { query: "{ validated(value: [1, 2]) }", result: nil, error_messages: ["value is too short (minimum is 3)"] },
       ]
     },
     {
       config: { maximum: 3 },
       cases: [
         { query: "{ validated(value: [1, 2]) }", result: [1, 2], error_messages: [] },
-        { query: "{ validated(value: [1, 2, 3, 4]) }", result: nil, error_messages: ["Query.validated.value is too long (maximum is 3)"] },
+        { query: "{ validated(value: [1, 2, 3, 4]) }", result: nil, error_messages: ["value is too long (maximum is 3)"] },
       ]
     },
     {
       config: { is: 3 },
       cases: [
         { query: "{ validated(value: [1, 2, 3]) }", result: [1, 2, 3], error_messages: [] },
-        { query: "{ validated(value: [1, 2]) }", result: nil, error_messages: ["Query.validated.value is the wrong length (should be 3)"] },
+        { query: "{ validated(value: [1, 2]) }", result: nil, error_messages: ["value is the wrong length (should be 3)"] },
       ]
     },
   ]
