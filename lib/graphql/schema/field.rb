@@ -17,6 +17,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasPath
       extend GraphQL::Schema::FindInheritedValue
       include GraphQL::Schema::FindInheritedValue::EmptyObjects
+      include GraphQL::Schema::Member::HasDirectives
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
@@ -199,6 +200,7 @@ module GraphQL
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       # @param extensions [Array<Class, Hash<Class => Object>>] Named extensions to apply to this field (see also {#extension})
+      # @param directives [Hash{Class => Hash}] Directives to apply to this field
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
       # @param broadcastable [Boolean] Whether or not this field can be distributed in subscription broadcasts
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
@@ -297,6 +299,12 @@ module GraphQL
         # is that it would override arguments
         if connection? && connection_extension
           self.extension(connection_extension)
+        end
+
+        if directives.any?
+          directives.each do |(dir_class, options)|
+            self.directive(dir_class, options)
+          end
         end
 
         if definition_block
