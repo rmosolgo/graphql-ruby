@@ -42,12 +42,12 @@ module GraphQL
           schema_definition = schema_defns.first
           types = {}
           directives = {}
-          type_resolver = build_resolve_type(types, directives, -> (type_name) { types[type_name] ||= Schema::LateBoundType.new(type_name)})
+          type_resolver = build_resolve_type(types, directives, ->(type_name) { types[type_name] ||= Schema::LateBoundType.new(type_name)})
           # Make a different type resolver because we need to coerce directive arguments
           # _while_ building the schema.
           # It will dig for a type if it encounters a custom type. This could be a problem if there are cycles.
           directive_type_resolver = nil
-          directive_type_resolver = build_resolve_type(GraphQL::Schema::BUILT_IN_TYPES, directives, -> (type_name) {
+          directive_type_resolver = build_resolve_type(GraphQL::Schema::BUILT_IN_TYPES, directives, ->(type_name) {
             types[type_name] ||= begin
               defn = document.definitions.find { |d| d.respond_to?(:name) && d.name == type_name }
               build_definition_from_node(defn, directive_type_resolver, default_resolve)
