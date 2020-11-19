@@ -290,7 +290,7 @@ module GraphQL
       end
 
       def definition_directives(member)
-        dirs = if member.directives.empty?
+        dirs = if !member.respond_to?(:directives) || member.directives.empty?
           []
         else
           member.directives.map do |dir|
@@ -300,9 +300,10 @@ module GraphQL
               if arg_defn.default_value? && arg_value.value == arg_defn.default_value
                 next
               else
+                value_node = build_default_value(arg_value.value, arg_value.definition.type)
                 args << GraphQL::Language::Nodes::Argument.new(
                   name: arg_value.definition.name,
-                  value: arg_value.value,
+                  value: value_node,
                 )
               end
             end

@@ -44,9 +44,15 @@ module GraphQL
           directives = {}
           type_resolver = build_resolve_type(types, directives, -> (type_name) { types[type_name] ||= Schema::LateBoundType.new(type_name)})
           # Make a different type resolver because we need to coerce directive arguments
-          # _while_ building the schema. I don't think this will work for
-          # directives whose arguments use custom scalars, though.
-          directive_type_resolver = build_resolve_type(GraphQL::Schema::BUILT_IN_TYPES, directives, -> (type_name) { types[type_name] ||= Schema::LateBoundType.new(type_name)})
+          # _while_ building the schema.
+          # It will dig for a type if it encounters a custom type. This could be a problem if there are cycles.
+          directive_type_resolver = nil
+          directive_type_resolver = build_resolve_type(GraphQL::Schema::BUILT_IN_TYPES, directives, -> (type_name) {
+            types[type_name] ||= begin
+              defn = document.definitions.find { |d| d.respond_to?(:name) && d.name == type_name }
+              build_definition_from_node(defn, directive_type_resolver, default_resolve)
+            end
+          })
 
           document.definitions.each do |definition|
             if definition.is_a?(GraphQL::Language::Nodes::DirectiveDefinition)
@@ -63,18 +69,12 @@ module GraphQL
             case definition
             when GraphQL::Language::Nodes::SchemaDefinition, GraphQL::Language::Nodes::DirectiveDefinition
               nil # already handled
-            when GraphQL::Language::Nodes::EnumTypeDefinition
-              types[definition.name] = build_enum_type(definition, type_resolver)
-            when GraphQL::Language::Nodes::ObjectTypeDefinition
-              types[definition.name] = build_object_type(definition, type_resolver)
-            when GraphQL::Language::Nodes::InterfaceTypeDefinition
-              types[definition.name] = build_interface_type(definition, type_resolver)
-            when GraphQL::Language::Nodes::UnionTypeDefinition
-              types[definition.name] = build_union_type(definition, type_resolver)
-            when GraphQL::Language::Nodes::ScalarTypeDefinition
-              types[definition.name] = build_scalar_type(definition, type_resolver, default_resolve: default_resolve)
-            when GraphQL::Language::Nodes::InputObjectTypeDefinition
-              types[definition.name] = build_input_object_type(definition, type_resolver)
+            else
+              # It's possible that this was already loaded by the directives
+              prev_type = types[definition.name]
+              if prev_type.nil? || prev_type.is_a?(Schema::LateBoundType)
+                types[definition.name] = build_definition_from_node(definition, type_resolver, default_resolve)
+              end
             end
           end
 
@@ -163,6 +163,23 @@ module GraphQL
           raise(GraphQL::RequiredImplementationMissingError, "Generated Schema cannot use Interface or Union types for execution. Implement resolve_type on your resolver.")
         }
 
+        def build_definition_from_node(definition, type_resolver, default_resolve)
+          case definition
+          when GraphQL::Language::Nodes::EnumTypeDefinition
+            build_enum_type(definition, type_resolver)
+          when GraphQL::Language::Nodes::ObjectTypeDefinition
+            build_object_type(definition, type_resolver)
+          when GraphQL::Language::Nodes::InterfaceTypeDefinition
+            build_interface_type(definition, type_resolver)
+          when GraphQL::Language::Nodes::UnionTypeDefinition
+            build_union_type(definition, type_resolver)
+          when GraphQL::Language::Nodes::ScalarTypeDefinition
+            build_scalar_type(definition, type_resolver, default_resolve: default_resolve)
+          when GraphQL::Language::Nodes::InputObjectTypeDefinition
+            build_input_object_type(definition, type_resolver)
+          end
+        end
+
         # Modify `types`, replacing any late-bound references to built-in types
         # with their actual definitions.
         #
@@ -192,6 +209,9 @@ module GraphQL
               next
             else
               dir_class = type_resolver.call(dir_node.name)
+              if dir_class.nil?
+                raise ArgumentError, "No definition for @#{dir_node.name} on #{ast_node.name} at #{ast_node.line}:#{ast_node.col}"
+              end
               options = args_to_kwargs(dir_node)
               dirs[dir_class] = options
             end
