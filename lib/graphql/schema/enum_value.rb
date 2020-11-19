@@ -30,6 +30,7 @@ module GraphQL
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
+      include GraphQL::Schema::Member::HasDirectives
 
       attr_reader :graphql_name
 
@@ -39,7 +40,7 @@ module GraphQL
       # @return [String] Explains why this value was deprecated (if present, this will be marked deprecated in introspection)
       attr_accessor :deprecation_reason
 
-      def initialize(graphql_name, desc = nil, owner:, ast_node: nil, description: nil, value: nil, deprecation_reason: nil, &block)
+      def initialize(graphql_name, desc = nil, owner:, ast_node: nil, directives: nil, description: nil, value: nil, deprecation_reason: nil, &block)
         @graphql_name = graphql_name.to_s
         GraphQL::NameValidator.validate!(@graphql_name)
         @description = desc || description
@@ -47,6 +48,11 @@ module GraphQL
         @deprecation_reason = deprecation_reason
         @owner = owner
         @ast_node = ast_node
+        if directives
+          directives.each do |dir_class, dir_options|
+            directive(dir_class, **dir_options)
+          end
+        end
 
         if block_given?
           instance_eval(&block)

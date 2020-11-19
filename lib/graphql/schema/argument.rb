@@ -46,8 +46,9 @@ module GraphQL
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
       # @param from_resolver [Boolean] if true, a Resolver class defined this argument
       # @param method_access [Boolean] If false, don't build method access on legacy {Query::Arguments} instances.
+      # @param directives [Hash{Class => Hash}]
       # @param deprecation_reason [String]
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, deprecation_reason: nil, &definition_block)
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, directives: nil, deprecation_reason: nil, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -63,6 +64,12 @@ module GraphQL
         @from_resolver = from_resolver
         @method_access = method_access
         self.deprecation_reason = deprecation_reason
+
+        if directives
+          directives.each do |dir_class, dir_options|
+            directive(dir_class, **dir_options)
+          end
+        end
 
         if definition_block
           if definition_block.arity == 1

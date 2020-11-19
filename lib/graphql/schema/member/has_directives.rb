@@ -43,6 +43,10 @@ module GraphQL
                 merge_directives(dirs, anc_dirs)
               end
             end
+            if own_directives
+              dirs ||= []
+              merge_directives(dirs, own_directives)
+            end
             dirs || NO_DIRECTIVES
           when HasDirectives
             @own_directives || NO_DIRECTIVES

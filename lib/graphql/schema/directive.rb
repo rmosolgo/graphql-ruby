@@ -9,6 +9,10 @@ module GraphQL
     class Directive < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasArguments
       class << self
+        def path
+          "@#{super}"
+        end
+
         # Return a name based on the class name,
         # but downcase the first letter.
         def default_graphql_name
@@ -21,6 +25,11 @@ module GraphQL
 
         def locations(*new_locations)
           if new_locations.any?
+            new_locations.each do |new_loc|
+              if !LOCATIONS.include?(new_loc.to_sym)
+                raise ArgumentError, "#{self} (#{self.graphql_name}) has an invalid directive location: `locations #{new_loc}` "
+              end
+            end
             @locations = new_locations
           else
             @locations ||= (superclass.respond_to?(:locations) ? superclass.locations : [])

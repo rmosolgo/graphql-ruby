@@ -59,9 +59,11 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
 
     let(:expected_document) { GraphQL.parse(expected_idl) }
 
-    describe "when schemas have enums" do
+    describe "when schemas have enums and directives" do
       let(:schema_idl) { <<-GRAPHQL.chomp
 directive @locale(lang: LangEnum!) on FIELD
+
+directive @secret(top: Boolean = false) on FIELD_DEFINITION
 
 enum LangEnum {
   en
@@ -69,14 +71,26 @@ enum LangEnum {
 }
 
 type Query {
-  i: Int
+  i: Int @secret
+  ssn: String @secret(top: true)
 }
       GRAPHQL
       }
 
       class DirectiveSchema < GraphQL::Schema
+        class Secret < GraphQL::Schema::Directive
+          argument :top, Boolean, required: false, default_value: false
+          locations FIELD_DEFINITION
+        end
+
         class Query < GraphQL::Schema::Object
-          field :i, Int, null: true
+          field :i, Int, null: true do
+            directive Secret
+          end
+
+          field :ssn, String, null: true do
+            directive Secret, top: true
+          end
         end
 
         class Locale < GraphQL::Schema::Directive

@@ -206,7 +206,7 @@ module GraphQL
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param legacy_edge_class [Class, nil] (DEPRECATED) If present, pass this along to the legacy field definition
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, legacy_edge_class: nil, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, legacy_edge_class: nil, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -303,7 +303,7 @@ module GraphQL
 
         if directives.any?
           directives.each do |(dir_class, options)|
-            self.directive(dir_class, options)
+            self.directive(dir_class, **options)
           end
         end
 

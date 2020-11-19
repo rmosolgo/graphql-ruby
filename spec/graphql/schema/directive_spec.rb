@@ -54,7 +54,29 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     assert_equal expected_message, err.message
   end
 
-  it "raises an error when arguments are missing or mistyped"
-  it "appears in schema dumps"
-  it "is loaded from schema dumps"
+  it "validates arguments" do
+    err = assert_raises ArgumentError do
+      GraphQL::Schema::Field.from_options(
+        name: :something,
+        type: String,
+        null: false,
+        owner: DirectiveTest::Thing,
+        directives: { DirectiveTest::Secret => {} }
+      )
+    end
+
+    assert_equal "@secret.topSecret is required, but no value was given", err.message
+
+    err2 = assert_raises ArgumentError do
+      GraphQL::Schema::Field.from_options(
+        name: :something,
+        type: String,
+        null: false,
+        owner: DirectiveTest::Thing,
+        directives: { DirectiveTest::Secret => { top_secret: 12.5 } }
+      )
+    end
+
+    assert_equal "@secret.topSecret is required, but no value was given", err2.message
+  end
 end
