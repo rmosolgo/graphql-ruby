@@ -212,22 +212,23 @@ module GraphQL
               if dir_class.nil?
                 raise ArgumentError, "No definition for @#{dir_node.name} on #{ast_node.name} at #{ast_node.line}:#{ast_node.col}"
               end
-              options = args_to_kwargs(dir_node)
+              options = args_to_kwargs(dir_class, dir_node)
               dirs[dir_class] = options
             end
           end
           dirs
         end
 
-        def args_to_kwargs(node)
+        def args_to_kwargs(arg_owner, node)
           if node.respond_to?(:arguments)
             kwargs = {}
             node.arguments.each do |arg_node|
-              kwargs[arg_node.name] = args_to_kwargs(arg_node.value)
+              arg_defn = arg_owner.get_argument(arg_node.name)
+              kwargs[arg_defn.keyword] = args_to_kwargs(arg_defn.type.unwrap, arg_node.value)
             end
             kwargs
           elsif node.is_a?(Array)
-            node.map { |n| args_to_kwargs(n) }
+            node.map { |n| args_to_kwargs(arg_owner, n) }
           elsif node.is_a?(Language::Nodes::Enum)
             node.name
           else
