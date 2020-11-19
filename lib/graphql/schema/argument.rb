@@ -11,6 +11,8 @@ module GraphQL
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasDirectives
+      include GraphQL::Schema::Member::HasValidators
+      include GraphQL::Schema::FindInheritedValue::EmptyObjects
 
       NO_DEFAULT = :__no_default__
 
@@ -48,7 +50,8 @@ module GraphQL
       # @param method_access [Boolean] If false, don't build method access on legacy {Query::Arguments} instances.
       # @param directives [Hash{Class => Hash}]
       # @param deprecation_reason [String]
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, directives: nil, deprecation_reason: nil, &definition_block)
+      # @param validates [Hash, nil] Options for building validators, if any should be applied
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -70,6 +73,8 @@ module GraphQL
             directive(dir_class, **dir_options)
           end
         end
+
+        self.validates(validates)
 
         if definition_block
           if definition_block.arity == 1
@@ -206,6 +211,8 @@ module GraphQL
         if value.is_a?(GraphQL::Schema::InputObject)
           value = value.prepare
         end
+
+        Schema::Validator.validate!(validators, obj, context, value)
 
         if @prepare.nil?
           value

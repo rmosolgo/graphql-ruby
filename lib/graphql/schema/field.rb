@@ -15,6 +15,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasArguments
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
+      include GraphQL::Schema::Member::HasValidators
       extend GraphQL::Schema::FindInheritedValue
       include GraphQL::Schema::FindInheritedValue::EmptyObjects
       include GraphQL::Schema::Member::HasDirectives
@@ -205,8 +206,9 @@ module GraphQL
       # @param broadcastable [Boolean] Whether or not this field can be distributed in subscription broadcasts
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
+      # @param validates [Array<Hash>] Configurations for validating this field
       # @param legacy_edge_class [Class, nil] (DEPRECATED) If present, pass this along to the legacy field definition
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, legacy_edge_class: nil, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, legacy_edge_class: nil, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -306,6 +308,8 @@ module GraphQL
             self.directive(dir_class, **options)
           end
         end
+
+        self.validates(validates)
 
         if definition_block
           if definition_block.arity == 1
@@ -594,6 +598,9 @@ module GraphQL
         begin
           # Unwrap the GraphQL object to get the application object.
           application_object = object.object
+
+          Schema::Validator.validate!(validators, application_object, ctx, args)
+
           ctx.schema.after_lazy(self.authorized?(application_object, args, ctx)) do |is_authorized|
             if is_authorized
               public_send_field(object, args, ctx)

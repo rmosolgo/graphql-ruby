@@ -21,6 +21,7 @@ require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
 
+require "graphql/schema/validator"
 require "graphql/schema/member"
 require "graphql/schema/wrapper"
 require "graphql/schema/list"

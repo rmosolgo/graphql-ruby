@@ -7,6 +7,7 @@ module GraphQL
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader
       extend GraphQL::Schema::Member::ValidatesInput
+      extend GraphQL::Schema::Member::HasValidators
 
       include GraphQL::Dig
 
@@ -75,6 +76,9 @@ module GraphQL
       def prepare
         if context
           context.schema.after_any_lazies(@maybe_lazies) do
+            object = context[:current_object]
+            # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
+            Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash, as: self.class)
             self
           end
         else
