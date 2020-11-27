@@ -33,3 +33,17 @@ class MySchema < GraphQL::Schema
   use MyTimeout, max_seconds: 2
 end
 ```
+
+### Validation
+
+Queries can originate from a user, and may be crafted in a manner to take a long time to validate against the schema.
+
+It is possible to set an upper bound on how long the static validation rules are allowed to run before returning a validation timeout error. The default is no timeout.
+
+For example:
+
+```ruby
+class MySchema < GraphQL::Schema
+  validate_timeout 10
+end
+```
