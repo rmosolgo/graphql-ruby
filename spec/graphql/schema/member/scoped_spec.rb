@@ -90,6 +90,12 @@ describe GraphQL::Schema::Member::Scoped do
         ]
       end
 
+      field :lazy_items, [Item], null: false
+      field :lazy_items_connection, Item.connection_type, null: false, resolver_method: :lazy_items
+      def lazy_items
+        ->() { items }
+      end
+
       if TESTING_INTERPRETER
         field :things, [Thing], null: false
         def things
@@ -202,6 +208,28 @@ describe GraphQL::Schema::Member::Scoped do
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
       assert_equal ["Trombone", "Paperclip"], names
       assert_equal true, ctx[:proc_called]
+    end
+
+    it "works for lazy returned list values" do
+      query_str = "
+      {
+        lazyItemsConnection {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+        lazyItems {
+          name
+        }
+      }
+      "
+      res = ScopeSchema.execute(query_str, context: { french: true })
+      names = res["data"]["lazyItemsConnection"]["edges"].map { |e| e["node"]["name"] }
+      assert_equal ["Trombone"], names
+      names2 = res["data"]["lazyItems"].map { |e| e["name"] }
+      assert_equal ["Trombone"], names2
     end
 
     it "is called for abstract types" do

@@ -69,6 +69,14 @@ module GraphQL
       end
     end
   end
+
+  module StringMatchBackport
+    refine String do
+      def match?(pattern)
+        self =~ pattern
+      end
+    end
+  end
 end
 
 # Order matters for these:
@@ -121,6 +129,7 @@ require "graphql/introspection"
 require "graphql/analysis_error"
 require "graphql/coercion_error"
 require "graphql/invalid_name_error"
+require "graphql/integer_decoding_error"
 require "graphql/integer_encoding_error"
 require "graphql/string_encoding_error"
 require "graphql/internal_representation"

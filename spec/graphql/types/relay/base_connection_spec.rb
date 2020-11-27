@@ -31,4 +31,14 @@ describe GraphQL::Types::Relay::BaseConnection do
     assert_equal "NON_NULL",nodes_field["type"]["kind"]
     assert_equal "NON_NULL",nodes_field["type"]["ofType"]["ofType"]["kind"]
   end
+
+  it "never treats nodes like a connection" do
+    type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "MissedConnection"
+      field :id, "ID", null: false
+    end
+
+    refute type.connection_type.fields["nodes"].connection?
+    refute type.connection_type.fields["edges"].type.unwrap.fields["node"].connection?
+  end
 end

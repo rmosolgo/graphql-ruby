@@ -43,6 +43,7 @@ module GraphQL
         # @param arg_defn [GraphQL::Schema::Argument]
         # @return [GraphQL::Schema::Argument]
         def add_argument(arg_defn)
+          @own_arguments ||= {}
           own_arguments[arg_defn.name] = arg_defn
           arg_defn
         end
@@ -84,70 +85,69 @@ module GraphQL
         # @param context [GraphQL::Query::Context]
         # @return [Hash<Symbol, Object>, Execution::Lazy<Hash>]
         def coerce_arguments(parent_object, values, context)
-          argument_values = {}
-          kwarg_arguments = {}
           # Cache this hash to avoid re-merging it
           arg_defns = self.arguments
 
-          maybe_lazies = []
-          arg_lazies = arg_defns.map do |arg_name, arg_defn|
-            arg_key = arg_defn.keyword
-            has_value = false
-            default_used = false
-            if values.key?(arg_name)
-              has_value = true
-              value = values[arg_name]
-            elsif values.key?(arg_key)
-              has_value = true
-              value = values[arg_key]
-            elsif arg_defn.default_value?
-              has_value = true
-              value = arg_defn.default_value
-              default_used = true
-            end
+          if arg_defns.empty?
+            GraphQL::Execution::Interpreter::Arguments.new(argument_values: nil)
+          else
+            argument_values = {}
+            arg_lazies = arg_defns.map do |arg_name, arg_defn|
+              arg_key = arg_defn.keyword
+              has_value = false
+              default_used = false
+              if values.key?(arg_name)
+                has_value = true
+                value = values[arg_name]
+              elsif values.key?(arg_key)
+                has_value = true
+                value = values[arg_key]
+              elsif arg_defn.default_value?
+                has_value = true
+                value = arg_defn.default_value
+                default_used = true
+              end
 
-            if has_value
-              loads = arg_defn.loads
-              loaded_value = nil
-              if loads && !arg_defn.from_resolver?
-                loaded_value = if arg_defn.type.list?
-                  loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, context) }
-                  context.schema.after_any_lazies(loaded_values) { |result| result }
+              if has_value
+                loads = arg_defn.loads
+                loaded_value = nil
+                if loads && !arg_defn.from_resolver?
+                  loaded_value = if arg_defn.type.list?
+                    loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, context) }
+                    context.schema.after_any_lazies(loaded_values) { |result| result }
+                  else
+                    load_application_object(arg_defn, loads, value, context)
+                  end
+                end
+
+                coerced_value = if loaded_value
+                  loaded_value
                 else
-                  load_application_object(arg_defn, loads, value, context)
-                end
-              end
-
-              coerced_value = if loaded_value
-                loaded_value
-              else
-                context.schema.error_handler.with_error_handling(context) do
-                  arg_defn.type.coerce_input(value, context)
-                end
-              end
-
-              context.schema.after_lazy(coerced_value) do |coerced_value|
-                prepared_value = context.schema.error_handler.with_error_handling(context) do
-                  arg_defn.prepare_value(parent_object, coerced_value, context: context)
+                  context.schema.error_handler.with_error_handling(context) do
+                    arg_defn.type.coerce_input(value, context)
+                  end
                 end
 
-                kwarg_arguments[arg_key] = prepared_value
-                # TODO code smell to access such a deeply-nested constant in a distant module
-                argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
-                  value: prepared_value,
-                  definition: arg_defn,
-                  default_used: default_used,
-                )
+                context.schema.after_lazy(coerced_value) do |coerced_value|
+                  prepared_value = context.schema.error_handler.with_error_handling(context) do
+                    arg_defn.prepare_value(parent_object, coerced_value, context: context)
+                  end
+
+                  # TODO code smell to access such a deeply-nested constant in a distant module
+                  argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
+                    value: prepared_value,
+                    definition: arg_defn,
+                    default_used: default_used,
+                  )
+                end
               end
             end
-          end
 
-          maybe_lazies.concat(arg_lazies)
-          context.schema.after_any_lazies(maybe_lazies) do
-            GraphQL::Execution::Interpreter::Arguments.new(
-              keyword_arguments: kwarg_arguments,
-              argument_values: argument_values,
-            )
+            context.schema.after_any_lazies(arg_lazies) do
+              GraphQL::Execution::Interpreter::Arguments.new(
+                argument_values: argument_values,
+              )
+            end
           end
         end
 
@@ -229,8 +229,9 @@ module GraphQL
           end
         end
 
+        NO_ARGUMENTS = {}.freeze
         def own_arguments
-          @own_arguments ||= {}
+          @own_arguments || NO_ARGUMENTS
         end
       end
     end

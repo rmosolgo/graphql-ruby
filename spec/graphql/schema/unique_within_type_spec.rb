@@ -34,6 +34,13 @@ describe GraphQL::Schema::UniqueWithinType do
       assert_equal("250cda0e-a89d-41cf-99e1-2872d89f1100", id)
     end
 
+    it "raises an execution error if invalid string is decoded" do
+      err = assert_raises(GraphQL::ExecutionError) {
+        GraphQL::Schema::UniqueWithinType.decode("Invalid-String*")
+      }
+      assert_includes err.message, "Invalid input: \"Invalid-String*\""
+    end
+
     it "raises an error if you try and use a reserved character in the typename" do
       err = assert_raises(RuntimeError) {
         GraphQL::Schema::UniqueWithinType.encode("Best-Thing", "234-567")
