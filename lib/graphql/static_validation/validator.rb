@@ -38,6 +38,7 @@ module GraphQL
               validate_rules(rules_to_use, context)
             else
               begin
+                # CAUTION: Usage of the timeout module makes the assumption that validation rules are stateless Ruby code that requires no cleanup if process was interrupted. This means no blocking IO calls, native gems, locks, or `rescue` clauses that must be reached.
                 Timeout::timeout(timeout) do
                   validate_rules(rules_to_use, context)
                 end
