@@ -464,13 +464,6 @@ type Query {
       errors = admin_schema.validate('query { adminOnlyMessage }', context: context)
       assert_equal([], errors)
     end
-
-    it "returns timeout error on large query string" do
-      admin_schema.validate_timeout = 0.001
-      query = "query { #{'adminOnlyMessage ' * 2000 }}"
-      errors = admin_schema.validate(query)
-      assert_equal 1, errors.length
-    end
   end
 
   describe "#as_json / #to_json" do

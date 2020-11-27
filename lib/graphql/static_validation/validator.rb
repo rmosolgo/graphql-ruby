@@ -34,17 +34,24 @@ module GraphQL
 
             context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class)
 
-            if timeout.nil?
-              validate_rules(rules_to_use, context)
-            else
-              begin
-                # CAUTION: Usage of the timeout module makes the assumption that validation rules are stateless Ruby code that requires no cleanup if process was interrupted. This means no blocking IO calls, native gems, locks, or `rescue` clauses that must be reached.
-                Timeout::timeout(timeout) do
-                  validate_rules(rules_to_use, context)
+            begin
+              # CAUTION: Usage of the timeout module makes the assumption that validation rules are stateless Ruby code that requires no cleanup if process was interrupted. This means no blocking IO calls, native gems, locks, or `rescue` clauses that must be reached.
+              # A timeout value of 0 or nil will execute the block without any timeout.
+              Timeout::timeout(timeout) do
+                # Attach legacy-style rules.
+                # Only loop through rules if it has legacy-style rules
+                unless (legacy_rules = rules_to_use - GraphQL::StaticValidation::ALL_RULES).empty?
+                  legacy_rules.each do |rule_class_or_module|
+                    if rule_class_or_module.method_defined?(:validate)
+                      rule_class_or_module.new.validate(context)
+                    end
+                  end
                 end
-              rescue Timeout::Error
-                handle_timeout(query, context)
+
+                context.visitor.visit
               end
+            rescue Timeout::Error
+              handle_timeout(query, context)
             end
 
             context.errors
@@ -71,22 +78,6 @@ module GraphQL
         context.errors << GraphQL::StaticValidation::ValidationTimeoutError.new(
           "Timeout on validation of query"
         )
-      end
-
-      private
-
-      def validate_rules(rules_to_use, context)
-        # Attach legacy-style rules.
-        # Only loop through rules if it has legacy-style rules
-        unless (legacy_rules = rules_to_use - GraphQL::StaticValidation::ALL_RULES).empty?
-          legacy_rules.each do |rule_class_or_module|
-            if rule_class_or_module.method_defined?(:validate)
-              rule_class_or_module.new.validate(context)
-            end
-          end
-        end
-
-        context.visitor.visit
       end
     end
   end
