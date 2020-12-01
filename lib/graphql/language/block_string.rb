@@ -63,7 +63,7 @@ module GraphQL
       end
 
       def self.print(str, indent: '')
-        lines = str.split("\n")
+        lines = str.to_s.split("\n")
 
         block_str = "#{indent}\"\"\"\n".dup
 
