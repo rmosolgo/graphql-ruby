@@ -31,8 +31,6 @@ module GraphQL
         end
       end
 
-      private
-
       def first
         @first ||= begin
           capped = limit_pagination_argument(arguments[:first], max_page_size)
@@ -46,6 +44,8 @@ module GraphQL
       def last
         @last ||= limit_pagination_argument(arguments[:last], max_page_size)
       end
+
+      private
 
       # apply first / last limit results
       def paged_nodes
