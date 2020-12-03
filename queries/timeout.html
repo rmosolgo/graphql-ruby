@@ -112,6 +112,8 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
+<p><strong>Note:</strong> This configuration uses Ruby’s built-in <code class="language-plaintext highlighter-rouge">Timeout</code> API, which can interrupt IO calls mid-flight, resulting in <a href="https://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/">very weird bugs</a>. None of GraphQL-Ruby’s validators make IO calls but if you want to use this configuration and you have custom static validators that make IO calls, open an issue to discuss implementing this in an IO-safe way.</p>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
