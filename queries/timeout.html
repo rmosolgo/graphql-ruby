@@ -99,6 +99,19 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
+<h3 id="validation">Validation</h3>
+
+<p>Queries can originate from a user, and may be crafted in a manner to take a long time to validate against the schema.</p>
+
+<p>It is possible to limit how many seconds the static validation rules are allowed to run before returning a validation timeout error. The default is no timeout.</p>
+
+<p>For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">validate_timeout</span> <span class="mi">10</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
