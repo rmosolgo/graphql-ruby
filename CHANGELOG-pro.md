@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.16.1 (3 Dec 2020)
+
+### Bug Fix
+
+- Fix duplicate calls to `Argument#authorized?` in CanCan and Pundit integrations #3242
+
 ## 1.16.0 (10 Nov 2020)
 
 ### New Features
