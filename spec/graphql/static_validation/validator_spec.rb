@@ -156,6 +156,31 @@ describe GraphQL::StaticValidation::Validator do
     end
   end
 
+  describe "validation timeout" do
+    module StubValidationTimeout
+      def on_operation_definition(node, parent)
+        raise Timeout::Error.new
+      end
+    end
+    let(:rules) {
+      [
+        StubValidationTimeout
+      ]
+    }
+    let(:validator) { GraphQL::StaticValidation::Validator.new(schema: Dummy::Schema, rules: rules) }
+    let(:query_string) { "{ t: __typename }"}
+    let(:errors) { validator.validate(query, validate: validate, timeout: 0.1)[:errors].map(&:to_h) }
+
+    it "aborts and return error" do
+      expected_errors = [{
+        "message" => "Timeout on validation of query",
+        "locations" => [],
+        "extensions"=>{"code"=>"validationTimeout"}
+      }]
+      assert_equal expected_errors, errors
+    end
+  end
+
   describe "Custom ruleset" do
     let(:query_string) { "
         fragment Thing on Cheese {
