@@ -56,8 +56,4 @@ describe GraphQL::Schema::Validator::NumericalityValidator do
   ]
 
   build_tests(:numericality, Integer, expectations)
-
-  it "applies custom messages" do
-    skip
-  end
 end
