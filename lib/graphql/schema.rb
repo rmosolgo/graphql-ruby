@@ -41,6 +41,7 @@ require "graphql/schema/directive/deprecated"
 require "graphql/schema/directive/include"
 require "graphql/schema/directive/skip"
 require "graphql/schema/directive/feature"
+require "graphql/schema/directive/flagged"
 require "graphql/schema/directive/transform"
 require "graphql/schema/type_membership"
 
