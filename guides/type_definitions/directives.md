@@ -129,6 +129,11 @@ After that:
 
 Similarly, {{ "Schema.from_definition" | api_doc }} parses directives from IDL strings.
 
+For a couple of built-in examples, check out:
+
+- {{ "GraphQL::Schema::Directive::Deprecated" | api_doc }} which implements `deprecation_reason` (via {{ "GraphQL::Schema::Member::HasDeprecationReason" | api_doc}})
+- {{ "GraphQL::Schema::Directive::Flagged" | api_doc }}, which is an example of using schema directives to implement {% internal_link "visibility", "/authorization/visibility" %}
+
 ## Custom Name
 
 By default, the directive's name is taken from the class name. You can override this with `graphql_name`, for example:
