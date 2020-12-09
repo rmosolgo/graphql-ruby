@@ -11,6 +11,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasDirectives
+      include GraphQL::Schema::Member::HasDeprecationReason
       include GraphQL::Schema::Member::HasValidators
       include GraphQL::Schema::FindInheritedValue::EmptyObjects
 
@@ -107,14 +108,16 @@ module GraphQL
       # @return [String] Deprecation reason for this argument
       def deprecation_reason(text = nil)
         if text
-          validate_deprecated_or_optional(null: @null, deprecation_reason: text)
-          @deprecation_reason = text
+          self.deprecation_reason = text
         else
-          @deprecation_reason
+          super()
         end
       end
 
-      alias_method :deprecation_reason=, :deprecation_reason
+      def deprecation_reason=(new_reason)
+        validate_deprecated_or_optional(null: @null, deprecation_reason: new_reason)
+        super
+      end
 
       def visible?(context)
         true
@@ -170,8 +173,8 @@ module GraphQL
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value
         end
-        if @deprecation_reason
-          argument.deprecation_reason = @deprecation_reason
+        if self.deprecation_reason
+          argument.deprecation_reason = self.deprecation_reason
         end
         argument
       end

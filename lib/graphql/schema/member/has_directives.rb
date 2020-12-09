@@ -4,11 +4,23 @@ module GraphQL
   class Schema
     class Member
       module HasDirectives
-        # Create an instance of `dir_class` for `self`, using `options`
+        # Create an instance of `dir_class` for `self`, using `options`.
+        #
+        # It removes a previously-attached instance of `dir_class`, if there is one.
+        #
         # @return [void]
         def directive(dir_class, **options)
           @own_directives ||= []
+          remove_directive(dir_class)
           @own_directives << dir_class.new(self, **options)
+          nil
+        end
+
+        # Remove an attached instance of `dir_class`, if there is one
+        # @param dir_class [Class<GraphQL::Schema::Directive>]
+        # @return [viod]
+        def remove_directive(dir_class)
+          @own_directives && @own_directives.reject! { |d| d.is_a?(dir_class) }
           nil
         end
 

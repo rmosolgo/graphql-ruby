@@ -14,6 +14,7 @@ module GraphQL
           elsif !target.is_a?(VisibleByFlag)
             # This is an instance of a base class. `include` won't put this in front of the
             # base class implementation, so we need to `.prepend`.
+            # `#visible?` could probably be moved to a module and then this could use `include` instead.
             target.class.prepend(VisibleByFlag)
           end
           super

@@ -314,7 +314,8 @@ module GraphQL
           end
         end
 
-        if member.respond_to?(:deprecation_reason) && (reason = member.deprecation_reason)
+        # This is just for printing legacy `.define { ... }` schemas, where `deprecation_reason` isn't added to `.directives`.
+        if !member.respond_to?(:directives) && member.respond_to?(:deprecation_reason) && (reason = member.deprecation_reason)
           arguments = []
 
           if reason != GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON
