@@ -28,6 +28,9 @@ jobs:
     - run: bundle exec rake rubocop test
       env:
         BUNDLE_GEMFILE: ${{ matrix.gemfile }}
-    # - run: bundle exec rake test TESTING_LEGACY=1
-    # - run: bundle exec rake js:all
-    # - run: cd spec/dummy && bundle install && bundle exec rails test:system && cd ../..
+    - run: bundle exec rake test TESTING_LEGACY=1
+      if: ${{ matrix.gemfile == "Gemfile" }}
+    - run: bundle exec rake js:all
+      if: ${{ matrix.gemfile == "Gemfile" }}
+    - run: cd spec/dummy && bundle install && bundle exec rails test:system && cd ../..
+      if: ${{ matrix.gemfile == "Gemfile" }}
