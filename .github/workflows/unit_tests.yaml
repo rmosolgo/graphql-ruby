@@ -9,25 +9,14 @@ jobs:
         gemfile: ["Gemfile", "gemfiles/rails_5.2.gemfile"]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/cache@v2
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles(matrix.gemfile) }}
-        restore-keys: |
-          ${{ runner.os }}-gems-
+    - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6
-    - run: bundle config path vendor/bundle
-      env:
-        BUNDLE_GEMFILE: ${{ matrix.gemfile }}
+        bundler-cache: true
     - run: bundle install --jobs 4 --retry 3
-      env:
-        BUNDLE_GEMFILE: ${{ matrix.gemfile }}
-    - run: bundle exec rake rubocop test
-      env:
-        BUNDLE_GEMFILE: ${{ matrix.gemfile }}
+    - run: bundle exec rake test
     - run: bundle exec rake test TESTING_LEGACY=1
       if: ${{ matrix.gemfile == 'Gemfile' }}
     - run: bundle exec rake js:all
