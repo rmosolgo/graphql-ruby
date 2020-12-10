@@ -6,6 +6,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+    - run: echo BUNDLE_GEMFILE="spec/dummy/Gemfile" > $GITHUB_ENV
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
