@@ -32,5 +32,3 @@ jobs:
       if: ${{ matrix.gemfile == 'Gemfile' }}
     - run: bundle exec rake js:all
       if: ${{ matrix.gemfile == 'Gemfile' }}
-    - run: cd spec/dummy && bundle install && bundle exec rails test:system && cd ../..
-      if: ${{ matrix.gemfile == 'Gemfile' }}
