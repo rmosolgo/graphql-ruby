@@ -6,17 +6,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/cache@v2
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-gems-
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6
+        bundler-cache: true
     - run: bundle config path vendor/bundle
-    - run: cd spec/dummy
     - run: bundle install
+      env:
+        working-directory: spec/dummy
     - run: bundle exec rails test:system
+      env:
+        working-directory: spec/dummy
