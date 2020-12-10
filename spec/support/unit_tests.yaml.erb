@@ -1,0 +1,21 @@
+name: Unit tests
+on:
+  push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6
+    - run: bundle install
+    - run: bundle exec rake rubocop
+    - run: bundle exec rake test
+    - run: bundle exec rake test TESTING_LEGACY=1
+    - run: bundle exec rake test:js
+    <%- gemfiles.each do |gemfile| -%>
+    - run: BUNDLE_GEMFILE=<%= gemfile.inspect %> bundle install && bundle exec rake test
+    <%- end -%>
+    - run: cd spec/dummy && bundle install && bundle exec rails test:system && cd ../..

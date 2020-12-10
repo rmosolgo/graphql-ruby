@@ -139,3 +139,9 @@ namespace :js do
   end
   task all: [:install, :build, :test]
 end
+
+desc "Generate the GH Actions workflow for the unit tests"
+task :generate_unit_tests_workflow do
+  require_relative "./spec/support/git_hub_actions_unit_tests"
+  GitHubActionsUnitTests.update!
+end
