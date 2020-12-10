@@ -23,6 +23,7 @@ jobs:
     - run: bundle exec rake test TESTING_LEGACY=1
     - run: bundle exec rake js:all
     <%- gemfiles.each do |gemfile| -%>
-    - run: BUNDLE_GEMFILE=<%= gemfile.inspect %> bundle install --jobs 4 --retry 3 && bundle exec rake test
+    - run: BUNDLE_GEMFILE=<%= gemfile.inspect %> bundle install --jobs 4 --retry 3
+    - run: BUNDLE_GEMFILE=<%= gemfile.inspect %> bundle exec rake test
     <%- end -%>
     - run: cd spec/dummy && bundle install && bundle exec rails test:system && cd ../..
