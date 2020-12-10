@@ -21,7 +21,7 @@ jobs:
     - run: bundle exec rake rubocop
     - run: bundle exec rake test
     - run: bundle exec rake test TESTING_LEGACY=1
-    - run: bundle exec rake test:js
+    - run: bundle exec rake js:all
     - run: BUNDLE_GEMFILE="gemfiles/mongoid_5.gemfile" bundle install --jobs 4 --retry 3 && bundle exec rake test
     - run: BUNDLE_GEMFILE="gemfiles/mongoid_6.gemfile" bundle install --jobs 4 --retry 3 && bundle exec rake test
     - run: BUNDLE_GEMFILE="gemfiles/mongoid_7.gemfile" bundle install --jobs 4 --retry 3 && bundle exec rake test
