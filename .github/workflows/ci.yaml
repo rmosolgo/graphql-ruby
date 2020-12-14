@@ -81,7 +81,7 @@ jobs:
     - run: |
         echo DATABASE=POSTGRESQL > $GITHUB_ENV
         echo POSTGRESQL_PASSWORD='graphql-ruby' > $GITHUB_ENV
-        PGPASSWORD=graphql-ruby psql -c 'create database graphql_ruby_test;' -U postgres
+        PGPASSWORD=graphql-ruby psql -U postgres -tc 'create database graphql_ruby_test;'
       if: ${{ matrix.testing_database == 'postgresql' }}
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
@@ -89,8 +89,6 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
     - run: bundle install --jobs 4 --retry 3
-    - run: psql -c 'create database graphql_ruby_test;' -U postgres
-      if: ${{ matrix.database == 'postgresql' }}
     - run: bundle exec rake test
     - run: bundle exec rake test TESTING_LEGACY=1
       if: ${{ matrix.testing_legacy == 'legacy' }}
