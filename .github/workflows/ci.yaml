@@ -16,11 +16,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: echo BUNDLE_GEMFILE="spec/dummy/Gemfile" > $GITHUB_ENV
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6
         bundler-cache: true
+      env:
+        BUNDLE_GEMFILE: ./spec/dummy/Gemfile
     - run: |
         pwd
         ls
