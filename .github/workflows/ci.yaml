@@ -21,8 +21,6 @@ jobs:
       with:
         ruby-version: 2.6
         bundler-cache: true
-    - run: bundle config path vendor/bundle
-    - run: bundle install
       env:
         working-directory: spec/dummy
     - run: bundle exec rails test:system
