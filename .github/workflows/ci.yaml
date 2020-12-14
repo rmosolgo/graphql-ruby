@@ -26,6 +26,7 @@ jobs:
       working-directory: ./spec/dummy
   test:
     strategy:
+      fail-fast: false
       matrix:
         # Some goals of this matrix:
         # - Test once without Rails at all
@@ -65,12 +66,16 @@ jobs:
         image: postgres:10.8
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: ""
           POSTGRES_DB: postgres
         ports:
         - 5432:5432
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      mongodb:
+        image: mongo:3.4.23
+        ports:
+        - 27017:27017
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
     - run: echo DATABASE=POSTGRESQL > $GITHUB_ENV
