@@ -48,8 +48,6 @@ jobs:
           - gemfile: gemfiles/rails_5.2_postgresql.gemfile
             ruby: 2.7
             testing_database: postgresql
-            env:
-              DATABASE: POSTGRESQL
           - gemfile: gemfiles/rails_6.0.gemfile
             ruby: 2.7
             testing_legacy: legacy
@@ -64,6 +62,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
+    - run: echo DATABASE=POSTGRESQL > $GITHUB_ENV
+      if: ${{ matrix.database == 'postgresql' }}
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
