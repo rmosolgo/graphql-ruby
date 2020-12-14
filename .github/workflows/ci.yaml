@@ -22,11 +22,7 @@ jobs:
         bundler-cache: true
       env:
         BUNDLE_GEMFILE: ./spec/dummy/Gemfile
-    - run: |
-        pwd
-        ls
-        bundle exec rails -v
-        bundle exec rails test:system
+    - run: bundle exec rails test:system
       working-directory: ./spec/dummy
   test:
     strategy:
