@@ -81,7 +81,6 @@ jobs:
     - run: |
         echo DATABASE=POSTGRESQL > $GITHUB_ENV
         echo POSTGRESQL_PASSWORD='graphql-ruby' > $GITHUB_ENV
-        PGPASSWORD=graphql-ruby psql -U postgres -tc 'create database graphql_ruby_test;'
       if: ${{ matrix.testing_database == 'postgresql' }}
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
