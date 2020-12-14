@@ -44,7 +44,7 @@ jobs:
           - gemfile: gemfiles/rails_3.2.gemfile
             ruby: 2.3
           - gemfile: gemfiles/rails_4.2.gemfile
-            ruby: 2.4
+            ruby: 2.3
           - gemfile: gemfiles/rails_5.2_postgresql.gemfile
             ruby: 2.7
             testing_database: postgresql
