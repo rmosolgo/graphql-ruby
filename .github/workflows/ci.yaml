@@ -14,18 +14,16 @@ jobs:
     - run: bundle exec rake rubocop
   system_tests:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: spec/dummy
     steps:
-    - run: echo BUNDLE_GEMFILE="spec/dummy/Gemfile" > $GITHUB_ENV
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6
         bundler-cache: true
-      env:
-        working-directory: spec/dummy
     - run: bundle exec rails test:system
-      env:
-        working-directory: spec/dummy
   test:
     strategy:
       matrix:
