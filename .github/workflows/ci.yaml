@@ -21,7 +21,6 @@ jobs:
       with:
         ruby-version: 2.6
         bundler-cache: true
-      working-directory: ./spec/dummy
     - run: |
         pwd
         ls
