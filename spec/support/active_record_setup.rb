@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-p ["DATABASE is", ENV["DATABASE"]]
+p ["DATABASE is", ENV["DATABASE"], ENV.keys]
 
 if testing_rails?
   # Remove the old sqlite database
