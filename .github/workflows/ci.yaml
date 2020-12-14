@@ -66,7 +66,7 @@ jobs:
         image: postgres:10.8
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ""
+          POSTGRES_PASSWORD: graphql-ruby
           POSTGRES_DB: postgres
         ports:
         - 5432:5432
@@ -78,7 +78,10 @@ jobs:
         - 27017:27017
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
-    - run: echo DATABASE=POSTGRESQL > $GITHUB_ENV
+    - run: |
+        echo DATABASE=POSTGRESQL > $GITHUB_ENV
+        echo POSTGRESQL_PASSWORD='graphql-ruby' > $GITHUB_ENV
+        PGPASSWORD=graphql-ruby psql -c 'create database graphql_ruby_test;' -U postgres
       if: ${{ matrix.testing_database == 'postgresql' }}
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
