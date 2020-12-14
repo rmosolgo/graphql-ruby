@@ -21,15 +21,13 @@ jobs:
       with:
         ruby-version: 2.6
         bundler-cache: true
-      env:
-        working-directory: ./spec/dummy
-    - run: >
+      working-directory: ./spec/dummy
+    - run: |
         pwd
         ls
         bundle exec rails -v
         bundle exec rails test:system
-      env:
-        working-directory: ./spec/dummy
+      working-directory: ./spec/dummy
   test:
     strategy:
       matrix:
