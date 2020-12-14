@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: spec/dummy
+        working-directory: ./spec/dummy
     steps:
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
