@@ -63,7 +63,7 @@ jobs:
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
     - run: echo DATABASE=POSTGRESQL > $GITHUB_ENV
-      if: ${{ matrix.database == 'postgresql' }}
+      if: ${{ matrix.testing_database == 'postgresql' }}
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
