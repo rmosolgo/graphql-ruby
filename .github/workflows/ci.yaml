@@ -80,7 +80,9 @@ jobs:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
       if: ${{ matrix.testing_database == 'postgresql' }}
-    - run: echo POSTGRESQL_PASSWORD='graphql-ruby' > $GITHUB_ENV
+    - run: echo PGPASSWORD='graphql-ruby' > $GITHUB_ENV
+      if: ${{ matrix.testing_database == 'postgresql' }}
+    - run: psql -U postgres -c 'CREATE DATABASE graphql_ruby_test;'
       if: ${{ matrix.testing_database == 'postgresql' }}
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
