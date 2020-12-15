@@ -52,14 +52,6 @@ jobs:
           - gemfile: gemfiles/rails_6.0.gemfile
             ruby: 2.7
             testing_legacy: legacy
-          - gemfile: gemfiles/rails_master.gemfile
-            ruby: 2.7
-          - gemfile: gemfiles/mongoid_7.gemfile
-            ruby: 2.7
-          - gemfile: gemfiles/mongoid_6.gemfile
-            ruby: 2.7
-          - gemfile: gemfiles/mongoid_5.gemfile
-            ruby: 2.7
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -72,10 +64,6 @@ jobs:
         - 5432:5432
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-      mongodb:
-        image: mongo:3.4.23
-        ports:
-        - 27017:27017
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
@@ -87,9 +75,35 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - run: bundle install --jobs 4 --retry 3
     - run: bundle exec rake test
     - run: bundle exec rake test TESTING_LEGACY=1
       if: ${{ matrix.testing_legacy == 'legacy' }}
     - run: bundle exec rake js:all
       if: ${{ matrix.testing_js == 'js' }}
+  mongodb_test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - gemfile: gemfiles/rails_master.gemfile
+            ruby: 2.7
+          - gemfile: gemfiles/mongoid_7.gemfile
+            ruby: 2.7
+          - gemfile: gemfiles/mongoid_6.gemfile
+            ruby: 2.7
+          - gemfile: gemfiles/mongoid_5.gemfile
+            ruby: 2.7
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:3.4.23
+        ports:
+        - 27017:27017
+    steps:
+    - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+    - run: bundle exec rake test
