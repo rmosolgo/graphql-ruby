@@ -14,6 +14,8 @@ if testing_rails?
     ActiveRecord::Base.establish_connection(adapter: "jdbcsqlite3", database: "./_test_.db")
     SequelDB = Sequel.connect('jdbc:sqlite:./_test_.db')
   elsif ENV['DATABASE'] == 'POSTGRESQL'
+    # This will fail silently if the database already exists
+    system("psql -U postgres -c 'CREATE DATABASE graphql_ruby_test;'")
     ActiveRecord::Base.establish_connection(
       adapter: "postgresql",
       username: "postgres",
