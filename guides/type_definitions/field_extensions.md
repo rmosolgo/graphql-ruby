@@ -96,8 +96,8 @@ In this case, `{limit: 20}` will be passed as `options:` to `#initialize` and `o
 For example, options can be used for modifying execution:
 
 ```ruby
-def after_resolve(value:, **options)
-  # Apply the limit from the options
+def after_resolve(value:, **rest)
+  # Apply the limit from the options, a readable attribute on the class
   value.limit(options[:limit])
 end
 ```
