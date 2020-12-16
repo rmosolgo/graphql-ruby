@@ -44,7 +44,7 @@ jobs:
           - gemfile: gemfiles/rails_3.2.gemfile
             ruby: 2.3
           - gemfile: gemfiles/rails_4.2.gemfile
-            ruby: 2.7
+            ruby: 2.4
             bundler: "1"
           # Rails 5.2 is tested with Postgresql below
           - gemfile: gemfiles/rails_6.0.gemfile
