@@ -11,6 +11,8 @@ if RUBY_VERSION >= "2.4"
   gem 'pry-byebug'
 end
 
+gem "mongoid", "~> 5.4.0"
+
 # Required for running `jekyll algolia ...` (via `rake site:update_search_index`)
 group :jekyll_plugins do
   if RUBY_VERSION >= "2.3"
