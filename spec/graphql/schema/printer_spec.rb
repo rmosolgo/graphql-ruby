@@ -151,7 +151,7 @@ directive @deprecated(
   [Markdown](https://daringfireball.net/projects/markdown/).
   """
   reason: String = "No longer supported"
-) on FIELD_DEFINITION | ENUM_VALUE | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+) on ARGUMENT_DEFINITION | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 
 """
 Directs the executor to include this field or fragment only when the `if` argument is true.
@@ -859,8 +859,27 @@ SCHEMA
 
   it "prints directives parsed from IDL" do
     input = <<-GRAPHQL
+directive @a(a: Letter) on ENUM_VALUE
+
+directive @b(b: BInput) on ENUM_VALUE
+
+directive @customDirective on FIELD_DEFINITION
+
+directive @intDir(a: Int!) on INPUT_FIELD_DEFINITION
+
+directive @someDirective on OBJECT
+
+input BInput {
+  b: Letter
+}
+
 input I {
   i1: Int @intDir(a: 1)
+}
+
+enum Letter {
+  A
+  B
 }
 
 type Query @someDirective {

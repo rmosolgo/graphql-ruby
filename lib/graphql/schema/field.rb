@@ -18,15 +18,14 @@ module GraphQL
       include GraphQL::Schema::Member::HasValidators
       extend GraphQL::Schema::FindInheritedValue
       include GraphQL::Schema::FindInheritedValue::EmptyObjects
+      include GraphQL::Schema::Member::HasDirectives
+      include GraphQL::Schema::Member::HasDeprecationReason
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
       alias :graphql_name :name
 
       attr_writer :description
-
-      # @return [String, nil] If present, the field is marked as deprecated with this documentation
-      attr_accessor :deprecation_reason
 
       # @return [Symbol] Method or hash key on the underlying object to look up
       attr_reader :method_sym
@@ -200,13 +199,14 @@ module GraphQL
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       # @param extensions [Array<Class, Hash<Class => Object>>] Named extensions to apply to this field (see also {#extension})
+      # @param directives [Hash{Class => Hash}] Directives to apply to this field
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
       # @param broadcastable [Boolean] Whether or not this field can be distributed in subscription broadcasts
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @param legacy_edge_class [Class, nil] (DEPRECATED) If present, pass this along to the legacy field definition
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, legacy_edge_class: nil, validates: EMPTY_ARRAY, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, legacy_edge_class: nil, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -233,7 +233,7 @@ module GraphQL
         end
         @function = function
         @resolve = resolve
-        @deprecation_reason = deprecation_reason
+        self.deprecation_reason = deprecation_reason
 
         if method && hash_key
           raise ArgumentError, "Provide `method:` _or_ `hash_key:`, not both. (called with: `method: #{method.inspect}, hash_key: #{hash_key.inspect}`)"
@@ -299,6 +299,12 @@ module GraphQL
         # is that it would override arguments
         if connection? && connection_extension
           self.extension(connection_extension)
+        end
+
+        if directives.any?
+          directives.each do |(dir_class, options)|
+            self.directive(dir_class, **options)
+          end
         end
 
         self.validates(validates)
@@ -444,8 +450,8 @@ module GraphQL
           field_defn.description = @description
         end
 
-        if @deprecation_reason
-          field_defn.deprecation_reason = @deprecation_reason
+        if self.deprecation_reason
+          field_defn.deprecation_reason = self.deprecation_reason
         end
 
         if @resolver_class

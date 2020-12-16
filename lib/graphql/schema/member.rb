@@ -4,6 +4,8 @@ require 'graphql/schema/member/base_dsl_methods'
 require 'graphql/schema/member/cached_graphql_definition'
 require 'graphql/schema/member/graphql_type_names'
 require 'graphql/schema/member/has_ast_node'
+require 'graphql/schema/member/has_directives'
+require 'graphql/schema/member/has_deprecation_reason'
 require 'graphql/schema/member/has_path'
 require 'graphql/schema/member/has_unresolved_type_error'
 require 'graphql/schema/member/has_validators'
@@ -31,6 +33,7 @@ module GraphQL
       extend RelayShortcuts
       extend HasPath
       extend HasAstNode
+      extend HasDirectives
     end
   end
 end

@@ -41,6 +41,7 @@ require "graphql/schema/directive/deprecated"
 require "graphql/schema/directive/include"
 require "graphql/schema/directive/skip"
 require "graphql/schema/directive/feature"
+require "graphql/schema/directive/flagged"
 require "graphql/schema/directive/transform"
 require "graphql/schema/type_membership"
 
@@ -1561,9 +1562,12 @@ module GraphQL
 
       # Attach a single directive to this schema
       # @param new_directive [Class]
+      # @return void
       def directive(new_directive)
-        add_type_and_traverse(new_directive, root: false)
-        own_directives[new_directive.graphql_name] = new_directive
+        own_directives[new_directive.graphql_name] ||= begin
+          add_type_and_traverse(new_directive, root: false)
+          new_directive
+        end
       end
 
       def default_directives
@@ -1890,13 +1894,16 @@ module GraphQL
           end
         else
           own_types[type.graphql_name] = type
+          add_directives_from(type)
           if type.kind.fields?
             type.fields.each do |name, field|
               field_type = field.type.unwrap
               references_to(field_type, from: field)
               field_path = path + [name]
               add_type(field_type, owner: field, late_types: late_types, path: field_path)
+              add_directives_from(field)
               field.arguments.each do |arg_name, arg|
+                add_directives_from(arg)
                 arg_type = arg.type.unwrap
                 references_to(arg_type, from: arg)
                 add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg_name])
@@ -1905,6 +1912,7 @@ module GraphQL
           end
           if type.kind.input_object?
             type.arguments.each do |arg_name, arg|
+              add_directives_from(arg)
               arg_type = arg.type.unwrap
               references_to(arg_type, from: arg)
               add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg_name])
@@ -1941,6 +1949,10 @@ module GraphQL
             end
           end
         end
+      end
+
+      def add_directives_from(owner)
+        owner.directives.each { |dir| directive(dir.class) }
       end
     end
 
