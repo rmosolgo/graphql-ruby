@@ -45,6 +45,7 @@ jobs:
             ruby: 2.3
           - gemfile: gemfiles/rails_4.2.gemfile
             ruby: 2.7
+            bundler: "1"
           # Rails 5.2 is tested with Postgresql below
           - gemfile: gemfiles/rails_6.0.gemfile
             ruby: 2.5
@@ -59,6 +60,7 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
+        bundler: ${{ matrix.bundler || 'default' }}
     - run: bundle exec rake test
     - run: bundle exec rake test TESTING_LEGACY=1
       if: ${{ matrix.testing_legacy == 'legacy' }}
