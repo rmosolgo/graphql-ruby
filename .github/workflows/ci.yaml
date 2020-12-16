@@ -105,7 +105,7 @@ jobs:
           - gemfile: gemfiles/mongoid_6.gemfile
             ruby: 2.7
           - gemfile: gemfiles/mongoid_5.gemfile
-            ruby: 2.7
+            ruby: 2.6
     runs-on: ubuntu-latest
     services:
       mongodb:
