@@ -40,7 +40,6 @@ jobs:
         include:
           - gemfile: Gemfile
             ruby: 2.6
-            testing_js: js
           - gemfile: gemfiles/rails_3.2.gemfile
             ruby: 2.3
           - gemfile: gemfiles/rails_4.2.gemfile
@@ -49,7 +48,6 @@ jobs:
           # Rails 5.2 is tested with Postgresql below
           - gemfile: gemfiles/rails_6.0.gemfile
             ruby: 2.5
-            testing_legacy: legacy
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 2.7
     runs-on: ubuntu-latest
@@ -62,10 +60,25 @@ jobs:
         bundler-cache: true
         bundler: ${{ matrix.bundler || 'default' }}
     - run: bundle exec rake test
+  legacy_test:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo BUNDLE_GEMFILE='gemfiles/rails_6.0.gemfile' > $GITHUB_ENV
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7
+        bundler-cache: true
     - run: bundle exec rake test TESTING_LEGACY=1
-      if: ${{ matrix.testing_legacy == 'legacy' }}
+  javascript_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7
+        bundler-cache: true
     - run: bundle exec rake js:all
-      if: ${{ matrix.testing_js == 'js' }}
   postgres_test:
     runs-on: ubuntu-latest
     services:
