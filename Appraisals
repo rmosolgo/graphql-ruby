@@ -46,7 +46,3 @@ end
 appraise 'mongoid_6' do
   gem 'mongoid', '~> 6.4.1'
 end
-
-appraise 'mongoid_5' do
-  gem 'mongoid', '~> 5.4.0'
-end
