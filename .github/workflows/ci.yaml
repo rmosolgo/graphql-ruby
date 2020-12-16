@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:10.8
+        image: postgres:latest
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: graphql-ruby
@@ -78,14 +78,17 @@ jobs:
         ports:
         - 5432:5432
         # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
     - run: echo BUNDLE_GEMFILE='gemfiles/rails_5.2_postgresql.gemfile' > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
     - run: echo PGPASSWORD='graphql-ruby' > $GITHUB_ENV
     - run: pg_lsclusters
-    - run: systemctl status postgresql.service
-    - run: service postgresql status
+    - run: systemctl start postgresql.service
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
