@@ -24,32 +24,33 @@ jobs:
         BUNDLE_GEMFILE: ./spec/dummy/Gemfile
     - run: bundle exec rails test:system
       working-directory: ./spec/dummy
+  # Some coverage goals of these tests:
+  # - Test once without Rails at all
+  # - Test postgres, to make sure that the ActiveRecord
+  #   stuff works on that (as well as the default sqlite)
+  # - Test mongoid -- and several versions, since they're quite different
+  # - Run the tests with Rails _and_ TESTING_LEGACY=1 to test legacy codepaths
+  # - Run the JS unit tests once
+  # - Test each major version of Rails we support
+  # - Test the min/max minor Ruby version we support (and others?)
   test:
     strategy:
       fail-fast: false
       matrix:
-        # Some goals of this matrix:
-        # - Test once without Rails at all
-        # - Test postgres, to make sure that the ActiveRecord
-        #   stuff works on that (as well as the default sqlite)
-        # - Test mongoid -- and several versions, since they're quite different
-        # - Run the tests with Rails _and_ TESTING_LEGACY=1 to test legacy codepaths
-        # - Run the JS unit tests once (TODO make this its own job?)
-        # - Test each major version of Rails we support
-        # - Test the min/max minor Ruby version we support (and others?)
         include:
-          # TODO ruby 2.2?
           - gemfile: Gemfile
             ruby: 2.6
             testing_js: js
           - gemfile: gemfiles/rails_3.2.gemfile
             ruby: 2.3
           - gemfile: gemfiles/rails_4.2.gemfile
-            ruby: 2.3
+            ruby: 2.4
           # Rails 5.2 is tested with Postgresql below
           - gemfile: gemfiles/rails_6.0.gemfile
-            ruby: 2.7
+            ruby: 2.5
             testing_legacy: legacy
+          - gemfile: gemfiles/rails_master.gemfile
+            ruby: 2.7
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
