@@ -112,13 +112,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - gemfile: gemfiles/mongoid_5.gemfile
-            ruby: 2.5
-          - gemfile: gemfiles/mongoid_6.gemfile
-            ruby: 2.7
-          - gemfile: gemfiles/mongoid_7.gemfile
-            ruby: 2.7
+        gemfile:
+          - gemfiles/mongoid_6.gemfile
+          - gemfiles/mongoid_7.gemfile
     runs-on: ubuntu-latest
     services:
       mongodb:
