@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Connect to PostgreSQL
+      - name: Connect to PostgreSQL in JS
         # Runs a script that creates a PostgreSQL client, populates
         # the client with data, and retrieves data
         run: node client.js
@@ -48,7 +48,9 @@ jobs:
           POSTGRES_HOST: localhost
           # The default PostgreSQL port
           POSTGRES_PORT: 5432
-
+      - run: gem install pg
+      - name: Connect to PostgreSQL in ruby
+        run: ruby client.rb
   lint:
     runs-on: ubuntu-latest
     steps:
