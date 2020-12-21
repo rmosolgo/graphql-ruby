@@ -1,0 +1,25 @@
+{
+  "name": "graphql-ruby-gh-actions-debug",
+  "version": "1.0.0",
+  "description": "debugging gh actions postgres",
+  "main": "client.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rmosolgo/graphql-ruby.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rmosolgo/graphql-ruby/issues"
+  },
+  "homepage": "https://github.com/rmosolgo/graphql-ruby#readme",
+  "dependencies": {
+    "pg": "^8.5.1"
+  }
+}
