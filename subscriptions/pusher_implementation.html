@@ -160,6 +160,13 @@ appendonly <span class="nb">yes</span>
 
 <p>That connection will be used for managing subscription state. All writes to Redis are prefixed with <code class="language-plaintext highlighter-rouge">graphql:sub:</code>.</p>
 
+<p>There are also two configurations for managing persistence:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">stale_ttl_s:</code> expires subscription data after the given number of seconds without any update. After <code class="language-plaintext highlighter-rouge">stale_ttl_s</code> has passed, the data will expire from Redis. Each time a subscription receives an update, its TTL is refreshed. (Generally, this isn’t required because the backend is built to clean itself up. But, if you find that Redis is collecting stale queries, you can set them to expire after some very long time as a safeguard.)</li>
+  <li><code class="language-plaintext highlighter-rouge">cleanup_delay_s:</code> prevents deleting a subscription during those first seconds after it’s created. Usually, this isn’t necessary, but if you observe latency between the subscription’s initial response and the client’s subscription to the delivery channel, you can set this configuration to account for it.</li>
+</ul>
+
 <h2 id="execution-configuration">Execution configuration</h2>
 
 <p>During execution, GraphQL will assign a <code class="language-plaintext highlighter-rouge">subscription_id</code> to the <code class="language-plaintext highlighter-rouge">context</code> hash. The client will use that ID to listen for updates, so you must return the <code class="language-plaintext highlighter-rouge">subscription_id</code> in the response headers.</p>
