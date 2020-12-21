@@ -100,6 +100,7 @@ jobs:
     - run: echo BUNDLE_GEMFILE='gemfiles/rails_5.2_postgresql.gemfile' > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
     - run: echo PGPASSWORD='graphql-ruby' > $GITHUB_ENV
+    - run: sudo apt-get install libpq-dev
     - run: pg_lsclusters
     - run: sudo systemctl start postgresql.service
     - uses: actions/checkout@v2
