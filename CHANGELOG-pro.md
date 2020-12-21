@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.16.2 (21 Dec 2020)
+
+### New Features
+
+- Subscriptions: Add `stale_ttl_s:` and `cleanup_delay_s:` to customize persistence in Redis #3252
+
 ## 1.16.1 (3 Dec 2020)
 
 ### Bug Fix
