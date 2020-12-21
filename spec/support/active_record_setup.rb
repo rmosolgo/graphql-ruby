@@ -25,7 +25,7 @@ if testing_rails?
     databases = ActiveRecord::Base.connection.execute("select datname from pg_database;")
     test_db = databases.find { |d| d["datname"] == "graphql_ruby_test" }
     if test_db.nil?
-      ActiveRecord::Base.connection.execute("create database 'graphql_ruby_test';")
+      ActiveRecord::Base.connection.execute("create database graphql_ruby_test;")
     end
 
     ActiveRecord::Base.establish_connection(ar_connection_options)
