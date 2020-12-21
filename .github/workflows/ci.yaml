@@ -138,7 +138,7 @@ jobs:
         image: postgres:latest
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: graphql-ruby
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
         ports:
         - 5432:5432
@@ -151,7 +151,7 @@ jobs:
     steps:
     - run: echo BUNDLE_GEMFILE='gemfiles/rails_5.2_postgresql.gemfile' > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
-    - run: echo PGPASSWORD='graphql-ruby' > $GITHUB_ENV
+    - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
     - run: sudo apt-get install libpq-dev
     - run: pg_lsclusters
     - run: sudo systemctl start postgresql.service
