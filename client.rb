@@ -4,7 +4,7 @@ conn = PG.connect(
   host: 'localhost',
   port: 5432,
   user: 'postgres',
-  password: 'graphql-ruby',
+  password: 'postgres',
   dbname: 'postgres',
 )
 
