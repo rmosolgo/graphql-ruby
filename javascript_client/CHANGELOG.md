@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.8.1
+
+- Sync: When `--url` is omitted, generate an outfile without syncing with a server
+
 ## 1.8.0
 
 - Ably: Support server-side `cipher_base:` config in the client

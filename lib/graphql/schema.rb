@@ -159,7 +159,7 @@ module GraphQL
 
     accepts_definitions \
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :max_depth, :max_complexity, :default_max_page_size,
+      :validate_timeout, :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
       :error_bubbling,
       :raise_definition_error,
@@ -198,7 +198,7 @@ module GraphQL
     attr_accessor \
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :max_depth, :max_complexity, :default_max_page_size,
+      :validate_timeout, :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :directives,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
@@ -367,7 +367,7 @@ module GraphQL
       validator_opts = { schema: self }
       rules && (validator_opts[:rules] = rules)
       validator = GraphQL::StaticValidation::Validator.new(**validator_opts)
-      res = validator.validate(query)
+      res = validator.validate(query, timeout: validate_timeout)
       res[:errors]
     end
 
@@ -948,6 +948,7 @@ module GraphQL
         schema_defn.query = query && query.graphql_definition
         schema_defn.mutation = mutation && mutation.graphql_definition
         schema_defn.subscription = subscription && subscription.graphql_definition
+        schema_defn.validate_timeout = validate_timeout
         schema_defn.max_complexity = max_complexity
         schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
@@ -1267,6 +1268,18 @@ module GraphQL
           @subscription_execution_strategy = new_subscription_execution_strategy
         else
           @subscription_execution_strategy || find_inherited_value(:subscription_execution_strategy, self.default_execution_strategy)
+        end
+      end
+
+      attr_writer :validate_timeout
+
+      def validate_timeout(new_validate_timeout = nil)
+        if new_validate_timeout
+          @validate_timeout = new_validate_timeout
+        elsif defined?(@validate_timeout)
+          @validate_timeout
+        else
+          find_inherited_value(:validate_timeout)
         end
       end
 

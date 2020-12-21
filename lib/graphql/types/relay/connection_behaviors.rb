@@ -43,7 +43,8 @@ module GraphQL
             field :edges, [edge_type_class, null: true],
               null: true,
               description: "A list of edges.",
-              legacy_edge_class: edge_class # This is used by the old runtime only, for EdgesInstrumentation
+              legacy_edge_class: edge_class, # This is used by the old runtime only, for EdgesInstrumentation
+              connection: false
 
             define_nodes_field(node_nullable) if nodes_field
 
@@ -87,7 +88,8 @@ module GraphQL
           def define_nodes_field(nullable)
             field :nodes, [@node_type, null: nullable],
               null: nullable,
-              description: "A list of nodes."
+              description: "A list of nodes.",
+              connection: false
           end
         end
 

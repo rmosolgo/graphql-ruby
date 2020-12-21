@@ -8,6 +8,18 @@
 
 ### Bug Fix
 
+## 1.16.2 (21 Dec 2020)
+
+### New Features
+
+- Subscriptions: Add `stale_ttl_s:` and `cleanup_delay_s:` to customize persistence in Redis #3252
+
+## 1.16.1 (3 Dec 2020)
+
+### Bug Fix
+
+- Fix duplicate calls to `Argument#authorized?` in CanCan and Pundit integrations #3242
+
 ## 1.16.0 (10 Nov 2020)
 
 ### New Features

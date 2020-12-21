@@ -19,7 +19,7 @@ module GraphQL
             if node_type
               @node_type = node_type
               # Add a default `node` field
-              field :node, node_type, null: null, description: "The item at the end of the edge."
+              field :node, node_type, null: null, description: "The item at the end of the edge.", connection: false
             end
             @node_type
           end
