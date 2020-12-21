@@ -13,6 +13,7 @@ if testing_rails?
     SequelDB = Sequel.connect('jdbc:sqlite:./_test_.db')
   elsif ENV['DATABASE'] == 'POSTGRESQL'
     ar_connection_options = {
+      host: "localhost",
       adapter: "postgresql",
       username: "postgres",
       password: ENV["PGPASSWORD"], # empty in development, populated for GH Actions
