@@ -11,6 +11,10 @@ module GraphQL
         @association_name = association_name
       end
 
+      def self.load(association_name, record)
+        super(record.class, association_name, record)
+      end
+
       def load(record)
         # return early if this association is already loaded
         if record.association(@association_name).loaded?

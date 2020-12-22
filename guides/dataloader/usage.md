@@ -17,12 +17,6 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-Dataloader also requires the [`concurrent-ruby` gem](https://github.com/ruby-concurrency/concurrent-ruby) in your project. Add to your Gemfile:
-
-```ruby
-gem "concurrent-ruby"
-```
-
 ## Batch-loading data
 
 With {{ "GraphQL::Dataloader" | api_doc }} in your schema, you're ready to start batch loading data. For example:
@@ -33,7 +27,7 @@ class Types::Post < Types::BaseObject
 
   def author
     # Look up this Post's author by its `belongs_to` association
-    GraphQL::Dataloader::ActiveRecordAssociation.load(self, :author)
+    GraphQL::Dataloader::ActiveRecordAssociation.load(:author, object)
   end
 end
 ```
@@ -54,7 +48,7 @@ class Types::User < Types::BaseObject
 end
 ```
 
-{{ "GraphQL::Dataloader::BelongsTo" | api_doc }} and {{ "GraphQL::Dataloader::Http" | api_doc }} are _source classes_ which fields can use to request data. Under the hood, GraphQL will defer the _actual_ data fetching as long as possible, so that batches can be gathered up and sent together.
+{{ "GraphQL::Dataloader::ActiveRecordAssociation" | api_doc }} and {{ "GraphQL::Dataloader::Http" | api_doc }} are _source classes_ which fields can use to request data. Under the hood, GraphQL will defer the _actual_ data fetching as long as possible, so that batches can be gathered up and sent together.
 
 For a full list of built-in sources, see the {% internal_link "Built-in sources guide", "/dataloader/built_in_sources" %}.
 

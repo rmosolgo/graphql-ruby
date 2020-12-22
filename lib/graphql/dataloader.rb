@@ -3,56 +3,19 @@ require "graphql/dataloader/source"
 require "graphql/dataloader/active_record"
 require "graphql/dataloader/active_record_association"
 require "graphql/dataloader/http"
+require "graphql/dataloader/instrumentation"
+require "graphql/dataloader/load_error"
+require "graphql/dataloader/mutation_field_extension"
 require "graphql/dataloader/redis"
 
 module GraphQL
   class Dataloader
-    class LoadError < GraphQL::Error
-      # @return [Array<Integer, String>] The runtime GraphQL path where the failed load was requested
-      attr_accessor :graphql_path
-
-      attr_writer :message
-
-      def message
-        @message || super
-      end
-
-      attr_writer :cause
-
-      def cause
-        @cause || super
-      end
-    end
-
     def self.use(schema)
       instrumenter = Dataloader::Instrumentation.new
       schema.instrument(:multiplex, instrumenter)
       # TODO this won't work if the mutation is hooked up after this
       schema.mutation && schema.mutation.fields.each do |name, field|
         field.extension(MutationFieldExtension)
-      end
-    end
-
-    class MutationFieldExtension < GraphQL::Schema::FieldExtension
-      def resolve(object:, arguments:, context:, **_rest)
-        Dataloader.current.clear
-        begin
-          return_value = yield(object, arguments)
-          GraphQL::Execution::Lazy.sync(return_value)
-        ensure
-          Dataloader.current.clear
-        end
-      end
-    end
-
-    class Instrumentation
-      def before_multiplex(multiplex)
-        dataloader = Dataloader.new(multiplex)
-        Dataloader.begin_dataloading(dataloader)
-      end
-
-      def after_multiplex(_m)
-        Dataloader.end_dataloading
       end
     end
 

@@ -36,7 +36,7 @@ if testing_rails? && ActiveRecord::Base.respond_to?(:type_for_attribute)
         def artist_album_count(album_name:)
           GraphQL::Dataloader::ActiveRecord.for(Album, column: "name").load(album_name).then do |album|
             # IRL This could be done better using `album.artist_id`, but this is a nice way to test the belongs-to association
-            album && GraphQL::Dataloader::ActiveRecordAssociation.load(Album, :artist, album).then do |artist|
+            album && GraphQL::Dataloader::ActiveRecordAssociation.load(:artist, album).then do |artist|
               artist && artist.albums.count
             end
           end
@@ -48,7 +48,7 @@ if testing_rails? && ActiveRecord::Base.respond_to?(:type_for_attribute)
 
         def artist_name(album_name:)
           GraphQL::Dataloader::ActiveRecord.for(Album, column: "name").load(album_name).then do |album|
-            album && GraphQL::Dataloader::ActiveRecordAssociation.load(Album, :artist, album).then(&:name)
+            album && GraphQL::Dataloader::ActiveRecordAssociation.load(:artist, album).then(&:name)
           end
         end
       end

@@ -14,7 +14,7 @@ Because GraphQL queries are very dynamic, GraphQL systems require a different ap
 
 ## Dynamic Data Requirements
 
-When your application renders a predetermined HTML template or JSON payload, you can customize your SQL query for minimum overhead and maximum performance. But, in GraphQL, the response is highly dependent on the incoming query. When clients are sending custom queries, you can't hand-tune database queries!
+When your application renders a hardcoded HTML template or JSON payload, you can customize your SQL query for minimum overhead and maximum performance. But, in GraphQL, the response is highly dependent on the incoming query. When clients are sending custom queries, you can't hand-tune database queries!
 
 For example, imagine this incoming GraphQL query:
 

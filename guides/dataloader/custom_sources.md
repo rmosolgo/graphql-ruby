@@ -57,7 +57,7 @@ However, we'll want to capture the table name for each batch, and we'll use `#in
 class SQLDatabase < GraphQL::Dataloader::Source
   def initialize(table_name)
     # Next, we'll use `@table_name` to prepare a SQL query, see below
-    @table_name
+    @table_name = table_name
   end
 end
 ```
@@ -112,4 +112,8 @@ class SQLDatabase < GraphQL::Dataloader::Source
 end
 ```
 
-Under the hood, GraphQL-Ruby uses [`Concurrent::Promises::Future`](https://ruby-concurrency.github.io/concurrent-ruby/1.1.7/Concurrent/Promises/Future.html) from [concurrent-ruby](https://github.com/ruby-concurrency/concurrent-ruby/).
+Under the hood, GraphQL-Ruby uses [`Concurrent::Promises::Future`](https://ruby-concurrency.github.io/concurrent-ruby/1.1.7/Concurrent/Promises/Future.html) from [concurrent-ruby](https://github.com/ruby-concurrency/concurrent-ruby/). Add to your Gemfile:
+
+```ruby
+gem "concurrent-ruby", require: "concurrent"
+```
