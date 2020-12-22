@@ -178,7 +178,7 @@ module GraphQL
         query = Dataloader.current.current_query
         local_err.graphql_path = query.context[:current_path]
         op_name = query.selected_operation_name || query.selected_operation.operation_type || "query"
-        local_err.message = err.message.sub("),", ") at #{op_name}.#{local_err.graphql_path.join(".")},")
+        local_err.message = err.message.sub(")\n\n", ") at #{op_name}.#{local_err.graphql_path.join(".")}\n\n")
         local_err
       end
 

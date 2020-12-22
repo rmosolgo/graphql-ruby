@@ -46,5 +46,19 @@ if testing_rails?
     create_table :foods, force: true do |t|
       t.column :name, :string
     end
+
+    create_table :albums, force: true do |t|
+      t.column :name, :string
+      t.column :artist_id, :integer
+    end
+
+    create_table :artists, force: true do |t|
+      t.column :name, :string
+    end
+
+    create_table :html_colors, force: true do |t|
+      t.column :name, :string
+      t.column :hex, :integer
+    end
   end
 end

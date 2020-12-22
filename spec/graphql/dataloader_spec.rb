@@ -145,8 +145,6 @@ describe "GraphQL::Dataloader" do
 
       query(Query)
       mutation(Mutation)
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
       use GraphQL::Dataloader
 
       def self.resolve_type(type, obj, ctx)
@@ -277,7 +275,7 @@ describe "GraphQL::Dataloader" do
       exec_query('query GetBook { book4: book(id: "b4") { author { name } } }')
     end
     assert_equal "Key not found: a3", err.cause.message
-    assert_equal "Error from DataloaderTest::BackendSource#perform(\"a3\") at GetBook.book4.author, RuntimeError: \"Key not found: a3\"", err.message
+    assert_equal "Error from DataloaderTest::BackendSource#perform(\"a3\") at GetBook.book4.author\n\nRuntimeError:\n\"Key not found: a3\"", err.message
     assert_equal ["book4", "author"], err.graphql_path
   end
 
@@ -309,7 +307,7 @@ describe "GraphQL::Dataloader" do
       exec_query('query GetBook { book4: book(id: "b4") { author { name } } }', context: { background_threaded: true })
     end
     assert_equal "Key not found: a3", err.cause.message
-    assert_equal "Error from DataloaderTest::BackgroundThreadBackendSource#perform(\"a3\") at GetBook.book4.author, RuntimeError: \"Key not found: a3\"", err.message
+    assert_equal "Error from DataloaderTest::BackgroundThreadBackendSource#perform(\"a3\") at GetBook.book4.author\n\nRuntimeError:\n\"Key not found: a3\"", err.message
     assert_equal ["book4", "author"], err.graphql_path
   end
 

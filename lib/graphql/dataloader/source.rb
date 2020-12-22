@@ -115,7 +115,7 @@ module GraphQL
         # Allow client-facing errors to keep propagating
         raise
       rescue StandardError => cause
-        message = "Error from #{self.class}#perform(#{keys_to_load.map(&:inspect).join(", ")}), #{cause.class}: #{cause.message.inspect}"
+        message = "Error from #{self.class}#perform(#{keys_to_load.map(&:inspect).join(", ")})\n\n#{cause.class}:\n#{cause.message.inspect}"
         load_err = GraphQL::Dataloader::LoadError.new(message)
         load_err.set_backtrace(cause.backtrace)
         load_err.cause = cause

@@ -28,7 +28,7 @@ module GraphQL
       instrumenter = Dataloader::Instrumentation.new
       schema.instrument(:multiplex, instrumenter)
       # TODO this won't work if the mutation is hooked up after this
-      schema.mutation.fields.each do |name, field|
+      schema.mutation && schema.mutation.fields.each do |name, field|
         field.extension(MutationFieldExtension)
       end
     end

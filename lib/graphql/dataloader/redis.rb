@@ -4,7 +4,7 @@ module GraphQL
   class Dataloader
     # This source uses Redis pipelining to execute a bunch of commands.
     #
-    # In practice, an application-specific would be more appropriate, because you
+    # In practice, an application-specific source would be more appropriate, because you
     # could choose between commands like GET and MGET, HGETALL and HMGET, etc.
     #
     # But this source is here as an example of what's possible.
@@ -22,8 +22,8 @@ module GraphQL
 
       def perform(commands)
         results = @redis.pipelined do
-          commands.each do |(command, *args)|
-            @redis.public_send(command, args)
+          commands.map do |(command, *args)|
+            @redis.public_send(command, *args)
           end
         end
 
