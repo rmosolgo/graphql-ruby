@@ -52,29 +52,4 @@ describe GraphQL::Relay::ConnectionInstrumentation do
     assert_instance_of GraphQL::Relay::ConnectionResolve, connection_field.resolve_proc
     assert_instance_of GraphQL::Relay::ConnectionResolve, redefined_connection_field.resolve_proc
   end
-
-  # field instrumentation doesn't exist here
-  if !TESTING_INTERPRETER
-    describe "after_built_ins instrumentation" do
-      it "has access to connection objects" do
-        query_str = <<-GRAPHQL
-        {
-          rebels {
-            ships {
-              pageInfo {
-                __typename
-              }
-            }
-          }
-        }
-        GRAPHQL
-        ctx = { before_built_ins: [], after_built_ins: [] }
-        star_wars_query(query_str, {}, context: ctx)
-        # These are data classes, later they're wrapped with type proxies
-        assert_equal ["StarWars::FactionRecord", "GraphQL::Relay::ArrayConnection", "GraphQL::Relay::ArrayConnection"], ctx[:before_built_ins]
-        # After the object is wrapped in a connection, it sees the connection object
-        assert_equal ["StarWars::Faction", "StarWars::ShipConnectionWithParentType", "GraphQL::Types::Relay::PageInfo"], ctx[:after_built_ins]
-      end
-    end
-  end
 end

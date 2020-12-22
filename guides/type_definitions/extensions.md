@@ -68,7 +68,7 @@ Fields are generated in a different way. Instead of using classes, they are gene
 field :name, String, null: false
 # ...
 # Leads to:
-field_config = GraphQL::Schema::Field.new(:name, String, null: false)
+field_config = GraphQL::Schema::Field.new(name: :name, type: String, null: false)
 ```
 
 So, you can customize this process by:
@@ -100,10 +100,14 @@ class Types::BaseObject < GraphQL::Schema::Object
   field_class AuthorizedField
 end
 
-# And/Or
+# And....
 class Types::BaseInterface < GraphQL::Schema::Interface
   field_class AuthorizedField
 end
+
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
+  field_class AuthorizedField 
+end 
 ```
 
 Now, `AuthorizedField.new(*args, &block)` will be used to create `GraphQL::Schema::Field`s on those types. At runtime `field.required_permission` will return the configured value.
@@ -152,7 +156,7 @@ Edges may be customized in a similar way to Connections.
 Arguments may be customized in a similar way to Fields.
 
 - Create a new class extending `GraphQL::Schema::Argument`
-- Assign it to your field class with `argument_class(MyArgClass)`
+- Use `argument_class(MyArgClass)` to assign it to your base field class, base resolver class, and base mutation class
 
 Then, in your custom argument class, you can use `#initialize(name, type, desc = nil, **kwargs)` to take input from the DSL.
 

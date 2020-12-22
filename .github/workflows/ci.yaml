@@ -1,0 +1,129 @@
+name: CI Suite
+on:
+  push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6
+        bundler-cache: true
+    - run: bundle exec rake rubocop
+  system_tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6
+        bundler-cache: true
+      env:
+        BUNDLE_GEMFILE: ./spec/dummy/Gemfile
+    - run: bundle exec rails test:system
+      working-directory: ./spec/dummy
+  # Some coverage goals of these tests:
+  # - Test once without Rails at all
+  # - Test postgres, to make sure that the ActiveRecord
+  #   stuff works on that (as well as the default sqlite)
+  # - Test mongoid -- and several versions, since they're quite different
+  # - Run the tests with Rails _and_ TESTING_LEGACY=1 to test legacy codepaths
+  # - Run the JS unit tests once
+  # - Test each major version of Rails we support
+  # - Test the min/max minor Ruby version we support (and others?)
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - gemfile: Gemfile
+            ruby: 2.6
+          - gemfile: gemfiles/rails_3.2.gemfile
+            ruby: 2.3
+          - gemfile: gemfiles/rails_4.2.gemfile
+            ruby: 2.4
+            bundler: "1"
+          # Rails 5.2 is tested with Postgresql below
+          - gemfile: gemfiles/rails_6.0.gemfile
+            ruby: 2.5
+          - gemfile: gemfiles/rails_master.gemfile
+            ruby: 2.7
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+        bundler: ${{ matrix.bundler || 'default' }}
+    - run: bundle exec rake test
+  legacy_test:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo BUNDLE_GEMFILE='gemfiles/rails_6.0.gemfile' > $GITHUB_ENV
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7
+        bundler-cache: true
+    - run: bundle exec rake test TESTING_LEGACY=1
+  javascript_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7
+        bundler-cache: true
+    - run: bundle exec rake js:all
+  postgres_test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+        - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+    - run: echo BUNDLE_GEMFILE='gemfiles/rails_5.2_postgresql.gemfile' > $GITHUB_ENV
+    - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
+    - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7
+        bundler-cache: true
+    - run: bundle exec rake test
+  mongodb_test:
+    strategy:
+      fail-fast: false
+      matrix:
+        gemfile:
+          - gemfiles/mongoid_6.gemfile
+          - gemfiles/mongoid_7.gemfile
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:3.4.23
+        ports:
+        - 27017:27017
+    steps:
+    - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7
+        bundler-cache: true
+    - run: bundle exec rake test

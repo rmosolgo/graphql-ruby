@@ -16,9 +16,6 @@ describe GraphQL::Schema::Directive::Transform do
     directive(GraphQL::Schema::Directive::Transform)
 
     query(Query)
-    # only supported by the interpreter
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
   end
 
   it "transforms when applicable" do

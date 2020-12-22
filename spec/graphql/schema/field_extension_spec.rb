@@ -27,7 +27,7 @@ describe GraphQL::Schema::FieldExtension do
       end
 
       def resolve(object:, arguments:, context:)
-        factor = arguments.delete(:factor)
+        factor = arguments[:factor]
         yield(object, arguments, factor)
       end
 
@@ -44,8 +44,43 @@ describe GraphQL::Schema::FieldExtension do
       # `yield` returns the user-returned value
       # This method's return value is passed along
       def resolve(object:, arguments:, context:)
-        factor = arguments.delete(:factor)
+        factor = arguments[:factor]
         yield(object, arguments) * factor
+      end
+    end
+
+    class MultiplyByArgumentUsingAfterResolve < GraphQL::Schema::FieldExtension
+      def apply
+        field.argument(:factor, Integer, required: true)
+      end
+
+      def resolve(object:, arguments:, context:)
+        new_arguments = arguments.dup
+        new_arguments.delete(:factor)
+        yield(object, new_arguments, { original_arguments: arguments})
+      end
+
+      def after_resolve(object:, value:, arguments:, context:, memo:)
+        value * memo[:original_arguments][:factor]
+      end
+    end
+
+    class ExtendsArguments < GraphQL::Schema::FieldExtension
+      def resolve(object:, arguments:, **_rest)
+        new_args = arguments.dup
+        new_args[:extended] = true
+        yield(object, new_args)
+      end
+
+      def after_resolve(arguments:, context:, value:, **_rest)
+        context[:extended_args] = arguments[:extended]
+        value
+      end
+    end
+
+    class ShortcutsResolve < GraphQL::Schema::FieldExtension
+      def resolve(**_args)
+        options[:shortcut_value]
       end
     end
 
@@ -89,18 +124,28 @@ describe GraphQL::Schema::FieldExtension do
         input # return it as-is, it will be modified by extensions
       end
 
+      field :multiply_input3, Integer, null: false, resolver_method: :pass_thru_without_splat, extensions: [MultiplyByArgumentUsingAfterResolve] do
+        argument :input, Integer, required: true
+      end
+
+      # lack of kwargs splat demonstrates the extended arguments are passed to the resolver method
+      def pass_thru_without_splat(input:)
+        input
+      end
+
       field :multiple_extensions, Integer, null: false, resolver_method: :pass_thru,
         extensions: [DoubleFilter, { MultiplyByOption => { factor: 3 } }] do
           argument :input, Integer, required: true
         end
+
+      field :extended_then_shortcut, Integer, null: true do
+        extension ExtendsArguments
+        extension ShortcutsResolve, shortcut_value: 3
+      end
     end
 
     class Schema < GraphQL::Schema
       query(Query)
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
   end
 
@@ -113,6 +158,15 @@ describe GraphQL::Schema::FieldExtension do
       field = FilterTestSchema::Query.fields["multiplyInput"]
       assert_equal 1, field.extensions.size
       assert_instance_of FilterTestSchema::MultiplyByArgument, field.extensions.first
+    end
+  end
+
+  describe "passing along extended arguments" do
+    it "works even when shortcut" do
+      ctx = {}
+      res =  exec_query("{ extendedThenShortcut }", context: ctx)
+      assert_equal 3, res["data"]["extendedThenShortcut"]
+      assert_equal true, ctx[:extended_args]
     end
   end
 
@@ -149,6 +203,11 @@ describe GraphQL::Schema::FieldExtension do
     it "can hide arguments from resolve methods" do
       res = exec_query("{ multiplyInput(input: 3, factor: 5) }")
       assert_equal 15, res["data"]["multiplyInput"]
+    end
+
+    it "calls the resolver method with the extended arguments" do
+      res = exec_query("{ multiplyInput3(input: 3, factor: 5) }")
+      assert_equal 15, res["data"]["multiplyInput3"]
     end
 
     it "supports multiple extensions via extensions kwarg" do

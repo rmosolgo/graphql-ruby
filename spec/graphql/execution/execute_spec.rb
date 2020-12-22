@@ -39,7 +39,8 @@ describe GraphQL::Execution::Execute do
     end
 
     describe "when root fields are non-nullable" do
-      let(:schema) { GraphQL::Schema.from_definition <<-GRAPHQL, interpreter: false
+      let(:schema) {
+        schema_class = GraphQL::Schema.from_definition <<-GRAPHQL
         type Mutation {
           push(int: Int!): Int!
         }
@@ -48,6 +49,13 @@ describe GraphQL::Execution::Execute do
           ints: [Int!]
         }
       GRAPHQL
+
+      schema_class.class_exec {
+        use GraphQL::Execution::Execute
+        use GraphQL::Analysis
+      }
+
+      schema_class
       }
 
       it "propagates null to the root mutation and halts mutation execution" do
@@ -131,6 +139,8 @@ describe GraphQL::Execution::Execute do
 
       GraphQL::Schema.define do
         query query_type
+        use GraphQL::Execution::Execute
+        use GraphQL::Analysis
         lazy_resolve(LazyHelpers::Wrapper, :item)
       end
     }
@@ -204,6 +214,8 @@ describe GraphQL::Execution::Execute do
 
       GraphQL::Schema.define do
         query query_type
+        use GraphQL::Execution::Execute
+        use GraphQL::Analysis
         lazy_resolve(Proc, :call)
       end
     }
@@ -256,16 +268,16 @@ describe GraphQL::Execution::Execute do
 
         exec_traces = traces[5..-1]
         expected_traces = [
-          (TESTING_INTERPRETER ? "authorized" : nil),
+          "authorized",
           "execute_field",
           "execute_field",
           "execute_query",
           "lazy_loader",
           "execute_field_lazy",
-          (TESTING_INTERPRETER ? "authorized" : nil),
+          "authorized",
           "execute_field",
           "execute_field_lazy",
-          (TESTING_INTERPRETER ? "authorized" : nil),
+          "authorized",
           "execute_field",
           "execute_field_lazy",
           "execute_field_lazy",
@@ -275,25 +287,15 @@ describe GraphQL::Execution::Execute do
 
         assert_equal expected_traces, exec_traces.map { |t| t[:key] }
 
-        if TESTING_INTERPRETER
-          _authorized_1, field_1_eager, field_2_eager,
-            query_eager, lazy_loader,
-            # field 3 is eager-resolved _during_ field 1's lazy resolve
-            field_1_lazy, _authorized_2, field_3_eager,
-            field_2_lazy, _authorized_3, field_4_eager,
-            # field 3 didn't finish above, it's resolved in the next round
-            field_3_lazy, field_4_lazy,
-            query_lazy, multiplex = exec_traces
-        else
-          field_1_eager, field_2_eager,
-            query_eager, lazy_loader,
-            # field 3 is eager-resolved _during_ field 1's lazy resolve
-            field_1_lazy, field_3_eager,
-            field_2_lazy, field_4_eager,
-            # field 3 didn't finish above, it's resolved in the next round
-            field_3_lazy, field_4_lazy,
-            query_lazy, multiplex = exec_traces
-        end
+        _authorized_1, field_1_eager, field_2_eager,
+          query_eager, lazy_loader,
+          # field 3 is eager-resolved _during_ field 1's lazy resolve
+          field_1_lazy, _authorized_2, field_3_eager,
+          field_2_lazy, _authorized_3, field_4_eager,
+          # field 3 didn't finish above, it's resolved in the next round
+          field_3_lazy, field_4_lazy,
+          query_lazy, multiplex = exec_traces
+
         assert_equal ["b1"], field_1_eager[:path]
         assert_equal ["b2"], field_2_eager[:path]
         assert_instance_of GraphQL::Query, query_eager[:query]

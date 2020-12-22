@@ -14,10 +14,6 @@ describe GraphQL::Tracing::PrometheusTracing do
 
     class Schema < GraphQL::Schema
       query Query
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
   end
 

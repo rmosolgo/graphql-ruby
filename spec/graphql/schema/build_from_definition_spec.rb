@@ -66,10 +66,58 @@ schema {
 
 directive @foo(arg: Int, nullDefault: Int = null) on FIELD
 
-type Hello {
+directive @greeting(pleasant: Boolean = true) on ARGUMENT_DEFINITION | ENUM | FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | UNION
+
+directive @hashed on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @language(is: String!) on ENUM_VALUE
+
+type Hello implements Secret @greeting {
+  goodbye(saying: Parting @greeting): Parting
+  humbug: Int @greeting(pleasant: false)
+  password: Phrase @hashed
+  str(in: Input): String
+}
+
+input Input @greeting {
+  value: String @hashed
+}
+
+enum Parting @greeting {
+  AU_REVOIR @language(is: "fr")
+  ZAI_JIAN @language(is: "zh")
+}
+
+union Phrase @greeting = Hello | Word
+
+interface Secret @greeting {
+  password: String
+}
+
+type Word {
   str: String
 }
       SCHEMA
+
+      parsed_schema = GraphQL::Schema.from_definition(schema)
+      hello_type = parsed_schema.get_type("Hello")
+      assert_equal ["deprecated", "foo", "greeting", "hashed", "include", "language", "skip"], parsed_schema.directives.keys.sort
+      parsed_schema.directives.values.each do |dir_class|
+        assert dir_class < GraphQL::Schema::Directive
+      end
+      assert_equal 1, hello_type.directives.size
+      assert_instance_of parsed_schema.directives["greeting"], hello_type.directives.first
+      assert_equal({ pleasant: true }, hello_type.directives.first.arguments.keyword_arguments)
+
+      humbug_directives = hello_type.get_field("humbug").directives
+      assert_equal 1, humbug_directives.size
+      assert_instance_of parsed_schema.directives["greeting"], humbug_directives.first
+      assert_equal({ pleasant: false }, humbug_directives.first.arguments.keyword_arguments)
+
+      au_revoir_directives = parsed_schema.get_type("Parting").values["AU_REVOIR"].directives
+      assert_equal 1, au_revoir_directives.size
+      assert_instance_of parsed_schema.directives["language"], au_revoir_directives.first
+      assert_equal({ is: "fr" }, au_revoir_directives.first.arguments.keyword_arguments)
 
       assert_schema_and_compare_output(schema.chop)
     end
@@ -578,7 +626,7 @@ type Root {
 
       built_schema = assert_schema_and_compare_output(schema.chop)
       id_scalar = built_schema.types["ID"]
-      assert_equal true, id_scalar.valid_input?("123", OpenStruct.new(schema: built_schema))
+      assert_equal true, id_scalar.valid_isolated_input?("123")
     end
 
     it 'supports custom scalar' do
@@ -596,9 +644,8 @@ type Root {
 
       built_schema = assert_schema_and_compare_output(schema.chop)
       custom_scalar = built_schema.types["CustomScalar"]
-      dummy_ctx = OpenStruct.new(schema: built_schema)
-      assert_equal true, custom_scalar.valid_input?("anything", dummy_ctx)
-      assert_equal true, custom_scalar.valid_input?(12345, dummy_ctx)
+      assert_equal true, custom_scalar.valid_isolated_input?("anything")
+      assert_equal true, custom_scalar.valid_isolated_input?(12345)
     end
 
     it 'supports input object' do

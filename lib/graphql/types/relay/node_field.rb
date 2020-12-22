@@ -19,25 +19,7 @@ module GraphQL
       #     context.schema.object_from_id(id, context)
       #   end
       #
-      NodeField = GraphQL::Schema::Field.new(
-        name: "node",
-        owner: nil,
-        type: GraphQL::Types::Relay::Node,
-        null: true,
-        description: "Fetches an object given its ID.",
-        relay_node_field: true,
-      ) do
-        argument :id, "ID!", required: true,
-          description: "ID of the object."
-
-        def resolve(obj, args, ctx)
-          ctx.schema.object_from_id(args[:id], ctx)
-        end
-
-        def resolve_field(obj, args, ctx)
-          resolve(obj, args, ctx)
-        end
-      end
+      NodeField = GraphQL::Schema::Field.new(**HasNodeField.field_options, &HasNodeField.field_block)
     end
   end
 end

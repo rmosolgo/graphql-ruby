@@ -30,6 +30,9 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - [`action_policy-graphql`](https://github.com/palkan/action_policy-graphql), an integration for using [`action_policy`](https://github.com/palkan/action_policy) as an authorization framework for GraphQL applications.
 - [`graphql_rails`](https://github.com/samesystem/graphql_rails), Rails way GraphQL build tool
 - [`graphql-rails-generators`](https://github.com/ajsharp/graphql-rails-generators), Generate graphql-ruby mutations, types and input types from your ActiveRecord models.
+- [`graphql-ruby-fragment_cache`](https://github.com/DmitryTsepelev/graphql-ruby-fragment_cache), a tool for caching response fragments.
+- [`graphql-ruby-persisted_queries`](https://github.com/DmitryTsepelev/graphql-ruby-persisted_queries), the implementation of [Apollo persisted queries](https://github.com/apollographql/apollo-link-persisted-queries).
+- [`rubocop-graphql`](https://github.com/DmitryTsepelev/rubocop-graphql), [rubocop](https://github.com/rubocop-hq/rubocop) extension for enforcing best practices.
 
 ## Blog Posts
 
@@ -43,6 +46,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - Active Storage meets GraphQL: [Direct uploads](https://evilmartians.com/chronicles/active-storage-meets-graphql-direct-uploads) and [Exposing attachment URLs](https://evilmartians.com/chronicles/active-storage-meets-graphql-pt-2-exposing-attachment-urls)
 - [Exposing permissions in GraphQL APIs with Action Policy](https://evilmartians.com/chronicles/exposing-permissions-in-graphql-apis-with-action-policy)
 - [Reporting non-nullable violations in graphql-ruby properly](https://evilmartians.com/chronicles/reporting-non-nullable-violations-in-graphql-ruby-properly)
+- [How to GraphQL with Ruby, Rails, Active Record, and no N+1](https://evilmartians.com/chronicles/how-to-graphql-with-ruby-rails-active-record-and-no-n-plus-one)
 
 ## Screencasts
 

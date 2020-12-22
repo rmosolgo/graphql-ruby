@@ -56,7 +56,7 @@ describe GraphQL::Relay::MongoRelationConnection do
     |}
 
     it 'limits the result' do
-      result = star_trek_query(query_string, "first" => 2)
+      result = star_trek_query(query_string, { "first" => 2 })
       assert_equal(2, get_names(result).length)
       assert_equal(true, get_page_info(result)["hasNextPage"])
       assert_equal(false, get_page_info(result)["hasPreviousPage"])
@@ -65,7 +65,7 @@ describe GraphQL::Relay::MongoRelationConnection do
       assert_equal("MQ", get_first_cursor(result))
       assert_equal("Mg", get_last_cursor(result))
 
-      result = star_trek_query(query_string, "first" => 3)
+      result = star_trek_query(query_string, { "first" => 3 })
       assert_equal(3, get_names(result).length)
       assert_equal(false, get_page_info(result)["hasNextPage"])
       assert_equal(false, get_page_info(result)["hasPreviousPage"])
@@ -76,106 +76,92 @@ describe GraphQL::Relay::MongoRelationConnection do
     end
 
     it 'provides custom fields on the connection type' do
-      result = star_trek_query(query_string, "first" => 2)
+      result = star_trek_query(query_string, { "first" => 2 })
       assert_equal(
         StarTrek::Base.where(faction_id: 1).count,
         result["data"]["federation"]["bases"]["totalCount"]
       )
     end
 
-    it "provides bidirectional_pagination" do
-      result = star_trek_query(query_string, "first" => 1)
+    it "provides bidirectional_pagination by default" do
+      result = star_trek_query(query_string, { "first" => 1 })
       last_cursor = get_last_cursor(result)
 
-      result = star_trek_query(query_string, "first" => 1, "after" => last_cursor)
-      assert_equal true, get_page_info(result)["hasNextPage"]
-      assert_equal false, get_page_info(result)["hasPreviousPage"]
-
-      result = with_bidirectional_pagination {
-        star_trek_query(query_string, "first" => 1, "after" => last_cursor)
-      }
+      result = star_trek_query(query_string, { "first" => 1, "after" => last_cursor })
       assert_equal true, get_page_info(result)["hasNextPage"]
       assert_equal true, get_page_info(result)["hasPreviousPage"]
 
       last_cursor = get_last_cursor(result)
-      result = with_bidirectional_pagination {
-        star_trek_query(query_string, "last" => 1, "before" => last_cursor)
-      }
+      result =  star_trek_query(query_string, { "last" => 1, "before" => last_cursor })
       assert_equal true, get_page_info(result)["hasNextPage"]
       assert_equal false, get_page_info(result)["hasPreviousPage"]
 
-      result = star_trek_query(query_string, "first" => 100)
+      result = star_trek_query(query_string, { "first" => 100 })
       last_cursor = get_last_cursor(result)
 
-      result = star_trek_query(query_string, "last" => 1, "before" => last_cursor)
-      assert_equal false, get_page_info(result)["hasNextPage"]
-      assert_equal true, get_page_info(result)["hasPreviousPage"]
-
-      result = with_bidirectional_pagination {
-        star_trek_query(query_string, "last" => 1, "before" => last_cursor)
-      }
+      result = star_trek_query(query_string, { "last" => 1, "before" => last_cursor })
       assert_equal true, get_page_info(result)["hasNextPage"]
       assert_equal true, get_page_info(result)["hasPreviousPage"]
     end
 
     it 'slices the result' do
-      result = star_trek_query(query_string, "first" => 2)
+      result = star_trek_query(query_string, { "first" => 2 })
       assert_equal(["Deep Space Station K-7", "Regula I"], get_names(result))
 
       # After the last result, find the next 2:
       last_cursor = get_last_cursor(result)
 
-      result = star_trek_query(query_string, "after" => last_cursor, "first" => 2)
+      result = star_trek_query(query_string, { "after" => last_cursor, "first" => 2 })
       assert_equal(["Deep Space Nine"], get_names(result))
 
       last_cursor = get_last_cursor(result)
 
-      result = star_trek_query(query_string, "before" => last_cursor, "last" => 1)
+      result = star_trek_query(query_string, { "before" => last_cursor, "last" => 1 })
       assert_equal(["Regula I"], get_names(result))
 
-      result = star_trek_query(query_string, "before" => last_cursor, "last" => 2)
+      result = star_trek_query(query_string, { "before" => last_cursor, "last" => 2 })
       assert_equal(["Deep Space Station K-7", "Regula I"], get_names(result))
 
-      result = star_trek_query(query_string, "before" => last_cursor, "last" => 10)
+      result = star_trek_query(query_string, { "before" => last_cursor, "last" => 10 })
       assert_equal(["Deep Space Station K-7", "Regula I"], get_names(result))
 
-      result = star_trek_query(query_string, "last" => 2)
+      result = star_trek_query(query_string, { "last" => 2 })
       assert_equal(["Regula I", "Deep Space Nine"], get_names(result))
 
-      result = star_trek_query(query_string, "last" => 10)
+      result = star_trek_query(query_string, { "last" => 10 })
       assert_equal(["Deep Space Station K-7", "Regula I", "Deep Space Nine"], get_names(result))
       assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasNextPage"])
       assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasPreviousPage"])
     end
 
     it 'works with before and after specified together' do
-      result = star_trek_query(query_string, "first" => 2)
+      result = star_trek_query(query_string, { "first" => 2 })
       assert_equal(["Deep Space Station K-7", "Regula I"], get_names(result))
 
       first_cursor = get_last_cursor(result)
 
       # There is no records between before and after if they point to the same cursor
-      result = star_trek_query(query_string, "before" => first_cursor, "after" => first_cursor, "last" => 2)
+      result = star_trek_query(query_string, { "before" => first_cursor, "after" => first_cursor, "last" => 2 })
       assert_equal([], get_names(result))
 
-      result = star_trek_query(query_string, "after" => first_cursor, "first" => 2)
+      result = star_trek_query(query_string, { "after" => first_cursor, "first" => 2 })
       assert_equal(["Deep Space Nine"], get_names(result))
 
       second_cursor = get_last_cursor(result)
 
-      result = star_trek_query(query_string, "after" => first_cursor, "before" => second_cursor, "first" => 3)
+      result = star_trek_query(query_string, { "after" => first_cursor, "before" => second_cursor, "first" => 3 })
       assert_equal([], get_names(result)) # TODO: test fails. fixme
     end
 
     it 'handles cursors above the bounds of the array' do
       overreaching_cursor = Base64.strict_encode64("100")
-      result = star_trek_query(query_string, "after" => overreaching_cursor, "first" => 2)
+      result = star_trek_query(query_string, { "after" => overreaching_cursor, "first" => 2 })
       assert_equal([], get_names(result))
     end
 
     it 'handles cursors below the bounds of the array' do
       underreaching_cursor = Base64.strict_encode64("1")
-      result = star_trek_query(query_string, "before" => underreaching_cursor, "first" => 2)
+      result = star_trek_query(query_string, { "before" => underreaching_cursor, "first" => 2 })
       assert_equal([], get_names(result))
     end
 
@@ -199,16 +185,16 @@ describe GraphQL::Relay::MongoRelationConnection do
     end
 
     it "applies custom arguments" do
-      result = star_trek_query(query_string, "first" => 1, "nameIncludes" => "eep")
+      result = star_trek_query(query_string, { "first" => 1, "nameIncludes" => "eep" })
       assert_equal(["Deep Space Station K-7"], get_names(result))
 
       after = get_last_cursor(result)
 
-      result = star_trek_query(query_string, "first" => 2, "nameIncludes" => "eep", "after" => after )
+      result = star_trek_query(query_string, { "first" => 2, "nameIncludes" => "eep", "after" => after  })
       assert_equal(["Deep Space Nine"], get_names(result))
       before = get_last_cursor(result)
 
-      result = star_trek_query(query_string, "last" => 1, "nameIncludes" => "eep", "before" => before)
+      result = star_trek_query(query_string, { "last" => 1, "nameIncludes" => "eep", "before" => before })
       assert_equal(["Deep Space Station K-7"], get_names(result))
     end
 
@@ -245,7 +231,7 @@ describe GraphQL::Relay::MongoRelationConnection do
       |}
 
       it "applies to queries by `first`" do
-        result = star_trek_query(query_string, "first" => 100)
+        result = star_trek_query(query_string, { "first" => 100 })
         assert_equal(2, result["data"]["federation"]["bases"]["edges"].size)
         assert_equal(true, result["data"]["federation"]["bases"]["pageInfo"]["hasNextPage"])
 
@@ -260,19 +246,19 @@ describe GraphQL::Relay::MongoRelationConnection do
         first_and_second_names = ["Deep Space Station K-7", "Regula I"]
 
         last_cursor = "Ng=="
-        result = star_trek_query(query_string, "last" => 100, "before" => last_cursor)
+        result = star_trek_query(query_string, { "last" => 100, "before" => last_cursor })
         assert_equal(second_to_last_two_names, get_names(result))
         assert_equal(true, result["data"]["federation"]["bases"]["pageInfo"]["hasPreviousPage"])
 
-        result = star_trek_query(query_string, "before" => last_cursor)
+        result = star_trek_query(query_string, { "before" => last_cursor })
         assert_equal(first_and_second_names, get_names(result))
         assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
 
         third_cursor = "Mw"
-        result = star_trek_query(query_string, "last" => 100, "before" => third_cursor)
+        result = star_trek_query(query_string, { "last" => 100, "before" => third_cursor })
         assert_equal(first_and_second_names, get_names(result))
 
-        result = star_trek_query(query_string, "before" => third_cursor)
+        result = star_trek_query(query_string, { "before" => third_cursor })
         assert_equal(first_and_second_names, get_names(result))
       end
     end
@@ -304,7 +290,7 @@ describe GraphQL::Relay::MongoRelationConnection do
         |}
 
       it "applies to queries by `first`" do
-        result = star_trek_query(query_string, "first" => 100)
+        result = star_trek_query(query_string, { "first" => 100 })
         assert_equal(3, result["data"]["federation"]["bases"]["edges"].size)
         assert_equal(true, result["data"]["federation"]["bases"]["pageInfo"]["hasNextPage"])
 
@@ -319,19 +305,19 @@ describe GraphQL::Relay::MongoRelationConnection do
         first_second_and_third_names = ["Deep Space Station K-7", "Regula I", "Deep Space Nine"]
 
         last_cursor = "Ng=="
-        result = star_trek_query(query_string, "last" => 100, "before" => last_cursor)
+        result = star_trek_query(query_string, { "last" => 100, "before" => last_cursor })
         assert_equal(second_to_last_three_names, get_names(result))
         assert_equal(true, result["data"]["federation"]["bases"]["pageInfo"]["hasPreviousPage"])
 
-        result = star_trek_query(query_string, "before" => last_cursor)
+        result = star_trek_query(query_string, { "before" => last_cursor })
         assert_equal(first_second_and_third_names, get_names(result))
         assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
 
         fourth_cursor = "NA=="
-        result = star_trek_query(query_string, "last" => 100, "before" => fourth_cursor)
+        result = star_trek_query(query_string, { "last" => 100, "before" => fourth_cursor })
         assert_equal(first_second_and_third_names, get_names(result))
 
-        result = star_trek_query(query_string, "before" => fourth_cursor)
+        result = star_trek_query(query_string, { "before" => fourth_cursor })
         assert_equal(first_second_and_third_names, get_names(result))
       end
     end
@@ -364,7 +350,7 @@ describe GraphQL::Relay::MongoRelationConnection do
       |}
 
     it "applies to queries by `first`" do
-      result = star_trek_query(query_string, "first" => 100)
+      result = star_trek_query(query_string, { "first" => 100 })
       assert_equal(6, result["data"]["federation"]["bases"]["edges"].size)
       assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasNextPage"])
 
@@ -378,23 +364,23 @@ describe GraphQL::Relay::MongoRelationConnection do
       all_names = ["Deep Space Station K-7", "Regula I", "Deep Space Nine", "Firebase P'ok", "Ganalda Space Station", "Rh'Ihho Station"]
 
       last_cursor = "Ng=="
-      result = star_trek_query(query_string, "last" => 100, "before" => last_cursor)
+      result = star_trek_query(query_string, { "last" => 100, "before" => last_cursor })
       assert_equal(all_names[0..4], get_names(result))
       assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasPreviousPage"])
 
-      result = star_trek_query(query_string, "last" => 100)
+      result = star_trek_query(query_string, { "last" => 100 })
       assert_equal(all_names, get_names(result))
       assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasPreviousPage"])
 
-      result = star_trek_query(query_string, "before" => last_cursor)
+      result = star_trek_query(query_string, { "before" => last_cursor })
       assert_equal(all_names[0..4], get_names(result))
       assert_equal(false, result["data"]["federation"]["bases"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
 
       fourth_cursor = "NA=="
-      result = star_trek_query(query_string, "last" => 100, "before" => fourth_cursor)
+      result = star_trek_query(query_string, { "last" => 100, "before" => fourth_cursor })
       assert_equal(all_names[0..2], get_names(result))
 
-      result = star_trek_query(query_string, "before" => fourth_cursor)
+      result = star_trek_query(query_string, { "before" => fourth_cursor })
       assert_equal(all_names[0..2], get_names(result))
     end
   end

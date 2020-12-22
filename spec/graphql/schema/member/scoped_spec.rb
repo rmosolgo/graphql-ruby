@@ -71,17 +71,9 @@ describe GraphQL::Schema::Member::Scoped do
 
       field :french_items, [FrenchItem], null: false,
         resolver_method: :items
-      if TESTING_INTERPRETER
-        field :items_connection, Item.connection_type, null: false,
+
+      field :items_connection, Item.connection_type, null: false,
           resolver_method: :items
-      else
-        field :items_connection, Item.connection_type, null: false, resolve: ->(obj, args, ctx) {
-          [
-            OpenStruct.new(name: "Trombone"),
-            OpenStruct.new(name: "Paperclip"),
-          ]
-        }
-      end
 
       def items
         [
@@ -90,28 +82,19 @@ describe GraphQL::Schema::Member::Scoped do
         ]
       end
 
-      if TESTING_INTERPRETER
-        field :things, [Thing], null: false
-        def things
-          items + [OpenStruct.new(name: "Turbine")]
-        end
-      else
-        # Make sure it works with resolve procs, too
-        field :things, [Thing], null: false, resolve: ->(obj, args, ctx) {
-          [
-            OpenStruct.new(name: "Trombone"),
-            OpenStruct.new(name: "Paperclip"),
-            OpenStruct.new(name: "Turbine"),
-          ]
-        }
+      field :things, [Thing], null: false
+      def things
+        items + [OpenStruct.new(name: "Turbine")]
+      end
+
+      field :lazy_items, [Item], null: false
+      field :lazy_items_connection, Item.connection_type, null: false, resolver_method: :lazy_items
+      def lazy_items
+        ->() { items }
       end
     end
 
     query(Query)
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
     lazy_resolve(Proc, :call)
   end
 
@@ -202,6 +185,28 @@ describe GraphQL::Schema::Member::Scoped do
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
       assert_equal ["Trombone", "Paperclip"], names
       assert_equal true, ctx[:proc_called]
+    end
+
+    it "works for lazy returned list values" do
+      query_str = "
+      {
+        lazyItemsConnection {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+        lazyItems {
+          name
+        }
+      }
+      "
+      res = ScopeSchema.execute(query_str, context: { french: true })
+      names = res["data"]["lazyItemsConnection"]["edges"].map { |e| e["node"]["name"] }
+      assert_equal ["Trombone"], names
+      names2 = res["data"]["lazyItems"].map { |e| e["name"] }
+      assert_equal ["Trombone"], names2
     end
 
     it "is called for abstract types" do

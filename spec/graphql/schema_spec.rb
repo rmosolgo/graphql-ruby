@@ -62,6 +62,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_execution_strategy, schema.query_execution_strategy
       assert_equal base_schema.mutation_execution_strategy, schema.mutation_execution_strategy
       assert_equal base_schema.subscription_execution_strategy, schema.subscription_execution_strategy
+      assert_equal base_schema.validate_timeout, schema.validate_timeout
       assert_equal base_schema.max_complexity, schema.max_complexity
       assert_equal base_schema.max_depth, schema.max_depth
       assert_equal base_schema.default_max_page_size, schema.default_max_page_size
@@ -76,7 +77,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.instrumenters, schema.instrumenters
       assert_equal base_schema.middleware.steps.size, schema.middleware.steps.size
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
-      assert_equal [GraphQL::Backtrace], schema.plugins.map(&:first)
+      assert_equal [GraphQL::Execution::Errors, GraphQL::Pagination::Connections, GraphQL::Backtrace], schema.plugins.map(&:first)
       assert_equal base_schema.error_handler, schema.error_handler
     end
 
@@ -114,6 +115,7 @@ describe GraphQL::Schema do
 
       context_class = Class.new
       schema.context_class(context_class)
+      schema.validate_timeout(10)
       schema.max_complexity(10)
       schema.max_depth(20)
       schema.default_max_page_size(30)
@@ -139,6 +141,7 @@ describe GraphQL::Schema do
       assert_equal cursor_encoder, schema.cursor_encoder
 
       assert_equal context_class, schema.context_class
+      assert_equal 10, schema.validate_timeout
       assert_equal 10, schema.max_complexity
       assert_equal 20, schema.max_depth
       assert_equal 30, schema.default_max_page_size
@@ -147,7 +150,7 @@ describe GraphQL::Schema do
       assert_equal schema.directives, GraphQL::Schema.default_directives.merge(DummyFeature1.graphql_name => DummyFeature1, DummyFeature2.graphql_name => DummyFeature2)
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
-      assert_equal [GraphQL::Backtrace, GraphQL::Execution::Interpreter], schema.plugins.map(&:first)
+      assert_equal [GraphQL::Execution::Errors, GraphQL::Pagination::Connections, GraphQL::Backtrace, GraphQL::Execution::Interpreter], schema.plugins.map(&:first)
       assert_equal [GraphQL::Relay::EdgesInstrumentation, GraphQL::Relay::ConnectionInstrumentation], schema.instrumenters[:field]
       assert_equal [GraphQL::ExecutionError, StandardError], schema.rescues.keys.sort_by(&:name)
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
@@ -277,8 +280,6 @@ describe GraphQL::Schema do
       let(:schema) do
         Class.new(GraphQL::Schema) do
           query query_type
-          use GraphQL::Analysis::AST
-          use GraphQL::Execution::Interpreter
           use PluginWithInstrumentationTracingAndAnalyzer
         end
       end
@@ -301,8 +302,8 @@ describe GraphQL::Schema do
         let(:schema) do
           Class.new(GraphQL::Schema) do
             query query_type
-            use GraphQL::Analysis::AST
             use PluginWithInstrumentationTracingAndAnalyzer
+            use GraphQL::Execution::Execute
           end.to_graphql
         end
 
@@ -326,8 +327,6 @@ describe GraphQL::Schema do
       let(:schema) do
         schema = Class.new(GraphQL::Schema) do
           query query_type
-          use GraphQL::Analysis::AST
-          use GraphQL::Execution::Interpreter
         end
 
         # return a subclass
