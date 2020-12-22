@@ -21,7 +21,16 @@ module GraphQL
       end
 
       def perform(records)
-        ::ActiveRecord::Associations::Preloader.new.preload(records, @association_name)
+        if ::ActiveRecord::Associations::Preloader.method_defined?(:call)
+          # After Rails 6.2, Preloader's API changes to `new(**kwargs).call`
+          ::ActiveRecord::Associations::Preloader
+            .new(records: records, associations: @association_name, scope: nil)
+            .call
+        else
+          ::ActiveRecord::Associations::Preloader
+            .new
+            .preload(records, @association_name)
+        end
         records.each { |record|
           fulfill(record, record.public_send(@association_name))
         }
