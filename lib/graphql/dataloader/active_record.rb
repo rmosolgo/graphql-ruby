@@ -18,6 +18,8 @@ module GraphQL
       def load(column_value)
         casted_value = if @column_type.respond_to?(:type_cast)
           @column_type.type_cast(column_value)
+        elsif @column_type.respond_to?(:type_cast_from_user)
+          @column_type.type_cast_from_user(column_value)
         else
           @column_type.cast(column_value)
         end

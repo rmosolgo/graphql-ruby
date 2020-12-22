@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-if testing_rails?
+# Rails 3 doesn't have type_for_attribute
+if testing_rails? && ActiveRecord::Base.respond_to?(:type_for_attribute)
   describe GraphQL::Dataloader::ActiveRecordAssociation do
     class Artist < ActiveRecord::Base
       has_many :albums
@@ -33,7 +34,7 @@ if testing_rails?
         end
 
         def artist_album_count(album_name:)
-          GraphQL::Dataloader::ActiveRecord.for(Album, column: :name).load(album_name).then do |album|
+          GraphQL::Dataloader::ActiveRecord.for(Album, column: "name").load(album_name).then do |album|
             album && GraphQL::Dataloader::ActiveRecordAssociation.load(Album, :artist, album).then do |artist|
               artist && artist.albums.count
             end
@@ -45,7 +46,7 @@ if testing_rails?
         end
 
         def artist_name(album_name:)
-          GraphQL::Dataloader::ActiveRecord.for(Album, column: :name).load(album_name).then do |album|
+          GraphQL::Dataloader::ActiveRecord.for(Album, column: "name").load(album_name).then do |album|
             album && GraphQL::Dataloader::ActiveRecordAssociation.load(Album, :artist, album).then(&:name)
           end
         end
@@ -59,7 +60,7 @@ if testing_rails?
       DataloaderActiveRecordAssociationSchema.execute(*args, **kwargs)
     end
 
-    it "calls Model.where with batches of IDs" do
+    it "batches calls for belongs-tos" do
       res = nil
       log = []
       callback = ->(_name, _start, _end, _digest, query, *rest) { log << [query[:sql], query[:type_casted_binds]] }
@@ -87,10 +88,7 @@ if testing_rails?
       }
 
       assert_equal(expected_data, res["data"])
-      expected_log = if Rails::VERSION::STRING < "4"
-        # Rails 3
-        nil
-      elsif Rails::VERSION::STRING < "5"
+      expected_log = if Rails::VERSION::STRING < "5"
         # Rails 4
         [
           ["SELECT \"albums\".* FROM \"albums\" WHERE \"albums\".\"name\" IN ('Short Stories', 'Wincing the Night Away', 'Rearrange Us', 'Chutes Too Narrow', 'Tom''s Story', 'Oh, Inverted World')", nil],

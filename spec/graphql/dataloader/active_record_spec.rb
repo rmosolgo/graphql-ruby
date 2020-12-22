@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-if testing_rails?
+# Rails 3 doesn't have type_for_attribute
+if testing_rails? && ActiveRecord::Base.respond_to?(:type_for_attribute)
   describe GraphQL::Dataloader::ActiveRecord do
     class HtmlColor < ActiveRecord::Base
     end
@@ -75,9 +76,7 @@ if testing_rails?
 
       assert_equal(expected_data, res["data"])
 
-      expected_log = if Rails::VERSION::STRING < "4"
-        nil
-      elsif Rails::VERSION::STRING < "5"
+      expected_log = if Rails::VERSION::STRING < "5"
         # Rails 4
         [
           ["SELECT \"html_colors\".* FROM \"html_colors\" WHERE \"html_colors\".\"hex\" = 16770244", nil],
