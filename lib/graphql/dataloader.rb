@@ -6,6 +6,7 @@ require "graphql/dataloader/http"
 require "graphql/dataloader/instrumentation"
 require "graphql/dataloader/load_error"
 require "graphql/dataloader/mutation_field_extension"
+require "graphql/dataloader/no_dataloader_error"
 require "graphql/dataloader/redis"
 
 module GraphQL
@@ -42,7 +43,7 @@ module GraphQL
         GraphQL::Execution::Lazy.sync(result)
       end
 
-      def begin_dataloading(dataloader)
+      def begin_dataloading(dataloader = Dataloader.new(nil))
         self.current ||= dataloader
         increment_level
       end
@@ -92,7 +93,7 @@ module GraphQL
     end
 
     def current_query
-      @multiplex.context[:current_query]
+      @multiplex && @multiplex.context[:current_query]
     end
 
     # Clear the cached loaders of this dataloader (eg, after running a mutation).

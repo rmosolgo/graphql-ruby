@@ -13,7 +13,7 @@ module GraphQL
       def self.for(*key_parts)
         dl = Dataloader.current
         if !dl
-          raise "Can't initialize a Source without a Dataloader, use `Dataloader.load { ... }` or add `use GraphQL::Dataloader` to your schema"
+          raise Dataloader::NoDataloaderError, "Can't initialize a Source without a Dataloader, use `Dataloader.load { ... }` or add `use GraphQL::Dataloader` to your schema"
         end
         dl.source_for(self, key_parts)
       end

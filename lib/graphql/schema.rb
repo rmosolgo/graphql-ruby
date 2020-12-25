@@ -281,7 +281,7 @@ module GraphQL
       @parse_error_proc = DefaultParseError
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
-      @lazy_methods.set(GraphQL::Execution::Lazy, :value)
+      @lazy_methods.set(GraphQL::Execution::Lazy, :sync)
       @cursor_encoder = Base64Encoder
       # For schema instances, default to legacy runtime modules
       @analysis_engine = GraphQL::Analysis
@@ -1710,7 +1710,7 @@ module GraphQL
             @lazy_methods = inherited_map.dup
           else
             @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
-            @lazy_methods.set(GraphQL::Execution::Lazy, :value)
+            @lazy_methods.set(GraphQL::Execution::Lazy, :sync)
           end
         end
         @lazy_methods

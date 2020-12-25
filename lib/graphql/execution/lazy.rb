@@ -22,11 +22,11 @@ module GraphQL
 
       # If `maybe_lazy` is a Lazy, sync it recursively. (Never returns another Lazy)
       def self.sync(maybe_lazy)
-        if maybe_lazy.is_a?(Lazy)
-          sync(maybe_lazy.value)
-        else
-          maybe_lazy
+        while maybe_lazy.is_a?(Lazy)
+          maybe_lazy = maybe_lazy.value
         end
+
+        maybe_lazy
       end
 
       # @param maybe_lazies [Array<Lazy, Object>]
@@ -87,7 +87,9 @@ module GraphQL
         end
       end
 
-      alias :sync :value
+      def sync
+        self.class.sync(self)
+      end
 
       # resolve this lazy's dependencies as long as one can be found
       # @return [void]
@@ -176,9 +178,11 @@ module GraphQL
       def tag_error(err)
         local_err = err.dup
         query = Dataloader.current.current_query
-        local_err.graphql_path = query.context[:current_path]
-        op_name = query.selected_operation_name || query.selected_operation.operation_type || "query"
-        local_err.message = err.message.sub(")\n\n", ") at #{op_name}.#{local_err.graphql_path.join(".")}\n\n")
+        if query
+          local_err.graphql_path = query.context[:current_path]
+          op_name = query.selected_operation_name || query.selected_operation.operation_type || "query"
+          local_err.message = err.message.sub(")\n\n", ") at #{op_name}.#{local_err.graphql_path.join(".")}\n\n")
+        end
         local_err
       end
 
