@@ -115,6 +115,7 @@ module GraphQL
                   arg_defn.type.coerce_input(value, context)
                 end
 
+                # TODO this should probably be inside after_lazy
                 if loads && !arg_defn.from_resolver?
                   loaded_value = if arg_defn.type.list?
                     loaded_values = coerced_value.map { |val| load_application_object(arg_defn, loads, val, context) }
