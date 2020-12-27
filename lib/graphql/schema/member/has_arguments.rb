@@ -111,21 +111,23 @@ module GraphQL
               if has_value
                 loads = arg_defn.loads
                 loaded_value = nil
+                coerced_value = context.schema.error_handler.with_error_handling(context) do
+                  arg_defn.type.coerce_input(value, context)
+                end
+
                 if loads && !arg_defn.from_resolver?
                   loaded_value = if arg_defn.type.list?
-                    loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, context) }
+                    loaded_values = coerced_value.map { |val| load_application_object(arg_defn, loads, val, context) }
                     context.schema.after_any_lazies(loaded_values) { |result| result }
                   else
-                    load_application_object(arg_defn, loads, value, context)
+                    load_application_object(arg_defn, loads, coerced_value, context)
                   end
                 end
 
                 coerced_value = if loaded_value
                   loaded_value
                 else
-                  context.schema.error_handler.with_error_handling(context) do
-                    arg_defn.type.coerce_input(value, context)
-                  end
+                  coerced_value
                 end
 
                 context.schema.after_lazy(coerced_value) do |coerced_value|

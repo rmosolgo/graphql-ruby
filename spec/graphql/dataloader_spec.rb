@@ -97,16 +97,24 @@ describe "fiber data loading" do
         argument :id, ID, required: true
       end
 
-      field :recipe, Recipe, null: true, resolver_method: :item do
-        argument :id, ID, required: true
-      end
-
       def item(id:)
         Loader.for(context).load(id)
+      end
+
+      field :recipe, Recipe, null: true do
+        argument :id, ID, required: true, loads: Recipe, as: :recipe
+      end
+
+      def recipe(recipe:)
+        recipe
       end
     end
 
     query(Query)
+
+    def self.object_from_id(id, ctx)
+      Loader.for(ctx).load(id)
+    end
 
     def self.resolve_type(type, obj, ctx)
       get_type(obj[:type])
