@@ -128,6 +128,16 @@ module GraphQL
         @irep_node.ast_node
       end
 
+      # Halt this graphql resolution
+      def yield_graphql
+        ctx = namespace(:interpreter)[:next_progress]
+        if ctx[:passed_along]
+          raise "Invariant: #progress_context was already called"
+        end
+        ctx[:progress_context][:passed_along] = true
+        Fiber.yield(ctx[:progress])
+      end
+
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
       attr_reader :errors
 
