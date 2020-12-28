@@ -131,11 +131,13 @@ module GraphQL
       # Halt this graphql resolution
       def yield_graphql
         ctx = namespace(:interpreter)[:next_progress]
-        if ctx[:passed_along]
-          raise "Invariant: #progress_context was already called"
+        if ctx[:progress_context][:passed_along]
+          # This fiber already passed the baton
+          Fiber.yield
+        else
+          ctx[:progress_context][:passed_along] = true
+          Fiber.yield(ctx[:progress])
         end
-        ctx[:progress_context][:passed_along] = true
-        Fiber.yield(ctx[:progress])
       end
 
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution

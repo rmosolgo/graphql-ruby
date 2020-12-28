@@ -12,6 +12,8 @@ describe "fiber data loading" do
         { id: "3", name: "Butter", type: "Dairy" },
         { id: "4", name: "Baking Soda", type: "LeaveningAgent" },
         { id: "5", name: "Cornbread", type: "Recipe", ingredient_ids: ["1", "2", "3", "4"] },
+        { id: "6", name: "Grits", type: "Recipe", ingredient_ids: ["2", "3", "7"] },
+        { id: "7", name: "Cheese", type: "Dairy" },
       ].each { |d| DATA[d[:id]] = d }
 
       def log
@@ -36,19 +38,25 @@ describe "fiber data loading" do
       end
 
       def load(id_or_ids)
+        puts "[Fiber:#{Fiber.current.object_id}] loading #{id_or_ids}"
         if id_or_ids.is_a?(Array)
           _local_ids, pending_ids = id_or_ids.partition { |id| @data.key?(id) }
           if pending_ids.any?
             @ids.concat(pending_ids)
             @context.yield_graphql
-            sync
+            _local_ids, pending_ids = id_or_ids.partition { |id| @data.key?(id) }
+            if pending_ids.any?
+              sync
+            end
           end
           id_or_ids.map { |id| @data[id] }
         else
           @data[id_or_ids] || begin
             @ids.push(id_or_ids)
             @context.yield_graphql
-            sync
+            if !@data.key?(id_or_ids)
+              sync
+            end
             @data[id_or_ids]
           end
         end
@@ -56,6 +64,7 @@ describe "fiber data loading" do
 
       def sync
         if @ids.any?
+          puts "[Fiber:#{Fiber.current.object_id}] sync #{@ids}"
           records = Database.mget(@ids)
           @ids.each_with_index do |id, idx|
             @data[id] = records[idx]
@@ -108,6 +117,17 @@ describe "fiber data loading" do
       def recipe(recipe:)
         recipe
       end
+
+      field :recipe_ingredient, Ingredient, null: true do
+        argument :recipe_id, ID, required: true
+        argument :ingredient_number, Int, required: true
+      end
+
+      def recipe_ingredient(recipe_id:, ingredient_number:)
+        recipe = Loader.for(context).load(recipe_id)
+        ingredient_id = recipe[:ingredient_ids][ingredient_number - 1]
+        Loader.for(context).load(ingredient_id)
+      end
     end
 
     query(Query)
@@ -142,12 +162,21 @@ describe "fiber data loading" do
       r1: recipe(id: 5) {
         ingredients { name }
       }
+      ri1: recipeIngredient(recipeId: 6, ingredientNumber: 3) {
+        name
+      }
     }
     GRAPHQL
     expected_log = [
-      [:mget, ["1", "2"]],
-      [:mget, ["5"]],
-      [:mget, ["3", "4"]]
+      [:mget, [
+        "1", "2",           # The first 2 ingredients
+        "5",                # The first recipe
+        "6"]                # recipeIngredient recipeId
+      ],
+      [:mget, [
+        "3", "4",            # The two unfetched ingredients the first recipe
+        "7" ]                # recipeIngredient ingredient_id
+      ],
     ]
     assert_equal expected_log, database_log
     assert_nil context[:ids]
@@ -161,6 +190,9 @@ describe "fiber data loading" do
           { "name" => "Butter" },
           { "name" => "Baking Soda" },
         ],
+      },
+      "ri1" => {
+        "name" => "Cheese",
       },
     }
     assert_equal(expected_data, res["data"])

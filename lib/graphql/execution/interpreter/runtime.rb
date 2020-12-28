@@ -57,12 +57,6 @@ module GraphQL
             # Run the query in an endless chain of fibers.
             # There's no pool or limit here. How is that going to work at scale?
             waiting_fibers = []
-            # This is for detecting fibers that yielded multiple times.
-            # You should only build a fiber for the _first_ yield.
-            # (This isn't tested yet. It probably won't work with the
-            # invariant in Query::Context; Maybe that method can return `nil`
-            # when a Fiber has already yielded.)
-            seen_progresses = Set.new
             # Make the first fiber which will begin execution
             initial_args = [path, context.scoped_context, object_proxy, root_type, root_operation.selections, after: nil, root_operation_type: root_op_type]
             waiting_fibers << make_selections_fiber(initial_args)
@@ -70,27 +64,25 @@ module GraphQL
             # Start executing Fibers. This will run until all the Fibers are done.
             # TODO some kind of check to prevent endless loops in case of a bug.
             while (next_fiber = waiting_fibers.shift)
+              puts "[Fiber:#{next_fiber.object_id}] resume"
               # Run this fiber until its next yield.
               # If the Fiber yields, it will return an object for continuing excecution.
               # If it doesn't yield, it will return `nil`
               progress = next_fiber.resume
+              puts "[Fiber:#{next_fiber.object_id}] progress: #{progress.class}"
 
               # if there's a _new_ fiber from this selection,
               # queue it up first.
               if progress
-                if seen_progresses.include?(progress)
-                  # Maybe this is no big deal?
-                  # raise "Invariant: visiting the same progress: #{progress.inspect}"
-                else
-                  # Register this progress object and then enqueue the next fiber
-                  seen_progresses.add(progress)
-                  waiting_fibers << make_selections_fiber(progress)
-                end
+                new_f = make_selections_fiber(progress)
+                puts "[Fiber:#{new_f.object_id}] creating from progress"
+                waiting_fibers.unshift(new_f)
               end
 
               # This fiber yielded; there's more to do here.
               # (If `#alive?` is false, then the fiber concluded without yielding.)
               if next_fiber.alive?
+                puts "[Fiber:#{next_fiber.object_id}] alive, queuing"
                 waiting_fibers << next_fiber
               end
             end
