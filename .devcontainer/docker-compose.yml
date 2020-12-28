@@ -1,0 +1,16 @@
+version: "3.7"
+services:
+  app:
+    init: true
+    build:
+      context: .
+    command: sleep infinity
+    volumes:
+      - ..:/app:cached
+      - vendor:/app/vendor
+      - dotconfig:/home/app/.config
+
+volumes:
+  app:
+  vendor:
+  dotconfig:

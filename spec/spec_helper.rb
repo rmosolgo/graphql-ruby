@@ -21,7 +21,7 @@ require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
 
-Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
+Minitest::Reporters.use! [Minitest::Reporters::DefaultReporter.new(color: true), Minitest::Reporters::JUnitReporter.new]
 
 Minitest::Spec.make_my_diffs_pretty!
 

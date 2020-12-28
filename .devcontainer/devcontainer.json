@@ -1,0 +1,10 @@
+{
+  "dockerComposeFile": "./docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/app",
+  "name": "${localWorkspaceFolderBasename}",
+  "extensions": [
+    "esbenp.prettier-vscode",
+    "graphql.vscode-graphql"
+  ]
+}
