@@ -39,26 +39,27 @@ describe "fiber data loading" do
 
       def load(id_or_ids)
         puts "[Fiber:#{Fiber.current.object_id}] loading #{id_or_ids}"
-        if id_or_ids.is_a?(Array)
-          _local_ids, pending_ids = id_or_ids.partition { |id| @data.key?(id) }
-          if pending_ids.any?
-            @ids.concat(pending_ids)
-            @context.yield_graphql
-            _local_ids, pending_ids = id_or_ids.partition { |id| @data.key?(id) }
-            if pending_ids.any?
-              sync
-            end
+        is_single_item = !id_or_ids.is_a?(Array)
+        ids = Array(id_or_ids)
+
+        # Return synchronously if possible
+        if ids.any? { |id| !@data.key?(id) }
+          pending_ids = ids.select { |id| !@data.key?(id) }
+          @ids.concat(pending_ids)
+          @context.yield_graphql
+          # If another Fiber called `sync`, then don't call it again --
+          # the loader may have gathered other IDs since then, and they
+          # shouldn't be synced yet.
+          if pending_ids.any? { |id| !@data.key?(id) }
+            sync
           end
-          id_or_ids.map { |id| @data[id] }
+        end
+
+        items = ids.map { |id| @data[id] }
+        if is_single_item
+          items[0]
         else
-          @data[id_or_ids] || begin
-            @ids.push(id_or_ids)
-            @context.yield_graphql
-            if !@data.key?(id_or_ids)
-              sync
-            end
-            @data[id_or_ids]
-          end
+          items
         end
       end
 
