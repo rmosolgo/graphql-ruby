@@ -129,7 +129,9 @@ describe GraphQL::Schema::Subscription do
     use GraphQL::Execution::Errors
 
     rescue_from(StandardError) { |err, *rest|
-      raise "This should never happen: #{err.class}: #{err.message}"
+      err2 = RuntimeError.new("This should never happen: #{err.class}: #{err.message}")
+      err2.set_backtrace(err.backtrace)
+      raise err2
     }
 
     def self.object_from_id(id, ctx)

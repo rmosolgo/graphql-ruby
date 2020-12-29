@@ -64,25 +64,25 @@ module GraphQL
             # Start executing Fibers. This will run until all the Fibers are done.
             # TODO some kind of check to prevent endless loops in case of a bug.
             while (next_fiber = waiting_fibers.shift)
-              puts "[Fiber:#{next_fiber.object_id}] resume"
+              # puts "[Fiber:#{next_fiber.object_id}] resume"
               # Run this fiber until its next yield.
               # If the Fiber yields, it will return an object for continuing excecution.
               # If it doesn't yield, it will return `nil`
               progress = next_fiber.resume
-              puts "[Fiber:#{next_fiber.object_id}] progress: #{progress.class}"
+              # puts "[Fiber:#{next_fiber.object_id}] progress: #{progress.class}"
 
               # if there's a _new_ fiber from this selection,
               # queue it up first.
               if progress
                 new_f = make_selections_fiber(progress)
-                puts "[Fiber:#{new_f.object_id}] creating from progress"
+                # puts "[Fiber:#{new_f.object_id}] creating from progress"
                 waiting_fibers.unshift(new_f)
               end
 
               # This fiber yielded; there's more to do here.
               # (If `#alive?` is false, then the fiber concluded without yielding.)
               if next_fiber.alive?
-                puts "[Fiber:#{next_fiber.object_id}] alive, queuing"
+                # puts "[Fiber:#{next_fiber.object_id}] alive, queuing"
                 waiting_fibers << next_fiber
               end
             end
