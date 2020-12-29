@@ -155,8 +155,7 @@ describe "fiber data loading" do
   end
 
   it "batch-loads" do
-    context = {}
-    res = FiberSchema.execute <<-GRAPHQL, context: context
+    res = FiberSchema.execute <<-GRAPHQL
     {
       i1: ingredient(id: 1) { name }
       i2: ingredient(id: 2) { name }
@@ -168,19 +167,7 @@ describe "fiber data loading" do
       }
     }
     GRAPHQL
-    expected_log = [
-      [:mget, [
-        "1", "2",           # The first 2 ingredients
-        "5",                # The first recipe
-        "6"]                # recipeIngredient recipeId
-      ],
-      [:mget, [
-        "3", "4",            # The two unfetched ingredients the first recipe
-        "7" ]                # recipeIngredient ingredient_id
-      ],
-    ]
-    assert_equal expected_log, database_log
-    assert_nil context[:ids]
+
     expected_data = {
       "i1" => { "name" => "Wheat" },
       "i2" => { "name" => "Corn" },
@@ -197,5 +184,18 @@ describe "fiber data loading" do
       },
     }
     assert_equal(expected_data, res["data"])
+
+    expected_log = [
+      [:mget, [
+        "1", "2",           # The first 2 ingredients
+        "5",                # The first recipe
+        "6"]                # recipeIngredient recipeId
+      ],
+      [:mget, [
+        "3", "4",            # The two unfetched ingredients the first recipe
+        "7" ]                # recipeIngredient ingredient_id
+      ],
+    ]
+    assert_equal expected_log, database_log
   end
 end

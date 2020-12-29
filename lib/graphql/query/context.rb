@@ -131,12 +131,13 @@ module GraphQL
       # Halt this graphql resolution
       def yield_graphql
         ctx = namespace(:interpreter)[:next_progress]
-        if ctx[:progress_context][:passed_along]
+        if ctx[:passed_along]
           # This fiber already passed the baton
           Fiber.yield
         else
-          ctx[:progress_context][:passed_along] = true
-          Fiber.yield(ctx[:progress])
+          ctx[:passed_along] = true
+          progress = namespace(:interpreter)[:runtime].make_selections_fiber
+          Fiber.yield(progress)
         end
       end
 

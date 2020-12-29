@@ -57,9 +57,20 @@ module GraphQL
             # Run the query in an endless chain of fibers.
             # There's no pool or limit here. How is that going to work at scale?
             waiting_fibers = []
+            @progress_array = [
+              path,
+              context.scoped_context,
+              object_proxy,
+              root_type,
+              root_operation.selections,
+              nil, # idx
+              root_op_type,
+            ]
+            # This object can be reused until it's detected to have been switched to `true`
+            @last_progress_context = { passed_along: false }
+
             # Make the first fiber which will begin execution
-            initial_args = [path, context.scoped_context, object_proxy, root_type, root_operation.selections, after: nil, root_operation_type: root_op_type]
-            waiting_fibers << make_selections_fiber(initial_args)
+            waiting_fibers << make_selections_fiber
 
             # Start executing Fibers. This will run until all the Fibers are done.
             # TODO some kind of check to prevent endless loops in case of a bug.
@@ -68,15 +79,14 @@ module GraphQL
               # Run this fiber until its next yield.
               # If the Fiber yields, it will return an object for continuing excecution.
               # If it doesn't yield, it will return `nil`
-              progress = next_fiber.resume
-              # puts "[Fiber:#{next_fiber.object_id}] progress: #{progress.class}"
+              progress_f = next_fiber.resume
+              # puts "[Fiber:#{next_fiber.object_id}] progress: #{progress_f.class} (#{next_fiber.alive? ? "Alive" : "Dead"})"
 
               # if there's a _new_ fiber from this selection,
               # queue it up first.
-              if progress
-                new_f = make_selections_fiber(progress)
-                # puts "[Fiber:#{new_f.object_id}] creating from progress"
-                waiting_fibers.unshift(new_f)
+              if progress_f
+                # puts "[Fiber:#{progress_f.object_id}] creating from progress"
+                waiting_fibers.unshift(progress_f)
               end
 
               # This fiber yielded; there's more to do here.
@@ -96,9 +106,17 @@ module GraphQL
 
         # Use a method to make sure `args` is preserved in a closure
         # (otherwise `progress = ...` gets clobbered)
-        def make_selections_fiber(args)
+        def make_selections_fiber
+          # p "Making fiber: #{@progress_array[0]} #{@progress_array[5]}"
+          path = @progress_array[0]
+          scoped_context = @progress_array[1]
+          owner_object = @progress_array[2]
+          owner_type = @progress_array[3]
+          selections = @progress_array[4]
+          idx = @progress_array[5]
+          root_operation_type = @progress_array[6]
           Fiber.new {
-            evaluate_selections(*args)
+            evaluate_selections(path, scoped_context, owner_object, owner_type, selections, after: idx, root_operation_type: root_operation_type)
           }
         end
 
@@ -160,29 +178,39 @@ module GraphQL
 
         # @return [void]
         def evaluate_selections(path, scoped_context, owner_object, owner_type, selections, after:, root_operation_type: nil)
+          # puts "[Fiber:#{Fiber.current.object_id}] evaluate_selections #{path} after: #{after}"
           set_all_interpreter_context(owner_object, nil, nil, path)
           selections_by_name = {}
           gather_selections(owner_object, owner_type, selections, selections_by_name)
-          progress_context = { passed_along: false }
-          selections_by_name.each_with_index do |(result_name, field_ast_nodes_or_ast_node), idx|
+          progress_context = @last_progress_context[:passed_along] ? { passed_along: false } : @last_progress_context
+          # Track `idx` manually to avoid an allocation on this hot path
+          idx = 0
+          selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
+            prev_idx = idx
+            idx += 1
             # TODO: this is how a `progress` resumes where this left off.
             # Is there a better way to seek in the hash?
             # I think we could also use the array of keys; it supports seeking just fine.
-            if after && idx <= after
+            if after && prev_idx <= after
+              # puts "[Fiber:#{Fiber.current.object_id}] next #{path} #{result_name} #{prev_idx} <= #{after}"
               next
             end
-
+            # TODO can some of these assignments be eliminated and
+            # other context assignments used instead? (eg context[:current_...])
             # This will be used by Query::Context to build a progress object.
-            # TODO: no allocations here on every selection, it's a huge waste.
-            @interpreter_context[:next_progress] = {
-              id: progress_context.object_id,
-              progress: [path, scoped_context, owner_object, owner_type, selections, {after: idx, root_operation_type: root_operation_type}],
-              progress_context: progress_context,
-            }
-
+            @progress_array[0] = path
+            @progress_array[1] = scoped_context
+            @progress_array[2] = owner_object
+            @progress_array[3] = owner_type
+            @progress_array[4] = selections
+            @progress_array[5] = prev_idx
+            @progress_array[6] = root_operation_type
+            @interpreter_context[:next_progress] = progress_context
+            # puts "[Fiber:#{Fiber.current.object_id}] evaluate #{path} #{result_name} #{prev_idx} <= #{after}"
             evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, root_operation_type)
             # This flag is set by Query::Context
             if progress_context[:passed_along]
+              # puts "[Fiber:#{Fiber.current.object_id}] break #{result_name}"
               break
             end
           end
