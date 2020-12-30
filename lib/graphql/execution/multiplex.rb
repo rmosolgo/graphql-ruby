@@ -89,16 +89,22 @@ module GraphQL
           end
 
           multiplex.dataloader.run
+
           # Then, work through lazy results in a breadth-first way
-          multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
+          multiplex.dataloader.enqueue {
+            multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
+          }
+          multiplex.dataloader.run
 
           # Then, find all errors and assign the result to the query object
-          results.each_with_index.map do |data_result, idx|
+          results.each_with_index do |data_result, idx|
             query = queries[idx]
             finish_query(data_result, query, multiplex)
             # Get the Query::Result, not the Hash
-            query.result
+            results[idx] = query.result
           end
+
+          results
         rescue Exception
           # TODO rescue at a higher level so it will catch errors in analysis, too
           # Assign values here so that the query's `@executed` becomes true

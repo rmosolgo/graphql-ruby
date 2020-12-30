@@ -1712,6 +1712,7 @@ module GraphQL
           else
             @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
             @lazy_methods.set(GraphQL::Execution::Lazy, :value)
+            @lazy_methods.set(GraphQL::Dataloader::Source::Request, :load)
           end
         end
         @lazy_methods

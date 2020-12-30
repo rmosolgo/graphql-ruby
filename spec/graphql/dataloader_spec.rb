@@ -106,7 +106,7 @@ describe "fiber data loading" do
     query(Query)
 
     def self.object_from_id(id, ctx)
-      ctx.dataloader.with(Loader).load(id)
+      ctx.dataloader.with(Loader).request(id)
     end
 
     def self.resolve_type(type, obj, ctx)
