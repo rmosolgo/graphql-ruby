@@ -3,17 +3,41 @@
 module GraphQL
   class Dataloader
     class Source
+      class Request
+        def initialize(source, key)
+          @source = source
+          @key = key
+        end
+
+        def load
+          @source.sync
+          @source.results[@key]
+        end
+      end
+
+      attr_reader :results
+
       def initialize(context)
         @context = context
         @pending_keys = []
         @results = {}
+        @dataloader = @context.query.multiplex.dataloader
       end
+
+      def request(key)
+        if !@results.key?(key)
+          @pending_keys << key
+        end
+        Request.new(self, key)
+      end
+
 
       def load(key)
         if @results.key?(key)
           @results[key]
         else
-          sync([key])
+          @pending_keys << key
+          sync
           @results[key]
         end
       end
@@ -21,7 +45,8 @@ module GraphQL
       def load_all(keys)
         if keys.any? { |k| !@results.key?(k) }
           pending_keys = keys.select { |k| !@results.key?(k) }
-          sync(pending_keys)
+          @pending_keys.concat(pending_keys)
+          sync
         end
 
         keys.map { |k| @results[k] }
@@ -35,18 +60,15 @@ module GraphQL
       # Wait for a batch, if there's anything to batch.
       # Then run the batch and update the cache.
       # @return [void]
-      def sync(this_fiber_pending_keys)
-        @pending_keys.concat(this_fiber_pending_keys)
+      def sync
         interpreter_ctx = @context.namespace(:interpreter)
         progress_ctx = interpreter_ctx[:next_progress]
-        if progress_ctx[:passed_along]
-          # This fiber already passed the baton
-          Fiber.yield
-        else
+        if !progress_ctx[:passed_along]
           progress_ctx[:passed_along] = true
-          progress = interpreter_ctx[:runtime].make_selections_fiber
-          Fiber.yield(progress)
+          next_fiber = interpreter_ctx[:runtime].make_selections_fiber
+          @dataloader.enqueue(next_fiber)
         end
+        @dataloader.yield
       end
 
       def run_pending_keys

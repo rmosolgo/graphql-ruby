@@ -35,7 +35,7 @@ module GraphQL
         @queries = queries
         @queries.each { |q| q.multiplex = self }
         @context = context
-        @dataloader = Dataloader.new(context)
+        @context[:dataloader] = @dataloader = @schema.dataloader_class.new(context)
         @tracers = schema.tracers + (context[:tracers] || [])
         # Support `context: {backtrace: true}`
         if context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
@@ -83,11 +83,8 @@ module GraphQL
           # Do as much eager evaluation of the query as possible
           results = []
           queries.each_with_index do |query, idx|
-            multiplex.dataloader.append Fiber.new {
-              # p "Begin query #{idx}"
+            multiplex.dataloader.enqueue {
               results[idx] = begin_query(query, multiplex)
-              # p "End query #{idx}"
-              nil
             }
           end
 

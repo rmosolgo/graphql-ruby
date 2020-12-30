@@ -92,6 +92,20 @@ describe "fiber data loading" do
         ingredient_id = recipe[:ingredient_ids][ingredient_number - 1]
         Loader.for(context).load(ingredient_id)
       end
+
+      field :common_ingredients, [Ingredient], null: true do
+        argument :recipe_1_id, ID, required: true
+        argument :recipe_2_id, ID, required: true
+      end
+
+      def common_ingredients(recipe_1_id:, recipe_2_id:)
+        req1 = Loader.for(context).request(recipe_1_id)
+        req2 = Loader.for(context).request(recipe_2_id)
+        recipe1 = req1.load
+        recipe2 = req2.load
+        common_ids = recipe1[:ingredient_ids] & recipe2[:ingredient_ids]
+        Loader.for(context).load_all(common_ids)
+      end
     end
 
     query(Query)
@@ -107,6 +121,7 @@ describe "fiber data loading" do
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Analysis::AST
     use GraphQL::Execution::Interpreter
+    use GraphQL::Dataloader
   end
 
   def database_log
@@ -115,6 +130,27 @@ describe "fiber data loading" do
 
   before do
     database_log.clear
+  end
+
+  it "Works with request(...)" do
+    res = FiberSchema.execute <<-GRAPHQL
+    {
+      commonIngredients(recipe1Id: 5, recipe2Id: 6) {
+        name
+      }
+    }
+    GRAPHQL
+
+    expected_data = {
+      "data" => {
+        "commonIngredients" => [
+          { "name" => "Corn" },
+          { "name" => "Butter" },
+        ]
+      }
+    }
+    assert_equal expected_data, res
+    assert_equal [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
   end
 
   it "batch-loads" do

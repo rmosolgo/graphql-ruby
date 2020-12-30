@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   class Backtrace
+    # TODO this is not fiber-friendly
     module Tracer
       module_function
 

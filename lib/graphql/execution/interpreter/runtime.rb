@@ -19,6 +19,7 @@ module GraphQL
 
         def initialize(query:, response:)
           @query = query
+          @dataloader = query.multiplex.dataloader
           @schema = query.schema
           @context = query.context
           @interpreter_context = @context.namespace(:interpreter)
@@ -67,7 +68,7 @@ module GraphQL
             @last_progress_context = { passed_along: false }
 
             # Make the first fiber which will begin execution
-            Fiber.yield(make_selections_fiber)
+            @dataloader.enqueue(make_selections_fiber)
           end
           delete_interpreter_context(:current_path)
           delete_interpreter_context(:current_field)
@@ -87,7 +88,7 @@ module GraphQL
           selections = @progress_array[4]
           idx = @progress_array[5]
           root_operation_type = @progress_array[6]
-          Fiber.new {
+          @dataloader.prepare {
             evaluate_selections(path, scoped_context, owner_object, owner_type, selections, after: idx, root_operation_type: root_operation_type)
           }
         end

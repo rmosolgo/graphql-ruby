@@ -1157,6 +1157,14 @@ module GraphQL
         end
       end
 
+      # @api private
+      # @see GraphQL::Dataloader
+      def dataloader_class
+        @dataloader_class || GraphQL::Dataloader::NullDataloader
+      end
+
+      attr_writer :dataloader_class
+
       def references_to(to_type = nil, from: nil)
         @own_references_to ||= Hash.new { |h, k| h[k] = [] }
         if to_type
@@ -1952,6 +1960,11 @@ module GraphQL
           end
         end
       end
+    end
+
+
+    def dataloader_class
+      self.class.dataloader_class
     end
 
     protected
