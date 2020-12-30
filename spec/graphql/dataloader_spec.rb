@@ -26,52 +26,15 @@ describe "fiber data loading" do
       end
     end
 
-    class Loader
-      def initialize(context)
-        @context = context
-        @ids = []
-        @data = {}
-      end
-
+    class Loader < GraphQL::Dataloader::Source
+      # TODO a system of managing these
       def self.for(context)
-        context[:loader] ||= self.new(context)
+        context.query.multiplex.context[:loader] ||= self.new(context)
       end
 
-      def load(id_or_ids)
-        puts "[Fiber:#{Fiber.current.object_id}] loading #{id_or_ids}"
-        is_single_item = !id_or_ids.is_a?(Array)
-        ids = Array(id_or_ids)
-
-        # Return synchronously if possible
-        if ids.any? { |id| !@data.key?(id) }
-          pending_ids = ids.select { |id| !@data.key?(id) }
-          @ids.concat(pending_ids)
-          @context.yield_graphql
-          # If another Fiber called `sync`, then don't call it again --
-          # the loader may have gathered other IDs since then, and they
-          # shouldn't be synced yet.
-          if pending_ids.any? { |id| !@data.key?(id) }
-            sync
-          end
-        end
-
-        items = ids.map { |id| @data[id] }
-        if is_single_item
-          items[0]
-        else
-          items
-        end
-      end
-
-      def sync
-        if @ids.any?
-          puts "[Fiber:#{Fiber.current.object_id}] sync #{@ids}"
-          records = Database.mget(@ids)
-          @ids.each_with_index do |id, idx|
-            @data[id] = records[idx]
-          end
-          @ids = []
-        end
+      def fetch(ids)
+        # puts "[Fiber:#{Fiber.current.object_id}] fetch #{ids}"
+        Database.mget(ids)
       end
     end
 
@@ -97,7 +60,7 @@ describe "fiber data loading" do
       field :ingredients, [Ingredient], null: false
 
       def ingredients
-        ingredients = Loader.for(context).load(object[:ingredient_ids])
+        ingredients = Loader.for(context).load_all(object[:ingredient_ids])
         ingredients
       end
     end
@@ -189,12 +152,32 @@ describe "fiber data loading" do
       [:mget, [
         "1", "2",           # The first 2 ingredients
         "5",                # The first recipe
-        "6"]                # recipeIngredient recipeId
-      ],
+        "6",                # recipeIngredient recipeId
+      ]],
       [:mget, [
-        "3", "4",            # The two unfetched ingredients the first recipe
-        "7" ]                # recipeIngredient ingredient_id
-      ],
+        "7",                # recipeIngredient ingredient_id
+        "3", "4",           # The two unfetched ingredients the first recipe
+      ]],
+    ]
+    assert_equal expected_log, database_log
+  end
+
+  it "caches and batch-loads across a multiplex" do
+    result = FiberSchema.multiplex([
+      { query: "{ i1: ingredient(id: 1) { name } i2: ingredient(id: 2) { name } }", },
+      { query: "{ i2: ingredient(id: 2) { name } r1: recipe(id: 5) { ingredients { name } } }", },
+      { query: "{ i1: ingredient(id: 1) { name } ri1: recipeIngredient(recipeId: 5, ingredientNumber: 2) { name } }", },
+    ])
+
+    expected_result = [
+      {"data"=>{"i1"=>{"name"=>"Wheat"}, "i2"=>{"name"=>"Corn"}}},
+      {"data"=>{"i2"=>{"name"=>"Corn"}, "r1"=>{"ingredients"=>[{"name"=>"Wheat"}, {"name"=>"Corn"}, {"name"=>"Butter"}, {"name"=>"Baking Soda"}]}}},
+      {"data"=>{"i1"=>{"name"=>"Wheat"}, "ri1"=>{"name"=>"Corn"}}},
+    ]
+    assert_equal expected_result, result
+    expected_log = [
+      [:mget, ["1", "5", "2"]],
+      [:mget, ["3", "4"]],
     ]
     assert_equal expected_log, database_log
   end

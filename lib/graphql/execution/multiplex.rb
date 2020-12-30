@@ -29,11 +29,13 @@ module GraphQL
 
       include Tracing::Traceable
 
-      attr_reader :context, :queries, :schema, :max_complexity
+      attr_reader :context, :queries, :schema, :max_complexity, :dataloader
       def initialize(schema:, queries:, context:, max_complexity:)
         @schema = schema
         @queries = queries
+        @queries.each { |q| q.multiplex = self }
         @context = context
+        @dataloader = Dataloader.new(context)
         @tracers = schema.tracers + (context[:tracers] || [])
         # Support `context: {backtrace: true}`
         if context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
@@ -79,10 +81,17 @@ module GraphQL
           multiplex.schema.query_execution_strategy.begin_multiplex(multiplex)
           queries = multiplex.queries
           # Do as much eager evaluation of the query as possible
-          results = queries.map do |query|
-            begin_query(query, multiplex)
+          results = []
+          queries.each_with_index do |query, idx|
+            multiplex.dataloader.append Fiber.new {
+              # p "Begin query #{idx}"
+              results[idx] = begin_query(query, multiplex)
+              # p "End query #{idx}"
+              nil
+            }
           end
 
+          multiplex.dataloader.run
           # Then, work through lazy results in a breadth-first way
           multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
 

@@ -128,19 +128,6 @@ module GraphQL
         @irep_node.ast_node
       end
 
-      # Halt this graphql resolution
-      def yield_graphql
-        ctx = namespace(:interpreter)[:next_progress]
-        if ctx[:passed_along]
-          # This fiber already passed the baton
-          Fiber.yield
-        else
-          ctx[:passed_along] = true
-          progress = namespace(:interpreter)[:runtime].make_selections_fiber
-          Fiber.yield(progress)
-        end
-      end
-
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
       attr_reader :errors
 

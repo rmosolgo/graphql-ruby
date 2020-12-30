@@ -54,9 +54,6 @@ module GraphQL
             # Root .authorized? returned false.
             write_in_response(path, nil)
           else
-            # Run the query in an endless chain of fibers.
-            # There's no pool or limit here. How is that going to work at scale?
-            waiting_fibers = []
             @progress_array = [
               path,
               context.scoped_context,
@@ -70,32 +67,7 @@ module GraphQL
             @last_progress_context = { passed_along: false }
 
             # Make the first fiber which will begin execution
-            waiting_fibers << make_selections_fiber
-
-            # Start executing Fibers. This will run until all the Fibers are done.
-            # TODO some kind of check to prevent endless loops in case of a bug.
-            while (next_fiber = waiting_fibers.shift)
-              # puts "[Fiber:#{next_fiber.object_id}] resume"
-              # Run this fiber until its next yield.
-              # If the Fiber yields, it will return an object for continuing excecution.
-              # If it doesn't yield, it will return `nil`
-              progress_f = next_fiber.resume
-              # puts "[Fiber:#{next_fiber.object_id}] progress: #{progress_f.class} (#{next_fiber.alive? ? "Alive" : "Dead"})"
-
-              # if there's a _new_ fiber from this selection,
-              # queue it up first.
-              if progress_f
-                # puts "[Fiber:#{progress_f.object_id}] creating from progress"
-                waiting_fibers.unshift(progress_f)
-              end
-
-              # This fiber yielded; there's more to do here.
-              # (If `#alive?` is false, then the fiber concluded without yielding.)
-              if next_fiber.alive?
-                # puts "[Fiber:#{next_fiber.object_id}] alive, queuing"
-                waiting_fibers << next_fiber
-              end
-            end
+            Fiber.yield(make_selections_fiber)
           end
           delete_interpreter_context(:current_path)
           delete_interpreter_context(:current_field)

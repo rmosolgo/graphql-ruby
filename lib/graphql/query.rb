@@ -153,6 +153,8 @@ module GraphQL
       @interpreter
     end
 
+    attr_accessor :multiplex
+
     def subscription_update?
       @subscription_topic && subscription?
     end
