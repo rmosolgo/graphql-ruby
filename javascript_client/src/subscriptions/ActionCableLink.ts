@@ -1,8 +1,8 @@
-import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "apollo-link"
+import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client"
 import { Cable } from "actioncable"
 import { print } from "graphql"
 
-type RequestResult = Observable<FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>>
+type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
 
 
 class ActionCableLink extends ApolloLink {
@@ -21,7 +21,7 @@ class ActionCableLink extends ApolloLink {
 
   // Interestingly, this link does _not_ call through to `next` because
   // instead, it sends the request to ActionCable.
-  request(operation: Operation, _next: NextLink): RequestResult {
+  request(operation: Operation, _next: NextLink): Observable<RequestResult> {
     return new Observable((observer) => {
       var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
       var actionName = this.actionName

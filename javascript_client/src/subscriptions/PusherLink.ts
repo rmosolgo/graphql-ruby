@@ -34,11 +34,11 @@
 //     // Do something with `data` and/or `errors`
 //   }})
 //
-import { ApolloLink, Observable, Operation, NextLink, FetchResult } from "apollo-link"
+import { ApolloLink, Observable, Operation, NextLink, FetchResult } from "@apollo/client"
 import { Pusher } from "pusher-js"
 
 
-type RequestResult = Observable<FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>>
+type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
 
 class PusherLink extends ApolloLink {
   pusher: Pusher
@@ -49,8 +49,8 @@ class PusherLink extends ApolloLink {
     this.pusher = options.pusher
   }
 
-  request(operation: Operation, forward: NextLink): RequestResult {
-    const subscribeObservable = new Observable((_observer) => {  }) as RequestResult
+  request(operation: Operation, forward: NextLink): Observable<RequestResult> {
+    const subscribeObservable = new Observable<RequestResult>((_observer) => {  })
     var pusher = this.pusher
     // Capture the super method
     const prevSubscribe = subscribeObservable.subscribe.bind(subscribeObservable)
