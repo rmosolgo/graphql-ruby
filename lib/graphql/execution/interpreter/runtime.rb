@@ -22,6 +22,7 @@ module GraphQL
           @dataloader = query.multiplex.dataloader
           @schema = query.schema
           @context = query.context
+          @multiplex_context = query.multiplex.context
           @interpreter_context = @context.namespace(:interpreter)
           @response = response
           @dead_paths = {}
@@ -65,7 +66,7 @@ module GraphQL
               root_op_type,
             ]
             # This object can be reused until it's detected to have been switched to `true`
-            @last_progress_context = { passed_along: false }
+            @last_progress_context = { passed_along: false, runtime: self }
 
             # Make the first fiber which will begin execution
             @dataloader.enqueue(make_selections_fiber)
@@ -155,7 +156,7 @@ module GraphQL
           set_all_interpreter_context(owner_object, nil, nil, path)
           selections_by_name = {}
           gather_selections(owner_object, owner_type, selections, selections_by_name)
-          progress_context = @last_progress_context[:passed_along] ? { passed_along: false } : @last_progress_context
+          progress_context = @last_progress_context[:passed_along] ? { passed_along: false, runtime: self } : @last_progress_context
           # Track `idx` manually to avoid an allocation on this hot path
           idx = 0
           selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
@@ -178,7 +179,7 @@ module GraphQL
             @progress_array[4] = selections
             @progress_array[5] = prev_idx
             @progress_array[6] = root_operation_type
-            @interpreter_context[:next_progress] = progress_context
+            @multiplex_context[:next_progress] = progress_context
             # puts "[Fiber:#{Fiber.current.object_id}] evaluate #{path} #{result_name} #{prev_idx} <= #{after}"
             evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, root_operation_type)
             # This flag is set by Query::Context

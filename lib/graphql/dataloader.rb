@@ -8,10 +8,7 @@ module GraphQL
     #
     # The Dataloader interface isn't public, but it enables
     # simple internal code while adding the option to add Dataloader.
-    class NullDataloader
-      def initialize(_ctx)
-      end
-
+    class NullDataloader < Dataloader
       # @param prepared [Proc]
       def enqueue(prepared = nil, &block)
         (prepared || block).call
@@ -32,9 +29,12 @@ module GraphQL
 
     def initialize(context)
       @context = context
-      @loader_cache = {}
+      @source_cache = {}
       @waiting_fibers = []
     end
+
+    # @return [Hash] the {Multiplex} context
+    attr_reader :context
 
     # Add some work to this dataloader to be scheduled later.
     # @param prepared [Fiber] some work prepared with {prepare}
@@ -95,8 +95,7 @@ module GraphQL
         end
 
         if @waiting_fibers.empty?
-          # TODO this is just to make the tests pass
-          @context[:loader] && @context[:loader].run_pending_keys
+          @source_cache.each_value(&:run_pending_keys)
           @waiting_fibers.concat(already_run_fibers)
           already_run_fibers.clear
         end
@@ -104,14 +103,8 @@ module GraphQL
       nil
     end
 
-    class << self
-      def self.current
-        Thread.current[:graphql_dataloader]
-      end
-
-      def self.current=(dl)
-        Thread.current[:graphql_dataloader] = dl
-      end
+    def with(source_class)
+      @source_cache[source_class] ||= source_class.new(self)
     end
   end
 end

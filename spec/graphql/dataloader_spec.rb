@@ -27,11 +27,6 @@ describe "fiber data loading" do
     end
 
     class Loader < GraphQL::Dataloader::Source
-      # TODO a system of managing these
-      def self.for(context)
-        context.query.multiplex.context[:loader] ||= self.new(context)
-      end
-
       def fetch(ids)
         # puts "[Fiber:#{Fiber.current.object_id}] fetch #{ids}"
         Database.mget(ids)
@@ -60,7 +55,7 @@ describe "fiber data loading" do
       field :ingredients, [Ingredient], null: false
 
       def ingredients
-        ingredients = Loader.for(context).load_all(object[:ingredient_ids])
+        ingredients = dataloader.with(Loader).load_all(object[:ingredient_ids])
         ingredients
       end
     end
@@ -71,7 +66,7 @@ describe "fiber data loading" do
       end
 
       def item(id:)
-        Loader.for(context).load(id)
+        dataloader.with(Loader).load(id)
       end
 
       field :recipe, Recipe, null: true do
@@ -88,9 +83,9 @@ describe "fiber data loading" do
       end
 
       def recipe_ingredient(recipe_id:, ingredient_number:)
-        recipe = Loader.for(context).load(recipe_id)
+        recipe = dataloader.with(Loader).load(recipe_id)
         ingredient_id = recipe[:ingredient_ids][ingredient_number - 1]
-        Loader.for(context).load(ingredient_id)
+        dataloader.with(Loader).load(ingredient_id)
       end
 
       field :common_ingredients, [Ingredient], null: true do
@@ -99,19 +94,19 @@ describe "fiber data loading" do
       end
 
       def common_ingredients(recipe_1_id:, recipe_2_id:)
-        req1 = Loader.for(context).request(recipe_1_id)
-        req2 = Loader.for(context).request(recipe_2_id)
+        req1 = dataloader.with(Loader).request(recipe_1_id)
+        req2 = dataloader.with(Loader).request(recipe_2_id)
         recipe1 = req1.load
         recipe2 = req2.load
         common_ids = recipe1[:ingredient_ids] & recipe2[:ingredient_ids]
-        Loader.for(context).load_all(common_ids)
+        dataloader.with(Loader).load_all(common_ids)
       end
     end
 
     query(Query)
 
     def self.object_from_id(id, ctx)
-      Loader.for(ctx).load(id)
+      ctx.dataloader.with(Loader).load(id)
     end
 
     def self.resolve_type(type, obj, ctx)

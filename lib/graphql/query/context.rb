@@ -158,6 +158,10 @@ module GraphQL
         @scoped_context = {}
       end
 
+      def dataloader
+        @dataloader ||= query.multiplex.dataloader
+      end
+
       # @api private
       attr_writer :interpreter
 

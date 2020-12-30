@@ -17,11 +17,10 @@ module GraphQL
 
       attr_reader :results
 
-      def initialize(context)
-        @context = context
+      def initialize(dataloader)
         @pending_keys = []
         @results = {}
-        @dataloader = @context.query.multiplex.dataloader
+        @dataloader = dataloader
       end
 
       def request(key)
@@ -61,11 +60,10 @@ module GraphQL
       # Then run the batch and update the cache.
       # @return [void]
       def sync
-        interpreter_ctx = @context.namespace(:interpreter)
-        progress_ctx = interpreter_ctx[:next_progress]
+        progress_ctx = @dataloader.context[:next_progress]
         if !progress_ctx[:passed_along]
           progress_ctx[:passed_along] = true
-          next_fiber = interpreter_ctx[:runtime].make_selections_fiber
+          next_fiber = progress_ctx[:runtime].make_selections_fiber
           @dataloader.enqueue(next_fiber)
         end
         @dataloader.yield

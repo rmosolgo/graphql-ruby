@@ -14,6 +14,11 @@ module GraphQL
       # @return [GraphQL::Query::Context] the context instance for this query
       attr_reader :context
 
+      # @return [GraphQL::Dataloader]
+      def dataloader
+        context.dataloader
+      end
+
       class << self
         # This is protected so that we can be sure callers use the public method, {.authorized_new}
         # @see authorized_new to make instances
