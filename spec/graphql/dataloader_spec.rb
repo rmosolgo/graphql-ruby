@@ -32,6 +32,12 @@ describe "fiber data loading" do
       end
     end
 
+    class NestedLoader < GraphQL::Dataloader::Source
+      def fetch(ids)
+        @dataloader.with(Loader).load_all(ids)
+      end
+    end
+
     module Ingredient
       include GraphQL::Schema::Interface
       field :name, String, null: false
@@ -60,12 +66,20 @@ describe "fiber data loading" do
     end
 
     class Query < GraphQL::Schema::Object
-      field :ingredient, Ingredient, null: true, resolver_method: :item do
+      field :ingredient, Ingredient, null: true do
         argument :id, ID, required: true
       end
 
-      def item(id:)
+      def ingredient(id:)
         dataloader.with(Loader).load(id)
+      end
+
+      field :nested_ingredient, Ingredient, null: true do
+        argument :id, ID, required: true
+      end
+
+      def nested_ingredient(id:)
+        dataloader.with(NestedLoader).load(id)
       end
 
       field :recipe, Recipe, null: true do
@@ -210,5 +224,18 @@ describe "fiber data loading" do
       [:mget, ["3", "4"]],
     ]
     assert_equal expected_log, database_log
+  end
+
+  it "works with calls within sources" do
+    res = FiberSchema.execute <<-GRAPHQL
+    {
+      i1: nestedIngredient(id: 1) { name }
+      i2: nestedIngredient(id: 2) { name }
+    }
+    GRAPHQL
+
+    expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" } }
+    assert_equal expected_data, res["data"]
+    assert_equal [[:mget, ["1", "2"]]], database_log
   end
 end

@@ -62,6 +62,10 @@ module GraphQL
         @dataloader.yield
       end
 
+      def pending?
+        @pending_keys.any?
+      end
+
       def run_pending_keys
         return if @pending_keys.empty?
         fetch_keys = @pending_keys.uniq
