@@ -28,7 +28,6 @@ describe "fiber data loading" do
 
     class Loader < GraphQL::Dataloader::Source
       def fetch(ids)
-        # puts "[Fiber:#{Fiber.current.object_id}] fetch #{ids}"
         Database.mget(ids)
       end
     end
@@ -106,7 +105,7 @@ describe "fiber data loading" do
     query(Query)
 
     def self.object_from_id(id, ctx)
-      ctx.dataloader.with(Loader).request(id)
+      ctx.dataloader.with(Loader).load(id)
     end
 
     def self.resolve_type(type, obj, ctx)

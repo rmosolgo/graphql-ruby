@@ -1,0 +1,114 @@
+---
+layout: guide
+search: true
+section: Dataloader
+title: Sources
+desc: Batch-loading objects for GraphQL::Dataloader
+index: 1
+experimental: true
+---
+
+_Sources_ are what {{ "GraphQL::Dataloader" | api_doc }} uses to fetch data from external services.
+
+## Source Concepts
+
+Sources are classes that inherit from `GraphQL::Dataloader::Source`. A Source _must_ implement `def fetch(keys)` to return a list of objects, one for each of the given keys. A source _may_ implement `def initialize(dataloader, ...)` to accept other batching parameters.
+
+Sources will receive two kinds of inputs from `GraphQL::Dataloader`:
+
+- _keys_, which correspond to objects requested by the application.
+
+  Keys are passed to `def fetch(keys)`, which must return an object (or `nil`) for each of `keys`, in the same order as `keys`.
+
+  Under the hood, each Source instance maintains a `key => object` cache.
+
+- _batch parameters_, which are the basis of batched groups. For example, if you're loading records from different database tables, the the table name would be a batch parameter.
+
+  Batch parameters are given to `dataloader.with(source_class, *batch_parameters)`, and the default is _no batch parameters_. When you define a source, you should add the batch parameters to `def initialize(dataloader, ...)` and store them in instance variables.
+
+  (`dataloader.with(source_class, *batch_parameters)` returns an instance of `source_class` with the given batch parameters -- but it might be an instance which was cached by `dataloader`.)
+
+
+## Example: Loading Strings from Redis by Key
+
+The simplest source might fetch values based on their keys. For example:
+
+```ruby
+# app/graphql/sources/redis_string.rb
+class Sources::RedisString < GraphQL::Dataloader::Source
+  REDIS = Redis.new
+  def fetch(keys)
+    # Redis's `mget` will return a value for each key with a `nil` for any not-found key.
+    REDIS.mget(*keys)
+  end
+end
+```
+
+This loader could be used in GraphQL like this:
+
+```ruby
+some_string = dataloader.with(Sources::RedisString).load("some_key")
+```
+
+Calls to `.load(key)` will be batched, and when `GraphQL::Dataloader` can't go any further, it will dispatch a call to `def fetch(keys)` above.
+
+## Example: Loading ActiveRecord Objects by ID
+
+To fetch ActiveRecord objects by ID, the source should also accept the _model class_ as a batching parameter. For example:
+
+```ruby
+# app/graphql/sources/active_record_object.rb
+class Sources::ActiveRecordObject < GraphQL::Dataloader::Source
+  def initialize(dataloader, model_class)
+    @model_class = model_class
+    super(dataloader)
+  end
+
+  def fetch(ids)
+    records = @model_class.where(id: ids)
+    # return a list with `nil` for any ID that wasn't found
+    ids.map { |id| records.find { |r| r.id == id } }
+  end
+end
+```
+
+This source could be used for any `model_class`, for example:
+
+```ruby
+author = dataloader.for(Sources::ActiveRecordObject, ::User).load(1)
+post = dataloader.for(Sources::ActiveRecordObject, ::Post).load(1)
+```
+
+## Example: Batched Calculations
+
+Besides fetching objects, Sources can return values from batched calculations. For example, a system could batch up checks for who a user follows:
+
+```ruby
+# for a given user, batch checks to see whether this user follows another user.
+# (The default `user.followings.where(followed_user_id: followed).exists?` would cause N+1 queries.)
+class Sources::UserFollowingExists < GraphQL::Dataloader::Source
+  def initialize(dataloader, user)
+    @user = user
+    super(dataloader)
+  end
+
+  def fetch(handles)
+    # Prepare a `SELECT id FROM users WHERE handle IN(...)` statement
+    user_ids = ::User.where(handle: handles).select(:id)
+    # And use it to filter this user's followings:
+    followings = @user.followings.where(followed_user_id: user_ids)
+    # Now, for followings that _actually_ hit a user, get the handles for those users:
+    followed_users = ::User.where(id: followings.select(:followed_user_id))
+    # Finally, return a result set, with one entry (true or false) for each of the given `handles`
+    handles.map { |h| !!followed_users.find { |u| u.handle == h }}
+  end
+end
+```
+
+It could be used like this:
+
+```ruby
+is_following = dataloader.with(Sources::UserFollowingExists, context[:viewer]).load(handle)
+```
+
+After all requests were batched, `#fetch` will return a Boolean result to `is_following`.

@@ -152,7 +152,6 @@ module GraphQL
 
         # @return [void]
         def evaluate_selections(path, scoped_context, owner_object, owner_type, selections, after:, root_operation_type: nil)
-          # puts "[Fiber:#{Fiber.current.object_id}] evaluate_selections #{path} after: #{after}"
           set_all_interpreter_context(owner_object, nil, nil, path)
           selections_by_name = {}
           gather_selections(owner_object, owner_type, selections, selections_by_name)
@@ -166,7 +165,6 @@ module GraphQL
             # Is there a better way to seek in the hash?
             # I think we could also use the array of keys; it supports seeking just fine.
             if after && prev_idx <= after
-              # puts "[Fiber:#{Fiber.current.object_id}] next #{path} #{result_name} #{prev_idx} <= #{after}"
               next
             end
             # TODO can some of these assignments be eliminated and
@@ -180,11 +178,9 @@ module GraphQL
             @progress_array[5] = prev_idx
             @progress_array[6] = root_operation_type
             @multiplex_context[:next_progress] = progress_context
-            # puts "[Fiber:#{Fiber.current.object_id}] evaluate #{path} #{result_name} #{prev_idx} <= #{after}"
             evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, root_operation_type)
             # This flag is set by Query::Context
             if progress_context[:passed_along]
-              # puts "[Fiber:#{Fiber.current.object_id}] break #{result_name}"
               break
             end
           end

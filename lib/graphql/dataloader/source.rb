@@ -3,30 +3,6 @@
 module GraphQL
   class Dataloader
     class Source
-      class Request
-        def initialize(source, key)
-          @source = source
-          @key = key
-        end
-
-        def load
-          @source.sync
-          @source.results[@key]
-        end
-      end
-
-      class RequestAll < Request
-        def initialize(source, keys)
-          @source = source
-          @keys = keys
-        end
-
-        def load
-          @source.sync
-          @keys.map { |k| @source.results[k] }
-        end
-      end
-
       attr_reader :results
 
       def initialize(dataloader)
@@ -39,13 +15,13 @@ module GraphQL
         if !@results.key?(key)
           @pending_keys << key
         end
-        Request.new(self, key)
+        Dataloader::Request.new(self, key)
       end
 
       def request_all(keys)
         pending_keys = keys.select { |k| !@results.key?(k) }
         @pending_keys.concat(pending_keys)
-        RequestAll.new(self, keys)
+        Dataloader::RequestAll.new(self, keys)
       end
 
       def load(key)

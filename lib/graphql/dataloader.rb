@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "graphql/dataloader/request"
+require "graphql/dataloader/request_all"
 require "graphql/dataloader/source"
 
 module GraphQL
@@ -48,7 +50,6 @@ module GraphQL
           err
         end
       }
-      # puts "[Fiber:#{fiber.object_id}] appended"
       @waiting_fibers << prepared
       nil
     end
@@ -77,7 +78,6 @@ module GraphQL
       # Start executing Fibers. This will run until all the Fibers are done.
       already_run_fibers = []
       while (current_fiber = @waiting_fibers.pop)
-        # puts "[Fiber:#{current_fiber.object_id}] resume"
         # Run this fiber until its next yield.
         # If the Fiber yields, it will return an object for continuing excecution.
         # If it doesn't yield, it will return `nil`
@@ -85,12 +85,10 @@ module GraphQL
         if result.is_a?(StandardError)
           raise result
         end
-        # puts "[Fiber:#{current_fiber.object_id}] (#{current_fiber.alive? ? "Alive" : "Dead"}) progress: #{progress_f.class}:#{progress_f.object_id}"
 
         # This fiber yielded; there's more to do here.
         # (If `#alive?` is false, then the fiber concluded without yielding.)
         if current_fiber.alive?
-          # puts "[Fiber:#{current_fiber.object_id}] alive, queuing"
           already_run_fibers << current_fiber
         end
 

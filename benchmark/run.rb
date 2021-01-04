@@ -123,6 +123,7 @@ module GraphQLBenchmark
       query QueryType
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
+      use GraphQL::Dataloader
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL
