@@ -8,10 +8,10 @@
 Includes:
 GraphQL::Dig
 Extended by:
-GraphQL::Schema::Member::ValidatesInput,
+GraphQL::Schema::Member::AcceptsDefinition, Forwardable,
+GraphQL::Schema::Member::HasArguments,
 GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader,
-GraphQL::Schema::Member::HasArguments, Forwardable,
-GraphQL::Schema::Member::AcceptsDefinition
+GraphQL::Schema::Member::ValidatesInput
 Class methods:
 argument, coerce_input, coerce_result, kind, to_graphql,
 validate_non_null_input

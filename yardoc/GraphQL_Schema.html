@@ -25,10 +25,10 @@ Includes:
 GraphQL::Schema::LazyHandlingMethods,
 GraphQL::Define::InstanceDefinable
 Extended by:
-GraphQL::Schema::LazyHandlingMethods,
-GraphQL::Schema::FindInheritedValue,
+Forwardable, GraphQL::Schema::Member::AcceptsDefinition,
 GraphQL::Schema::Member::HasAstNode,
-GraphQL::Schema::Member::AcceptsDefinition, Forwardable
+GraphQL::Schema::FindInheritedValue,
+GraphQL::Schema::LazyHandlingMethods
 Class methods:
 accessible?, add_subscription_extension_if_necessary, add_type,
 add_type_and_traverse, all_middleware, as_json, context_class,
