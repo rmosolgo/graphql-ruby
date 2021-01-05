@@ -82,7 +82,6 @@ module GraphQL
         # Use a method to make sure `args` is preserved in a closure
         # (otherwise `progress = ...` gets clobbered)
         def make_selections_fiber
-          # p "Making fiber: #{@progress_array[0]} #{@progress_array[5]}"
           path = @progress_array[0]
           scoped_context = @progress_array[1]
           owner_object = @progress_array[2]

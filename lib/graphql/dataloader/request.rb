@@ -8,6 +8,8 @@ module GraphQL
         @key = key
       end
 
+      # Call this method to cause the current Fiber to wait for the results of this request.
+      #
       # @return [Object] the object loaded for `key`
       def load
         if @source.results.key?(@key)

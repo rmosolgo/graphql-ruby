@@ -230,11 +230,12 @@ describe "fiber data loading" do
   end
 
   it "caches and batch-loads across a multiplex" do
+    context = {}
     result = FiberSchema.multiplex([
       { query: "{ i1: ingredient(id: 1) { name } i2: ingredient(id: 2) { name } }", },
       { query: "{ i2: ingredient(id: 2) { name } r1: recipe(id: 5) { ingredients { name } } }", },
       { query: "{ i1: ingredient(id: 1) { name } ri1: recipeIngredient(recipeId: 5, ingredientNumber: 2) { name } }", },
-    ])
+    ], context: context)
 
     expected_result = [
       {"data"=>{"i1"=>{"name"=>"Wheat"}, "i2"=>{"name"=>"Corn"}}},
@@ -247,6 +248,7 @@ describe "fiber data loading" do
       [:mget, ["3", "4"]],
     ]
     assert_equal expected_log, database_log
+    assert_equal 0, context[:dataloader].yielded_fibers.size, "All yielded fibers are cleaned up when they're finished"
   end
 
   it "works with calls within sources" do
