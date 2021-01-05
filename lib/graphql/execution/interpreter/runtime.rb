@@ -56,15 +56,14 @@ module GraphQL
             # Root .authorized? returned false.
             write_in_response(path, nil)
           else
-            @progress_array = [
-              path,
-              context.scoped_context,
-              object_proxy,
-              root_type,
-              nil, # idx
-              root_op_type,
-              gather_selections(object_proxy, root_type, root_operation.selections),
-            ]
+            # Prepare this runtime state to be encapsulated in a Fiber
+            @progress_path = path
+            @progress_scoped_context = context.scoped_context
+            @progress_object = object_proxy
+            @progress_object_type = root_type
+            @progress_index = nil
+            @progress_is_eager_selection = root_op_type == "mutation"
+            @progress_selections = gather_selections(object_proxy, root_type, root_operation.selections)
 
             # Make the first fiber which will begin execution
             enqueue_selections_fiber
@@ -80,21 +79,22 @@ module GraphQL
         # @return [void]
         def enqueue_selections_fiber
           # Read these into local variables so that later assignments don't affect the block below.
-          path = @progress_array[0]
-          scoped_context = @progress_array[1]
-          owner_object = @progress_array[2]
-          owner_type = @progress_array[3]
-          idx = @progress_array[4]
-          root_operation_type = @progress_array[5]
-          gathered_selections = @progress_array[6]
+          path = @progress_path
+          scoped_context = @progress_scoped_context
+          owner_object = @progress_object
+          owner_type = @progress_object_type
+          idx = @progress_index
+          is_eager_selection = @progress_is_eager_selection
+          gathered_selections = @progress_selections
+
           @dataloader.enqueue {
             evaluate_selections(
               path,
               scoped_context,
               owner_object,
               owner_type,
+              is_eager_selection: is_eager_selection,
               after: idx,
-              root_operation_type: root_operation_type,
               gathered_selections: gathered_selections,
             )
           }
@@ -159,17 +159,16 @@ module GraphQL
         NO_ARGS = {}.freeze
 
         # @return [void]
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, gathered_selections:, after:, root_operation_type: nil)
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection:, gathered_selections:, after:)
           set_all_interpreter_context(owner_object, nil, nil, path)
 
-          # This will be used by {enqueue_selections_fiber}
-          @progress_array[0] = path
-          @progress_array[1] = scoped_context
-          @progress_array[2] = owner_object
-          @progress_array[3] = owner_type
-          # @progress_array[4] is the index -- assigned in the loop below
-          @progress_array[5] = root_operation_type
-          @progress_array[6] = gathered_selections
+          @progress_path = path
+          @progress_scoped_context = scoped_context
+          @progress_object = owner_object
+          @progress_object_type = owner_type
+          @progress_index = nil
+          @progress_is_eager_selection = is_eager_selection
+          @progress_selections = gathered_selections
 
           # Track `idx` manually to avoid an allocation on this hot path
           idx = 0
@@ -182,11 +181,11 @@ module GraphQL
             if after && prev_idx <= after
               next
             end
-            @progress_array[4] = prev_idx
+            @progress_index = prev_idx
             # This is how the current runtime gives itself to `dataloader`
             # so that the dataloader can enqueue another fiber to resume if needed.
             @dataloader.current_runtime = self
-            evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, root_operation_type)
+            evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection)
             # The dataloader knows if ^^ that selection halted and later selections were executed in another fiber.
             # If that's the case, then don't continue execution here.
             if @dataloader.yielded?
@@ -197,7 +196,7 @@ module GraphQL
         end
 
         # @return [void]
-        def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, root_operation_type)
+        def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field)
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
           # selections of the field, it will be an Array of nodes
@@ -321,7 +320,7 @@ module GraphQL
             # If this field is a root mutation field, immediately resolve
             # all of its child fields before moving on to the next root mutation field.
             # (Subselections of this mutation will still be resolved level-by-level.)
-            if root_operation_type == "mutation"
+            if is_eager_field
               Interpreter::Resolve.resolve_all([field_result])
             end
 
@@ -412,7 +411,7 @@ module GraphQL
                 response_hash = {}
                 write_in_response(path, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
-                evaluate_selections(path, context.scoped_context, continue_value, current_type, gathered_selections: gathered_selections, after: nil)
+                evaluate_selections(path, context.scoped_context, continue_value, current_type, is_eager_selection: false, gathered_selections: gathered_selections, after: nil)
                 response_hash
               end
             end
