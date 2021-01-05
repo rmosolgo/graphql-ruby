@@ -53,12 +53,6 @@ module GraphQL
       # Then run the batch and update the cache.
       # @return [void]
       def sync
-        progress_ctx = @dataloader.context[:next_progress]
-        if !progress_ctx[:passed_along]
-          progress_ctx[:passed_along] = true
-          next_fiber = progress_ctx[:runtime].make_selections_fiber
-          @dataloader.enqueue(next_fiber)
-        end
         @dataloader.yield
       end
 

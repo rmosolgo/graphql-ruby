@@ -64,9 +64,10 @@ module GraphQL
               root_operation.selections,
               nil, # idx
               root_op_type,
+              nil, # gathered selections
             ]
             # This object can be reused until it's detected to have been switched to `true`
-            @last_progress_context = { passed_along: false, runtime: self }
+            @last_progress_context = { runtime: self }
 
             # Make the first fiber which will begin execution
             @dataloader.enqueue(make_selections_fiber)
@@ -89,8 +90,14 @@ module GraphQL
           selections = @progress_array[4]
           idx = @progress_array[5]
           root_operation_type = @progress_array[6]
+          gathered_selections = @progress_array[7]
           @dataloader.prepare {
-            evaluate_selections(path, scoped_context, owner_object, owner_type, selections, after: idx, root_operation_type: root_operation_type)
+            evaluate_selections(
+              path, scoped_context, owner_object,
+              owner_type, selections,
+              after: idx, root_operation_type: root_operation_type,
+              gathered_selections: gathered_selections,
+            )
           }
         end
 
@@ -151,11 +158,26 @@ module GraphQL
         NO_ARGS = {}.freeze
 
         # @return [void]
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, selections, after:, root_operation_type: nil)
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, selections, gathered_selections:, after:, root_operation_type: nil)
           set_all_interpreter_context(owner_object, nil, nil, path)
-          selections_by_name = {}
-          gather_selections(owner_object, owner_type, selections, selections_by_name)
-          progress_context = @last_progress_context[:passed_along] ? { passed_along: false, runtime: self } : @last_progress_context
+
+          if gathered_selections
+            selections_by_name = gathered_selections
+          else
+            selections_by_name = {}
+            gather_selections(owner_object, owner_type, selections, selections_by_name)
+          end
+          # This will be used by Query::Context to build a progress object.
+          @progress_array[0] = path
+          @progress_array[1] = scoped_context
+          @progress_array[2] = owner_object
+          @progress_array[3] = owner_type
+          @progress_array[4] = selections
+          # @progress_array[5] is the index -- assigned in the loop below
+          @progress_array[6] = root_operation_type
+          @progress_array[7] = selections_by_name
+
+          progress_context = @last_progress_context
           # Track `idx` manually to avoid an allocation on this hot path
           idx = 0
           selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
@@ -167,20 +189,10 @@ module GraphQL
             if after && prev_idx <= after
               next
             end
-            # TODO can some of these assignments be eliminated and
-            # other context assignments used instead? (eg context[:current_...])
-            # This will be used by Query::Context to build a progress object.
-            @progress_array[0] = path
-            @progress_array[1] = scoped_context
-            @progress_array[2] = owner_object
-            @progress_array[3] = owner_type
-            @progress_array[4] = selections
             @progress_array[5] = prev_idx
-            @progress_array[6] = root_operation_type
             @multiplex_context[:next_progress] = progress_context
             evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, root_operation_type)
-            # This flag is set by Query::Context
-            if progress_context[:passed_along]
+            if @dataloader.yielded?(Fiber.current)
               break
             end
           end
@@ -402,7 +414,7 @@ module GraphQL
               if HALT != continue_value
                 response_hash = {}
                 write_in_response(path, response_hash)
-                evaluate_selections(path, context.scoped_context, continue_value, current_type, next_selections, after: nil)
+                evaluate_selections(path, context.scoped_context, continue_value, current_type, next_selections, gathered_selections: nil, after: nil)
                 response_hash
               end
             end

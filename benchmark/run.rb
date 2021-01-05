@@ -190,8 +190,23 @@ module GraphQLBenchmark
       x.compare!
     end
 
+    puts "========== GraphQL-Batch Memory =============="
+    report = MemoryProfiler.report do
+      GraphQLBatchSchema.execute(document: document)
+    end
+
+    report.pretty_print
+
+    puts "========== Dataloader Memory ================="
     report = MemoryProfiler.report do
       GraphQLDataloaderSchema.execute(document: document)
+    end
+
+    report.pretty_print
+
+    puts "========== No Batch Memory =============="
+    report = MemoryProfiler.report do
+      GraphQLNoBatchingSchema.execute(document: document)
     end
 
     report.pretty_print

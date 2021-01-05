@@ -23,6 +23,7 @@ module GraphQL
 
       def run; end
       def yield; end
+      def yielded?(_fiber); false; end
     end
 
     def self.use(schema)
@@ -33,6 +34,7 @@ module GraphQL
       @context = context
       @source_cache = Hash.new { |h,k| h[k] = {} }
       @waiting_fibers = []
+      @yielded_fibers = Set.new
     end
 
     # @return [Hash] the {Multiplex} context
@@ -63,7 +65,18 @@ module GraphQL
     # Tell the dataloader that this fiber is waiting for data.
     # @return [void]
     def yield
+      # This fiber hasn't yielded yet, it should flag
+      if !@yielded_fibers.include?(Fiber.current)
+        @yielded_fibers.add(Fiber.current)
+        progress_ctx = @context[:next_progress]
+        next_fiber = progress_ctx[:runtime].make_selections_fiber
+        enqueue(next_fiber)
+      end
       Fiber.yield
+    end
+
+    def yielded?(fiber)
+      @yielded_fibers.include?(fiber)
     end
 
     # Run all Fibers until they're all done
@@ -84,6 +97,9 @@ module GraphQL
         # (If `#alive?` is false, then the fiber concluded without yielding.)
         if current_fiber.alive?
           already_run_fibers << current_fiber
+        else
+          # Keep this set clean so that fibers can be GC'ed during execution
+          @yielded_fibers.delete(current_fiber)
         end
 
         if @waiting_fibers.empty?
@@ -104,7 +120,11 @@ module GraphQL
               outer_source_fiber.resume
               if outer_source_fiber.alive?
                 source_fiber_stack << outer_source_fiber
+              else
+                # Keep this set clean so that fibers can be GC'ed during execution
+                @yielded_fibers.delete(outer_source_fiber)
               end
+
               # If this source caused more sources to become pending, run those before running this one again:
               next_source_fiber = create_source_fiber
               if next_source_fiber
