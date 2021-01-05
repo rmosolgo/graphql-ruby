@@ -189,5 +189,11 @@ module GraphQLBenchmark
 
       x.compare!
     end
+
+    report = MemoryProfiler.report do
+      GraphQLDataloaderSchema.execute(document: document)
+    end
+
+    report.pretty_print
   end
 end

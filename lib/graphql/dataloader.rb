@@ -43,13 +43,7 @@ module GraphQL
     # @param block Some work to enqueue
     # @return [void]
     def enqueue(prepared = nil, &block)
-      prepared ||= Fiber.new {
-        begin
-          yield
-        rescue StandardError => err
-          err
-        end
-      }
+      prepared ||= prepare(&block)
       @waiting_fibers << prepared
       nil
     end
@@ -99,15 +93,24 @@ module GraphQL
           # This is where an evented approach would be even better -- can we tell which
           # fibers are ready to continue, and continue execution there?
           #
-          source_fiber_stack = create_source_fiber_stack
-          # Use `.any?` because it might be a frozen array, don't want to `.pop` it
-          while source_fiber_stack.any? && (outer_source_fiber = source_fiber_stack.pop)
-            outer_source_fiber.resume
-            if outer_source_fiber.alive?
-              source_fiber_stack << outer_source_fiber
+          source_fiber_stack = if (first_source_fiber = create_source_fiber)
+            [first_source_fiber]
+          else
+            nil
+          end
+
+          if source_fiber_stack
+            while (outer_source_fiber = source_fiber_stack.pop)
+              outer_source_fiber.resume
+              if outer_source_fiber.alive?
+                source_fiber_stack << outer_source_fiber
+              end
+              # If this source caused more sources to become pending, run those before running this one again:
+              next_source_fiber = create_source_fiber
+              if next_source_fiber
+                source_fiber_stack << next_source_fiber
+              end
             end
-            # If this source caused more sources to become pending, run those before running this one again:
-            source_fiber_stack.concat(create_source_fiber_stack)
           end
 
           @waiting_fibers.concat(already_run_fibers)
@@ -123,12 +126,8 @@ module GraphQL
 
     private
 
-    EMPTY_STACK = [].freeze
-
-    # run each pending source, returning an array containing Fibers to resume any sources that yielded
-    def create_source_fiber_stack
-      # only assign a new array when we need one:
-      source_fiber_stack = nil
+    # @return [Fiber, nil]
+    def create_source_fiber
       pending_sources = nil
       @source_cache.each_value do |source_by_batch_params|
         source_by_batch_params.each_value do |source|
@@ -143,15 +142,9 @@ module GraphQL
         source_fiber = Fiber.new do
           pending_sources.each(&:run_pending_keys)
         end
-
-        source_fiber.resume
-        if source_fiber.alive?
-          source_fiber_stack ||= []
-          source_fiber_stack << source_fiber
-        end
       end
 
-      source_fiber_stack || EMPTY_STACK
+      source_fiber
     end
   end
 end

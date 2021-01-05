@@ -24,11 +24,25 @@ describe "fiber data loading" do
         log << [:mget, ids]
         ids.map { |id| DATA[id] }
       end
+
+      def find_by(attribute, keys)
+        log << [:find_by, attribute, keys]
+        keys.map { |k| DATA.each_value.find { |v| v[attribute] == k } }
+      end
     end
 
     class Loader < GraphQL::Dataloader::Source
-      def fetch(ids)
-        Database.mget(ids)
+      def initialize(dataloader, column = :id)
+        @column = column
+        super(dataloader)
+      end
+
+      def fetch(keys)
+        if @column == :id
+          Database.mget(keys)
+        else
+          Database.find_by(@column, keys)
+        end
       end
     end
 
@@ -41,6 +55,7 @@ describe "fiber data loading" do
     module Ingredient
       include GraphQL::Schema::Interface
       field :name, String, null: false
+      field :id, ID, null: false
     end
 
     class Grain < GraphQL::Schema::Object
@@ -72,6 +87,14 @@ describe "fiber data loading" do
 
       def ingredient(id:)
         dataloader.with(Loader).load(id)
+      end
+
+      field :ingredient_by_name, Ingredient, null: true do
+        argument :name, String, required: true
+      end
+
+      def ingredient_by_name(name:)
+        dataloader.with(Loader, :name).load(name)
       end
 
       field :nested_ingredient, Ingredient, null: true do
@@ -237,5 +260,23 @@ describe "fiber data loading" do
     expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" } }
     assert_equal expected_data, res["data"]
     assert_equal [[:mget, ["1", "2"]]], database_log
+  end
+
+  it "works with batch parameters" do
+    res = FiberSchema.execute <<-GRAPHQL
+    {
+      i1: ingredientByName(name: "Butter") { id }
+      i2: ingredientByName(name: "Corn") { id }
+      i3: ingredientByName(name: "Gummi Bears") { id }
+    }
+    GRAPHQL
+
+    expected_data = {
+      "i1" => { "id" => "3" },
+      "i2" => { "id" => "2" },
+      "i3" => nil,
+    }
+    assert_equal expected_data, res["data"]
+    assert_equal [[:find_by, :name, ["Butter", "Corn", "Gummi Bears"]]], database_log
   end
 end
