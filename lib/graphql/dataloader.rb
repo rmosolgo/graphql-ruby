@@ -50,9 +50,9 @@ module GraphQL
       nil
     end
 
-    # @return [Boolean] Returns true if `fiber` has yielded once via Dataloader
-    def yielded?(fiber)
-      @yielded_fibers.include?(fiber)
+    # @return [Boolean] Returns true if the current Fiber has yielded once via Dataloader
+    def yielded?
+      @yielded_fibers.include?(Fiber.current)
     end
 
     # Run all Fibers until they're all done

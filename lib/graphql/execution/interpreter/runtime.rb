@@ -61,10 +61,9 @@ module GraphQL
               context.scoped_context,
               object_proxy,
               root_type,
-              root_operation.selections,
               nil, # idx
               root_op_type,
-              nil, # gathered selections
+              gather_selections(object_proxy, root_type, root_operation.selections),
             ]
 
             # Make the first fiber which will begin execution
@@ -77,28 +76,32 @@ module GraphQL
           nil
         end
 
-        # Use a method to make sure `args` is preserved in a closure
-        # (otherwise `progress = ...` gets clobbered)
+        # Use `@dataloader` to enqueue a fiber that will pick up from the current point.
+        # @return [void]
         def enqueue_selections_fiber
+          # Read these into local variables so that later assignments don't affect the block below.
           path = @progress_array[0]
           scoped_context = @progress_array[1]
           owner_object = @progress_array[2]
           owner_type = @progress_array[3]
-          selections = @progress_array[4]
-          idx = @progress_array[5]
-          root_operation_type = @progress_array[6]
-          gathered_selections = @progress_array[7]
+          idx = @progress_array[4]
+          root_operation_type = @progress_array[5]
+          gathered_selections = @progress_array[6]
           @dataloader.enqueue {
             evaluate_selections(
-              path, scoped_context, owner_object,
-              owner_type, selections,
-              after: idx, root_operation_type: root_operation_type,
+              path,
+              scoped_context,
+              owner_object,
+              owner_type,
+              after: idx,
+              root_operation_type: root_operation_type,
               gathered_selections: gathered_selections,
             )
           }
+          nil
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_by_name)
+        def gather_selections(owner_object, owner_type, selections, selections_by_name = {})
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
@@ -150,33 +153,27 @@ module GraphQL
               raise "Invariant: unexpected selection class: #{node.class}"
             end
           end
+          selections_by_name
         end
 
         NO_ARGS = {}.freeze
 
         # @return [void]
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, selections, gathered_selections:, after:, root_operation_type: nil)
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, gathered_selections:, after:, root_operation_type: nil)
           set_all_interpreter_context(owner_object, nil, nil, path)
 
-          if gathered_selections
-            selections_by_name = gathered_selections
-          else
-            selections_by_name = {}
-            gather_selections(owner_object, owner_type, selections, selections_by_name)
-          end
-          # This will be used by Query::Context to build a progress object.
+          # This will be used by {enqueue_selections_fiber}
           @progress_array[0] = path
           @progress_array[1] = scoped_context
           @progress_array[2] = owner_object
           @progress_array[3] = owner_type
-          @progress_array[4] = selections
-          # @progress_array[5] is the index -- assigned in the loop below
-          @progress_array[6] = root_operation_type
-          @progress_array[7] = selections_by_name
+          # @progress_array[4] is the index -- assigned in the loop below
+          @progress_array[5] = root_operation_type
+          @progress_array[6] = gathered_selections
 
           # Track `idx` manually to avoid an allocation on this hot path
           idx = 0
-          selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
+          gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
             prev_idx = idx
             idx += 1
             # TODO: this is how a `progress` resumes where this left off.
@@ -185,12 +182,14 @@ module GraphQL
             if after && prev_idx <= after
               next
             end
-            @progress_array[5] = prev_idx
+            @progress_array[4] = prev_idx
             # This is how the current runtime gives itself to `dataloader`
             # so that the dataloader can enqueue another fiber to resume if needed.
             @dataloader.current_runtime = self
             evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, root_operation_type)
-            if @dataloader.yielded?(Fiber.current)
+            # The dataloader knows if ^^ that selection halted and later selections were executed in another fiber.
+            # If that's the case, then don't continue execution here.
+            if @dataloader.yielded?
               break
             end
           end
@@ -412,7 +411,8 @@ module GraphQL
               if HALT != continue_value
                 response_hash = {}
                 write_in_response(path, response_hash)
-                evaluate_selections(path, context.scoped_context, continue_value, current_type, next_selections, gathered_selections: nil, after: nil)
+                gathered_selections = gather_selections(continue_value, current_type, next_selections)
+                evaluate_selections(path, context.scoped_context, continue_value, current_type, gathered_selections: gathered_selections, after: nil)
                 response_hash
               end
             end

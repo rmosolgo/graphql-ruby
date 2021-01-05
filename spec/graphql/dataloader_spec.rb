@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe "fiber data loading" do
+describe GraphQL::Dataloader do
   class FiberSchema < GraphQL::Schema
     module Database
       extend self

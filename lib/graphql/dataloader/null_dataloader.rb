@@ -15,7 +15,7 @@ module GraphQL
       # executed sychronously.
       def run; end
       def yield; end
-      def yielded?(_fiber); false; end
+      def yielded?; false; end
     end
   end
 end
