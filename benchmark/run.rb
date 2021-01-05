@@ -5,6 +5,7 @@ require "jazz"
 require "benchmark/ips"
 require "ruby-prof"
 require "memory_profiler"
+require "graphql/batch"
 
 module GraphQLBenchmark
   QUERY_STRING = GraphQL::Introspection::INTROSPECTION_QUERY
@@ -142,5 +143,51 @@ module GraphQLBenchmark
         }
       }
     GRAPHQL
+  end
+
+  def self.profile_batch_loaders
+    require_relative "./batch_loading"
+    include BatchLoading
+
+    document = GraphQL.parse <<-GRAPHQL
+    {
+      braves: team(name: "Braves") { ...TeamFields }
+      bulls: team(name: "Bulls") { ...TeamFields }
+    }
+
+    fragment TeamFields on Team {
+      players {
+        team {
+          players {
+            team {
+              name
+            }
+          }
+        }
+      }
+    }
+    GRAPHQL
+    batch_result = GraphQLBatchSchema.execute(document: document).to_h
+    dataloader_result = GraphQLDataloaderSchema.execute(document: document).to_h
+    no_batch_result = GraphQLNoBatchingSchema.execute(document: document).to_h
+
+    results = [batch_result, dataloader_result, no_batch_result].uniq
+    if results.size > 1
+      puts "Batch result:"
+      pp batch_result
+      puts "Dataloader result:"
+      pp dataloader_result
+      puts "No-batch result:"
+      pp no_batch_result
+      raise "Got different results -- fix implementation before benchmarking."
+    end
+
+    Benchmark.ips do |x|
+      x.report("GraphQL::Batch") { GraphQLBatchSchema.execute(document: document) }
+      x.report("GraphQL::Dataloader") { GraphQLDataloaderSchema.execute(document: document) }
+      x.report("No Batching") { GraphQLNoBatchingSchema.execute(document: document) }
+
+      x.compare!
+    end
   end
 end

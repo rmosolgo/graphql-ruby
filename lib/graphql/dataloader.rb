@@ -31,7 +31,7 @@ module GraphQL
 
     def initialize(context)
       @context = context
-      @source_cache = {}
+      @source_cache = Hash.new { |h,k| h[k] = {} }
       @waiting_fibers = []
     end
 
@@ -117,8 +117,8 @@ module GraphQL
       nil
     end
 
-    def with(source_class)
-      @source_cache[source_class] ||= source_class.new(self)
+    def with(source_class, *batch_parameters)
+      @source_cache[source_class][batch_parameters] ||= source_class.new(self, *batch_parameters)
     end
 
     private
@@ -129,8 +129,17 @@ module GraphQL
     def create_source_fiber_stack
       # only assign a new array when we need one:
       source_fiber_stack = nil
-      while @source_cache.each_value.any?(&:pending?)
-        pending_sources = @source_cache.each_value.select(&:pending?)
+      pending_sources = nil
+      @source_cache.each_value do |source_by_batch_params|
+        source_by_batch_params.each_value do |source|
+          if source.pending?
+            pending_sources ||= []
+            pending_sources << source
+          end
+        end
+      end
+
+      if pending_sources
         source_fiber = Fiber.new do
           pending_sources.each(&:run_pending_keys)
         end
