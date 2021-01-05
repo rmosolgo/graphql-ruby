@@ -176,7 +176,6 @@ module GraphQL
           @progress_array[6] = root_operation_type
           @progress_array[7] = selections_by_name
 
-          progress_context = @last_progress_context
           # Track `idx` manually to avoid an allocation on this hot path
           idx = 0
           selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
@@ -189,7 +188,9 @@ module GraphQL
               next
             end
             @progress_array[5] = prev_idx
-            @multiplex_context[:next_progress] = progress_context
+            # This is how the current runtime gives itself to `dataloader`
+            # so that the dataloader can enqueue another fiber to resume if needed.
+            @dataloader.current_runtime = self
             evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, root_operation_type)
             if @dataloader.yielded?(Fiber.current)
               break

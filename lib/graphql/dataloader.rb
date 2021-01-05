@@ -129,6 +129,9 @@ module GraphQL
       @source_cache[source_class][batch_parameters] ||= source_class.new(self, *batch_parameters)
     end
 
+    # @api private
+    attr_accessor :current_runtime
+
     private
 
     # Check if this fiber is still alive.
@@ -148,8 +151,7 @@ module GraphQL
         if result == :graphql_yield && !@yielded_fibers.include?(fiber)
           # This fiber hasn't yielded yet, we should enqueue a continuation fiber
           @yielded_fibers.add(fiber)
-          progress_ctx = @context[:next_progress]
-          next_fiber = progress_ctx[:runtime].make_selections_fiber
+          next_fiber = current_runtime.make_selections_fiber
           enqueue(next_fiber)
         end
         fiber_stack << fiber
