@@ -7,14 +7,8 @@ module GraphQL
     # The Dataloader interface isn't public, but it enables
     # simple internal code while adding the option to add Dataloader.
     class NullDataloader < Dataloader
-      # @param prepared [Proc]
-      def enqueue(prepared = nil, &block)
-        (prepared || block).call
-      end
-
-      # @return [Proc]
-      def prepare(&block)
-        block
+      def enqueue
+        yield
       end
 
       # These are all no-ops because code was

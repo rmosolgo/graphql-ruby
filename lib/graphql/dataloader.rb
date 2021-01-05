@@ -25,26 +25,17 @@ module GraphQL
     attr_reader :yielded_fibers
 
     # Add some work to this dataloader to be scheduled later.
-    # @param prepared [Fiber] some work prepared with {prepare}
     # @param block Some work to enqueue
     # @return [void]
-    def enqueue(prepared = nil, &block)
-      prepared ||= prepare(&block)
-      @waiting_fibers << prepared
-      nil
-    end
-
-    # Wrap a block to be scheduled by this dataloader.
-    # Pass it to `.enqueue` to schedule it.
-    # @return [Fiber]
-    def prepare
-      Fiber.new {
+    def enqueue(&block)
+      @waiting_fibers << Fiber.new {
         begin
           yield
         rescue StandardError => exception
           exception
         end
       }
+      nil
     end
 
     # Tell the dataloader that this fiber is waiting for data.
@@ -151,8 +142,7 @@ module GraphQL
         if result == :graphql_yield && !@yielded_fibers.include?(fiber)
           # This fiber hasn't yielded yet, we should enqueue a continuation fiber
           @yielded_fibers.add(fiber)
-          next_fiber = current_runtime.make_selections_fiber
-          enqueue(next_fiber)
+          current_runtime.enqueue_selections_fiber
         end
         fiber_stack << fiber
       else

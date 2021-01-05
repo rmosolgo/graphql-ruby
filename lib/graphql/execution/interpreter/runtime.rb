@@ -66,11 +66,9 @@ module GraphQL
               root_op_type,
               nil, # gathered selections
             ]
-            # This object can be reused until it's detected to have been switched to `true`
-            @last_progress_context = { runtime: self }
 
             # Make the first fiber which will begin execution
-            @dataloader.enqueue(make_selections_fiber)
+            enqueue_selections_fiber
           end
           delete_interpreter_context(:current_path)
           delete_interpreter_context(:current_field)
@@ -81,7 +79,7 @@ module GraphQL
 
         # Use a method to make sure `args` is preserved in a closure
         # (otherwise `progress = ...` gets clobbered)
-        def make_selections_fiber
+        def enqueue_selections_fiber
           path = @progress_array[0]
           scoped_context = @progress_array[1]
           owner_object = @progress_array[2]
@@ -90,7 +88,7 @@ module GraphQL
           idx = @progress_array[5]
           root_operation_type = @progress_array[6]
           gathered_selections = @progress_array[7]
-          @dataloader.prepare {
+          @dataloader.enqueue {
             evaluate_selections(
               path, scoped_context, owner_object,
               owner_type, selections,
