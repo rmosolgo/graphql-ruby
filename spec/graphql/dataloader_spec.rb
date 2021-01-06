@@ -312,7 +312,7 @@ describe GraphQL::Dataloader do
 
   it "works with manual parallelism" do
     start = Time.now.to_f
-    res = FiberSchema.execute <<-GRAPHQL
+    FiberSchema.execute <<-GRAPHQL
     {
       i1: slowRecipe(id: 5) { slowIngredients { name } }
       i2: slowRecipe(id: 6) { slowIngredients { name } }
