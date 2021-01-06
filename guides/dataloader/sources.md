@@ -28,7 +28,6 @@ Sources will receive two kinds of inputs from `GraphQL::Dataloader`:
 
   (`dataloader.with(source_class, *batch_parameters)` returns an instance of `source_class` with the given batch parameters -- but it might be an instance which was cached by `dataloader`.)
 
-
 ## Example: Loading Strings from Redis by Key
 
 The simplest source might fetch values based on their keys. For example:
@@ -110,3 +109,28 @@ is_following = dataloader.with(Sources::UserFollowingExists, context[:viewer]).l
 ```
 
 After all requests were batched, `#fetch` will return a Boolean result to `is_following`.
+
+## Example: Loading in a background thread
+
+Inside `Source#fetch(keys)`, you can call `dataloader.yield` to return control to the Dataloader. This way, it will proceed loading other Sources (if there are any), then return the source that yielded.
+
+A simple example, spinning up a new Thread:
+
+```ruby
+def fetch(keys)
+  # spin up some work in a background thread
+  thread = Thread.new {
+    fetch_external_data(keys)
+  }
+  # return control to the dataloader
+  dataloader.yield
+  # at this point,
+  # the dataloader has tried everything else and come back to this source,
+  # so block if necessary:
+  thread.value
+end
+```
+
+For a more robust asynchronous task primitive, check out [`Concurrent::Future`](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Future.html).
+
+Ruby 3.0 added built-in support for yielding Fibers that make I/O calls -- hopefully a future GraphQL-Ruby version will work with that!

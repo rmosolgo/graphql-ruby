@@ -51,6 +51,22 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class SlowDataObject < GraphQL::Dataloader::Source
+      def initialize(batch_key)
+        # This is just so that I can force different instances in test
+        @batch_key = batch_key
+      end
+
+      def fetch(keys)
+        t = Thread.new {
+          sleep 0.5
+          Database.mget(keys)
+        }
+        dataloader.yield
+        t.value
+      end
+    end
+
     module Ingredient
       include GraphQL::Schema::Interface
       field :name, String, null: false
@@ -77,6 +93,13 @@ describe GraphQL::Dataloader do
         ingredients = dataloader.with(DataObject).load_all(object[:ingredient_ids])
         ingredients
       end
+
+      field :slow_ingredients, [Ingredient], null: false
+
+      def slow_ingredients
+        # Use `object[:id]` here to force two different instances of the loader in the test
+        dataloader.with(SlowDataObject, object[:id]).load_all(object[:ingredient_ids])
+      end
     end
 
     class Query < GraphQL::Schema::Object
@@ -102,6 +125,14 @@ describe GraphQL::Dataloader do
 
       def nested_ingredient(id:)
         dataloader.with(NestedDataObject).load(id)
+      end
+
+      field :slow_recipe, Recipe, null: true do
+        argument :id, ID, required: true
+      end
+
+      def slow_recipe(id:)
+        dataloader.with(SlowDataObject, id).load(id)
       end
 
       field :recipe, Recipe, null: true do
@@ -277,5 +308,29 @@ describe GraphQL::Dataloader do
     }
     assert_equal expected_data, res["data"]
     assert_equal [[:find_by, :name, ["Butter", "Corn", "Gummi Bears"]]], database_log
+  end
+
+  it "works with manual parallelism" do
+    start = Time.now.to_f
+    res = FiberSchema.execute <<-GRAPHQL
+    {
+      i1: slowRecipe(id: 5) { slowIngredients { name } }
+      i2: slowRecipe(id: 6) { slowIngredients { name } }
+    }
+    GRAPHQL
+    finish = Time.now.to_f
+
+    # Each load slept for 0.5 second, so sequentially, this would have been 2s sequentially
+    assert_in_delta 1, finish - start, 0.1, "Load threads are executed in parallel"
+    expected_log = [
+      # These were separated because of different recipe IDs:
+      [:mget, ["5"]],
+      [:mget, ["6"]],
+      # These were cached separately because of different recipe IDs:
+      [:mget, ["2", "3", "7"]],
+      [:mget, ["1", "2", "3", "4"]],
+    ]
+    # Sort them because threads may have returned in slightly different order
+    assert_equal expected_log.sort, database_log.sort
   end
 end

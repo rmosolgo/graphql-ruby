@@ -65,9 +65,7 @@ module GraphQL
     #
     # @return [void]
     def yield
-      # :graphql_yield is used to detect that this fiber was yielded _by_ the dataloader.
-      # (This should support other uses of `Fiber.yield`)
-      Fiber.yield(:graphql_yield)
+      Fiber.yield
       nil
     end
 
@@ -160,7 +158,7 @@ module GraphQL
       # This fiber yielded; there's more to do here.
       # (If `#alive?` is false, then the fiber concluded without yielding.)
       if fiber.alive?
-        if result == :graphql_yield && !@yielded_fibers.include?(fiber)
+        if !@yielded_fibers.include?(fiber)
           # This fiber hasn't yielded yet, we should enqueue a continuation fiber
           @yielded_fibers.add(fiber)
           current_runtime.enqueue_selections_fiber

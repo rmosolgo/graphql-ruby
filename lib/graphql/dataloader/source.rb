@@ -14,6 +14,8 @@ module GraphQL
         @dataloader = dataloader
       end
 
+      attr_reader :dataloader
+
       # @return [Dataloader::Request] a pending request for a value from `key`. Call `.load` on that object to wait for the result.
       def request(key)
         if !@results.key?(key)
