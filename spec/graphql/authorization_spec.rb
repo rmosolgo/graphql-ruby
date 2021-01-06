@@ -403,10 +403,9 @@ describe GraphQL::Authorization do
     end
 
     class Schema < GraphQL::Schema
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      else
+      if !TESTING_INTERPRETER
+        use GraphQL::Execution::Execute
+        use GraphQL::Analysis
         # Opt in to accessible? checks
         query_analyzer GraphQL::Authorization::Analyzer
       end
@@ -432,10 +431,6 @@ describe GraphQL::Authorization do
     end
 
     class SchemaWithFieldHook < GraphQL::Schema
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
       query(Query)
 
       lazy_resolve(Box, :value)
@@ -1016,11 +1011,6 @@ describe GraphQL::Authorization do
         end
       end
       query(Query)
-
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
 
     it "works out-of-the-box" do

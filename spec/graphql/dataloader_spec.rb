@@ -150,8 +150,6 @@ describe GraphQL::Dataloader do
     end
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
-    use GraphQL::Analysis::AST
-    use GraphQL::Execution::Interpreter
     use GraphQL::Dataloader
   end
 

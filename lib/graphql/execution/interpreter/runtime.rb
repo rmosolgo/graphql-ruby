@@ -248,41 +248,48 @@ module GraphQL
             return
           end
 
+
           after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
             if resolved_arguments.is_a? GraphQL::ExecutionError
               continue_value(next_path, resolved_arguments, owner_type, field_defn, return_type.non_null?, ast_node)
               next
             end
 
-            if resolved_arguments.empty? && field_defn.extras.empty?
+            kwarg_arguments = if resolved_arguments.empty? && field_defn.extras.empty?
               # We can avoid allocating the `{ Symbol => Object }` hash in this case
-              kwarg_arguments = NO_ARGS
+              NO_ARGS
             else
-              kwarg_arguments = resolved_arguments.keyword_arguments
-
+              # Bundle up the extras, then make a new arguments instance
+              # that includes the extras, too.
+              extra_args = {}
               field_defn.extras.each do |extra|
                 case extra
                 when :ast_node
-                  kwarg_arguments[:ast_node] = ast_node
+                  extra_args[:ast_node] = ast_node
                 when :execution_errors
-                  kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
+                  extra_args[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
                 when :path
-                  kwarg_arguments[:path] = next_path
+                  extra_args[:path] = next_path
                 when :lookahead
                   if !field_ast_nodes
                     field_ast_nodes = [ast_node]
                   end
-                  kwarg_arguments[:lookahead] = Execution::Lookahead.new(
+
+                  extra_args[:lookahead] = Execution::Lookahead.new(
                     query: query,
                     ast_nodes: field_ast_nodes,
                     field: field_defn,
                   )
                 when :argument_details
-                  kwarg_arguments[:argument_details] = resolved_arguments
+                  # Use this flag to tell Interpreter::Arguments to add itself
+                  # to the keyword args hash _before_ freezing everything.
+                  extra_args[:argument_details] = :__arguments_add_self
                 else
-                  kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
+                  extra_args[extra] = field_defn.fetch_extra(extra, context)
                 end
               end
+              resolved_arguments = resolved_arguments.merge_extras(extra_args)
+              resolved_arguments.keyword_arguments
             end
 
             set_all_interpreter_context(nil, nil, kwarg_arguments, nil)
@@ -548,9 +555,7 @@ module GraphQL
         end
 
         def arguments(graphql_object, arg_owner, ast_node)
-          # Don't cache arguments if field extras or extensions are requested since they can mutate the argument data structure
-          if arg_owner.arguments_statically_coercible? &&
-              (!arg_owner.is_a?(GraphQL::Schema::Field) || (arg_owner.extras.empty? && arg_owner.extensions.empty?))
+          if arg_owner.arguments_statically_coercible?
             query.arguments_for(ast_node, arg_owner)
           else
             # The arguments must be prepared in the context of the given object

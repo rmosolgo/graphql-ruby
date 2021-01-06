@@ -89,7 +89,7 @@ module GraphQL
           arg_defns = self.arguments
 
           if arg_defns.empty?
-            GraphQL::Execution::Interpreter::Arguments.new(argument_values: nil)
+            GraphQL::Execution::Interpreter::Arguments::EMPTY
           else
             argument_values = {}
             arg_lazies = arg_defns.map do |arg_name, arg_defn|
@@ -132,6 +132,7 @@ module GraphQL
                 end
 
                 context.schema.after_lazy(coerced_value) do |coerced_value|
+                  validate_directive_argument(arg_defn, coerced_value)
                   prepared_value = context.schema.error_handler.with_error_handling(context) do
                     arg_defn.prepare_value(parent_object, coerced_value, context: context)
                   end
@@ -143,6 +144,9 @@ module GraphQL
                     default_used: default_used,
                   )
                 end
+              else
+                # has_value is false
+                validate_directive_argument(arg_defn, nil)
               end
             end
 
@@ -150,6 +154,17 @@ module GraphQL
               GraphQL::Execution::Interpreter::Arguments.new(
                 argument_values: argument_values,
               )
+            end
+          end
+        end
+
+        # Usually, this is validated statically by RequiredArgumentsArePresent,
+        # but not for directives.
+        # TODO apply static validations on schema definitions?
+        def validate_directive_argument(arg_defn, value)
+          if arg_defn.owner.is_a?(Class) && arg_defn.owner < GraphQL::Schema::Directive
+            if value.nil? && arg_defn.type.non_null?
+              raise ArgumentError, "#{arg_defn.path} is required, but no value was given"
             end
           end
         end

@@ -27,7 +27,7 @@ describe GraphQL::Schema::FieldExtension do
       end
 
       def resolve(object:, arguments:, context:)
-        factor = arguments.delete(:factor)
+        factor = arguments[:factor]
         yield(object, arguments, factor)
       end
 
@@ -44,7 +44,7 @@ describe GraphQL::Schema::FieldExtension do
       # `yield` returns the user-returned value
       # This method's return value is passed along
       def resolve(object:, arguments:, context:)
-        factor = arguments.delete(:factor)
+        factor = arguments[:factor]
         yield(object, arguments) * factor
       end
     end
@@ -55,9 +55,9 @@ describe GraphQL::Schema::FieldExtension do
       end
 
       def resolve(object:, arguments:, context:)
-        original_arguments = arguments.dup
-        arguments.delete(:factor)
-        yield(object, arguments, { original_arguments: original_arguments})
+        new_arguments = arguments.dup
+        new_arguments.delete(:factor)
+        yield(object, new_arguments, { original_arguments: arguments})
       end
 
       def after_resolve(object:, value:, arguments:, context:, memo:)
@@ -146,10 +146,6 @@ describe GraphQL::Schema::FieldExtension do
 
     class Schema < GraphQL::Schema
       query(Query)
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
   end
 

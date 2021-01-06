@@ -219,7 +219,8 @@ describe GraphQL::Analysis do
     |}
     let(:schema) do
       schema = Class.new(Dummy::Schema) do
-        self.analysis_engine = GraphQL::Analysis
+        use GraphQL::Analysis
+        use GraphQL::Execution::Execute
       end
 
       schema.query_analyzer(id_catcher)

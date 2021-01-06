@@ -180,8 +180,6 @@ describe GraphQL::Schema::Field do
           end
 
           query(Query)
-          use(GraphQL::Execution::Interpreter)
-          use(GraphQL::Analysis::AST)
         end
 
         it "provides metadata about arguments" do

@@ -40,11 +40,6 @@ Then, add `GraphQL::Pro::Defer` to your schema as a plugin:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  # The new interpreter runtime (1.9+) is required:
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
-
-  # Then add the directive:
   use GraphQL::Pro::Defer
 end
 ```

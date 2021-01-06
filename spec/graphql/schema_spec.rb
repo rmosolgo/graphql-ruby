@@ -77,7 +77,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.instrumenters, schema.instrumenters
       assert_equal base_schema.middleware.steps.size, schema.middleware.steps.size
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
-      assert_equal [GraphQL::Backtrace], schema.plugins.map(&:first)
+      assert_equal [GraphQL::Execution::Errors, GraphQL::Pagination::Connections, GraphQL::Backtrace], schema.plugins.map(&:first)
       assert_equal base_schema.error_handler, schema.error_handler
     end
 
@@ -150,7 +150,7 @@ describe GraphQL::Schema do
       assert_equal schema.directives, GraphQL::Schema.default_directives.merge(DummyFeature1.graphql_name => DummyFeature1, DummyFeature2.graphql_name => DummyFeature2)
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
-      assert_equal [GraphQL::Backtrace, GraphQL::Execution::Interpreter], schema.plugins.map(&:first)
+      assert_equal [GraphQL::Execution::Errors, GraphQL::Pagination::Connections, GraphQL::Backtrace, GraphQL::Execution::Interpreter], schema.plugins.map(&:first)
       assert_equal [GraphQL::Relay::EdgesInstrumentation, GraphQL::Relay::ConnectionInstrumentation], schema.instrumenters[:field]
       assert_equal [GraphQL::ExecutionError, StandardError], schema.rescues.keys.sort_by(&:name)
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
@@ -280,8 +280,6 @@ describe GraphQL::Schema do
       let(:schema) do
         Class.new(GraphQL::Schema) do
           query query_type
-          use GraphQL::Analysis::AST
-          use GraphQL::Execution::Interpreter
           use PluginWithInstrumentationTracingAndAnalyzer
         end
       end
@@ -304,8 +302,8 @@ describe GraphQL::Schema do
         let(:schema) do
           Class.new(GraphQL::Schema) do
             query query_type
-            use GraphQL::Analysis::AST
             use PluginWithInstrumentationTracingAndAnalyzer
+            use GraphQL::Execution::Execute
           end.to_graphql
         end
 
@@ -329,8 +327,6 @@ describe GraphQL::Schema do
       let(:schema) do
         schema = Class.new(GraphQL::Schema) do
           query query_type
-          use GraphQL::Analysis::AST
-          use GraphQL::Execution::Interpreter
         end
 
         # return a subclass

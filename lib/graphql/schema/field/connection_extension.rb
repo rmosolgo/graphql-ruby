@@ -42,6 +42,7 @@ module GraphQL
               value.after_value ||= original_arguments[:after]
               value.last_value ||= original_arguments[:last]
               value.before_value ||= original_arguments[:before]
+              value.field ||= field
               if field.has_max_page_size? && !value.has_max_page_size_override?
                 value.max_page_size = field.max_page_size
               end

@@ -23,12 +23,15 @@ module GraphQL
       end
 
       def self.use(schema_class)
-        schema_class.interpreter = true
-        schema_class.query_execution_strategy(GraphQL::Execution::Interpreter)
-        schema_class.mutation_execution_strategy(GraphQL::Execution::Interpreter)
-        schema_class.subscription_execution_strategy(GraphQL::Execution::Interpreter)
-        schema_class.add_subscription_extension_if_necessary
-        GraphQL::Schema::Object.include(HandlesRawValue)
+        if schema_class.interpreter?
+          definition_line = caller(2, 1).first
+          warn("GraphQL::Execution::Interpreter is now the default; remove `use GraphQL::Execution::Interpreter` from the schema definition (#{definition_line})")
+        else
+          schema_class.query_execution_strategy(self)
+          schema_class.mutation_execution_strategy(self)
+          schema_class.subscription_execution_strategy(self)
+          schema_class.add_subscription_extension_if_necessary
+        end
       end
 
       def self.begin_multiplex(multiplex)

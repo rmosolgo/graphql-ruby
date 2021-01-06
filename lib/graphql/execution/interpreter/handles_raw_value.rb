@@ -13,13 +13,6 @@ module GraphQL
           @object
         end
       end
-
-      # Allows to return "raw" value from the resolver
-      module HandlesRawValue
-        def raw_value(obj)
-          RawValue.new(obj)
-        end
-      end
     end
   end
 end

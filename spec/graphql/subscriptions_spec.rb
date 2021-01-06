@@ -135,12 +135,6 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class Subscription < GraphQL::Schema::Object
-    if !TESTING_INTERPRETER
-      # Stub methods are required
-      [:payload, :event, :my_event].each do |m|
-        define_method(m) { |*a| nil }
-      end
-    end
     field :payload, Payload, null: false do
       argument :id, ID, required: true
     end
@@ -172,10 +166,6 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     query(Query)
     subscription(Subscription)
     use InMemoryBackend::Subscriptions, extra: 123
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
   end
 end
 
@@ -233,7 +223,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
   }
-  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }}, interpreter: TESTING_INTERPRETER)
+  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }})
   # TODO don't hack this (no way to add metadata from IDL parser right now)
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
@@ -283,7 +273,7 @@ describe GraphQL::Subscriptions do
           res_1 = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
           res_2 = schema.execute(query_str, context: { socket: "2" }, variables: { "id" => "200" }, root_value: root_object)
 
-          empty_response = TESTING_INTERPRETER ? {} : nil
+          empty_response = {}
 
           # Initial response is nil, no broadcasts yet
           assert_equal(empty_response, res_1["data"])
@@ -316,7 +306,7 @@ describe GraphQL::Subscriptions do
 
         # Initial subscriptions
         res = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
-        empty_response = TESTING_INTERPRETER ? {} : nil
+        empty_response = {}
 
         # Initial response is nil, no broadcasts yet
         assert_equal(empty_response, res["data"])
@@ -355,7 +345,7 @@ describe GraphQL::Subscriptions do
           # Initial subscriptions
           response = schema.execute(nil, document: document, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
 
-          empty_response = TESTING_INTERPRETER ? {} : nil
+          empty_response = {}
 
           # Initial response is empty, no broadcasts yet
           assert_equal(empty_response, response["data"])
@@ -581,20 +571,11 @@ describe GraphQL::Subscriptions do
 
             # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
             expected_sub_count = if schema == ClassBasedInMemoryBackend::Schema
-              if TESTING_INTERPRETER
-                {
-                  ":eventSubscription:payloadType:one:userId:3" => 1,
-                  ":eventSubscription:payloadType:one:userId:4" => 2,
-                  ":eventSubscription:payloadType:two:userId:3" => 1,
-                }
-              else
-                # Unfortunately, on the non-interpreter runtime, `prepare:` was _not_ applied here,
-                {
-                  ":eventSubscription:payloadType:ONE:userId:3" => 1,
-                  ":eventSubscription:payloadType:ONE:userId:4" => 2,
-                  ":eventSubscription:payloadType:TWO:userId:3" => 1,
-                }
-              end
+              {
+                ":eventSubscription:payloadType:one:userId:3" => 1,
+                ":eventSubscription:payloadType:one:userId:4" => 2,
+                ":eventSubscription:payloadType:two:userId:3" => 1,
+              }
             else
               {
                 ":eventSubscription:payloadType:ONE:userId:3" => 1,
@@ -777,8 +758,6 @@ describe GraphQL::Subscriptions do
 
       query(Query)
       subscription(Subscription)
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
       use InMemoryBackend::Subscriptions, extra: nil,
         broadcast: true, default_broadcastable: true
     end

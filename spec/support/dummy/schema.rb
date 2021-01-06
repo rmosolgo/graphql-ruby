@@ -525,10 +525,8 @@ module Dummy
       end
     end
 
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
-    use GraphQL::Execution::Errors
     use GraphQL::Dataloader
+
     lazy_resolve(Proc, :call)
   end
 
