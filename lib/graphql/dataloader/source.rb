@@ -6,9 +6,9 @@ module GraphQL
       # @api private
       attr_reader :results
 
-      # This is called by `dataloader.with(source_class, *batch_parameters)`.
-      # In a subclass, make sure to call `super(dataloader)`.
-      def initialize(dataloader)
+      # Called by {Dataloader} to prepare the {Source}'s internal state
+      # @api private
+      def setup(dataloader)
         @pending_keys = []
         @results = {}
         @dataloader = dataloader

@@ -6,6 +6,22 @@ require "graphql/dataloader/request_all"
 require "graphql/dataloader/source"
 
 module GraphQL
+  # This plugin supports Fiber-based concurrency, along with {GraphQL::Dataloader::Source}.
+  #
+  # @example Installing Dataloader
+  #
+  #   class MySchema < GraphQL::Schema
+  #     use GraphQL::Dataloader
+  #   end
+  #
+  # @example Waiting for batch-loaded data in a GraphQL field
+  #
+  #   field :team, Types::Team, null: true
+  #
+  #   def team
+  #     dataloader.with(Sources::Record, Team).load(object.team_id)
+  #   end
+  #
   class Dataloader
     def self.use(schema)
       schema.dataloader_class = self
@@ -13,7 +29,12 @@ module GraphQL
 
     def initialize(multiplex_context)
       @context = multiplex_context
-      @source_cache = Hash.new { |h, k| h[k] = {} }
+      @source_cache = Hash.new { |h, source_class| h[source_class] = Hash.new { |h2, batch_parameters|
+          source = source_class.new(*batch_parameters)
+          source.setup(self)
+          h2[batch_parameters] = source
+        }
+      }
       @waiting_fibers = []
       @yielded_fibers = Set.new
     end
@@ -117,7 +138,7 @@ module GraphQL
     # @return [GraphQL::Dataloader::Source] An instance of {source_class}, initialized with `self, *batch_parameters`,
     #   and cached for the lifetime of this {Multiplex}.
     def with(source_class, *batch_parameters)
-      @source_cache[source_class][batch_parameters] ||= source_class.new(self, *batch_parameters)
+      @source_cache[source_class][batch_parameters]
     end
 
     # @api private

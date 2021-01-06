@@ -31,10 +31,9 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Loader < GraphQL::Dataloader::Source
-      def initialize(dataloader, column = :id)
+    class DataObject < GraphQL::Dataloader::Source
+      def initialize(column = :id)
         @column = column
-        super(dataloader)
       end
 
       def fetch(keys)
@@ -46,9 +45,9 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class NestedLoader < GraphQL::Dataloader::Source
+    class NestedDataObject < GraphQL::Dataloader::Source
       def fetch(ids)
-        @dataloader.with(Loader).load_all(ids)
+        @dataloader.with(DataObject).load_all(ids)
       end
     end
 
@@ -75,7 +74,7 @@ describe GraphQL::Dataloader do
       field :ingredients, [Ingredient], null: false
 
       def ingredients
-        ingredients = dataloader.with(Loader).load_all(object[:ingredient_ids])
+        ingredients = dataloader.with(DataObject).load_all(object[:ingredient_ids])
         ingredients
       end
     end
@@ -86,7 +85,7 @@ describe GraphQL::Dataloader do
       end
 
       def ingredient(id:)
-        dataloader.with(Loader).load(id)
+        dataloader.with(DataObject).load(id)
       end
 
       field :ingredient_by_name, Ingredient, null: true do
@@ -94,7 +93,7 @@ describe GraphQL::Dataloader do
       end
 
       def ingredient_by_name(name:)
-        dataloader.with(Loader, :name).load(name)
+        dataloader.with(DataObject, :name).load(name)
       end
 
       field :nested_ingredient, Ingredient, null: true do
@@ -102,7 +101,7 @@ describe GraphQL::Dataloader do
       end
 
       def nested_ingredient(id:)
-        dataloader.with(NestedLoader).load(id)
+        dataloader.with(NestedDataObject).load(id)
       end
 
       field :recipe, Recipe, null: true do
@@ -119,9 +118,9 @@ describe GraphQL::Dataloader do
       end
 
       def recipe_ingredient(recipe_id:, ingredient_number:)
-        recipe = dataloader.with(Loader).load(recipe_id)
+        recipe = dataloader.with(DataObject).load(recipe_id)
         ingredient_id = recipe[:ingredient_ids][ingredient_number - 1]
-        dataloader.with(Loader).load(ingredient_id)
+        dataloader.with(DataObject).load(ingredient_id)
       end
 
       field :common_ingredients, [Ingredient], null: true do
@@ -130,19 +129,19 @@ describe GraphQL::Dataloader do
       end
 
       def common_ingredients(recipe_1_id:, recipe_2_id:)
-        req1 = dataloader.with(Loader).request(recipe_1_id)
-        req2 = dataloader.with(Loader).request(recipe_2_id)
+        req1 = dataloader.with(DataObject).request(recipe_1_id)
+        req2 = dataloader.with(DataObject).request(recipe_2_id)
         recipe1 = req1.load
         recipe2 = req2.load
         common_ids = recipe1[:ingredient_ids] & recipe2[:ingredient_ids]
-        dataloader.with(Loader).load_all(common_ids)
+        dataloader.with(DataObject).load_all(common_ids)
       end
     end
 
     query(Query)
 
     def self.object_from_id(id, ctx)
-      ctx.dataloader.with(Loader).load(id)
+      ctx.dataloader.with(DataObject).load(id)
     end
 
     def self.resolve_type(type, obj, ctx)

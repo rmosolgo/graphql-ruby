@@ -58,9 +58,8 @@ module BatchLoading
 
   class GraphQLDataloaderSchema < GraphQL::Schema
     class DataSource < GraphQL::Dataloader::Source
-      def initialize(dataloader, column: :id)
+      def initialize(column: :id)
         @column = column
-        super(dataloader)
       end
 
       def fetch(keys)

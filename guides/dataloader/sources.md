@@ -59,9 +59,8 @@ To fetch ActiveRecord objects by ID, the source should also accept the _model cl
 ```ruby
 # app/graphql/sources/active_record_object.rb
 class Sources::ActiveRecordObject < GraphQL::Dataloader::Source
-  def initialize(dataloader, model_class)
+  def initialize(model_class)
     @model_class = model_class
-    super(dataloader)
   end
 
   def fetch(ids)
@@ -87,9 +86,8 @@ Besides fetching objects, Sources can return values from batched calculations. F
 # for a given user, batch checks to see whether this user follows another user.
 # (The default `user.followings.where(followed_user_id: followed).exists?` would cause N+1 queries.)
 class Sources::UserFollowingExists < GraphQL::Dataloader::Source
-  def initialize(dataloader, user)
+  def initialize(user)
     @user = user
-    super(dataloader)
   end
 
   def fetch(handles)
