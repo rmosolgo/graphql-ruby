@@ -525,6 +525,8 @@ module Dummy
       end
     end
 
+    use GraphQL::Dataloader
+
     lazy_resolve(Proc, :call)
   end
 

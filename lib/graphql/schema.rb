@@ -1155,6 +1155,14 @@ module GraphQL
         end
       end
 
+      # @api private
+      # @see GraphQL::Dataloader
+      def dataloader_class
+        @dataloader_class || GraphQL::Dataloader::NullDataloader
+      end
+
+      attr_writer :dataloader_class
+
       def references_to(to_type = nil, from: nil)
         @own_references_to ||= Hash.new { |h, k| h[k] = [] }
         if to_type
@@ -1711,6 +1719,7 @@ module GraphQL
           else
             @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
             @lazy_methods.set(GraphQL::Execution::Lazy, :value)
+            @lazy_methods.set(GraphQL::Dataloader::Request, :load)
           end
         end
         @lazy_methods
@@ -1967,6 +1976,10 @@ module GraphQL
       def add_directives_from(owner)
         owner.directives.each { |dir| directive(dir.class) }
       end
+    end
+
+    def dataloader_class
+      self.class.dataloader_class
     end
 
     # Install these here so that subclasses will also install it.

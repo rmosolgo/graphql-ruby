@@ -50,6 +50,11 @@ module GraphQL
       # @return [GraphQL::Query::Context]
       attr_reader :context
 
+      # @return [GraphQL::Dataloader]
+      def dataloader
+        context.dataloader
+      end
+
       # @return [GraphQL::Schema::Field]
       attr_reader :field
 

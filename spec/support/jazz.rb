@@ -932,6 +932,8 @@ module Jazz
       GloballyIdentifiableType.find(id)
     end
 
+    use GraphQL::Dataloader
+
     if !TESTING_INTERPRETER
       use GraphQL::Execution::Execute
       use GraphQL::Analysis
@@ -944,6 +946,8 @@ module Jazz
     query(Query)
 
     disable_introspection_entry_points
+
+    use GraphQL::Dataloader
 
     if !TESTING_INTERPRETER
       use GraphQL::Execution::Execute

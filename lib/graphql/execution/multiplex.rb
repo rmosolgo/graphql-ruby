@@ -29,11 +29,13 @@ module GraphQL
 
       include Tracing::Traceable
 
-      attr_reader :context, :queries, :schema, :max_complexity
+      attr_reader :context, :queries, :schema, :max_complexity, :dataloader
       def initialize(schema:, queries:, context:, max_complexity:)
         @schema = schema
         @queries = queries
+        @queries.each { |q| q.multiplex = self }
         @context = context
+        @context[:dataloader] = @dataloader = @schema.dataloader_class.new(context)
         @tracers = schema.tracers + (context[:tracers] || [])
         # Support `context: {backtrace: true}`
         if context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
@@ -79,20 +81,30 @@ module GraphQL
           multiplex.schema.query_execution_strategy.begin_multiplex(multiplex)
           queries = multiplex.queries
           # Do as much eager evaluation of the query as possible
-          results = queries.map do |query|
-            begin_query(query, multiplex)
+          results = []
+          queries.each_with_index do |query, idx|
+            multiplex.dataloader.enqueue {
+              results[idx] = begin_query(query, multiplex)
+            }
           end
 
+          multiplex.dataloader.run
+
           # Then, work through lazy results in a breadth-first way
-          multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
+          multiplex.dataloader.enqueue {
+            multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
+          }
+          multiplex.dataloader.run
 
           # Then, find all errors and assign the result to the query object
-          results.each_with_index.map do |data_result, idx|
+          results.each_with_index do |data_result, idx|
             query = queries[idx]
             finish_query(data_result, query, multiplex)
             # Get the Query::Result, not the Hash
-            query.result
+            results[idx] = query.result
           end
+
+          results
         rescue Exception
           # TODO rescue at a higher level so it will catch errors in analysis, too
           # Assign values here so that the query's `@executed` becomes true

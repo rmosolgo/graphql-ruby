@@ -25,6 +25,22 @@ module GraphQL
         @mode = context.query.subscription_update? ? :update : :subscribe
       end
 
+      def resolve_with_support(**args)
+        result = nil
+        unsubscribed = true
+        catch :graphql_subscription_unsubscribed do
+          result = super
+          unsubscribed = false
+        end
+
+
+        if unsubscribed
+          context.skip
+        else
+          result
+        end
+      end
+
       # Implement the {Resolve} API
       def resolve(**args)
         # Dispatch based on `@mode`, which will raise a `NoMethodError` if we ever
@@ -55,7 +71,8 @@ module GraphQL
       def resolve_update(**args)
         ret_val = args.any? ? update(**args) : update
         if ret_val == :no_update
-          throw :graphql_no_subscription_update
+          context.namespace(:subscriptions)[:no_update] = true
+          context.skip
         else
           ret_val
         end
@@ -80,6 +97,7 @@ module GraphQL
 
       # Call this to halt execution and remove this subscription from the system
       def unsubscribe
+        context.namespace(:subscriptions)[:unsubscribed] = true
         throw :graphql_subscription_unsubscribed
       end
 

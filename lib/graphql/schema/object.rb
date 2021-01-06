@@ -14,6 +14,11 @@ module GraphQL
       # @return [GraphQL::Query::Context] the context instance for this query
       attr_reader :context
 
+      # @return [GraphQL::Dataloader]
+      def dataloader
+        context.dataloader
+      end
+
       # Call this in a field method to return a value that should be returned to the client
       # without any further handling by GraphQL.
       def raw_value(obj)
