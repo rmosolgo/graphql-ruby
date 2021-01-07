@@ -3,6 +3,18 @@ module GraphQL
   module Define
     # @api deprecated
     module InstanceDefinable
+      module DeprecatedDefine
+        def define(**kwargs, &block)
+          deprecated_caller = caller(1, 1).first
+          if deprecated_caller
+            warn <<-ERR
+#{self}.define will be removed in GraphQL-Ruby 2.0; use a class-based definition instead. See https://graphql-ruby.org/schema/class_based_api.html.
+  -> called from #{deprecated_caller}
+ERR
+          end
+          super
+        end
+      end
       def self.included(base)
         base.extend(ClassMethods)
         base.ensure_defined(:metadata)

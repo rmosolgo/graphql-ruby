@@ -2,6 +2,8 @@
 module GraphQL
   # @api deprecated
   class UnionType < GraphQL::BaseType
+    extend Define::InstanceDefinable::DeprecatedDefine
+
     # Rubocop was unhappy about the syntax when this was a proc literal
     class AcceptPossibleTypesDefinition
       def self.call(target, possible_types, options = {})

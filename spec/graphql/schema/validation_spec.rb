@@ -32,7 +32,7 @@ describe GraphQL::Schema::Validation do
     let(:invalid_name_field) {
       GraphQL::Field.define do
         name "__Something"
-        type GraphQL::STRING_TYPE
+        type types.String
       end
     }
 
@@ -332,7 +332,7 @@ describe GraphQL::Schema::Validation do
     let(:invalid_name_argument) {
       GraphQL::Argument.define do
         name "__Something"
-        type GraphQL::INT_TYPE
+        type(types.Int)
       end
     }
 
@@ -356,7 +356,7 @@ describe GraphQL::Schema::Validation do
       GraphQL::Argument.define do
         name "Something"
         deprecation_reason "Don't use me"
-        type !GraphQL::INT_TYPE
+        type(!types.Int)
       end
     }
 
@@ -364,7 +364,7 @@ describe GraphQL::Schema::Validation do
       GraphQL::Argument.define do
         name "Something"
         deprecation_reason 1
-        type GraphQL::INT_TYPE
+        type(types.Int)
       end
     }
 

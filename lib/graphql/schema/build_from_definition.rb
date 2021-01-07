@@ -197,7 +197,7 @@ module GraphQL
         def build_directives(definition, ast_node, type_resolver)
           dirs = prepare_directives(ast_node, type_resolver)
           dirs.each do |dir_class, options|
-            definition.directive(dir_class, options)
+            definition.directive(dir_class, **options)
           end
         end
 

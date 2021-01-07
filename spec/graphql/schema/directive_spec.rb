@@ -17,9 +17,9 @@ describe GraphQL::Schema::Directive do
 
     class Thing < GraphQL::Schema::Object
       field :name, String, null: false do
-        directive Secret, { top_secret: true }
+        directive Secret, top_secret: true
         argument :nickname, Boolean, required: false do
-          directive Secret, { top_secret: false }
+          directive Secret, top_secret: false
         end
       end
     end

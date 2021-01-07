@@ -2,6 +2,8 @@
 module GraphQL
   # @api deprecated
   class EnumType < GraphQL::BaseType
+    extend Define::InstanceDefinable::DeprecatedDefine
+
     accepts_definitions :values, value: GraphQL::Define::AssignEnumValue
     ensure_defined(:values, :validate_non_null_input, :coerce_non_null_input, :coerce_result)
     attr_accessor :ast_node

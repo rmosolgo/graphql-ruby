@@ -59,6 +59,7 @@ module GraphQL
       # @param parent [Object] The object which this collection belongs to
       # @param context [GraphQL::Query::Context] The context from the field being resolved
       def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, context: nil)
+        warn "GraphQL::Relay::BaseConnection (used for #{self.class}) will be removed from GraphQL-Ruby 2.0, use GraphQL::Pagination::Connections instead: https://graphql-ruby.org/pagination/overview.html"
         @context = context
         @nodes = nodes
         @arguments = arguments

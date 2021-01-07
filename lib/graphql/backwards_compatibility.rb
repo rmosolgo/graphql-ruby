@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   # Helpers for migrating in a backwards-compatible way
+  # Remove this in GraphQL-Ruby 2.0, when all users of it will be gone.
   # @api private
   module BackwardsCompatibility
     module_function
