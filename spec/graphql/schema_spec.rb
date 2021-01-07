@@ -45,8 +45,6 @@ describe GraphQL::Schema do
         query_analyzer Object.new
         multiplex_analyzer Object.new
         rescue_from(StandardError) { }
-        instrument :field, GraphQL::Relay::EdgesInstrumentation
-        middleware (Proc.new {})
         use GraphQL::Backtrace
         self.error_handler = Object.new
       end
@@ -74,8 +72,6 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers, schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.rescues, schema.rescues
-      assert_equal base_schema.instrumenters, schema.instrumenters
-      assert_equal base_schema.middleware.steps.size, schema.middleware.steps.size
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
       assert_equal [GraphQL::Execution::Errors, GraphQL::Pagination::Connections, GraphQL::Backtrace], schema.plugins.map(&:first)
       assert_equal base_schema.error_handler, schema.error_handler
@@ -127,10 +123,8 @@ describe GraphQL::Schema do
       multiplex_analyzer = Object.new
       schema.multiplex_analyzer(multiplex_analyzer)
       schema.use(GraphQL::Execution::Interpreter)
-      schema.instrument(:field, GraphQL::Relay::ConnectionInstrumentation)
       schema.rescue_from(GraphQL::ExecutionError)
       schema.tracer(GraphQL::Tracing::NewRelicTracing)
-      schema.middleware(Proc.new {})
       error_handler = Object.new
       schema.error_handler = error_handler
 
@@ -151,12 +145,9 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
       assert_equal [GraphQL::Execution::Errors, GraphQL::Pagination::Connections, GraphQL::Backtrace, GraphQL::Execution::Interpreter], schema.plugins.map(&:first)
-      assert_equal [GraphQL::Relay::EdgesInstrumentation, GraphQL::Relay::ConnectionInstrumentation], schema.instrumenters[:field]
       assert_equal [GraphQL::ExecutionError, StandardError], schema.rescues.keys.sort_by(&:name)
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer, GraphQL::Tracing::NewRelicTracing], schema.tracers
-      # This doesn't include `RescueMiddleware`, since interpreter handles that separately.
-      assert_equal 2, schema.middleware.steps.size
       assert_equal error_handler, schema.error_handler
     end
   end

@@ -1564,7 +1564,7 @@ module GraphQL
 
       def instrument(instrument_step, instrumenter, options = {})
         if instrument_step == :field
-          warn "Field instrumentation will be removed in GraphQL-Ruby 2.0, please upgrade to field extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
+          warn "Field instrumentation (#{instrumenter.inspect}) will be removed in GraphQL-Ruby 2.0, please upgrade to field extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
         end
 
         step = if instrument_step == :field && options[:after_built_ins]
