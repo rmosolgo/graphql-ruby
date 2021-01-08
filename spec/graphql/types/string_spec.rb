@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::STRING_TYPE do
-  let(:string_type) { GraphQL::STRING_TYPE }
+describe GraphQL::Types::String do
+  let(:string_type) { GraphQL::Types::String }
 
   it "is a default scalar" do
     assert_equal(true, string_type.default_scalar?)

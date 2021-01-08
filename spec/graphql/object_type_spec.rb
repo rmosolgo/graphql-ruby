@@ -47,28 +47,6 @@ describe GraphQL::ObjectType do
 
       assert_raises(ArgumentError) { type.name }
     end
-
-    it "doesnt convolute field names that differ with underscore" do
-      interface = Module.new do
-        include GraphQL::Schema::Interface
-        graphql_name 'TestInterface'
-        description 'Requires an id'
-
-        field :id, GraphQL::ID_TYPE, null: false
-      end
-
-      object = Class.new(GraphQL::Schema::Object) do
-        graphql_name 'TestObject'
-        implements interface
-        global_id_field :id
-
-        # When the validation for `id` is run for `_id`, it will fail because
-        # GraphQL::STRING_TYPE cannot be transformed into a GraphQL::ID_TYPE
-        field :_id, String, description: 'database id', null: true
-      end
-
-      assert_equal nil, GraphQL::Schema::Validation.validate(object.to_graphql)
-    end
   end
 
   it "accepts fields definition" do

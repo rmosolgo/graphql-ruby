@@ -9,8 +9,8 @@ describe GraphQL::Schema::Traversal do
 
   it "finds types from directives" do
     expected = {
-      "Boolean" => GraphQL::BOOLEAN_TYPE, # `skip` argument
-      "String" => GraphQL::STRING_TYPE # `deprecated` argument
+      "Boolean" => GraphQL::DEPRECATED_BOOLEAN_TYPE, # `skip` argument
+      "String" => GraphQL::DEPRECATED_STRING_TYPE # `deprecated` argument
     }
     result = traversal([]).type_map
     assert_equal(expected.keys.sort, result.keys.sort)
@@ -19,14 +19,14 @@ describe GraphQL::Schema::Traversal do
 
   it "finds types from a single type and its fields" do
     expected = {
-      "Boolean" => GraphQL::BOOLEAN_TYPE,
+      "Boolean" => GraphQL::DEPRECATED_BOOLEAN_TYPE,
       "Cheese" => Dummy::Cheese.graphql_definition,
-      "Float" => GraphQL::FLOAT_TYPE,
-      "String" => GraphQL::STRING_TYPE,
+      "Float" => GraphQL::DEPRECATED_FLOAT_TYPE,
+      "String" => GraphQL::DEPRECATED_STRING_TYPE,
       "Edible" => Dummy::Edible.graphql_definition,
       "EdibleAsMilk" => Dummy::EdibleAsMilk.graphql_definition,
       "DairyAnimal" => Dummy::DairyAnimal.graphql_definition,
-      "Int" => GraphQL::INT_TYPE,
+      "Int" => GraphQL::DEPRECATED_INT_TYPE,
       "AnimalProduct" => Dummy::AnimalProduct.graphql_definition,
       "LocalProduct" => Dummy::LocalProduct.graphql_definition,
     }
@@ -57,7 +57,7 @@ describe GraphQL::Schema::Traversal do
   it "finds types from nested InputObjectTypes" do
     type_child = GraphQL::InputObjectType.define do
       name "InputTypeChild"
-      input_field :someField, GraphQL::STRING_TYPE
+      input_field :someField, GraphQL::DEPRECATED_STRING_TYPE
     end
 
     type_parent = GraphQL::InputObjectType.define do
@@ -67,8 +67,8 @@ describe GraphQL::Schema::Traversal do
 
     result = traversal([type_parent]).type_map
     expected = {
-      "Boolean" => GraphQL::BOOLEAN_TYPE,
-      "String" => GraphQL::STRING_TYPE,
+      "Boolean" => GraphQL::DEPRECATED_BOOLEAN_TYPE,
+      "String" => GraphQL::DEPRECATED_STRING_TYPE,
       "InputTypeParent" => type_parent,
       "InputTypeChild" => type_child,
     }
@@ -135,12 +135,12 @@ describe GraphQL::Schema::Traversal do
   it "finds all references to types from fields and arguments" do
     c_type = GraphQL::InputObjectType.define do
       name "C"
-      input_field :someField, GraphQL::STRING_TYPE
+      input_field :someField, GraphQL::DEPRECATED_STRING_TYPE
     end
 
     b_type = GraphQL::ObjectType.define do
       name "B"
-      field :anotherField, !GraphQL::STRING_TYPE do |field|
+      field :anotherField, !GraphQL::DEPRECATED_STRING_TYPE do |field|
         field.argument :anArgument, c_type
       end
     end
@@ -216,8 +216,8 @@ describe GraphQL::Schema::Traversal do
 
     result = traversal([interface, another_interface]).type_map
     expected = {
-      "Boolean" => GraphQL::BOOLEAN_TYPE,
-      "String" => GraphQL::STRING_TYPE,
+      "Boolean" => GraphQL::DEPRECATED_BOOLEAN_TYPE,
+      "String" => GraphQL::DEPRECATED_STRING_TYPE,
       "AInterface" => interface,
       "AnotherIterface" => another_interface,
       "B" => b_type,

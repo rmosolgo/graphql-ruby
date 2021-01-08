@@ -25,7 +25,7 @@ describe GraphQL::Schema::Validation do
   describe "validating Fields" do
     let(:unnamed_field) {
       GraphQL::Field.define do
-        type GraphQL::STRING_TYPE
+        type GraphQL::DEPRECATED_STRING_TYPE
       end
     }
 
@@ -46,7 +46,7 @@ describe GraphQL::Schema::Validation do
     let(:bad_arguments_field) {
       field = GraphQL::Field.define do
         name "BadArgs"
-        type !GraphQL::BOOLEAN_TYPE
+        type !GraphQL::DEPRECATED_BOOLEAN_TYPE
       end
       field.arguments[:bad_key] = :bad_value
       field
@@ -55,9 +55,9 @@ describe GraphQL::Schema::Validation do
     let(:invalid_argument_member_field) {
       GraphQL::Field.define do
         name "InvalidArgument"
-        type !types[!GraphQL::INT_TYPE]
+        type !types[!GraphQL::DEPRECATED_INT_TYPE]
         argument :invalid do
-          type GraphQL::FLOAT_TYPE
+          type GraphQL::DEPRECATED_FLOAT_TYPE
           default_value [1,2,3]
         end
       end
@@ -270,7 +270,7 @@ describe GraphQL::Schema::Validation do
       GraphQL::InputObjectType.define do
         name "InvalidArgumentMember"
         argument :nonsense do
-          type GraphQL::FLOAT_TYPE
+          type GraphQL::DEPRECATED_FLOAT_TYPE
           default_value ["xyz"]
         end
       end
@@ -299,9 +299,9 @@ describe GraphQL::Schema::Validation do
       GraphQL::InterfaceType.define do
         name "InvalidField"
         field :invalid do
-          type GraphQL::BOOLEAN_TYPE
+          type GraphQL::DEPRECATED_BOOLEAN_TYPE
           argument :invalid do
-            type GraphQL::FLOAT_TYPE
+            type GraphQL::DEPRECATED_FLOAT_TYPE
             default_value ["123"]
           end
         end
@@ -324,7 +324,7 @@ describe GraphQL::Schema::Validation do
     let(:default_argument_for_non_null_argument) {
       GraphQL::Argument.define do
         name "ValidDefault"
-        type !GraphQL::INT_TYPE
+        type !GraphQL::DEPRECATED_INT_TYPE
         default_value 1
       end
     }
@@ -348,7 +348,7 @@ describe GraphQL::Schema::Validation do
       GraphQL::Argument.define do
         name "Something"
         deprecation_reason "Don't use me"
-        type GraphQL::INT_TYPE
+        type GraphQL::DEPRECATED_INT_TYPE
       end
     }
 

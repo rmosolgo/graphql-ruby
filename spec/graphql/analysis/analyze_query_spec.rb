@@ -80,7 +80,7 @@ describe GraphQL::Analysis do
 
     it "calls the defined analyzers" do
       collected_types, node_counts = reduce_result
-      expected_visited_types = [Dummy::DairyAppQuery.graphql_definition, Dummy::Cheese.graphql_definition, GraphQL::INT_TYPE, GraphQL::STRING_TYPE]
+      expected_visited_types = [Dummy::DairyAppQuery.graphql_definition, Dummy::Cheese.graphql_definition, GraphQL::DEPRECATED_INT_TYPE, GraphQL::DEPRECATED_STRING_TYPE]
       assert_equal expected_visited_types, collected_types
       expected_node_counts = {
         GraphQL::Language::Nodes::OperationDefinition => 1,

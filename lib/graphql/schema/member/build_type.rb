@@ -75,7 +75,7 @@ module GraphQL
             if type_expr.respond_to?(:graphql_definition)
               type_expr
             else
-              # Eg `String` => GraphQL::STRING_TYPE
+              # Eg `String` => GraphQL::Types::String
               parse_type(type_expr.name, null: true)
             end
           when Proc

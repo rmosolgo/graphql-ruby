@@ -8,7 +8,7 @@ describe GraphQL::Function do
   end
 
   class TestFunc < GraphQL::Function
-    argument :name, GraphQL::STRING_TYPE
+    argument :name, GraphQL::DEPRECATED_STRING_TYPE
     argument :age, types.Int
     type TestFuncPayload
 
@@ -21,7 +21,7 @@ describe GraphQL::Function do
   end
 
   class TestFuncConn < GraphQL::Function
-    argument :name, GraphQL::STRING_TYPE
+    argument :name, GraphQL::DEPRECATED_STRING_TYPE
     argument :age, types.Int
     type TestFuncPayload.connection_type
 
@@ -145,7 +145,7 @@ describe GraphQL::Function do
     it "can add to arguments" do
       field = schema.query.fields["argOverride"]
       assert_equal "New Description", field.description
-      assert_equal GraphQL::STRING_TYPE, field.type
+      assert_equal GraphQL::DEPRECATED_STRING_TYPE, field.type
       assert_equal ["name", "age"], field.arguments.keys
     end
   end

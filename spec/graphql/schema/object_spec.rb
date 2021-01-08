@@ -129,6 +129,26 @@ describe GraphQL::Schema::Object do
     end
   end
 
+  it "doesnt convolute field names that differ with underscore" do
+    interface = Module.new do
+      include GraphQL::Schema::Interface
+      graphql_name 'TestInterface'
+      description 'Requires an id'
+
+      field :id, GraphQL::Types::ID, null: false
+    end
+
+    object = Class.new(GraphQL::Schema::Object) do
+      graphql_name 'TestObject'
+      implements interface
+      global_id_field :id
+
+      field :_id, String, description: 'database id', null: true
+    end
+
+    assert_equal 2, object.fields.size
+  end
+
   if !TESTING_INTERPRETER
   describe "using GraphQL::Function" do # rubocop:disable Layout/IndentationWidth
     new_test_func_payload = Class.new(GraphQL::Schema::Object) do
@@ -138,7 +158,7 @@ describe GraphQL::Schema::Object do
 
     it "returns data on a field" do
       new_func_class = Class.new(GraphQL::Function) do
-        argument :name, GraphQL::STRING_TYPE
+        argument :name, GraphQL::DEPRECATED_STRING_TYPE
         type new_test_func_payload
 
         def call(o, a, c)
@@ -170,7 +190,7 @@ describe GraphQL::Schema::Object do
 
     it "returns data on a connection" do
       new_func_class = Class.new(GraphQL::Function) do
-        argument :name, GraphQL::STRING_TYPE
+        argument :name, GraphQL::DEPRECATED_STRING_TYPE
         type new_test_func_payload.connection_type
 
         def call(o, a, c)
@@ -262,7 +282,7 @@ describe GraphQL::Schema::Object do
 
       name_field = obj_type.all_fields[3]
       assert_equal "name", name_field.name
-      assert_equal GraphQL::STRING_TYPE.to_non_null_type, name_field.type
+      assert_equal GraphQL::DEPRECATED_STRING_TYPE.to_non_null_type, name_field.type
       assert_equal nil, name_field.description
     end
 

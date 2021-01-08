@@ -21,7 +21,7 @@ describe "GraphQL::Introspection::INTROSPECTION_QUERY" do
          type !GraphQL::ListType.new(
            of_type: !GraphQL::ListType.new(
              of_type: !GraphQL::ListType.new(
-               of_type: GraphQL::FLOAT_TYPE
+               of_type: GraphQL::DEPRECATED_FLOAT_TYPE
              )
            )
          )
@@ -44,7 +44,7 @@ describe "GraphQL::Introspection::INTROSPECTION_QUERY" do
            of_type: !GraphQL::ListType.new(
              of_type: !GraphQL::ListType.new(
                of_type: !GraphQL::ListType.new(
-                 of_type: GraphQL::FLOAT_TYPE
+                 of_type: GraphQL::DEPRECATED_FLOAT_TYPE
                )
              )
            )

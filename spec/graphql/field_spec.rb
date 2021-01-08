@@ -27,7 +27,7 @@ describe GraphQL::Field do
   end
 
   it "accepts arguments definition" do
-    number = GraphQL::Argument.define(name: :number, type: -> { GraphQL::INT_TYPE })
+    number = GraphQL::Argument.define(name: :number, type: -> { GraphQL::DEPRECATED_INT_TYPE })
     field = GraphQL::Field.define(type: FieldSpecReturnType, arguments: [number])
     assert_equal([number], field.arguments)
   end

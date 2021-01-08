@@ -23,17 +23,17 @@ describe GraphQL::Argument do
     it "accepts an existing argument" do
       existing = GraphQL::Argument.define do
         name "bar"
-        type GraphQL::STRING_TYPE
+        type GraphQL::DEPRECATED_STRING_TYPE
       end
 
       arg = GraphQL::Argument.from_dsl(:foo, existing)
 
       assert_equal "foo", arg.name
-      assert_equal GraphQL::STRING_TYPE, arg.type
+      assert_equal GraphQL::DEPRECATED_STRING_TYPE, arg.type
     end
 
     it "accepts a definition block after defining kwargs" do
-      arg = GraphQL::Argument.from_dsl(:foo, GraphQL::STRING_TYPE) do
+      arg = GraphQL::Argument.from_dsl(:foo, GraphQL::DEPRECATED_STRING_TYPE) do
         description "my type is #{target.type}"
       end
 
@@ -41,7 +41,7 @@ describe GraphQL::Argument do
     end
 
     it "accepts a definition block and yields the argument if the block has an arity of one" do
-      arg = GraphQL::Argument.from_dsl(:foo, GraphQL::STRING_TYPE) do |argument|
+      arg = GraphQL::Argument.from_dsl(:foo, GraphQL::DEPRECATED_STRING_TYPE) do |argument|
         argument.description "my type is #{target.type}"
       end
 
@@ -51,7 +51,7 @@ describe GraphQL::Argument do
     it "accepts a definition block with existing arg" do
       existing = GraphQL::Argument.define do
         name "bar"
-        type GraphQL::STRING_TYPE
+        type GraphQL::DEPRECATED_STRING_TYPE
       end
 
       arg = GraphQL::Argument.from_dsl(:foo, existing) do
@@ -64,13 +64,13 @@ describe GraphQL::Argument do
     it "creates an argument from dsl arguments" do
       arg = GraphQL::Argument.from_dsl(
         :foo,
-        GraphQL::STRING_TYPE,
+        GraphQL::DEPRECATED_STRING_TYPE,
         "A Description",
         default_value: "Bar"
       )
 
       assert_equal "foo", arg.name
-      assert_equal GraphQL::STRING_TYPE, arg.type
+      assert_equal GraphQL::DEPRECATED_STRING_TYPE, arg.type
       assert_equal "A Description", arg.description
       assert_equal "Bar", arg.default_value
     end
@@ -89,38 +89,38 @@ describe GraphQL::Argument do
   end
 
   it "accepts proc type" do
-    argument = GraphQL::Argument.define(name: :favoriteFood, type: -> { GraphQL::STRING_TYPE })
-    assert_equal GraphQL::STRING_TYPE, argument.type
+    argument = GraphQL::Argument.define(name: :favoriteFood, type: -> { GraphQL::DEPRECATED_STRING_TYPE })
+    assert_equal GraphQL::DEPRECATED_STRING_TYPE, argument.type
   end
 
   it "accepts a default_value" do
-    argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE, default_value: 'Default')
+    argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::DEPRECATED_STRING_TYPE, default_value: 'Default')
     assert_equal 'Default', argument.default_value
     assert argument.default_value?
   end
 
   it "accepts a default_value of nil" do
-    argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE, default_value: nil)
+    argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::DEPRECATED_STRING_TYPE, default_value: nil)
     assert argument.default_value.nil?
     assert argument.default_value?
   end
 
   it "default_value is optional" do
-    argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE)
+    argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::DEPRECATED_STRING_TYPE)
     assert argument.default_value.nil?
     assert !argument.default_value?
   end
 
   describe "#as, #exposed_as" do
     it "accepts a `as` property to define the arg name at resolve time" do
-      argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE, as: :favFood)
+      argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::DEPRECATED_STRING_TYPE, as: :favFood)
       assert_equal argument.as, :favFood
     end
 
     it "uses `name` or `as` for `expose_as`" do
-      arg_1 = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE, as: :favFood)
+      arg_1 = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::DEPRECATED_STRING_TYPE, as: :favFood)
       assert_equal arg_1.expose_as, "favFood"
-      arg_2 = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE)
+      arg_2 = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::DEPRECATED_STRING_TYPE)
       assert_equal arg_2.expose_as, "favoriteFood"
       arg_3 = arg_2.redefine { as :ff }
       assert_equal arg_3.expose_as, "ff"
@@ -138,12 +138,12 @@ describe GraphQL::Argument do
   describe "prepare" do
     it "accepts a prepare proc and calls it to generate the prepared value" do
       prepare_proc = Proc.new { |arg, ctx| arg + ctx[:val] }
-      argument = GraphQL::Argument.define(name: :plusOne, type: GraphQL::INT_TYPE, prepare: prepare_proc)
+      argument = GraphQL::Argument.define(name: :plusOne, type: GraphQL::DEPRECATED_INT_TYPE, prepare: prepare_proc)
       assert_equal argument.prepare(1, {val: 1}), 2
     end
 
     it "returns the value itself if no prepare proc is provided" do
-      argument = GraphQL::Argument.define(name: :someNumber, type: GraphQL::INT_TYPE)
+      argument = GraphQL::Argument.define(name: :someNumber, type: GraphQL::DEPRECATED_INT_TYPE)
       assert_equal argument.prepare(1, nil), 1
     end
 
