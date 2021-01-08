@@ -127,14 +127,6 @@ describe GraphQL::Schema::Object do
       new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
       assert_equal method_defs, new_method_defs
     end
-
-    it "can implement legacy interfaces" do
-      object_type = Class.new(GraphQL::Schema::Object) do
-        implements GraphQL::Relay::Node.interface # class-based would be `GraphQL::Types::Relay::Node`
-      end
-      assert_equal ["Node"], object_type.interfaces.map(&:graphql_name)
-      assert_equal ["id"], object_type.fields.keys
-    end
   end
 
   if !TESTING_INTERPRETER

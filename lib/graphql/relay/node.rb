@@ -19,8 +19,7 @@ module GraphQL
       end
 
       def self.plural_field(**kwargs, &block)
-        warn "GraphQL::Relay::Node.field will be removed from GraphQL-Ruby 2.0, use GraphQL::Types::Relay::NodesField instead"
-
+        warn "GraphQL::Relay::Nodes.field will be removed from GraphQL-Ruby 2.0, use GraphQL::Types::Relay::NodesField instead"
         field = GraphQL::Types::Relay::NodesField.graphql_definition
 
         if kwargs.any? || block

@@ -324,12 +324,7 @@ module StarTrek
       [OpenStruct.new(id: nil)]
     end
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodeField)
-    else
-      field :node, field: GraphQL::Relay::Node.field
-    end
-
+    add_field(GraphQL::Types::Relay::NodeField)
 
     field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
       argument :id, ID, required: true

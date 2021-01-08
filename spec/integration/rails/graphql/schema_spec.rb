@@ -189,16 +189,23 @@ describe GraphQL::Schema do
 
     describe "when a schema is defined with a node field, but no hook" do
       it "raises not implemented" do
-        query_type = GraphQL::ObjectType.define do
-          name "Query"
-          field :node, GraphQL::Relay::Node.field
+        query_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Query"
+          add_field(GraphQL::Types::Relay::NodeField)
         end
 
+        thing_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Thing"
+          implements GraphQL::Types::Relay::Node
+        end
+
+        schema = Class.new(GraphQL::Schema) {
+          query(query_type)
+          orphan_types(thing_type)
+        }
+
         assert_raises(GraphQL::RequiredImplementationMissingError) {
-          GraphQL::Schema.define do
-            query(query_type)
-            resolve_type NO_OP_RESOLVE_TYPE
-          end
+          schema.execute("{ node(id: \"1\") { id } }")
         }
       end
     end
