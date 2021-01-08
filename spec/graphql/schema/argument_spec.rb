@@ -3,6 +3,12 @@ require "spec_helper"
 
 describe GraphQL::Schema::Argument do
   module SchemaArgumentTest
+    class UnauthorizedInstrumentType < Jazz::InstrumentType
+      def self.authorized?(_object, _context)
+        false
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       field :field, String, null: true do
         argument :arg, String, description: "test", required: false
@@ -18,10 +24,15 @@ describe GraphQL::Schema::Argument do
         argument :exploding_prepared_arg, Int, required: false, prepare: ->(val, context) do
           raise GraphQL::ExecutionError.new('boom!')
         end
+        argument :unauthorized_prepared_arg, Int, required: false, prepare: ->(val, context) do
+          raise GraphQL::UnauthorizedError.new('no access')
+        end
 
         argument :keys, [String], required: false, method_access: false
         argument :instrument_id, ID, required: false, loads: Jazz::InstrumentType
         argument :instrument_ids, [ID], required: false, loads: Jazz::InstrumentType
+
+        argument :unauthorized_instrument_id, ID, required: false, loads: UnauthorizedInstrumentType
 
         class Multiply
           def call(val, context)
@@ -57,13 +68,13 @@ describe GraphQL::Schema::Argument do
         -> { Jazz::GloballyIdentifiableType.find(id) }
       end
 
-      orphan_types [Jazz::InstrumentType]
+      orphan_types [Jazz::InstrumentType, UnauthorizedInstrumentType]
     end
   end
 
   describe "#keys" do
     it "is not overwritten by the 'keys' argument" do
-      expected_keys = ["aliasedArg", "arg", "argWithBlock", "deprecatedArg", "explodingPreparedArg", "instrumentId", "instrumentIds", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg"]
+      expected_keys = ["aliasedArg", "arg", "argWithBlock", "deprecatedArg", "explodingPreparedArg", "instrumentId", "instrumentIds", "keys", "preparedArg", "preparedByCallableArg", "preparedByProcArg", "requiredWithDefaultArg", "unauthorizedInstrumentId", "unauthorizedPreparedArg"]
       assert_equal expected_keys, SchemaArgumentTest::Query.fields["field"].arguments.keys.sort
     end
   end
@@ -162,6 +173,16 @@ describe GraphQL::Schema::Argument do
       assert_equal({ 'f1' => '{:arg=>"echo", :required_with_default_arg=>1}', 'f2' => nil }, res['data'])
       assert_equal(res['errors'][0]['message'], 'boom!')
       assert_equal(res['errors'][0]['path'], ['f2'])
+    end
+
+    it "handles unauthorized exception raised by prepare" do
+      query_str = <<-GRAPHQL
+        { f1: field(arg: "echo"), f2: field(unauthorizedPreparedArg: 5) }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
+      assert_equal({ 'f1' => '{:arg=>"echo", :required_with_default_arg=>1}', 'f2' => nil }, res['data'])
+      assert_nil(res['errors'])
     end
   end
 
@@ -265,6 +286,16 @@ describe GraphQL::Schema::Argument do
 
       res5 = Jazz::Schema.execute(query_str4)
       assert_nil res5["data"].fetch("nullableEnsemble")
+    end
+
+    it "handles unauthorized exception raised when object is resolved and returns nil" do
+      query_str = <<-GRAPHQL
+      query { field(unauthorizedInstrumentId: "Instrument/Drum Kit") }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str)
+      assert_nil res["errors"]
+      assert_nil res["data"].fetch("field")
     end
   end
 
