@@ -776,6 +776,7 @@ describe GraphQL::Schema::InputObject do
               "fatContent" => 0.4,
             )
             result = validate_isolated_input(input_object, input)
+            assert_nil result.problems
             assert(result.valid?)
           end
         end
