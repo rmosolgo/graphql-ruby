@@ -153,6 +153,12 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 - Fix compatibility of `YYYY-mm-dd` with `Types::ISO8601DateTime` #2989
 - Remove unused ivar in InputObject #2987
 
+## 1.9.21 (12 June 2020)
+
+### Bug fixes
+
+- Fix `extras:` on subscription fields #2983
+
 ## 1.10.11 (11 June 2020)
 
 ### New features
@@ -183,6 +189,12 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 - Fix array input to Date/DateTime types #2927
 - Fix method conflict warnings on schema loader #2934
 - Fix some Ruby 2.7 warnings #2925
+
+## 1.9.20 (20 May 2020)
+
+### Bug fixes
+
+- Fix `default_value: {}` on Ruby 2.7
 
 ## 1.10.9 (4 May 2020)
 
@@ -319,6 +331,12 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 - Fix field extension presence check #2689
 - Make new relation connections more efficient #2697
 - Don't include fields `@skip(if: true)` or `@include(if: false)` in lookahead #2700
+
+## 1.9.19 (28 Jan 2020)
+
+### Bug Fixes
+
+- Fix argument default value of `{}` with Ruby 2.7 argument handling #2704
 
 ## 1.10.0 (20 Jan 2020)
 
