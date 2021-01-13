@@ -791,30 +791,34 @@ SCHEMA
       assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(schema.types['Sub'])
     end
 
-    it "can print arguments that use non-standard Ruby objects as default values" do
-      backing_object = Struct.new(:value)
+    class DefaultValueTestSchema < GraphQL::Schema
+      BackingObject = Struct.new(:value)
 
-      scalar_type = GraphQL::ScalarType.define do
-        name "SomeType"
-        coerce_input ->(value, ctx) { backing_object.new(value) }
-        coerce_result ->(obj, ctx) { obj.value }
-      end
+      class SomeType < GraphQL::Schema::Scalar
+        graphql_name "SomeType"
+        def self.coerce_input(value, ctx)
+          BackingObject.new(value)
+        end
 
-      query_root = GraphQL::ObjectType.define do
-        name "Query"
-        description "The query root of this schema"
-
-        field :example do
-          type scalar_type
-          argument :input, scalar_type, default_value: backing_object.new("Howdy")
-          resolve ->(obj, args, ctx) { args[:input] }
+        def self.coerce_result(obj, ctx)
+          obj.value
         end
       end
 
-      schema = GraphQL::Schema.define do
-        query query_root
-      end
+      class Query < GraphQL::Schema::Object
+        description "The query root of this schema"
+        field :example, SomeType, null: true do
+          argument :input, SomeType, default_value: BackingObject.new("Howdy"), required: false
+        end
 
+        def example(input:)
+          input
+        end
+      end
+      query(Query)
+    end
+
+    it "can print arguments that use non-standard Ruby objects as default values" do
       expected = <<SCHEMA
 """
 The query root of this schema
@@ -824,7 +828,7 @@ type Query {
 }
 SCHEMA
 
-      assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(query_root)
+      assert_equal expected.chomp, GraphQL::Schema::Printer.new(DefaultValueTestSchema).print_type(DefaultValueTestSchema::Query)
     end
   end
 

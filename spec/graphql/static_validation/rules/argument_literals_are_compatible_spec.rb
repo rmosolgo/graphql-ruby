@@ -333,47 +333,68 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     end
   end
 
+  class CustomErrorMessagesSchema < GraphQL::Schema
+    class TimeType < GraphQL::Schema::Scalar
+      description "Time since epoch in seconds"
+
+      def self.coerce_input(value, ctx)
+        Time.at(Float(value))
+      rescue ArgumentError
+        raise GraphQL::CoercionError, 'cannot coerce to Float'
+      end
+
+      def self.coerce_result(value, ctx)
+        value.to_f
+      end
+    end
+
+    class RangeType < GraphQL::Schema::InputObject
+      argument :from, TimeType, required: true
+      argument :to, TimeType, required: true
+    end
+
+    class EmailType < GraphQL::Schema::Scalar
+
+      def self.coerce_input(value, ctx)
+        if URI::MailTo::EMAIL_REGEXP.match(value)
+          value
+        else
+          raise GraphQL::CoercionError.new("Invalid email address", extensions: { "code" => "invalid_email_address" })
+        end
+      end
+
+      def self.coerce_result(value, ctx)
+        value.to_f
+      end
+    end
+
+
+    class Query < GraphQL::Schema::Object
+      description "The query root of this schema"
+
+      field :time, TimeType, null: true do
+        argument :value, TimeType, required: false
+        argument :range, RangeType, required: false
+      end
+
+      def time(value: nil, range: nil)
+        value
+      end
+
+      field :email, EmailType, null: true do
+        argument :value, EmailType, required: false
+      end
+
+      def email(value:)
+        value
+      end
+    end
+
+    query(Query)
+  end
+
   describe "custom error messages" do
-    let(:schema) {
-      CoerceTestTimeType ||= GraphQL::ScalarType.define do
-        name "Time"
-        description "Time since epoch in seconds"
-
-        coerce_input ->(value, ctx) do
-          begin
-            Time.at(Float(value))
-          rescue ArgumentError
-            raise GraphQL::CoercionError, 'cannot coerce to Float'
-          end
-        end
-
-        coerce_result ->(value, ctx) { value.to_f }
-      end
-
-      CoerceTestDeepTimeType ||= GraphQL::InputObjectType.define do
-        name "range"
-        description "Time range"
-        argument :from, !CoerceTestTimeType
-        argument :to, !CoerceTestTimeType
-      end
-
-      CoerceTestQueryType ||= GraphQL::ObjectType.define do
-        name "Query"
-        description "The query root of this schema"
-
-        field :time do
-          type CoerceTestTimeType
-          argument :value, CoerceTestTimeType
-          argument :range, CoerceTestDeepTimeType
-          resolve ->(obj, args, ctx) { args[:value] }
-        end
-      end
-
-
-      GraphQL::Schema.define do
-        query CoerceTestQueryType
-      end
-    }
+    let(:schema) { CustomErrorMessagesSchema }
 
     let(:query_string) {%|
       query {
@@ -445,37 +466,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   end
 
   describe "custom error extensions" do
-    let(:schema) {
-      CoerceTestEmailType ||= GraphQL::ScalarType.define do
-        name "Email"
-        description "Email address"
-
-        coerce_input ->(value, ctx) do
-          if URI::MailTo::EMAIL_REGEXP.match(value)
-            value
-          else
-            raise GraphQL::CoercionError.new("Invalid email address", extensions: { "code" => "invalid_email_address" })
-          end
-        end
-
-        coerce_result ->(value, ctx) { value.to_f }
-      end
-
-      CoerceTestEmailQueryType ||= GraphQL::ObjectType.define do
-        name "Query"
-        description "The query root of this schema"
-
-        field :email do
-          type CoerceTestEmailType
-          argument :value, CoerceTestEmailType
-          resolve ->(obj, args, ctx) { args[:value] }
-        end
-      end
-
-      GraphQL::Schema.define do
-        query CoerceTestEmailQueryType
-      end
-    }
+    let(:schema) { CustomErrorMessagesSchema }
 
     let(:query_string) {%|
       query {
