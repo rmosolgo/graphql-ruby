@@ -58,6 +58,7 @@
   <li><code class="language-plaintext highlighter-rouge">ISO8601DateTime</code>, an ISO 8601-encoded datetime</li>
   <li><code class="language-plaintext highlighter-rouge">ISO8601Date</code>, an ISO 8601-encoded date</li>
   <li><code class="language-plaintext highlighter-rouge">JSON</code>, ⚠ This returns arbitrary JSON (Ruby hashes, arrays, strings, integers, floats, booleans and nils). Take care: by using this type, you completely lose all GraphQL type safety. Consider building object types for your data instead.</li>
+  <li><code class="language-plaintext highlighter-rouge">BigInt</code>, a numeric value which may exceed the size of a 32-bit integer</li>
 </ul>
 
 <p>Fields can return built-in scalars by referencing them by name:</p>
@@ -80,6 +81,8 @@
 <span class="n">field</span> <span class="ss">:birthday</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">ISO8601Date</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 <span class="c1"># JSON field ⚠</span>
 <span class="n">field</span> <span class="ss">:parameters</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">JSON</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+<span class="c1"># BigInt field</span>
+<span class="n">field</span> <span class="ss">:sales</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">BigInt</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 </code></pre></div></div>
 
 <p>Custom scalars (see below) can also be used by name:</p>
