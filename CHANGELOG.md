@@ -350,7 +350,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
     - If you need the whole Hash, get a cached value from `context.warden` (an instance of `GraphQL::Schema::Warden`) at runtime. Those values reflect the types and fields which are permitted for the current query, and they're cached for life of the query. Check the API docs to see methods on the `warden`.
 - Class-based schemas using the interpreter _must_ add `use GraphQL::Analysis::AST` to their schema (and update their custom analyzers, see https://graphql-ruby.org/queries/ast_analysis.html) #2363
 - ActiveSupport::Notifications events are correctly named in event.library format #2562
-- Field and Argument `#authorized?` methods now accept _three_ arguments (instead of 2). They now accept `(obj, args, ctx)`, where `args` is the arguments (for a field) or the argument value (for an argument). #2536
+- Field and Argument `#authorized?` methods now accept _three_ arguments (instead of 2). They now accept `(obj, args, ctx)`, where `args` is the arguments (for a field) or the argument value (for an argument). #2520
 - Double-null `!!` is disallowed by the parser #2397
 - (Non-interpreter only) The return value of subscription fields is passed along to execute the subscription. Return `nil` to get the previous behavior. #2536
 - `Schema.from_definition` builds a _class-based schema_ from the definition string #2178
