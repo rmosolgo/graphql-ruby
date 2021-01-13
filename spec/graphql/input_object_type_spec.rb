@@ -5,9 +5,7 @@ describe GraphQL::InputObjectType do
   describe 'default values' do
     describe 'when the type is an enum with underlying ruby values' do
       it 'provides the default value' do
-        TestEnum = GraphQL::EnumType.define do
-          name 'Test'
-
+        class TestEnum < GraphQL::Schema::Enum
           value 'A', 'Represents an authorized agent in our system.', value: 'a'
           value 'B', 'Agent is disabled, web app access is denied.', value: 'b'
         end
@@ -16,7 +14,7 @@ describe GraphQL::InputObjectType do
           argument :foo, TestEnum, 'TestEnum', required: false, default_value: 'a'
         end
 
-        test_input_type = TestInput.to_graphql
+        test_input_type = TestInput
         default_test_input_value = test_input_type.coerce_isolated_input({})
         assert_equal default_test_input_value[:foo], 'a'
       end
