@@ -36,21 +36,13 @@ describe GraphQL::ListType do
   end
 
   describe "list of input objects" do
-    let(:input_object) do
-      input_object = GraphQL::InputObjectType.define do
-        name "SomeInputObjectType"
-        argument :float, !types.Float
-      end
-
-      GraphQL::Query::Arguments.construct_arguments_class(input_object)
-
-      input_object
-    end
-
-    let(:input_object_list) { input_object.to_list_type }
-
     it "converts hashes into lists of hashes" do
-      hash = { 'float' => 1.0 }
+      input_object = Class.new(GraphQL::Schema::InputObject) do
+        graphql_name "SomeInputObjectType"
+        argument :float, Float, required: true
+      end
+      input_object_list = input_object.to_list_type
+      hash = { float: 1.0 }
       assert_equal([hash].inspect, input_object_list.coerce_isolated_input(hash).map(&:to_h).inspect)
     end
   end
