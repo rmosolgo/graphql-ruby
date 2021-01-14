@@ -170,7 +170,7 @@ describe GraphQL::Schema::Enum do
             end
           end
           query(query)
-        en
+        end
       }
 
       it "accepts them as inputs" do
