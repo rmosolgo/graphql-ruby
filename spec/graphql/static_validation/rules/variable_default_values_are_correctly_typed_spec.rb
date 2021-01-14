@@ -140,7 +140,7 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
   end
 
   describe "custom error messages" do
-    class CustomErrorMessagesSchema < GraphQL::Schema
+    class CustomErrorMessagesSchema2 < GraphQL::Schema
       class TimeType < GraphQL::Schema::Scalar
         description "Time since epoch in seconds"
 
@@ -171,7 +171,7 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
       query(Query)
     end
 
-    let(:schema) { CustomErrorMessagesSchema }
+    let(:schema) { CustomErrorMessagesSchema2 }
 
     let(:query_string) {%|
       query(

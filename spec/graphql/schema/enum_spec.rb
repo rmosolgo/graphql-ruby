@@ -91,4 +91,135 @@ describe GraphQL::Schema::Enum do
       assert_equal expected_names, result["data"]["instruments"].map { |i| i["name"] }
     end
   end
+
+  describe "legacy tests" do
+    let(:enum) { Dummy::DairyAnimal }
+
+    it "coerces names to underlying values" do
+      assert_equal("YAK", enum.coerce_isolated_input("YAK"))
+      assert_equal(1, enum.coerce_isolated_input("COW"))
+    end
+
+    it "coerces invalid names to nil" do
+      assert_equal(nil, enum.coerce_isolated_input("YAKKITY"))
+    end
+
+    it "coerces result values to value's value" do
+      assert_equal("YAK", enum.coerce_isolated_result("YAK"))
+      assert_equal("COW", enum.coerce_isolated_result(1))
+      assert_equal("REINDEER", enum.coerce_isolated_result('reindeer'))
+      assert_equal("DONKEY", enum.coerce_isolated_result(:donkey))
+    end
+
+    it "raises when a result value can't be coerced" do
+      assert_raises(GraphQL::EnumType::UnresolvedValueError) {
+        enum.coerce_isolated_result(:nonsense)
+      }
+    end
+
+    describe "resolving with a warden" do
+      it "gets values from the warden" do
+        # OK
+        assert_equal("YAK", enum.coerce_isolated_result("YAK"))
+        # NOT OK
+        assert_raises(GraphQL::EnumType::UnresolvedValueError) {
+          enum.coerce_result("YAK", OpenStruct.new(warden: NothingWarden))
+        }
+      end
+    end
+
+    describe "invalid values" do
+      it "rejects value names with a space" do
+        assert_raises(GraphQL::InvalidNameError) {
+          Class.new(GraphQL::Schema::Enum) do
+            graphql_name "InvalidEnumValueTest"
+
+            value("SPACE IN VALUE", "Invalid enum because it contains spaces", value: 1)
+          end
+        }
+      end
+    end
+
+    describe "invalid name" do
+      it "reject names with invalid format" do
+        assert_raises(GraphQL::InvalidNameError) do
+          Class.new(GraphQL::Schema::Enum) do
+            graphql_name "Some::Invalid::Name"
+          end
+        end
+      end
+    end
+
+    describe "values that are Arrays" do
+      let(:schema) {
+        Class.new(GraphQL::Schema) do
+          plural = Class.new(GraphQL::Schema::Enum) do
+            graphql_name "Plural"
+            value 'PETS', value: ["dogs", "cats"]
+            value 'FRUITS', value: ["apples", "oranges"]
+            value 'PLANETS', value: ["Earth"]
+          end
+          query = Class.new(GraphQL::Schema::Object) do
+            graphql_name "Query"
+            field :names, [String], null: false do
+              argument :things, [plural], required: true
+            end
+
+            def names(things:)
+              things.reduce(&:+)
+            end
+          end
+          query(query)
+        en
+      }
+
+      it "accepts them as inputs" do
+        res = schema.execute("{ names(things: [PETS, PLANETS]) }")
+        assert_equal ["dogs", "cats", "Earth"], res["data"]["names"]
+      end
+    end
+
+    it "accepts a symbol as a value, but stringifies it" do
+      enum = Class.new(GraphQL::Schema::Enum) do
+        graphql_name 'MessageFormat'
+        value :markdown
+      end
+
+      variant = enum.values['markdown']
+
+      assert_equal('markdown', variant.graphql_name)
+      assert_equal('markdown', variant.value)
+    end
+
+    it "has value description" do
+      assert_equal("Animal with horns", enum.values["GOAT"].description)
+    end
+
+    describe "validate_input with bad input" do
+      it "returns an invalid result" do
+        result = enum.validate_input("bad enum", GraphQL::Query::NullContext)
+        assert(!result.valid?)
+        assert_equal(
+          result.problems.first['explanation'],
+          "Expected \"bad enum\" to be one of: COW, DONKEY, GOAT, REINDEER, SHEEP, YAK"
+        )
+      end
+    end
+
+    describe "validates enum value name uniqueness" do
+      it "raises an exception when adding a duplicate enum value name" do
+        expected_message = "X is already defined for SomeEnum, please remove one of the definitions."
+
+        exception = assert_raises(ArgumentError) do
+          Class.new(GraphQL::Schema::Enum) do
+            graphql_name "SomeEnum"
+            value "X"
+            value "X"
+          end
+        end
+
+        assert_equal(expected_message, exception.message)
+      end
+    end
+  end
 end
