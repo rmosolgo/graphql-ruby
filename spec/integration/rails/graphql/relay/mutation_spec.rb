@@ -215,61 +215,53 @@ describe GraphQL::Relay::Mutation do
   end
 
   describe "specifying return interfaces" do
-    let(:result_interface) {
-      GraphQL::InterfaceType.define do
-        name "ResultInterface"
-        field :success, !types.Boolean
-        field :notice, types.String
+    class MutationInterfaceSchema < GraphQL::Schema
+      module ResultInterface
+        include GraphQL::Schema::Interface
+        field :success, Boolean, null: false
+        field :notice, String, null: true
       end
-    }
 
-    let(:error_interface) {
-      GraphQL::InterfaceType.define do
-        name "ErrorInterface"
-        field :error, types.String
+      module ErrorInterface
+        include GraphQL::Schema::Interface
+        field :error, String, null: true
       end
-    }
 
-    let(:mutation) {
-      interfaces = [result_interface, error_interface]
-      GraphQL::Relay::Mutation.define do
-        name "ReturnTypeWithInterfaceTest"
+      class ReturnTypeWithInterfaceTest < GraphQL::Schema::RelayClassicMutation
+        field :name, String, null: true
+        return_interfaces [ResultInterface, ErrorInterface]
 
-        return_field :name, types.String
-
-        return_interfaces interfaces
-
-        resolve ->(obj, input, ctx) {
+        def resolve
           {
             name: "Type Specific Field",
             success: true,
             notice: "Success Interface Field",
             error: "Error Interface Field"
           }
-        }
-      end
-    }
-
-    let(:schema) {
-      mutation_field = mutation.field
-
-      mutation_root = GraphQL::ObjectType.define do
-        name "Mutation"
-        field :custom, mutation_field
+        end
       end
 
-      GraphQL::Schema.define do
-        mutation(mutation_root)
-        resolve_type NO_OP_RESOLVE_TYPE
+      class Mutation < GraphQL::Schema::Object
+        field :custom, mutation: ReturnTypeWithInterfaceTest
       end
-    }
+
+      mutation(Mutation)
+
+      def self.resolve_type(abs_type, obj, ctx)
+        NO_OP_RESOLVE_TYPE.call(abs_type, obj, ctx)
+      end
+    end
 
     it 'makes the mutation type implement the interfaces' do
-      assert_equal [result_interface, error_interface], mutation.return_type.interfaces
+      mutation = MutationInterfaceSchema::ReturnTypeWithInterfaceTest
+      assert_equal(
+        [MutationInterfaceSchema::ResultInterface, MutationInterfaceSchema::ErrorInterface],
+        mutation.payload_type.interfaces
+      )
     end
 
     it "returns interface values and specific ones" do
-      result = schema.execute('mutation { custom(input: {clientMutationId: "123"}) { name, success, notice, error, clientMutationId } }')
+      result = MutationInterfaceSchema.execute('mutation { custom(input: {clientMutationId: "123"}) { name, success, notice, error, clientMutationId } }')
       assert_equal "Type Specific Field", result["data"]["custom"]["name"]
       assert_equal "Success Interface Field", result["data"]["custom"]["notice"]
       assert_equal true, result["data"]["custom"]["success"]

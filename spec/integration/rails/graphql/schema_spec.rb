@@ -108,25 +108,6 @@ describe GraphQL::Schema do
         }
       end
     end
-
-    describe "when a schema is defined with abstract types, but no resolve type hook" do
-      it "raises not implemented" do
-        interface = GraphQL::InterfaceType.define do
-          name "SomeInterface"
-        end
-
-        query_type = GraphQL::ObjectType.define do
-          name "Query"
-          field :something, interface
-        end
-
-        assert_raises(GraphQL::RequiredImplementationMissingError) {
-          GraphQL::Schema.define do
-            query(query_type)
-          end
-        }
-      end
-    end
   end
 
   describe "#disable_introspection_entry_points" do
