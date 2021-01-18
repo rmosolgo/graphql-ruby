@@ -35,7 +35,7 @@ describe GraphQL::Relay::ConnectionType do
           assert_equal [upcased_rebels_name] , bases["edges"].map { |e| e["upcasedParentName"] }.uniq
         end
         assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases["edges"].map { |e| e["node"]["name"] }
-        assert_equal ["StarWars::CustomBaseEdge"] , bases["edges"].map { |e| e["edgeClassName"] }.uniq
+        assert_equal [TESTING_INTERPRETER ? "StarWars::NewCustomBaseEdge" : "StarWars::CustomBaseEdge"] , bases["edges"].map { |e| e["edgeClassName"] }.uniq
       end
     end
 

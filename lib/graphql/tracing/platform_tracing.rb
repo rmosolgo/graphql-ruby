@@ -95,7 +95,7 @@ module GraphQL
       end
 
       def self.use(schema_defn, options = {})
-        tracer = self.new(options)
+        tracer = self.new(**options)
         schema_defn.instrument(:field, tracer)
         schema_defn.tracer(tracer)
       end
