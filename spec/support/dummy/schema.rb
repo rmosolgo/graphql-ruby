@@ -328,6 +328,9 @@ module Dummy
     end
 
     def resolve
+      if context[:resolved_count]
+        context[:resolved_count] += 1
+      end
       self.class.data
     end
   end
