@@ -8,6 +8,40 @@
 
 ### Bug fixes
 
+# 1.11.7 (18 January 2021)
+
+### Breaking changes
+
+- Incoming integer values are properly bound (as per the spec) #3206 To continue receiving out-of-bound integer values, add this to your schema's `def self.type_error(err, ctx)` hook:
+
+  ```ruby
+  def self.type_error(err, ctx)
+    if err.is_a?(GraphQL::IntegerDecodingError)
+      return err.value # return it anyways, since this is how graphql-ruby used to work
+    end
+    # ...
+  end
+  ```
+
+### New features
+
+- Support Ruby 3.0 #3278
+- Add validation timeout option #3234
+- Support Prometheus custom_labels in GraphQLCollector #3215
+
+### Bug fixes
+
+- Handle `GraphQL::UnauthorizedError` in interpreter in from arguments #3276
+- Set description for auto-generated `input:` argument #3141
+- Improve performance of fields will merge validation #3228
+- Use `Float` graphql type for ActiveRecord decimal columns #3246
+- Add some custom methods to ArrayConnection #3238
+- Fix generated fields for types ending Connection #3223
+- Improve runtime performance #3217
+- Improve argument handling when extensions shortcut the defined resolve #3212
+- Bind scalar ints as per the spec #3206
+- Validate that input object names are unique #3205
+
 ## 1.11.6 (29 October 2020)
 
 ### Breaking changes
