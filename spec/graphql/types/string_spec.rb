@@ -45,12 +45,11 @@ describe GraphQL::Types::String do
 
     describe "when the schema defines a custom handler" do
       let(:schema) {
-        GraphQL::Schema.define do
-          query(GraphQL::ObjectType.define(name: "Query"))
-          type_error ->(err, ctx) {
+        Class.new(GraphQL::Schema) do
+          def self.type_error(err, ctx)
             ctx.errors << err
             "🌾"
-          }
+          end
         end
       }
 
