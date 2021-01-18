@@ -184,37 +184,34 @@ describe GraphQL::Execution::Multiplex do
       end
     end
 
-    InspectQueryType = GraphQL::ObjectType.define do
-      name "Query"
+    class InspectSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :raise_execution_error, String, null: true
 
-      field :raiseExecutionError, types.String do
-        resolve ->(object, args, ctx) {
+        def raise_execution_error
           raise GraphQL::ExecutionError, "Whoops"
-        }
-      end
+        end
 
-      field :raiseError, types.String do
-        resolve ->(object, args, ctx) {
+        field :raise_error, String, null: true
+
+        def raise_error
           raise GraphQL::Error, "Crash"
-        }
-      end
+        end
 
-      field :raiseSyntaxError, types.String do
-        resolve ->(object, args, ctx) {
+        field :raise_syntax_error, String, null: true
+
+        def raise_syntax_error
           raise SyntaxError
-        }
-      end
+        end
 
-      field :raiseException, types.String do
-        resolve ->(object, args, ctx) {
+        field :raise_exception, String, null: true
+
+        def raise_exception
           raise Exception
-        }
+        end
       end
 
-    end
-
-    InspectSchema = GraphQL::Schema.define do
-      query InspectQueryType
+      query(Query)
       instrument(:query, InspectQueryInstrumentation)
     end
 

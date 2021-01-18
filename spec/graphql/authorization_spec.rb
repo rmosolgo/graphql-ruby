@@ -403,13 +403,6 @@ describe GraphQL::Authorization do
     end
 
     class Schema < GraphQL::Schema
-      if !TESTING_INTERPRETER
-        use GraphQL::Execution::Execute
-        use GraphQL::Analysis
-        # Opt in to accessible? checks
-        query_analyzer GraphQL::Authorization::Analyzer
-      end
-
       query(Query)
       mutation(Mutation)
 
@@ -555,7 +548,7 @@ describe GraphQL::Authorization do
     end
 
     it "refuses to resolve to hidden enum values" do
-      expected_class = TESTING_INTERPRETER ? AuthTest::LandscapeFeature::UnresolvedValueError : GraphQL::EnumType::UnresolvedValueError
+      expected_class = AuthTest::LandscapeFeature::UnresolvedValueError
       assert_raises(expected_class) do
         auth_execute <<-GRAPHQL, context: { hide: true }
         {
@@ -610,67 +603,6 @@ describe GraphQL::Authorization do
     end
   end
 
-  if !TESTING_INTERPRETER
-    # This isn't supported when running the interpreter
-    describe "applying the accessible? method" do
-      it "works with fields and arguments" do
-        queries = {
-          "{ inaccessible }" => ["Some fields in this query are not accessible: inaccessible"],
-          "{ int2(inaccessible: 1) }" => ["Some fields in this query are not accessible: int2"],
-        }
-
-        queries.each do |query_str, errors|
-          res = auth_execute(query_str, context: { hide: true })
-          assert_equal errors, res.fetch("errors").map { |e| e["message"] }
-
-          res = auth_execute(query_str, context: { hide: false })
-          refute res.key?("errors")
-        end
-      end
-
-      it "works with return types" do
-        queries = {
-          "{ inaccessibleObject { __typename } }" => ["Some fields in this query are not accessible: inaccessibleObject"],
-          "{ inaccessibleInterface { __typename } }" => ["Some fields in this query are not accessible: inaccessibleInterface"],
-          "{ inaccessibleDefaultInterface { __typename } }" => ["Some fields in this query are not accessible: inaccessibleDefaultInterface"],
-        }
-
-        queries.each do |query_str, errors|
-          res = auth_execute(query_str, context: { hide: true })
-          assert_equal errors, res["errors"].map { |e| e["message"] }
-
-          res = auth_execute(query_str, context: { hide: false })
-          refute res.key?("errors")
-        end
-      end
-
-      it "works with mutations" do
-        query = "mutation { doInaccessibleStuff(input: {}) { __typename } }"
-        res = auth_execute(query, context: { inaccessible_mutation: true })
-        assert_equal ["Some fields in this query are not accessible: doInaccessibleStuff"], res["errors"].map { |e| e["message"] }
-
-        assert_raises GraphQL::RequiredImplementationMissingError do
-          auth_execute(query)
-        end
-      end
-
-      it "works with edges and connections" do
-        query = <<-GRAPHQL
-        {
-          inaccessibleConnection { __typename }
-          inaccessibleEdge { __typename }
-        }
-        GRAPHQL
-
-        inaccessible_res = auth_execute(query, context: { inaccessible_relay: true })
-        assert_equal ["Some fields in this query are not accessible: inaccessibleConnection, inaccessibleEdge"], inaccessible_res["errors"].map { |e| e["message"] }
-
-        accessible_res = auth_execute(query)
-        refute accessible_res.key?("errors")
-      end
-    end
-  end
-
   describe "applying the authorized? method" do
     it "halts on unauthorized objects, replacing the object with nil" do
       query = "{ unauthorizedObject { __typename } }"
@@ -714,19 +646,18 @@ describe GraphQL::Authorization do
             end
           end
 
-          if TESTING_INTERPRETER
-            describe "when the field authorization resolves lazily" do
-              it "returns value if authorized" do
-                query = "{ unauthorized }"
-                response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: true })
-                assert_equal 34, response["data"].fetch("unauthorized")
-              end
 
-              it "returns nil if not authorized" do
-                query = "{ unauthorized }"
-                response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: false })
-                assert_nil response["data"].fetch("unauthorized")
-              end
+          describe "when the field authorization resolves lazily" do
+            it "returns value if authorized" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: true })
+              assert_equal 34, response["data"].fetch("unauthorized")
+            end
+
+            it "returns nil if not authorized" do
+              query = "{ unauthorized }"
+              response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: false })
+              assert_nil response["data"].fetch("unauthorized")
             end
           end
 
@@ -832,7 +763,7 @@ describe GraphQL::Authorization do
       # the same.
       #
       # TODO revisit the docs for this.
-      failed_nodes_value = TESTING_INTERPRETER ? [nil] : nil
+      failed_nodes_value = [nil]
       assert_equal failed_nodes_value, conn.fetch("nodes")
       assert_equal [{"node" => nil, "__typename" => "RelayObjectEdge"}], conn.fetch("edges")
 
@@ -842,7 +773,7 @@ describe GraphQL::Authorization do
 
       unauthorized_object_paths = [
         ["unauthorizedConnection", "edges", 0, "node"],
-        TESTING_INTERPRETER ? ["unauthorizedConnection", "nodes", 0] : ["unauthorizedConnection", "nodes"],
+        ["unauthorizedConnection", "nodes", 0],
         ["unauthorizedEdge", "node"]
       ]
 

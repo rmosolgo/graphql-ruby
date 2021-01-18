@@ -372,7 +372,7 @@ module GraphQL
       res[:errors]
     end
 
-    def define(**kwargs, &block)
+    def deprecated_define(**kwargs, &block)
       super
       ensure_defined
       # Assert that all necessary configs are present:

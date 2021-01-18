@@ -288,30 +288,6 @@ describe GraphQL::Schema do
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
         assert_equal true, query.context[:no_op_analyzer_ran_result]
       end
-
-      describe "when called on schema instance" do
-        let(:schema) do
-          Class.new(GraphQL::Schema) do
-            query query_type
-            use PluginWithInstrumentationTracingAndAnalyzer
-            use GraphQL::Execution::Execute
-          end.to_graphql
-        end
-
-        let(:query) { GraphQL::Query.new(schema, "query { foobar }") }
-
-        it "attaches plugins correctly, runs all of their callbacks" do
-          res = query.result
-          assert res.key?("data")
-
-          assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
-          assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
-          assert_equal true, query.context[:no_op_tracer_ran]
-          assert_equal true, query.context[:no_op_analyzer_ran_initialize]
-          assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
-          assert_equal true, query.context[:no_op_analyzer_ran_result]
-        end
-      end
     end
 
     describe "when called on schema subclasses" do
@@ -339,40 +315,6 @@ describe GraphQL::Schema do
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
         assert_equal true, query.context[:no_op_analyzer_ran_result]
       end
-    end
-  end
-
-  describe "when mixing define and class-based" do
-    module MixedSchema
-      class Query < GraphQL::Schema::Object
-        field :int, Int, null: false
-      end
-
-      class Mutation < GraphQL::Schema::Object
-        field :int, Int, null: false
-      end
-
-      class Subscription < GraphQL::Schema::Object
-        field :int, Int, null: false
-      end
-
-      Schema = GraphQL::Schema.define do
-        query(Query)
-        mutation(Mutation)
-        subscription(Subscription)
-      end
-    end
-
-    it "includes root types properly" do
-      res = MixedSchema::Schema.as_json
-      assert_equal "Query", res["data"]["__schema"]["queryType"]["name"]
-      assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Query"
-
-      assert_equal "Mutation", res["data"]["__schema"]["mutationType"]["name"]
-      assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Mutation"
-
-      assert_equal "Subscription", res["data"]["__schema"]["subscriptionType"]["name"]
-      assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Subscription"
     end
   end
 
