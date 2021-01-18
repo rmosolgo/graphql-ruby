@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::ID_TYPE do
+describe GraphQL::Types::ID do
   let(:result) { Dummy::Schema.execute(query_string)}
 
   describe "coercion for int inputs" do

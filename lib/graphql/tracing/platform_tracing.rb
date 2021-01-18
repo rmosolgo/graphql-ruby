@@ -96,7 +96,9 @@ module GraphQL
 
       def self.use(schema_defn, options = {})
         tracer = self.new(**options)
-        schema_defn.instrument(:field, tracer)
+        if !schema_defn.is_a?(Class)
+          schema_defn.instrument(:field, tracer)
+        end
         schema_defn.tracer(tracer)
       end
 

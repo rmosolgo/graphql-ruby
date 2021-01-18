@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::BOOLEAN_TYPE do
+describe GraphQL::Types::Boolean do
   describe "coerce_input" do
     def coerce_input(input)
-      GraphQL::BOOLEAN_TYPE.coerce_isolated_input(input)
+      GraphQL::Types::Boolean.coerce_isolated_input(input)
     end
 
     it "accepts true and false" do

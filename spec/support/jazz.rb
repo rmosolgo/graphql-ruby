@@ -934,11 +934,6 @@ module Jazz
 
     use GraphQL::Dataloader
 
-    if !TESTING_INTERPRETER
-      use GraphQL::Execution::Execute
-      use GraphQL::Analysis
-    end
-
     use MetadataPlugin, value: "xyz"
   end
 
@@ -948,11 +943,6 @@ module Jazz
     disable_introspection_entry_points
 
     use GraphQL::Dataloader
-
-    if !TESTING_INTERPRETER
-      use GraphQL::Execution::Execute
-      use GraphQL::Analysis
-    end
   end
 
   class SchemaWithoutSchemaIntrospection < GraphQL::Schema

@@ -241,13 +241,16 @@ module StarWars
       else
         ship = DATA.create_ship(ship_name, faction_id)
         faction = DATA["Faction"][faction_id]
-        connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
-        ships_connection = connection_class.new(faction.ships, {ship_name: ship_name, faction: faction})
-        ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
+        range_add = GraphQL::Relay::RangeAdd.new(
+          collection: faction.ships,
+          item: ship,
+          parent: faction,
+          context: context,
+        )
         result = {
-          ship_edge: ship_edge, # support new-style, too
-          faction: faction,
-          aliased_faction: faction,
+          ship_edge: range_add.edge,
+          faction: range_add.parent,
+          aliased_faction: range_add.parent,
         }
         if ship_name == "Slave II"
           LazyWrapper.new(result)
@@ -383,26 +386,6 @@ module StarWars
     field :introduceShip, mutation: IntroduceShipMutation
   end
 
-  class ClassNameRecorder
-    def initialize(context_key)
-      @context_key = context_key
-    end
-
-    def instrument(type, field)
-      inner_resolve = field.resolve_proc
-      key = @context_key
-      field.redefine {
-        resolve ->(o, a, c) {
-          res = inner_resolve.call(o, a, c)
-          if c[key]
-            c[key] << res.class.name
-          end
-          res
-        }
-      }
-    end
-  end
-
   class Schema < GraphQL::Schema
     query(QueryType)
     mutation(MutationType)
@@ -435,8 +418,5 @@ module StarWars
 
     lazy_resolve(LazyWrapper, :value)
     lazy_resolve(LazyLoader, :value)
-
-    instrument(:field, ClassNameRecorder.new(:before_built_ins))
-    instrument(:field, ClassNameRecorder.new(:after_built_ins), after_built_ins: true)
   end
 end

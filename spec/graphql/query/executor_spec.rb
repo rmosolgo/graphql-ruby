@@ -103,24 +103,7 @@ describe GraphQL::Query::Executor do
 
 
   describe "fragment resolution" do
-    let(:schema) {
-      # we will raise if the dairy field is resolved more than one time
-      resolved = false
-
-      DummyQueryType = GraphQL::ObjectType.define do
-        name "Query"
-        field :dairy do
-          type Dummy::Dairy.graphql_definition
-          resolve ->(t, a, c) {
-            raise if resolved
-            resolved = true
-            Dummy::DAIRY
-          }
-        end
-      end
-
-      GraphQL::Schema.define(query: DummyQueryType, mutation: Dummy::DairyAppMutation.graphql_definition, resolve_type: ->(a,b,c) { :pass }, id_from_object: :pass)
-    }
+    let(:schema) { Dummy::Schema }
     let(:variables) { nil }
     let(:query_string) { %|
       query getDairy {
@@ -138,10 +121,13 @@ describe GraphQL::Query::Executor do
     |}
 
     it "resolves each field only one time, even when present in multiple fragments" do
+      ctx = { resolved_count: 0 }
+      result = Dummy::Schema.execute(query_string, context: ctx)
       expected = {"data" => {
         "dairy" => { "id" => "1" }
       }}
       assert_equal(expected, result)
+      assert_equal 1, ctx[:resolved_count]
     end
 
   end

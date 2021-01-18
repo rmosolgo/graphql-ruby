@@ -98,7 +98,7 @@ If an object implements any interfaces, they can be added with `implements`, for
 
 ```ruby
 # This object implements some interfaces:
-implements GraphQL::Relay::Node.interface
+implements GraphQL::Types::Relay::Node
 implements Types::UserAssignableType
 ```
 

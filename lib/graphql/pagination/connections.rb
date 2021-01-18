@@ -65,9 +65,9 @@ module GraphQL
 
       # Used by the runtime to wrap values in connection wrappers.
       # @api Private
-      def wrap(field, parent, items, arguments, context, wrappers: all_wrappers)
+      def wrap(field, parent, items, arguments, context)
         return items if GraphQL::Execution::Interpreter::RawValue === items
-
+        wrappers = context ? context.namespace(:connections)[:all_wrappers] : all_wrappers
         impl = wrapper_for(items, wrappers: wrappers)
 
         if impl.nil?

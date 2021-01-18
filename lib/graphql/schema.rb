@@ -82,6 +82,7 @@ module GraphQL
     extend GraphQL::Schema::Member::AcceptsDefinition
     extend GraphQL::Schema::Member::HasAstNode
     include GraphQL::Define::InstanceDefinable
+    extend GraphQL::Define::InstanceDefinable::DeprecatedDefine
     extend GraphQL::Schema::FindInheritedValue
 
     class DuplicateTypeNamesError < GraphQL::Error
@@ -371,7 +372,7 @@ module GraphQL
       res[:errors]
     end
 
-    def define(**kwargs, &block)
+    def deprecated_define(**kwargs, &block)
       super
       ensure_defined
       # Assert that all necessary configs are present:
@@ -1562,6 +1563,10 @@ module GraphQL
       end
 
       def instrument(instrument_step, instrumenter, options = {})
+        if instrument_step == :field
+          warn "Field instrumentation (#{instrumenter.inspect}) will be removed in GraphQL-Ruby 2.0, please upgrade to field extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
+        end
+
         step = if instrument_step == :field && options[:after_built_ins]
           :field_after_built_ins
         else
@@ -1620,6 +1625,7 @@ module GraphQL
 
       def middleware(new_middleware = nil)
         if new_middleware
+          warn "Middleware will be removed in GraphQL-Ruby 2.0, please upgrade to Field Extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
           own_middleware << new_middleware
         else
           # TODO make sure this is cached when running a query

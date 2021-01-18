@@ -5,24 +5,7 @@ describe GraphQL::Schema do
   let(:schema) { Dummy::Schema }
   let(:admin_schema) { Dummy::AdminSchema }
   let(:relay_schema)  { StarWars::Schema }
-  let(:empty_schema) { GraphQL::Schema.define }
-
-  describe "#graphql_definition" do
-    it "returns itself" do
-      assert_equal empty_schema, empty_schema.graphql_definition
-    end
-  end
-
-  describe "#rescue_from" do
-    it "adds handlers to the rescue middleware" do
-      schema_defn = schema.graphql_definition
-      rescue_middleware = schema_defn.middleware.first
-      assert_equal(1, rescue_middleware.rescue_table.length)
-      # normally, you'd use a real class, not a symbol:
-      schema_defn.rescue_from(:error_class, :another_err_class) { "my custom message" }
-      assert_equal(3, rescue_middleware.rescue_table.length)
-    end
-  end
+  let(:empty_schema) { Class.new(GraphQL::Schema) }
 
   describe "#find" do
     it "finds a member using a string path" do
@@ -104,26 +87,7 @@ describe GraphQL::Schema do
     describe "when the hook wasn't implemented" do
       it "raises not implemented" do
         assert_raises(GraphQL::RequiredImplementationMissingError) {
-          empty_schema.resolve_type(nil, nil)
-        }
-      end
-    end
-
-    describe "when a schema is defined with abstract types, but no resolve type hook" do
-      it "raises not implemented" do
-        interface = GraphQL::InterfaceType.define do
-          name "SomeInterface"
-        end
-
-        query_type = GraphQL::ObjectType.define do
-          name "Query"
-          field :something, interface
-        end
-
-        assert_raises(GraphQL::RequiredImplementationMissingError) {
-          GraphQL::Schema.define do
-            query(query_type)
-          end
+          empty_schema.resolve_type(Class.new(GraphQL::Schema::Union), nil, nil)
         }
       end
     end
@@ -136,7 +100,7 @@ describe GraphQL::Schema do
 
     describe "when disable_introspection_entry_points is configured" do
       let(:schema) do
-        GraphQL::Schema.define do
+        Class.new(GraphQL::Schema) do
           disable_introspection_entry_points
         end
       end
@@ -155,27 +119,6 @@ describe GraphQL::Schema do
         }
       end
     end
-
-    describe "when a schema is defined with a relay ID field, but no hook" do
-      it "raises not implemented" do
-        thing_type = GraphQL::ObjectType.define do
-          name "Thing"
-          global_id_field :id
-        end
-
-        query_type = GraphQL::ObjectType.define do
-          name "Query"
-          field :thing, thing_type
-        end
-
-        assert_raises(GraphQL::RequiredImplementationMissingError) {
-          GraphQL::Schema.define do
-            query(query_type)
-            resolve_type NO_OP_RESOLVE_TYPE
-          end
-        }
-      end
-    end
   end
 
   describe "id_from_object" do
@@ -189,16 +132,23 @@ describe GraphQL::Schema do
 
     describe "when a schema is defined with a node field, but no hook" do
       it "raises not implemented" do
-        query_type = GraphQL::ObjectType.define do
-          name "Query"
-          field :node, GraphQL::Relay::Node.field
+        query_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Query"
+          add_field(GraphQL::Types::Relay::NodeField)
         end
 
+        thing_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Thing"
+          implements GraphQL::Types::Relay::Node
+        end
+
+        schema = Class.new(GraphQL::Schema) {
+          query(query_type)
+          orphan_types(thing_type)
+        }
+
         assert_raises(GraphQL::RequiredImplementationMissingError) {
-          GraphQL::Schema.define do
-            query(query_type)
-            resolve_type NO_OP_RESOLVE_TYPE
-          end
+          schema.execute("{ node(id: \"1\") { id } }")
         }
       end
     end
@@ -207,24 +157,13 @@ describe GraphQL::Schema do
   describe "directives" do
     describe "when directives are not overwritten" do
       it "contains built-in directives" do
-        schema = GraphQL::Schema.define
+        schema = GraphQL::Schema
 
         assert_equal ['deprecated', 'include', 'skip'], schema.directives.keys.sort
 
-        assert_equal GraphQL::Directive::DeprecatedDirective, schema.directives['deprecated']
-        assert_equal GraphQL::Directive::IncludeDirective, schema.directives['include']
-        assert_equal GraphQL::Directive::SkipDirective, schema.directives['skip']
-      end
-    end
-
-    describe "when directives are overwritten" do
-      it "contains only specified directives" do
-        schema = GraphQL::Schema.define do
-          directives [GraphQL::Directive::DeprecatedDirective]
-        end
-
-        assert_equal ['deprecated'], schema.directives.keys.sort
-        assert_equal GraphQL::Directive::DeprecatedDirective, schema.directives['deprecated']
+        assert_equal GraphQL::Schema::Directive::Deprecated, schema.directives['deprecated']
+        assert_equal GraphQL::Schema::Directive::Include, schema.directives['include']
+        assert_equal GraphQL::Schema::Directive::Skip, schema.directives['skip']
       end
     end
   end
@@ -251,12 +190,13 @@ type Query {
 
   describe ".from_introspection" do
     let(:schema) {
-      query_root = GraphQL::ObjectType.define do
-        name 'Query'
-        field :str, types.String
+
+      query_root = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'Query'
+        field :str, String, null: true
       end
 
-      GraphQL::Schema.define do
+      Class.new(GraphQL::Schema) do
         query query_root
       end
     }
@@ -270,28 +210,6 @@ type Query {
   end
 
   describe "#instrument" do
-    class MultiplyInstrumenter
-      def initialize(multiplier)
-        @multiplier = multiplier
-      end
-
-      def instrument(type_defn, field_defn)
-        if type_defn.name == "Query" && field_defn.name == "int"
-          prev_proc = field_defn.resolve_proc
-          new_resolve_proc = ->(obj, args, ctx) {
-            inner_value = prev_proc.call(obj, args, ctx)
-            inner_value * @multiplier
-          }
-
-          field_defn.redefine do
-            resolve(new_resolve_proc)
-          end
-        else
-          field_defn
-        end
-      end
-    end
-
     class VariableCountInstrumenter
       attr_reader :counts
       def initialize
@@ -325,30 +243,26 @@ type Query {
     let(:variable_counter) {
       VariableCountInstrumenter.new
     }
-    let(:query_type) {
-      GraphQL::ObjectType.define do
-        name "Query"
-        field :int, types.Int do
-          argument :value, types.Int
-          resolve ->(obj, args, ctx) { args[:value] == 13 ? raise("13 is unlucky") : args[:value] }
-        end
-      end
-    }
 
     let(:schema) {
       spec = self
-      GraphQL::Schema.define do
-        query(spec.query_type)
-        instrument(:field, MultiplyInstrumenter.new(3))
+      Class.new(GraphQL::Schema) do
+        query_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Query"
+          field :int, Integer, null: true do
+            argument :value, Integer, required: false
+          end
+
+          def int(value:)
+            value == 13 ? raise("13 is unlucky") : value
+          end
+        end
+
+        query(query_type)
         instrument(:query, StackCheckInstrumenter.new(spec.variable_counter))
         instrument(:query, spec.variable_counter)
       end
     }
-
-    it "can modify field definitions" do
-      res = schema.execute(" { int(value: 2) } ")
-      assert_equal 6, res["data"]["int"]
-    end
 
     it "can wrap query execution" do
       schema.execute("query getInt($val: Int = 5){ int(value: $val) } ")
@@ -363,36 +277,6 @@ type Query {
       }
       assert_equal [:in, 1, :end, :out, :in, 1, :end, :out], variable_counter.counts
     end
-
-    it "can be applied after the fact" do
-      res = schema.execute("query { int(value: 2) } ")
-      assert_equal 6, res["data"]["int"]
-
-      schema.instrument(:field, MultiplyInstrumenter.new(4))
-      res = schema.execute("query { int(value: 2) } ")
-      assert_equal 24, res["data"]["int"]
-    end
-
-    class CyclicalDependencyInstrumentation
-      def initialize(schema)
-        @schema = schema
-      end
-
-      def instrument(type, field)
-        @schema.types # infinite loop
-        field
-      end
-    end
-
-    describe "field instrumenters which cause loops" do
-      it "has a nice error message" do
-        assert_raises(GraphQL::Schema::CyclicalDefinitionError) do
-          schema.redefine {
-            instrument(:field, CyclicalDependencyInstrumentation.new(self.target))
-          }
-        end
-      end
-    end
   end
 
   describe "#lazy? / #lazy_method_name" do
@@ -400,8 +284,11 @@ type Query {
     class LazyObjChild < LazyObj; end
 
     let(:schema) {
-      query_type = GraphQL::ObjectType.define(name: "Query")
-      GraphQL::Schema.define do
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+      end
+
+      Class.new(GraphQL::Schema) do
         query(query_type)
         lazy_resolve(Integer, :itself)
         lazy_resolve(LazyObj, :dup)
@@ -420,22 +307,6 @@ type Query {
     end
   end
 
-  describe "#dup" do
-    it "copies internal state" do
-      schema_1 = schema.graphql_definition
-      schema_2 = schema_1.dup
-      refute schema_2.types.equal?(schema_1.types)
-
-      refute schema_2.instrumenters.equal?(schema_1.instrumenters)
-      assert_equal schema_2.instrumenters, schema_1.instrumenters
-
-      refute schema_2.middleware.equal?(schema_1.middleware)
-      assert_equal schema_2.middleware, schema_1.middleware
-
-      schema_2.middleware << ->(*args) { :noop }
-      refute_equal schema_2.middleware, schema_1.middleware
-    end
-  end
 
   describe "#validate" do
     it "returns errors on the query string" do

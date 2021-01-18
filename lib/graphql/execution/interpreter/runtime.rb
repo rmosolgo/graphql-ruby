@@ -249,7 +249,7 @@ module GraphQL
           end
 
 
-          after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
+          after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
             if resolved_arguments.is_a? GraphQL::ExecutionError
               continue_value(next_path, resolved_arguments, owner_type, field_defn, return_type.non_null?, ast_node)
               next
@@ -306,14 +306,14 @@ module GraphQL
               # Actually call the field resolver and capture the result
               app_result = begin
                 query.with_error_handling do
-                  query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, query: query, object: object, arguments: kwarg_arguments}) do
+                  query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments}) do
                     field_defn.resolve(object, kwarg_arguments, context)
                   end
                 end
               rescue GraphQL::ExecutionError => err
                 err
               end
-              after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |inner_result|
+              after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node)
                 if RawValue === continue_value
                   # Write raw value directly to the response without resolving nested objects
@@ -392,7 +392,7 @@ module GraphQL
             resolved_type_or_lazy, resolved_value = resolve_type(current_type, value, path)
             resolved_value ||= value
 
-            after_lazy(resolved_type_or_lazy, owner: current_type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
+            after_lazy(resolved_type_or_lazy, owner: current_type, path: path, ast_node: ast_node, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
               possible_types = query.possible_types(current_type)
 
               if !possible_types.include?(resolved_type)
@@ -412,7 +412,7 @@ module GraphQL
             rescue GraphQL::ExecutionError => err
               err
             end
-            after_lazy(object_proxy, owner: current_type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |inner_object|
+            after_lazy(object_proxy, owner: current_type, path: path, ast_node: ast_node, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |inner_object|
               continue_value = continue_value(path, inner_object, owner_type, field, is_non_null, ast_node)
               if HALT != continue_value
                 response_hash = {}
@@ -436,7 +436,7 @@ module GraphQL
                 idx += 1
                 set_type_at_path(next_path, inner_type)
                 # This will update `response_list` with the lazy
-                after_lazy(inner_value, owner: inner_type, path: next_path, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
+                after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
                   continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node)
                   if HALT != continue_value
                     continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments)
@@ -519,7 +519,7 @@ module GraphQL
         # @param eager [Boolean] Set to `true` for mutation root fields only
         # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
-        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false, trace: true, &block)
+        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, ast_node:, eager: false, trace: true, &block)
           set_all_interpreter_context(owner_object, field, arguments, path)
           if schema.lazy?(lazy_obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
@@ -530,7 +530,7 @@ module GraphQL
               inner_obj = begin
                 query.with_error_handling do
                   if trace
-                    query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
+                    query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
                       schema.sync_lazy(lazy_obj)
                     end
                   else
@@ -540,7 +540,7 @@ module GraphQL
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
                   err
               end
-              after_lazy(inner_obj, owner: owner, field: field, path: path, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager, trace: trace, &block)
+              after_lazy(inner_obj, owner: owner, field: field, path: path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager, trace: trace, &block)
             end
 
             if eager
@@ -594,6 +594,16 @@ module GraphQL
               @response.write(path, value)
             end
           end
+        end
+
+        def value_at(path)
+          i = 0
+          value = @response.final_value
+          while value && (part = path[i])
+            value = value[part]
+            i += 1
+          end
+          value
         end
 
         # To propagate nulls, we have to know what the field type was

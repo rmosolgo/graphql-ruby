@@ -6,7 +6,7 @@ module Platform
       include Platform::Interfaces::Base
       description "Entities that can be subscribed to for web and email notifications."
 
-      field :id, GraphQL::ID_TYPE, method: :global_relay_id, null: false
+      field :id, GraphQL::DEPRECATED_ID_TYPE, method: :global_relay_id, null: false
 
       field :viewer_subscription, Enums::SubscriptionState, description: "Identifies if the viewer is watching, not watching, or ignoring the subscribable entity.", null: false
 

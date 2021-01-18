@@ -5,6 +5,7 @@ module GraphQL
     module Node
       # @return [GraphQL::Field] a field for finding objects by their global ID.
       def self.field(**kwargs, &block)
+        warn "GraphQL::Relay::Node.field will be removed from GraphQL-Ruby 2.0, use GraphQL::Types::Relay::NodeField instead"
         # We have to define it fresh each time because
         # its name will be modified and its description
         # _may_ be modified.
@@ -18,6 +19,7 @@ module GraphQL
       end
 
       def self.plural_field(**kwargs, &block)
+        warn "GraphQL::Relay::Nodes.field will be removed from GraphQL-Ruby 2.0, use GraphQL::Types::Relay::NodesField instead"
         field = GraphQL::Types::Relay::NodesField.graphql_definition
 
         if kwargs.any? || block
@@ -29,6 +31,7 @@ module GraphQL
 
       # @return [GraphQL::InterfaceType] The interface which all Relay types must implement
       def self.interface
+        warn "GraphQL::Relay::Node.interface will be removed from GraphQL-Ruby 2.0, use GraphQL::Types::Relay::Node instead"
         @interface ||= GraphQL::Types::Relay::Node.graphql_definition
       end
     end

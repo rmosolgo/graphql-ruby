@@ -16,12 +16,11 @@ describe GraphQL::StaticValidation::MutationRootExists do
   |}
 
   let(:schema) {
-    query_root = GraphQL::ObjectType.define do
-      name "Query"
-      description "Query root of the system"
-    end
+    Class.new(GraphQL::Schema) do
+      query_root = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+      end
 
-    GraphQL::Schema.define do
       query query_root
     end
   }

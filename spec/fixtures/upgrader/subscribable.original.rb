@@ -6,7 +6,7 @@ module Platform
       name "Subscribable"
       description "Entities that can be subscribed to for web and email notifications."
 
-      field :id, !GraphQL::ID_TYPE, property: :global_relay_id
+      field :id, !GraphQL::DEPRECATED_ID_TYPE, property: :global_relay_id
 
       field :viewerSubscription, -> { !Enums::SubscriptionState } do
         description "Identifies if the viewer is watching, not watching, or ignoring the subscribable entity."

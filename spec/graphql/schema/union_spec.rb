@@ -182,4 +182,117 @@ describe GraphQL::Schema::Union do
 
     assert_match expected_message, err2.message
   end
+
+  describe "migrate legacy tests" do
+    describe "#resolve_type" do
+      let(:result) { Dummy::Schema.execute(query_string) }
+      let(:query_string) {%|
+        {
+          allAnimal {
+            type: __typename
+            ... on Cow {
+              cowName: name
+            }
+            ... on Goat {
+              goatName: name
+            }
+          }
+
+          allAnimalAsCow {
+            type: __typename
+            ... on Cow {
+              name
+            }
+          }
+        }
+      |}
+
+      it 'returns correct types for general schema and specific union' do
+        expected_result = {
+          # When using Query#resolve_type
+          "allAnimal" => [
+            { "type" => "Cow", "cowName" => "Billy" },
+            { "type" => "Goat", "goatName" => "Gilly" }
+          ],
+
+          # When using UnionType#resolve_type
+          "allAnimalAsCow" => [
+            { "type" => "Cow", "name" => "Billy" },
+            { "type" => "Cow", "name" => "Gilly" }
+          ]
+        }
+        assert_equal expected_result, result["data"]
+      end
+    end
+
+    describe "typecasting from union to union" do
+      let(:result) { Dummy::Schema.execute(query_string) }
+      let(:query_string) {%|
+        {
+          allDairy {
+            dairyName: __typename
+            ... on Beverage {
+              bevName: __typename
+              ... on Milk {
+                flavors
+              }
+            }
+          }
+        }
+      |}
+
+      it "casts if the object belongs to both unions" do
+        expected_result = [
+          {"dairyName"=>"Cheese"},
+          {"dairyName"=>"Cheese"},
+          {"dairyName"=>"Cheese"},
+          {"dairyName"=>"Milk", "bevName"=>"Milk", "flavors"=>["Natural", "Chocolate", "Strawberry"]},
+        ]
+        assert_equal expected_result, result["data"]["allDairy"]
+      end
+    end
+
+    describe "list of union type" do
+      describe "fragment spreads" do
+        let(:result) { Dummy::Schema.execute(query_string) }
+        let(:query_string) {%|
+          {
+            allDairy {
+              __typename
+              ... milkFields
+              ... cheeseFields
+            }
+          }
+          fragment milkFields on Milk {
+            id
+            source
+            origin
+            flavors
+          }
+
+          fragment cheeseFields on Cheese {
+            id
+            source
+            origin
+            flavor
+          }
+        |}
+
+        it "resolves the right fragment on the right item" do
+          all_dairy = result["data"]["allDairy"]
+          cheeses = all_dairy.first(3)
+          cheeses.each do |cheese|
+            assert_equal "Cheese", cheese["__typename"]
+            assert_equal ["__typename", "id", "source", "origin", "flavor"], cheese.keys
+          end
+
+          milks = all_dairy.last(1)
+          milks.each do |milk|
+            assert_equal "Milk", milk["__typename"]
+            assert_equal ["__typename", "id", "source", "origin", "flavors"], milk.keys
+          end
+        end
+      end
+    end
+  end
 end

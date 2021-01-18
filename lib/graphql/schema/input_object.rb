@@ -173,17 +173,10 @@ module GraphQL
             return result
           end
 
-          input = begin
-            input.to_h
-          rescue
-            begin
-              # Handle ActionController::Parameters:
-              input.to_unsafe_h
-            rescue
-              # We're not sure it'll act like a hash, so reject it:
-              result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
-              return result
-            end
+          if !(input.respond_to?(:to_h) || input.respond_to?(:to_unsafe_h))
+            # We're not sure it'll act like a hash, so reject it:
+            result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+            return result
           end
 
           # Inject missing required arguments
@@ -195,16 +188,19 @@ module GraphQL
             m
           end
 
-          input.merge(missing_required_inputs).each do |argument_name, value|
-            argument = warden.get_argument(self, argument_name)
-            # Items in the input that are unexpected
-            unless argument
-              result.add_problem("Field is not defined on #{self.graphql_name}", [argument_name])
-              next
+
+          [input, missing_required_inputs].each do |args_to_validate|
+            args_to_validate.each do |argument_name, value|
+              argument = warden.get_argument(self, argument_name)
+              # Items in the input that are unexpected
+              unless argument
+                result.add_problem("Field is not defined on #{self.graphql_name}", [argument_name])
+                next
+              end
+              # Items in the input that are expected, but have invalid values
+              argument_result = argument.type.validate_input(value, ctx)
+              result.merge_result!(argument_name, argument_result) unless argument_result.valid?
             end
-            # Items in the input that are expected, but have invalid values
-            argument_result = argument.type.validate_input(value, ctx)
-            result.merge_result!(argument_name, argument_result) unless argument_result.valid?
           end
 
           result

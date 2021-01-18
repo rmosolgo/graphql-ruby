@@ -9,6 +9,9 @@ module GraphQL
     class Directive < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasArguments
       class << self
+        # Directives aren't types, they don't have kinds.
+        undef_method :kind
+
         def path
           "@#{super}"
         end

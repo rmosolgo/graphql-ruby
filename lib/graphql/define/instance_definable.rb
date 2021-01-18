@@ -3,6 +3,23 @@ module GraphQL
   module Define
     # @api deprecated
     module InstanceDefinable
+      module DeprecatedDefine
+        def define(**kwargs, &block)
+          deprecated_caller = caller(1, 1).first
+          if deprecated_caller.include?("lib/graphql")
+            deprecated_caller = caller(2, 10).find { |c| !c.include?("lib/graphql") }
+          end
+
+          if deprecated_caller
+            warn <<-ERR
+#{self}.define will be removed in GraphQL-Ruby 2.0; use a class-based definition instead. See https://graphql-ruby.org/schema/class_based_api.html.
+  -> called from #{deprecated_caller}
+ERR
+          end
+          deprecated_define(**kwargs, &block)
+        end
+      end
+
       def self.included(base)
         base.extend(ClassMethods)
         base.ensure_defined(:metadata)
@@ -14,7 +31,7 @@ module GraphQL
       end
 
       # @api deprecated
-      def define(**kwargs, &block)
+      def deprecated_define(**kwargs, &block)
         # make sure the previous definition_proc was executed:
         ensure_defined
         stash_dependent_methods
@@ -23,10 +40,15 @@ module GraphQL
       end
 
       # @api deprecated
+      def define(**kwargs, &block)
+        deprecated_define(**kwargs, &block)
+      end
+
+      # @api deprecated
       def redefine(**kwargs, &block)
         ensure_defined
         new_inst = self.dup
-        new_inst.define(**kwargs, &block)
+        new_inst.deprecated_define(**kwargs, &block)
         new_inst
       end
 
@@ -125,8 +147,16 @@ module GraphQL
       module ClassMethods
         # Create a new instance
         # and prepare a definition using its {.definitions}.
+        # @api deprecated
         # @param kwargs [Hash] Key-value pairs corresponding to defininitions from `accepts_definitions`
         # @param block [Proc] Block which calls helper methods from `accepts_definitions`
+        def deprecated_define(**kwargs, &block)
+          instance = self.new
+          instance.deprecated_define(**kwargs, &block)
+          instance
+        end
+
+        # @api deprecated
         def define(**kwargs, &block)
           instance = self.new
           instance.define(**kwargs, &block)

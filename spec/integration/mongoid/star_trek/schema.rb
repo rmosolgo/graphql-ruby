@@ -324,12 +324,7 @@ module StarTrek
       [OpenStruct.new(id: nil)]
     end
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodeField)
-    else
-      field :node, field: GraphQL::Relay::Node.field
-    end
-
+    add_field(GraphQL::Types::Relay::NodeField)
 
     field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
       argument :id, ID, required: true
@@ -359,26 +354,6 @@ module StarTrek
   class MutationType < GraphQL::Schema::Object
     graphql_name "Mutation"
     field :introduceShip, mutation: IntroduceShipMutation
-  end
-
-  class ClassNameRecorder
-    def initialize(context_key)
-      @context_key = context_key
-    end
-
-    def instrument(type, field)
-      inner_resolve = field.resolve_proc
-      key = @context_key
-      field.redefine {
-        resolve ->(o, a, c) {
-          res = inner_resolve.call(o, a, c)
-          if c[key]
-            c[key] << res.class.name
-          end
-          res
-        }
-      }
-    end
   end
 
   class Schema < GraphQL::Schema
@@ -413,8 +388,5 @@ module StarTrek
 
     lazy_resolve(LazyWrapper, :value)
     lazy_resolve(LazyLoader, :value)
-
-    instrument(:field, ClassNameRecorder.new(:before_built_ins))
-    instrument(:field, ClassNameRecorder.new(:after_built_ins), after_built_ins: true)
   end
 end

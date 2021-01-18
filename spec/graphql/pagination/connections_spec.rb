@@ -50,11 +50,19 @@ describe GraphQL::Pagination::Connections do
     assert_instance_of GraphQL::Execution::Interpreter::RawValue, raw_value
   end
 
-  it "uses passed-in wrappers" do
+  it "uses cached wrappers" do
     field_defn = OpenStruct.new(max_page_size: 10)
-
+    dummy_ctx = Class.new do
+      def namespace(some_key)
+        if some_key == :connections
+          { all_wrappers: {} }
+        else
+          raise ArgumentError, "unsupported key: #{some_key.inspect}"
+        end
+      end
+    end
     assert_raises GraphQL::Pagination::Connections::ImplementationMissingError do
-      schema.connections.wrap(field_defn, nil, Set.new([1,2,3]), {}, nil, wrappers: {})
+      schema.connections.wrap(field_defn, nil, Set.new([1,2,3]), {}, dummy_ctx.new)
     end
   end
 
