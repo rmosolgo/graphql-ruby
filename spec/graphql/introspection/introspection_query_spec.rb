@@ -15,20 +15,13 @@ describe "GraphQL::Introspection::INTROSPECTION_QUERY" do
   end
 
   it "is limited to the max query depth" do
-    query_type =  GraphQL::ObjectType.define do
-      name "DeepQuery"
-       field :foo do
-         type !GraphQL::ListType.new(
-           of_type: !GraphQL::ListType.new(
-             of_type: !GraphQL::ListType.new(
-               of_type: GraphQL::DEPRECATED_FLOAT_TYPE
-             )
-           )
-         )
-       end
+    query_type =  Class.new(GraphQL::Schema::Object) do
+      graphql_name "DeepQuery"
+
+      field :foo, [[[Float]]], null: false
     end
 
-     deep_schema = GraphQL::Schema.define do
+     deep_schema = Class.new(GraphQL::Schema) do
        query query_type
      end
 
@@ -37,24 +30,15 @@ describe "GraphQL::Introspection::INTROSPECTION_QUERY" do
   end
 
   it "doesn't handle too deeply nested (< 8) schemas" do
-    query_type =  GraphQL::ObjectType.define do
-      name "DeepQuery"
-       field :foo do
-         type !GraphQL::ListType.new(
-           of_type: !GraphQL::ListType.new(
-             of_type: !GraphQL::ListType.new(
-               of_type: !GraphQL::ListType.new(
-                 of_type: GraphQL::DEPRECATED_FLOAT_TYPE
-               )
-             )
-           )
-         )
-       end
+    query_type =  Class.new(GraphQL::Schema::Object) do
+      graphql_name "DeepQuery"
+
+      field :foo, [[[[Float]]]], null: false
     end
 
-     deep_schema = GraphQL::Schema.define do
-       query query_type
-     end
+    deep_schema = Class.new(GraphQL::Schema) do
+      query query_type
+    end
 
      result = deep_schema.execute(query_string)
      assert_raises(KeyError) {

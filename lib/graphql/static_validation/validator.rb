@@ -42,8 +42,9 @@ module GraphQL
                 # Only loop through rules if it has legacy-style rules
                 unless (legacy_rules = rules_to_use - GraphQL::StaticValidation::ALL_RULES).empty?
                   legacy_rules.each do |rule_class_or_module|
-                    warn "Legacy validator rules will be removed from GraphQL-Ruby 2.0, use a module instead (see the built-in rules: https://github.com/rmosolgo/graphql-ruby/tree/master/lib/graphql/static_validation/rules)"
                     if rule_class_or_module.method_defined?(:validate)
+                      warn "Legacy validator rules will be removed from GraphQL-Ruby 2.0, use a module instead (see the built-in rules: https://github.com/rmosolgo/graphql-ruby/tree/master/lib/graphql/static_validation/rules)"
+                      warn "  -> Legacy validator: #{rule_class_or_module}"
                       rule_class_or_module.new.validate(context)
                     end
                   end
