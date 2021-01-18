@@ -105,7 +105,7 @@ module GraphQL
           sig = super
           # Arguments were added at the root, but they should be nested
           sig[:arguments].clear
-          sig[:arguments][:input] = { type: input_type, required: true }
+          sig[:arguments][:input] = { type: input_type, required: true, description: "Parameters for #{graphql_name}" }
           sig
         end
 

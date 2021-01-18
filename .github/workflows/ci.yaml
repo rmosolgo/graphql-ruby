@@ -47,9 +47,9 @@ jobs:
             bundler: "1"
           # Rails 5.2 is tested with Postgresql below
           - gemfile: gemfiles/rails_6.0.gemfile
-            ruby: 2.5
-          - gemfile: gemfiles/rails_master.gemfile
             ruby: 2.7
+          - gemfile: gemfiles/rails_master.gemfile
+            ruby: 3.0
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV

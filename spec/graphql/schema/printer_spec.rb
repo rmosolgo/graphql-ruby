@@ -509,7 +509,12 @@ type Mutation {
   """
   Create a blog post
   """
-  createPost(input: CreatePostInput!): CreatePostPayload
+  createPost(
+    """
+    Parameters for CreatePost
+    """
+    input: CreatePostInput!
+  ): CreatePostPayload
 }
 
 interface Node {
@@ -691,7 +696,12 @@ type Mutation {
   """
   Create a blog post
   """
-  createPost(input: CreatePostInput!): CreatePostPayload
+  createPost(
+    """
+    Parameters for CreatePost
+    """
+    input: CreatePostInput!
+  ): CreatePostPayload
 }
 
 interface Node {

@@ -243,14 +243,13 @@ module GraphQL
 
           begin
             kwarg_arguments = arguments(object, field_defn, ast_node)
-          rescue GraphQL::ExecutionError => e
+          rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => e
             continue_value(next_path, e, owner_type, field_defn, return_type.non_null?, ast_node)
             return
           end
 
-
           after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
-            if resolved_arguments.is_a? GraphQL::ExecutionError
+            if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
               continue_value(next_path, resolved_arguments, owner_type, field_defn, return_type.non_null?, ast_node)
               next
             end

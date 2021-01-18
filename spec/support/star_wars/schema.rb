@@ -52,7 +52,7 @@ module StarWars
     end
   end
 
-  class CustomBaseEdge < GraphQL::Pagination::Connection::Edge
+  class NewCustomBaseEdge < GraphQL::Pagination::Connection::Edge
     def upcased_name
       node.name.upcase
     end
@@ -74,7 +74,7 @@ module StarWars
   end
 
   class CustomEdgeBaseConnectionType < GraphQL::Types::Relay::BaseConnection
-    edge_type(CustomBaseEdgeType, edge_class: CustomBaseEdge, nodes_field: true)
+    edge_type(CustomBaseEdgeType, edge_class: NewCustomBaseEdge, nodes_field: true)
     field :total_count_times_100, Integer, null: true
     def total_count_times_100
       object.items.count * 100
@@ -307,17 +307,16 @@ module StarWars
   end
 
   LazyNodesWrapper = Struct.new(:relation)
-  class LazyNodesRelationConnection < GraphQL::Pagination::ActiveRecordRelationConnection
-    def initialize(wrapper, *args, **kwargs)
-      super(wrapper.relation, *args, **kwargs)
+
+  class NewLazyNodesRelationConnection < GraphQL::Pagination::ActiveRecordRelationConnection
+    def initialize(wrapper, **kwargs)
+      super(wrapper.relation, **kwargs)
     end
 
-    def edges
+    def edge_nodes
       LazyWrapper.new { super }
     end
   end
-
-  GraphQL::Relay::BaseConnection.register_connection_implementation(LazyNodesWrapper, LazyNodesRelationConnection)
 
   class QueryType < GraphQL::Schema::Object
     graphql_name "Query"
@@ -391,7 +390,7 @@ module StarWars
     mutation(MutationType)
     default_max_page_size 3
 
-    connections.add(LazyNodesWrapper, LazyNodesRelationConnection)
+    connections.add(LazyNodesWrapper, NewLazyNodesRelationConnection)
 
     def self.resolve_type(type, object, ctx)
       if object == :test_error

@@ -33,7 +33,7 @@ describe GraphQL::Relay::ConnectionType do
         upcased_rebels_name = "ALLIANCE TO RESTORE THE REPUBLIC"
         assert_equal [upcased_rebels_name] , bases["edges"].map { |e| e["upcasedParentName"] }.uniq
         assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases["edges"].map { |e| e["node"]["name"] }
-        assert_equal ["StarWars::CustomBaseEdge"] , bases["edges"].map { |e| e["edgeClassName"] }.uniq
+        assert_equal [TESTING_INTERPRETER ? "StarWars::NewCustomBaseEdge" : "StarWars::CustomBaseEdge"] , bases["edges"].map { |e| e["edgeClassName"] }.uniq
       end
     end
 
