@@ -51,8 +51,8 @@ module GraphQL
               end
               value
             elsif context.schema.new_connections?
-              wrappers = context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
-              context.schema.connections.wrap(field, object.object, value, original_arguments, context, wrappers: wrappers)
+              context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
+              context.schema.connections.wrap(field, object.object, value, original_arguments, context)
             else
               if object.is_a?(GraphQL::Schema::Object)
                 object = object.object

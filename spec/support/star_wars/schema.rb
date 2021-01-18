@@ -241,13 +241,16 @@ module StarWars
       else
         ship = DATA.create_ship(ship_name, faction_id)
         faction = DATA["Faction"][faction_id]
-        connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
-        ships_connection = connection_class.new(faction.ships, {ship_name: ship_name, faction: faction})
-        ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
+        range_add = GraphQL::Relay::RangeAdd.new(
+          collection: faction.ships,
+          item: ship,
+          parent: faction,
+          context: context,
+        )
         result = {
-          ship_edge: ship_edge, # support new-style, too
-          faction: faction,
-          aliased_faction: faction,
+          ship_edge: range_add.edge,
+          faction: range_add.parent,
+          aliased_faction: range_add.parent,
         }
         if ship_name == "Slave II"
           LazyWrapper.new(result)
