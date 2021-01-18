@@ -383,19 +383,6 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
-  describe "CI setup" do
-    it "sets interpreter based on a constant" do
-      # Force the plugins to be applied
-      Jazz::Schema.graphql_definition
-      Dummy::Schema.graphql_definition
-      if TESTING_INTERPRETER
-        assert_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
-      else
-        refute_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
-      end
-    end
-  end
-
   describe "null propagation" do
     it "propagates nulls" do
       query_str = <<-GRAPHQL

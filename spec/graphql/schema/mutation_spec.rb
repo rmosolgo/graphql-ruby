@@ -102,7 +102,7 @@ describe GraphQL::Schema::Mutation do
       response = Jazz::Schema.execute(query_str)
       assert_equal "Trombone", response["data"]["addInstrument"]["instrument"]["name"]
       assert_equal "BRASS", response["data"]["addInstrument"]["instrument"]["family"]
-      errors_class = TESTING_INTERPRETER ? "GraphQL::Execution::Interpreter::ExecutionErrors" : "GraphQL::Query::Context::ExecutionErrors"
+      errors_class = "GraphQL::Execution::Interpreter::ExecutionErrors"
       assert_equal errors_class, response["data"]["addInstrument"]["ee"]
       assert_equal 7, response["data"]["addInstrument"]["entries"].size
     end
