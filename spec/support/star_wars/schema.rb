@@ -48,21 +48,7 @@ module StarWars
     field :total_count, Integer, null: true
 
     def total_count
-      if TESTING_INTERPRETER
-        object.items.count
-      else
-        object.nodes.count
-      end
-    end
-  end
-
-  class CustomBaseEdge < GraphQL::Relay::Edge
-    def upcased_name
-      node.name.upcase
-    end
-
-    def upcased_parent_name
-      parent.name.upcase
+      object.items.count
     end
   end
 
@@ -88,16 +74,10 @@ module StarWars
   end
 
   class CustomEdgeBaseConnectionType < GraphQL::Types::Relay::BaseConnection
-    edge_type(CustomBaseEdgeType, edge_class: (TESTING_INTERPRETER ? NewCustomBaseEdge : CustomBaseEdge), nodes_field: true)
+    edge_type(CustomBaseEdgeType, edge_class: NewCustomBaseEdge, nodes_field: true)
     field :total_count_times_100, Integer, null: true
     def total_count_times_100
-      if object.is_a?(GraphQL::Pagination::Connection)
-        # new-style
-        object.items.count * 100
-      else
-        # legacy
-        object.nodes.count * 100
-      end
+      object.items.count * 100
     end
 
     field :field_name, String, null: true
@@ -261,13 +241,16 @@ module StarWars
       else
         ship = DATA.create_ship(ship_name, faction_id)
         faction = DATA["Faction"][faction_id]
-        connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
-        ships_connection = connection_class.new(faction.ships, {ship_name: ship_name, faction: faction})
-        ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
+        range_add = GraphQL::Relay::RangeAdd.new(
+          collection: faction.ships,
+          item: ship,
+          parent: faction,
+          context: context,
+        )
         result = {
-          ship_edge: ship_edge, # support new-style, too
-          faction: faction,
-          aliased_faction: faction,
+          ship_edge: range_add.edge,
+          faction: range_add.parent,
+          aliased_faction: range_add.parent,
         }
         if ship_name == "Slave II"
           LazyWrapper.new(result)
@@ -324,15 +307,6 @@ module StarWars
   end
 
   LazyNodesWrapper = Struct.new(:relation)
-  class LazyNodesRelationConnection < GraphQL::Relay::RelationConnection
-    def initialize(wrapper, *args, **kwargs)
-      super(wrapper.relation, *args, **kwargs)
-    end
-
-    def edge_nodes
-      LazyWrapper.new { super }
-    end
-  end
 
   class NewLazyNodesRelationConnection < GraphQL::Pagination::ActiveRecordRelationConnection
     def initialize(wrapper, **kwargs)
@@ -343,8 +317,6 @@ module StarWars
       LazyWrapper.new { super }
     end
   end
-
-  GraphQL::Relay::BaseConnection.register_connection_implementation(LazyNodesWrapper, LazyNodesRelationConnection)
 
   class QueryType < GraphQL::Schema::Object
     graphql_name "Query"
@@ -380,43 +352,23 @@ module StarWars
       [OpenStruct.new(id: nil)]
     end
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodeField)
-    else
-      field :node, field: GraphQL::Relay::Node.field
+    add_field(GraphQL::Types::Relay::NodeField)
+
+    field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
+      argument :id, ID, required: true
+    end
+    def node_with_custom_resolver(id:)
+      StarWars::DATA["Faction"]["1"]
     end
 
-    if TESTING_INTERPRETER
-      field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
-        argument :id, ID, required: true
-      end
-      def node_with_custom_resolver(id:)
-        StarWars::DATA["Faction"]["1"]
-      end
-    else
-      custom_node_field = GraphQL::Relay::Node.field do
-        resolve ->(_, _, _) { StarWars::DATA["Faction"]["1"] }
-      end
-      field :nodeWithCustomResolver, field: custom_node_field
-    end
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodesField)
-    else
-      field :nodes, field: GraphQL::Relay::Node.plural_field
-    end
+    add_field(GraphQL::Types::Relay::NodesField)
 
-    if TESTING_INTERPRETER
-      field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
-        argument :ids, [ID], required: true
-      end
-      def nodes_with_custom_resolver(ids:)
-        [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]]
-      end
-    else
-      field :nodesWithCustomResolver, field: GraphQL::Relay::Node.plural_field(
-        resolve: ->(_, _, _) { [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]] }
-      )
+    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
+      argument :ids, [ID], required: true
+    end
+    def nodes_with_custom_resolver(ids:)
+      [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]]
     end
 
     field :batched_base, BaseType, null: true do
@@ -433,37 +385,12 @@ module StarWars
     field :introduceShip, mutation: IntroduceShipMutation
   end
 
-  class ClassNameRecorder
-    def initialize(context_key)
-      @context_key = context_key
-    end
-
-    def instrument(type, field)
-      inner_resolve = field.resolve_proc
-      key = @context_key
-      field.redefine {
-        resolve ->(o, a, c) {
-          res = inner_resolve.call(o, a, c)
-          if c[key]
-            c[key] << res.class.name
-          end
-          res
-        }
-      }
-    end
-  end
-
   class Schema < GraphQL::Schema
     query(QueryType)
     mutation(MutationType)
     default_max_page_size 3
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-      use GraphQL::Pagination::Connections
-      connections.add(LazyNodesWrapper, NewLazyNodesRelationConnection)
-    end
+    connections.add(LazyNodesWrapper, NewLazyNodesRelationConnection)
 
     def self.resolve_type(type, object, ctx)
       if object == :test_error
@@ -490,8 +417,5 @@ module StarWars
 
     lazy_resolve(LazyWrapper, :value)
     lazy_resolve(LazyLoader, :value)
-
-    instrument(:field, ClassNameRecorder.new(:before_built_ins))
-    instrument(:field, ClassNameRecorder.new(:after_built_ins), after_built_ins: true)
   end
 end

@@ -2,6 +2,10 @@
 module GraphQL
   # @api deprecated
   class Function
+    def self.inherited(subclass)
+      warn "GraphQL::Function (used for #{subclass}) will be removed from GraphQL-Ruby 2.0, please upgrade to resolvers: https://graphql-ruby.org/fields/resolvers.html"
+    end
+
     # @return [Hash<String => GraphQL::Argument>] Arguments, keyed by name
     def arguments
       self.class.arguments

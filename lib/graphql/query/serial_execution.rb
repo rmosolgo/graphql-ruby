@@ -16,6 +16,7 @@ module GraphQL
       # @param query_object [GraphQL::Query] the query object for this execution
       # @return [Hash] a spec-compliant GraphQL result, as a hash
       def execute(ast_operation, root_type, query_object)
+        warn "#{self.class} will be removed in GraphQL-Ruby 2.0, please upgrade to the Interpreter: https://graphql-ruby.org/queries/interpreter.html"
         operation_resolution.resolve(
           query_object.irep_selection,
           root_type,

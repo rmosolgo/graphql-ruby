@@ -106,10 +106,6 @@ describe GraphQL::Schema::InputObject do
       end
 
       query(Query)
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
 
     it "calls the prepare proc" do
@@ -184,10 +180,6 @@ describe GraphQL::Schema::InputObject do
         query(Query)
         mutation(Mutation)
         lazy_resolve(Proc, :call)
-        if TESTING_INTERPRETER
-          use GraphQL::Execution::Interpreter
-          use GraphQL::Analysis::AST
-        end
 
         def self.object_from_id(id, ctx)
           -> { Jazz::GloballyIdentifiableType.find(id) }
@@ -222,15 +214,8 @@ describe GraphQL::Schema::InputObject do
                                                    variables: { input: input})
       assert_nil(res["data"])
 
-      if TESTING_INTERPRETER
-        assert_equal("boom!", res["errors"][0]["message"])
-        assert_equal([{ "line" => 1, "column" => 33 }], res["errors"][0]["locations"])
-      else
-        assert_equal("Variable $input of type InputObj! was provided invalid value", res["errors"][0]["message"])
-        assert_equal([{ "line" => 1, "column" => 13 }], res["errors"][0]["locations"])
-        assert_equal("boom!", res["errors"][0]["extensions"]["problems"][0]["explanation"])
-        assert_equal(input, res["errors"][0]["extensions"]["value"])
-      end
+      assert_equal("boom!", res["errors"][0]["message"])
+      assert_equal([{ "line" => 1, "column" => 33 }], res["errors"][0]["locations"])
     end
 
     it "handles not-found with max complexity analyzer running" do
@@ -299,11 +284,6 @@ describe GraphQL::Schema::InputObject do
 
       class Schema < GraphQL::Schema
         query(Query)
-
-        if TESTING_INTERPRETER
-          use GraphQL::Execution::Interpreter
-          use GraphQL::Analysis::AST
-        end
       end
     end
 
@@ -384,11 +364,6 @@ describe GraphQL::Schema::InputObject do
 
         def self.resolve_type(type, obj, ctx)
           type
-        end
-
-        if TESTING_INTERPRETER
-          use GraphQL::Analysis::AST
-          use GraphQL::Execution::Interpreter
         end
       end
     end
@@ -534,8 +509,6 @@ describe GraphQL::Schema::InputObject do
         end
 
         query(Query)
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
       end
 
       res = InputDefaultSchema.execute "
@@ -718,8 +691,6 @@ describe GraphQL::Schema::InputObject do
       end
 
       mutation(Mutation)
-      use GraphQL::Analysis::AST
-      use GraphQL::Execution::Interpreter
     end
 
     it "properly wraps them in instances" do
@@ -731,6 +702,355 @@ describe GraphQL::Schema::InputObject do
         }
       ", variables: { input: { "items" => [{ "str" => "1"}, { "str" => "2"}]}}
       assert_equal "NestedInputObjectSchema::ItemInput, NestedInputObjectSchema::ItemInput", res["data"]["nestedStuff"]["str"]
+    end
+  end
+
+  describe 'default values' do
+    describe 'when the type is an enum with underlying ruby values' do
+      it 'provides the default value' do
+        class TestEnum < GraphQL::Schema::Enum
+          value 'A', 'Represents an authorized agent in our system.', value: 'a'
+          value 'B', 'Agent is disabled, web app access is denied.', value: 'b'
+        end
+
+        class TestInput < GraphQL::Schema::InputObject
+          argument :foo, TestEnum, 'TestEnum', required: false, default_value: 'a'
+        end
+
+        test_input_type = TestInput
+        default_test_input_value = test_input_type.coerce_isolated_input({})
+        assert_equal default_test_input_value[:foo], 'a'
+      end
+    end
+
+    describe "when it's an empty object" do
+      it "is passed in" do
+        input_obj = Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "InputObj"
+          argument :s, String, required: false
+        end
+
+        query = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Query"
+          field :f, String, null: true do
+            argument :arg, input_obj, required: false, default_value: {}
+          end
+
+          def f(arg:)
+            arg.to_h.inspect
+          end
+        end
+
+        schema = Class.new(GraphQL::Schema) do
+          query(query)
+        end
+
+        res = schema.execute("{ f } ")
+        assert_equal "{}", res["data"]["f"]
+      end
+    end
+  end
+
+  describe "tests from legacy input_object_type" do
+    let(:input_object) { Dummy::DairyProductInput }
+
+    def validate_isolated_input(t, input)
+      t.validate_input(input, GraphQL::Query::NullContext)
+    end
+
+    describe "input validation" do
+      it "Accepts anything that yields key-value pairs to #all?" do
+        values_obj = MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})
+        assert input_object.valid_isolated_input?(values_obj)
+      end
+
+      describe "validate_input with non-enumerable input" do
+        it "returns a valid result for MinimumInputObject" do
+          result = validate_isolated_input(input_object, MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4}))
+          assert(result.valid?)
+        end
+
+        it "returns an invalid result for MinimumInvalidInputObject" do
+          invalid_input = MinimumInputObject.new({"source" => "KOALA", "fatContent" => 0.4})
+          result = validate_isolated_input(input_object, invalid_input)
+          assert(!result.valid?)
+        end
+      end
+
+      describe "validate_input with null" do
+        let(:schema) { GraphQL::Schema.from_definition(%|
+          type Query {
+            a: Int
+          }
+
+          input ExampleInputObject {
+            a: String
+            b: Int!
+          }
+        |) }
+        let(:input_type) { schema.types['ExampleInputObject'] }
+
+        it "returns an invalid result when value is null for non-null argument" do
+          invalid_input = MinimumInputObject.new({"a" => "Test", "b" => nil})
+          result = validate_isolated_input(input_type, invalid_input)
+          assert(!result.valid?)
+        end
+
+        it "returns valid result when value is null for nullable argument" do
+          invalid_input = MinimumInputObject.new({"a" => nil, "b" => 1})
+          result = validate_isolated_input(input_type, invalid_input)
+          assert(result.valid?)
+        end
+      end
+
+      describe "validate_input with enumerable input" do
+        describe "with good input" do
+          it "returns a valid result" do
+            input = {
+              "source" => "COW",
+              "fatContent" => 0.4
+            }
+            result = validate_isolated_input(input_object, input)
+            assert(result.valid?)
+          end
+        end
+
+        if testing_rails? && ActionPack::VERSION::MAJOR > 3
+          it "returns a valid result" do
+            input = ActionController::Parameters.new(
+              "source" => "COW",
+              "fatContent" => 0.4,
+            )
+            result = validate_isolated_input(input_object, input)
+            assert_nil result.problems
+            assert(result.valid?)
+          end
+        end
+
+        describe "with bad enum and float" do
+          let(:result) { validate_isolated_input(input_object, {"source" => "KOALA", "fatContent" => "bad_num"}) }
+
+          it "returns an invalid result" do
+            assert(!result.valid?)
+          end
+
+          it "has problems with correct paths" do
+            paths = result.problems.map { |p| p["path"] }
+            assert(paths.include?(["source"]))
+            assert(paths.include?(["fatContent"]))
+          end
+
+          it "has correct problem explanation" do
+            expected = validate_isolated_input(Dummy::DairyAnimal, "KOALA").problems[0]["explanation"]
+
+            source_problem = result.problems.detect { |p| p["path"] == ["source"] }
+            actual = source_problem["explanation"]
+
+            assert_equal(expected, actual)
+          end
+        end
+
+        describe 'with a string as input' do
+          let(:result) { validate_isolated_input(input_object, "just a string") }
+
+          it "returns an invalid result" do
+            assert(!result.valid?)
+          end
+
+          it "has problem with correct path" do
+            paths = result.problems.map { |p| p["path"] }
+            assert(paths.include?([]))
+          end
+
+          it "has correct problem explanation" do
+            assert_includes result.problems[0]["explanation"], "to be a key-value object"
+          end
+        end
+
+        describe 'with an array as input' do
+          let(:result) { validate_isolated_input(input_object, ["string array"]) }
+
+          it "returns an invalid result" do
+            assert(!result.valid?)
+          end
+
+          it "has problem with correct path" do
+            paths = result.problems.map { |p| p["path"] }
+            assert(paths.include?([]))
+          end
+
+          it "has correct problem explanation" do
+            assert_includes result.problems[0]["explanation"], "to be a key-value object"
+          end
+        end
+
+        describe 'with a int as input' do
+          let(:result) { validate_isolated_input(input_object, 10) }
+
+          it "returns an invalid result" do
+            assert(!result.valid?)
+          end
+
+          it "has problem with correct path" do
+            paths = result.problems.map { |p| p["path"] }
+            assert(paths.include?([]))
+          end
+
+          it "has correct problem explanation" do
+            assert_includes result.problems[0]["explanation"], "to be a key-value object"
+          end
+        end
+
+        describe "with extra argument" do
+          let(:result) { validate_isolated_input(input_object, {"source" => "COW", "fatContent" => 0.4, "isDelicious" => false}) }
+
+          it "returns an invalid result" do
+            assert(!result.valid?)
+          end
+
+          it "has problem with correct path" do
+            paths = result.problems.map { |p| p["path"] }
+            assert_equal([["isDelicious"]], paths)
+          end
+
+          it "has correct problem explanation" do
+            assert(result.problems[0]["explanation"].include?("Field is not defined"))
+          end
+        end
+
+        describe "list with one invalid element" do
+          let(:list_type) { Dummy::DairyProductInput.to_list_type }
+          let(:result) do
+            validate_isolated_input(list_type, [
+              { "source" => "COW", "fatContent" => 0.4 },
+              { "source" => "KOALA", "fatContent" => 0.4 }
+            ])
+          end
+
+          it "returns an invalid result" do
+            assert(!result.valid?)
+          end
+
+          it "has one problem" do
+            assert_equal(result.problems.length, 1)
+          end
+
+          it "has problem with correct path" do
+            path = result.problems[0]["path"]
+            assert_equal(path, [1, "source"])
+          end
+
+          it "has problem with correct explanation" do
+            expected = validate_isolated_input(Dummy::DairyAnimal, "KOALA").problems[0]["explanation"]
+            actual = result.problems[0]["explanation"]
+            assert_equal(expected, actual)
+          end
+        end
+      end
+    end
+
+    describe "coerce_result" do
+      it "omits unspecified arguments" do
+        result = input_object.coerce_isolated_result({fatContent: 0.3})
+        assert_equal ["fatContent"], result.keys
+        assert_equal 0.3, result["fatContent"]
+      end
+    end
+
+    describe "coercion of null inputs" do
+      let(:schema) { GraphQL::Schema.from_definition(%|
+        type Query {
+          a: Int
+        }
+
+        input ExampleInputObject {
+          a: String
+          b: Int!
+          c: String = "Default"
+          d: Boolean = false
+        }
+
+        input SecondLevelInputObject {
+          example: ExampleInputObject = {b: 42, d: true}
+        }
+      |) }
+      let(:input_type) { schema.types['ExampleInputObject'] }
+
+      it "null values are returned in coerced input" do
+        input = MinimumInputObject.new({"a" => "Test", "b" => nil,"c" => "Test"})
+        result = input_type.coerce_isolated_input(input)
+
+        assert_equal 'Test', result[:a]
+
+        assert result.key?(:b)
+        assert_nil result[:b]
+
+        assert_equal "Test", result[:c]
+      end
+
+      it "null values are preserved when argument has a default value" do
+        input = MinimumInputObject.new({"a" => "Test", "b" => 1, "c" => nil})
+        result = input_type.coerce_isolated_input(input)
+
+        assert_equal 'Test', result[:a]
+        assert_equal 1, result[:b]
+
+        assert result.key?(:c)
+        assert_nil result[:c]
+      end
+
+      it "omitted arguments are not returned" do
+        input = MinimumInputObject.new({"b" => 1, "c" => "Test"})
+        result = input_type.coerce_isolated_input(input)
+
+        assert !result.key?(:a)
+        assert_equal 1, result[:b]
+        assert_equal 'Test', result[:c]
+      end
+
+      it "false default values are returned" do
+        input = MinimumInputObject.new({"b" => 1})
+        result = input_type.coerce_isolated_input(input)
+
+        assert_equal false, result[:d]
+      end
+
+      it "merges defaults of nested input objects" do
+        result = schema.types['SecondLevelInputObject'].coerce_isolated_input({})
+        assert_equal 42, result[:example][:b]
+        assert_equal "Default", result[:example][:c]
+        assert_equal true, result[:example][:d]
+      end
+    end
+
+    describe "when sent into a query" do
+      let(:variables) { {} }
+      let(:result) { Dummy::Schema.execute(query_string, variables: variables) }
+
+      describe "list inputs" do
+        let(:variables) { {"search" => [MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})]} }
+        let(:query_string) {%|
+          query getCheeses($search: [DairyProductInput]!){
+              sheep: searchDairy(product: [{source: SHEEP, fatContent: 0.1}]) {
+                ... cheeseFields
+              }
+              cow: searchDairy(product: $search) {
+                ... cheeseFields
+              }
+          }
+
+          fragment cheeseFields on Cheese {
+            flavor
+          }
+        |}
+
+        it "converts items to plain values" do
+          sheep_value = result["data"]["sheep"]["flavor"]
+          cow_value = result["data"]["cow"]["flavor"]
+          assert_equal("Manchego", sheep_value)
+          assert_equal("Brie", cow_value)
+        end
+      end
     end
   end
 end

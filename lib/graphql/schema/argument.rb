@@ -10,6 +10,10 @@ module GraphQL
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
+      include GraphQL::Schema::Member::HasDirectives
+      include GraphQL::Schema::Member::HasDeprecationReason
+      include GraphQL::Schema::Member::HasValidators
+      include GraphQL::Schema::FindInheritedValue::EmptyObjects
 
       NO_DEFAULT = :__no_default__
 
@@ -45,8 +49,10 @@ module GraphQL
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
       # @param from_resolver [Boolean] if true, a Resolver class defined this argument
       # @param method_access [Boolean] If false, don't build method access on legacy {Query::Arguments} instances.
+      # @param directives [Hash{Class => Hash}]
       # @param deprecation_reason [String]
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, deprecation_reason: nil, &definition_block)
+      # @param validates [Hash, nil] Options for building validators, if any should be applied
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -62,6 +68,14 @@ module GraphQL
         @from_resolver = from_resolver
         @method_access = method_access
         self.deprecation_reason = deprecation_reason
+
+        if directives
+          directives.each do |dir_class, dir_options|
+            directive(dir_class, **dir_options)
+          end
+        end
+
+        self.validates(validates)
 
         if definition_block
           if definition_block.arity == 1
@@ -94,14 +108,16 @@ module GraphQL
       # @return [String] Deprecation reason for this argument
       def deprecation_reason(text = nil)
         if text
-          validate_deprecated_or_optional(null: @null, deprecation_reason: text)
-          @deprecation_reason = text
+          self.deprecation_reason = text
         else
-          @deprecation_reason
+          super()
         end
       end
 
-      alias_method :deprecation_reason=, :deprecation_reason
+      def deprecation_reason=(new_reason)
+        validate_deprecated_or_optional(null: @null, deprecation_reason: new_reason)
+        super
+      end
 
       def visible?(context)
         true
@@ -157,8 +173,8 @@ module GraphQL
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value
         end
-        if @deprecation_reason
-          argument.deprecation_reason = @deprecation_reason
+        if self.deprecation_reason
+          argument.deprecation_reason = self.deprecation_reason
         end
         argument
       end
@@ -198,6 +214,8 @@ module GraphQL
         if value.is_a?(GraphQL::Schema::InputObject)
           value = value.prepare
         end
+
+        Schema::Validator.validate!(validators, obj, context, value)
 
         if @prepare.nil?
           value

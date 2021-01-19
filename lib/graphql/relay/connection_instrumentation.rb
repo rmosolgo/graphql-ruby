@@ -10,10 +10,10 @@ module GraphQL
       def self.default_arguments
         @default_arguments ||= begin
           argument_definitions = [
-              ["first", GraphQL::INT_TYPE, "Returns the first _n_ elements from the list."],
-              ["after", GraphQL::STRING_TYPE, "Returns the elements in the list that come after the specified cursor."],
-              ["last", GraphQL::INT_TYPE, "Returns the last _n_ elements from the list."],
-              ["before", GraphQL::STRING_TYPE, "Returns the elements in the list that come before the specified cursor."],
+              ["first", GraphQL::DEPRECATED_INT_TYPE, "Returns the first _n_ elements from the list."],
+              ["after", GraphQL::DEPRECATED_STRING_TYPE, "Returns the elements in the list that come after the specified cursor."],
+              ["last", GraphQL::DEPRECATED_INT_TYPE, "Returns the last _n_ elements from the list."],
+              ["before", GraphQL::DEPRECATED_STRING_TYPE, "Returns the elements in the list that come before the specified cursor."],
             ]
 
           argument_definitions.reduce({}) do |memo, arg_defn|

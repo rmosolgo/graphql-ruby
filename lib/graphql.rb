@@ -110,6 +110,7 @@ require "graphql/execution"
 require "graphql/runtime_type_error"
 require "graphql/unresolved_type_error"
 require "graphql/invalid_null_error"
+require "graphql/pagination"
 require "graphql/schema"
 require "graphql/query"
 require "graphql/directive"
@@ -124,6 +125,9 @@ require "graphql/string_type"
 require "graphql/schema/built_in_types"
 require "graphql/schema/loader"
 require "graphql/schema/printer"
+require "graphql/filter"
+require "graphql/internal_representation"
+require "graphql/static_validation"
 require "graphql/introspection"
 
 require "graphql/analysis_error"
@@ -132,12 +136,9 @@ require "graphql/invalid_name_error"
 require "graphql/integer_decoding_error"
 require "graphql/integer_encoding_error"
 require "graphql/string_encoding_error"
-require "graphql/internal_representation"
-require "graphql/static_validation"
 require "graphql/version"
 require "graphql/compatibility"
 require "graphql/function"
-require "graphql/filter"
 require "graphql/subscriptions"
 require "graphql/parse_error"
 require "graphql/backtrace"
@@ -147,4 +148,37 @@ require "graphql/authorization"
 require "graphql/unauthorized_error"
 require "graphql/unauthorized_field_error"
 require "graphql/load_application_object_failed_error"
-require "graphql/pagination"
+require "graphql/dataloader"
+
+
+module GraphQL
+  # Ruby has `deprecate_constant`,
+  # but I don't see a way to give a nice error message in that case,
+  # so I'm doing this instead.
+  DEPRECATED_INT_TYPE = INT_TYPE
+  DEPRECATED_FLOAT_TYPE = FLOAT_TYPE
+  DEPRECATED_STRING_TYPE = STRING_TYPE
+  DEPRECATED_BOOLEAN_TYPE = BOOLEAN_TYPE
+  DEPRECATED_ID_TYPE = ID_TYPE
+
+  remove_const :INT_TYPE
+  remove_const :FLOAT_TYPE
+  remove_const :STRING_TYPE
+  remove_const :BOOLEAN_TYPE
+  remove_const :ID_TYPE
+
+  def self.const_missing(const_name)
+    deprecated_const_name = :"DEPRECATED_#{const_name}"
+    if const_defined?(deprecated_const_name)
+      deprecated_type = const_get(deprecated_const_name)
+      deprecated_caller = caller(1, 1).first
+      # Don't warn about internal uses, like `types.Int`
+      if !deprecated_caller.include?("lib/graphql")
+        warn "GraphQL::#{const_name} is deprecated and will be removed in GraphQL-Ruby 2.0, use GraphQL::Types::#{deprecated_type.graphql_name} instead. (from #{deprecated_caller})"
+      end
+      deprecated_type
+    else
+      super
+    end
+  end
+end

@@ -19,8 +19,10 @@ module GraphQL
 
         def initialize(query:, response:)
           @query = query
+          @dataloader = query.multiplex.dataloader
           @schema = query.schema
           @context = query.context
+          @multiplex_context = query.multiplex.context
           @interpreter_context = @context.namespace(:interpreter)
           @response = response
           @dead_paths = {}
@@ -54,7 +56,17 @@ module GraphQL
             # Root .authorized? returned false.
             write_in_response(path, nil)
           else
-            evaluate_selections(path, context.scoped_context, object_proxy, root_type, root_operation.selections, root_operation_type: root_op_type)
+            # Prepare this runtime state to be encapsulated in a Fiber
+            @progress_path = path
+            @progress_scoped_context = context.scoped_context
+            @progress_object = object_proxy
+            @progress_object_type = root_type
+            @progress_index = nil
+            @progress_is_eager_selection = root_op_type == "mutation"
+            @progress_selections = gather_selections(object_proxy, root_type, root_operation.selections)
+
+            # Make the first fiber which will begin execution
+            enqueue_selections_fiber
           end
           delete_interpreter_context(:current_path)
           delete_interpreter_context(:current_field)
@@ -63,7 +75,33 @@ module GraphQL
           nil
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_by_name)
+        # Use `@dataloader` to enqueue a fiber that will pick up from the current point.
+        # @return [void]
+        def enqueue_selections_fiber
+          # Read these into local variables so that later assignments don't affect the block below.
+          path = @progress_path
+          scoped_context = @progress_scoped_context
+          owner_object = @progress_object
+          owner_type = @progress_object_type
+          idx = @progress_index
+          is_eager_selection = @progress_is_eager_selection
+          gathered_selections = @progress_selections
+
+          @dataloader.enqueue {
+            evaluate_selections(
+              path,
+              scoped_context,
+              owner_object,
+              owner_type,
+              is_eager_selection: is_eager_selection,
+              after: idx,
+              gathered_selections: gathered_selections,
+            )
+          }
+          nil
+        end
+
+        def gather_selections(owner_object, owner_type, selections, selections_by_name = {})
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
@@ -115,145 +153,184 @@ module GraphQL
               raise "Invariant: unexpected selection class: #{node.class}"
             end
           end
+          selections_by_name
         end
 
         NO_ARGS = {}.freeze
 
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, selections, root_operation_type: nil)
+        # @return [void]
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection:, gathered_selections:, after:)
           set_all_interpreter_context(owner_object, nil, nil, path)
-          selections_by_name = {}
-          gather_selections(owner_object, owner_type, selections, selections_by_name)
-          selections_by_name.each do |result_name, field_ast_nodes_or_ast_node|
-            # As a performance optimization, the hash key will be a `Node` if
-            # there's only one selection of the field. But if there are multiple
-            # selections of the field, it will be an Array of nodes
-            if field_ast_nodes_or_ast_node.is_a?(Array)
-              field_ast_nodes = field_ast_nodes_or_ast_node
-              ast_node = field_ast_nodes.first
+
+          @progress_path = path
+          @progress_scoped_context = scoped_context
+          @progress_object = owner_object
+          @progress_object_type = owner_type
+          @progress_index = nil
+          @progress_is_eager_selection = is_eager_selection
+          @progress_selections = gathered_selections
+
+          # Track `idx` manually to avoid an allocation on this hot path
+          idx = 0
+          gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
+            prev_idx = idx
+            idx += 1
+            # TODO: this is how a `progress` resumes where this left off.
+            # Is there a better way to seek in the hash?
+            # I think we could also use the array of keys; it supports seeking just fine.
+            if after && prev_idx <= after
+              next
+            end
+            @progress_index = prev_idx
+            # This is how the current runtime gives itself to `dataloader`
+            # so that the dataloader can enqueue another fiber to resume if needed.
+            @dataloader.current_runtime = self
+            evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection)
+            # The dataloader knows if ^^ that selection halted and later selections were executed in another fiber.
+            # If that's the case, then don't continue execution here.
+            if @dataloader.yielded?
+              break
+            end
+          end
+          nil
+        end
+
+        # @return [void]
+        def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field)
+          # As a performance optimization, the hash key will be a `Node` if
+          # there's only one selection of the field. But if there are multiple
+          # selections of the field, it will be an Array of nodes
+          if field_ast_nodes_or_ast_node.is_a?(Array)
+            field_ast_nodes = field_ast_nodes_or_ast_node
+            ast_node = field_ast_nodes.first
+          else
+            field_ast_nodes = nil
+            ast_node = field_ast_nodes_or_ast_node
+          end
+          field_name = ast_node.name
+          field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name)
+          is_introspection = false
+          if field_defn.nil?
+            field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
+              is_introspection = true
+              entry_point_field
+            elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
+              is_introspection = true
+              dynamic_field
             else
-              field_ast_nodes = nil
-              ast_node = field_ast_nodes_or_ast_node
+              raise "Invariant: no field for #{owner_type}.#{field_name}"
             end
-            field_name = ast_node.name
-            field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name)
-            is_introspection = false
-            if field_defn.nil?
-              field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
-                is_introspection = true
-                entry_point_field
-              elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
-                is_introspection = true
-                dynamic_field
-              else
-                raise "Invariant: no field for #{owner_type}.#{field_name}"
-              end
-            end
-            return_type = field_defn.type
+          end
+          return_type = field_defn.type
 
-            next_path = path.dup
-            next_path << result_name
-            next_path.freeze
+          next_path = path.dup
+          next_path << result_name
+          next_path.freeze
 
-            # This seems janky, but we need to know
-            # the field's return type at this path in order
-            # to propagate `null`
-            set_type_at_path(next_path, return_type)
-            # Set this before calling `run_with_directives`, so that the directive can have the latest path
-            set_all_interpreter_context(nil, field_defn, nil, next_path)
+          # This seems janky, but we need to know
+          # the field's return type at this path in order
+          # to propagate `null`
+          set_type_at_path(next_path, return_type)
+          # Set this before calling `run_with_directives`, so that the directive can have the latest path
+          set_all_interpreter_context(nil, field_defn, nil, next_path)
 
-            context.scoped_context = scoped_context
-            object = owner_object
+          context.scoped_context = scoped_context
+          object = owner_object
 
-            if is_introspection
-              object = authorized_new(field_defn.owner, object, context, next_path)
-            end
+          if is_introspection
+            object = authorized_new(field_defn.owner, object, context, next_path)
+          end
 
-            begin
-              kwarg_arguments = arguments(object, field_defn, ast_node)
-            rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => e
-              continue_value(next_path, e, owner_type, field_defn, return_type.non_null?, ast_node)
+          begin
+            kwarg_arguments = arguments(object, field_defn, ast_node)
+          rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => e
+            continue_value(next_path, e, owner_type, field_defn, return_type.non_null?, ast_node)
+            return
+          end
+
+          after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
+            if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
+              continue_value(next_path, resolved_arguments, owner_type, field_defn, return_type.non_null?, ast_node)
               next
             end
 
-            after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
-              case resolved_arguments
-              when GraphQL::ExecutionError, GraphQL::UnauthorizedError
-                continue_value(next_path, resolved_arguments, owner_type, field_defn, return_type.non_null?, ast_node)
-                next
-              end
-
-              if resolved_arguments.empty? && field_defn.extras.empty?
-                # We can avoid allocating the `{ Symbol => Object }` hash in this case
-                kwarg_arguments = NO_ARGS
-              else
-                kwarg_arguments = resolved_arguments.keyword_arguments
-
-                field_defn.extras.each do |extra|
-                  case extra
-                  when :ast_node
-                    kwarg_arguments[:ast_node] = ast_node
-                  when :execution_errors
-                    kwarg_arguments[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
-                  when :path
-                    kwarg_arguments[:path] = next_path
-                  when :lookahead
-                    if !field_ast_nodes
-                      field_ast_nodes = [ast_node]
-                    end
-                    kwarg_arguments[:lookahead] = Execution::Lookahead.new(
-                      query: query,
-                      ast_nodes: field_ast_nodes,
-                      field: field_defn,
-                    )
-                  when :argument_details
-                    kwarg_arguments[:argument_details] = resolved_arguments
-                  else
-                    kwarg_arguments[extra] = field_defn.fetch_extra(extra, context)
+            kwarg_arguments = if resolved_arguments.empty? && field_defn.extras.empty?
+              # We can avoid allocating the `{ Symbol => Object }` hash in this case
+              NO_ARGS
+            else
+              # Bundle up the extras, then make a new arguments instance
+              # that includes the extras, too.
+              extra_args = {}
+              field_defn.extras.each do |extra|
+                case extra
+                when :ast_node
+                  extra_args[:ast_node] = ast_node
+                when :execution_errors
+                  extra_args[:execution_errors] = ExecutionErrors.new(context, ast_node, next_path)
+                when :path
+                  extra_args[:path] = next_path
+                when :lookahead
+                  if !field_ast_nodes
+                    field_ast_nodes = [ast_node]
                   end
+
+                  extra_args[:lookahead] = Execution::Lookahead.new(
+                    query: query,
+                    ast_nodes: field_ast_nodes,
+                    field: field_defn,
+                  )
+                when :argument_details
+                  # Use this flag to tell Interpreter::Arguments to add itself
+                  # to the keyword args hash _before_ freezing everything.
+                  extra_args[:argument_details] = :__arguments_add_self
+                else
+                  extra_args[extra] = field_defn.fetch_extra(extra, context)
                 end
               end
+              resolved_arguments = resolved_arguments.merge_extras(extra_args)
+              resolved_arguments.keyword_arguments
+            end
 
-              set_all_interpreter_context(nil, nil, kwarg_arguments, nil)
+            set_all_interpreter_context(nil, nil, kwarg_arguments, nil)
 
-              # Optimize for the case that field is selected only once
-              if field_ast_nodes.nil? || field_ast_nodes.size == 1
-                next_selections = ast_node.selections
-              else
-                next_selections = []
-                field_ast_nodes.each { |f| next_selections.concat(f.selections) }
-              end
+            # Optimize for the case that field is selected only once
+            if field_ast_nodes.nil? || field_ast_nodes.size == 1
+              next_selections = ast_node.selections
+            else
+              next_selections = []
+              field_ast_nodes.each { |f| next_selections.concat(f.selections) }
+            end
 
-              field_result = resolve_with_directives(object, ast_node) do
-                # Actually call the field resolver and capture the result
-                app_result = begin
-                  query.with_error_handling do
-                    query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, query: query, object: object, arguments: kwarg_arguments}) do
-                      field_defn.resolve(object, kwarg_arguments, context)
-                    end
-                  end
-                rescue GraphQL::ExecutionError => err
-                  err
-                end
-                after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |inner_result|
-                  continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node)
-                  if RawValue === continue_value
-                    # Write raw value directly to the response without resolving nested objects
-                    write_in_response(next_path, continue_value.resolve)
-                  elsif HALT != continue_value
-                    continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments)
+            field_result = resolve_with_directives(object, ast_node) do
+              # Actually call the field resolver and capture the result
+              app_result = begin
+                query.with_error_handling do
+                  query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments}) do
+                    field_defn.resolve(object, kwarg_arguments, context)
                   end
                 end
+              rescue GraphQL::ExecutionError => err
+                err
               end
-
-              # If this field is a root mutation field, immediately resolve
-              # all of its child fields before moving on to the next root mutation field.
-              # (Subselections of this mutation will still be resolved level-by-level.)
-              if root_operation_type == "mutation"
-                Interpreter::Resolve.resolve_all([field_result])
-              else
-                field_result
+              after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |inner_result|
+                continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node)
+                if RawValue === continue_value
+                  # Write raw value directly to the response without resolving nested objects
+                  write_in_response(next_path, continue_value.resolve)
+                elsif HALT != continue_value
+                  continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments)
+                end
               end
             end
+
+            # If this field is a root mutation field, immediately resolve
+            # all of its child fields before moving on to the next root mutation field.
+            # (Subselections of this mutation will still be resolved level-by-level.)
+            if is_eager_field
+              Interpreter::Resolve.resolve_all([field_result])
+            end
+
+            nil
           end
         end
 
@@ -314,7 +391,7 @@ module GraphQL
             resolved_type_or_lazy, resolved_value = resolve_type(current_type, value, path)
             resolved_value ||= value
 
-            after_lazy(resolved_type_or_lazy, owner: current_type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
+            after_lazy(resolved_type_or_lazy, owner: current_type, path: path, ast_node: ast_node, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |resolved_type|
               possible_types = query.possible_types(current_type)
 
               if !possible_types.include?(resolved_type)
@@ -334,12 +411,13 @@ module GraphQL
             rescue GraphQL::ExecutionError => err
               err
             end
-            after_lazy(object_proxy, owner: current_type, path: path, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |inner_object|
+            after_lazy(object_proxy, owner: current_type, path: path, ast_node: ast_node, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false) do |inner_object|
               continue_value = continue_value(path, inner_object, owner_type, field, is_non_null, ast_node)
               if HALT != continue_value
                 response_hash = {}
                 write_in_response(path, response_hash)
-                evaluate_selections(path, context.scoped_context, continue_value, current_type, next_selections)
+                gathered_selections = gather_selections(continue_value, current_type, next_selections)
+                evaluate_selections(path, context.scoped_context, continue_value, current_type, is_eager_selection: false, gathered_selections: gathered_selections, after: nil)
                 response_hash
               end
             end
@@ -357,7 +435,7 @@ module GraphQL
                 idx += 1
                 set_type_at_path(next_path, inner_type)
                 # This will update `response_list` with the lazy
-                after_lazy(inner_value, owner: inner_type, path: next_path, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
+                after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
                   continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node)
                   if HALT != continue_value
                     continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments)
@@ -440,7 +518,7 @@ module GraphQL
         # @param eager [Boolean] Set to `true` for mutation root fields only
         # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
-        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, eager: false, trace: true, &block)
+        def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, ast_node:, eager: false, trace: true, &block)
           set_all_interpreter_context(owner_object, field, arguments, path)
           if schema.lazy?(lazy_obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
@@ -451,7 +529,7 @@ module GraphQL
               inner_obj = begin
                 query.with_error_handling do
                   if trace
-                    query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments}) do
+                    query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
                       schema.sync_lazy(lazy_obj)
                     end
                   else
@@ -461,7 +539,7 @@ module GraphQL
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
                   err
               end
-              after_lazy(inner_obj, owner: owner, field: field, path: path, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager, trace: trace, &block)
+              after_lazy(inner_obj, owner: owner, field: field, path: path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager, trace: trace, &block)
             end
 
             if eager
@@ -476,9 +554,7 @@ module GraphQL
         end
 
         def arguments(graphql_object, arg_owner, ast_node)
-          # Don't cache arguments if field extras or extensions are requested since they can mutate the argument data structure
-          if arg_owner.arguments_statically_coercible? &&
-              (!arg_owner.is_a?(GraphQL::Schema::Field) || (arg_owner.extras.empty? && arg_owner.extensions.empty?))
+          if arg_owner.arguments_statically_coercible?
             query.arguments_for(ast_node, arg_owner)
           else
             # The arguments must be prepared in the context of the given object
@@ -517,6 +593,16 @@ module GraphQL
               @response.write(path, value)
             end
           end
+        end
+
+        def value_at(path)
+          i = 0
+          value = @response.final_value
+          while value && (part = path[i])
+            value = value[part]
+            i += 1
+          end
+          value
         end
 
         # To propagate nulls, we have to know what the field type was

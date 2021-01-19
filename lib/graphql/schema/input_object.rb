@@ -7,6 +7,7 @@ module GraphQL
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader
       extend GraphQL::Schema::Member::ValidatesInput
+      extend GraphQL::Schema::Member::HasValidators
 
       include GraphQL::Dig
 
@@ -37,14 +38,15 @@ module GraphQL
                 load_application_object(arg_defn, loads, value, context)
               end
               maybe_lazies << context.schema.after_lazy(loaded_value) do |loaded_value|
-                @ruby_style_hash[ruby_kwargs_key] = loaded_value
+                overwrite_argument(ruby_kwargs_key, loaded_value)
               end
             end
 
             # Weirdly, procs are applied during coercion, but not methods.
             # Probably because these methods require a `self`.
             if arg_defn.prepare.is_a?(Symbol) || context.nil? || !context.interpreter?
-              @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
+              prepared_value = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
+              overwrite_argument(ruby_kwargs_key, prepared_value)
             end
           end
         end
@@ -74,6 +76,9 @@ module GraphQL
       def prepare
         if context
           context.schema.after_any_lazies(@maybe_lazies) do
+            object = context[:current_object]
+            # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
+            Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash, as: self.class)
             self
           end
         else
@@ -168,17 +173,10 @@ module GraphQL
             return result
           end
 
-          input = begin
-            input.to_h
-          rescue
-            begin
-              # Handle ActionController::Parameters:
-              input.to_unsafe_h
-            rescue
-              # We're not sure it'll act like a hash, so reject it:
-              result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
-              return result
-            end
+          if !(input.respond_to?(:to_h) || input.respond_to?(:to_unsafe_h))
+            # We're not sure it'll act like a hash, so reject it:
+            result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+            return result
           end
 
           # Inject missing required arguments
@@ -190,16 +188,19 @@ module GraphQL
             m
           end
 
-          input.merge(missing_required_inputs).each do |argument_name, value|
-            argument = warden.get_argument(self, argument_name)
-            # Items in the input that are unexpected
-            unless argument
-              result.add_problem("Field is not defined on #{self.graphql_name}", [argument_name])
-              next
+
+          [input, missing_required_inputs].each do |args_to_validate|
+            args_to_validate.each do |argument_name, value|
+              argument = warden.get_argument(self, argument_name)
+              # Items in the input that are unexpected
+              unless argument
+                result.add_problem("Field is not defined on #{self.graphql_name}", [argument_name])
+                next
+              end
+              # Items in the input that are expected, but have invalid values
+              argument_result = argument.type.validate_input(value, ctx)
+              result.merge_result!(argument_name, argument_result) unless argument_result.valid?
             end
-            # Items in the input that are expected, but have invalid values
-            argument_result = argument.type.validate_input(value, ctx)
-            result.merge_result!(argument_name, argument_result) unless argument_result.valid?
           end
 
           result
@@ -239,6 +240,16 @@ module GraphQL
 
           result
         end
+      end
+
+      private
+
+      def overwrite_argument(key, value)
+        # Argument keywords come in frozen from the interpreter, dup them before modifying them.
+        if @ruby_style_hash.frozen?
+          @ruby_style_hash = @ruby_style_hash.dup
+        end
+        @ruby_style_hash[key] = value
       end
     end
   end

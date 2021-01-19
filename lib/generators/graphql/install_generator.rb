@@ -43,9 +43,6 @@ module Graphql
     # post "/graphql", to: "graphql#execute"
     # ```
     #
-    # Accept a `--relay` option which adds
-    # The root `node(id: ID!)` field.
-    #
     # Accept a `--batch` option which adds `GraphQL::Batch` setup.
     #
     # Use `--no-graphiql` to skip `graphiql-rails` installation.
@@ -79,8 +76,8 @@ module Graphql
 
       class_option :relay,
         type: :boolean,
-        default: false,
-        desc: "Include GraphQL::Relay installation"
+        default: true,
+        desc: "Include installation of Relay conventions (nodes, connections, edges)"
 
       class_option :batch,
         type: :boolean,
@@ -164,7 +161,10 @@ if Rails.env.development?
 RUBY
             end
           end
+        end
 
+        if options[:relay]
+          generate("graphql:relay")
         end
 
         if gemfile_modified?

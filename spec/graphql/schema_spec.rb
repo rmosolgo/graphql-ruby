@@ -45,8 +45,6 @@ describe GraphQL::Schema do
         query_analyzer Object.new
         multiplex_analyzer Object.new
         rescue_from(StandardError) { }
-        instrument :field, GraphQL::Relay::EdgesInstrumentation
-        middleware (Proc.new {})
         use GraphQL::Backtrace
         self.error_handler = Object.new
       end
@@ -74,10 +72,8 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers, schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.rescues, schema.rescues
-      assert_equal base_schema.instrumenters, schema.instrumenters
-      assert_equal base_schema.middleware.steps.size, schema.middleware.steps.size
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
-      assert_equal [GraphQL::Backtrace], schema.plugins.map(&:first)
+      assert_equal [GraphQL::Execution::Errors, GraphQL::Pagination::Connections, GraphQL::Backtrace], schema.plugins.map(&:first)
       assert_equal base_schema.error_handler, schema.error_handler
     end
 
@@ -127,10 +123,8 @@ describe GraphQL::Schema do
       multiplex_analyzer = Object.new
       schema.multiplex_analyzer(multiplex_analyzer)
       schema.use(GraphQL::Execution::Interpreter)
-      schema.instrument(:field, GraphQL::Relay::ConnectionInstrumentation)
       schema.rescue_from(GraphQL::ExecutionError)
       schema.tracer(GraphQL::Tracing::NewRelicTracing)
-      schema.middleware(Proc.new {})
       error_handler = Object.new
       schema.error_handler = error_handler
 
@@ -150,13 +144,10 @@ describe GraphQL::Schema do
       assert_equal schema.directives, GraphQL::Schema.default_directives.merge(DummyFeature1.graphql_name => DummyFeature1, DummyFeature2.graphql_name => DummyFeature2)
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
-      assert_equal [GraphQL::Backtrace, GraphQL::Execution::Interpreter], schema.plugins.map(&:first)
-      assert_equal [GraphQL::Relay::EdgesInstrumentation, GraphQL::Relay::ConnectionInstrumentation], schema.instrumenters[:field]
+      assert_equal [GraphQL::Execution::Errors, GraphQL::Pagination::Connections, GraphQL::Backtrace, GraphQL::Execution::Interpreter], schema.plugins.map(&:first)
       assert_equal [GraphQL::ExecutionError, StandardError], schema.rescues.keys.sort_by(&:name)
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer, GraphQL::Tracing::NewRelicTracing], schema.tracers
-      # This doesn't include `RescueMiddleware`, since interpreter handles that separately.
-      assert_equal 2, schema.middleware.steps.size
       assert_equal error_handler, schema.error_handler
     end
   end
@@ -280,8 +271,6 @@ describe GraphQL::Schema do
       let(:schema) do
         Class.new(GraphQL::Schema) do
           query query_type
-          use GraphQL::Analysis::AST
-          use GraphQL::Execution::Interpreter
           use PluginWithInstrumentationTracingAndAnalyzer
         end
       end
@@ -299,38 +288,12 @@ describe GraphQL::Schema do
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
         assert_equal true, query.context[:no_op_analyzer_ran_result]
       end
-
-      describe "when called on schema instance" do
-        let(:schema) do
-          Class.new(GraphQL::Schema) do
-            query query_type
-            use GraphQL::Analysis::AST
-            use PluginWithInstrumentationTracingAndAnalyzer
-          end.to_graphql
-        end
-
-        let(:query) { GraphQL::Query.new(schema, "query { foobar }") }
-
-        it "attaches plugins correctly, runs all of their callbacks" do
-          res = query.result
-          assert res.key?("data")
-
-          assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
-          assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
-          assert_equal true, query.context[:no_op_tracer_ran]
-          assert_equal true, query.context[:no_op_analyzer_ran_initialize]
-          assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
-          assert_equal true, query.context[:no_op_analyzer_ran_result]
-        end
-      end
     end
 
     describe "when called on schema subclasses" do
       let(:schema) do
         schema = Class.new(GraphQL::Schema) do
           query query_type
-          use GraphQL::Analysis::AST
-          use GraphQL::Execution::Interpreter
         end
 
         # return a subclass
@@ -352,40 +315,6 @@ describe GraphQL::Schema do
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
         assert_equal true, query.context[:no_op_analyzer_ran_result]
       end
-    end
-  end
-
-  describe "when mixing define and class-based" do
-    module MixedSchema
-      class Query < GraphQL::Schema::Object
-        field :int, Int, null: false
-      end
-
-      class Mutation < GraphQL::Schema::Object
-        field :int, Int, null: false
-      end
-
-      class Subscription < GraphQL::Schema::Object
-        field :int, Int, null: false
-      end
-
-      Schema = GraphQL::Schema.define do
-        query(Query)
-        mutation(Mutation)
-        subscription(Subscription)
-      end
-    end
-
-    it "includes root types properly" do
-      res = MixedSchema::Schema.as_json
-      assert_equal "Query", res["data"]["__schema"]["queryType"]["name"]
-      assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Query"
-
-      assert_equal "Mutation", res["data"]["__schema"]["mutationType"]["name"]
-      assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Mutation"
-
-      assert_equal "Subscription", res["data"]["__schema"]["subscriptionType"]["name"]
-      assert_includes res["data"]["__schema"]["types"].map { |t| t["name"] }, "Subscription"
     end
   end
 

@@ -6,6 +6,8 @@ module GraphQL
     # Its {RULES} contain objects that respond to `#call(type)`. Rules are
     # looked up for given types (by class ancestry), then applied to
     # the object until an error is returned.
+    #
+    # Remove this in GraphQL-Ruby 2.0 when schema instances are removed.
     class Validation
       # Lookup the rules for `object` based on its class,
       # Then returns an error message or `nil`

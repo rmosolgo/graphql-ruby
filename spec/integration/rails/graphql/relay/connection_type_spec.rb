@@ -25,17 +25,15 @@ describe GraphQL::Relay::ConnectionType do
       |}
 
       it "uses the custom edge and custom connection" do
-        result = star_wars_query(query_string, { "testNames" => !TESTING_INTERPRETER })
+        result = star_wars_query(query_string, { "testNames" => true })
         bases = result["data"]["rebels"]["basesWithCustomEdge"]
         assert_equal 300, bases["totalCountTimes100"]
-        if !TESTING_INTERPRETER
-          assert_equal 'basesWithCustomEdge', bases["fieldName"]
-          assert_equal ["YAVIN", "ECHO BASE", "SECRET HIDEOUT"] , bases["edges"].map { |e| e["upcasedName"] }
-          upcased_rebels_name = "ALLIANCE TO RESTORE THE REPUBLIC"
-          assert_equal [upcased_rebels_name] , bases["edges"].map { |e| e["upcasedParentName"] }.uniq
-        end
+        assert_equal 'basesWithCustomEdge', bases["fieldName"]
+        assert_equal ["YAVIN", "ECHO BASE", "SECRET HIDEOUT"] , bases["edges"].map { |e| e["upcasedName"] }
+        upcased_rebels_name = "ALLIANCE TO RESTORE THE REPUBLIC"
+        assert_equal [upcased_rebels_name] , bases["edges"].map { |e| e["upcasedParentName"] }.uniq
         assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases["edges"].map { |e| e["node"]["name"] }
-        assert_equal [TESTING_INTERPRETER ? "StarWars::NewCustomBaseEdge" : "StarWars::CustomBaseEdge"] , bases["edges"].map { |e| e["edgeClassName"] }.uniq
+        assert_equal ["StarWars::NewCustomBaseEdge"] , bases["edges"].map { |e| e["edgeClassName"] }.uniq
       end
     end
 

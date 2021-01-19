@@ -19,6 +19,7 @@ module GraphQL
         # @return [String]
         def graphql_name(new_name = nil)
           if new_name
+            GraphQL::NameValidator.validate!(new_name)
             @graphql_name = new_name
           else
             overridden_graphql_name || default_graphql_name

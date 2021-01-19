@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::ListType do
-  let(:float_list) { GraphQL::ListType.new(of_type: GraphQL::FLOAT_TYPE) }
+  let(:float_list) { GraphQL::ListType.new(of_type: GraphQL::DEPRECATED_FLOAT_TYPE) }
 
   it "coerces elements in the list" do
     assert_equal([1.0, 2.0, 3.0].inspect, float_list.coerce_isolated_input([1, 2, 3]).inspect)
@@ -29,28 +29,20 @@ describe GraphQL::ListType do
     end
 
     it "has the correct explanation" do
-      expected = GraphQL::FLOAT_TYPE.validate_isolated_input(bad_num).problems[0]["explanation"]
+      expected = GraphQL::DEPRECATED_FLOAT_TYPE.validate_isolated_input(bad_num).problems[0]["explanation"]
       actual = result.problems[0]["explanation"]
       assert_equal(actual, expected)
     end
   end
 
   describe "list of input objects" do
-    let(:input_object) do
-      input_object = GraphQL::InputObjectType.define do
-        name "SomeInputObjectType"
-        argument :float, !types.Float
-      end
-
-      GraphQL::Query::Arguments.construct_arguments_class(input_object)
-
-      input_object
-    end
-
-    let(:input_object_list) { input_object.to_list_type }
-
     it "converts hashes into lists of hashes" do
-      hash = { 'float' => 1.0 }
+      input_object = Class.new(GraphQL::Schema::InputObject) do
+        graphql_name "SomeInputObjectType"
+        argument :float, Float, required: true
+      end
+      input_object_list = input_object.to_list_type
+      hash = { float: 1.0 }
       assert_equal([hash].inspect, input_object_list.coerce_isolated_input(hash).map(&:to_h).inspect)
     end
   end

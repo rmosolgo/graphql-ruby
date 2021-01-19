@@ -59,10 +59,6 @@ describe GraphQL::Schema::Argument do
     class Schema < GraphQL::Schema
       query(Query)
       lazy_resolve(Proc, :call)
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
 
       def self.object_from_id(id, ctx)
         -> { Jazz::GloballyIdentifiableType.find(id) }
@@ -378,9 +374,6 @@ describe GraphQL::Schema::Argument do
           argument :lazy_object_ref, "InvalidArgumentTypeSchema::InvalidArgumentType", required: false
         end
       end
-
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
 
     it "rejects them" do

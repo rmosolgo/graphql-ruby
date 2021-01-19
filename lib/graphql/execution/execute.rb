@@ -18,7 +18,14 @@ module GraphQL
       # @api private
       PROPAGATE_NULL = PropagateNull.new
 
+      def self.use(schema_class)
+        schema_class.query_execution_strategy(self)
+        schema_class.mutation_execution_strategy(self)
+        schema_class.subscription_execution_strategy(self)
+      end
+
       def execute(ast_operation, root_type, query)
+        warn "#{self.class} will be removed in GraphQL-Ruby 2.0, please upgrade to the Interpreter: https://graphql-ruby.org/queries/interpreter.html"
         result = resolve_root_selection(query)
         lazy_resolve_root_selection(result, **{query: query})
         GraphQL::Execution::Flatten.call(query.context)

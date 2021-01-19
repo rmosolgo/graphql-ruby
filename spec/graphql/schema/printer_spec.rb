@@ -2,16 +2,13 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Printer do
-  let(:schema) {
-    node_type = GraphQL::InterfaceType.define do
-      name "Node"
-
-      field :id, !types.ID
+  class PrinterTestSchema < GraphQL::Schema
+    module Node
+      include GraphQL::Schema::Interface
+      field :id, ID, null: false
     end
 
-    choice_type = GraphQL::EnumType.define do
-      name "Choice"
-
+    class Choice < GraphQL::Schema::Enum
       value "FOO", value: :foo
       value "BAR", value: :bar
       value "BAZ", deprecation_reason: <<-REASON
@@ -22,116 +19,89 @@ REASON
       value "WOZ", deprecation_reason: GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON
     end
 
-    sub_input_type = GraphQL::InputObjectType.define do
-      name "Sub"
+    class Sub < GraphQL::Schema::InputObject
       description "Test"
-      input_field :string, types.String, 'Something'
-      input_field :int, types.Int, 'Something', deprecation_reason: 'Do something else'
+      argument :string, String, required: false, description: "Something"
+      argument :int, Int, required: false, description: "Something", deprecation_reason: "Do something else"
     end
 
-    variant_input_type = GraphQL::InputObjectType.define do
-      name "Varied"
-      input_field :id, types.ID
-      input_field :int, types.Int
-      input_field :float, types.Float
-      input_field :bool, types.Boolean
-      input_field :enum, choice_type, default_value: :foo
-      input_field :sub, types[sub_input_type]
+    class Varied < GraphQL::Schema::InputObject
+      argument :id, ID, required: false
+      argument :int, Int, required: false
+      argument :float, Float, required: false
+      argument :bool, Boolean, required: false
+      argument :enum, Choice, required: false, default_value: :foo
+      argument :sub, [Sub, null: true], required: false
     end
 
-    comment_type = GraphQL::ObjectType.define do
-      name "Comment"
+    class Comment < GraphQL::Schema::Object
       description "A blog comment"
-      interfaces [node_type]
-
-      field :id, !types.ID
+      implements Node
+      field :id, ID, null: false
     end
 
-    post_type = GraphQL::ObjectType.define do
-      name "Post"
+    class Post < GraphQL::Schema::Object
       description "A blog post"
-
-      field :id, !types.ID
-      field :title, !types.String
-      field :body, !types.String
-      field :comments, types[!comment_type]
-      field :comments_count, !types.Int, deprecation_reason: 'Use "comments".'
+      field :id, ID, null: false
+      field :title, String, null: false
+      field :body, String, null: false
+      field :comments, [Comment], null: true
+      field :comments_count, Int, null: false, deprecation_reason: "Use \"comments\".", camelize: false
     end
 
-    audio_type = GraphQL::ObjectType.define do
-      name "Audio"
-
-      field :id, !types.ID
-      field :name, !types.String
-      field :duration, !types.Int
+    class Audio < GraphQL::Schema::Object
+      field :id, ID, null: false
+      field :name, String, null: false
+      field :duration, Int, null: false
     end
 
-    image_type = GraphQL::ObjectType.define do
-      name "Image"
-
-      field :id, !types.ID
-      field :name, !types.String
-      field :width, !types.Int
-      field :height, !types.Int
+    class Image < GraphQL::Schema::Object
+      field :id, ID, null: false
+      field :name, String, null: false
+      field :width, Int, null: false
+      field :height, Int, null: false
     end
 
-    media_union_type = GraphQL::UnionType.define do
-      name "Media"
+    class Media < GraphQL::Schema::Union
       description "Media objects"
-
-      possible_types [image_type, audio_type]
+      possible_types Image, Audio
     end
 
-    query_root = GraphQL::ObjectType.define do
-      name "Query"
+    class Query < GraphQL::Schema::Object
       description "The query root of this schema"
 
-      field :post do
-        type post_type
-        argument :id, !types.ID, 'Post ID'
-        argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
-        argument :variedWithNulls, variant_input_type, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil }
-        argument :deprecatedArg, types.String, deprecation_reason: 'Use something else'
-        resolve ->(obj, args, ctx) { Post.find(args["id"]) }
+      field :post, Post, null: true do
+        argument :id, ID, required: true, description: "Post ID"
+        argument :varied, Varied, required: false, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
+        argument :varied_with_nulls, Varied, required: false, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil }
+        argument :deprecated_arg, String, required: false, deprecation_reason: "Use something else"
       end
     end
 
-    create_post_mutation = GraphQL::Relay::Mutation.define do
-      name "CreatePost"
+    class CreatePost < GraphQL::Schema::RelayClassicMutation
       description "Create a blog post"
-
-      input_field :title, !types.String
-      input_field :body, !types.String
-
-      return_field :post, post_type
-
-      resolve ->(_, _, _) { }
+      argument :title, String, required: true
+      argument :body, String, required: true
+      field :post, Post, null: true
     end
 
-    mutation_root = GraphQL::ObjectType.define do
-      name "Mutation"
-
-      field :createPost, field: create_post_mutation.field
+    class Mutation < GraphQL::Schema::Object
+      field :create_post, mutation: CreatePost
     end
 
-    subscription_root = GraphQL::ObjectType.define do
-      name "Subscription"
-
-      field :post do
-        type post_type
-        argument :id, !types.ID
-        resolve ->(_, _, _) { }
+    class Subscription < GraphQL::Schema::Object
+      field :post, Post, null: true do
+        argument :id, ID, required: true
       end
     end
 
-    GraphQL::Schema.define(
-      query: query_root,
-      mutation: mutation_root,
-      subscription: subscription_root,
-      resolve_type: ->(a,b,c) { :pass },
-      orphan_types: [media_union_type]
-    )
-  }
+    query(Query)
+    mutation(Mutation)
+    subscription(Subscription)
+    orphan_types [Media]
+  end
+
+  let(:schema) { PrinterTestSchema }
 
   describe ".print_introspection_schema" do
     it "returns the schema as a string for the introspection types" do
@@ -151,7 +121,7 @@ directive @deprecated(
   [Markdown](https://daringfireball.net/projects/markdown/).
   """
   reason: String = "No longer supported"
-) on FIELD_DEFINITION | ENUM_VALUE | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+) on ARGUMENT_DEFINITION | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 
 """
 Directs the executor to include this field or fragment only when the `if` argument is true.
@@ -434,8 +404,8 @@ SCHEMA
 
   describe ".print_schema" do
     it "includes schema definition when query root name doesn't match convention" do
-      custom_query = schema.query.redefine(name: "MyQueryRoot")
-      custom_schema = schema.redefine(query: custom_query)
+      custom_query = Class.new(PrinterTestSchema::Query) { graphql_name "MyQueryRoot" }
+      custom_schema = Class.new(PrinterTestSchema) { query(custom_query) }
 
       expected = <<SCHEMA
 schema {
@@ -448,8 +418,8 @@ SCHEMA
     end
 
     it "includes schema definition when mutation root name doesn't match convention" do
-      custom_mutation = schema.mutation.redefine(name: "MyMutationRoot")
-      custom_schema = schema.redefine(mutation: custom_mutation)
+      custom_mutation = Class.new(PrinterTestSchema::Mutation) { graphql_name "MyMutationRoot" }
+      custom_schema = Class.new(PrinterTestSchema) { mutation(custom_mutation) }
 
       expected = <<SCHEMA
 schema {
@@ -463,8 +433,8 @@ SCHEMA
     end
 
     it "includes schema definition when subscription root name doesn't match convention" do
-      custom_subscription = schema.subscription.redefine(name: "MySubscriptionRoot")
-      custom_schema = schema.redefine(subscription: custom_subscription)
+      custom_subscription = Class.new(PrinterTestSchema::Subscription) { graphql_name "MySubscriptionRoot" }
+      custom_schema = Class.new(PrinterTestSchema) { subscription(custom_subscription) }
 
       expected = <<SCHEMA
 schema {
@@ -539,7 +509,12 @@ type Mutation {
   """
   Create a blog post
   """
-  createPost(input: CreatePostInput!): CreatePostPayload
+  createPost(
+    """
+    Parameters for CreatePost
+    """
+    input: CreatePostInput!
+  ): CreatePostPayload
 }
 
 interface Node {
@@ -618,7 +593,6 @@ SCHEMA
 
       schema = Class.new(GraphQL::Schema) do
         query query_type
-        use GraphQL::Execution::Interpreter
       end
 
       expected = "type Query {\n  foobar: Int!\n}"
@@ -647,12 +621,21 @@ SCHEMA
 
     only_filter = ->(member, ctx) {
       case member
-      when GraphQL::ScalarType
-        true
-      when GraphQL::BaseType
-        ctx[:names].include?(member.name)
-      when GraphQL::Argument
-        member.name != "id"
+      when Module
+        if !member.respond_to?(:kind)
+          true
+        else
+          case member.kind.name
+          when "SCALAR"
+            true
+          when "OBJECT", "UNION", "INTERFACE"
+            ctx[:names].include?(member.graphql_name)
+          else
+            false
+          end
+        end
+      when GraphQL::Schema::Argument
+        member.graphql_name != "id"
       else
         if member.respond_to?(:deprecation_reason)
           member.deprecation_reason.nil?
@@ -713,7 +696,12 @@ type Mutation {
   """
   Create a blog post
   """
-  createPost(input: CreatePostInput!): CreatePostPayload
+  createPost(
+    """
+    Parameters for CreatePost
+    """
+    input: CreatePostInput!
+  ): CreatePostPayload
 }
 
 interface Node {
@@ -748,7 +736,7 @@ type Subscription {
 SCHEMA
 
     except_filter = ->(member, ctx) {
-      ctx[:names].include?(member.name) || (member.respond_to?(:deprecation_reason) && member.deprecation_reason)
+      ctx[:names].include?(member.graphql_name) || (member.respond_to?(:deprecation_reason) && member.deprecation_reason)
     }
 
     context = { names: ["Varied", "Image", "Sub"] }
@@ -792,30 +780,34 @@ SCHEMA
       assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(schema.types['Sub'])
     end
 
-    it "can print arguments that use non-standard Ruby objects as default values" do
-      backing_object = Struct.new(:value)
+    class DefaultValueTestSchema < GraphQL::Schema
+      BackingObject = Struct.new(:value)
 
-      scalar_type = GraphQL::ScalarType.define do
-        name "SomeType"
-        coerce_input ->(value, ctx) { backing_object.new(value) }
-        coerce_result ->(obj, ctx) { obj.value }
-      end
+      class SomeType < GraphQL::Schema::Scalar
+        graphql_name "SomeType"
+        def self.coerce_input(value, ctx)
+          BackingObject.new(value)
+        end
 
-      query_root = GraphQL::ObjectType.define do
-        name "Query"
-        description "The query root of this schema"
-
-        field :example do
-          type scalar_type
-          argument :input, scalar_type, default_value: backing_object.new("Howdy")
-          resolve ->(obj, args, ctx) { args[:input] }
+        def self.coerce_result(obj, ctx)
+          obj.value
         end
       end
 
-      schema = GraphQL::Schema.define do
-        query query_root
-      end
+      class Query < GraphQL::Schema::Object
+        description "The query root of this schema"
+        field :example, SomeType, null: true do
+          argument :input, SomeType, default_value: BackingObject.new("Howdy"), required: false
+        end
 
+        def example(input:)
+          input
+        end
+      end
+      query(Query)
+    end
+
+    it "can print arguments that use non-standard Ruby objects as default values" do
       expected = <<SCHEMA
 """
 The query root of this schema
@@ -825,7 +817,7 @@ type Query {
 }
 SCHEMA
 
-      assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(query_root)
+      assert_equal expected.chomp, GraphQL::Schema::Printer.new(DefaultValueTestSchema).print_type(DefaultValueTestSchema::Query)
     end
   end
 
@@ -851,7 +843,6 @@ SCHEMA
       end
 
       query(OddlyNamedQuery)
-      use GraphQL::Execution::Interpreter
     end
 
 
@@ -861,8 +852,27 @@ SCHEMA
 
   it "prints directives parsed from IDL" do
     input = <<-GRAPHQL
+directive @a(a: Letter) on ENUM_VALUE
+
+directive @b(b: BInput) on ENUM_VALUE
+
+directive @customDirective on FIELD_DEFINITION
+
+directive @intDir(a: Int!) on INPUT_FIELD_DEFINITION
+
+directive @someDirective on OBJECT
+
+input BInput {
+  b: Letter
+}
+
 input I {
   i1: Int @intDir(a: 1)
+}
+
+enum Letter {
+  A
+  B
 }
 
 type Query @someDirective {

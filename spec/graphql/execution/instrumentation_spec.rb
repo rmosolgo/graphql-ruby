@@ -96,11 +96,6 @@ describe GraphQL::Schema do
         instrument(:query, SecondInstrumenter.new)
         instrument(:query, ExecutionErrorInstrumenter.new)
         instrument(:query, QueryStringInstrumenter.new)
-
-        if TESTING_INTERPRETER
-          use GraphQL::Analysis::AST
-          use GraphQL::Execution::Interpreter
-        end
       end
     }
 

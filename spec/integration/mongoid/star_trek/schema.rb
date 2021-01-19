@@ -39,7 +39,7 @@ module StarTrek
     field :total_count, Integer, null: true
 
     def total_count
-      object.nodes.count
+      object.items.count
     end
   end
 
@@ -69,7 +69,7 @@ module StarTrek
 
     field :total_count_times_100, Integer, null: true
     def total_count_times_100
-      obj.nodes.count * 100
+      obj.items.to_a.count * 100
     end
 
     field :field_name, String, null: true
@@ -324,43 +324,22 @@ module StarTrek
       [OpenStruct.new(id: nil)]
     end
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodeField)
-    else
-      field :node, field: GraphQL::Relay::Node.field
+    add_field(GraphQL::Types::Relay::NodeField)
+
+    field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
+      argument :id, ID, required: true
+    end
+    def node_with_custom_resolver(id:)
+      StarTrek::DATA["Faction"]["1"]
     end
 
-    if TESTING_INTERPRETER
-      field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
-        argument :id, ID, required: true
-      end
-      def node_with_custom_resolver(id:)
-        StarTrek::DATA["Faction"]["1"]
-      end
-    else
-      custom_node_field = GraphQL::Relay::Node.field do
-        resolve ->(_, _, _) { StarTrek::DATA["Faction"]["1"] }
-      end
-      field :nodeWithCustomResolver, field: custom_node_field
-    end
+    add_field(GraphQL::Types::Relay::NodesField)
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodesField)
-    else
-      field :nodes, field: GraphQL::Relay::Node.plural_field
+    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
+      argument :ids, [ID], required: true
     end
-
-    if TESTING_INTERPRETER
-      field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
-        argument :ids, [ID], required: true
-      end
-      def nodes_with_custom_resolver(ids:)
-        [StarTrek::DATA["Faction"]["1"], StarTrek::DATA["Faction"]["2"]]
-      end
-    else
-      field :nodesWithCustomResolver, field: GraphQL::Relay::Node.plural_field(
-        resolve: ->(_, _, _) { [StarTrek::DATA["Faction"]["1"], StarTrek::DATA["Faction"]["2"]] }
-      )
+    def nodes_with_custom_resolver(ids:)
+      [StarTrek::DATA["Faction"]["1"], StarTrek::DATA["Faction"]["2"]]
     end
 
     field :batched_base, BaseType, null: true do
@@ -377,35 +356,10 @@ module StarTrek
     field :introduceShip, mutation: IntroduceShipMutation
   end
 
-  class ClassNameRecorder
-    def initialize(context_key)
-      @context_key = context_key
-    end
-
-    def instrument(type, field)
-      inner_resolve = field.resolve_proc
-      key = @context_key
-      field.redefine {
-        resolve ->(o, a, c) {
-          res = inner_resolve.call(o, a, c)
-          if c[key]
-            c[key] << res.class.name
-          end
-          res
-        }
-      }
-    end
-  end
-
   class Schema < GraphQL::Schema
     query(QueryType)
     mutation(MutationType)
     default_max_page_size 3
-
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
 
     def self.resolve_type(type, object, ctx)
       if object == :test_error
@@ -421,6 +375,8 @@ module StarTrek
       end
     end
 
+    connections.add(LazyNodesWrapper, LazyNodesRelationConnection)
+
     def self.object_from_id(node_id, ctx)
       type_name, id = GraphQL::Schema::UniqueWithinType.decode(node_id)
       StarTrek::DATA[type_name][id]
@@ -432,8 +388,5 @@ module StarTrek
 
     lazy_resolve(LazyWrapper, :value)
     lazy_resolve(LazyLoader, :value)
-
-    instrument(:field, ClassNameRecorder.new(:before_built_ins))
-    instrument(:field, ClassNameRecorder.new(:after_built_ins), after_built_ins: true)
   end
 end
