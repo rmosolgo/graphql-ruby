@@ -1,4 +1,4 @@
 # frozen_string_literal: true
 module GraphQL
-  VERSION = "1.11.7"
+  VERSION = "1.12.0"
 end
