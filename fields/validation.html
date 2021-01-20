@@ -1,0 +1,142 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Validation</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#fields-guides">Fields</a>
+  &raquo; Validation
+</p>
+
+
+<h1 class="guide-header">Validation</h1>
+<div class="guide-container">
+  <p>Fields (and their arguments, and input object arguments) can be validated at runtime using built-in or custom validators.</p>
+
+<p>Validations are configured in <code class="language-plaintext highlighter-rouge">field(...)</code> or <code class="language-plaintext highlighter-rouge">argument(...)</code> calls:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:home_phone</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span>
+  <span class="ss">description: </span><span class="s2">"A US phone number"</span><span class="p">,</span>
+  <span class="ss">validates: </span><span class="p">{</span> <span class="ss">format: </span><span class="p">{</span> <span class="ss">with: </span><span class="sr">/\d{3}-\d{3}-\d{4}/</span> <span class="p">}</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>or:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="p">[</span><span class="no">Comment</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+  <span class="ss">description: </span><span class="s2">"Find comments by author ID or author name"</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:author_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
+  <span class="n">argument</span> <span class="ss">:author_name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
+  <span class="c1"># Either `authorId` or `authorName` must be provided by the client, but not both:</span>
+  <span class="n">validates</span> <span class="ss">required: </span><span class="p">{</span> <span class="ss">one_of: </span><span class="p">[</span><span class="ss">:author_id</span><span class="p">,</span> <span class="ss">:author_name</span><span class="p">]</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Validations can be provided with a keyword (<code class="language-plaintext highlighter-rouge">validates: { ... }</code>) or with a method inside the configuration block (<code class="language-plaintext highlighter-rouge">validates ...</code>).</p>
+
+<h2 id="built-in-validations">Built-In Validations</h2>
+
+<p>All the validators below accept the following options:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">allow_blank: true</code> will permit any input that responds to <code class="language-plaintext highlighter-rouge">.blank?</code> and returns true for it.</li>
+  <li><code class="language-plaintext highlighter-rouge">allow_nil: true</code> will permit <code class="language-plaintext highlighter-rouge">nil</code> (bypassing the validation)</li>
+  <li><code class="language-plaintext highlighter-rouge">message: "..."</code> customizes the error message when the validation fails</li>
+</ul>
+
+<p>See each validator’s API docs for details:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">length: { maximum: ..., minimum: ..., is: ..., within: ... }</code> <a href="/api-doc/1.12.0/GraphQL/Schema/Validator/LengthValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::LengthValidator"><code>Schema::Validator::LengthValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">format: { with: /.../, without: /.../ }</code> <a href="/api-doc/1.12.0/GraphQL/Schema/Validator/FormatValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::FormatValidator"><code>Schema::Validator::FormatValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">numericality: { greater_than:, greater_than_or_equal_to:, less_than:, less_than_or_equal_to:, other_than:, odd:, even: }</code> <a href="/api-doc/1.12.0/GraphQL/Schema/Validator/NumericalityValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::NumericalityValidator"><code>Schema::Validator::NumericalityValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">inclusion: { in: [...] }</code> <a href="/api-doc/1.12.0/GraphQL/Schema/Validator/InclusionValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::InclusionValidator"><code>Schema::Validator::InclusionValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">exclusion: { in: [...] }</code> <a href="/api-doc/1.12.0/GraphQL/Schema/Validator/ExclusionValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::ExclusionValidator"><code>Schema::Validator::ExclusionValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">required: { one_of: [...] }</code> Schema::Validator::RequiredValidator</li>
+</ul>
+
+<p>Some of the validators accept customizable messages for certain validation failures; see the API docs for examples.</p>
+
+<h2 id="custom-validators">Custom Validators</h2>
+
+<p>You can write custom validators, too. A validator is a class that extends <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Validator</code>. It should implement:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">def initialize(..., **default_options)</code> to accept any validator-specific options and pass along the defaults to <code class="language-plaintext highlighter-rouge">super(**default_options)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">def validate(object, context, value)</code> which is called at runtime to validate <code class="language-plaintext highlighter-rouge">value</code>. It may return a String error message or an Array of Strings. GraphQL-Ruby will add those messages to the top-level <code class="language-plaintext highlighter-rouge">"errors"</code> array along with runtime context information.</li>
+</ul>
+
+<p>Then, custom validators can be attached either:</p>
+
+<ul>
+  <li>directly, passed to <code class="language-plaintext highlighter-rouge">validates</code>, like <code class="language-plaintext highlighter-rouge">validates: { MyCustomValidator =&gt; { some: :options }</code></li>
+  <li>by keyword, if the keyword is registered with <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Validator.install(:custom, MyCustomValidator)</code>. (That would support <code class="language-plaintext highlighter-rouge">validates: { custom: { some: :options }})</code>.)</li>
+</ul>
+
+<p>Validators are initialized when the schema is constructed (at application boot), and <code class="language-plaintext highlighter-rouge">validate(...)</code> is called while executing the query. There’s one <code class="language-plaintext highlighter-rouge">Validator</code> instance for each configuration on each field, argument, or input object. (<code class="language-plaintext highlighter-rouge">Validator</code> instances aren’t shared.)</p>
+
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/fields/validation.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Validation">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

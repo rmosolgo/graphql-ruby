@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.12.0/GraphQL/Schema/Validator/RequiredValidator" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Schema::Validator::RequiredValidator &lt; GraphQL::Sche…
+Use this validator to require <em>one</em> of the named arguments to be
+present. Or, use Arrays of symbols to name a valid <em>set</em> of
+arguments. 
+(This is for specifying mutually exclusive sets of arguments.) 
+Examples:</p>
+<h1 id="require-exactly-one-of-these-arguments">Require exactly one of these arguments</h1>
+<p>field :update_amount, IngredientAmount, null: false do
+argument :ingredient_id, ID, required: true
+argument :cups, Integer, required: false
+argument :tablespoons, Integer, required: false
+argument :teaspoons, Integer, required: true
+validates required: { one_of: [:cups, :tablespoons, :teaspoons] }
+end</p>
+<h1 id="require-one-of-these-sets-of-arguments">Require one of these <em>sets</em> of arguments</h1>
+<p>field :find_object, Node, null: true do
+argument :node_id, ID, required: false
+argument :object_type, String, required: false
+argument :object_id, Integer, required: false</p>
+<h1 id="either-a-global-node_id-or-an-object_typeobject_id-pair-is-required">either a global <code class="language-plaintext highlighter-rouge">node_id</code> or an <code class="language-plaintext highlighter-rouge">object_type</code>/<code class="language-plaintext highlighter-rouge">object_id</code> pair is required:</h1>
+<p>validates required: { one_of: [:node_id, [:object_type, :object_id]] }
+end
+Instance methods:
+initialize, validate</p>
+
+
+  </body>
+</html>

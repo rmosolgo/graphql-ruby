@@ -1,11 +1,13 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.11.7/GraphQL/Execution/Interpreter/Arguments" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.12.0/GraphQL/Execution/Interpreter/Arguments" />
   </head>
   <body>
     <p>Class: GraphQL::Execution::Interpreter::Arguments &lt; Object
 A wrapper for argument hashes in GraphQL queries. 
+This object is immutable so that the runtime code can be sure that
+modifications don’t leak from one use to another 
 See Also:</p>
 <ul>
   <li>GraphQL::Query#arguments_for - to get access to these objects.
@@ -14,7 +16,7 @@ GraphQL::Dig
 Extended by:
 Forwardable
 Instance methods:
-argument_values, empty?, initialize, inspect, keyword_arguments</li>
+empty?, initialize, inspect, merge_extras</li>
 </ul>
 
 

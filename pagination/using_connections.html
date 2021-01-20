@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.7/">API</a>
+          <a href="/api-doc/1.12.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -50,16 +50,6 @@
   <p>GraphQL-Ruby ships with a few implementations of the <a href="/pagination/connection_concepts">connection pattern</a> that you can use out of the box. They support Ruby Arrays, Mongoid, Sequel, and ActiveRecord.</p>
 
 <p>Additionally, connections allow you to limit the number of items returned with <a href="#max-page-size"><code class="language-plaintext highlighter-rouge">max_page_size</code></a>.</p>
-
-<h2 id="adding-the-plugin">Adding the Plugin</h2>
-
-<p>GraphQL-Ruby 1.10.0 includes a new plugin for connections. It’s more flexible and easier to customize. If it’s not already added to your schema with <code class="language-plaintext highlighter-rouge">use ...</code>, add it:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="c1"># ...</span>
-  <span class="c1"># Add the plugin for connection pagination</span>
-  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pagination</span><span class="o">::</span><span class="no">Connections</span>
-</code></pre></div></div>
 
 <h2 id="make-connection-fields">Make Connection Fields</h2>
 

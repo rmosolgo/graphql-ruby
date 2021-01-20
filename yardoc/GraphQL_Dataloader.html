@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.12.0/GraphQL/Dataloader" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Dataloader &lt; Object
+This plugin supports Fiber-based concurrency, along with
+GraphQL::Dataloader::Source. 
+Examples:</p>
+<h1 id="installing-dataloader">Installing Dataloader</h1>
+<p>class MySchema &lt; GraphQL::Schema
+use GraphQL::Dataloader
+end</p>
+<h1 id="waiting-for-batch-loaded-data-in-a-graphql-field">Waiting for batch-loaded data in a GraphQL field</h1>
+<p>field :team, Types::Team, null: true
+def team
+dataloader.with(Sources::Record, Team).load(object.team_id)
+end
+Direct Known Subclasses:
+NullDataloader
+Class methods:
+use
+Instance methods:
+create_source_fiber, enqueue, initialize,
+resume_fiber_and_enqueue_continuation, run, with, yield, yielded?</p>
+
+
+  </body>
+</html>

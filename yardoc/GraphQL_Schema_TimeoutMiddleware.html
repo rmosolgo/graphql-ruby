@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.11.7/GraphQL/Schema/TimeoutMiddleware" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.12.0/GraphQL/Schema/TimeoutMiddleware" />
   </head>
   <body>
     <p>Class: GraphQL::Schema::TimeoutMiddleware &lt; Object
@@ -23,8 +23,12 @@ Examples:</p>
 <p>MySchema.middleware « GraphQL::Schema::TimeoutMiddleware(max_seconds: 1.5) do |timeout_error, query|
 Bugsnag.notify(timeout_error, {query_string: query_ctx.query.query_string})
 end
+See Also:</p>
+<ul>
+  <li>Schema::Timeout
 Instance methods:
-call, initialize, on_timeout</p>
+call, initialize, on_timeout</li>
+</ul>
 
 
   </body>

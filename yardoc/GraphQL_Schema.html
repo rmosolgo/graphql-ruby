@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.11.7/GraphQL/Schema" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.12.0/GraphQL/Schema" />
   </head>
   <body>
     <p>Class: GraphQL::Schema &lt; Object
@@ -27,14 +27,16 @@ GraphQL::Define::InstanceDefinable
 Extended by:
 Forwardable, GraphQL::Schema::Member::AcceptsDefinition,
 GraphQL::Schema::Member::HasAstNode,
+GraphQL::Define::InstanceDefinable::DeprecatedDefine,
 GraphQL::Schema::FindInheritedValue,
 GraphQL::Schema::LazyHandlingMethods
 Class methods:
-accessible?, add_subscription_extension_if_necessary, add_type,
+accessible?, add_directives_from,
+add_subscription_extension_if_necessary, add_type,
 add_type_and_traverse, all_middleware, as_json, context_class,
-cursor_encoder, default_directives, default_filter, default_mask,
-default_max_page_size, directive, directives,
-disable_introspection_entry_points,
+cursor_encoder, default_analysis_engine, default_directives,
+default_filter, default_mask, default_max_page_size, directive,
+directives, disable_introspection_entry_points,
 disable_introspection_entry_points?,
 disable_schema_introspection_entry_point,
 disable_schema_introspection_entry_point?,
@@ -61,7 +63,8 @@ types, unauthorized_field, unauthorized_object, union_memberships,
 update_type_owner, use, using_ast_analysis?, visible?
 Instance methods:
 accessible?, as_json, call_on_type_class, check_resolved_type,
-default_filter, define, disable_introspection_entry_points?,
+dataloader_class, default_filter, deprecated_define,
+disable_introspection_entry_points?,
 disable_schema_introspection_entry_point?,
 disable_type_introspection_entry_point?, execute,
 execution_strategy_for_operation, find, get_field, get_fields,

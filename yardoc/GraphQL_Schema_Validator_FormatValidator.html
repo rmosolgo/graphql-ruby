@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.12.0/GraphQL/Schema/Validator/FormatValidator" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Schema::Validator::FormatValidator &lt; GraphQL::Schema…
+Use this to assert that string values match (or don’t match) the
+given RegExp. 
+Examples:</p>
+<h1 id="requiring-input-to-match-a-pattern">requiring input to match a pattern</h1>
+<p>argument :handle, String, required: true,
+validates: { format: { with: /\A[a-z0-9_]+\Z/ } }</p>
+<h1 id="reject-inputs-that-match-a-pattern">reject inputs that match a pattern</h1>
+<p>argument :word_that_doesnt_begin_with_a_vowel, String, required: true,
+validates: { format: { without: /\A[aeiou]/ } }</p>
+<h1 id="its-pretty-hard-to-come-up-with-a-legitimate-use-case-for-without">It’s pretty hard to come up with a legitimate use case for <code class="language-plaintext highlighter-rouge">without:</code></h1>
+<p>Instance methods:
+initialize, validate</p>
+
+
+  </body>
+</html>

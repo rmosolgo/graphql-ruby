@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.11.7/">API</a>
+          <a href="/api-doc/1.12.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -64,7 +64,7 @@
 
 <h2 id="whats-the-difference">What’s the difference?</h2>
 
-<p>The default <a href="/api-doc/1.11.7/GraphQL/Pagination/ActiveRecordRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::ActiveRecordRelationConnection"><code>GraphQL::Pagination::ActiveRecordRelationConnection</code></a> (which turns an <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code> into a GraphQL-ready connection) uses <em>offset</em> as a cursor. This naive approach is sufficient for many cases, but it’s subject to a specific set of bugs.</p>
+<p>The default <a href="/api-doc/1.12.0/GraphQL/Pagination/ActiveRecordRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::ActiveRecordRelationConnection"><code>GraphQL::Pagination::ActiveRecordRelationConnection</code></a> (which turns an <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code> into a GraphQL-ready connection) uses <em>offset</em> as a cursor. This naive approach is sufficient for many cases, but it’s subject to a specific set of bugs.</p>
 
 <p>Let’s say you’re looking at the second page of 10 items (<code class="language-plaintext highlighter-rouge">LIMIT 10 OFFSET 10</code>). During that time, one of the items on page 1 is deleted. When you navigate to page 3 (<code class="language-plaintext highlighter-rouge">LIMIT 10 OFFSET 20</code>), you’ll actually <em>miss</em> one item. The entire list shifted “up” one position when a previous item was deleted.</p>
 
@@ -83,9 +83,6 @@
 <p>You can use a stable connection for <em>all</em> <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code>s by installing it at the schema level:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="c1"># Add the connection plugin</span>
-  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pagination</span><span class="o">::</span><span class="no">Connections</span>
-
   <span class="c1"># Hook up the stable connection that matches your database</span>
   <span class="n">connections</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PostgresStableRelationConnection</span><span class="p">)</span>
   <span class="c1"># Or...</span>

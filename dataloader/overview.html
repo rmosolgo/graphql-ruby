@@ -1,0 +1,211 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Overview</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#dataloader-guides">Dataloader</a>
+  &raquo; Overview
+</p>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Overview</h1>
+<div class="guide-container">
+  <p>GraphQL-Ruby 1.12 includes <a href="/api-doc/1.12.0/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a>, a module for managing efficient database in a way that’s transparent to application code, backed by Ruby’s <code class="language-plaintext highlighter-rouge">Fiber</code> concurrency primitive.</p>
+
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> is inspired by <a href="https://github.com/bessey/graphql-fiber-test/tree/no-gem-changes"><code class="language-plaintext highlighter-rouge">@bessey</code>’s proof-of-concept</a> and <a href="https://github.com/shopify/graphql-batch">shopify/graphql-batch</a>.</p>
+
+<h2 id="batch-loading">Batch Loading</h2>
+
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> facilitates a two-stage approach to fetching data from external sources (like database or APIs):</p>
+
+<ul>
+  <li>First, GraphQL fields register their data requirements (eg, object IDs or query parameters)</li>
+  <li>Then, after as many requirements have been gathered as possible, <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> initiates <em>actual</em> fetches to external services</li>
+</ul>
+
+<p>That cycle is repeated during execution: data requirements are gathered until no further GraphQL fields can be executed, then <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> triggers external calls based on those requirements and GraphQL execution resumes.</p>
+
+<h2 id="fibers">Fibers</h2>
+
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> uses Ruby’s <code class="language-plaintext highlighter-rouge">Fiber</code>, a lightweight concurrency primitive which supports application-level scheduling <em>within</em> a <code class="language-plaintext highlighter-rouge">Thread</code>. By using <code class="language-plaintext highlighter-rouge">Fiber</code>, <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> can pause GraphQL execution when data is requested, then resume execution after the data is fetched.</p>
+
+<p>At a high level, <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code>’s usage of <code class="language-plaintext highlighter-rouge">Fiber</code> looks like this:</p>
+
+<ul>
+  <li>GraphQL execution is run inside a Fiber.</li>
+  <li>When that Fiber returns, if the Fiber was paused to wait for data, then GraphQL execution resumes with the <em>next</em> (sibling) GraphQL field inside a new Fiber.</li>
+  <li>That cycle continues until no further sibling fields are available and all known Fibers are paused.</li>
+  <li><code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> takes the first paused Fiber and resumes it, causing the <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader::Source</code> to execute its <code class="language-plaintext highlighter-rouge">#fetch(...)</code> call. That Fiber continues execution as far as it can.</li>
+  <li>Likewise, paused Fibers are resumed, causing GraphQL execution to continue, until all paused Fibers are evaluated completely.</li>
+</ul>
+
+<p>Since <em>all</em> GraphQL execution is inside a Fiber, <strong><code class="language-plaintext highlighter-rouge">Thread.current[...]</code> won’t be set</strong>. Those assignments are <em>Fiber-local</em>, so each new Fiber has an <em>empty</em> <code class="language-plaintext highlighter-rouge">Thread.current</code>. For <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code>, use GraphQL-Ruby’s <code class="language-plaintext highlighter-rouge">context</code> object to provide “current” values to a GraphQL query. Inside <code class="language-plaintext highlighter-rouge">#fetch(...)</code> methods, those values can be re-assigned to <code class="language-plaintext highlighter-rouge">Thread.current</code> if application code requires it.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>To install <a href="/api-doc/1.12.0/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a>, add it to your schema with <code class="language-plaintext highlighter-rouge">use ...</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, inside your schema, you can request batch-loaded objects by their lookup key with <code class="language-plaintext highlighter-rouge">dataloader.with(...).load(...)</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:user</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:handle</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="n">handle</span><span class="p">:)</span>
+  <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">UserByHandle</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Or, load several objects by passing an array of lookup keys to <code class="language-plaintext highlighter-rouge">.load_all(...)</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:is_following</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:follower_handle</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:followed_handle</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">is_following</span><span class="p">(</span><span class="n">follower_handle</span><span class="p">:,</span> <span class="n">followed_handle</span><span class="p">:)</span>
+  <span class="n">follower</span><span class="p">,</span> <span class="n">followed</span> <span class="o">=</span> <span class="n">dataloader</span>
+    <span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">UserByHandle</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">load_all</span><span class="p">([</span><span class="n">follower_handle</span><span class="p">,</span> <span class="n">followed_handle</span><span class="p">])</span>
+
+  <span class="n">followed</span> <span class="o">&amp;&amp;</span> <span class="n">follower</span> <span class="o">&amp;&amp;</span> <span class="n">follower</span><span class="p">.</span><span class="nf">follows?</span><span class="p">(</span><span class="n">followed</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>To prepare requests from several sources, use <code class="language-plaintext highlighter-rouge">.request(...)</code>, then call <code class="language-plaintext highlighter-rouge">.load</code> after all requests are registered:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AddToList</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Mutation</span>
+  <span class="n">argument</span> <span class="ss">:handle</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:list</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">as: :list_name</span>
+
+  <span class="n">field</span> <span class="ss">:list</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">UserList</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+
+  <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">handle</span><span class="p">:,</span> <span class="n">list_name</span><span class="p">:)</span>
+    <span class="c1"># first, register the requests:</span>
+    <span class="n">user_request</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">UserByHandle</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+    <span class="n">list_request</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ListByName</span><span class="p">,</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">]).</span><span class="nf">request</span><span class="p">(</span><span class="n">list_name</span><span class="p">)</span>
+    <span class="c1"># then, use `.load` to wait for the external call and return the object:</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">user_request</span><span class="p">.</span><span class="nf">load</span>
+    <span class="n">list</span> <span class="o">=</span> <span class="n">list_request</span><span class="p">.</span><span class="nf">load</span>
+    <span class="c1"># Now, all objects are ready.</span>
+    <span class="n">list</span><span class="p">.</span><span class="nf">add_user!</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="p">{</span> <span class="ss">list: </span><span class="n">list</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="loads-and-object_from_id"><code class="language-plaintext highlighter-rouge">loads:</code> and <code class="language-plaintext highlighter-rouge">object_from_id</code></h3>
+
+<p><code class="language-plaintext highlighter-rouge">dataloader</code> is also available as <code class="language-plaintext highlighter-rouge">context.dataloader</code>, so you can use it to implement <code class="language-plaintext highlighter-rouge">MySchema.object_from_id</code>. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="n">model_class</span><span class="p">,</span> <span class="n">database_id</span> <span class="o">=</span> <span class="no">IdDecoder</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="p">.</span><span class="nf">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">RecordById</span><span class="p">,</span> <span class="n">model_class</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="n">database_id</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, any arguments with <code class="language-plaintext highlighter-rouge">loads:</code> will use that method to fetch objects. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FollowUser</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Mutation</span>
+  <span class="n">argument</span> <span class="ss">:follow_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">User</span>
+
+  <span class="n">field</span> <span class="ss">:followed</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+
+  <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">follow</span><span class="p">:)</span>
+    <span class="c1"># `follow` was fetched using the Schema's `object_from_id` hook</span>
+    <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">follow!</span><span class="p">(</span><span class="n">follow</span><span class="p">)</span>
+    <span class="p">{</span> <span class="ss">followed: </span><span class="n">follow</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong>Caveat:</strong> The currently implementation loads all <code class="language-plaintext highlighter-rouge">loads:</code> objects in the <em>same fiber</em>, so data will be fetched sequentially.</p>
+
+<h2 id="data-sources">Data Sources</h2>
+
+<p>To implement batch-loading data sources, see the <a href="/dataloader/sources">Sources guide</a>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/dataloader/overview.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Overview">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Sources</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#dataloader-guides">Dataloader</a>
+  &raquo; Sources
+</p>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Sources</h1>
+<div class="guide-container">
+  <p><em>Sources</em> are what <a href="/api-doc/1.12.0/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> uses to fetch data from external services.</p>
+
+<h2 id="source-concepts">Source Concepts</h2>
+
+<p>Sources are classes that inherit from <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader::Source</code>. A Source <em>must</em> implement <code class="language-plaintext highlighter-rouge">def fetch(keys)</code> to return a list of objects, one for each of the given keys. A source <em>may</em> implement <code class="language-plaintext highlighter-rouge">def initialize(dataloader, ...)</code> to accept other batching parameters.</p>
+
+<p>Sources will receive two kinds of inputs from <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code>:</p>
+
+<ul>
+  <li>
+    <p><em>keys</em>, which correspond to objects requested by the application.</p>
+
+    <p>Keys are passed to <code class="language-plaintext highlighter-rouge">def fetch(keys)</code>, which must return an object (or <code class="language-plaintext highlighter-rouge">nil</code>) for each of <code class="language-plaintext highlighter-rouge">keys</code>, in the same order as <code class="language-plaintext highlighter-rouge">keys</code>.</p>
+
+    <p>Under the hood, each Source instance maintains a <code class="language-plaintext highlighter-rouge">key =&gt; object</code> cache.</p>
+  </li>
+  <li>
+    <p><em>batch parameters</em>, which are the basis of batched groups. For example, if you’re loading records from different database tables, the the table name would be a batch parameter.</p>
+
+    <p>Batch parameters are given to <code class="language-plaintext highlighter-rouge">dataloader.with(source_class, *batch_parameters)</code>, and the default is <em>no batch parameters</em>. When you define a source, you should add the batch parameters to <code class="language-plaintext highlighter-rouge">def initialize(dataloader, ...)</code> and store them in instance variables.</p>
+
+    <p>(<code class="language-plaintext highlighter-rouge">dataloader.with(source_class, *batch_parameters)</code> returns an instance of <code class="language-plaintext highlighter-rouge">source_class</code> with the given batch parameters – but it might be an instance which was cached by <code class="language-plaintext highlighter-rouge">dataloader</code>.)</p>
+  </li>
+</ul>
+
+<h2 id="example-loading-strings-from-redis-by-key">Example: Loading Strings from Redis by Key</h2>
+
+<p>The simplest source might fetch values based on their keys. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/sources/redis_string.rb</span>
+<span class="k">class</span> <span class="nc">Sources::RedisString</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="o">::</span><span class="no">Source</span>
+  <span class="no">REDIS</span> <span class="o">=</span> <span class="no">Redis</span><span class="p">.</span><span class="nf">new</span>
+  <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+    <span class="c1"># Redis's `mget` will return a value for each key with a `nil` for any not-found key.</span>
+    <span class="no">REDIS</span><span class="p">.</span><span class="nf">mget</span><span class="p">(</span><span class="o">*</span><span class="n">keys</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This loader could be used in GraphQL like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">some_string</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">RedisString</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="s2">"some_key"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Calls to <code class="language-plaintext highlighter-rouge">.load(key)</code> will be batched, and when <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> can’t go any further, it will dispatch a call to <code class="language-plaintext highlighter-rouge">def fetch(keys)</code> above.</p>
+
+<h2 id="example-loading-activerecord-objects-by-id">Example: Loading ActiveRecord Objects by ID</h2>
+
+<p>To fetch ActiveRecord objects by ID, the source should also accept the <em>model class</em> as a batching parameter. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/sources/active_record_object.rb</span>
+<span class="k">class</span> <span class="nc">Sources::ActiveRecordObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="o">::</span><span class="no">Source</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
+    <span class="vi">@model_class</span> <span class="o">=</span> <span class="n">model_class</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+    <span class="n">records</span> <span class="o">=</span> <span class="vi">@model_class</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">ids</span><span class="p">)</span>
+    <span class="c1"># return a list with `nil` for any ID that wasn't found</span>
+    <span class="n">ids</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="nb">id</span><span class="o">|</span> <span class="n">records</span><span class="p">.</span><span class="nf">find</span> <span class="p">{</span> <span class="o">|</span><span class="n">r</span><span class="o">|</span> <span class="n">r</span><span class="p">.</span><span class="nf">id</span> <span class="o">==</span> <span class="nb">id</span> <span class="p">}</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This source could be used for any <code class="language-plaintext highlighter-rouge">model_class</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">author</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">for</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecordObject</span><span class="p">,</span> <span class="o">::</span><span class="no">User</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">post</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">for</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecordObject</span><span class="p">,</span> <span class="o">::</span><span class="no">Post</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="example-batched-calculations">Example: Batched Calculations</h2>
+
+<p>Besides fetching objects, Sources can return values from batched calculations. For example, a system could batch up checks for who a user follows:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># for a given user, batch checks to see whether this user follows another user.</span>
+<span class="c1"># (The default `user.followings.where(followed_user_id: followed).exists?` would cause N+1 queries.)</span>
+<span class="k">class</span> <span class="nc">Sources::UserFollowingExists</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="o">::</span><span class="no">Source</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="vi">@user</span> <span class="o">=</span> <span class="n">user</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">handles</span><span class="p">)</span>
+    <span class="c1"># Prepare a `SELECT id FROM users WHERE handle IN(...)` statement</span>
+    <span class="n">user_ids</span> <span class="o">=</span> <span class="o">::</span><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">handle: </span><span class="n">handles</span><span class="p">).</span><span class="nf">select</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span>
+    <span class="c1"># And use it to filter this user's followings:</span>
+    <span class="n">followings</span> <span class="o">=</span> <span class="vi">@user</span><span class="p">.</span><span class="nf">followings</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">followed_user_id: </span><span class="n">user_ids</span><span class="p">)</span>
+    <span class="c1"># Now, for followings that _actually_ hit a user, get the handles for those users:</span>
+    <span class="n">followed_users</span> <span class="o">=</span> <span class="o">::</span><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">followings</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:followed_user_id</span><span class="p">))</span>
+    <span class="c1"># Finally, return a result set, with one entry (true or false) for each of the given `handles`</span>
+    <span class="n">handles</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">h</span><span class="o">|</span> <span class="o">!!</span><span class="n">followed_users</span><span class="p">.</span><span class="nf">find</span> <span class="p">{</span> <span class="o">|</span><span class="n">u</span><span class="o">|</span> <span class="n">u</span><span class="p">.</span><span class="nf">handle</span> <span class="o">==</span> <span class="n">h</span> <span class="p">}}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>It could be used like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">is_following</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">UserFollowingExists</span><span class="p">,</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">]).</span><span class="nf">load</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>After all requests were batched, <code class="language-plaintext highlighter-rouge">#fetch</code> will return a Boolean result to <code class="language-plaintext highlighter-rouge">is_following</code>.</p>
+
+<h2 id="example-loading-in-a-background-thread">Example: Loading in a background thread</h2>
+
+<p>Inside <code class="language-plaintext highlighter-rouge">Source#fetch(keys)</code>, you can call <code class="language-plaintext highlighter-rouge">dataloader.yield</code> to return control to the Dataloader. This way, it will proceed loading other Sources (if there are any), then return the source that yielded.</p>
+
+<p>A simple example, spinning up a new Thread:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+  <span class="c1"># spin up some work in a background thread</span>
+  <span class="n">thread</span> <span class="o">=</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span>
+    <span class="n">fetch_external_data</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="c1"># return control to the dataloader</span>
+  <span class="n">dataloader</span><span class="p">.</span><span class="nf">yield</span>
+  <span class="c1"># at this point,</span>
+  <span class="c1"># the dataloader has tried everything else and come back to this source,</span>
+  <span class="c1"># so block if necessary:</span>
+  <span class="n">thread</span><span class="p">.</span><span class="nf">value</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>For a more robust asynchronous task primitive, check out <a href="http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Future.html"><code class="language-plaintext highlighter-rouge">Concurrent::Future</code></a>.</p>
+
+<p>Ruby 3.0 added built-in support for yielding Fibers that make I/O calls – hopefully a future GraphQL-Ruby version will work with that!</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/dataloader/sources.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Sources">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

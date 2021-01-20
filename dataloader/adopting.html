@@ -1,0 +1,187 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Dataloader vs. GraphQL-Batch</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#dataloader-guides">Dataloader</a>
+  &raquo; Dataloader vs. GraphQL-Batch
+</p>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Dataloader vs. GraphQL-Batch</h1>
+<div class="guide-container">
+  <p><a href="/api-doc/1.12.0/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> solves the same problem as <a href="https://github.com/shopify/graphql-batch"><code class="language-plaintext highlighter-rouge">GraphQL::Batch</code></a>. There are a few major differences between the modules:</p>
+
+<ul>
+  <li><strong>Concurrency Primitive:</strong> GraphQL-Batch uses <code class="language-plaintext highlighter-rouge">Promise</code>s from <a href="https://github.com/lgierth/promise.rb"><code class="language-plaintext highlighter-rouge">promise.rb</code></a>; GraphQL::Dataloader uses Ruby’s <a href="https://ruby-doc.org/core-3.0.0/Fiber.html"><code class="language-plaintext highlighter-rouge">Fiber</code> API</a>. These primitives dictate how batch loading code is written (see below for comparisons).</li>
+  <li><strong>Maturity:</strong> Frankly, GraphQL-Batch is about as old as GraphQL-Ruby, and it’s been in production at Shopify, GitHub, and others for many years. GraphQL::Dataloader is new, and although Ruby has supported <code class="language-plaintext highlighter-rouge">Fiber</code>s since 1.9, they still aren’t widely used.</li>
+  <li><strong>Scope:</strong> It’s not currently possible to use <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> <em>outside</em> GraphQL.</li>
+</ul>
+
+<p>The incentive in writing <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> was to leverage <code class="language-plaintext highlighter-rouge">Fiber</code>’s ability to <em>transparently</em> pause and resume work, which removes the need for <code class="language-plaintext highlighter-rouge">Promise</code>s (and removes the resulting complexity in the code). Additionally, <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> shoulde <em>eventually</em> support Ruby 3.0’s <code class="language-plaintext highlighter-rouge">Fiber.scheduler</code> API, which runs I/O in the background by default.</p>
+
+<h2 id="comparison-fetching-a-single-object">Comparison: Fetching a single object</h2>
+
+<p>In this example, a single object is batch-loaded to satisfy a GraphQL field.</p>
+
+<ul>
+  <li>
+    <p>With <strong>GraphQL-Batch</strong>, you call a loader, which returns a <code class="language-plaintext highlighter-rouge">Promise</code>:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">record_promise</span> <span class="o">=</span> <span class="no">Loaders</span><span class="o">::</span><span class="no">Record</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>    </div>
+
+    <p>Then, under the hood, GraphQL-Ruby manages the promise (using its <code class="language-plaintext highlighter-rouge">lazy_resolve</code> feature, upstreamed from GraphQL-Batch many years ago). GraphQL-Ruby will call <code class="language-plaintext highlighter-rouge">.sync</code> on it when no futher execution is possible; <code class="language-plaintext highlighter-rouge">promise.rb</code> implements <code class="language-plaintext highlighter-rouge">Promise#sync</code> to execute the pending work.</p>
+  </li>
+  <li>
+    <p>With <strong>GraphQL::Dataloader</strong>, you get a source, then call <code class="language-plaintext highlighter-rouge">.load</code> on it, which may pause the current Fiber, but it returns the requested object.</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">Record</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>    </div>
+
+    <p>Since the requested object is (eventually) returned from <code class="language-plaintext highlighter-rouge">.load</code>, Nothing else is required.</p>
+  </li>
+</ul>
+
+<h2 id="comparison-fetching-objects-in-sequence-dependent">Comparison: Fetching objects in sequence (dependent)</h2>
+
+<p>In this example, one object is loaded, then another object is loaded <em>based on</em> the first one.</p>
+
+<ul>
+  <li>
+    <p>With <strong>GraphQL-Batch</strong>, <code class="language-plaintext highlighter-rouge">.then { ... }</code> is used to join dependent code blocks:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Loaders</span><span class="o">::</span><span class="no">Record</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nf">then</span> <span class="k">do</span> <span class="o">|</span><span class="n">record</span><span class="o">|</span>
+  <span class="no">Loaders</span><span class="o">::</span><span class="no">OtherRecord</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="n">record</span><span class="p">.</span><span class="nf">other_record_id</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div>    </div>
+
+    <p>That call returns a <code class="language-plaintext highlighter-rouge">Promise</code>, which is stored by GraphQL-Ruby, and finally <code class="language-plaintext highlighter-rouge">.sync</code>ed.</p>
+  </li>
+  <li>
+    <p>With <strong>GraphQL-Dataloader</strong>, <code class="language-plaintext highlighter-rouge">.load(...)</code> returns the requested object (after a potential <code class="language-plaintext highlighter-rouge">Fiber</code> pause), so other method calls are necessary:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">record</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">Record</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">OtherRecord</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="n">record</span><span class="p">.</span><span class="nf">other_record_id</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h2 id="comparison-fetching-objects-concurrently-independent">Comparison: Fetching objects concurrently (independent)</h2>
+
+<p>Sometimes, you need multiple <em>indepenedent</em> records to perform a calcuation. Each record is loaded, then they’re combined in some bit of work.</p>
+
+<ul>
+  <li>
+    <p>With <strong>GraphQL-Batch</strong>, <code class="language-plaintext highlighter-rouge">Promise.all(...)</code> is used to to wait for several pending loads:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">promise_1</span> <span class="o">=</span> <span class="no">Loaders</span><span class="o">::</span><span class="no">Record</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">promise_2</span> <span class="o">=</span> <span class="no">Loaders</span><span class="o">::</span><span class="no">OtherRecord</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="no">Promise</span><span class="p">.</span><span class="nf">all</span><span class="p">([</span><span class="n">promise_1</span><span class="p">,</span> <span class="n">promise_2</span><span class="p">]).</span><span class="nf">then</span> <span class="k">do</span> <span class="o">|</span><span class="n">record</span><span class="p">,</span> <span class="n">other_record</span><span class="o">|</span>
+  <span class="n">do_something</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">other_record</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div>    </div>
+
+    <p>If the objects are loaded from the same loader, then <code class="language-plaintext highlighter-rouge">.load_many</code> also works:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Loaders</span><span class="o">::</span><span class="no">Record</span><span class="p">.</span><span class="nf">load_many</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]).</span><span class="nf">then</span> <span class="k">do</span> <span class="o">|</span><span class="n">record</span><span class="p">,</span> <span class="n">other_record</span><span class="o">|</span>
+  <span class="n">do_something</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">other_record</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>With <strong>GraphQL::Dataloader</strong>, each request is registered with <code class="language-plaintext highlighter-rouge">.request(...)</code> (which never pauses the Fiber), then data is loaded with <code class="language-plaintext highlighter-rouge">.load</code> (which will pause the Fiber as needed):</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># first, make some requests</span>
+<span class="n">request_1</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">Record</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">request_2</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">OtherRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1"># then, load the objects and do something</span>
+<span class="n">record</span> <span class="o">=</span> <span class="n">request_1</span><span class="p">.</span><span class="nf">load</span>
+<span class="n">other_record</span> <span class="o">=</span> <span class="n">request_2</span><span class="p">.</span><span class="nf">load</span>
+<span class="n">do_something</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">other_record</span><span class="p">)</span>
+</code></pre></div>    </div>
+
+    <p>If the objects come from the same <code class="language-plaintext highlighter-rouge">Source</code>, then <code class="language-plaintext highlighter-rouge">.load_all</code> will return the objects directly:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">record</span><span class="p">,</span> <span class="n">other_record</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">Record</span><span class="p">).</span><span class="nf">load_all</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">do_something</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">other_record</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/dataloader/adopting.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Dataloader vs. GraphQL-Batch">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

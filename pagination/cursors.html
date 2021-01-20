@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Cursors</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#pagination-guides">Pagination</a>
+  &raquo; Cursors
+</p>
+
+
+<h1 class="guide-header">Cursors</h1>
+<div class="guide-container">
+  <p>Connections use <em>cursors</em> to advance through paginated lists. A cursor is an opaque string that indicates a specific point in this.</p>
+
+<p>Here, <em>opaque</em> means that the string has no meaning except its value. cursors shouldn’t be decoded, reverse-engineered, or generated ad-hoc. The only guarantee of a cursor is that, after you retrieve one, you can use it to request subsequent or preceeding items in the list.</p>
+
+<p>Although cursors can be tricky, they were chosen for Relay-style connections because they can be implemented in stable and high-performing ways.</p>
+
+<h2 id="customizing-cursors">Customizing Cursors</h2>
+
+<p>By default, cursors are encoded in base64 to make them opaque to a human client. You can specify a custom encoder with <code class="language-plaintext highlighter-rouge">Schema.cursor_encoder</code>. The value should be an object which responds to <code class="language-plaintext highlighter-rouge">.encode(plain_text, nonce:)</code> and <code class="language-plaintext highlighter-rouge">.decode(encoded_text, nonce: false)</code>.</p>
+
+<p>For example, to use URL-safe base-64 encoding:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">URLSafeBase64Encoder</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">txt</span><span class="p">,</span> <span class="ss">nonce: </span><span class="kp">false</span><span class="p">)</span>
+    <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_encode64</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">decode</span><span class="p">(</span><span class="n">txt</span><span class="p">,</span> <span class="ss">nonce: </span><span class="kp">false</span><span class="p">)</span>
+    <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_decode64</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="n">cursor_encoder</span><span class="p">(</span><span class="no">URLSafeBase64Encoder</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, all connections will use URL-safe base-64 encoding.</p>
+
+<p>From a connection instance, the <code class="language-plaintext highlighter-rouge">cursor_encoders</code> methods are available via <a href="/api-doc/1.12.0/GraphQL/Pagination/Connection#encode-instance_method" target="_blank" title="API docs for GraphQL::Pagination::Connection#encode"><code>GraphQL::Pagination::Connection#encode</code></a> and <a href="/api-doc/1.12.0/GraphQL/Pagination/Connection#decode-instance_method" target="_blank" title="API docs for GraphQL::Pagination::Connection#decode"><code>GraphQL::Pagination::Connection#decode</code></a></p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/pagination/cursors.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Cursors">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
