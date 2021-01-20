@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Schema::FieldExtension
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Schema::FieldExtension";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (F)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span>
+     &raquo; 
+    <span class="title">FieldExtension</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Schema::FieldExtension
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Schema::FieldExtension</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/field_extension.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Extend this class to make field-level customizations to resolve behavior.</p>
+
+<p>When a extension is added to a field with <code>extension(MyExtension)</code>, a <code>MyExtension</code> instance
+is created, and its hooks are applied whenever that field is called.</p>
+
+<p>The instance is frozen so that instance variables aren’t modified during query execution,
+which could cause all kinds of issues due to race conditions.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="Field/ConnectionExtension.html" title="GraphQL::Schema::Field::ConnectionExtension (class)">GraphQL::Schema::Field::ConnectionExtension</a></span>, <span class='object_link'><a href="Field/ScopeExtension.html" title="GraphQL::Schema::Field::ScopeExtension (class)">GraphQL::Schema::Field::ScopeExtension</a></span>, <span class='object_link'><a href="../Subscriptions/SubscriptionRoot/Extension.html" title="GraphQL::Subscriptions::SubscriptionRoot::Extension (class)">GraphQL::Subscriptions::SubscriptionRoot::Extension</a></span></p>
+</div>
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#field-instance_method" title="#field (instance method)">#<strong>field</strong>  &#x21d2; GraphQL::Schema::Field </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#options-instance_method" title="#options (instance method)">#<strong>options</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#after_resolve-instance_method" title="#after_resolve (instance method)">#<strong>after_resolve</strong>(object:, arguments:, context:, value:, memo:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called after <span class='object_link'><a href="#field-instance_method" title="GraphQL::Schema::FieldExtension#field (method)">#field</a></span> was resolved, and after any lazy values (like <code>Promise</code>s) were synced, but before the value was added to the GraphQL response.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#apply-instance_method" title="#apply (instance method)">#<strong>apply</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called when this extension is attached to a field.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(field:, options:)  &#x21d2; FieldExtension </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called when the extension is mounted with <code>extension(name, options)</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve-instance_method" title="#resolve (instance method)">#<strong>resolve</strong>(object:, arguments:, context:) {|object, arguments, memo| ... } &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called before resolving <span class='object_link'><a href="#field-instance_method" title="GraphQL::Schema::FieldExtension#field (method)">#field</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(field:, options:)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Schema::FieldExtension (class)">FieldExtension</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Called when the extension is mounted with <code>extension(name, options)</code>.
+The instance is frozen to avoid improper use of state during execution.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>field</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The field where this extension was mounted</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The second argument to <code>extension</code>, or <code>{}</code> if nothing was passed.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24
+25
+26
+27</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field_extension.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>field:</span><span class='comma'>,</span> <span class='label'>options:</span><span class='rparen'>)</span>
+  <span class='ivar'>@field</span> <span class='op'>=</span> <span class='id identifier rubyid_field'>field</span>
+  <span class='ivar'>@options</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span> <span class='op'>||</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_apply'>apply</span>
+  <span class='id identifier rubyid_freeze'>freeze</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="field-instance_method">
+  
+    #<strong>field</strong>  &#x21d2; <tt><span class='object_link'><a href="Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field_extension.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_field'>field</span>
+  <span class='ivar'>@field</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="options-instance_method">
+  
+    #<strong>options</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+16
+17
+18</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field_extension.rb', line 16</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_options'>options</span>
+  <span class='ivar'>@options</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="after_resolve-instance_method">
+  
+    #<strong>after_resolve</strong>(object:, arguments:, context:, value:, memo:)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Called after <span class='object_link'><a href="#field-instance_method" title="GraphQL::Schema::FieldExtension#field (method)">#field</a></span> was resolved, and after any lazy values (like <code>Promise</code>s) were synced,
+but before the value was added to the GraphQL response.</p>
+
+<p>Whatever this hook returns will be used as the return value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>object</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The object the field is being resolved on</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>arguments</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Ruby keyword arguments for resolving this field</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">Query::Context</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the context for this query</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Whatever the field previously returned</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>memo</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The third value yielded by <span class='object_link'><a href="#resolve-instance_method" title="GraphQL::Schema::FieldExtension#resolve (method)">#resolve</a></span>, or <code>nil</code> if there wasn’t one</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The return value for this field.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+64
+65
+66</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field_extension.rb', line 64</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_after_resolve'>after_resolve</span><span class='lparen'>(</span><span class='label'>object:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='comma'>,</span> <span class='label'>context:</span><span class='comma'>,</span> <span class='label'>value:</span><span class='comma'>,</span> <span class='label'>memo:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_value'>value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="apply-instance_method">
+  
+    #<strong>apply</strong>  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Called when this extension is attached to a field.
+The field definition may be extended during this method.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+32
+33</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field_extension.rb', line 32</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_apply'>apply</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolve-instance_method">
+  
+    #<strong>resolve</strong>(object:, arguments:, context:) {|object, arguments, memo| ... } &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Called before resolving <span class='object_link'><a href="#field-instance_method" title="GraphQL::Schema::FieldExtension#field (method)">#field</a></span>. It should either:</p>
+
+<ul>
+  <li><code>yield</code> values to continue execution; OR</li>
+  <li>return something else to shortcut field execution.</li>
+</ul>
+
+<p>Whatever this method returns will be used for execution.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>object</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The object the field is being resolved on</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>arguments</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Ruby keyword arguments for resolving this field</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">Query::Context</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the context for this query</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>object</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The object to continue resolving the field on</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>arguments</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The keyword arguments to continue resolving with</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>memo</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Any extension-specific value which will be passed to <span class='object_link'><a href="#after_resolve-instance_method" title="GraphQL::Schema::FieldExtension#after_resolve (method)">#after_resolve</a></span> later</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The return value for this field.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+49
+50
+51</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/field_extension.rb', line 49</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='label'>object:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='comma'>,</span> <span class='label'>context:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Wed Jan 20 21:00:34 2021 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.26 (ruby-2.7.2).
+</div>
+
+    </div>
+  </body>
+</html>
