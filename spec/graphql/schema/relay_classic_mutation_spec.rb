@@ -316,9 +316,13 @@ describe GraphQL::Schema::RelayClassicMutation do
           field :error, String, null: true
         end
 
+        class BaseReturnType < GraphQL::Schema::Object
+          implements ResultInterface, ErrorInterface
+        end
+
         class ReturnTypeWithInterfaceTest < GraphQL::Schema::RelayClassicMutation
           field :name, String, null: true
-          return_interfaces [ResultInterface, ErrorInterface]
+          object_class BaseReturnType
 
           def resolve
             {

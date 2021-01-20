@@ -8,6 +8,32 @@
 
 ### Bug fixes
 
+# 1.12.0 (19 January 2021)
+
+### Breaking changes
+
+- `GraphQL::Schema` defaults to `GraphQL::Execution::Interpreter`, `GraphQL::Analysis::AST`, `GraphQL::Pagination::Connections`, and `GraphQL::Execution::Errors`. (#3145) To get the previous (deprecated) behaviors:
+
+  ```ruby
+  # revert to deprecated execution behaviors:
+  use GraphQL::Execution::Execute
+  use GraphQL::Analysis
+  ```
+- `GraphQL::Execution::Interpreter::Arguments` instances are frozen (#3138). (Usually, GraphQL code doesn't interact with these objects, but they're used some places under the hood.)
+
+### Deprecations
+
+- Many, many legacy classes and methods were deprecated. #3275 Deprecation errors include links to migration documentation. For a full list, see: https://github.com/rmosolgo/graphql-ruby/issues/3056
+
+### New features
+
+- Rails-like argument validations (#3207)
+- Fiber-based `GraphQL::Dataloader` for batch-loading data #3264
+- Connection and edge behaviors are available as mixins #3071
+- Schema definition supports schema directives #3224
+
+### Bug fixes
+
 # 1.11.7 (18 January 2021)
 
 ### Breaking changes
