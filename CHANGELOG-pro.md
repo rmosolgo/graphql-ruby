@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+## 1.17.0 (20 Jan 2020)
+
+### New Features
+
+- Updates for 1.12.0 compatibility
+
+### Bug Fix
+
+- OperationStore: improve performance by batching reads and writes during updates
+
 ## 1.16.2 (21 Dec 2020)
 
 ### New Features
