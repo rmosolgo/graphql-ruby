@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "yard"
+require "webrick"
 
 namespace :apidocs do
   desc "Fetch a gem version from RubyGems, build the docs"
