@@ -8,7 +8,7 @@
 
 ### Bug fixes
 
-# 1.12.0 (19 January 2021)
+# 1.12.0 (20 January 2021)
 
 ### Breaking changes
 
