@@ -771,7 +771,7 @@ module GraphQL
 
     class Member
       def initialize(member, skip: SkipOnNullKeyword, type_transforms: DEFAULT_TYPE_TRANSFORMS, field_transforms: DEFAULT_FIELD_TRANSFORMS, clean_up_transforms: DEFAULT_CLEAN_UP_TRANSFORMS)
-        warn "#{self.class} will be removed from GraphQL-Ruby 2.0 (but there's no point in using it after you've transformed your code, anyways)"
+        GraphQL::Deprecated.warn "#{self.class} will be removed from GraphQL-Ruby 2.0 (but there's no point in using it after you've transformed your code, anyways)"
         @member = member
         @skip = skip
         @type_transforms = type_transforms

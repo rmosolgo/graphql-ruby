@@ -30,7 +30,7 @@ module GraphQL
       alias :input_fields :arguments
 
       def initialize
-        warn "GraphQL::Relay::Mutation will be removed from GraphQL-Ruby 2.0, use GraphQL::Schema::RelayClassicMutation instead: https://graphql-ruby.org/mutations/mutation_classes"
+        GraphQL::Deprecated.warn "GraphQL::Relay::Mutation will be removed from GraphQL-Ruby 2.0, use GraphQL::Schema::RelayClassicMutation instead: https://graphql-ruby.org/mutations/mutation_classes"
         @fields = {}
         @arguments = {}
         @has_generated_return_type = false

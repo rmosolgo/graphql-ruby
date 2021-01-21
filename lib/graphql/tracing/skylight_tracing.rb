@@ -18,7 +18,7 @@ module GraphQL
       #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
       #   It can also be specified per-query with `context[:set_skylight_endpoint_name]`.
       def initialize(options = {})
-        warn("GraphQL::Tracing::SkylightTracing is deprecated and will be removed in GraphQL-Ruby 2.0, please enable Skylight's GraphQL probe instead: https://www.skylight.io/support/getting-more-from-skylight#graphql.")
+        GraphQL::Deprecated.warn("GraphQL::Tracing::SkylightTracing is deprecated and will be removed in GraphQL-Ruby 2.0, please enable Skylight's GraphQL probe instead: https://www.skylight.io/support/getting-more-from-skylight#graphql.")
         @set_endpoint_name = options.fetch(:set_endpoint_name, false)
         super
       end

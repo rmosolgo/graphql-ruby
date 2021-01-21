@@ -12,7 +12,7 @@ module GraphQL
       # Define a custom connection type for this object type
       # @return [GraphQL::ObjectType]
       def define_connection(**kwargs, &block)
-        warn ".connection_type and .define_connection will be removed from GraphQL-Ruby 2.0, use class-based type definitions instead: https://graphql-ruby.org/schema/class_based_api.html"
+        GraphQL::Deprecated.warn ".connection_type and .define_connection will be removed from GraphQL-Ruby 2.0, use class-based type definitions instead: https://graphql-ruby.org/schema/class_based_api.html"
         GraphQL::Relay::ConnectionType.create_type(self, **kwargs, &block)
       end
 
@@ -24,7 +24,7 @@ module GraphQL
       # Define a custom edge type for this object type
       # @return [GraphQL::ObjectType]
       def define_edge(**kwargs, &block)
-        warn ".edge_type and .define_edge will be removed from GraphQL-Ruby 2.0, use class-based type definitions instead: https://graphql-ruby.org/schema/class_based_api.html"
+        GraphQL::Deprecated.warn ".edge_type and .define_edge will be removed from GraphQL-Ruby 2.0, use class-based type definitions instead: https://graphql-ruby.org/schema/class_based_api.html"
         GraphQL::Relay::EdgeType.create_type(self, **kwargs, &block)
       end
     end

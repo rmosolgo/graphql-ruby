@@ -24,7 +24,7 @@ module GraphQL
 
     def self.activate
       deprecated_caller = caller(1, 1).first
-      warn "DeprecatedDSL will be removed from GraphQL-Ruby 2.0, use `.to_non_null_type` instead of `!` and remove `.activate` from #{deprecated_caller}"
+      GraphQL::Deprecated.warn "DeprecatedDSL will be removed from GraphQL-Ruby 2.0, use `.to_non_null_type` instead of `!` and remove `.activate` from #{deprecated_caller}"
       TYPE_CLASSES.each { |c| c.extend(Methods) }
       GraphQL::Schema::List.include(Methods)
       GraphQL::Schema::NonNull.include(Methods)
@@ -33,7 +33,7 @@ module GraphQL
     module Methods
       def !
         deprecated_caller = caller(1, 1).first
-        warn "DeprecatedDSL will be removed from GraphQL-Ruby 2.0, use `.to_non_null_type` instead of `!` at #{deprecated_caller}"
+        GraphQL::Deprecated.warn "DeprecatedDSL will be removed from GraphQL-Ruby 2.0, use `.to_non_null_type` instead of `!` at #{deprecated_caller}"
         to_non_null_type
       end
     end

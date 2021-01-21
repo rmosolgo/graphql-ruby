@@ -156,7 +156,7 @@ module GraphQL
 
         # use the old `query_execution_strategy` etc to run this query
         def run_one_legacy(schema, query)
-          warn "Multiplex.run_one_legacy will be removed from GraphQL-Ruby 2.0, upgrade to the Interpreter to avoid this deprecated codepath: https://graphql-ruby.org/queries/interpreter.html"
+          GraphQL::Deprecated.warn "Multiplex.run_one_legacy will be removed from GraphQL-Ruby 2.0, upgrade to the Interpreter to avoid this deprecated codepath: https://graphql-ruby.org/queries/interpreter.html"
 
           query.result_values = if !query.valid?
             all_errors = query.validation_errors + query.analysis_errors + query.context.errors

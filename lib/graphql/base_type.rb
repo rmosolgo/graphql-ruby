@@ -224,7 +224,7 @@ module GraphQL
     private
 
     def warn_deprecated_coerce(alt_method_name)
-      warn("Coercing without a context is deprecated; use `#{alt_method_name}` if you don't want context-awareness")
+      GraphQL::Deprecated.warn("Coercing without a context is deprecated; use `#{alt_method_name}` if you don't want context-awareness")
     end
   end
 end
