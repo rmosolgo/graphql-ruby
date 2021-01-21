@@ -22,7 +22,7 @@ module GraphQL
               method_names.each do |method_name|
                 # Don't define a helper method if it would override something.
                 if method_defined?(method_name)
-                  GraphQL::Deprecated.warn(
+                  GraphQL::Deprecation.warn(
                     "Unable to define a helper for argument with name '#{method_name}' "\
                     "as this is a reserved name. Add `method_access: false` to stop this warning."
                   )

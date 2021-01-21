@@ -22,7 +22,7 @@ module GraphQL
         backtrace = caller(0, 20)
         # Find the first line in the trace that isn't library internals:
         user_line = backtrace.find {|l| l !~ /lib\/graphql/ }
-        GraphQL::Deprecated.warn(message + "\n" + user_line + "\n")
+        GraphQL::Deprecation.warn(message + "\n" + user_line + "\n")
         wrapper = last ? LastArgumentsWrapper : FirstArgumentsWrapper
         wrapper.new(callable, from)
       else

@@ -4,13 +4,13 @@ module GraphQL
   #
   # 1. Scoped by file (CRuby only), add to the top of the file:
   #
-  #      using GraphQL::DeprecatedDSL
+  #      using GraphQL::DeprecationDSL
   #
   #   (This is a "refinement", there are also other ways to scope it.)
   #
   # 2. Global application, add before schema definition:
   #
-  #      GraphQL::DeprecatedDSL.activate
+  #      GraphQL::DeprecationDSL.activate
   #
   module DeprecatedDSL
     TYPE_CLASSES = [
@@ -24,7 +24,7 @@ module GraphQL
 
     def self.activate
       deprecated_caller = caller(1, 1).first
-      GraphQL::Deprecated.warn "DeprecatedDSL will be removed from GraphQL-Ruby 2.0, use `.to_non_null_type` instead of `!` and remove `.activate` from #{deprecated_caller}"
+      GraphQL::Deprecation.warn "DeprecatedDSL will be removed from GraphQL-Ruby 2.0, use `.to_non_null_type` instead of `!` and remove `.activate` from #{deprecated_caller}"
       TYPE_CLASSES.each { |c| c.extend(Methods) }
       GraphQL::Schema::List.include(Methods)
       GraphQL::Schema::NonNull.include(Methods)
@@ -33,7 +33,7 @@ module GraphQL
     module Methods
       def !
         deprecated_caller = caller(1, 1).first
-        GraphQL::Deprecated.warn "DeprecatedDSL will be removed from GraphQL-Ruby 2.0, use `.to_non_null_type` instead of `!` at #{deprecated_caller}"
+        GraphQL::Deprecation.warn "DeprecatedDSL will be removed from GraphQL-Ruby 2.0, use `.to_non_null_type` instead of `!` at #{deprecated_caller}"
         to_non_null_type
       end
     end

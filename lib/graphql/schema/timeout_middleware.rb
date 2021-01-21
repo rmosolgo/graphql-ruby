@@ -30,7 +30,7 @@ module GraphQL
       def initialize(max_seconds:, context_key: nil, &block)
         @max_seconds = max_seconds
         if context_key
-          GraphQL::Deprecated.warn("TimeoutMiddleware's `context_key` is ignored, timeout data is now stored in isolated storage")
+          GraphQL::Deprecation.warn("TimeoutMiddleware's `context_key` is ignored, timeout data is now stored in isolated storage")
         end
         @error_handler = block
       end

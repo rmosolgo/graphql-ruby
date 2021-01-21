@@ -14,12 +14,12 @@ module GraphQL
       end
 
       def [](key)
-        GraphQL::Deprecated.warn "#{self.class}#[] is deprecated; use `operation_definitions[]` instead"
+        GraphQL::Deprecation.warn "#{self.class}#[] is deprecated; use `operation_definitions[]` instead"
         operation_definitions[key]
       end
 
       def each(&block)
-        GraphQL::Deprecated.warn "#{self.class}#each is deprecated; use `operation_definitions.each` instead"
+        GraphQL::Deprecation.warn "#{self.class}#each is deprecated; use `operation_definitions.each` instead"
         operation_definitions.each(&block)
       end
     end

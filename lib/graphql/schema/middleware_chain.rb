@@ -71,7 +71,7 @@ module GraphQL
 
       def wrap(callable)
         if BackwardsCompatibility.get_arity(callable) == 6
-          GraphQL::Deprecated.warn("Middleware that takes a next_middleware parameter is deprecated (#{callable.inspect}); instead, accept a block and use yield.")
+          GraphQL::Deprecation.warn("Middleware that takes a next_middleware parameter is deprecated (#{callable.inspect}); instead, accept a block and use yield.")
           MiddlewareWrapper.new(callable)
         else
           callable

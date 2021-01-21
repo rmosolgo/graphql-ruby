@@ -184,7 +184,7 @@ module GraphQL
       },
       query_analyzer: ->(schema, analyzer) {
         if analyzer == GraphQL::Authorization::Analyzer
-          GraphQL::Deprecated.warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
+          GraphQL::Deprecation.warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
         end
         schema.query_analyzers << analyzer
       },
@@ -1564,7 +1564,7 @@ module GraphQL
 
       def instrument(instrument_step, instrumenter, options = {})
         if instrument_step == :field
-          GraphQL::Deprecated.warn "Field instrumentation (#{instrumenter.inspect}) will be removed in GraphQL-Ruby 2.0, please upgrade to field extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
+          GraphQL::Deprecation.warn "Field instrumentation (#{instrumenter.inspect}) will be removed in GraphQL-Ruby 2.0, please upgrade to field extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
         end
 
         step = if instrument_step == :field && options[:after_built_ins]
@@ -1614,7 +1614,7 @@ module GraphQL
 
       def query_analyzer(new_analyzer)
         if new_analyzer == GraphQL::Authorization::Analyzer
-          GraphQL::Deprecated.warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
+          GraphQL::Deprecation.warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
         end
         own_query_analyzers << new_analyzer
       end
@@ -1625,7 +1625,7 @@ module GraphQL
 
       def middleware(new_middleware = nil)
         if new_middleware
-          GraphQL::Deprecated.warn "Middleware will be removed in GraphQL-Ruby 2.0, please upgrade to Field Extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
+          GraphQL::Deprecation.warn "Middleware will be removed in GraphQL-Ruby 2.0, please upgrade to Field Extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
           own_middleware << new_middleware
         else
           # TODO make sure this is cached when running a query
@@ -1702,7 +1702,7 @@ module GraphQL
         if interpreter? && !defined?(@subscription_extension_added) && subscription && self.subscriptions
           @subscription_extension_added = true
           if subscription.singleton_class.ancestors.include?(Subscriptions::SubscriptionRoot)
-            GraphQL::Deprecated.warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")
+            GraphQL::Deprecation.warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")
           else
             subscription.fields.each do |name, field|
               field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
