@@ -15,10 +15,13 @@
 - `GraphQL::Schema` defaults to `GraphQL::Execution::Interpreter`, `GraphQL::Analysis::AST`, `GraphQL::Pagination::Connections`, and `GraphQL::Execution::Errors`. (#3145) To get the previous (deprecated) behaviors:
 
   ```ruby
-  # revert to deprecated execution behaviors:
+  # Revert to deprecated execution behaviors:
   use GraphQL::Execution::Execute
   use GraphQL::Analysis
+  # Disable the new connection implementation:
+  self.connections = nil
   ```
+
 - `GraphQL::Execution::Interpreter::Arguments` instances are frozen (#3138). (Usually, GraphQL code doesn't interact with these objects, but they're used some places under the hood.)
 
 ### Deprecations
@@ -43,7 +46,7 @@
   ```ruby
   def self.type_error(err, ctx)
     if err.is_a?(GraphQL::IntegerDecodingError)
-      return err.value # return it anyways, since this is how graphql-ruby used to work
+      return err.integer_value # return it anyways, since this is how graphql-ruby used to work
     end
     # ...
   end
