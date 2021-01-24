@@ -188,12 +188,14 @@ module GraphQL
             evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection)
             # The dataloader knows if ^^ that selection halted and later selections were executed in another fiber.
             # If that's the case, then don't continue execution here.
-            if @dataloader.yielded?
+            if @dataloader.yielded?(path)
               break
             end
           end
           nil
         end
+
+        attr_reader :progress_path
 
         # @return [void]
         def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field)

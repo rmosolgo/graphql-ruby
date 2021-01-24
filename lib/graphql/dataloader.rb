@@ -36,7 +36,7 @@ module GraphQL
         }
       }
       @waiting_fibers = []
-      @yielded_fibers = Set.new
+      @yielded_fibers = {}
     end
 
     # @return [Hash] the {Multiplex} context
@@ -69,9 +69,10 @@ module GraphQL
       nil
     end
 
-    # @return [Boolean] Returns true if the current Fiber has yielded once via Dataloader
-    def yielded?
-      @yielded_fibers.include?(Fiber.current)
+    # @param path [Array<String, Integer>] A graphql response path
+    # @return [Boolean] True if the current Fiber has yielded once via Dataloader at {path}
+    def yielded?(path)
+      @yielded_fibers[Fiber.current] == path
     end
 
     # Run all Fibers until they're all done
@@ -160,7 +161,7 @@ module GraphQL
       if fiber.alive?
         if !@yielded_fibers.include?(fiber)
           # This fiber hasn't yielded yet, we should enqueue a continuation fiber
-          @yielded_fibers.add(fiber)
+          @yielded_fibers[fiber] = current_runtime.progress_path
           current_runtime.enqueue_selections_fiber
         end
         fiber_stack << fiber

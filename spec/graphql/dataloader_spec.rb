@@ -215,7 +215,7 @@ describe GraphQL::Dataloader do
   it "batch-loads" do
     res = FiberSchema.execute <<-GRAPHQL
     {
-      i1: ingredient(id: 1) { name }
+      i1: ingredient(id: 1) { id name }
       i2: ingredient(id: 2) { name }
       r1: recipe(id: 5) {
         ingredients { name }
@@ -227,7 +227,7 @@ describe GraphQL::Dataloader do
     GRAPHQL
 
     expected_data = {
-      "i1" => { "name" => "Wheat" },
+      "i1" => { "id" => "1", "name" => "Wheat" },
       "i2" => { "name" => "Corn" },
       "r1" => {
         "ingredients" => [
@@ -332,5 +332,25 @@ describe GraphQL::Dataloader do
     ]
     # Sort them because threads may have returned in slightly different order
     assert_equal expected_log.sort, database_log.sort
+  end
+
+  it "Works with multiple-field selections and __typename" do
+    query_str = <<-GRAPHQL
+    {
+      ingredient(id: 1) {
+        __typename
+        name
+      }
+    }
+    GRAPHQL
+
+    res = FiberSchema.execute(query_str)
+    expected_data = {
+      "ingredient" => {
+        "__typename" => "Grain",
+        "name" => "Wheat",
+      }
+    }
+    assert_equal expected_data, res["data"]
   end
 end
