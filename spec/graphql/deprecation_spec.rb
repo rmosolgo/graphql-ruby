@@ -3,7 +3,7 @@
 require "spec_helper"
 
 describe GraphQL::Deprecation do
-  if testing_rails?
+  if defined?(ActiveSupport)
     it "uses ActiveSupport::Deprecation.warn when it's available" do
       ActiveSupport::Deprecation.stub :warn, :was_warned do
         assert_equal :was_warned, GraphQL::Deprecation.warn("abcd")

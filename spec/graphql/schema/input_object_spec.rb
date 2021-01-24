@@ -653,17 +653,12 @@ describe GraphQL::Schema::InputObject do
       end
 
       expected_warning = "Unable to define a helper for argument with name 'method' as this is a reserved name. Add `method_access: false` to stop this warning."
-      if testing_rails?
-        rails_caller = if Rails::VERSION::STRING < "5"
-          "(called from warn at #{Dir.pwd}/lib/graphql/deprecation.rb:7)"
-        else
-          "(called from block (3 levels) in construct_arguments_class at #{Dir.pwd}/lib/graphql/query/arguments.rb:25)"
-        end
-        expected_warning = "DEPRECATION WARNING: #{expected_warning} #{rails_caller}"
-      end
-      assert_output "", expected_warning + "\n" do
+
+      messages = []
+      GraphQL::Deprecation.stub(:warn, ->(message) { messages << message; nil }) do
         input_object.graphql_definition
       end
+      assert_equal [expected_warning], messages
     end
 
     it "doesn't warn with `method_access: false`" do
