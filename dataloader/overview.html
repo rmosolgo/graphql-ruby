@@ -57,13 +57,13 @@
 
 <h1 class="guide-header">Overview</h1>
 <div class="guide-container">
-  <p>GraphQL-Ruby 1.12 includes <a href="/api-doc/1.12.0/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a>, a module for managing efficient database in a way that’s transparent to application code, backed by Ruby’s <code class="language-plaintext highlighter-rouge">Fiber</code> concurrency primitive.</p>
+  <p>GraphQL-Ruby 1.12 includes <a href="/api-doc/1.12.0/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a>, a module for managing efficient database access in a way that’s transparent to application code, backed by Ruby’s <code class="language-plaintext highlighter-rouge">Fiber</code> concurrency primitive.</p>
 
 <p><code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> is inspired by <a href="https://github.com/bessey/graphql-fiber-test/tree/no-gem-changes"><code class="language-plaintext highlighter-rouge">@bessey</code>’s proof-of-concept</a> and <a href="https://github.com/shopify/graphql-batch">shopify/graphql-batch</a>.</p>
 
 <h2 id="batch-loading">Batch Loading</h2>
 
-<p><code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> facilitates a two-stage approach to fetching data from external sources (like database or APIs):</p>
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> facilitates a two-stage approach to fetching data from external sources (like databases or APIs):</p>
 
 <ul>
   <li>First, GraphQL fields register their data requirements (eg, object IDs or query parameters)</li>
@@ -174,7 +174,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><strong>Caveat:</strong> The currently implementation loads all <code class="language-plaintext highlighter-rouge">loads:</code> objects in the <em>same fiber</em>, so data will be fetched sequentially.</p>
+<p><strong>Caveat:</strong> The current implementation loads all <code class="language-plaintext highlighter-rouge">loads:</code> objects in the <em>same fiber</em>, so data will be fetched sequentially.</p>
 
 <h2 id="data-sources">Data Sources</h2>
 
