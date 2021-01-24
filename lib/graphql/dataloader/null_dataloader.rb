@@ -15,7 +15,7 @@ module GraphQL
       # executed sychronously.
       def run; end
       def yield; end
-      def yielded?; false; end
+      def yielded?(_path); false; end
     end
   end
 end
