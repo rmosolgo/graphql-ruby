@@ -8,13 +8,13 @@ index: 0
 experimental: true
 ---
 
-GraphQL-Ruby 1.12 includes {{ "GraphQL::Dataloader" | api_doc }}, a module for managing efficient database in a way that's transparent to application code, backed by Ruby's `Fiber` concurrency primitive.
+GraphQL-Ruby 1.12 includes {{ "GraphQL::Dataloader" | api_doc }}, a module for managing efficient database access in a way that's transparent to application code, backed by Ruby's `Fiber` concurrency primitive.
 
 `GraphQL::Dataloader` is inspired by [`@bessey`'s proof-of-concept](https://github.com/bessey/graphql-fiber-test/tree/no-gem-changes) and [shopify/graphql-batch](https://github.com/shopify/graphql-batch).
 
 ## Batch Loading
 
-`GraphQL::Dataloader` facilitates a two-stage approach to fetching data from external sources (like database or APIs):
+`GraphQL::Dataloader` facilitates a two-stage approach to fetching data from external sources (like databases or APIs):
 
 - First, GraphQL fields register their data requirements (eg, object IDs or query parameters)
 - Then, after as many requirements have been gathered as possible, `GraphQL::Dataloader` initiates _actual_ fetches to external services
@@ -127,7 +127,7 @@ class FollowUser < GraphQL::Schema::Mutation
 end
 ```
 
-__Caveat:__ The currently implementation loads all `loads:` objects in the _same fiber_, so data will be fetched sequentially.
+__Caveat:__ The current implementation loads all `loads:` objects in the _same fiber_, so data will be fetched sequentially.
 
 ## Data Sources
 
