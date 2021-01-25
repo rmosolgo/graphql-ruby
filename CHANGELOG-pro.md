@@ -8,7 +8,14 @@
 
 ### Bug Fix
 
-## 1.17.0 (20 Jan 2020)
+## 1.17.1 (25 Jan 2021)
+
+### New Features
+
+- OperationStore: add `OperationStore::AddOperationBatch.call` for adding data directly
+- Subscriptions: use Lua scripts for more efficient Redis access
+
+## 1.17.0 (20 Jan 2021)
 
 ### New Features
 
