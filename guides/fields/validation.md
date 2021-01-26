@@ -40,6 +40,21 @@ All the validators below accept the following options:
 - `allow_nil: true` will permit `nil` (bypassing the validation)
 - `message: "..."` customizes the error message when the validation fails
 
+For example:
+
+```ruby
+field :comments, [Comment], null: true,
+  description: "Find comments by author ID or author name" do
+  argument :author_id, ID, required: false
+  argument :author_name, String, required: false
+  # Include a message for the end user if the validation fails:
+  validates required: {
+    one_of: [:author_id, :author_name],
+    message: "May use either author_id or author_name, but not both."
+  }
+end
+```
+
 See each validator's API docs for details:
 
 - `length: { maximum: ..., minimum: ..., is: ..., within: ... }` {{ "Schema::Validator::LengthValidator" | api_doc }}
@@ -47,7 +62,7 @@ See each validator's API docs for details:
 - `numericality: { greater_than:, greater_than_or_equal_to:, less_than:, less_than_or_equal_to:, other_than:, odd:, even: }` {{ "Schema::Validator::NumericalityValidator" | api_doc }}
 - `inclusion: { in: [...] }` {{ "Schema::Validator::InclusionValidator" | api_doc }}
 - `exclusion: { in: [...] }` {{ "Schema::Validator::ExclusionValidator" | api_doc }}
-- `required: { one_of: [...] }` {{ "Schema::Validator::RequiredValidator" }}
+- `required: { one_of: [...] }` {{ "Schema::Validator::RequiredValidator" | api_doc }}
 
 
 Some of the validators accept customizable messages for certain validation failures; see the API docs for examples.
