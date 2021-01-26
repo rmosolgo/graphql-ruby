@@ -8,11 +8,13 @@
 
 ### Bug fixes
 
-# 1.12.1 (25 January 2021)
+# 1.12.2 (26 January 2021)
 
 ### New features
 
 - `GraphQL::Deprecation.warn` is used for GraphQL-Ruby 2.0 deprecation warnings (and calls through to `ActiveSupport::Deprecation.warn` if it's available) #3292
+
+# 1.12.1 (25 January 2021)
 
 ### Bug fixes
 
