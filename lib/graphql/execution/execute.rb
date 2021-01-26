@@ -25,7 +25,7 @@ module GraphQL
       end
 
       def execute(ast_operation, root_type, query)
-        warn "#{self.class} will be removed in GraphQL-Ruby 2.0, please upgrade to the Interpreter: https://graphql-ruby.org/queries/interpreter.html"
+        GraphQL::Deprecation.warn "#{self.class} will be removed in GraphQL-Ruby 2.0, please upgrade to the Interpreter: https://graphql-ruby.org/queries/interpreter.html"
         result = resolve_root_selection(query)
         lazy_resolve_root_selection(result, **{query: query})
         GraphQL::Execution::Flatten.call(query.context)

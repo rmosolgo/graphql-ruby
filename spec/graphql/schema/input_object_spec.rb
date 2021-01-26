@@ -652,10 +652,13 @@ describe GraphQL::Schema::InputObject do
         argument :method, String, required: true
       end
 
-      expected_warning = "Unable to define a helper for argument with name 'method' as this is a reserved name. Add `method_access: false` to stop this warning.\n"
-      assert_output "", expected_warning do
+      expected_warning = "Unable to define a helper for argument with name 'method' as this is a reserved name. Add `method_access: false` to stop this warning."
+
+      messages = []
+      GraphQL::Deprecation.stub(:warn, ->(message) { messages << message; nil }) do
         input_object.graphql_definition
       end
+      assert_equal [expected_warning], messages
     end
 
     it "doesn't warn with `method_access: false`" do

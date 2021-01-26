@@ -7,11 +7,11 @@ module GraphQL
     class TypeDefiner
       include Singleton
       # rubocop:disable Naming/MethodName
-      def Int;      GraphQL::DEPRECATED_INT_TYPE;      end
-      def String;   GraphQL::DEPRECATED_STRING_TYPE;   end
-      def Float;    GraphQL::DEPRECATED_FLOAT_TYPE;    end
-      def Boolean;  GraphQL::DEPRECATED_BOOLEAN_TYPE;  end
-      def ID;       GraphQL::DEPRECATED_ID_TYPE;       end
+      def Int;      GraphQL::Deprecation_INT_TYPE;      end
+      def String;   GraphQL::Deprecation_STRING_TYPE;   end
+      def Float;    GraphQL::Deprecation_FLOAT_TYPE;    end
+      def Boolean;  GraphQL::Deprecation_BOOLEAN_TYPE;  end
+      def ID;       GraphQL::Deprecation_ID_TYPE;       end
       # rubocop:enable Naming/MethodName
 
       # Make a {ListType} which wraps the input type

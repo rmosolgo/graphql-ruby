@@ -8,7 +8,7 @@ module GraphQL
       # @yieldreturn [GraphQL::Language::Nodes::Document]
       # @return [Class<Minitest::Test>] A test suite for this parse function
       def self.build_suite(&block)
-        warn "#{self} will be removed from GraphQL-Ruby 2.0. There is no replacement, please open an issue on GitHub if you need support."
+        GraphQL::Deprecation.warn "#{self} will be removed from GraphQL-Ruby 2.0. There is no replacement, please open an issue on GitHub if you need support."
 
         Class.new(Minitest::Test) do
           @@parse_fn = block

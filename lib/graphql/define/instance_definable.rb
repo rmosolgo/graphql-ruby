@@ -11,7 +11,7 @@ module GraphQL
           end
 
           if deprecated_caller
-            warn <<-ERR
+            GraphQL::Deprecation.warn <<-ERR
 #{self}.define will be removed in GraphQL-Ruby 2.0; use a class-based definition instead. See https://graphql-ruby.org/schema/class_based_api.html.
   -> called from #{deprecated_caller}
 ERR

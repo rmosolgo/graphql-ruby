@@ -83,10 +83,10 @@ module GraphQL
       def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
         if kwargs[:field]
           if kwargs[:field].is_a?(GraphQL::Field) && kwargs[:field] == GraphQL::Types::Relay::NodeField.graphql_definition
-            warn("Legacy-style `GraphQL::Relay::Node.field` is being added to a class-based type. See `GraphQL::Types::Relay::NodeField` for a replacement.")
+            GraphQL::Deprecation.warn("Legacy-style `GraphQL::Relay::Node.field` is being added to a class-based type. See `GraphQL::Types::Relay::NodeField` for a replacement.")
             return GraphQL::Types::Relay::NodeField
           elsif kwargs[:field].is_a?(GraphQL::Field) && kwargs[:field] == GraphQL::Types::Relay::NodesField.graphql_definition
-            warn("Legacy-style `GraphQL::Relay::Node.plural_field` is being added to a class-based type. See `GraphQL::Types::Relay::NodesField` for a replacement.")
+            GraphQL::Deprecation.warn("Legacy-style `GraphQL::Relay::Node.plural_field` is being added to a class-based type. See `GraphQL::Types::Relay::NodesField` for a replacement.")
             return GraphQL::Types::Relay::NodesField
           end
         end
