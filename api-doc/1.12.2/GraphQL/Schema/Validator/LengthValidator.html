@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Schema::Validator::LengthValidator
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Schema::Validator::LengthValidator";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (L)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">Validator</a></span></span>
+     &raquo; 
+    <span class="title">LengthValidator</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Schema::Validator::LengthValidator
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">GraphQL::Schema::Validator</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">GraphQL::Schema::Validator</a></span></li>
+          
+            <li class="next">GraphQL::Schema::Validator::LengthValidator</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/validator/length_validator.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Use this to enforce a <code>.length</code> restriction on incoming values. It works for both Strings and Lists.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'><p>Allow no more than 10 IDs</p>
+</div></p>
+      
+      <pre class="example code"><code>
+<span class='id identifier rubyid_argument'>argument</span> <span class='symbol'>:ids</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>ID</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>required:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>validates:</span> <span class='lbrace'>{</span> <span class='label'>length:</span> <span class='lbrace'>{</span> <span class='label'>maximum:</span> <span class='int'>10</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span></code></pre>
+    
+      
+        <p class="example_title"><div class='inline'><p>Require three selections</p>
+</div></p>
+      
+      <pre class="example code"><code>
+<span class='id identifier rubyid_argument'>argument</span> <span class='symbol'>:ice_cream_preferences</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>ICE_CREAM_FLAVOR</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>required:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>validates:</span> <span class='lbrace'>{</span> <span class='label'>length:</span> <span class='lbrace'>{</span> <span class='label'>is:</span> <span class='int'>3</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span></code></pre>
+    
+  </div>
+
+
+</div>
+
+
+  <h2>Constant Summary</h2>
+  
+  <h3 class="inherited">Constants included
+     from <span class='object_link'><a href="../FindInheritedValue/EmptyObjects.html" title="GraphQL::Schema::FindInheritedValue::EmptyObjects (module)">FindInheritedValue::EmptyObjects</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../FindInheritedValue/EmptyObjects.html#EMPTY_ARRAY-constant" title="GraphQL::Schema::FindInheritedValue::EmptyObjects::EMPTY_ARRAY (constant)">FindInheritedValue::EmptyObjects::EMPTY_ARRAY</a></span>, <span class='object_link'><a href="../FindInheritedValue/EmptyObjects.html#EMPTY_HASH-constant" title="GraphQL::Schema::FindInheritedValue::EmptyObjects::EMPTY_HASH (constant)">FindInheritedValue::EmptyObjects::EMPTY_HASH</a></span></p>
+
+
+
+
+  <h2>Instance Attribute Summary</h2>
+  
+  <h3 class="inherited">Attributes inherited from <span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">GraphQL::Schema::Validator</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Validator.html#validated-instance_method" title="GraphQL::Schema::Validator#validated (method)">#validated</a></span></p>
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(maximum: nil, too_long: &quot;%{validated} is too long (maximum is %{count})&quot;, minimum: nil, too_short: &quot;%{validated} is too short (minimum is %{count})&quot;, is: nil, within: nil, wrong_length: &quot;%{validated} is the wrong length (should be %{count})&quot;, message: nil, **default_options)  &#x21d2; LengthValidator </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of LengthValidator.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#validate-instance_method" title="#validate (instance method)">#<strong>validate</strong>(_object, _context, value)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">GraphQL::Schema::Validator</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Validator.html#apply-instance_method" title="GraphQL::Schema::Validator#apply (method)">#apply</a></span>, <span class='object_link'><a href="../Validator.html#from_config-class_method" title="GraphQL::Schema::Validator.from_config (method)">from_config</a></span>, <span class='object_link'><a href="../Validator.html#install-class_method" title="GraphQL::Schema::Validator.install (method)">install</a></span>, <span class='object_link'><a href="../Validator.html#partial_format-instance_method" title="GraphQL::Schema::Validator#partial_format (method)">#partial_format</a></span>, <span class='object_link'><a href="../Validator.html#uninstall-class_method" title="GraphQL::Schema::Validator.uninstall (method)">uninstall</a></span>, <span class='object_link'><a href="../Validator.html#validate!-class_method" title="GraphQL::Schema::Validator.validate! (method)">validate!</a></span></p>
+
+  
+  
+  
+  
+  
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(maximum: nil, too_long: &quot;%{validated} is too long (maximum is %{count})&quot;, minimum: nil, too_short: &quot;%{validated} is too short (minimum is %{count})&quot;, is: nil, within: nil, wrong_length: &quot;%{validated} is the wrong length (should be %{count})&quot;, message: nil, **default_options)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Schema::Validator::LengthValidator (class)">LengthValidator</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of LengthValidator.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>maximum</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>too_long</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>&quot;%{validated} is too long (maximum is %{count})&quot;</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>Used when <code>maximum</code> is exceeded or value is greater than <code>within</code></p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>minimum</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>too_short</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>&quot;%{validated} is too short (minimum is %{count})&quot;</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>Used with value is less than <code>minimum</code> or less than <code>within</code></p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>is</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>Exact length requirement</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>wrong_length</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>&quot;%{validated} is the wrong length (should be %{count})&quot;</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>Used when value doesn’t match <code>is</code></p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>within</span>
+      
+      
+        <span class='type'>(<tt>Range</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>An allowed range (becomes <code>minimum:</code> and <code>maximum:</code> under the hood)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>message</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/validator/length_validator.rb', line 25</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span>
+  <span class='label'>maximum:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>too_long:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>%{validated} is too long (maximum is %{count})</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='label'>minimum:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>too_short:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>%{validated} is too short (minimum is %{count})</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='label'>is:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>within:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>wrong_length:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>%{validated} is the wrong length (should be %{count})</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='label'>message:</span> <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='op'>**</span><span class='id identifier rubyid_default_options'>default_options</span>
+<span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_within'>within</span> <span class='op'>&amp;&amp;</span> <span class='lparen'>(</span><span class='id identifier rubyid_minimum'>minimum</span> <span class='op'>||</span> <span class='id identifier rubyid_maximum'>maximum</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>`length: { ... }` may include `within:` _or_ `minimum:`/`maximum:`, but not both</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='comment'># Under the hood, `within` is decomposed into `minimum` and `maximum`
+</span>  <span class='ivar'>@maximum</span> <span class='op'>=</span> <span class='id identifier rubyid_maximum'>maximum</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_within'>within</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_within'>within</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span><span class='rparen'>)</span>
+  <span class='ivar'>@too_long</span> <span class='op'>=</span> <span class='id identifier rubyid_message'>message</span> <span class='op'>||</span> <span class='id identifier rubyid_too_long'>too_long</span>
+  <span class='ivar'>@minimum</span> <span class='op'>=</span> <span class='id identifier rubyid_minimum'>minimum</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_within'>within</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_within'>within</span><span class='period'>.</span><span class='id identifier rubyid_min'>min</span><span class='rparen'>)</span>
+  <span class='ivar'>@too_short</span> <span class='op'>=</span> <span class='id identifier rubyid_message'>message</span> <span class='op'>||</span> <span class='id identifier rubyid_too_short'>too_short</span>
+  <span class='ivar'>@is</span> <span class='op'>=</span> <span class='id identifier rubyid_is'>is</span>
+  <span class='ivar'>@wrong_length</span> <span class='op'>=</span> <span class='id identifier rubyid_message'>message</span> <span class='op'>||</span> <span class='id identifier rubyid_wrong_length'>wrong_length</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='op'>**</span><span class='id identifier rubyid_default_options'>default_options</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="validate-instance_method">
+  
+    #<strong>validate</strong>(_object, _context, value)  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47
+48
+49
+50
+51
+52
+53</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/validator/length_validator.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_validate'>validate</span><span class='lparen'>(</span><span class='id identifier rubyid__object'>_object</span><span class='comma'>,</span> <span class='id identifier rubyid__context'>_context</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@maximum</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;</span> <span class='ivar'>@maximum</span>
+    <span class='id identifier rubyid_partial_format'>partial_format</span><span class='lparen'>(</span><span class='ivar'>@too_long</span><span class='comma'>,</span> <span class='lbrace'>{</span> <span class='label'>count:</span> <span class='ivar'>@maximum</span> <span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@minimum</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&lt;</span> <span class='ivar'>@minimum</span>
+    <span class='id identifier rubyid_partial_format'>partial_format</span><span class='lparen'>(</span><span class='ivar'>@too_short</span><span class='comma'>,</span> <span class='lbrace'>{</span> <span class='label'>count:</span> <span class='ivar'>@minimum</span> <span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@is</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>!=</span> <span class='ivar'>@is</span>
+    <span class='id identifier rubyid_partial_format'>partial_format</span><span class='lparen'>(</span><span class='ivar'>@wrong_length</span><span class='comma'>,</span> <span class='lbrace'>{</span> <span class='label'>count:</span> <span class='ivar'>@is</span> <span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Jan 26 14:37:36 2021 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.26 (ruby-2.7.2).
+</div>
+
+    </div>
+  </body>
+</html>

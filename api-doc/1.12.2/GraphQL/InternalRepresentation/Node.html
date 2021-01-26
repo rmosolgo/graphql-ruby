@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::InternalRepresentation::Node
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::InternalRepresentation::Node";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (N)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../InternalRepresentation.html" title="GraphQL::InternalRepresentation (module)">InternalRepresentation</a></span></span>
+     &raquo; 
+    <span class="title">Node</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::InternalRepresentation::Node
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::InternalRepresentation::Node</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/internal_representation/node.rb</dd>
+  </dl>
+  
+</div>
+
+
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="DEFAULT_TYPED_CHILDREN-constant" class="">DEFAULT_TYPED_CHILDREN =
+          <div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This constant is part of a private API.</strong>
+  You should avoid using this constant if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Proc</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span> <span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="NO_TYPED_CHILDREN-constant" class="">NO_TYPED_CHILDREN =
+          <div class="docstring">
+  <div class="discussion">
+    <p>A specialized, reusable object for leaf nodes.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span><span class='rparen'>)</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#ast_nodes-instance_method" title="#ast_nodes (instance method)">#<strong>ast_nodes</strong>  &#x21d2; Array&lt;Language::Nodes::AbstractNode&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>AST nodes which are represented by this node.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#definitions-instance_method" title="#definitions (instance method)">#<strong>definitions</strong>  &#x21d2; Array&lt;GraphQL::Field&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Field definitions for this node (there should only be one!).</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#name-instance_method" title="#name (instance method)">#<strong>name</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The name this node has in the response.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#owner_type-instance_method" title="#owner_type (instance method)">#<strong>owner_type</strong>  &#x21d2; GraphQL::ObjectType </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parent-instance_method" title="#parent (instance method)">#<strong>parent</strong>  &#x21d2; InternalRepresentation::Node<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#query-instance_method" title="#query (instance method)">#<strong>query</strong>  &#x21d2; GraphQL::Query </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#return_type-instance_method" title="#return_type (instance method)">#<strong>return_type</strong>  &#x21d2; GraphQL::BaseType </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The expected wrapped type this node must return.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scoped_children-instance_method" title="#scoped_children (instance method)">#<strong>scoped_children</strong>  &#x21d2; Hash&lt;GraphQL::BaseType, Hash&lt;String =&gt; Node&gt;&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>These children correspond closely to scopes in the AST.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#==-instance_method" title="#== (instance method)">#<strong>==</strong>(other)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#arguments-instance_method" title="#arguments (instance method)">#<strong>arguments</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#ast_node-instance_method" title="#ast_node (instance method)">#<strong>ast_node</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#deep_merge_node-instance_method" title="#deep_merge_node (instance method)">#<strong>deep_merge_node</strong>(new_parent, scope: nil, merge_self: true)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Merge selections from <code>new_parent</code> into <code>self</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#definition-instance_method" title="#definition (instance method)">#<strong>definition</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#definition_name-instance_method" title="#definition_name (instance method)">#<strong>definition_name</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(name:, owner_type:, query:, return_type:, parent:, ast_nodes: [], definitions: [])  &#x21d2; Node </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Node.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize_copy-instance_method" title="#initialize_copy (instance method)">#<strong>initialize_copy</strong>(other_node)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#inspect-instance_method" title="#inspect (instance method)">#<strong>inspect</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#subscription_topic-instance_method" title="#subscription_topic (instance method)">#<strong>subscription_topic</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#typed_children-instance_method" title="#typed_children (instance method)">#<strong>typed_children</strong>  &#x21d2; Hash&lt;GraphQL::ObjectType, Hash&lt;String =&gt; Node&gt;&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Each key is a <span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span> which this selection <em>may</em> be made on.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(name:, owner_type:, query:, return_type:, parent:, ast_nodes: [], definitions: [])  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::InternalRepresentation::Node (class)">Node</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Node.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span>
+    <span class='label'>name:</span><span class='comma'>,</span> <span class='label'>owner_type:</span><span class='comma'>,</span> <span class='label'>query:</span><span class='comma'>,</span> <span class='label'>return_type:</span><span class='comma'>,</span> <span class='label'>parent:</span><span class='comma'>,</span>
+    <span class='label'>ast_nodes:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='comma'>,</span>
+    <span class='label'>definitions:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+  <span class='ivar'>@name</span> <span class='op'>=</span> <span class='id identifier rubyid_name'>name</span>
+  <span class='ivar'>@query</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span>
+  <span class='ivar'>@owner_type</span> <span class='op'>=</span> <span class='id identifier rubyid_owner_type'>owner_type</span>
+  <span class='ivar'>@parent</span> <span class='op'>=</span> <span class='id identifier rubyid_parent'>parent</span>
+  <span class='ivar'>@typed_children</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@scoped_children</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h1'>h1</span><span class='comma'>,</span> <span class='id identifier rubyid_k1'>k1</span><span class='op'>|</span> <span class='id identifier rubyid_h1'>h1</span><span class='lbracket'>[</span><span class='id identifier rubyid_k1'>k1</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span> <span class='rbrace'>}</span>
+  <span class='ivar'>@ast_nodes</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_nodes'>ast_nodes</span>
+  <span class='ivar'>@definitions</span> <span class='op'>=</span> <span class='id identifier rubyid_definitions'>definitions</span>
+  <span class='ivar'>@return_type</span> <span class='op'>=</span> <span class='id identifier rubyid_return_type'>return_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="ast_nodes-instance_method">
+  
+    #<strong>ast_nodes</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="../Language/Nodes/AbstractNode.html" title="GraphQL::Language::Nodes::AbstractNode (class)">Language::Nodes::AbstractNode</a></span>&gt;</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns AST nodes which are represented by this node.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="../Language/Nodes/AbstractNode.html" title="GraphQL::Language::Nodes::AbstractNode (class)">Language::Nodes::AbstractNode</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>AST nodes which are represented by this node</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+54
+55
+56</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 54</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_ast_nodes'>ast_nodes</span>
+  <span class='ivar'>@ast_nodes</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="definitions-instance_method">
+  
+    #<strong>definitions</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">GraphQL::Field</a></span>&gt;</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Field definitions for this node (there should only be one!).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="../Field.html" title="GraphQL::Field (class)">GraphQL::Field</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Field definitions for this node (there should only be one!)</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+57
+58
+59</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 57</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_definitions'>definitions</span>
+  <span class='ivar'>@definitions</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="name-instance_method">
+  
+    #<strong>name</strong>  &#x21d2; <tt>String</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the name this node has in the response.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the name this node has in the response</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+14
+15
+16</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 14</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
+  <span class='ivar'>@name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="owner_type=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="owner_type-instance_method">
+  
+    #<strong>owner_type</strong>  &#x21d2; <tt><span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">GraphQL::ObjectType</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">GraphQL::ObjectType</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+17
+18
+19</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 17</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_owner_type'>owner_type</span>
+  <span class='ivar'>@owner_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="parent=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="parent-instance_method">
+  
+    #<strong>parent</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::InternalRepresentation::Node (class)">InternalRepresentation::Node</a></span></tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="GraphQL::InternalRepresentation::Node (class)">InternalRepresentation::Node</a></span></tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+63
+64
+65</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 63</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_parent'>parent</span>
+  <span class='ivar'>@parent</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="query-instance_method">
+  
+    #<strong>query</strong>  &#x21d2; <tt><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">GraphQL::Query</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">GraphQL::Query</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+158
+159
+160</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 158</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_query'>query</span>
+  <span class='ivar'>@query</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="return_type-instance_method">
+  
+    #<strong>return_type</strong>  &#x21d2; <tt><span class='object_link'><a href="../BaseType.html" title="GraphQL::BaseType (class)">GraphQL::BaseType</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The expected wrapped type this node must return.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../BaseType.html" title="GraphQL::BaseType (class)">GraphQL::BaseType</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The expected wrapped type this node must return.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+60
+61
+62</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 60</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_return_type'>return_type</span>
+  <span class='ivar'>@return_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="scoped_children-instance_method">
+  
+    #<strong>scoped_children</strong>  &#x21d2; <tt>Hash&lt;<span class='object_link'><a href="../BaseType.html" title="GraphQL::BaseType (class)">GraphQL::BaseType</a></span>, Hash&lt;String =&gt; <span class='object_link'><a href="" title="GraphQL::InternalRepresentation::Node (class)">Node</a></span>&gt;&gt;</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>These children correspond closely to scopes in the AST.
+Keys <em>may</em> be abstract types. They’re assumed to be read-only after rewrite is finished
+because <span class='object_link'><a href="#typed_children-instance_method" title="GraphQL::InternalRepresentation::Node#typed_children (method)">#typed_children</a></span> is derived from them.</p>
+
+<p>Using <span class='object_link'><a href="#scoped_children-instance_method" title="GraphQL::InternalRepresentation::Node#scoped_children (method)">#scoped_children</a></span> during the rewrite step reduces the overhead of reifying
+abstract types because they’re only reified <em>after</em> the rewrite.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash&lt;<span class='object_link'><a href="../BaseType.html" title="GraphQL::BaseType (class)">GraphQL::BaseType</a></span>, Hash&lt;String =&gt; <span class='object_link'><a href="" title="GraphQL::InternalRepresentation::Node (class)">Node</a></span>&gt;&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+51
+52
+53</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 51</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_scoped_children'>scoped_children</span>
+  <span class='ivar'>@scoped_children</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="==-instance_method">
+  
+    #<strong>==</strong>(other)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 94</span>
+
+<span class='kw'>def</span> <span class='op'>==</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span>
+    <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>==</span> <span class='id identifier rubyid_name'>name</span> <span class='op'>&amp;&amp;</span>
+    <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_parent'>parent</span> <span class='op'>==</span> <span class='id identifier rubyid_parent'>parent</span> <span class='op'>&amp;&amp;</span>
+    <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_return_type'>return_type</span> <span class='op'>==</span> <span class='id identifier rubyid_return_type'>return_type</span> <span class='op'>&amp;&amp;</span>
+    <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_owner_type'>owner_type</span> <span class='op'>==</span> <span class='id identifier rubyid_owner_type'>owner_type</span> <span class='op'>&amp;&amp;</span>
+    <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_scoped_children'>scoped_children</span> <span class='op'>==</span> <span class='id identifier rubyid_scoped_children'>scoped_children</span> <span class='op'>&amp;&amp;</span>
+    <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_definitions'>definitions</span> <span class='op'>==</span> <span class='id identifier rubyid_definitions'>definitions</span> <span class='op'>&amp;&amp;</span>
+    <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_ast_nodes'>ast_nodes</span> <span class='op'>==</span> <span class='id identifier rubyid_ast_nodes'>ast_nodes</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="arguments-instance_method">
+  
+    #<strong>arguments</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+109
+110
+111</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 109</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_arguments'>arguments</span>
+  <span class='ivar'>@query</span><span class='period'>.</span><span class='id identifier rubyid_arguments_for'>arguments_for</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_definition'>definition</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="ast_node-instance_method">
+  
+    #<strong>ast_node</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+120
+121
+122</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 120</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_ast_node'>ast_node</span>
+  <span class='ivar'>@ast_node</span> <span class='op'>||=</span> <span class='id identifier rubyid_ast_nodes'>ast_nodes</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="deep_merge_node-instance_method">
+  
+    #<strong>deep_merge_node</strong>(new_parent, scope: nil, merge_self: true)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Merge selections from <code>new_parent</code> into <code>self</code>.
+Selections are merged in place, not copied.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 132</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_deep_merge_node'>deep_merge_node</span><span class='lparen'>(</span><span class='id identifier rubyid_new_parent'>new_parent</span><span class='comma'>,</span> <span class='label'>scope:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>merge_self:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_merge_self'>merge_self</span>
+    <span class='ivar'>@ast_nodes</span> <span class='op'>|=</span> <span class='id identifier rubyid_new_parent'>new_parent</span><span class='period'>.</span><span class='id identifier rubyid_ast_nodes'>ast_nodes</span>
+    <span class='ivar'>@definitions</span> <span class='op'>|=</span> <span class='id identifier rubyid_new_parent'>new_parent</span><span class='period'>.</span><span class='id identifier rubyid_definitions'>definitions</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_new_sc'>new_sc</span> <span class='op'>=</span> <span class='id identifier rubyid_new_parent'>new_parent</span><span class='period'>.</span><span class='id identifier rubyid_scoped_children'>scoped_children</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_new_sc'>new_sc</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>
+    <span class='id identifier rubyid_scope'>scope</span> <span class='op'>||=</span> <span class='const'><span class='object_link'><a href="Scope.html" title="GraphQL::InternalRepresentation::Scope (class)">Scope</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Scope.html#initialize-instance_method" title="GraphQL::InternalRepresentation::Scope#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='ivar'>@query</span><span class='comma'>,</span> <span class='ivar'>@return_type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_new_sc'>new_sc</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='comma'>,</span> <span class='id identifier rubyid_new_fields'>new_fields</span><span class='op'>|</span>
+      <span class='id identifier rubyid_inner_scope'>inner_scope</span> <span class='op'>=</span> <span class='id identifier rubyid_scope'>scope</span><span class='period'>.</span><span class='id identifier rubyid_enter'>enter</span><span class='lparen'>(</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_inner_scope'>inner_scope</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_scoped_type'>scoped_type</span><span class='op'>|</span>
+        <span class='id identifier rubyid_prev_fields'>prev_fields</span> <span class='op'>=</span> <span class='ivar'>@scoped_children</span><span class='lbracket'>[</span><span class='id identifier rubyid_scoped_type'>scoped_type</span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_new_fields'>new_fields</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_new_node'>new_node</span><span class='op'>|</span>
+          <span class='id identifier rubyid_prev_node'>prev_node</span> <span class='op'>=</span> <span class='id identifier rubyid_prev_fields'>prev_fields</span><span class='lbracket'>[</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span>
+          <span class='kw'>if</span> <span class='id identifier rubyid_prev_node'>prev_node</span>
+            <span class='id identifier rubyid_prev_node'>prev_node</span><span class='period'>.</span><span class='id identifier rubyid_deep_merge_node'>deep_merge_node</span><span class='lparen'>(</span><span class='id identifier rubyid_new_node'>new_node</span><span class='rparen'>)</span>
+          <span class='kw'>else</span>
+            <span class='id identifier rubyid_prev_fields'>prev_fields</span><span class='lbracket'>[</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_new_node'>new_node</span>
+          <span class='kw'>end</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="definition-instance_method">
+  
+    #<strong>definition</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+113
+114
+115
+116
+117
+118</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 113</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_definition'>definition</span>
+  <span class='ivar'>@definition</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='id identifier rubyid_first_def'>first_def</span> <span class='op'>=</span> <span class='ivar'>@definitions</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span>
+    <span class='id identifier rubyid_first_def'>first_def</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@query</span><span class='period'>.</span><span class='id identifier rubyid_get_field'>get_field</span><span class='lparen'>(</span><span class='ivar'>@owner_type</span><span class='comma'>,</span> <span class='id identifier rubyid_first_def'>first_def</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="definition_name-instance_method">
+  
+    #<strong>definition_name</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+105
+106
+107</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 105</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_definition_name'>definition_name</span>
+  <span class='id identifier rubyid_definition'>definition</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_definition'>definition</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="initialize_copy-instance_method">
+  
+    #<strong>initialize_copy</strong>(other_node)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 81</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize_copy'>initialize_copy</span><span class='lparen'>(</span><span class='id identifier rubyid_other_node'>other_node</span><span class='rparen'>)</span>
+  <span class='kw'>super</span>
+  <span class='comment'># Bust some caches:
+</span>  <span class='ivar'>@typed_children</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@definition</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@definition_name</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@ast_node</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='comment'># Shallow-copy some state:
+</span>  <span class='ivar'>@scoped_children</span> <span class='op'>=</span> <span class='id identifier rubyid_other_node'>other_node</span><span class='period'>.</span><span class='id identifier rubyid_scoped_children'>scoped_children</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+  <span class='ivar'>@ast_nodes</span> <span class='op'>=</span> <span class='id identifier rubyid_other_node'>other_node</span><span class='period'>.</span><span class='id identifier rubyid_ast_nodes'>ast_nodes</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+  <span class='ivar'>@definitions</span> <span class='op'>=</span> <span class='id identifier rubyid_other_node'>other_node</span><span class='period'>.</span><span class='id identifier rubyid_definitions'>definitions</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="inspect-instance_method">
+  
+    #<strong>inspect</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+124
+125
+126
+127
+128</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 124</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_inspect'>inspect</span>
+  <span class='id identifier rubyid_all_children_names'>all_children_names</span> <span class='op'>=</span> <span class='id identifier rubyid_scoped_children'>scoped_children</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:keys</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_flatten'>flatten</span><span class='period'>.</span><span class='id identifier rubyid_uniq'>uniq</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>, </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_all_locations'>all_locations</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_nodes'>ast_nodes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_line'>line</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_col'>col</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>, </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>#&lt;Node </span><span class='embexpr_beg'>#{</span><span class='ivar'>@owner_type</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='ivar'>@name</span><span class='embexpr_end'>}</span><span class='tstring_content'> -&gt; </span><span class='embexpr_beg'>#{</span><span class='ivar'>@return_type</span><span class='embexpr_end'>}</span><span class='tstring_content'> {</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_all_children_names'>all_children_names</span><span class='embexpr_end'>}</span><span class='tstring_content'>} @ [</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_all_locations'>all_locations</span><span class='embexpr_end'>}</span><span class='tstring_content'>] </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_object_id'>object_id</span><span class='embexpr_end'>}</span><span class='tstring_content'>&gt;</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="subscription_topic-instance_method">
+  
+    #<strong>subscription_topic</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 160</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_subscription_topic'>subscription_topic</span>
+  <span class='ivar'>@subscription_topic</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='id identifier rubyid_scope'>scope</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_definition'>definition</span><span class='period'>.</span><span class='id identifier rubyid_subscription_scope'>subscription_scope</span>
+      <span class='ivar'>@query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='id identifier rubyid_definition'>definition</span><span class='period'>.</span><span class='id identifier rubyid_subscription_scope'>subscription_scope</span><span class='rbracket'>]</span>
+    <span class='kw'>else</span>
+      <span class='kw'>nil</span>
+    <span class='kw'>end</span>
+    <span class='const'><span class='object_link'><a href="../Subscriptions.html" title="GraphQL::Subscriptions (class)">Subscriptions</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Subscriptions/Event.html" title="GraphQL::Subscriptions::Event (class)">Event</a></span></span><span class='period'>.</span><span class='id identifier rubyid_serialize'><span class='object_link'><a href="../Subscriptions/Event.html#serialize-class_method" title="GraphQL::Subscriptions::Event.serialize (method)">serialize</a></span></span><span class='lparen'>(</span>
+      <span class='id identifier rubyid_definition_name'>definition_name</span><span class='comma'>,</span>
+      <span class='ivar'>@query</span><span class='period'>.</span><span class='id identifier rubyid_arguments_for'>arguments_for</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_definition'>definition</span><span class='rparen'>)</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_definition'>definition</span><span class='comma'>,</span>
+      <span class='label'>scope:</span> <span class='id identifier rubyid_scope'>scope</span>
+    <span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="typed_children-instance_method">
+  
+    #<strong>typed_children</strong>  &#x21d2; <tt>Hash&lt;<span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">GraphQL::ObjectType</a></span>, Hash&lt;String =&gt; <span class='object_link'><a href="" title="GraphQL::InternalRepresentation::Node (class)">Node</a></span>&gt;&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Each key is a <span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span> which this selection <em>may</em> be made on.
+The values for that key are selections which apply to that type.</p>
+
+<p>This value is derived from <span class='object_link'><a href="#scoped_children-instance_method" title="GraphQL::InternalRepresentation::Node#scoped_children (method)">#scoped_children</a></span> after the rewrite is finished.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash&lt;<span class='object_link'><a href="../ObjectType.html" title="GraphQL::ObjectType (class)">GraphQL::ObjectType</a></span>, Hash&lt;String =&gt; <span class='object_link'><a href="" title="GraphQL::InternalRepresentation::Node (class)">Node</a></span>&gt;&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/internal_representation/node.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_typed_children'>typed_children</span>
+  <span class='ivar'>@typed_children</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='kw'>if</span> <span class='ivar'>@scoped_children</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>
+      <span class='id identifier rubyid_new_tc'>new_tc</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='const'><span class='object_link'><a href="#DEFAULT_TYPED_CHILDREN-constant" title="GraphQL::InternalRepresentation::Node::DEFAULT_TYPED_CHILDREN (constant)">DEFAULT_TYPED_CHILDREN</a></span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_all_object_types'>all_object_types</span> <span class='op'>=</span> <span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+      <span class='id identifier rubyid_scoped_children'>scoped_children</span><span class='period'>.</span><span class='id identifier rubyid_each_key'>each_key</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_all_object_types'>all_object_types</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='ivar'>@query</span><span class='period'>.</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='lparen'>(</span><span class='id identifier rubyid_t'>t</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+      <span class='comment'># Remove any scoped children which don&#39;t follow this return type
+</span>      <span class='comment'># (This can happen with fragment merging where lexical scope is lost)
+</span>      <span class='id identifier rubyid_all_object_types'>all_object_types</span> <span class='op'>&amp;=</span> <span class='ivar'>@query</span><span class='period'>.</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='lparen'>(</span><span class='ivar'>@return_type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_all_object_types'>all_object_types</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span>
+        <span class='id identifier rubyid_new_tc'>new_tc</span><span class='lbracket'>[</span><span class='id identifier rubyid_t'>t</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_get_typed_children'>get_typed_children</span><span class='lparen'>(</span><span class='id identifier rubyid_t'>t</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_new_tc'>new_tc</span>
+    <span class='kw'>else</span>
+      <span class='const'><span class='object_link'><a href="#NO_TYPED_CHILDREN-constant" title="GraphQL::InternalRepresentation::Node::NO_TYPED_CHILDREN (constant)">NO_TYPED_CHILDREN</a></span></span>
+    <span class='kw'>end</span>
+
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Jan 26 14:37:35 2021 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.26 (ruby-2.7.2).
+</div>
+
+    </div>
+  </body>
+</html>
