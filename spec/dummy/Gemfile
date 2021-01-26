@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 
 gem 'rails', '~> 5.2.1'
 gem 'puma'
-gem 'capybara'
+gem 'capybara', '3.34.0'
 gem 'selenium-webdriver'
 gem 'graphql', path: File.expand_path('../../', __dir__)
 
