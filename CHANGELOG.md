@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 1.12.3 (27 January 2021)
+
+### Bug fixes
+
+- Fix constant names for legacy scalar types
+
 # 1.12.2 (26 January 2021)
 
 ### New features
