@@ -23,7 +23,7 @@ module GraphQL
         # a one level deep merge explicitly. However beyond that only show the
         # latest value and problems.
         super.merge({ "extensions" => { "value" => value, "problems" => validation_result.problems }}) do |key, oldValue, newValue|
-          if oldValue.respond_to? merge
+          if oldValue.respond_to?(:merge)
             oldValue.merge(newValue)
           else
             newValue
