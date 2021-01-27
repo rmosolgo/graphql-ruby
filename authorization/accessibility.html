@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Accessibility</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.11.7/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#authorization-guides">Authorization</a>
+  &raquo; Accessibility
+</p>
+
+
+<h1 class="guide-header">Accessibility</h1>
+<div class="guide-container">
+  <p><strong>NOTE:</strong> This kind of authorization is deprecated and isn’t supported by the <a href="/queries/interpreter">forthcoming GraphQL runtime</a> because it’s too slow.</p>
+
+<p>With GraphQL-Ruby, you can inspect an incoming query, and return a custom error if that query accesses some unauthorized parts of the schema.</p>
+
+<p>This is different from <a href="/authorization/visibility">visibility</a>, where unauthorized parts of the schema are treated as non-existent. It’s also different from <a href="/authorization/authorization">authorization</a>, which makes checks <em>while running</em>, instead of <em>before running</em>.</p>
+
+<h2 id="opt-in">Opt-In</h2>
+
+<p>To use this kind of authorization, you must add a query analyzer:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Set up ahead-of-time `accessible?` authorization</span>
+  <span class="n">query_analyzer</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Authorization</span><span class="o">::</span><span class="no">Analyzer</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="preventing-access">Preventing Access</h2>
+
+<p>You can override some <code class="language-plaintext highlighter-rouge">.accessible?(context)</code> methods to prevent access to certain members of the schema:</p>
+
+<ul>
+  <li>Type and mutation classes have a <code class="language-plaintext highlighter-rouge">.accessible?(context)</code> class method</li>
+  <li>Arguments and fields have a <code class="language-plaintext highlighter-rouge">.accessible?(context)</code> instance method</li>
+</ul>
+
+<p>These methods are called with the query context, based on the hash you pass as <code class="language-plaintext highlighter-rouge">context:</code>.</p>
+
+<p>Whenever that method is implemented to return <code class="language-plaintext highlighter-rouge">false</code>, the currently-checked field will be collected as inaccessible. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">preview</span><span class="p">:,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="vi">@preview</span> <span class="o">=</span> <span class="n">preview</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># If this field was marked as preview, hide it unless the current viewer can see previews.</span>
+  <span class="k">def</span> <span class="nf">accessible?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="k">if</span> <span class="vi">@preview</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">can_preview?</span>
+      <span class="kp">false</span>
+    <span class="k">else</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, any fields created with <code class="language-plaintext highlighter-rouge">field(..., preview: true)</code> will be <em>visible</em> to everyone, but only accessible to users where <code class="language-plaintext highlighter-rouge">.can_preview?</code> is <code class="language-plaintext highlighter-rouge">true</code>.</p>
+
+<h2 id="adding-an-error">Adding an Error</h2>
+
+<p>By default, GraphQL-Ruby will return a simple error to the client if any <code class="language-plaintext highlighter-rouge">.accessible?</code> checks return false.</p>
+
+<p>You can customize this behavior by overriding Schema.inaccessible_fields, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># If you have a custom `permission_level` setting on your `GraphQL::Field` class,</span>
+  <span class="c1"># you can access it here:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">inaccessible_fields</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+    <span class="n">required_permissions</span> <span class="o">=</span> <span class="n">error</span><span class="p">.</span><span class="nf">fields</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:permission_level</span><span class="p">).</span><span class="nf">uniq</span>
+    <span class="c1"># Return a custom error</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">AnalysisError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"You need certain permissions: </span><span class="si">#{</span><span class="n">required_permissions</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, your custom error will be added to the response instead of the default one.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/authorization/accessibility.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Accessibility">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
