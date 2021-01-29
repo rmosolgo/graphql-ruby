@@ -73,8 +73,8 @@ end
 This source could be used for any `model_class`, for example:
 
 ```ruby
-author = dataloader.for(Sources::ActiveRecordObject, ::User).load(1)
-post = dataloader.for(Sources::ActiveRecordObject, ::Post).load(1)
+author = dataloader.with(Sources::ActiveRecordObject, ::User).load(1)
+post = dataloader.with(Sources::ActiveRecordObject, ::Post).load(1)
 ```
 
 ## Example: Batched Calculations
