@@ -42,6 +42,7 @@ jobs:
             ruby: 2.6
           - gemfile: gemfiles/rails_3.2.gemfile
             ruby: 2.3
+            bundler: "1"
           - gemfile: gemfiles/rails_4.2.gemfile
             ruby: 2.4
             bundler: "1"
