@@ -27,11 +27,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "codeclimate-test-reporter", "~>0.4"
   s.add_development_dependency "concurrent-ruby", "~>1.0"
-  s.add_development_dependency "guard", "~> 2.12"
-  s.add_development_dependency "guard-minitest", "~> 2.4"
-  s.add_development_dependency "guard-rake"
-  s.add_development_dependency "guard-rubocop"
-  s.add_development_dependency "listen", "~> 3.0.0"
   s.add_development_dependency "memory_profiler"
   # Remove this limit when minitest-reports is compatible
   # https://github.com/kern/minitest-reporters/pull/220
@@ -41,8 +36,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "racc", "~> 1.4"
   s.add_development_dependency "rake", "~> 12"
   s.add_development_dependency "rubocop", "0.68" # for Ruby 2.2 enforcement
-  # following are required for relay helpers
-  s.add_development_dependency "appraisal"
   # required for upgrader
   s.add_development_dependency "parser"
   # website stuff

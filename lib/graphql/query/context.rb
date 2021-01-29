@@ -1,6 +1,4 @@
 # frozen_string_literal: true
-# test_via: ../execution/execute.rb
-# test_via: ../execution/lazy.rb
 module GraphQL
   class Query
     # Expose some query-specific info to field resolve functions.
