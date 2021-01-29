@@ -111,13 +111,6 @@ bundle exec rake test   # tests only
 
 <p>(This is provided by <code class="language-plaintext highlighter-rouge">minitest-focus</code>.)</p>
 
-<p>You can <strong>watch files</strong> with <code class="language-plaintext highlighter-rouge">guard</code>:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec guard
-</code></pre></div></div>
-
-<p>When a file in <code class="language-plaintext highlighter-rouge">lib/</code> is modified, <code class="language-plaintext highlighter-rouge">guard</code> will run the corresponding file in <code class="language-plaintext highlighter-rouge">spec</code>. Guard also respects <code class="language-plaintext highlighter-rouge"># test_via:</code> comments, so it will run that test when the file changes (if there is no corresponding file by name).</p>
-
 <h4 id="integration-tests">Integration tests</h4>
 
 <p>You need to pick a specific gemfile from gemfiles/ to run integration tests. For example:</p>
@@ -140,16 +133,9 @@ BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle exec rake test TEST=spec/integr
 
 <h3 id="gemfiles-gemfiles-gemfiles">Gemfiles, Gemfiles, Gemfiles</h3>
 
-<p><code class="language-plaintext highlighter-rouge">graphql-ruby</code> has several gemfiles to ensure support for various Rails versions.</p>
+<p><code class="language-plaintext highlighter-rouge">graphql-ruby</code> has several gemfiles to ensure support for various Rails versions. You can specify a gemfile with <code class="language-plaintext highlighter-rouge">BUNDLE_GEMFILE</code>, eg:</p>
 
-<p>You can run all gemfiles with</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>appraisal rake
-</code></pre></div></div>
-
-<p>You can specify a gemfile with <code class="language-plaintext highlighter-rouge">BUNDLE_GEMFILE</code>, eg:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake test
 </code></pre></div></div>
 
 <h3 id="debugging-with-pry">Debugging with Pry</h3>
@@ -215,8 +201,6 @@ rake bench:validate        <span class="c"># Benchmark validation of several que
 <p>To update the lexer or parser, you should update their corresponding <em>definitions</em> (<code class="language-plaintext highlighter-rouge">lexer.rl</code> or <code class="language-plaintext highlighter-rouge">parser.y</code>). Then, you can run <code class="language-plaintext highlighter-rouge">bundle exec rake build_parser</code> to re-generate the <code class="language-plaintext highlighter-rouge">.rb</code> files.</p>
 
 <p>You will need Ragel to build the lexer (see above).</p>
-
-<p>If you start <strong>guard</strong> (<code class="language-plaintext highlighter-rouge">bundle exec guard</code>), the <code class="language-plaintext highlighter-rouge">.rb</code> files will be rebuilt whenever the definition files are modified.</p>
 
 <h4 id="install-ragel-and-colm-on-a-mac">Install Ragel and Colm on a Mac</h4>
 
