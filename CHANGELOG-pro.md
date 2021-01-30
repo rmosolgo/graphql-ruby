@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.17.2 (30 Jan 2021)
+
+### Bug Fix
+
+- Subscriptions: don't generate keys inside Lua scripts (for redis-namespace compatibility, and probably better support for Redis cluster) #3307
+
 ## 1.17.1 (25 Jan 2021)
 
 ### New Features
