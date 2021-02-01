@@ -103,6 +103,12 @@ describe GraphQL::Dataloader do
     end
 
     class Query < GraphQL::Schema::Object
+      field :recipes, [Recipe], null: false
+
+      def recipes
+        Database.mget(["5", "6"])
+      end
+
       field :ingredient, Ingredient, null: true do
         argument :id, ID, required: true
       end
@@ -352,5 +358,42 @@ describe GraphQL::Dataloader do
       }
     }
     assert_equal expected_data, res["data"]
+  end
+
+  focus
+  it "Works when the parent field didn't yield" do
+    query_str = <<-GRAPHQL
+    {
+      recipes {
+        ingredients {
+          name
+        }
+      }
+    }
+    GRAPHQL
+
+    res = FiberSchema.execute(query_str)
+    expected_data = {
+      "recipes" =>[
+        { "ingredients" => [
+          {"name"=>"Wheat"},
+          {"name"=>"Corn"},
+          {"name"=>"Butter"},
+          {"name"=>"Baking Soda"}
+        ]},
+        { "ingredients" => [
+          {"name"=>"Corn"},
+          {"name"=>"Butter"},
+          {"name"=>"Cheese"}
+        ]},
+      ]
+    }
+    assert_equal expected_data, res["data"]
+
+    expected_log = [
+      [:mget, ["5", "6"]],
+      [:mget, ["1", "2", "3", "4", "7"]],
+    ]
+    assert_equal expected_log, database_log
   end
 end
