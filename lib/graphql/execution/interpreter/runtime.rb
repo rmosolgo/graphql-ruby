@@ -56,48 +56,26 @@ module GraphQL
             # Root .authorized? returned false.
             write_in_response(path, nil)
           else
-            # Prepare this runtime state to be encapsulated in a Fiber
-            @progress_path = path
-            @progress_scoped_context = context.scoped_context
-            @progress_object = object_proxy
-            @progress_object_type = root_type
-            @progress_index = nil
-            @progress_is_eager_selection = root_op_type == "mutation"
-            @progress_selections = gather_selections(object_proxy, root_type, root_operation.selections)
-
+            gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
             # Make the first fiber which will begin execution
-            enqueue_selections_fiber
+            @dataloader.enqueue {
+              evaluate_selections(
+                path,
+                context.scoped_context,
+                object_proxy,
+                root_type,
+                {
+                  is_eager_selection: root_op_type == "mutation",
+                  after: nil,
+                  gathered_selections: gathered_selections,
+                }
+              )
+            }
           end
           delete_interpreter_context(:current_path)
           delete_interpreter_context(:current_field)
           delete_interpreter_context(:current_object)
           delete_interpreter_context(:current_arguments)
-          nil
-        end
-
-        # Use `@dataloader` to enqueue a fiber that will pick up from the current point.
-        # @return [void]
-        def enqueue_selections_fiber
-          # Read these into local variables so that later assignments don't affect the block below.
-          path = @progress_path
-          scoped_context = @progress_scoped_context
-          owner_object = @progress_object
-          owner_type = @progress_object_type
-          idx = @progress_index
-          is_eager_selection = @progress_is_eager_selection
-          gathered_selections = @progress_selections
-
-          @dataloader.enqueue {
-            evaluate_selections(
-              path,
-              scoped_context,
-              owner_object,
-              owner_type,
-              is_eager_selection: is_eager_selection,
-              after: idx,
-              gathered_selections: gathered_selections,
-            )
-          }
           nil
         end
 
@@ -162,14 +140,6 @@ module GraphQL
         def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection:, gathered_selections:, after:)
           set_all_interpreter_context(owner_object, nil, nil, path)
 
-          @progress_path = path
-          @progress_scoped_context = scoped_context
-          @progress_object = owner_object
-          @progress_object_type = owner_type
-          @progress_index = nil
-          @progress_is_eager_selection = is_eager_selection
-          @progress_selections = gathered_selections
-
           # Track `idx` manually to avoid an allocation on this hot path
           idx = 0
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
@@ -181,11 +151,10 @@ module GraphQL
             if after && prev_idx <= after
               next
             end
-            @progress_index = prev_idx
-            # This is how the current runtime gives itself to `dataloader`
-            # so that the dataloader can enqueue another fiber to resume if needed.
-            @dataloader.current_runtime = self
-            evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection)
+
+            @dataloader.enqueue {
+              evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection)
+            }
             # The dataloader knows if ^^ that selection halted and later selections were executed in another fiber.
             # If that's the case, then don't continue execution here.
             if @dataloader.yielded?(path)
@@ -199,6 +168,7 @@ module GraphQL
 
         # @return [void]
         def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field)
+          p [:evaluate_selection, path, result_name]
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
           # selections of the field, it will be an Array of nodes
@@ -427,35 +397,8 @@ module GraphQL
             response_list = []
             write_in_response(path, response_list)
             inner_type = current_type.of_type
-            idx = 0
             scoped_context = context.scoped_context
-            begin
-              value.each do |inner_value|
-                next_path = path.dup
-                next_path << idx
-                next_path.freeze
-                idx += 1
-                set_type_at_path(next_path, inner_type)
-                # This will update `response_list` with the lazy
-                after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
-                  continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node)
-                  if HALT != continue_value
-                    continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments)
-                  end
-                end
-              end
-            rescue NoMethodError => err
-              # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
-              if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == value : true)
-                # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
-                raise ListResultFailedError.new(value: value, field: field, path: path)
-              else
-                # This was some other NoMethodError -- let it bubble to reveal the real error.
-                raise
-              end
-            end
-
-            response_list
+            evaluate_list(field, owner_type, next_selections, inner_type, ast_node, path, value, arguments, owner_object, scoped_context, after: nil)
           when "NON_NULL"
             inner_type = current_type.of_type
             # Don't `set_type_at_path` because we want the static type,
@@ -463,6 +406,54 @@ module GraphQL
             continue_field(path, value, owner_type, field, inner_type, ast_node, next_selections, true, owner_object, arguments)
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
+          end
+        end
+
+        def evaluate_list(
+            field, owner_type, next_selections, inner_type, ast_node, path,
+            value, arguments, owner_object, scoped_context, after:
+          )
+
+          idx = 0
+          @progress_field = field
+          @progress_object_type = owner_type
+          @progress_next_selections = next_selections
+          @progress_inner_type = inner_type
+          @progress_ast_node = ast_node
+          @progress_path = path
+          @progress_value = value
+          @progress_arguments = arguments
+          @progress_object = owner_object
+          @progress_scoped_context = scoped_context
+          @progress_index = nil
+          value.each do |inner_value|
+            if after && idx < after
+              idx += 1
+              next
+            end
+            @resume_mode = :list
+            @progress_index = idx
+            next_path = path.dup
+            next_path << idx
+            next_path.freeze
+            idx += 1
+            set_type_at_path(next_path, inner_type)
+            # This will update `response_list` with the lazy
+            after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
+              continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node)
+              if HALT != continue_value
+                continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments)
+              end
+            end
+          end
+        rescue NoMethodError => err
+          # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
+          if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == value : true)
+            # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
+            raise ListResultFailedError.new(value: value, field: field, path: path)
+          else
+            # This was some other NoMethodError -- let it bubble to reveal the real error.
+            raise
           end
         end
 

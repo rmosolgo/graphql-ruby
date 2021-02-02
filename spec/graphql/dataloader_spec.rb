@@ -25,9 +25,9 @@ describe GraphQL::Dataloader do
         ids.map { |id| DATA[id] }
       end
 
-      def find_by(attribute, keys)
-        log << [:find_by, attribute, keys]
-        keys.map { |k| DATA.each_value.find { |v| v[attribute] == k } }
+      def find_by(attribute, values)
+        log << [:find_by, attribute, values]
+        values.map { |v| DATA.each_value.find { |dv| dv[attribute] == v } }
       end
     end
 

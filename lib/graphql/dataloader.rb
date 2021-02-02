@@ -49,13 +49,17 @@ module GraphQL
     # @param block Some work to enqueue
     # @return [void]
     def enqueue(&block)
-      @waiting_fibers << Fiber.new {
-        begin
-          yield
-        rescue StandardError => exception
-          exception
-        end
-      }
+      if @current_fiber == Fiber.current
+        yield
+      else
+        @waiting_fibers << Fiber.new {
+          begin
+            yield
+          rescue StandardError => exception
+            exception
+          end
+        }
+      end
       nil
     end
 
@@ -96,6 +100,7 @@ module GraphQL
         resume_fiber_and_enqueue_continuation(current_fiber, already_run_fibers)
 
         if @waiting_fibers.empty?
+          p "@waiting_fibers is empty"
           # Now, run all Sources which have become pending _before_ resuming GraphQL execution.
           # Sources might queue up other Sources, which is fine -- those will also run before resuming execution.
           #
@@ -151,7 +156,9 @@ module GraphQL
     # Otherwise, clean it up from @yielded_fibers.
     # @return [void]
     def resume_fiber_and_enqueue_continuation(fiber, fiber_stack)
+      @current_fiber = fiber
       result = fiber.resume
+      @current_fiber = nil
       if result.is_a?(StandardError)
         raise result
       end
@@ -159,13 +166,15 @@ module GraphQL
       # This fiber yielded; there's more to do here.
       # (If `#alive?` is false, then the fiber concluded without yielding.)
       if fiber.alive?
+        p "Still alive: #{fiber.object_id} #{current_runtime.progress_path} #{current_runtime.instance_variable_get(:@progress_index)}"
         if !@yielded_fibers.include?(fiber)
           # This fiber hasn't yielded yet, we should enqueue a continuation fiber
           @yielded_fibers[fiber] = current_runtime.progress_path
-          current_runtime.enqueue_selections_fiber
+          current_runtime.enqueue_resume_fiber
         end
         fiber_stack << fiber
       else
+        p "Finished: #{fiber.object_id} #{current_runtime&.progress_path}"
         # Keep this set clean so that fibers can be GC'ed during execution
         @yielded_fibers.delete(fiber)
       end
@@ -190,6 +199,8 @@ module GraphQL
         source_fiber = Fiber.new do
           pending_sources.each(&:run_pending_keys)
         end
+
+        p "Created source fiber #{source_fiber.object_id}"
       end
 
       source_fiber
