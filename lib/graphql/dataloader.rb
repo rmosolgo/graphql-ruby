@@ -62,10 +62,8 @@ module GraphQL
     end
 
     # @api private Nothing to see here
-    def append_batch(receiver, method, *args)
-      args.unshift(method)
-      args.unshift(receiver)
-      @pending_batches.push(args)
+    def append_batch(*batch)
+      @pending_batches.push(batch)
       nil
     end
 
