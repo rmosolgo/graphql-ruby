@@ -58,19 +58,21 @@ module GraphQL
           else
             gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
             # Make the first fiber which will begin execution
-            @dataloader.enqueue {
-              evaluate_selections(
-                path,
-                context.scoped_context,
-                object_proxy,
-                root_type,
-                {
-                  is_eager_selection: root_op_type == "mutation",
-                  after: nil,
-                  gathered_selections: gathered_selections,
-                }
-              )
-            }
+            @dataloader.append_batches(
+              [
+                [
+                  self,
+                  :evaluate_selections,
+                  path,
+                  context.scoped_context,
+                  object_proxy,
+                  root_type,
+                  root_op_type == "mutation",
+                  gathered_selections,
+                  nil,
+                ]
+              ]
+            )
           end
           delete_interpreter_context(:current_path)
           delete_interpreter_context(:current_field)
@@ -137,30 +139,20 @@ module GraphQL
         NO_ARGS = {}.freeze
 
         # @return [void]
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection:, gathered_selections:, after:)
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, after)
           set_all_interpreter_context(owner_object, nil, nil, path)
 
-          # Track `idx` manually to avoid an allocation on this hot path
-          idx = 0
+          work_batches = []
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
-            prev_idx = idx
-            idx += 1
-            # TODO: this is how a `progress` resumes where this left off.
-            # Is there a better way to seek in the hash?
-            # I think we could also use the array of keys; it supports seeking just fine.
-            if after && prev_idx <= after
-              next
-            end
-
-            @dataloader.enqueue {
-              evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection)
-            }
-            # The dataloader knows if ^^ that selection halted and later selections were executed in another fiber.
-            # If that's the case, then don't continue execution here.
-            if @dataloader.yielded?(path)
-              break
-            end
+            work_batches << [
+              self,
+              :evaluate_selection,
+              path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection
+            ]
           end
+
+          @dataloader.append_batches(work_batches)
+
           nil
         end
 
@@ -168,7 +160,6 @@ module GraphQL
 
         # @return [void]
         def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field)
-          p [:evaluate_selection, path, result_name]
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
           # selections of the field, it will be an Array of nodes
@@ -389,7 +380,7 @@ module GraphQL
                 response_hash = {}
                 write_in_response(path, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
-                evaluate_selections(path, context.scoped_context, continue_value, current_type, is_eager_selection: false, gathered_selections: gathered_selections, after: nil)
+                evaluate_selections(path, context.scoped_context, continue_value, current_type, false, gathered_selections, nil)
                 response_hash
               end
             end

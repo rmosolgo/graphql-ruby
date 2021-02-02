@@ -74,6 +74,24 @@ module GraphQL
           end
         end
 
+        # @param query [GraphQL::Query]
+        def begin_query(results, idx, query, multiplex)
+          operation = query.selected_operation
+          result = if operation.nil? || !query.valid? || query.context.errors.any?
+            NO_OPERATION
+          else
+            begin
+              # These were checked to be the same in `#supports_multiplexing?`
+              query.schema.query_execution_strategy.begin_query(query, multiplex)
+            rescue GraphQL::ExecutionError => err
+              query.context.errors << err
+              NO_OPERATION
+            end
+          end
+          results[idx] = result
+          nil
+        end
+
         private
 
         def run_as_multiplex(multiplex)
@@ -82,19 +100,24 @@ module GraphQL
           queries = multiplex.queries
           # Do as much eager evaluation of the query as possible
           results = []
+          batches = []
           queries.each_with_index do |query, idx|
-            multiplex.dataloader.enqueue {
-              results[idx] = begin_query(query, multiplex)
-            }
+            batches << [self, :begin_query, results, idx, query, multiplex]
           end
 
-          multiplex.dataloader.run
+          multiplex.dataloader.append_batches(batches)
+          multiplex.dataloader.run_batches
 
           # Then, work through lazy results in a breadth-first way
-          multiplex.dataloader.enqueue {
-            multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
-          }
-          multiplex.dataloader.run
+          multiplex.dataloader.append_batches([
+            [
+              multiplex.schema.query_execution_strategy,
+              :finish_multiplex,
+              results,
+              multiplex
+            ]
+          ])
+          multiplex.dataloader.run_batches
 
           # Then, find all errors and assign the result to the query object
           results.each_with_index do |data_result, idx|
@@ -110,23 +133,6 @@ module GraphQL
           # Assign values here so that the query's `@executed` becomes true
           queries.map { |q| q.result_values ||= {} }
           raise
-        end
-
-        # @param query [GraphQL::Query]
-        # @return [Hash] The initial result (may not be finished if there are lazy values)
-        def begin_query(query, multiplex)
-          operation = query.selected_operation
-          if operation.nil? || !query.valid? || query.context.errors.any?
-            NO_OPERATION
-          else
-            begin
-              # These were checked to be the same in `#supports_multiplexing?`
-              query.schema.query_execution_strategy.begin_query(query, multiplex)
-            rescue GraphQL::ExecutionError => err
-              query.context.errors << err
-              NO_OPERATION
-            end
-          end
         end
 
         # @param data_result [Hash] The result for the "data" key, if any

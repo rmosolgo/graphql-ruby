@@ -35,104 +35,7 @@ module GraphQL
           h2[batch_parameters] = source
         }
       }
-      @waiting_fibers = []
-      @yielded_fibers = {}
-    end
-
-    # @return [Hash] the {Multiplex} context
-    attr_reader :context
-
-    # @api private
-    attr_reader :yielded_fibers
-
-    # Add some work to this dataloader to be scheduled later.
-    # @param block Some work to enqueue
-    # @return [void]
-    def enqueue(&block)
-      if @current_fiber == Fiber.current
-        yield
-      else
-        @waiting_fibers << Fiber.new {
-          begin
-            yield
-          rescue StandardError => exception
-            exception
-          end
-        }
-      end
-      nil
-    end
-
-    # Tell the dataloader that this fiber is waiting for data.
-    #
-    # Dataloader will resume the fiber after the requested data has been loaded (by another Fiber).
-    #
-    # @return [void]
-    def yield
-      Fiber.yield
-      nil
-    end
-
-    # @param path [Array<String, Integer>] A graphql response path
-    # @return [Boolean] True if the current Fiber has yielded once via Dataloader at {path}
-    def yielded?(path)
-      @yielded_fibers[Fiber.current] == path
-    end
-
-    # Run all Fibers until they're all done
-    #
-    # Each cycle works like this:
-    #
-    #   - Run each pending execution fiber (`@waiting_fibers`),
-    #   - Then run each pending Source, preparing more data for those fibers.
-    #     - Run each pending Source _again_ (if one Source requested more data from another Source)
-    #     - Continue until there are no pending sources
-    #   - Repeat: run execution fibers again ...
-    #
-    # @return [void]
-    def run
-      # Start executing Fibers. This will run until all the Fibers are done.
-      already_run_fibers = []
-      while (current_fiber = @waiting_fibers.pop)
-        # Run each execution fiber, enqueuing it in `already_run_fibers`
-        # if it's still `.alive?`.
-        # Any spin-off continuations will be enqueued in `@waiting_fibers` (via {#enqueue})
-        resume_fiber_and_enqueue_continuation(current_fiber, already_run_fibers)
-
-        if @waiting_fibers.empty?
-          p "@waiting_fibers is empty"
-          # Now, run all Sources which have become pending _before_ resuming GraphQL execution.
-          # Sources might queue up other Sources, which is fine -- those will also run before resuming execution.
-          #
-          # This is where an evented approach would be even better -- can we tell which
-          # fibers are ready to continue, and continue execution there?
-          #
-          source_fiber_stack = if (first_source_fiber = create_source_fiber)
-            [first_source_fiber]
-          else
-            nil
-          end
-
-          if source_fiber_stack
-            while (outer_source_fiber = source_fiber_stack.pop)
-              resume_fiber_and_enqueue_continuation(outer_source_fiber, source_fiber_stack)
-
-              # If this source caused more sources to become pending, run those before running this one again:
-              next_source_fiber = create_source_fiber
-              if next_source_fiber
-                source_fiber_stack << next_source_fiber
-              end
-            end
-          end
-
-          # We ran all the first round of execution fibers,
-          # and we ran all the pending sources.
-          # So pick up any paused execution fibers and repeat.
-          @waiting_fibers.concat(already_run_fibers)
-          already_run_fibers.clear
-        end
-      end
-      nil
+      @pending_batches = []
     end
 
     # Get a Source instance from this dataloader, for calling `.load(...)` or `.request(...)` on.
@@ -145,65 +48,112 @@ module GraphQL
       @source_cache[source_class][batch_parameters]
     end
 
-    # @api private
-    attr_accessor :current_runtime
+    # @return [Hash] the {Multiplex} context
+    attr_reader :context
 
-    private
-
-    # Check if this fiber is still alive.
-    # If it is, and it should continue, then enqueue a continuation.
-    # If it is, re-enqueue it in `fiber_queue`.
-    # Otherwise, clean it up from @yielded_fibers.
+    # Tell the dataloader that this fiber is waiting for data.
+    #
+    # Dataloader will resume the fiber after the requested data has been loaded (by another Fiber).
+    #
     # @return [void]
-    def resume_fiber_and_enqueue_continuation(fiber, fiber_stack)
-      @current_fiber = fiber
-      result = fiber.resume
-      @current_fiber = nil
-      if result.is_a?(StandardError)
-        raise result
+    def yield
+      Fiber.yield
+      nil
+    end
+
+    # @api private Nothing to see here
+    def append_batches(batches)
+      @pending_batches.concat(batches)
+    end
+
+    # @api private Move along, move along
+    def run_batches
+      pending_fibers = []
+      next_fibers = []
+
+      while @pending_batches.any?
+        run_batch_fiber(into: pending_fibers)
       end
 
-      # This fiber yielded; there's more to do here.
-      # (If `#alive?` is false, then the fiber concluded without yielding.)
-      if fiber.alive?
-        p "Still alive: #{fiber.object_id} #{current_runtime.progress_path} #{current_runtime.instance_variable_get(:@progress_index)}"
-        if !@yielded_fibers.include?(fiber)
-          # This fiber hasn't yielded yet, we should enqueue a continuation fiber
-          @yielded_fibers[fiber] = current_runtime.progress_path
-          current_runtime.enqueue_resume_fiber
+      # Now, run all Sources which have become pending _before_ resuming GraphQL execution.
+      # Sources might queue up other Sources, which is fine -- those will also run before resuming execution.
+      #
+      # This is where an evented approach would be even better -- can we tell which
+      # fibers are ready to continue, and continue execution there?
+      #
+      run_all_pending_sources
+      next_fibers.concat(pending_fibers)
+      pending_fibers.clear
+      while (f = next_fibers.shift)
+        f.resume
+        if f.alive?
+          pending_fibers << f
         end
-        fiber_stack << fiber
-      else
-        p "Finished: #{fiber.object_id} #{current_runtime&.progress_path}"
-        # Keep this set clean so that fibers can be GC'ed during execution
-        @yielded_fibers.delete(fiber)
+
+        while @pending_batches.any?
+          run_batch_fiber(into: pending_fibers)
+        end
+
+        if next_fibers.empty?
+          run_all_pending_sources
+          next_fibers.concat(pending_fibers)
+          pending_fibers.clear
+        end
       end
     end
 
-    # If there are pending sources, return a fiber for running them.
-    # Otherwise, return `nil`.
-    #
-    # @return [Fiber, nil]
-    def create_source_fiber
-      pending_sources = nil
+    private
+
+    def run_all_pending_sources
+      enqueue_pending_source_batches
+      pending_source_fibers = []
+      while @pending_batches.any?
+        run_batch_fiber(into: pending_source_fibers)
+        if @pending_batches.empty?
+          enqueue_pending_source_batches
+        end
+      end
+
+      # Use `.pop` so that any new batch fibers are run first
+      while (f = pending_source_fibers.pop)
+        f.resume
+        enqueue_pending_source_batches
+        while @pending_batches.any?
+          run_batch_fiber(into: pending_source_fibers)
+        end
+        if f.alive?
+          pending_source_fibers << f
+        end
+      end
+    end
+
+    def enqueue_pending_source_batches
       @source_cache.each_value do |source_by_batch_params|
         source_by_batch_params.each_value do |source|
           if source.pending?
-            pending_sources ||= []
-            pending_sources << source
+            @pending_batches << [source, :run_pending_keys]
           end
         end
       end
+    end
 
-      if pending_sources
-        source_fiber = Fiber.new do
-          pending_sources.each(&:run_pending_keys)
+    def run_batch_fiber(into: nil)
+      f = Fiber.new {
+        while (batch = @pending_batches.shift)
+          recv, method, *args = batch
+          # p "#{recv.class}##{method.inspect}(#{args.size})"
+          recv.public_send(method, *args)
         end
-
-        p "Created source fiber #{source_fiber.object_id}"
+      }
+      # Run it until it yields or the batches run out
+      result = f.resume
+      if result.is_a?(StandardError)
+        raise result
       end
-
-      source_fiber
+      if f.alive? && into
+        into << f
+      end
+      f
     end
   end
 end

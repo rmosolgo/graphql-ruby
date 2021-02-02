@@ -21,12 +21,12 @@ describe GraphQL::Dataloader do
       end
 
       def mget(ids)
-        log << [:mget, ids]
+        log << [:mget, ids.sort]
         ids.map { |id| DATA[id] }
       end
 
       def find_by(attribute, values)
-        log << [:find_by, attribute, values]
+        log << [:find_by, attribute, values.sort]
         values.map { |v| DATA.each_value.find { |dv| dv[attribute] == v } }
       end
     end
@@ -256,8 +256,8 @@ describe GraphQL::Dataloader do
         "6",                # recipeIngredient recipeId
       ]],
       [:mget, [
-        "7",                # recipeIngredient ingredient_id
         "3", "4",           # The two unfetched ingredients the first recipe
+        "7",                # recipeIngredient ingredient_id
       ]],
     ]
     assert_equal expected_log, database_log
@@ -278,11 +278,10 @@ describe GraphQL::Dataloader do
     ]
     assert_equal expected_result, result
     expected_log = [
-      [:mget, ["1", "5", "2"]],
+      [:mget, ["1", "2", "5"]],
       [:mget, ["3", "4"]],
     ]
     assert_equal expected_log, database_log
-    assert_equal 0, context[:dataloader].yielded_fibers.size, "All yielded fibers are cleaned up when they're finished"
   end
 
   it "works with calls within sources" do
@@ -360,7 +359,6 @@ describe GraphQL::Dataloader do
     assert_equal expected_data, res["data"]
   end
 
-  focus
   it "Works when the parent field didn't yield" do
     query_str = <<-GRAPHQL
     {

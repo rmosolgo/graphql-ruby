@@ -38,7 +38,6 @@ module GraphQL
           @results[key]
         else
           @pending_keys << key
-          p "Sync #{key}"
           sync
           @results[key]
         end
