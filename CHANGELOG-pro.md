@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.17.3 (2 Feb 2021)
+
+### New Features
+
+- Pusher subscriptions: `context[:compress_pusher_payload] = true` will cause the payload to be gzipped before being sent to Pusher
+
 ## 1.17.2 (30 Jan 2021)
 
 ### Bug Fix

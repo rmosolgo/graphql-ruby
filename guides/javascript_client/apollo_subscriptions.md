@@ -67,6 +67,25 @@ const client = new ApolloClient({
 
 This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Pusher for future updates.
 
+If you're using {% internal_link "compressed payloads", "/subscriptions/pusher_implementation#compressed-payloads" %}, configure a `decompress:` function, too:
+
+```javascript
+// Add `pako` to the project for gunzipping
+import pako from "pako"
+
+const pusherLink = new PusherLink({
+  pusher: pusherClient,
+  decompress: function(compressed) {
+    // Decode base64
+    const data = btoa(compressed)
+    // Decompress
+    const payloadString = pako.inflate(data, { to: 'string' })
+    // Parse into an object
+    return JSON.parse(payloadString);
+  }
+})
+```
+
 ## Apollo 2 -- Ably
 
 `graphql-ruby-client` includes support for subscriptions with Ably and ApolloLink.
@@ -180,6 +199,25 @@ addGraphQLSubscriptions(myNetworkInterface, {pusher: pusherClient})
 // Optionally, add persisted query support:
 var OperationStoreClient = require("./OperationStoreClient")
 RailsNetworkInterface.use([OperationStoreClient.apolloMiddleware])
+```
+
+If you're using {% internal_link "compressed payloads", "/subscriptions/pusher_implementation#compressed-payloads" %}, configure a `decompress:` function, too:
+
+```javascript
+// Add `pako` to the project for gunzipping
+import pako from "pako"
+
+addGraphQLSubscriptions(myNetworkInterface, {
+  pusher: pusherClient,
+  decompress: function(compressed) {
+    // Decode base64
+    const data = btoa(compressed)
+    // Decompress
+    const payloadString = pako.inflate(data, { to: 'string' })
+    // Parse into an object
+    return JSON.parse(payloadString);
+  }
+})
 ```
 
 ### Apollo 1 -- ActionCable
