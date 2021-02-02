@@ -58,20 +58,15 @@ module GraphQL
           else
             gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
             # Make the first fiber which will begin execution
-            @dataloader.append_batches(
-              [
-                [
-                  self,
-                  :evaluate_selections,
-                  path,
-                  context.scoped_context,
-                  object_proxy,
-                  root_type,
-                  root_op_type == "mutation",
-                  gathered_selections,
-                  nil,
-                ]
-              ]
+            @dataloader.append_batch(
+              self,
+              :evaluate_selections,
+              path,
+              context.scoped_context,
+              object_proxy,
+              root_type,
+              root_op_type == "mutation",
+              gathered_selections,
             )
           end
           delete_interpreter_context(:current_path)
@@ -139,19 +134,16 @@ module GraphQL
         NO_ARGS = {}.freeze
 
         # @return [void]
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, after)
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections)
           set_all_interpreter_context(owner_object, nil, nil, path)
 
-          work_batches = []
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
-            work_batches << [
+            @dataloader.append_batch(
               self,
               :evaluate_selection,
               path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection
-            ]
+            )
           end
-
-          @dataloader.append_batches(work_batches)
 
           nil
         end
@@ -380,7 +372,7 @@ module GraphQL
                 response_hash = {}
                 write_in_response(path, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
-                evaluate_selections(path, context.scoped_context, continue_value, current_type, false, gathered_selections, nil)
+                evaluate_selections(path, context.scoped_context, continue_value, current_type, false, gathered_selections)
                 response_hash
               end
             end
