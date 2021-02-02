@@ -407,6 +407,8 @@ module GraphQL
                 raise
               end
             end
+
+            response_list
           when "NON_NULL"
             inner_type = current_type.of_type
             # Don't `set_type_at_path` because we want the static type,
