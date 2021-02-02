@@ -85,13 +85,34 @@
 <span class="p">}</span>
 
 <span class="c1">// Create a Relay Modern-compatible handler</span>
-<span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createHandler</span><span class="p">({</span>
+<span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createRelaySubscriptionHandler</span><span class="p">({</span>
   <span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">,</span>
   <span class="na">fetchOperation</span><span class="p">:</span> <span class="nx">fetchOperation</span>
 <span class="p">})</span>
 
 <span class="c1">// Create a Relay Modern network with the handler</span>
 <span class="kd">var</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">Network</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">fetchQuery</span><span class="p">,</span> <span class="nx">subscriptionHandler</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="compressed-payloads">Compressed Payloads</h3>
+
+<p>If you’re using <a href="/subscriptions/pusher_implementation#compressed-payloads">compressed payloads</a>, configure a <code class="language-plaintext highlighter-rouge">decompress:</code> function, too:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Add `pako` to the project for gunzipping</span>
+<span class="k">import</span> <span class="nx">pako</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pako</span><span class="dl">"</span>
+
+<span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createRelaySubscriptionHandler</span><span class="p">({</span>
+  <span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">,</span>
+  <span class="na">fetchOperation</span><span class="p">:</span> <span class="nx">fetchOperation</span><span class="p">,</span>
+  <span class="na">decompress</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">compressed</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Decode base64</span>
+    <span class="kd">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">btoa</span><span class="p">(</span><span class="nx">compressed</span><span class="p">)</span>
+    <span class="c1">// Decompress</span>
+    <span class="kd">const</span> <span class="nx">payloadString</span> <span class="o">=</span> <span class="nx">pako</span><span class="p">.</span><span class="nx">inflate</span><span class="p">(</span><span class="nx">data</span><span class="p">,</span> <span class="p">{</span> <span class="na">to</span><span class="p">:</span> <span class="dl">'</span><span class="s1">string</span><span class="dl">'</span> <span class="p">})</span>
+    <span class="c1">// Parse into an object</span>
+    <span class="k">return</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">payloadString</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">})</span>
 </code></pre></div></div>
 
 <h2 id="ably">Ably</h2>
@@ -120,7 +141,7 @@
 <span class="p">}</span>
 
 <span class="c1">// Create a Relay Modern-compatible handler</span>
-<span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createHandler</span><span class="p">({</span>
+<span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createRelaySubscriptionHandler</span><span class="p">({</span>
   <span class="na">ably</span><span class="p">:</span> <span class="nx">ablyClient</span><span class="p">,</span>
   <span class="na">fetchOperation</span><span class="p">:</span> <span class="nx">fetchOperation</span>
 <span class="p">})</span>
@@ -208,7 +229,6 @@
 </code></pre></div></div>
 
 <p>Since <code class="language-plaintext highlighter-rouge">OperationStoreClient</code> is in the <code class="language-plaintext highlighter-rouge">fetchOperation</code> function, it will apply to all GraphQL operations.</p>
-
 
 </div>
 <p class="guide-footer">

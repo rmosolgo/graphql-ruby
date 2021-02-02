@@ -194,6 +194,26 @@ appendonly <span class="nb">yes</span>
 
 <p>Read more here: <a href="https://www.html5rocks.com/en/tutorials/cors/">“Using CORS”</a>.</p>
 
+<h4 id="payload-compression">Payload Compression</h4>
+
+<p>To mitigate problems with <a href="https://support.pusher.com/hc/en-us/articles/360019115473-What-is-the-message-size-limit-when-publishing-a-message-in-Channels-">Pusher’s 10kb message limit</a>, you can specify <code class="language-plaintext highlighter-rouge">compress_pusher_payload: true</code> in the <code class="language-plaintext highlighter-rouge">context</code> of your subscription. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
+<span class="k">def</span> <span class="nf">execute</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Somehow detect whether the client supports compressed payloads,</span>
+  <span class="c1"># for example, User-Agent, query param, or request header:</span>
+  <span class="k">if</span> <span class="n">client_supports_compressed_payloads?</span>
+    <span class="n">context</span><span class="p">[</span><span class="ss">:compress_pusher_payload</span><span class="p">]</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="k">end</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This will cause subscription payloads to include <code class="language-plaintext highlighter-rouge">compressed_result: "..."</code> instead of <code class="language-plaintext highlighter-rouge">result: "..."</code> when they’re sent over Pusher. See docs for <a href="/javascript_client/apollo_subscriptions">Apollo Client</a> or <a href="/javascript_client/relay_subscriptions">Relay Modern</a> to read about preparing clients for compressed payloads.</p>
+
+<p>By configuring <code class="language-plaintext highlighter-rouge">compress_pusher_payload: true</code> on a query-by-query basis, the subscription backend can continue to support clients running <em>old</em> client code (by not compressing) while upgrading new clients to compressed payloads.</p>
+
 <h2 id="webhook-configuration">Webhook configuration</h2>
 
 <p>Your server needs to receive webhooks from Pusher when clients disconnect. This keeps your local subscription database in sync with Pusher.</p>

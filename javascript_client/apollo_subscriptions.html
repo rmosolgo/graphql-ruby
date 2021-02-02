@@ -113,6 +113,24 @@
 
 <p>This link will check responses for the <code class="language-plaintext highlighter-rouge">X-Subscription-ID</code> header, and if it’s present, it will use that value to subscribe to Pusher for future updates.</p>
 
+<p>If you’re using <a href="/subscriptions/pusher_implementation#compressed-payloads">compressed payloads</a>, configure a <code class="language-plaintext highlighter-rouge">decompress:</code> function, too:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Add `pako` to the project for gunzipping</span>
+<span class="k">import</span> <span class="nx">pako</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pako</span><span class="dl">"</span>
+
+<span class="kd">const</span> <span class="nx">pusherLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PusherLink</span><span class="p">({</span>
+  <span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">,</span>
+  <span class="na">decompress</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">compressed</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Decode base64</span>
+    <span class="kd">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">btoa</span><span class="p">(</span><span class="nx">compressed</span><span class="p">)</span>
+    <span class="c1">// Decompress</span>
+    <span class="kd">const</span> <span class="nx">payloadString</span> <span class="o">=</span> <span class="nx">pako</span><span class="p">.</span><span class="nx">inflate</span><span class="p">(</span><span class="nx">data</span><span class="p">,</span> <span class="p">{</span> <span class="na">to</span><span class="p">:</span> <span class="dl">'</span><span class="s1">string</span><span class="dl">'</span> <span class="p">})</span>
+    <span class="c1">// Parse into an object</span>
+    <span class="k">return</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">payloadString</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</code></pre></div></div>
+
 <h2 id="apollo-2--ably">Apollo 2 – Ably</h2>
 
 <p><code class="language-plaintext highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with Ably and ApolloLink.</p>
@@ -227,6 +245,24 @@
 <span class="c1">// Optionally, add persisted query support:</span>
 <span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 <span class="nx">RailsNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>If you’re using <a href="/subscriptions/pusher_implementation#compressed-payloads">compressed payloads</a>, configure a <code class="language-plaintext highlighter-rouge">decompress:</code> function, too:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Add `pako` to the project for gunzipping</span>
+<span class="k">import</span> <span class="nx">pako</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pako</span><span class="dl">"</span>
+
+<span class="nx">addGraphQLSubscriptions</span><span class="p">(</span><span class="nx">myNetworkInterface</span><span class="p">,</span> <span class="p">{</span>
+  <span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">,</span>
+  <span class="na">decompress</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">compressed</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Decode base64</span>
+    <span class="kd">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">btoa</span><span class="p">(</span><span class="nx">compressed</span><span class="p">)</span>
+    <span class="c1">// Decompress</span>
+    <span class="kd">const</span> <span class="nx">payloadString</span> <span class="o">=</span> <span class="nx">pako</span><span class="p">.</span><span class="nx">inflate</span><span class="p">(</span><span class="nx">data</span><span class="p">,</span> <span class="p">{</span> <span class="na">to</span><span class="p">:</span> <span class="dl">'</span><span class="s1">string</span><span class="dl">'</span> <span class="p">})</span>
+    <span class="c1">// Parse into an object</span>
+    <span class="k">return</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">payloadString</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">})</span>
 </code></pre></div></div>
 
 <h3 id="apollo-1--actioncable">Apollo 1 – ActionCable</h3>
