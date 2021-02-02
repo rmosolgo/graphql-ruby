@@ -43,13 +43,35 @@ function fetchOperation(operation, variables, cacheConfig) {
 }
 
 // Create a Relay Modern-compatible handler
-var subscriptionHandler = createHandler({
+var subscriptionHandler = createRelaySubscriptionHandler({
   pusher: pusherClient,
   fetchOperation: fetchOperation
 })
 
 // Create a Relay Modern network with the handler
 var network = Network.create(fetchQuery, subscriptionHandler)
+```
+
+### Compressed Payloads
+
+If you're using {% internal_link "compressed payloads", "/subscriptions/pusher_implementation#compressed-payloads" %}, configure a `decompress:` function, too:
+
+```javascript
+// Add `pako` to the project for gunzipping
+import pako from "pako"
+
+var subscriptionHandler = createRelaySubscriptionHandler({
+  pusher: pusherClient,
+  fetchOperation: fetchOperation,
+  decompress: function(compressed) {
+    // Decode base64
+    const data = btoa(compressed)
+    // Decompress
+    const payloadString = pako.inflate(data, { to: 'string' })
+    // Parse into an object
+    return JSON.parse(payloadString);
+  }
+})
 ```
 
 ## Ably
@@ -77,7 +99,7 @@ function fetchOperation(operation, variables, cacheConfig) {
 }
 
 // Create a Relay Modern-compatible handler
-var subscriptionHandler = createHandler({
+var subscriptionHandler = createRelaySubscriptionHandler({
   ably: ablyClient,
   fetchOperation: fetchOperation
 })
@@ -166,4 +188,3 @@ const network = Network.create(fetchQuery, subscriptionHandler)
 ```
 
 Since `OperationStoreClient` is in the `fetchOperation` function, it will apply to all GraphQL operations.
-

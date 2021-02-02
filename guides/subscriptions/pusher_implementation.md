@@ -147,6 +147,27 @@ end
 
 Read more here: ["Using CORS"](https://www.html5rocks.com/en/tutorials/cors/).
 
+#### Payload Compression
+
+To mitigate problems with [Pusher's 10kb message limit](https://support.pusher.com/hc/en-us/articles/360019115473-What-is-the-message-size-limit-when-publishing-a-message-in-Channels-), you can specify `compress_pusher_payload: true` in the `context` of your subscription. For example:
+
+```ruby
+# app/controllers/graphql_controller.rb
+def execute
+  # ...
+  # Somehow detect whether the client supports compressed payloads,
+  # for example, User-Agent, query param, or request header:
+  if client_supports_compressed_payloads?
+    context[:compress_pusher_payload] = true
+  end
+  # ...
+end
+```
+
+This will cause subscription payloads to include `compressed_result: "..."` instead of `result: "..."` when they're sent over Pusher. See docs for {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %} or {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %} to read about preparing clients for compressed payloads.
+
+By configuring `compress_pusher_payload: true` on a query-by-query basis, the subscription backend can continue to support clients running _old_ client code (by not compressing) while upgrading new clients to compressed payloads.
+
 ## Webhook configuration
 
 Your server needs to receive webhooks from Pusher when clients disconnect. This keeps your local subscription database in sync with Pusher.

@@ -1,14 +1,18 @@
 # graphql-ruby-client
 
-## 1.8.1
+## 1.8.2 (2 Feb 2021)
+
+- Pusher: Accept a `decompress:` function for handling compressed payloads #3311
+
+## 1.8.1 (16 Nov 2020)
 
 - Sync: When `--url` is omitted, generate an outfile without syncing with a server
 
-## 1.8.0
+## 1.8.0 (10 Nov 2020)
 
 - Ably: Support server-side `cipher_base:` config in the client
 
-## 1.7.12
+## 1.7.12 (3 Nov 2020)
 
 - Ably: Add `rewind:` config so messages aren't lost between subscribe and registration of listener. #3210
 - Ably: Fix race condition where error was raised before the channel was available. #3210
