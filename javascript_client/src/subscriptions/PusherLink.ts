@@ -52,7 +52,7 @@ class PusherLink extends ApolloLink {
       this.decompress = options.decompress
     } else {
       this.decompress = function(_result: string) {
-        throw new Error("Received compressed_result but this link wasn't configured with `decompress: (result: string) => any`. Add this configuration.")
+        throw new Error("Received compressed_result but PusherLink wasn't configured with `decompress: (result: string) => any`. Add this configuration.")
       }
     }
   }

@@ -48,7 +48,7 @@ interface Subscriber {
  * @param {ActionCable.Consumer} options.cable - A cable for subscribing with
  * @param {Pusher} options.pusher - A pusher client for subscribing with
 */
-function addGraphQLSubscriptions(networkInterface: any, options: { pusher?: Pusher, cable?: Cable, subscriber?: Subscriber}) {
+function addGraphQLSubscriptions(networkInterface: any, options: { pusher?: Pusher, cable?: Cable, subscriber?: Subscriber, decompress?: (compressed: string) => any}) {
   if (!options) {
     options = {}
   }
@@ -60,7 +60,7 @@ function addGraphQLSubscriptions(networkInterface: any, options: { pusher?: Push
   } else if (options.cable) {
     subscriber = new ActionCableSubscriber(options.cable, networkInterface)
   } else if (options.pusher) {
-    subscriber = new PusherSubscriber(options.pusher, networkInterface)
+    subscriber = new PusherSubscriber(options.pusher, networkInterface, options.decompress)
   } else {
     throw new Error("Must provide cable: or pusher: option")
   }
