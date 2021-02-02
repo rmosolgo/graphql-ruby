@@ -1,6 +1,6 @@
 import ActionCableSubscriber from "./ActionCableSubscriber"
 import PusherSubscriber from "./PusherSubscriber"
-import { Pusher } from "pusher-js"
+import Pusher from "pusher-js"
 import { Cable } from "actioncable"
 
 interface Subscriber {

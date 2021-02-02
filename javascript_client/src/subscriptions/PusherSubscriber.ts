@@ -1,5 +1,5 @@
 import registry from "./registry"
-import { Pusher } from "pusher-js"
+import Pusher from "pusher-js"
 
 interface ApolloNetworkInterface {
   use: Function
@@ -60,7 +60,7 @@ class PusherSubscriber {
       subscription._channelName = subscriptionChannel
       var pusherChannel = pusher.subscribe(subscriptionChannel)
       // When you get an update form Pusher, send it to Apollo
-      pusherChannel.bind("update", function(payload) {
+      pusherChannel.bind("update", function(payload: any) {
         if (!payload.more) {
           registry.unsubscribe(id)
         }

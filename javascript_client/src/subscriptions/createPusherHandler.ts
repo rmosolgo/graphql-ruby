@@ -1,4 +1,4 @@
-import { Pusher } from "pusher-js"
+import Pusher from "pusher-js"
 // TODO:
 // - end-to-end test
 // - extract update code, inject it as a function?
@@ -17,7 +17,7 @@ function createPusherHandler(options: PusherHandlerOptions) {
       channelName = response.headers.get("X-Subscription-ID")
       var channel = pusher.subscribe(channelName)
       // When you get an update from pusher, give it to Relay
-      channel.bind("update", function(payload) {
+      channel.bind("update", function(payload: any) {
         // TODO Extract this code
         // When we get a response, send the update to `observer`
         const result = payload.result

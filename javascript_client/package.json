@@ -13,11 +13,14 @@
     "@types/jest": "^25.1.2",
     "@types/minimist": "^1.2.0",
     "@types/node": "^13.7.1",
+    "@types/pako": "^1.0.1",
     "ably": "^1.2.4",
     "jest": "^25.0.0",
     "nock": "^11.0.0",
-    "ts-jest": "^25.2.0",
-    "prettier": "^1.19.1"
+    "pako": "^2.0.3",
+    "prettier": "^1.19.1",
+    "pusher-js": "^7.0.3",
+    "ts-jest": "^25.2.0"
   },
   "scripts": {
     "test": "tsc && jest",
