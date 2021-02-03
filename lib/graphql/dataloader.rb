@@ -34,7 +34,7 @@ module GraphQL
           h2[batch_parameters] = source
         }
       }
-      @pending_batches = []
+      @pending_jobs = []
     end
 
     # Get a Source instance from this dataloader, for calling `.load(...)` or `.request(...)` on.
@@ -58,13 +58,13 @@ module GraphQL
     end
 
     # @api private Nothing to see here
-    def append_batch(&job)
-      @pending_batches.push(job)
+    def append_job(&job)
+      @pending_jobs.push(job)
       nil
     end
 
     # @api private Move along, move along
-    def run_batches
+    def run
       pending_fibers = []
       next_fibers = []
       first_pass = true
@@ -79,13 +79,13 @@ module GraphQL
           end
         end
 
-        while @pending_batches.any?
+        while @pending_jobs.any?
           f = Fiber.new {
-            while (batch = @pending_batches.shift)
-              batch.call
+            while (job = @pending_jobs.shift)
+              job.call
             end
           }
-          # Run it until it yields or the batches run out
+          # Run it until it yields or the jobs run out
           result = f.resume
           if result.is_a?(StandardError)
             raise result
@@ -130,8 +130,8 @@ module GraphQL
         end
       end
 
-      if @pending_batches.any?
-        raise "Invariant: #{@pending_batches.size} pending batches"
+      if @pending_jobs.any?
+        raise "Invariant: #{@pending_jobs.size} pending jobs"
       elsif pending_fibers.any?
         raise "Invariant: #{pending_fibers.size} pending fibers"
       elsif next_fibers.any?

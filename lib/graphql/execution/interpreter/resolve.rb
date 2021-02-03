@@ -7,7 +7,7 @@ module GraphQL
         # Continue field results in `results` until there's nothing else to continue.
         # @return [void]
         def self.resolve_all(results, dataloader)
-          dataloader.append_batch { resolve(results, dataloader) }
+          dataloader.append_job { resolve(results, dataloader) }
           nil
         end
 
@@ -50,7 +50,7 @@ module GraphQL
           end
 
           if next_results.any?
-            dataloader.append_batch { resolve(next_results, dataloader) }
+            dataloader.append_job { resolve(next_results, dataloader) }
           end
 
           nil

@@ -9,10 +9,10 @@ module GraphQL
     class NullDataloader < Dataloader
       # These are all no-ops because code was
       # executed sychronously.
-      def run_batches; end
+      def run; end
       def yield; end
 
-      def append_batch
+      def append_job
         yield
         nil
       end

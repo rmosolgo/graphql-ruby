@@ -58,7 +58,7 @@ module GraphQL
           else
             gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
             # Make the first fiber which will begin execution
-            @dataloader.append_batch {
+            @dataloader.append_job {
               evaluate_selections(
                 path,
                 context.scoped_context,
@@ -138,7 +138,7 @@ module GraphQL
           set_all_interpreter_context(owner_object, nil, nil, path)
 
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
-            @dataloader.append_batch {
+            @dataloader.append_job {
               evaluate_selection(
                 path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection
               )
