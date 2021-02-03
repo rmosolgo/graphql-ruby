@@ -85,30 +85,52 @@ module GraphQL
     def run_batches
       pending_fibers = []
       next_fibers = []
+      first_pass = true
 
-      run_all_batch_fibers(into: pending_fibers)
-
-      # Now, run all Sources which have become pending _before_ resuming GraphQL execution.
-      # Sources might queue up other Sources, which is fine -- those will also run before resuming execution.
-      #
-      # This is where an evented approach would be even better -- can we tell which
-      # fibers are ready to continue, and continue execution there?
-      #
-      run_all_pending_sources
-      next_fibers.concat(pending_fibers)
-      pending_fibers.clear
-      while (f = next_fibers.shift)
-        f.resume
-        if f.alive?
-          pending_fibers << f
+      while first_pass || (f = pending_fibers.shift)
+        if first_pass
+          first_pass = false
+        else
+          f.resume
+          if f.alive?
+            next_fibers << f
+          end
         end
 
-        run_all_batch_fibers(into: pending_fibers)
+        run_all_batch_fibers(into: next_fibers)
 
-        if next_fibers.empty?
-          run_all_pending_sources
-          next_fibers.concat(pending_fibers)
-          pending_fibers.clear
+        if pending_fibers.empty?
+          # Now, run all Sources which have become pending _before_ resuming GraphQL execution.
+          # Sources might queue up other Sources, which is fine -- those will also run before resuming execution.
+          #
+          # This is where an evented approach would be even better -- can we tell which
+          # fibers are ready to continue, and continue execution there?
+          #
+          source_fiber_stack = if (first_source_fiber = create_source_fiber)
+            [first_source_fiber]
+          else
+            nil
+          end
+
+          if source_fiber_stack
+            while (outer_source_fiber = source_fiber_stack.pop)
+              result = outer_source_fiber.resume
+              if result.is_a?(StandardError)
+                raise result
+              end
+
+              if outer_source_fiber.alive?
+                source_fiber_stack << outer_source_fiber
+              end
+              # If this source caused more sources to become pending, run those before running this one again:
+              next_source_fiber = create_source_fiber
+              if next_source_fiber
+                source_fiber_stack << next_source_fiber
+              end
+            end
+          end
+          pending_fibers.concat(next_fibers)
+          next_fibers.clear
         end
       end
 
@@ -124,33 +146,28 @@ module GraphQL
 
     private
 
-    def run_all_pending_sources
-      enqueue_pending_source_batches
-      pending_source_fibers = []
-      while @pending_batches.any?
-        run_all_batch_fibers(into: pending_source_fibers)
-        enqueue_pending_source_batches
-      end
-
-      # Use `.pop` so that any new batch fibers are run first
-      while (f = pending_source_fibers.pop)
-        f.resume
-        enqueue_pending_source_batches
-        run_all_batch_fibers(into: pending_source_fibers)
-        if f.alive?
-          pending_source_fibers << f
-        end
-      end
-    end
-
-    def enqueue_pending_source_batches
+    # If there are pending sources, return a fiber for running them.
+    # Otherwise, return `nil`.
+    #
+    # @return [Fiber, nil]
+    def create_source_fiber
+      pending_sources = nil
       @source_cache.each_value do |source_by_batch_params|
         source_by_batch_params.each_value do |source|
           if source.pending?
-            @pending_batches << [source, :run_pending_keys]
+            pending_sources ||= []
+            pending_sources << source
           end
         end
       end
+
+      if pending_sources
+        source_fiber = Fiber.new do
+          pending_sources.each(&:run_pending_keys)
+        end
+      end
+
+      source_fiber
     end
 
     def run_all_batch_fibers(into: nil)
