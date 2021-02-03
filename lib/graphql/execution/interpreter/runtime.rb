@@ -282,7 +282,7 @@ module GraphQL
             # all of its child fields before moving on to the next root mutation field.
             # (Subselections of this mutation will still be resolved level-by-level.)
             if is_eager_field
-              Interpreter::Resolve.resolve_all([field_result])
+              Interpreter::Resolve.resolve_all([field_result], @dataloader)
             end
 
             nil
