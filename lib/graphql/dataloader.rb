@@ -27,7 +27,7 @@ module GraphQL
       schema.dataloader_class = self
     end
 
-    def debug_batch(recv, meth, args)
+    def debug_batch(recv, meth, *args, extra: "")
       return # turned off
       debug_args = args.map do |arg|
         case arg
@@ -38,7 +38,7 @@ module GraphQL
         end
       end
 
-      p "#{recv.class}##{meth}(#{args.size}: #{debug_args}}"
+      p "#{extra}#{recv.class}##{meth}(#{args.size}: #{debug_args}}"
     end
 
     def initialize(multiplex_context)
@@ -97,7 +97,23 @@ module GraphQL
           end
         end
 
-        run_all_batch_fibers(into: next_fibers)
+        while @pending_batches.any?
+          f = Fiber.new {
+            while (batch = @pending_batches.shift)
+              debug_batch(*batch, extra: "Execute: ")
+              recv, method, *args = batch
+              recv.public_send(method, *args)
+            end
+          }
+          # Run it until it yields or the batches run out
+          result = f.resume
+          if result.is_a?(StandardError)
+            raise result
+          end
+          if f.alive?
+            next_fibers << f
+          end
+        end
 
         if pending_fibers.empty?
           # Now, run all Sources which have become pending _before_ resuming GraphQL execution.
@@ -168,26 +184,6 @@ module GraphQL
       end
 
       source_fiber
-    end
-
-    def run_all_batch_fibers(into: nil)
-      while @pending_batches.any?
-        f = Fiber.new {
-          while (batch = @pending_batches.shift)
-            recv, method, *args = batch
-            debug_batch(recv, method, args)
-            recv.public_send(method, *args)
-          end
-        }
-        # Run it until it yields or the batches run out
-        result = f.resume
-        if result.is_a?(StandardError)
-          raise result
-        end
-        if f.alive? && into
-          into << f
-        end
-      end
     end
   end
 end
