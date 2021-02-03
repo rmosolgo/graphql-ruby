@@ -58,16 +58,16 @@ module GraphQL
           else
             gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
             # Make the first fiber which will begin execution
-            @dataloader.append_batch(
-              self,
-              :evaluate_selections,
-              path,
-              context.scoped_context,
-              object_proxy,
-              root_type,
-              root_op_type == "mutation",
-              gathered_selections,
-            )
+            @dataloader.append_batch {
+              evaluate_selections(
+                path,
+                context.scoped_context,
+                object_proxy,
+                root_type,
+                root_op_type == "mutation",
+                gathered_selections,
+              )
+            }
           end
           delete_interpreter_context(:current_path)
           delete_interpreter_context(:current_field)
@@ -138,11 +138,11 @@ module GraphQL
           set_all_interpreter_context(owner_object, nil, nil, path)
 
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
-            @dataloader.append_batch(
-              self,
-              :evaluate_selection,
-              path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection
-            )
+            @dataloader.append_batch {
+              evaluate_selection(
+                path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection
+              )
+            }
           end
 
           nil

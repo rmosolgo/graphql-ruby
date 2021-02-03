@@ -101,18 +101,15 @@ module GraphQL
           # Do as much eager evaluation of the query as possible
           results = []
           queries.each_with_index do |query, idx|
-            multiplex.dataloader.append_batch(self, :begin_query, results, idx, query, multiplex)
+            multiplex.dataloader.append_batch { begin_query(results, idx, query, multiplex) }
           end
 
           multiplex.dataloader.run_batches
 
           # Then, work through lazy results in a breadth-first way
-          multiplex.dataloader.append_batch(
-            multiplex.schema.query_execution_strategy,
-            :finish_multiplex,
-            results,
-            multiplex
-          )
+          multiplex.dataloader.append_batch {
+            multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
+          }
           multiplex.dataloader.run_batches
 
           # Then, find all errors and assign the result to the query object
