@@ -27,20 +27,6 @@ module GraphQL
       schema.dataloader_class = self
     end
 
-    def debug_batch(recv, meth, *args, extra: "")
-      # return # turned off
-      debug_args = args.map do |arg|
-        case arg
-        when String, Integer, Float, true, false, Module
-          arg
-        else
-          arg.class
-        end
-      end
-
-      p "#{extra}#{recv.class}##{meth}(#{args.size}: #{debug_args}}"
-    end
-
     def initialize(multiplex_context)
       @context = multiplex_context
       @source_cache = Hash.new { |h, source_class| h[source_class] = Hash.new { |h2, batch_parameters|
@@ -77,7 +63,7 @@ module GraphQL
 
     # @api private Nothing to see here
     def append_batch(*batch)
-      debug_batch(*batch, extra: "Append: ")
+      # debug_batch(*batch, extra: "Append: ")
       @pending_batches.push(batch)
       nil
     end
@@ -101,7 +87,7 @@ module GraphQL
         while @pending_batches.any?
           f = Fiber.new {
             while (batch = @pending_batches.shift)
-              debug_batch(*batch, extra: "Execute: ")
+              # debug_batch(*batch, extra: "Execute: ")
               recv, method, *args = batch
               recv.public_send(method, *args)
             end
@@ -185,6 +171,20 @@ module GraphQL
       end
 
       source_fiber
+    end
+
+    def debug_batch(recv, meth, *args, extra: "")
+      return # turned off
+      debug_args = args.map do |arg|
+        case arg
+        when String, Integer, Float, true, false, Module
+          arg
+        else
+          arg.class
+        end
+      end
+
+      p "#{extra}#{recv.class}##{meth}(#{args.size}: #{debug_args}}"
     end
   end
 end

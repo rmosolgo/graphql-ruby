@@ -103,11 +103,6 @@ describe GraphQL::ExecutionError do
             },
             {
               "message"=>"There was an execution error",
-              "locations"=>[{"line"=>31, "column"=>9}],
-              "path"=>["dairy", "milks", 0, "executionError"]
-            },
-            {
-              "message"=>"There was an execution error",
               "locations"=>[{"line"=>41, "column"=>5}],
               "path"=>["executionError"]
             },
@@ -115,6 +110,11 @@ describe GraphQL::ExecutionError do
               "message"=>"Could not fetch latest value",
               "locations"=>[{"line"=>42, "column"=>5}],
               "path"=>["valueWithExecutionError"]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>31, "column"=>9}],
+              "path"=>["dairy", "milks", 0, "executionError"]
             },
             {
               "message"=>"No cheeses are made from Yak milk!",
