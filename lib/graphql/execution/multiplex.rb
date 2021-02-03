@@ -100,7 +100,6 @@ module GraphQL
           queries = multiplex.queries
           # Do as much eager evaluation of the query as possible
           results = []
-
           queries.each_with_index do |query, idx|
             multiplex.dataloader.append_batch(self, :begin_query, results, idx, query, multiplex)
           end

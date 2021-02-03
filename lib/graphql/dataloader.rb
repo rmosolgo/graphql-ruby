@@ -27,6 +27,20 @@ module GraphQL
       schema.dataloader_class = self
     end
 
+    def debug_batch(recv, meth, args)
+      return # turned off
+      debug_args = args.map do |arg|
+        case arg
+        when String, Integer, Float, true, false
+          arg
+        else
+          arg.class
+        end
+      end
+
+      p "#{recv.class}##{meth}(#{args.size}: #{debug_args}}"
+    end
+
     def initialize(multiplex_context)
       @context = multiplex_context
       @source_cache = Hash.new { |h, source_class| h[source_class] = Hash.new { |h2, batch_parameters|
@@ -72,9 +86,7 @@ module GraphQL
       pending_fibers = []
       next_fibers = []
 
-      while @pending_batches.any?
-        run_batch_fiber(into: pending_fibers)
-      end
+      run_all_batch_fibers(into: pending_fibers)
 
       # Now, run all Sources which have become pending _before_ resuming GraphQL execution.
       # Sources might queue up other Sources, which is fine -- those will also run before resuming execution.
@@ -91,9 +103,7 @@ module GraphQL
           pending_fibers << f
         end
 
-        while @pending_batches.any?
-          run_batch_fiber(into: pending_fibers)
-        end
+        run_all_batch_fibers(into: pending_fibers)
 
         if next_fibers.empty?
           run_all_pending_sources
@@ -101,6 +111,15 @@ module GraphQL
           pending_fibers.clear
         end
       end
+
+      if @pending_batches.any?
+        raise "Invariant: #{@pending_batches.size} pending batches"
+      elsif pending_fibers.any?
+        raise "Invariant: #{pending_fibers.size} pending fibers"
+      elsif next_fibers.any?
+        raise "Invariant: #{next_fibers.size} next fibers"
+      end
+      nil
     end
 
     private
@@ -109,19 +128,15 @@ module GraphQL
       enqueue_pending_source_batches
       pending_source_fibers = []
       while @pending_batches.any?
-        run_batch_fiber(into: pending_source_fibers)
-        if @pending_batches.empty?
-          enqueue_pending_source_batches
-        end
+        run_all_batch_fibers(into: pending_source_fibers)
+        enqueue_pending_source_batches
       end
 
       # Use `.pop` so that any new batch fibers are run first
       while (f = pending_source_fibers.pop)
         f.resume
         enqueue_pending_source_batches
-        while @pending_batches.any?
-          run_batch_fiber(into: pending_source_fibers)
-        end
+        run_all_batch_fibers(into: pending_source_fibers)
         if f.alive?
           pending_source_fibers << f
         end
@@ -138,23 +153,24 @@ module GraphQL
       end
     end
 
-    def run_batch_fiber(into: nil)
-      f = Fiber.new {
-        while (batch = @pending_batches.shift)
-          recv, method, *args = batch
-          # p "#{recv.class}##{method.inspect}(#{args.size})"
-          recv.public_send(method, *args)
+    def run_all_batch_fibers(into: nil)
+      while @pending_batches.any?
+        f = Fiber.new {
+          while (batch = @pending_batches.shift)
+            recv, method, *args = batch
+            debug_batch(recv, method, args)
+            recv.public_send(method, *args)
+          end
+        }
+        # Run it until it yields or the batches run out
+        result = f.resume
+        if result.is_a?(StandardError)
+          raise result
         end
-      }
-      # Run it until it yields or the batches run out
-      result = f.resume
-      if result.is_a?(StandardError)
-        raise result
+        if f.alive? && into
+          into << f
+        end
       end
-      if f.alive? && into
-        into << f
-      end
-      f
     end
   end
 end

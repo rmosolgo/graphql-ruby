@@ -12,7 +12,9 @@ module GraphQL
       def run_batches; end
       def yield; end
       def append_batch(recv, meth, *args)
+        debug_batch(recv, meth, args)
         recv.public_send(meth, *args)
+        nil
       end
     end
   end
