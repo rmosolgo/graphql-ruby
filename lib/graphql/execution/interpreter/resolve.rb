@@ -11,20 +11,21 @@ module GraphQL
           nil
         end
 
+        # After getting `results` back from an interpreter evaluation,
+        # continue it until you get a response-ready Ruby value.
+        #
+        # `results` is one level of _depth_ of a query or multiplex.
+        #
+        # Resolve all lazy values in that depth before moving on
+        # to the next level.
+        #
+        # It's assumed that the lazies will
+        # return {Lazy} instances if there's more work to be done,
+        # or return {Hash}/{Array} if the query should be continued.
+        #
+        # @return [void]
         def self.resolve(results, dataloader)
           next_results = []
-          # After getting `results` back from an interpreter evaluation,
-          # continue it until you get a response-ready Ruby value.
-          #
-          # `results` is one level of _depth_ of a query or multiplex.
-          #
-          # Resolve all lazy values in that depth before moving on
-          # to the next level.
-          #
-          # It's assumed that the lazies will
-          # return {Lazy} instances if there's more work to be done,
-          # or return {Hash}/{Array} if the query should be continued.
-          #
           while results.any?
             result_value = results.shift
             if result_value.is_a?(Hash)
@@ -51,6 +52,8 @@ module GraphQL
           if next_results.any?
             dataloader.append_batch(self, :resolve, next_results, dataloader)
           end
+
+          nil
         end
       end
     end

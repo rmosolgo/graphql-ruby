@@ -27,8 +27,7 @@ module GraphQL
       schema.dataloader_class = self
     end
 
-    def initialize(multiplex_context)
-      @context = multiplex_context
+    def initialize
       @source_cache = Hash.new { |h, source_class| h[source_class] = Hash.new { |h2, batch_parameters|
           source = source_class.new(*batch_parameters)
           source.setup(self)
@@ -47,9 +46,6 @@ module GraphQL
     def with(source_class, *batch_parameters)
       @source_cache[source_class][batch_parameters]
     end
-
-    # @return [Hash] the {Multiplex} context
-    attr_reader :context
 
     # Tell the dataloader that this fiber is waiting for data.
     #
