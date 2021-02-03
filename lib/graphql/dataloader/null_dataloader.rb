@@ -7,15 +7,15 @@ module GraphQL
     # The Dataloader interface isn't public, but it enables
     # simple internal code while adding the option to add Dataloader.
     class NullDataloader < Dataloader
-      def enqueue
-        yield
-      end
-
       # These are all no-ops because code was
       # executed sychronously.
       def run; end
       def yield; end
-      def yielded?(_path); false; end
+
+      def append_job
+        yield
+        nil
+      end
     end
   end
 end

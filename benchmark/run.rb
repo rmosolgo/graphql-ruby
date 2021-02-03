@@ -122,8 +122,6 @@ module GraphQLBenchmark
 
     class Schema < GraphQL::Schema
       query QueryType
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
       use GraphQL::Dataloader
     end
 

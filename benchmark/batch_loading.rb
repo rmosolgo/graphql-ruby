@@ -51,15 +51,13 @@ module BatchLoading
     end
 
     query(Query)
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
     use GraphQL::Batch
   end
 
   class GraphQLDataloaderSchema < GraphQL::Schema
     class DataSource < GraphQL::Dataloader::Source
-      def initialize(column: :id)
-        @column = column
+      def initialize(options = {column: :id})
+        @column = options[:column]
       end
 
       def fetch(keys)
@@ -100,8 +98,6 @@ module BatchLoading
     end
 
     query(Query)
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
     use GraphQL::Dataloader
   end
 
@@ -137,7 +133,5 @@ module BatchLoading
     end
 
     query(Query)
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
   end
 end
