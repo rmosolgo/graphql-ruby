@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'rails/generators/base'
 require_relative 'core'
+require_relative 'relay'
 
 module Graphql
   module Generators
@@ -50,6 +51,7 @@ module Graphql
     # TODO: also add base classes
     class InstallGenerator < Rails::Generators::Base
       include Core
+      include Relay
 
       desc "Install GraphQL folder structure and boilerplate code"
       source_root File.expand_path('../templates', __FILE__)
@@ -164,7 +166,7 @@ RUBY
         end
 
         if options[:relay]
-          generate("graphql:relay")
+          install_relay
         end
 
         if gemfile_modified?
