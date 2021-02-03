@@ -28,10 +28,10 @@ module GraphQL
     end
 
     def debug_batch(recv, meth, *args, extra: "")
-      return # turned off
+      # return # turned off
       debug_args = args.map do |arg|
         case arg
-        when String, Integer, Float, true, false
+        when String, Integer, Float, true, false, Module
           arg
         else
           arg.class
@@ -77,6 +77,7 @@ module GraphQL
 
     # @api private Nothing to see here
     def append_batch(*batch)
+      debug_batch(*batch, extra: "Append: ")
       @pending_batches.push(batch)
       nil
     end

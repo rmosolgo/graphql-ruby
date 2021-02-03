@@ -46,10 +46,10 @@ module GraphQL
               # they might be modified by later work in the dataloader.
               next_results << result_value
             end
+          end
 
-            if results.empty? && next_results.any?
-              dataloader.append_batch(self, :resolve, next_results, dataloader)
-            end
+          if next_results.any?
+            dataloader.append_batch(self, :resolve, next_results, dataloader)
           end
         end
       end
