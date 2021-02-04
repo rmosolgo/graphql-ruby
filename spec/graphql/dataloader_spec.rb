@@ -189,6 +189,30 @@ describe GraphQL::Dataloader do
     use GraphQL::Dataloader
   end
 
+  class FiberErrorSchema < GraphQL::Schema
+    class ErrorObject < GraphQL::Dataloader::Source
+      def fetch(_)
+        raise ArgumentError, "Nope"
+      end
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :error, String, null: false
+
+      def error
+        dataloader.with(ErrorObject).load(123)
+      end
+    end
+
+    use GraphQL::Dataloader
+    query(Query)
+
+    rescue_from(StandardError) do |err, obj, args, ctx, field|
+      ctx[:errors] << "#{err.message} (#{field.owner.name}.#{field.graphql_name}, #{obj.inspect}, #{args.inspect})"
+      nil
+    end
+  end
+
   def database_log
     FiberSchema::Database.log
   end
@@ -393,5 +417,15 @@ describe GraphQL::Dataloader do
       [:mget, ["1", "2", "3", "4", "7"]],
     ]
     assert_equal expected_log, database_log
+  end
+
+  focus
+  it "Works with error handlers" do
+    context = { errors: [] }
+
+    res = FiberErrorSchema.execute("{ error }", context: context)
+
+    assert_equal(nil, res["data"])
+    assert_equal ["Nope (FiberErrorSchema::Query.error, nil, {})"], context[:errors]
   end
 end
