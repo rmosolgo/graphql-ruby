@@ -43,8 +43,7 @@ module GraphQL
       # @param keys [Array<Object>] Loading keys which will be passed to `#fetch` (or read from the internal cache).
       # @return [Object] The result from {#fetch} for `keys`. If `keys` haven't been loaded yet, the Fiber will yield until they're loaded.
       def load_all(keys)
-        if keys.any? { |k| !@results.key?(k) }
-          pending_keys = keys.select { |k| !@results.key?(k) }
+        if pending_keys = keys.select { |k| !@results.key?(k) }
           @pending_keys.concat(pending_keys)
           sync
         end
