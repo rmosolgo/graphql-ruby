@@ -196,18 +196,34 @@ module GraphQL
             object = authorized_new(field_defn.owner, object, context, next_path)
           end
 
-          begin
-            kwarg_arguments = arguments(object, field_defn, ast_node)
-            # TODO: I think the thing to do here is, for each argument:
-            #  - enqueue a job to coerce _that_ argument and add it to the result set
-            #  - then check the result set: if it's complete, then call a method to continue execution
-            #  - I guess that'd be for each argument _definition_ -- maybe the counter would
-            #    be to check that each _definition_ has finished being loaded.
-          rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => e
-            continue_value(next_path, e, owner_type, field_defn, return_type.non_null?, ast_node)
-            return
+          total_args_count = field_defn.arguments.size
+          if total_args_count == 0
+            kwarg_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
+            evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, return_type)
+          else
+            # TODO: still use the cache somehow for this
+            # TODO: identify other uses of .arguments_for and use this instead
+            args_hash = ArgumentsCache.prepare_args_hash(@query, ast_node)
+            resolved_args_count = 0
+            argument_values = {}
+            field_defn.arguments.each do |arg_name, arg_defn|
+              @dataloader.append_job do
+                arg_defn.coerce_into_values(object, args_hash, context, argument_values)
+                resolved_args_count += 1
+                if resolved_args_count == total_args_count
+                  # Should be after any lazies
+                  kwarg_arguments = GraphQL::Execution::Interpreter::Arguments.new(
+                    argument_values: argument_values,
+                  )
+                  evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, return_type)
+                end
+              end
+            end
           end
+        end
 
+        def evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, return_type)
+          context.scoped_context = scoped_context
           after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
               continue_value(next_path, resolved_arguments, owner_type, field_defn, return_type.non_null?, ast_node)

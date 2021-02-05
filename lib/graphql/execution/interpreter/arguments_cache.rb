@@ -10,7 +10,7 @@ module GraphQL
             h[ast_node] = Hash.new do |h2, arg_owner|
               h2[arg_owner] = Hash.new do |h3, parent_object|
                 # First, normalize all AST or Ruby values to a plain Ruby hash
-                args_hash = prepare_args_hash(ast_node)
+                args_hash = self.class.prepare_args_hash(@query, ast_node)
                 # Then call into the schema to coerce those incoming values
                 args = arg_owner.coerce_arguments(parent_object, args_hash, query.context)
 
@@ -33,7 +33,7 @@ module GraphQL
 
         NO_VALUE_GIVEN = Object.new
 
-        def prepare_args_hash(ast_arg_or_hash_or_value)
+        def self.prepare_args_hash(query, ast_arg_or_hash_or_value)
           case ast_arg_or_hash_or_value
           when Hash
             if ast_arg_or_hash_or_value.empty?
@@ -41,27 +41,27 @@ module GraphQL
             end
             args_hash = {}
             ast_arg_or_hash_or_value.each do |k, v|
-              args_hash[k] = prepare_args_hash(v)
+              args_hash[k] = prepare_args_hash(query, v)
             end
             args_hash
           when Array
-            ast_arg_or_hash_or_value.map { |v| prepare_args_hash(v) }
+            ast_arg_or_hash_or_value.map { |v| prepare_args_hash(query, v) }
           when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject, GraphQL::Language::Nodes::Directive
             if ast_arg_or_hash_or_value.arguments.empty?
               return NO_ARGUMENTS
             end
             args_hash = {}
             ast_arg_or_hash_or_value.arguments.each do |arg|
-              v = prepare_args_hash(arg.value)
+              v = prepare_args_hash(query, arg.value)
               if v != NO_VALUE_GIVEN
                 args_hash[arg.name] = v
               end
             end
             args_hash
           when GraphQL::Language::Nodes::VariableIdentifier
-            if @query.variables.key?(ast_arg_or_hash_or_value.name)
-              variable_value = @query.variables[ast_arg_or_hash_or_value.name]
-              prepare_args_hash(variable_value)
+            if query.variables.key?(ast_arg_or_hash_or_value.name)
+              variable_value = query.variables[ast_arg_or_hash_or_value.name]
+              prepare_args_hash(query, variable_value)
             else
               NO_VALUE_GIVEN
             end
