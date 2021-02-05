@@ -201,31 +201,9 @@ module GraphQL
             kwarg_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
             evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field)
           else
-            # TODO: DRY this with ArgumentsCache
-            args_hash = ArgumentsCache.prepare_args_hash(@query, ast_node)
-            resolved_args_count = 0
-            argument_values = {}
-            raised_error = false
-            field_defn.arguments.each do |arg_name, arg_defn|
-              @dataloader.append_job do
-                # TODO put error handling in args cache, too
-                begin
-                  arg_defn.coerce_into_values(object, args_hash, context, argument_values)
-                rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => e
-                  raised_error = true
-                  continue_value(next_path, e, owner_type, field_defn, return_type.non_null?, ast_node)
-                end
-
-                resolved_args_count += 1
-                if resolved_args_count == total_args_count && !raised_error
-                  kwarg_arguments = schema.after_any_lazies(argument_values.values) {
-                    GraphQL::Execution::Interpreter::Arguments.new(
-                      argument_values: argument_values,
-                    )
-                  }
-                  evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field)
-                end
-              end
+            # TODO remove all arguments(...) usages?
+            @query.arguments_cache.dataload_for(ast_node, field_defn, object) do |resolved_arguments|
+              evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field)
             end
           end
         end

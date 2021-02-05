@@ -106,11 +106,22 @@ module GraphQL
             finished_args = nil
             argument_values = {}
             resolved_args_count = 0
+            raised_error = false
             arg_defns.each do |arg_name, arg_defn|
               context.dataloader.append_job do
-                arg_defn.coerce_into_values(parent_object, values, context, argument_values)
+                begin
+                  arg_defn.coerce_into_values(parent_object, values, context, argument_values)
+                rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                  raised_error = true
+                  if block_given?
+                    block.call(err)
+                  else
+                    finished_args = err
+                  end
+                end
+
                 resolved_args_count += 1
-                if resolved_args_count == total_args_count
+                if resolved_args_count == total_args_count && !raised_error
                   finished_args = context.schema.after_any_lazies(argument_values.values) {
                     GraphQL::Execution::Interpreter::Arguments.new(
                       argument_values: argument_values,

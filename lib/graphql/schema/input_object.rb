@@ -214,8 +214,12 @@ module GraphQL
           arguments = coerce_arguments(nil, value, ctx)
 
           ctx.schema.after_lazy(arguments) do |resolved_arguments|
-            input_obj_instance = self.new(resolved_arguments, ruby_kwargs: resolved_arguments.keyword_arguments, context: ctx, defaults_used: nil)
-            input_obj_instance.prepare
+            if resolved_arguments.is_a?(GraphQL::Error)
+              raise resolved_arguments
+            else
+              input_obj_instance = self.new(resolved_arguments, ruby_kwargs: resolved_arguments.keyword_arguments, context: ctx, defaults_used: nil)
+              input_obj_instance.prepare
+            end
           end
         end
 
