@@ -25,6 +25,12 @@ module GraphQL
         #
         # @return [void]
         def self.resolve(results, dataloader)
+          # There might be pending jobs here that _will_ write lazies
+          # into the result hash. We should run them out, so we
+          # can be sure that all lazies will be present in the result hashes.
+          # A better implementation would somehow interleave (or unify)
+          # these approaches.
+          dataloader.run
           next_results = []
           while results.any?
             result_value = results.shift

@@ -440,6 +440,43 @@ describe GraphQL::Dataloader do
     assert_equal expected_log, database_log
   end
 
+  class UsageAnalyzer < GraphQL::Analysis::AST::Analyzer
+    def initialize(query)
+      @query = query
+      @fields = Set.new
+    end
 
-  it "Works with analyzing arguments with `loads:`"
+    def on_enter_field(node, parent, visitor)
+      args = @query.arguments_for(node, visitor.field_definition)
+      if args.is_a?(GraphQL::Execution::Lazy)
+        args = args.value
+      end
+      @fields << [node.name, args.keys]
+    end
+
+    def result
+      @fields
+    end
+  end
+
+  it "Works with analyzing arguments with `loads:`, even with .request" do
+    query_str = <<-GRAPHQL
+    {
+      commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+        name
+      }
+    }
+    GRAPHQL
+    query = GraphQL::Query.new(FiberSchema, query_str)
+    results = GraphQL::Analysis::AST.analyze_query(query, [UsageAnalyzer])
+    expected_results = [
+      ["commonIngredientsWithLoad", [:recipe_1, :recipe_2]],
+      ["name", []],
+    ]
+    assert_equal expected_results, results.first.to_a
+
+    query2 = GraphQL::Query.new(FiberSchema, query_str, context: { use_request: true })
+    result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
+    assert_equal expected_results, result2.first.to_a
+  end
 end

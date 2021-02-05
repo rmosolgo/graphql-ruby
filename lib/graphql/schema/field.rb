@@ -60,6 +60,10 @@ module GraphQL
         @introspection
       end
 
+      def inspect
+        "#<#{self.class} #{path}#{arguments.any? ? "(...)" : ""}: #{type.to_type_signature}>"
+      end
+
       alias :mutation :resolver
 
       # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
