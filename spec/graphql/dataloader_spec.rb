@@ -197,10 +197,27 @@ describe GraphQL::Dataloader do
     end
 
     class Query < GraphQL::Schema::Object
-      field :error, String, null: false
+      field :load, String, null: false
+      field :load_all, String, null: false
+      field :request, String, null: false
+      field :request_all, String, null: false
 
-      def error
+      def load
         dataloader.with(ErrorObject).load(123)
+      end
+
+      def load_all
+        dataloader.with(ErrorObject).load_all([123])
+      end
+
+      def request
+        req = dataloader.with(ErrorObject).request(123)
+        req.load
+      end
+
+      def request_all
+        req = dataloader.with(ErrorObject).request_all([123])
+        req.load
       end
     end
 
@@ -422,9 +439,16 @@ describe GraphQL::Dataloader do
   it "Works with error handlers" do
     context = { errors: [] }
 
-    res = FiberErrorSchema.execute("{ error }", context: context)
+    res = FiberErrorSchema.execute("{ load loadAll request requestAll }", context: context)
+
+    expected_errors = [
+      "Nope (FiberErrorSchema::Query.load, nil, {})",
+      "Nope (FiberErrorSchema::Query.loadAll, nil, {})",
+      "Nope (FiberErrorSchema::Query.request, nil, {})",
+      "Nope (FiberErrorSchema::Query.requestAll, nil, {})",
+    ]
 
     assert_equal(nil, res["data"])
-    assert_equal ["Nope (FiberErrorSchema::Query.error, nil, {})"], context[:errors]
+    assert_equal(expected_errors, context[:errors].sort)
   end
 end
