@@ -12,12 +12,7 @@ module GraphQL
       #
       # @return [Object] the object loaded for `key`
       def load
-        if @source.results.key?(@key)
-          @source.results[@key]
-        else
-          @source.sync
-          @source.results[@key]
-        end
+        @source.load(@key)
       end
     end
   end

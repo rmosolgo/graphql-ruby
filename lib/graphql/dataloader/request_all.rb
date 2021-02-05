@@ -12,10 +12,7 @@ module GraphQL
       #
       # @return [Array<Object>] One object for each of `keys`
       def load
-        if @keys.any? { |k| !@source.results.key?(k) }
-          @source.sync
-        end
-        @keys.map { |k| @source.results[k] }
+        @source.load_all(@keys)
       end
     end
   end
