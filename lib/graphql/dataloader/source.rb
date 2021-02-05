@@ -3,9 +3,6 @@
 module GraphQL
   class Dataloader
     class Source
-      # @api private
-      attr_reader :results
-
       # Called by {Dataloader} to prepare the {Source}'s internal state
       # @api private
       def setup(dataloader)
