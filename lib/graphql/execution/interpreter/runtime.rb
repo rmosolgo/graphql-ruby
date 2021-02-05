@@ -198,6 +198,11 @@ module GraphQL
 
           begin
             kwarg_arguments = arguments(object, field_defn, ast_node)
+            # TODO: I think the thing to do here is, for each argument:
+            #  - enqueue a job to coerce _that_ argument and add it to the result set
+            #  - then check the result set: if it's complete, then call a method to continue execution
+            #  - I guess that'd be for each argument _definition_ -- maybe the counter would
+            #    be to check that each _definition_ has finished being loaded.
           rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => e
             continue_value(next_path, e, owner_type, field_defn, return_type.non_null?, ast_node)
             return

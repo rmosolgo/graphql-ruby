@@ -128,6 +128,7 @@ require "graphql/schema/printer"
 require "graphql/filter"
 require "graphql/internal_representation"
 require "graphql/static_validation"
+require "graphql/dataloader"
 require "graphql/introspection"
 
 require "graphql/analysis_error"
@@ -148,7 +149,6 @@ require "graphql/authorization"
 require "graphql/unauthorized_error"
 require "graphql/unauthorized_field_error"
 require "graphql/load_application_object_failed_error"
-require "graphql/dataloader"
 require "graphql/deprecation"
 
 module GraphQL

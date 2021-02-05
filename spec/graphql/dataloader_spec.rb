@@ -173,6 +173,16 @@ describe GraphQL::Dataloader do
         common_ids = recipe1[:ingredient_ids] & recipe2[:ingredient_ids]
         dataloader.with(DataObject).load_all(common_ids)
       end
+
+      field :common_ingredients_with_load, [Ingredient], null: false do
+        argument :recipe_1_id, ID, required: true, loads: Recipe
+        argument :recipe_2_id, ID, required: true, loads: Recipe
+      end
+
+      def common_ingredients_with_load(recipe_1:, recipe_2:)
+        common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
+        dataloader.with(DataObject).load_all(common_ids)
+      end
     end
 
     query(Query)
@@ -394,4 +404,34 @@ describe GraphQL::Dataloader do
     ]
     assert_equal expected_log, database_log
   end
+
+  it "loads arguments in batches" do
+    query_str = <<-GRAPHQL
+    {
+      commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+        name
+      }
+    }
+    GRAPHQL
+
+    res = FiberSchema.execute(query_str)
+    expected_data = {
+      "commonIngredientsWithLoad" => [
+        {"name"=>"Corn"},
+        {"name"=>"Butter"},
+      ]
+    }
+    assert_equal expected_data, res["data"]
+
+    expected_log = [
+      [:mget, ["5", "6"]],
+      [:mget, ["2", "3"]],
+    ]
+    assert_equal expected_log, database_log
+  end
+
+
+  it "Works with analyzing arguments with `loads:`"
+
+  it "Works when `loads:` returns `request ...`"
 end
