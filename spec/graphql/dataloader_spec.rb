@@ -419,7 +419,6 @@ describe GraphQL::Dataloader do
     assert_equal expected_log, database_log
   end
 
-  focus
   it "Works with error handlers" do
     context = { errors: [] }
 
