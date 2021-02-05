@@ -183,6 +183,22 @@ describe GraphQL::Dataloader do
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         dataloader.with(DataObject).load_all(common_ids)
       end
+
+      field :common_ingredients_from_input_object, [Ingredient], null: false do
+        class CommonIngredientsInput < GraphQL::Schema::InputObject
+          argument :recipe_1_id, ID, required: true, loads: Recipe
+          argument :recipe_2_id, ID, required: true, loads: Recipe
+        end
+        argument :input, CommonIngredientsInput, required: true
+      end
+
+
+      def common_ingredients_from_input_object(input:)
+        recipe_1 = input[:recipe_1]
+        recipe_2 = input[:recipe_2]
+        common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
+        dataloader.with(DataObject).load_all(common_ids)
+      end
     end
 
     query(Query)
@@ -480,5 +496,67 @@ describe GraphQL::Dataloader do
     query2 = GraphQL::Query.new(FiberSchema, query_str, context: { use_request: true })
     result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
     assert_equal expected_results, result2.first.to_a
+  end
+
+  it "Works with input objects, load and request" do
+    query_str = <<-GRAPHQL
+    {
+      commonIngredientsFromInputObject(input: { recipe1Id: 5, recipe2Id: 6 }) {
+        name
+      }
+    }
+    GRAPHQL
+    res = FiberSchema.execute(query_str)
+    expected_data = {
+      "commonIngredientsFromInputObject" => [
+        {"name"=>"Corn"},
+        {"name"=>"Butter"},
+      ]
+    }
+    assert_equal expected_data, res["data"]
+
+    expected_log = [
+      [:mget, ["5", "6"]],
+      [:mget, ["2", "3"]],
+    ]
+    assert_equal expected_log, database_log
+
+
+    # Run the same test, but using `.request` from object_from_id
+    database_log.clear
+    res2 = FiberSchema.execute(query_str, context: { use_request: true })
+    assert_equal expected_data, res2["data"]
+    assert_equal expected_log, database_log
+  end
+
+  it "Works with input objects using variables, load and request" do
+    query_str = <<-GRAPHQL
+    query($input: CommonIngredientsInput!) {
+      commonIngredientsFromInputObject(input: $input) {
+        name
+      }
+    }
+    GRAPHQL
+    res = FiberSchema.execute(query_str, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
+    expected_data = {
+      "commonIngredientsFromInputObject" => [
+        {"name"=>"Corn"},
+        {"name"=>"Butter"},
+      ]
+    }
+    assert_equal expected_data, res["data"]
+
+    expected_log = [
+      [:mget, ["5", "6"]],
+      [:mget, ["2", "3"]],
+    ]
+    assert_equal expected_log, database_log
+
+
+    # Run the same test, but using `.request` from object_from_id
+    database_log.clear
+    res2 = FiberSchema.execute(query_str, context: { use_request: true }, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
+    assert_equal expected_data, res2["data"]
+    assert_equal expected_log, database_log
   end
 end

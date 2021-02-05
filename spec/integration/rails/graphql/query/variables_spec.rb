@@ -15,13 +15,17 @@ describe GraphQL::Query::Variables do
   }
   |}
   let(:ast_variables) { GraphQL.parse(query_string).definitions.first.variables }
-  let(:schema) { Dummy::Schema }
+  let(:schema) {
+    Class.new(Dummy::Schema) {
+      # This tests coercion behavior which only happens when `.interpreter?` is false
+      use GraphQL::Execution::Execute
+      use GraphQL::Analysis
+    }
+  }
+  let(:query_context) { GraphQL::Query.new(schema, "{ __typename }").context }
   let(:variables) {
     GraphQL::Query::Variables.new(
-    OpenStruct.new({
-      schema: schema,
-      warden: GraphQL::Schema::Warden.new(schema.default_filter, schema: schema, context: nil),
-    }),
+    query_context,
     ast_variables,
     provided_variables)
   }
@@ -272,10 +276,7 @@ describe GraphQL::Query::Variables do
       let(:run_query) { schema.execute(query_string, variables: provided_variables) }
 
       let(:variables) { GraphQL::Query::Variables.new(
-        OpenStruct.new({
-          schema: schema,
-          warden: GraphQL::Schema::Warden.new(schema.default_filter, schema: schema, context: nil),
-        }),
+        query_context,
         ast_variables,
         provided_variables)
       }
