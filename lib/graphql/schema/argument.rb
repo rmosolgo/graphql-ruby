@@ -276,7 +276,9 @@ module GraphQL
             coerced_value
           end
 
-          context.schema.after_lazy(coerced_value) do |coerced_value|
+          # If this isn't lazy, then the block returns eagerly and assigns the result here
+          # If it _is_ lazy, then we write the lazy to the hash, then update it later
+          argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |coerced_value|
             owner.validate_directive_argument(self, coerced_value)
             prepared_value = context.schema.error_handler.with_error_handling(context) do
               prepare_value(parent_object, coerced_value, context: context)

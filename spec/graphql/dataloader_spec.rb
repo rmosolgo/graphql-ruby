@@ -188,7 +188,11 @@ describe GraphQL::Dataloader do
     query(Query)
 
     def self.object_from_id(id, ctx)
-      ctx.dataloader.with(DataObject).load(id)
+      if ctx[:use_request]
+        ctx.dataloader.with(DataObject).request(id)
+      else
+        ctx.dataloader.with(DataObject).load(id)
+      end
     end
 
     def self.resolve_type(type, obj, ctx)
@@ -405,7 +409,7 @@ describe GraphQL::Dataloader do
     assert_equal expected_log, database_log
   end
 
-  it "loads arguments in batches" do
+  it "loads arguments in batches, even with request" do
     query_str = <<-GRAPHQL
     {
       commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
@@ -428,10 +432,14 @@ describe GraphQL::Dataloader do
       [:mget, ["2", "3"]],
     ]
     assert_equal expected_log, database_log
+
+    # Run the same test, but using `.request` from object_from_id
+    database_log.clear
+    res2 = FiberSchema.execute(query_str, context: { use_request: true })
+    assert_equal expected_data, res2["data"]
+    assert_equal expected_log, database_log
   end
 
 
   it "Works with analyzing arguments with `loads:`"
-
-  it "Works when `loads:` returns `request ...`"
 end

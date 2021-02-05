@@ -211,10 +211,11 @@ module GraphQL
                 arg_defn.coerce_into_values(object, args_hash, context, argument_values)
                 resolved_args_count += 1
                 if resolved_args_count == total_args_count
-                  # Should be after any lazies
-                  kwarg_arguments = GraphQL::Execution::Interpreter::Arguments.new(
-                    argument_values: argument_values,
-                  )
+                  kwarg_arguments = schema.after_any_lazies(argument_values.values) {
+                    GraphQL::Execution::Interpreter::Arguments.new(
+                      argument_values: argument_values,
+                    )
+                  }
                   evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, return_type)
                 end
               end
