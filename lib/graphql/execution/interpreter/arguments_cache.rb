@@ -10,40 +10,18 @@ module GraphQL
           @storage = Hash.new do |h, ast_node|
             h[ast_node] = Hash.new do |h2, arg_owner|
               h2[arg_owner] = Hash.new do |h3, parent_object|
-                # First, normalize all AST or Ruby values to a plain Ruby hash
-                args_hash = self.class.prepare_args_hash(@query, ast_node)
-                # Then call into the schema to coerce those incoming values
-                total_args_count = arg_owner.arguments.size
-                if total_args_count == 0
-                  h3[parent_object] = NO_ARGUMENTS
-                else
-                  resolved_args_count = 0
-                  argument_values = {}
-                  # TODO how to make sure calls into this cache _while the data is pending_
-                  # work properly?
-                  h3[parent_object] = argument_values
-
-                  arg_owner.arguments.each do |arg_name, arg_defn|
-                    @dataloader.append_job do
-                      arg_defn.coerce_into_values(parent_object, args_hash, @query.context, argument_values)
-                      resolved_args_count += 1
-                      if resolved_args_count == total_args_count
-                        kwarg_arguments = @query.schema.after_any_lazies(argument_values.values) {
-                          GraphQL::Execution::Interpreter::Arguments.new(
-                            argument_values: argument_values,
-                          )
-                        }
-
-                        h3[parent_object] = @query.schema.after_lazy(kwarg_arguments) do |resolved_args|
-                          # when this promise is resolved, update the cache with the resolved value
-                          h3[parent_object] = resolved_args
-                        end
-                      end
-                    end
+                dataload_for(ast_node, arg_owner, parent_object) do |kwarg_arguments|
+                  h3[parent_object] = @query.schema.after_lazy(kwarg_arguments) do |resolved_args|
+                    h3[parent_object] = resolved_args
                   end
                 end
 
-                h3[parent_object]
+                if !h3.key?(parent_object)
+                  # TODO should i bother putting anything here?
+                  h3[parent_object] = NO_ARGUMENTS
+                else
+                  h3[parent_object]
+                end
               end
             end
           end
@@ -62,6 +40,14 @@ module GraphQL
           # TODO this should be better, find a solution
           # that works with merging the runtime.rb code
           @storage[ast_node][argument_owner][parent_object]
+        end
+
+        # @yield [Interpreter::Arguments, Lazy<Interpreter::Arguments>] The finally-loaded arguments
+        def dataload_for(ast_node, argument_owner, parent_object, &block)
+          # First, normalize all AST or Ruby values to a plain Ruby hash
+          args_hash = self.class.prepare_args_hash(@query, ast_node)
+          argument_owner.coerce_arguments(parent_object, args_hash, @query.context, &block)
+          nil
         end
 
         private

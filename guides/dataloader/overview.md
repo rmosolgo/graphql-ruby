@@ -127,8 +127,6 @@ class FollowUser < GraphQL::Schema::Mutation
 end
 ```
 
-__Caveat:__ The current implementation loads all `loads:` objects in the _same fiber_, so data will be fetched sequentially.
-
 ## Data Sources
 
 To implement batch-loading data sources, see the {% internal_link "Sources guide", "/dataloader/sources" %}.

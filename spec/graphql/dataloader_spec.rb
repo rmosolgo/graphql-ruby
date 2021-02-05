@@ -448,6 +448,8 @@ describe GraphQL::Dataloader do
 
     def on_enter_field(node, parent, visitor)
       args = @query.arguments_for(node, visitor.field_definition)
+      # This bug has been around for a while,
+      # see https://github.com/rmosolgo/graphql-ruby/issues/3321
       if args.is_a?(GraphQL::Execution::Lazy)
         args = args.value
       end

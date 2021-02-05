@@ -81,79 +81,55 @@ module GraphQL
         end
 
         # @api private
+        # If given a block, it will eventually yield the loaded args to the block.
+        #
+        # If no block is given, it will immediately dataload (but might return a Lazy).
+        #
         # @param values [Hash<String, Object>]
         # @param context [GraphQL::Query::Context]
-        # @return [Hash<Symbol, Object>, Execution::Lazy<Hash>]
-        def coerce_arguments(parent_object, values, context)
+        # @yield [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
+        # @return [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
+        def coerce_arguments(parent_object, values, context, &block)
           # Cache this hash to avoid re-merging it
           arg_defns = self.arguments
+          total_args_count = arg_defns.size
 
-          if arg_defns.empty?
-            GraphQL::Execution::Interpreter::Arguments::EMPTY
+          if total_args_count == 0
+            final_args = GraphQL::Execution::Interpreter::Arguments::EMPTY
+            if block_given?
+              block.call(final_args)
+              nil
+            else
+              final_args
+            end
           else
+            finished_args = nil
             argument_values = {}
-            arg_lazies = arg_defns.map do |arg_name, arg_defn|
-              arg_key = arg_defn.keyword
-              has_value = false
-              default_used = false
-              if values.key?(arg_name)
-                has_value = true
-                value = values[arg_name]
-              elsif values.key?(arg_key)
-                has_value = true
-                value = values[arg_key]
-              elsif arg_defn.default_value?
-                has_value = true
-                value = arg_defn.default_value
-                default_used = true
-              end
+            resolved_args_count = 0
+            arg_defns.each do |arg_name, arg_defn|
+              context.dataloader.append_job do
+                arg_defn.coerce_into_values(parent_object, values, context, argument_values)
+                resolved_args_count += 1
+                if resolved_args_count == total_args_count
+                  finished_args = context.schema.after_any_lazies(argument_values.values) {
+                    GraphQL::Execution::Interpreter::Arguments.new(
+                      argument_values: argument_values,
+                    )
+                  }
 
-              if has_value
-                loads = arg_defn.loads
-                loaded_value = nil
-                coerced_value = context.schema.error_handler.with_error_handling(context) do
-                  arg_defn.type.coerce_input(value, context)
-                end
-
-                # TODO this should probably be inside after_lazy
-                if loads && !arg_defn.from_resolver?
-                  loaded_value = if arg_defn.type.list?
-                    loaded_values = coerced_value.map { |val| load_application_object(arg_defn, loads, val, context) }
-                    context.schema.after_any_lazies(loaded_values) { |result| result }
-                  else
-                    load_application_object(arg_defn, loads, coerced_value, context)
+                  if block_given?
+                    block.call(finished_args)
                   end
                 end
-
-                coerced_value = if loaded_value
-                  loaded_value
-                else
-                  coerced_value
-                end
-
-                context.schema.after_lazy(coerced_value) do |coerced_value|
-                  validate_directive_argument(arg_defn, coerced_value)
-                  prepared_value = context.schema.error_handler.with_error_handling(context) do
-                    arg_defn.prepare_value(parent_object, coerced_value, context: context)
-                  end
-
-                  # TODO code smell to access such a deeply-nested constant in a distant module
-                  argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
-                    value: prepared_value,
-                    definition: arg_defn,
-                    default_used: default_used,
-                  )
-                end
-              else
-                # has_value is false
-                validate_directive_argument(arg_defn, nil)
               end
             end
 
-            context.schema.after_any_lazies(arg_lazies) do
-              GraphQL::Execution::Interpreter::Arguments.new(
-                argument_values: argument_values,
-              )
+            if block_given?
+              nil
+            else
+              # This API returns eagerly, gotta run it now
+              context.dataloader.run
+              finished_args
             end
           end
         end
