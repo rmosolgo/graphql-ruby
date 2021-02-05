@@ -225,8 +225,22 @@ describe GraphQL::Query::Variables do
           class << self
             attr_accessor :args_cache
           end
+          # Work around the fact that:
+          # - These tests check for `!intepreter?` behavior
+          # - Previously, these tests used an OpenStruct instead of a real context
+          # - But, now, the context requires `.dataloader.append_job`
+          # - At first I used NullContext, but that doesn't have the `.schema` reference that Variables needs.
+          # - So I built a _real_ context, but that started returning `.interpreter? => true`
+          # - So, update the schema to _really_ be `.interpreter? => false`
+          # When the legacy runtime is removed, so can the tests for that behavior (and the behavior itself.)
+          def args_cache
+            self.class.args_cache
+          end
 
           self.args_cache = args_cache
+          # This tests some coercion behavior that only applies to the legacy runtime:
+          use GraphQL::Execution::Execute
+          use GraphQL::Analysis
         end
       }
 
