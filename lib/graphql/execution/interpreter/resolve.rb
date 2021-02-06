@@ -41,17 +41,16 @@ module GraphQL
               results.concat(result_value)
               next
             elsif result_value.is_a?(Lazy)
-              result_value = result_value.value
-            end
-
-            if result_value.is_a?(Lazy)
-              # Since this field returned another lazy,
-              # add it to the same queue
-              results << result_value
-            elsif result_value.is_a?(Hash) || result_value.is_a?(Array)
-              # Add these values in wholesale --
-              # they might be modified by later work in the dataloader.
-              next_results << result_value
+              loaded_value = result_value.value
+              if loaded_value.is_a?(Lazy)
+                # Since this field returned another lazy,
+                # add it to the same queue
+                results << loaded_value
+              elsif loaded_value.is_a?(Hash) || loaded_value.is_a?(Array)
+                # Add these values in wholesale --
+                # they might be modified by later work in the dataloader.
+                next_results << loaded_value
+              end
             end
           end
 

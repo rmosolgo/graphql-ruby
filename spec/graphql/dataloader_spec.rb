@@ -559,4 +559,67 @@ describe GraphQL::Dataloader do
     assert_equal expected_data, res2["data"]
     assert_equal expected_log, database_log
   end
+
+
+  describe "example from #3314" do
+    module Example
+      class FooType < GraphQL::Schema::Object
+        field :id, ID, null: false
+      end
+
+      class FooSource < GraphQL::Dataloader::Source
+        def fetch(ids)
+          ids.map { OpenStruct.new(id: _1) }
+        end
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :foo, Example::FooType, null: true do
+          argument :foo_id, GraphQL::Types::ID, required: false, loads: Example::FooType
+          argument :use_load, GraphQL::Types::Boolean, required: false, default_value: false
+        end
+
+        def foo(use_load: false, foo: nil)
+          if use_load
+            dataloader.with(Example::FooSource).load("load")
+          else
+            dataloader.with(Example::FooSource).request("request")
+          end
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query Example::QueryType
+        use GraphQL::Dataloader
+
+        def self.object_from_id(id, ctx)
+          ctx.dataloader.with(Example::FooSource).request(id)
+        end
+      end
+    end
+
+    it "loads properly" do
+      result = Example::Schema.execute(<<~GRAPHQL)
+      {
+        foo(useLoad: false, fooId: "Other") {
+          __typename
+          id
+        }
+        fooWithLoad: foo(useLoad: true, fooId: "Other") {
+          __typename
+          id
+        }
+      }
+      GRAPHQL
+      # This should not have a Lazy in it
+      expected_result = {
+        "data" => {
+          "foo" => { "id" => "request", "__typename" => "Foo" },
+          "fooWithLoad" => { "id" => "load", "__typename" => "Foo" },
+        }
+      }
+
+      assert_equal expected_result, result.to_h
+    end
+  end
 end

@@ -291,9 +291,10 @@ module GraphQL
             # (Subselections of this mutation will still be resolved level-by-level.)
             if is_eager_field
               Interpreter::Resolve.resolve_all([field_result], @dataloader)
+            else
+              # Return this from `after_lazy` because it might be another lazy that needs to be resolved
+              field_result
             end
-
-            nil
           end
         end
 
