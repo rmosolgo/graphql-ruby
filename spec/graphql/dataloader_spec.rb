@@ -599,7 +599,7 @@ describe GraphQL::Dataloader do
     end
 
     it "loads properly" do
-      result = Example::Schema.execute(<<~GRAPHQL)
+      result = Example::Schema.execute(<<-GRAPHQL)
       {
         foo(useLoad: false, fooId: "Other") {
           __typename
