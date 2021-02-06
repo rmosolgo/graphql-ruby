@@ -236,6 +236,67 @@ module GraphQL
         end
       end
 
+      # @api private
+      def coerce_into_values(parent_object, values, context, argument_values)
+        arg_name = graphql_name
+        arg_key = keyword
+        has_value = false
+        default_used = false
+        if values.key?(arg_name)
+          has_value = true
+          value = values[arg_name]
+        elsif values.key?(arg_key)
+          has_value = true
+          value = values[arg_key]
+        elsif default_value?
+          has_value = true
+          value = default_value
+          default_used = true
+        end
+
+        if has_value
+          loaded_value = nil
+          coerced_value = context.schema.error_handler.with_error_handling(context) do
+            type.coerce_input(value, context)
+          end
+
+          # TODO this should probably be inside after_lazy
+          if loads && !from_resolver?
+            loaded_value = if type.list?
+              loaded_values = coerced_value.map { |val| owner.load_application_object(self, loads, val, context) }
+              context.schema.after_any_lazies(loaded_values) { |result| result }
+            else
+              owner.load_application_object(self, loads, coerced_value, context)
+            end
+          end
+
+          coerced_value = if loaded_value
+            loaded_value
+          else
+            coerced_value
+          end
+
+          # If this isn't lazy, then the block returns eagerly and assigns the result here
+          # If it _is_ lazy, then we write the lazy to the hash, then update it later
+          argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |coerced_value|
+            owner.validate_directive_argument(self, coerced_value)
+            prepared_value = context.schema.error_handler.with_error_handling(context) do
+              prepare_value(parent_object, coerced_value, context: context)
+            end
+
+            # TODO code smell to access such a deeply-nested constant in a distant module
+            argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
+              value: prepared_value,
+              definition: self,
+              default_used: default_used,
+            )
+          end
+        else
+          # has_value is false
+          owner.validate_directive_argument(self, nil)
+        end
+      end
+
       private
 
       def validate_input_type(input_type)

@@ -196,13 +196,21 @@ module GraphQL
             object = authorized_new(field_defn.owner, object, context, next_path)
           end
 
-          begin
-            kwarg_arguments = arguments(object, field_defn, ast_node)
-          rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => e
-            continue_value(next_path, e, owner_type, field_defn, return_type.non_null?, ast_node)
-            return
+          total_args_count = field_defn.arguments.size
+          if total_args_count == 0
+            kwarg_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
+            evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field)
+          else
+            # TODO remove all arguments(...) usages?
+            @query.arguments_cache.dataload_for(ast_node, field_defn, object) do |resolved_arguments|
+              evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field)
+            end
           end
+        end
 
+        def evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field)  # rubocop:disable Metrics/ParameterLists
+          context.scoped_context = scoped_context
+          return_type = field_defn.type
           after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |resolved_arguments|
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
               continue_value(next_path, resolved_arguments, owner_type, field_defn, return_type.non_null?, ast_node)
@@ -283,9 +291,10 @@ module GraphQL
             # (Subselections of this mutation will still be resolved level-by-level.)
             if is_eager_field
               Interpreter::Resolve.resolve_all([field_result], @dataloader)
+            else
+              # Return this from `after_lazy` because it might be another lazy that needs to be resolved
+              field_result
             end
-
-            nil
           end
         end
 

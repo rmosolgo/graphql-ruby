@@ -15,13 +15,17 @@ describe GraphQL::Query::Variables do
   }
   |}
   let(:ast_variables) { GraphQL.parse(query_string).definitions.first.variables }
-  let(:schema) { Dummy::Schema }
+  let(:schema) {
+    Class.new(Dummy::Schema) {
+      # This tests coercion behavior which only happens when `.interpreter?` is false
+      use GraphQL::Execution::Execute
+      use GraphQL::Analysis
+    }
+  }
+  let(:query_context) { GraphQL::Query.new(schema, "{ __typename }").context }
   let(:variables) {
     GraphQL::Query::Variables.new(
-    OpenStruct.new({
-      schema: schema,
-      warden: GraphQL::Schema::Warden.new(schema.default_filter, schema: schema, context: nil),
-    }),
+    query_context,
     ast_variables,
     provided_variables)
   }
@@ -221,8 +225,22 @@ describe GraphQL::Query::Variables do
           class << self
             attr_accessor :args_cache
           end
+          # Work around the fact that:
+          # - These tests check for `!intepreter?` behavior
+          # - Previously, these tests used an OpenStruct instead of a real context
+          # - But, now, the context requires `.dataloader.append_job`
+          # - At first I used NullContext, but that doesn't have the `.schema` reference that Variables needs.
+          # - So I built a _real_ context, but that started returning `.interpreter? => true`
+          # - So, update the schema to _really_ be `.interpreter? => false`
+          # When the legacy runtime is removed, so can the tests for that behavior (and the behavior itself.)
+          def args_cache
+            self.class.args_cache
+          end
 
           self.args_cache = args_cache
+          # This tests some coercion behavior that only applies to the legacy runtime:
+          use GraphQL::Execution::Execute
+          use GraphQL::Analysis
         end
       }
 
@@ -272,10 +290,7 @@ describe GraphQL::Query::Variables do
       let(:run_query) { schema.execute(query_string, variables: provided_variables) }
 
       let(:variables) { GraphQL::Query::Variables.new(
-        OpenStruct.new({
-          schema: schema,
-          warden: GraphQL::Schema::Warden.new(schema.default_filter, schema: schema, context: nil),
-        }),
+        query_context,
         ast_variables,
         provided_variables)
       }

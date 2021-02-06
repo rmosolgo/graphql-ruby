@@ -173,12 +173,42 @@ describe GraphQL::Dataloader do
         common_ids = recipe1[:ingredient_ids] & recipe2[:ingredient_ids]
         dataloader.with(DataObject).load_all(common_ids)
       end
+
+      field :common_ingredients_with_load, [Ingredient], null: false do
+        argument :recipe_1_id, ID, required: true, loads: Recipe
+        argument :recipe_2_id, ID, required: true, loads: Recipe
+      end
+
+      def common_ingredients_with_load(recipe_1:, recipe_2:)
+        common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
+        dataloader.with(DataObject).load_all(common_ids)
+      end
+
+      field :common_ingredients_from_input_object, [Ingredient], null: false do
+        class CommonIngredientsInput < GraphQL::Schema::InputObject
+          argument :recipe_1_id, ID, required: true, loads: Recipe
+          argument :recipe_2_id, ID, required: true, loads: Recipe
+        end
+        argument :input, CommonIngredientsInput, required: true
+      end
+
+
+      def common_ingredients_from_input_object(input:)
+        recipe_1 = input[:recipe_1]
+        recipe_2 = input[:recipe_2]
+        common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
+        dataloader.with(DataObject).load_all(common_ids)
+      end
     end
 
     query(Query)
 
     def self.object_from_id(id, ctx)
-      ctx.dataloader.with(DataObject).load(id)
+      if ctx[:use_request]
+        ctx.dataloader.with(DataObject).request(id)
+      else
+        ctx.dataloader.with(DataObject).load(id)
+      end
     end
 
     def self.resolve_type(type, obj, ctx)
@@ -187,47 +217,6 @@ describe GraphQL::Dataloader do
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Dataloader
-  end
-
-  class FiberErrorSchema < GraphQL::Schema
-    class ErrorObject < GraphQL::Dataloader::Source
-      def fetch(_)
-        raise ArgumentError, "Nope"
-      end
-    end
-
-    class Query < GraphQL::Schema::Object
-      field :load, String, null: false
-      field :load_all, String, null: false
-      field :request, String, null: false
-      field :request_all, String, null: false
-
-      def load
-        dataloader.with(ErrorObject).load(123)
-      end
-
-      def load_all
-        dataloader.with(ErrorObject).load_all([123])
-      end
-
-      def request
-        req = dataloader.with(ErrorObject).request(123)
-        req.load
-      end
-
-      def request_all
-        req = dataloader.with(ErrorObject).request_all([123])
-        req.load
-      end
-    end
-
-    use GraphQL::Dataloader
-    query(Query)
-
-    rescue_from(StandardError) do |err, obj, args, ctx, field|
-      ctx[:errors] << "#{err.message} (#{field.owner.name}.#{field.graphql_name}, #{obj.inspect}, #{args.inspect})"
-      nil
-    end
   end
 
   def database_log
@@ -434,6 +423,245 @@ describe GraphQL::Dataloader do
       [:mget, ["1", "2", "3", "4", "7"]],
     ]
     assert_equal expected_log, database_log
+  end
+
+  it "loads arguments in batches, even with request" do
+    query_str = <<-GRAPHQL
+    {
+      commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+        name
+      }
+    }
+    GRAPHQL
+
+    res = FiberSchema.execute(query_str)
+    expected_data = {
+      "commonIngredientsWithLoad" => [
+        {"name"=>"Corn"},
+        {"name"=>"Butter"},
+      ]
+    }
+    assert_equal expected_data, res["data"]
+
+    expected_log = [
+      [:mget, ["5", "6"]],
+      [:mget, ["2", "3"]],
+    ]
+    assert_equal expected_log, database_log
+
+    # Run the same test, but using `.request` from object_from_id
+    database_log.clear
+    res2 = FiberSchema.execute(query_str, context: { use_request: true })
+    assert_equal expected_data, res2["data"]
+    assert_equal expected_log, database_log
+  end
+
+  class UsageAnalyzer < GraphQL::Analysis::AST::Analyzer
+    def initialize(query)
+      @query = query
+      @fields = Set.new
+    end
+
+    def on_enter_field(node, parent, visitor)
+      args = @query.arguments_for(node, visitor.field_definition)
+      # This bug has been around for a while,
+      # see https://github.com/rmosolgo/graphql-ruby/issues/3321
+      if args.is_a?(GraphQL::Execution::Lazy)
+        args = args.value
+      end
+      @fields << [node.name, args.keys]
+    end
+
+    def result
+      @fields
+    end
+  end
+
+  it "Works with analyzing arguments with `loads:`, even with .request" do
+    query_str = <<-GRAPHQL
+    {
+      commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+        name
+      }
+    }
+    GRAPHQL
+    query = GraphQL::Query.new(FiberSchema, query_str)
+    results = GraphQL::Analysis::AST.analyze_query(query, [UsageAnalyzer])
+    expected_results = [
+      ["commonIngredientsWithLoad", [:recipe_1, :recipe_2]],
+      ["name", []],
+    ]
+    assert_equal expected_results, results.first.to_a
+
+    query2 = GraphQL::Query.new(FiberSchema, query_str, context: { use_request: true })
+    result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
+    assert_equal expected_results, result2.first.to_a
+  end
+
+  it "Works with input objects, load and request" do
+    query_str = <<-GRAPHQL
+    {
+      commonIngredientsFromInputObject(input: { recipe1Id: 5, recipe2Id: 6 }) {
+        name
+      }
+    }
+    GRAPHQL
+    res = FiberSchema.execute(query_str)
+    expected_data = {
+      "commonIngredientsFromInputObject" => [
+        {"name"=>"Corn"},
+        {"name"=>"Butter"},
+      ]
+    }
+    assert_equal expected_data, res["data"]
+
+    expected_log = [
+      [:mget, ["5", "6"]],
+      [:mget, ["2", "3"]],
+    ]
+    assert_equal expected_log, database_log
+
+
+    # Run the same test, but using `.request` from object_from_id
+    database_log.clear
+    res2 = FiberSchema.execute(query_str, context: { use_request: true })
+    assert_equal expected_data, res2["data"]
+    assert_equal expected_log, database_log
+  end
+
+  it "Works with input objects using variables, load and request" do
+    query_str = <<-GRAPHQL
+    query($input: CommonIngredientsInput!) {
+      commonIngredientsFromInputObject(input: $input) {
+        name
+      }
+    }
+    GRAPHQL
+    res = FiberSchema.execute(query_str, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
+    expected_data = {
+      "commonIngredientsFromInputObject" => [
+        {"name"=>"Corn"},
+        {"name"=>"Butter"},
+      ]
+    }
+    assert_equal expected_data, res["data"]
+
+    expected_log = [
+      [:mget, ["5", "6"]],
+      [:mget, ["2", "3"]],
+    ]
+    assert_equal expected_log, database_log
+
+
+    # Run the same test, but using `.request` from object_from_id
+    database_log.clear
+    res2 = FiberSchema.execute(query_str, context: { use_request: true }, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
+    assert_equal expected_data, res2["data"]
+    assert_equal expected_log, database_log
+  end
+
+
+  describe "example from #3314" do
+    module Example
+      class FooType < GraphQL::Schema::Object
+        field :id, ID, null: false
+      end
+
+      class FooSource < GraphQL::Dataloader::Source
+        def fetch(ids)
+          ids.map { |id| OpenStruct.new(id: id) }
+        end
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :foo, Example::FooType, null: true do
+          argument :foo_id, GraphQL::Types::ID, required: false, loads: Example::FooType
+          argument :use_load, GraphQL::Types::Boolean, required: false, default_value: false
+        end
+
+        def foo(use_load: false, foo: nil)
+          if use_load
+            dataloader.with(Example::FooSource).load("load")
+          else
+            dataloader.with(Example::FooSource).request("request")
+          end
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query Example::QueryType
+        use GraphQL::Dataloader
+
+        def self.object_from_id(id, ctx)
+          ctx.dataloader.with(Example::FooSource).request(id)
+        end
+      end
+    end
+
+    it "loads properly" do
+      result = Example::Schema.execute(<<-GRAPHQL)
+      {
+        foo(useLoad: false, fooId: "Other") {
+          __typename
+          id
+        }
+        fooWithLoad: foo(useLoad: true, fooId: "Other") {
+          __typename
+          id
+        }
+      }
+      GRAPHQL
+      # This should not have a Lazy in it
+      expected_result = {
+        "data" => {
+          "foo" => { "id" => "request", "__typename" => "Foo" },
+          "fooWithLoad" => { "id" => "load", "__typename" => "Foo" },
+        }
+      }
+
+      assert_equal expected_result, result.to_h
+    end
+  end
+
+  class FiberErrorSchema < GraphQL::Schema
+    class ErrorObject < GraphQL::Dataloader::Source
+      def fetch(_)
+        raise ArgumentError, "Nope"
+      end
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :load, String, null: false
+      field :load_all, String, null: false
+      field :request, String, null: false
+      field :request_all, String, null: false
+
+      def load
+        dataloader.with(ErrorObject).load(123)
+      end
+
+      def load_all
+        dataloader.with(ErrorObject).load_all([123])
+      end
+
+      def request
+        req = dataloader.with(ErrorObject).request(123)
+        req.load
+      end
+
+      def request_all
+        req = dataloader.with(ErrorObject).request_all([123])
+        req.load
+      end
+    end
+
+    use GraphQL::Dataloader
+    query(Query)
+
+    rescue_from(StandardError) do |err, obj, args, ctx, field|
+      ctx[:errors] << "#{err.message} (#{field.owner.name}.#{field.graphql_name}, #{obj.inspect}, #{args.inspect})"
+      nil
+    end
   end
 
   it "Works with error handlers" do

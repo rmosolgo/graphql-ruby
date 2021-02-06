@@ -157,7 +157,7 @@ module GraphQL
       end
 
       def dataloader
-        @dataloader ||= query.multiplex.dataloader
+        @dataloader ||= query.multiplex ? query.multiplex.dataloader : schema.dataloader_class.new
       end
 
       # @api private

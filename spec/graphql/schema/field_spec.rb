@@ -13,6 +13,12 @@ describe GraphQL::Schema::Field do
       end
     end
 
+    describe "inspect" do
+      it "includes the path and return type" do
+        assert_equal "#<Jazz::BaseField Query.inspectInput(...): [String!]!>", field.inspect
+      end
+    end
+
     it "uses the argument class" do
       arg_defn = field.graphql_definition.arguments.values.first
       assert_equal :ok, arg_defn.metadata[:custom]
