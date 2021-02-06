@@ -3,9 +3,6 @@
 module GraphQL
   class Dataloader
     class Source
-      # @api private
-      attr_reader :results
-
       # Called by {Dataloader} to prepare the {Source}'s internal state
       # @api private
       def setup(dataloader)
@@ -35,11 +32,11 @@ module GraphQL
       # @return [Object] The result from {#fetch} for `key`. If `key` hasn't been loaded yet, the Fiber will yield until it's loaded.
       def load(key)
         if @results.key?(key)
-          @results[key]
+          result_for(key)
         else
           @pending_keys << key
           sync
-          @results[key]
+          result_for(key)
         end
       end
 
@@ -52,7 +49,7 @@ module GraphQL
           sync
         end
 
-        keys.map { |k| @results[k] }
+        keys.map { |k| result_for(k) }
       end
 
       # Subclasses must implement this method to return a value for each of `keys`
@@ -86,7 +83,24 @@ module GraphQL
         fetch_keys.each_with_index do |key, idx|
           @results[key] = results[idx]
         end
+      rescue StandardError => error
+        fetch_keys.each { |key| @results[key] = error }
+      ensure
         nil
+      end
+
+      private
+
+      # Reads and returns the result for the key from the internal cache, or raises an error if the result was an error
+      # @param key [Object] key passed to {#load} or {#load_all}
+      # @return [Object] The result from {#fetch} for `key`.
+      # @api private
+      def result_for(key)
+        result = @results[key]
+
+        raise result if result.class <= StandardError
+
+        result
       end
     end
   end

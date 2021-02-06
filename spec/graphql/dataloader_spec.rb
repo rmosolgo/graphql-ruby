@@ -622,4 +622,61 @@ describe GraphQL::Dataloader do
       assert_equal expected_result, result.to_h
     end
   end
+
+  class FiberErrorSchema < GraphQL::Schema
+    class ErrorObject < GraphQL::Dataloader::Source
+      def fetch(_)
+        raise ArgumentError, "Nope"
+      end
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :load, String, null: false
+      field :load_all, String, null: false
+      field :request, String, null: false
+      field :request_all, String, null: false
+
+      def load
+        dataloader.with(ErrorObject).load(123)
+      end
+
+      def load_all
+        dataloader.with(ErrorObject).load_all([123])
+      end
+
+      def request
+        req = dataloader.with(ErrorObject).request(123)
+        req.load
+      end
+
+      def request_all
+        req = dataloader.with(ErrorObject).request_all([123])
+        req.load
+      end
+    end
+
+    use GraphQL::Dataloader
+    query(Query)
+
+    rescue_from(StandardError) do |err, obj, args, ctx, field|
+      ctx[:errors] << "#{err.message} (#{field.owner.name}.#{field.graphql_name}, #{obj.inspect}, #{args.inspect})"
+      nil
+    end
+  end
+
+  it "Works with error handlers" do
+    context = { errors: [] }
+
+    res = FiberErrorSchema.execute("{ load loadAll request requestAll }", context: context)
+
+    expected_errors = [
+      "Nope (FiberErrorSchema::Query.load, nil, {})",
+      "Nope (FiberErrorSchema::Query.loadAll, nil, {})",
+      "Nope (FiberErrorSchema::Query.request, nil, {})",
+      "Nope (FiberErrorSchema::Query.requestAll, nil, {})",
+    ]
+
+    assert_equal(nil, res["data"])
+    assert_equal(expected_errors, context[:errors].sort)
+  end
 end

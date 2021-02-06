@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.17.4 (4 Feb 2021)
+
+- Stable Relation Connection: Don't emit `OR ... IS NULL` for columns that are known to be `null: false` (this improves index utilization)
+
 ## 1.17.3 (2 Feb 2021)
 
 ### New Features
