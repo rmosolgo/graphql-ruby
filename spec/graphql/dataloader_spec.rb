@@ -569,7 +569,7 @@ describe GraphQL::Dataloader do
 
       class FooSource < GraphQL::Dataloader::Source
         def fetch(ids)
-          ids.map { OpenStruct.new(id: _1) }
+          ids.map { |id| OpenStruct.new(id: id) }
         end
       end
 
