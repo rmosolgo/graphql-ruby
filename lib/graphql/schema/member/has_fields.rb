@@ -77,7 +77,7 @@ module GraphQL
           elsif self.is_a?(Class)
             superclass.respond_to?(:field_class) ? superclass.field_class : GraphQL::Schema::Field
           else
-            ancestor = ancestors[1..-1].find { |a| a.respond_to?(:field_class) && a.field_class }
+            ancestor = (ancestors - [self]).find { |a| a.respond_to?(:field_class) && a.field_class }
             ancestor ? ancestor.field_class : GraphQL::Schema::Field
           end
         end

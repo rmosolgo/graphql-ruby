@@ -167,9 +167,15 @@ module Jazz
     end
   end
 
+  module WithNameField
+    def self.prepended(base)
+      base.field :name, String, null: false
+    end
+  end
+
   module NamedEntity
     include BaseInterface
-    field :name, String, null: false
+    prepend WithNameField
   end
 
   class PrivateMembership < GraphQL::Schema::TypeMembership
