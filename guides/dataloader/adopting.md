@@ -60,7 +60,7 @@ In this example, one object is loaded, then another object is loaded _based on_ 
 
 ## Comparison: Fetching objects concurrently (independent)
 
-Sometimes, you need multiple _indepenedent_ records to perform a calcuation. Each record is loaded, then they're combined in some bit of work.
+Sometimes, you need multiple _independent_ records to perform a calcuation. Each record is loaded, then they're combined in some bit of work.
 
 - With __GraphQL-Batch__, `Promise.all(...)` is used to to wait for several pending loads:
 
