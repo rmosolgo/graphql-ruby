@@ -155,7 +155,9 @@ describe GraphQL::Query::Variables do
         }
       |}
       let(:result) {
-        schema.execute(query_string, variables: provided_variables, root_value: ObjectWithThingsCount)
+        GraphQL::Deprecation.stub(:warn, nil) do
+          schema.execute(query_string, variables: provided_variables, root_value: ObjectWithThingsCount)
+        end
       }
 
       describe "when they are present, but null" do
@@ -287,7 +289,11 @@ describe GraphQL::Query::Variables do
       GRAPHQL
       }
 
-      let(:run_query) { schema.execute(query_string, variables: provided_variables) }
+      let(:run_query) {
+        GraphQL::Deprecation.stub(:warn, nil) do
+          schema.execute(query_string, variables: provided_variables)
+        end
+      }
 
       let(:variables) { GraphQL::Query::Variables.new(
         query_context,
@@ -389,7 +395,9 @@ describe GraphQL::Query::Variables do
       end
 
       it "works" do
-        res = schema.execute(query_string, variables: params["variables"])
+        res = GraphQL::Deprecation.stub(:warn, nil) do
+          schema.execute(query_string, variables: params["variables"])
+        end
         assert_equal 1, res["data"]["searchDairy"].length
       end
     end
