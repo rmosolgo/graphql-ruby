@@ -121,8 +121,6 @@ module GraphQL
           iface = GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
           if iface.is_a?(GraphQL::InterfaceType)
             @clean_inherited_fields.merge!(iface.fields)
-          else
-            pp iface
           end
         end
         @clean_inherited_fields

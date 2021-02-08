@@ -209,4 +209,9 @@ describe GraphQL::Backtrace do
     includes_tag = backtrace.any? { |s| s.include?(file) && s.include?("`" + method) }
     assert includes_tag, "Backtrace should include #{file} inside method #{method}\n\n#{backtrace.join("\n")}"
   end
+
+  it "works with stand-alone validation" do
+    res = backtrace_schema.validate("{ __typename }")
+    assert_equal [], res
+  end
 end

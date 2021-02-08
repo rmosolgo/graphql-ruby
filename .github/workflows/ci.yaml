@@ -47,7 +47,7 @@ jobs:
             ruby: 2.4
             bundler: "1"
           # Rails 5.2 is tested with Postgresql below
-          - gemfile: gemfiles/rails_6.0.gemfile
+          - gemfile: gemfiles/rails_6.1.gemfile
             ruby: 2.7
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.0
@@ -64,7 +64,7 @@ jobs:
   legacy_test:
     runs-on: ubuntu-latest
     steps:
-    - run: echo BUNDLE_GEMFILE='gemfiles/rails_6.0.gemfile' > $GITHUB_ENV
+    - run: echo BUNDLE_GEMFILE='gemfiles/rails_6.1.gemfile' > $GITHUB_ENV
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
