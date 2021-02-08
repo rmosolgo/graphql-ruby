@@ -288,20 +288,22 @@ module GraphQL
         @owner = owner
         @subscription_scope = subscription_scope
 
-        # Do this last so we have as much context as possible when initializing them:
         @extensions = EMPTY_ARRAY
-        if extensions.any?
-          self.extensions(extensions)
-        end
         # This should run before connection extension,
         # but should it run after the definition block?
         if scoped?
           self.extension(ScopeExtension)
         end
+
         # The problem with putting this after the definition_block
         # is that it would override arguments
         if connection? && connection_extension
           self.extension(connection_extension)
+        end
+
+        # Do this last so we have as much context as possible when initializing them:
+        if extensions.any?
+          self.extensions(extensions)
         end
 
         if directives.any?
