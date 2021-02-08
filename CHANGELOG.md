@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+# 1.12.4 (8 February 2021)
+
+### Bug fixes
+
+- Allow prepended modules to add fields #3325
+- Fix ConnectionExtension when another extension short-circuits `resolve` #3326
+- Backtrace: Fix GraphQL::Backtrace with static validation (used by graphql-client) #3324
+- Dataloader: Fix yield from root fiber when accessing arguments from analyzers. Fix arguments sometimes containing unresolved `Execution::Lazy`s #3320
+- Dataloader: properly pass raised errors to `handle_error` handlers #3319
+- Fix NameError in validation error #3303
+- Dataloader: properly batch when parent fields were not batched #3312
+
 # 1.12.3 (27 January 2021)
 
 ### Bug fixes
