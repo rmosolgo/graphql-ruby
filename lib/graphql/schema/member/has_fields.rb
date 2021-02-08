@@ -74,11 +74,8 @@ module GraphQL
             @field_class = new_field_class
           elsif defined?(@field_class) && @field_class
             @field_class
-          elsif self.is_a?(Class)
-            superclass.respond_to?(:field_class) ? superclass.field_class : GraphQL::Schema::Field
           else
-            ancestor = (ancestors - [self]).find { |a| a.respond_to?(:field_class) && a.field_class }
-            ancestor ? ancestor.field_class : GraphQL::Schema::Field
+            find_inherited_value(:field_class, GraphQL::Schema::Field)
           end
         end
 
