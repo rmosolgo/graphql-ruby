@@ -27,6 +27,21 @@ module GraphQL
       schema.dataloader_class = self
     end
 
+    # Call the block with a Dataloader instance,
+    # then run all enqueued jobs and return the result of the block.
+    #
+    # TODO here:
+    #   - reconsider `#append_job`'s name if that's going to be a public API
+    def self.with_dataloading(&block)
+      dataloader = self.new
+      result = nil
+      dataloader.append_job {
+        result = block.call(dataloader)
+      }
+      dataloader.run
+      result
+    end
+
     def initialize
       @source_cache = Hash.new { |h, source_class| h[source_class] = Hash.new { |h2, batch_parameters|
           source = if RUBY_VERSION < "3"
