@@ -73,7 +73,7 @@
 <p>Pass <code class="language-plaintext highlighter-rouge">pusher:</code> to get Subscription updates over Pusher:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load the helper function</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client</span><span class="dl">"</span>
+<span class="k">import</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/createRelaySubscriptionHandler</span><span class="dl">"</span>
 
 <span class="c1">// Prepare a Pusher client</span>
 <span class="kd">var</span> <span class="nx">Pusher</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">pusher-js</span><span class="dl">"</span><span class="p">)</span>
@@ -129,7 +129,7 @@
 <p>Pass <code class="language-plaintext highlighter-rouge">ably:</code> to get Subscription updates over Ably:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load the helper function</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client</span><span class="dl">"</span>
+<span class="k">import</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/createRelaySubscriptionHandler</span><span class="dl">"</span>
 
 <span class="c1">// Load Ably and create a client</span>
 <span class="kd">const</span> <span class="nx">Ably</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">ably</span><span class="dl">"</span><span class="p">)</span>
@@ -157,7 +157,7 @@
 <p>For example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Require the helper function</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client</span><span class="dl">"</span><span class="p">)</span>
+<span class="k">import</span> <span class="nx">createRelaySubscriptionHandler</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/createRelaySubscriptionHandler</span><span class="dl">"</span><span class="p">)</span>
 <span class="c1">// Optionally, load your OperationStoreClient</span>
 <span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 
