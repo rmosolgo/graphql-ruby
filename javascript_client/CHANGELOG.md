@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.9.0 (10 Feb 2021)
+
+- Move "compiled" `.js` files into the root directory of the published NPM package (instead of `dist/`). To upgrade, remove `dist/` from your import paths. (These files will be treated as public APIs in their own right, published independently to support smaller bundle sizes.) #2768
+
 ## 1.8.2 (2 Feb 2021)
 
 - Pusher: Accept a `decompress:` function for handling compressed payloads #3311

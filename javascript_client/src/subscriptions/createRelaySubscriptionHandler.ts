@@ -15,7 +15,7 @@ import { createAblyHandler, AblyHandlerOptions } from "./createAblyHandler"
  * @param {OperationStoreClient} options.operations - A generated `OperationStoreClient` for graphql-pro's OperationStore
  * @return {Function} A handler for a Relay Modern network
 */
-function createHandler(options: ActionCableHandlerOptions | PusherHandlerOptions | AblyHandlerOptions) {
+function createRelaySubscriptionHandler(options: ActionCableHandlerOptions | PusherHandlerOptions | AblyHandlerOptions) {
   if (!options) {
     return null
   }
@@ -30,4 +30,4 @@ function createHandler(options: ActionCableHandlerOptions | PusherHandlerOptions
   return handler
 }
 
-export default createHandler
+export default createRelaySubscriptionHandler
