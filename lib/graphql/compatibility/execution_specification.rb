@@ -32,6 +32,7 @@ module GraphQL
       # @param execution_strategy [<#new, #execute>] An execution strategy class
       # @return [Class<Minitest::Test>] A test suite for this execution strategy
       def self.build_suite(execution_strategy)
+        GraphQL::Deprecation.warn "#{self} will be removed from GraphQL-Ruby 2.0. There is no replacement, please open an issue on GitHub if you need support."
         Class.new(Minitest::Test) do
           class << self
             attr_accessor :counter_schema, :specification_schema

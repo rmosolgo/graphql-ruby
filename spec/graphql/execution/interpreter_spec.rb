@@ -210,8 +210,8 @@ describe GraphQL::Execution::Interpreter do
       field :field_counter, FieldCounter, null: false
       def field_counter; FieldCounter.generate_tag(context) ; end
 
-      field :node, field: GraphQL::Relay::Node.field
-      field :nodes, field: GraphQL::Relay::Node.plural_field
+      add_field(GraphQL::Types::Relay::NodeField)
+      add_field(GraphQL::Types::Relay::NodesField)
     end
 
     class Counter < GraphQL::Schema::Object
@@ -242,8 +242,6 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class Schema < GraphQL::Schema
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
       query(Query)
       mutation(Mutation)
       lazy_resolve(Box, :value)
@@ -382,19 +380,6 @@ describe GraphQL::Execution::Interpreter do
       # These are both `field_counter_2`, but one is lazy
       assert_equal '<"field_counter_2"> ["fieldCounter", "fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo(0)', res["data"]["fieldCounter"]["fieldCounter"]["runtimeInfo"]
       assert_equal '<"field_counter_2"> ["fieldCounter", "fieldCounter", "lazyRuntimeInfo"] -> FieldCounter.lazyRuntimeInfo(1)', res["data"]["fieldCounter"]["fieldCounter"]["lazyRuntimeInfo"]
-    end
-  end
-
-  describe "CI setup" do
-    it "sets interpreter based on a constant" do
-      # Force the plugins to be applied
-      Jazz::Schema.graphql_definition
-      Dummy::Schema.graphql_definition
-      if TESTING_INTERPRETER
-        assert_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
-      else
-        refute_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
-      end
     end
   end
 

@@ -6,20 +6,13 @@ module GraphQL
     #
     # Attach as a plugin.
     #
-    # @example Using new default connections
-    #   class MySchema < GraphQL::Schema
-    #     use GraphQL::Pagination::Connections
-    #   end
-    #
     # @example Adding a custom wrapper
     #   class MySchema < GraphQL::Schema
-    #     use GraphQL::Pagination::Connections
     #     connections.add(MyApp::SearchResults, MyApp::SearchResultsConnection)
     #   end
     #
     # @example Removing default connection support for arrays (they can still be manually wrapped)
     #   class MySchema < GraphQL::Schema
-    #     use GraphQL::Pagination::Connections
     #     connections.delete(Array)
     #   end
     #
@@ -29,14 +22,10 @@ module GraphQL
       end
 
       def self.use(schema_defn)
-        if schema_defn.is_a?(Class)
-          schema_defn.connections = self.new(schema: schema_defn)
-        else
-          # Unwrap a `.define` object
-          schema_defn = schema_defn.target
-          schema_defn.connections = self.new(schema: schema_defn)
-          schema_defn.class.connections = schema_defn.connections
+        if schema_defn.plugins.any? { |(plugin, args)| plugin == self }
+          GraphQL::Deprecation.warn("#{self} is now the default, remove `use #{self}` from #{caller(2,1).first}")
         end
+        schema_defn.connections = self.new(schema: schema_defn)
       end
 
       def initialize(schema:)
@@ -76,9 +65,9 @@ module GraphQL
 
       # Used by the runtime to wrap values in connection wrappers.
       # @api Private
-      def wrap(field, parent, items, arguments, context, wrappers: all_wrappers)
+      def wrap(field, parent, items, arguments, context)
         return items if GraphQL::Execution::Interpreter::RawValue === items
-
+        wrappers = context ? context.namespace(:connections)[:all_wrappers] : all_wrappers
         impl = wrapper_for(items, wrappers: wrappers)
 
         if impl.nil?
@@ -89,6 +78,7 @@ module GraphQL
           items,
           context: context,
           parent: parent,
+          field: field,
           max_page_size: field.max_page_size || context.schema.default_max_page_size,
           first: arguments[:first],
           after: arguments[:after],

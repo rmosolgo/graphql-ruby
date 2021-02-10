@@ -30,7 +30,7 @@ module GraphQL
 
         # @return [GraphQL::TypeKinds::TypeKind]
         def kind
-          raise GraphQL::RequiredImplementationMissingError
+          raise GraphQL::RequiredImplementationMissingError, "No `.kind` defined for #{self}"
         end
       end
     end

@@ -35,7 +35,7 @@
 //   }})
 //
 import { ApolloLink, Observable, Observer, Operation, NextLink, FetchResult } from "@apollo/client"
-import { Pusher } from "pusher-js"
+import Pusher from "pusher-js"
 
 type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
 
@@ -46,16 +46,23 @@ type Subscription = {
 
 class PusherLink extends ApolloLink {
   pusher: Pusher
+  decompress: (result: string) => any
 
-  constructor(options: { pusher: Pusher }) {
+  constructor(options: { pusher: Pusher, decompress?: (result: string) => any}) {
     super()
     // Retain a handle to the Pusher client
     this.pusher = options.pusher
+    if (options.decompress) {
+      this.decompress = options.decompress
+    } else {
+      this.decompress = function(_result: string) {
+        throw new Error("Received compressed_result but PusherLink wasn't configured with `decompress: (result: string) => any`. Add this configuration.")
+      }
+    }
   }
 
   request(operation: Operation, forward: NextLink): Observable<RequestResult> {
-    const subscribeObservable = new Observable<RequestResult>((_observer) => {  })
-    var pusher = this.pusher
+    const subscribeObservable = new Observable<RequestResult>((_observer: any) => {  })
     // Capture the super method
     const prevSubscribe = subscribeObservable.subscribe.bind(subscribeObservable)
     // Override subscribe to return an `unsubscribe` object, see
@@ -76,7 +83,7 @@ class PusherLink extends ApolloLink {
       // Check the result of the operation
       const resultObservable = forward(operation)
       // When the operation is done, try to get the subscription ID from the server
-      resultObservable.subscribe({ next: (data) => {
+      resultObservable.subscribe({ next: (data: any) => {
         // If the operation has the subscription header, it's a subscription
         const response = operation.getContext().response
         // Check to see if the response has the header
@@ -85,20 +92,10 @@ class PusherLink extends ApolloLink {
           // Set up the pusher subscription for updates from the server
           const pusherChannel = this.pusher.subscribe(subscriptionChannel)
           // Subscribe for more update
-          pusherChannel.bind("update", function(payload) {
-            const result = payload.result
-            if (result) {
-              // Send the new response to listeners
-              observer.next(result)
-            }
-            if (!payload.more) {
-              // This is the end, the server says to unsubscribe
-              pusher.unsubscribe(subscriptionChannel)
-              observer.complete()
-            }
+          pusherChannel.bind("update", (payload: any) => {
+            this._onUpdate(subscriptionChannel, observer, payload)
           })
-        }
-        else {
+        } else {
           // This isn't a subscription,
           // So pass the data along and close the observer.
           observer.next(data)
@@ -115,7 +112,27 @@ class PusherLink extends ApolloLink {
     }
     return subscribeObservable
   }
+
+  _onUpdate(subscriptionChannel: string, observer: { next: Function, complete: Function }, payload: {more: boolean, compressed_result?: string, result?: object}): void {
+    let result: any
+    if (payload.compressed_result) {
+      result = this.decompress(payload.compressed_result)
+    } else {
+      result = payload.result
+    }
+    if (result) {
+      // Send the new response to listeners
+      observer.next(result)
+    }
+    if (!payload.more) {
+      // This is the end, the server says to unsubscribe
+      this.pusher.unsubscribe(subscriptionChannel)
+      observer.complete()
+    }
+  }
 }
+
+
 
 // Turn `subscribe` arguments into an observer-like thing, see getObserver
 // https://github.com/apollographql/subscriptions-transport-ws/blob/master/src/client.ts#L347-L361

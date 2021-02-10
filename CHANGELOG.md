@@ -8,6 +8,99 @@
 
 ### Bug fixes
 
+# 1.12.4 (8 February 2021)
+
+### Bug fixes
+
+- Allow prepended modules to add fields #3325
+- Fix ConnectionExtension when another extension short-circuits `resolve` #3326
+- Backtrace: Fix GraphQL::Backtrace with static validation (used by graphql-client) #3324
+- Dataloader: Fix yield from root fiber when accessing arguments from analyzers. Fix arguments sometimes containing unresolved `Execution::Lazy`s #3320
+- Dataloader: properly pass raised errors to `handle_error` handlers #3319
+- Fix NameError in validation error #3303
+- Dataloader: properly batch when parent fields were not batched #3312
+
+# 1.12.3 (27 January 2021)
+
+### Bug fixes
+
+- Fix constant names for legacy scalar types
+
+# 1.12.2 (26 January 2021)
+
+### New features
+
+- `GraphQL::Deprecation.warn` is used for GraphQL-Ruby 2.0 deprecation warnings (and calls through to `ActiveSupport::Deprecation.warn` if it's available) #3292
+
+# 1.12.1 (25 January 2021)
+
+### Bug fixes
+
+- `GraphQL::Dataloader`: properly support selections with multiple fields #3297
+
+# 1.12.0 (20 January 2021)
+
+### Breaking changes
+
+- `GraphQL::Schema` defaults to `GraphQL::Execution::Interpreter`, `GraphQL::Analysis::AST`, `GraphQL::Pagination::Connections`, and `GraphQL::Execution::Errors`. (#3145) To get the previous (deprecated) behaviors:
+
+  ```ruby
+  # Revert to deprecated execution behaviors:
+  use GraphQL::Execution::Execute
+  use GraphQL::Analysis
+  # Disable the new connection implementation:
+  self.connections = nil
+  ```
+
+- `GraphQL::Execution::Interpreter::Arguments` instances are frozen (#3138). (Usually, GraphQL code doesn't interact with these objects, but they're used some places under the hood.)
+
+### Deprecations
+
+- Many, many legacy classes and methods were deprecated. #3275 Deprecation errors include links to migration documentation. For a full list, see: https://github.com/rmosolgo/graphql-ruby/issues/3056
+
+### New features
+
+- Rails-like argument validations (#3207)
+- Fiber-based `GraphQL::Dataloader` for batch-loading data #3264
+- Connection and edge behaviors are available as mixins #3071
+- Schema definition supports schema directives #3224
+
+### Bug fixes
+
+# 1.11.7 (18 January 2021)
+
+### Breaking changes
+
+- Incoming integer values are properly bound (as per the spec) #3206 To continue receiving out-of-bound integer values, add this to your schema's `def self.type_error(err, ctx)` hook:
+
+  ```ruby
+  def self.type_error(err, ctx)
+    if err.is_a?(GraphQL::IntegerDecodingError)
+      return err.integer_value # return it anyways, since this is how graphql-ruby used to work
+    end
+    # ...
+  end
+  ```
+
+### New features
+
+- Support Ruby 3.0 #3278
+- Add validation timeout option #3234
+- Support Prometheus custom_labels in GraphQLCollector #3215
+
+### Bug fixes
+
+- Handle `GraphQL::UnauthorizedError` in interpreter in from arguments #3276
+- Set description for auto-generated `input:` argument #3141
+- Improve performance of fields will merge validation #3228
+- Use `Float` graphql type for ActiveRecord decimal columns #3246
+- Add some custom methods to ArrayConnection #3238
+- Fix generated fields for types ending Connection #3223
+- Improve runtime performance #3217
+- Improve argument handling when extensions shortcut the defined resolve #3212
+- Bind scalar ints as per the spec #3206
+- Validate that input object names are unique #3205
+
 ## 1.11.6 (29 October 2020)
 
 ### Breaking changes
@@ -153,6 +246,12 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 - Fix compatibility of `YYYY-mm-dd` with `Types::ISO8601DateTime` #2989
 - Remove unused ivar in InputObject #2987
 
+## 1.9.21 (12 June 2020)
+
+### Bug fixes
+
+- Fix `extras:` on subscription fields #2983
+
 ## 1.10.11 (11 June 2020)
 
 ### New features
@@ -183,6 +282,12 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 - Fix array input to Date/DateTime types #2927
 - Fix method conflict warnings on schema loader #2934
 - Fix some Ruby 2.7 warnings #2925
+
+## 1.9.20 (20 May 2020)
+
+### Bug fixes
+
+- Fix `default_value: {}` on Ruby 2.7
 
 ## 1.10.9 (4 May 2020)
 
@@ -320,6 +425,12 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 - Make new relation connections more efficient #2697
 - Don't include fields `@skip(if: true)` or `@include(if: false)` in lookahead #2700
 
+## 1.9.19 (28 Jan 2020)
+
+### Bug Fixes
+
+- Fix argument default value of `{}` with Ruby 2.7 argument handling #2704
+
 ## 1.10.0 (20 Jan 2020)
 
 ### Breaking Changes
@@ -332,7 +443,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
     - If you need the whole Hash, get a cached value from `context.warden` (an instance of `GraphQL::Schema::Warden`) at runtime. Those values reflect the types and fields which are permitted for the current query, and they're cached for life of the query. Check the API docs to see methods on the `warden`.
 - Class-based schemas using the interpreter _must_ add `use GraphQL::Analysis::AST` to their schema (and update their custom analyzers, see https://graphql-ruby.org/queries/ast_analysis.html) #2363
 - ActiveSupport::Notifications events are correctly named in event.library format #2562
-- Field and Argument `#authorized?` methods now accept _three_ arguments (instead of 2). They now accept `(obj, args, ctx)`, where `args` is the arguments (for a field) or the argument value (for an argument). #2536
+- Field and Argument `#authorized?` methods now accept _three_ arguments (instead of 2). They now accept `(obj, args, ctx)`, where `args` is the arguments (for a field) or the argument value (for an argument). #2520
 - Double-null `!!` is disallowed by the parser #2397
 - (Non-interpreter only) The return value of subscription fields is passed along to execute the subscription. Return `nil` to get the previous behavior. #2536
 - `Schema.from_definition` builds a _class-based schema_ from the definition string #2178

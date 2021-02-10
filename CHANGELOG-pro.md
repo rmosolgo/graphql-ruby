@@ -8,6 +8,39 @@
 
 ### Bug Fix
 
+# 1.17.4 (4 Feb 2021)
+
+- Stable Relation Connection: Don't emit `OR ... IS NULL` for columns that are known to be `null: false` (this improves index utilization)
+
+## 1.17.3 (2 Feb 2021)
+
+### New Features
+
+- Pusher subscriptions: `context[:compress_pusher_payload] = true` will cause the payload to be gzipped before being sent to Pusher
+
+## 1.17.2 (30 Jan 2021)
+
+### Bug Fix
+
+- Subscriptions: don't generate keys inside Lua scripts (for redis-namespace compatibility, and probably better support for Redis cluster) #3307
+
+## 1.17.1 (25 Jan 2021)
+
+### New Features
+
+- OperationStore: add `OperationStore::AddOperationBatch.call` for adding data directly
+- Subscriptions: use Lua scripts for more efficient Redis access
+
+## 1.17.0 (20 Jan 2021)
+
+### New Features
+
+- Updates for 1.12.0 compatibility
+
+### Bug Fix
+
+- OperationStore: improve performance by batching reads and writes during updates
+
 ## 1.16.2 (21 Dec 2020)
 
 ### New Features

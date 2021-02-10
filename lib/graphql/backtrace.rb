@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/backtrace/inspect_result"
+require "graphql/backtrace/legacy_tracer"
 require "graphql/backtrace/table"
 require "graphql/backtrace/traced_error"
 require "graphql/backtrace/tracer"
@@ -9,13 +10,12 @@ module GraphQL
   # {TracedError} provides a GraphQL backtrace with arguments and return values.
   # The underlying error is available as {TracedError#cause}.
   #
-  # WARNING: {.enable} is not threadsafe because {GraphQL::Tracing.install} is not threadsafe.
-  #
   # @example toggling backtrace annotation
-  #   # to enable:
-  #   GraphQL::Backtrace.enable
-  #   # later, to disable:
-  #   GraphQL::Backtrace.disable
+  #   class MySchema < GraphQL::Schema
+  #     if Rails.env.development? || Rails.env.test?
+  #       use GraphQL::Backtrace
+  #     end
+  #   end
   #
   class Backtrace
     include Enumerable
@@ -23,19 +23,13 @@ module GraphQL
 
     def_delegators :to_a, :each, :[]
 
-    def self.enable
-      warn("GraphQL::Backtrace.enable is deprecated, add `use GraphQL::Backtrace` to your schema definition instead.")
-      GraphQL::Tracing.install(Backtrace::Tracer)
-      nil
-    end
-
-    def self.disable
-      GraphQL::Tracing.uninstall(Backtrace::Tracer)
-      nil
-    end
-
-    def self.use(schema_defn)
-      schema_defn.tracer(self::Tracer)
+    def self.use(schema_defn, legacy: false)
+      tracer = if legacy
+        self::LegacyTracer
+      else
+        self::Tracer
+      end
+      schema_defn.tracer(tracer)
     end
 
     def initialize(context, value: nil)
@@ -50,6 +44,21 @@ module GraphQL
 
     def to_a
       @table.to_backtrace
+    end
+
+    # Used for internal bookkeeping
+    # @api private
+    class Frame
+      attr_reader :path, :query, :ast_node, :object, :field, :arguments, :parent_frame
+      def initialize(path:, query:, ast_node:, object:, field:, arguments:, parent_frame:)
+        @path = path
+        @query = query
+        @ast_node = ast_node
+        @field = field
+        @object = object
+        @arguments = arguments
+        @parent_frame = parent_frame
+      end
     end
   end
 end

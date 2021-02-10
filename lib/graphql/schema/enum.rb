@@ -37,6 +37,9 @@ module GraphQL
         def value(*args, **kwargs, &block)
           kwargs[:owner] = self
           value = enum_value_class.new(*args, **kwargs, &block)
+          if own_values.key?(value.graphql_name)
+            raise ArgumentError, "#{value.graphql_name} is already defined for #{self.graphql_name}, please remove one of the definitions."
+          end
           own_values[value.graphql_name] = value
           nil
         end

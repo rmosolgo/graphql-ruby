@@ -9,10 +9,11 @@ module GraphQL
         def visible_type?(t); true; end
       end
 
-      attr_reader :schema, :query, :warden
+      attr_reader :schema, :query, :warden, :dataloader
 
       def initialize
         @query = nil
+        @dataloader = GraphQL::Dataloader::NullDataloader.new
         @schema = GraphQL::Schema.new
         @warden = NullWarden.new(
           GraphQL::Filter.new,
@@ -36,7 +37,7 @@ module GraphQL
           @instance = self.new
         end
 
-        def_delegators :instance, :query, :schema, :warden, :interpreter?
+        def_delegators :instance, :query, :schema, :warden, :interpreter?, :dataloader
       end
     end
   end

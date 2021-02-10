@@ -8,6 +8,7 @@ desc: Use mutation classes to implement behavior, then hook them up to your sche
 index: 1
 redirect_from:
   - /queries/mutations/
+  - /relay/mutations/
 ---
 
 GraphQL _mutations_ are special fields: instead of reading data or performing calculations, they may _modify_ the application state. For example, mutation fields may:

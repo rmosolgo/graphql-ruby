@@ -1,6 +1,4 @@
 # frozen_string_literal: true
-# test_via: ../execution/execute.rb
-# test_via: ../execution/lazy.rb
 module GraphQL
   class Query
     # Expose some query-specific info to field resolve functions.
@@ -156,6 +154,10 @@ module GraphQL
         @value = nil
         @context = self # for SharedMethods
         @scoped_context = {}
+      end
+
+      def dataloader
+        @dataloader ||= query.multiplex ? query.multiplex.dataloader : schema.dataloader_class.new
       end
 
       # @api private

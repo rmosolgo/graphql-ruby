@@ -60,7 +60,7 @@ RUBY
     assert_file "app/graphql/types/page_type.rb", <<-RUBY
 module Types
   class PageType < Types::BaseObject
-    implements GraphQL::Relay::Node.interface
+    implements GraphQL::Types::Relay::Node
   end
 end
 RUBY

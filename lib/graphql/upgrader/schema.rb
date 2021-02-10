@@ -4,6 +4,7 @@ module GraphQL
   module Upgrader
     class Schema
       def initialize(schema)
+        GraphQL::Deprecation.warn "#{self.class} will be removed from GraphQL-Ruby 2.0 (but there's no point in using it after you've transformed your code, anyways)"
         @schema = schema
       end
 

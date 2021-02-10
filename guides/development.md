@@ -72,14 +72,6 @@ bundle exec rake test
 
 (This is provided by `minitest-focus`.)
 
-You can __watch files__ with `guard`:
-
-```
-bundle exec guard
-```
-
-When a file in `lib/` is modified, `guard` will run the corresponding file in `spec`. Guard also respects `# test_via:` comments, so it will run that test when the file changes (if there is no corresponding file by name).
-
 #### Integration tests
 
 You need to pick a specific gemfile from gemfiles/ to run integration tests. For example:
@@ -105,18 +97,10 @@ bundle exec rake test:js
 
 ### Gemfiles, Gemfiles, Gemfiles
 
-`graphql-ruby` has several gemfiles to ensure support for various Rails versions.
-
-You can run all gemfiles with
+`graphql-ruby` has several gemfiles to ensure support for various Rails versions. You can specify a gemfile with `BUNDLE_GEMFILE`, eg:
 
 ```
-appraisal rake
-```
-
-You can specify a gemfile with `BUNDLE_GEMFILE`, eg:
-
-```
-BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake
+BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake test
 ```
 
 ### Debugging with Pry
@@ -179,8 +163,6 @@ The lexer and parser use a multistep build process:
 To update the lexer or parser, you should update their corresponding _definitions_ (`lexer.rl` or `parser.y`). Then, you can run `bundle exec rake build_parser` to re-generate the `.rb` files.
 
 You will need Ragel to build the lexer (see above).
-
-If you start __guard__ (`bundle exec guard`), the `.rb` files will be rebuilt whenever the definition files are modified.
 
 #### Install Ragel and Colm on a Mac
 

@@ -328,6 +328,9 @@ module Dummy
     end
 
     def resolve
+      if context[:resolved_count]
+        context[:resolved_count] += 1
+      end
       self.class.data
     end
   end
@@ -525,9 +528,8 @@ module Dummy
       end
     end
 
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
-    use GraphQL::Execution::Errors
+    use GraphQL::Dataloader
+
     lazy_resolve(Proc, :call)
   end
 

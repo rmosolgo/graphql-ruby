@@ -42,6 +42,7 @@ module GraphQL
               value.after_value ||= original_arguments[:after]
               value.last_value ||= original_arguments[:last]
               value.before_value ||= original_arguments[:before]
+              value.field ||= field
               if field.has_max_page_size? && !value.has_max_page_size_override?
                 value.max_page_size = field.max_page_size
               end
@@ -50,8 +51,8 @@ module GraphQL
               end
               value
             elsif context.schema.new_connections?
-              wrappers = context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
-              context.schema.connections.wrap(field, object.object, value, original_arguments, context, wrappers: wrappers)
+              context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
+              context.schema.connections.wrap(field, object.object, value, original_arguments, context)
             else
               if object.is_a?(GraphQL::Schema::Object)
                 object = object.object

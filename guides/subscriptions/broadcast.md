@@ -21,8 +21,6 @@ To enable broadcasts, add `broadcast: true` to your subscription setup:
 ```ruby
 class MyAppSchema < GraphQL::Schema
   # ...
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
   use SomeSubscriptionImplementation,
     broadcast: true # <----
 end
@@ -42,8 +40,6 @@ Additionally, you can set `default_broadcastable: true`:
 ```ruby
 class MyAppSchema < GraphQL::Schema
   # ...
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
   use SomeSubscriptionImplementation,
     broadcast: true,
     default_broadcastable: true # <----

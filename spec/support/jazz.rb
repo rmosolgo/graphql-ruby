@@ -167,9 +167,15 @@ module Jazz
     end
   end
 
+  module WithNameField
+    def self.prepended(base)
+      base.field :name, String, null: false
+    end
+  end
+
   module NamedEntity
     include BaseInterface
-    field :name, String, null: false
+    prepend WithNameField
   end
 
   class PrivateMembership < GraphQL::Schema::TypeMembership
@@ -932,10 +938,7 @@ module Jazz
       GloballyIdentifiableType.find(id)
     end
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
+    use GraphQL::Dataloader
 
     use MetadataPlugin, value: "xyz"
   end
@@ -945,10 +948,7 @@ module Jazz
 
     disable_introspection_entry_points
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
+    use GraphQL::Dataloader
   end
 
   class SchemaWithoutSchemaIntrospection < GraphQL::Schema

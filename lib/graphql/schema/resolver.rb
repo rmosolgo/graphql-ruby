@@ -24,6 +24,7 @@ module GraphQL
       # Really we only need description from here, but:
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
+      extend GraphQL::Schema::Member::HasValidators
       include Schema::Member::HasPath
       extend Schema::Member::HasPath
 
@@ -48,6 +49,11 @@ module GraphQL
 
       # @return [GraphQL::Query::Context]
       attr_reader :context
+
+      # @return [GraphQL::Dataloader]
+      def dataloader
+        context.dataloader
+      end
 
       # @return [GraphQL::Schema::Field]
       attr_reader :field
@@ -80,6 +86,7 @@ module GraphQL
             load_arguments_val = load_arguments(args)
             context.schema.after_lazy(load_arguments_val) do |loaded_args|
               @prepared_arguments = loaded_args
+              Schema::Validator.validate!(self.class.validators, object, context, loaded_args, as: @field)
               # Then call `authorized?`, which may raise or may return a lazy object
               authorized_val = if loaded_args.any?
                 authorized?(**loaded_args)

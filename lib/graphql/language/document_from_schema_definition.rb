@@ -49,6 +49,8 @@ module GraphQL
           subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,
           # This only supports directives from parsing,
           # use a custom printer to add to this list.
+          #
+          # `@schema.directives` is covered by `build_definition_nodes`
           directives: ast_directives(@schema),
         )
       end
@@ -59,7 +61,7 @@ module GraphQL
           interfaces: warden.interfaces(object_type).sort_by(&:graphql_name).map { |iface| build_type_name_node(iface) },
           fields: build_field_nodes(warden.fields(object_type)),
           description: object_type.description,
-          directives: ast_directives(object_type),
+          directives: directives(object_type),
         )
       end
 
@@ -69,7 +71,7 @@ module GraphQL
           arguments: build_argument_nodes(warden.arguments(field)),
           type: build_type_name_node(field.type),
           description: field.description,
-          directives: ast_directives(field),
+          directives: directives(field),
         )
       end
 
@@ -78,7 +80,7 @@ module GraphQL
           name: union_type.graphql_name,
           description: union_type.description,
           types: warden.possible_types(union_type).sort_by(&:graphql_name).map { |type| build_type_name_node(type) },
-          directives: ast_directives(union_type),
+          directives: directives(union_type),
         )
       end
 
@@ -87,7 +89,7 @@ module GraphQL
           name: interface_type.graphql_name,
           description: interface_type.description,
           fields: build_field_nodes(warden.fields(interface_type)),
-          directives: ast_directives(interface_type),
+          directives: directives(interface_type),
         )
       end
 
@@ -98,7 +100,7 @@ module GraphQL
             build_enum_value_node(enum_value)
           end,
           description: enum_type.description,
-          directives: ast_directives(enum_type),
+          directives: directives(enum_type),
         )
       end
 
@@ -106,7 +108,7 @@ module GraphQL
         GraphQL::Language::Nodes::EnumValueDefinition.new(
           name: enum_value.graphql_name,
           description: enum_value.description,
-          directives: ast_directives(enum_value),
+          directives: directives(enum_value),
         )
       end
 
@@ -114,7 +116,7 @@ module GraphQL
         GraphQL::Language::Nodes::ScalarTypeDefinition.new(
           name: scalar_type.graphql_name,
           description: scalar_type.description,
-          directives: ast_directives(scalar_type),
+          directives: directives(scalar_type),
         )
       end
 
@@ -130,7 +132,7 @@ module GraphQL
           description: argument.description,
           type: build_type_name_node(argument.type),
           default_value: default_value,
-          directives: ast_directives(argument),
+          directives: directives(argument),
         )
 
         argument_node
@@ -141,7 +143,7 @@ module GraphQL
           name: input_object.graphql_name,
           fields: build_argument_nodes(warden.arguments(input_object)),
           description: input_object.description,
-          directives: ast_directives(input_object),
+          directives: directives(input_object),
         )
       end
 
@@ -155,7 +157,7 @@ module GraphQL
       end
 
       def build_directive_location_nodes(locations)
-        locations.map { |location| build_directive_location_node(location) }
+        locations.sort.map { |location| build_directive_location_node(location) }
       end
 
       def build_directive_location_node(location)
@@ -283,14 +285,37 @@ module GraphQL
         (schema.subscription.nil? || schema.subscription.graphql_name == 'Subscription')
       end
 
-      def ast_directives(member)
-        ast_directives = member.ast_node ? member.ast_node.directives : []
+      def directives(member)
+        definition_directives(member)
+      end
 
-        # If this schema was built from IDL, it will already have `@deprecated` in `ast_node.directives`
-        if member.respond_to?(:deprecation_reason) &&
-            (reason = member.deprecation_reason) &&
-            ast_directives.none? { |d| d.name == "deprecated" }
+      def definition_directives(member)
+        dirs = if !member.respond_to?(:directives) || member.directives.empty?
+          []
+        else
+          member.directives.map do |dir|
+            args = []
+            dir.arguments.argument_values.each_value do |arg_value|
+              arg_defn = arg_value.definition
+              if arg_defn.default_value? && arg_value.value == arg_defn.default_value
+                next
+              else
+                value_node = build_default_value(arg_value.value, arg_value.definition.type)
+                args << GraphQL::Language::Nodes::Argument.new(
+                  name: arg_value.definition.name,
+                  value: value_node,
+                )
+              end
+            end
+            GraphQL::Language::Nodes::Directive.new(
+              name: dir.class.graphql_name,
+              arguments: args
+            )
+          end
+        end
 
+        # This is just for printing legacy `.define { ... }` schemas, where `deprecation_reason` isn't added to `.directives`.
+        if !member.respond_to?(:directives) && member.respond_to?(:deprecation_reason) && (reason = member.deprecation_reason)
           arguments = []
 
           if reason != GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON
@@ -300,15 +325,17 @@ module GraphQL
             )
           end
 
-          ast_directives += [
-            GraphQL::Language::Nodes::Directive.new(
-              name: GraphQL::Directive::DeprecatedDirective.graphql_name,
-              arguments: arguments
-            )
-          ]
+          dirs << GraphQL::Language::Nodes::Directive.new(
+            name: GraphQL::Directive::DeprecatedDirective.graphql_name,
+            arguments: arguments
+          )
         end
 
-        ast_directives
+        dirs
+      end
+
+      def ast_directives(member)
+        member.ast_node ? member.ast_node.directives : []
       end
 
       attr_reader :schema, :warden, :always_include_schema,

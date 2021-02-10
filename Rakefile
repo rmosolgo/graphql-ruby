@@ -98,6 +98,12 @@ namespace :bench do
     prepare_benchmark
     GraphQLBenchmark.profile_large_result
   end
+
+  desc "Compare GraphQL-Batch and GraphQL-Dataloader"
+  task :profile_batch_loaders do
+    prepare_benchmark
+    GraphQLBenchmark.profile_batch_loaders
+  end
 end
 
 namespace :test do

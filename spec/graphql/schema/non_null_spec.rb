@@ -63,8 +63,6 @@ describe GraphQL::Schema::NonNull do
       end
 
       query Query
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
 
     it "doesn't break on description" do

@@ -44,6 +44,8 @@ module GraphQL
           end
         end
 
+        NO_INTERFACES = [].freeze
+
         private
 
         # Build a subclass of {.object_class} based on `self`.

@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# test_via: ../backtrace.rb
 module GraphQL
   class Backtrace
     # A class for turning a context into a human-readable table or array
@@ -79,6 +78,25 @@ module GraphQL
       # @return [Array] 5 items for a backtrace table (not `key`)
       def build_rows(context_entry, rows:, top: false)
         case context_entry
+        when Backtrace::Frame
+          field_alias = context_entry.ast_node.respond_to?(:alias) && context_entry.ast_node.alias
+          value = if top && @override_value
+            @override_value
+          else
+            @context.query.context.namespace(:interpreter)[:runtime].value_at(context_entry.path)
+          end
+          rows << [
+            "#{context_entry.ast_node ? context_entry.ast_node.position.join(":") : ""}",
+            "#{context_entry.field.path}#{field_alias ? " as #{field_alias}" : ""}",
+            "#{context_entry.object.object.inspect}",
+            context_entry.arguments.to_h.inspect,
+            Backtrace::InspectResult.inspect_result(value),
+          ]
+          if (parent = context_entry.parent_frame)
+            build_rows(parent, rows: rows)
+          else
+            rows
+          end
         when GraphQL::Query::Context::FieldResolutionContext
           ctx = context_entry
           field_name = "#{ctx.irep_node.owner_type.name}.#{ctx.field.name}"
@@ -112,15 +130,16 @@ module GraphQL
           if object.is_a?(GraphQL::Schema::Object)
             object = object.object
           end
+          value = context_entry.namespace(:interpreter)[:runtime].value_at([])
           rows << [
             "#{position}",
             "#{op_type}#{op_name ? " #{op_name}" : ""}",
             "#{object.inspect}",
             query.variables.to_h.inspect,
-            Backtrace::InspectResult.inspect_result(query.context.value),
+            Backtrace::InspectResult.inspect_result(value),
           ]
         else
-          raise "Unexpected get_rows subject #{context_entry.inspect}"
+          raise "Unexpected get_rows subject #{context_entry.class} (#{context_entry.inspect})"
         end
       end
     end

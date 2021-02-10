@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require "timeout"
+
 module GraphQL
   module StaticValidation
     # Initialized with a {GraphQL::Schema}, then it can validate {GraphQL::Language::Nodes::Documents}s based on that schema.
@@ -43,6 +45,8 @@ module GraphQL
                 unless (legacy_rules = rules_to_use - GraphQL::StaticValidation::ALL_RULES).empty?
                   legacy_rules.each do |rule_class_or_module|
                     if rule_class_or_module.method_defined?(:validate)
+                      GraphQL::Deprecation.warn "Legacy validator rules will be removed from GraphQL-Ruby 2.0, use a module instead (see the built-in rules: https://github.com/rmosolgo/graphql-ruby/tree/master/lib/graphql/static_validation/rules)"
+                      GraphQL::Deprecation.warn "  -> Legacy validator: #{rule_class_or_module}"
                       rule_class_or_module.new.validate(context)
                     end
                   end

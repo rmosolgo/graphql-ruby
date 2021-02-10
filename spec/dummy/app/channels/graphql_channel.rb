@@ -57,8 +57,6 @@ class GraphqlChannel < ActionCable::Channel::Base
   class GraphQLSchema < GraphQL::Schema
     query(QueryType)
     subscription(SubscriptionType)
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
     use GraphQL::Subscriptions::ActionCableSubscriptions,
       serializer: CustomSerializer,
       broadcast: true,

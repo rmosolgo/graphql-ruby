@@ -20,7 +20,7 @@ module GraphQL
         # Any call that would trigger `wrapped_type.ensure_defined`
         # must be inside this lazy block, otherwise we get weird
         # cyclical dependency errors :S
-        ObjectType.define do
+        ObjectType.deprecated_define do
           type_name = wrapped_type.is_a?(GraphQL::BaseType) ? wrapped_type.name : wrapped_type.graphql_name
           edge_type ||= wrapped_type.edge_type
           name("#{type_name}Connection")

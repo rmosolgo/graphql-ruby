@@ -171,9 +171,6 @@ module LazyHelpers
     instrument(:multiplex, SumAllInstrumentation.new(counter: 1))
     instrument(:multiplex, SumAllInstrumentation.new(counter: 2))
 
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
-
     def self.sync_lazy(lazy)
       if lazy.is_a?(SumAll) && lazy.own_value > 1000
         lazy.value # clear the previous set

@@ -47,8 +47,6 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
     mutation(Mutation)
     subscription(Subscription)
     orphan_types(Shot, Javelin)
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
     use GraphQL::Subscriptions, broadcast: true, default_broadcastable: true
   end
 
@@ -58,8 +56,6 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
     mutation(BroadcastTestSchema::Mutation)
     subscription(BroadcastTestSchema::Subscription)
     orphan_types(BroadcastTestSchema::Shot, BroadcastTestSchema::Javelin)
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
     use GraphQL::Subscriptions, broadcast: true, default_broadcastable: false
   end
 

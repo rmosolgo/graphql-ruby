@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   # Helpers for migrating in a backwards-compatible way
+  # Remove this in GraphQL-Ruby 2.0, when all users of it will be gone.
   # @api private
   module BackwardsCompatibility
     module_function
@@ -21,7 +22,7 @@ module GraphQL
         backtrace = caller(0, 20)
         # Find the first line in the trace that isn't library internals:
         user_line = backtrace.find {|l| l !~ /lib\/graphql/ }
-        warn(message + "\n" + user_line + "\n")
+        GraphQL::Deprecation.warn(message + "\n" + user_line + "\n")
         wrapper = last ? LastArgumentsWrapper : FirstArgumentsWrapper
         wrapper.new(callable, from)
       else

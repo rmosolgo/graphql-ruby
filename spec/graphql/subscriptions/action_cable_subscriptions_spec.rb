@@ -79,8 +79,6 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
 
     query(Query)
     subscription(Subscription)
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
     use GraphQL::Subscriptions::ActionCableSubscriptions,
       action_cable: MockActionCable,
       action_cable_coder: JSON
@@ -89,8 +87,6 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
   class NamespacedActionCableTestSchema < GraphQL::Schema
     query(ActionCableTestSchema::Query)
     subscription(ActionCableTestSchema::Subscription)
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
     use GraphQL::Subscriptions::ActionCableSubscriptions,
       namespace: "other:",
       action_cable: MockActionCable,

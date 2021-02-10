@@ -15,6 +15,7 @@ module GraphQL
         include GraphQL::Schema::Member::Scoped
         include GraphQL::Schema::Member::HasAstNode
         include GraphQL::Schema::Member::HasUnresolvedTypeError
+        include GraphQL::Schema::Member::HasDirectives
 
         # Methods defined in this block will be:
         # - Added as class methods to this interface

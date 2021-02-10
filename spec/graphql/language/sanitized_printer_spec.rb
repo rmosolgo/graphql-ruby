@@ -55,8 +55,6 @@ describe GraphQL::Language::SanitizedPrinter do
 
     class Schema < GraphQL::Schema
       query(Query)
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
 
     class CustomSanitizedPrinter < GraphQL::Language::SanitizedPrinter

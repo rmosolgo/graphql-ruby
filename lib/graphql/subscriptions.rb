@@ -26,7 +26,9 @@ module GraphQL
 
       instrumentation = Subscriptions::Instrumentation.new(schema: schema)
       defn.instrument(:query, instrumentation)
-      defn.instrument(:field, instrumentation)
+      if !schema.is_a?(Class)
+        defn.instrument(:field, instrumentation)
+      end
       options[:schema] = schema
       schema.subscriptions = self.new(**options)
       schema.add_subscription_extension_if_necessary
@@ -107,31 +109,26 @@ module GraphQL
       variables = query_data.fetch(:variables)
       context = query_data.fetch(:context)
       operation_name = query_data.fetch(:operation_name)
-      result = nil
-      # this will be set to `false` unless `.execute` is terminated
-      # with a `throw :graphql_subscription_unsubscribed`
-      unsubscribed = true
-      catch(:graphql_subscription_unsubscribed) do
-        catch(:graphql_no_subscription_update) do
-          # Re-evaluate the saved query,
-          # but if it terminates early with a `throw`,
-          # it will stay `nil`
-          result = @schema.execute(
-            query: query_string,
-            context: context,
-            subscription_topic: event.topic,
-            operation_name: operation_name,
-            variables: variables,
-            root_value: object,
-          )
-        end
-        unsubscribed = false
+      result = @schema.execute(
+        query: query_string,
+        context: context,
+        subscription_topic: event.topic,
+        operation_name: operation_name,
+        variables: variables,
+        root_value: object,
+      )
+      subscriptions_context = result.context.namespace(:subscriptions)
+      if subscriptions_context[:no_update]
+        result = nil
       end
+
+      unsubscribed = subscriptions_context[:unsubscribed]
 
       if unsubscribed
         # `unsubscribe` was called, clean up on our side
         # TODO also send `{more: false}` to client?
         delete_subscription(subscription_id)
+        result = nil
       end
 
       result

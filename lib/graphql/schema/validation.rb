@@ -6,6 +6,8 @@ module GraphQL
     # Its {RULES} contain objects that respond to `#call(type)`. Rules are
     # looked up for given types (by class ancestry), then applied to
     # the object until an error is returned.
+    #
+    # Remove this in GraphQL-Ruby 2.0 when schema instances are removed.
     class Validation
       # Lookup the rules for `object` based on its class,
       # Then returns an error message or `nil`
@@ -201,7 +203,7 @@ module GraphQL
         RESERVED_TYPE_NAME = ->(type) {
           if type.name.start_with?('__') && !type.introspection?
             # TODO: make this a hard failure in a later version
-            warn("Name #{type.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
+            GraphQL::Deprecation.warn("Name #{type.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
             nil
           else
             # ok name
@@ -211,7 +213,7 @@ module GraphQL
         RESERVED_NAME = ->(named_thing) {
           if named_thing.name.start_with?('__')
             # TODO: make this a hard failure in a later version
-            warn("Name #{named_thing.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
+            GraphQL::Deprecation.warn("Name #{named_thing.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
             nil
           else
             # no worries

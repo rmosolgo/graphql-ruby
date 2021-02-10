@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# test_via: ../object.rb
 require "graphql/schema/field/connection_extension"
 require "graphql/schema/field/scope_extension"
 
@@ -15,17 +14,17 @@ module GraphQL
       include GraphQL::Schema::Member::HasArguments
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
+      include GraphQL::Schema::Member::HasValidators
       extend GraphQL::Schema::FindInheritedValue
       include GraphQL::Schema::FindInheritedValue::EmptyObjects
+      include GraphQL::Schema::Member::HasDirectives
+      include GraphQL::Schema::Member::HasDeprecationReason
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
       alias :graphql_name :name
 
       attr_writer :description
-
-      # @return [String, nil] If present, the field is marked as deprecated with this documentation
-      attr_accessor :deprecation_reason
 
       # @return [Symbol] Method or hash key on the underlying object to look up
       attr_reader :method_sym
@@ -61,6 +60,10 @@ module GraphQL
         @introspection
       end
 
+      def inspect
+        "#<#{self.class} #{path}#{arguments.any? ? "(...)" : ""}: #{type.to_type_signature}>"
+      end
+
       alias :mutation :resolver
 
       # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
@@ -82,11 +85,11 @@ module GraphQL
       # @see {.initialize} for other options
       def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
         if kwargs[:field]
-          if kwargs[:field] == GraphQL::Relay::Node.field
-            warn("Legacy-style `GraphQL::Relay::Node.field` is being added to a class-based type. See `GraphQL::Types::Relay::NodeField` for a replacement.")
+          if kwargs[:field].is_a?(GraphQL::Field) && kwargs[:field] == GraphQL::Types::Relay::NodeField.graphql_definition
+            GraphQL::Deprecation.warn("Legacy-style `GraphQL::Relay::Node.field` is being added to a class-based type. See `GraphQL::Types::Relay::NodeField` for a replacement.")
             return GraphQL::Types::Relay::NodeField
-          elsif kwargs[:field] == GraphQL::Relay::Node.plural_field
-            warn("Legacy-style `GraphQL::Relay::Node.plural_field` is being added to a class-based type. See `GraphQL::Types::Relay::NodesField` for a replacement.")
+          elsif kwargs[:field].is_a?(GraphQL::Field) && kwargs[:field] == GraphQL::Types::Relay::NodesField.graphql_definition
+            GraphQL::Deprecation.warn("Legacy-style `GraphQL::Relay::Node.plural_field` is being added to a class-based type. See `GraphQL::Types::Relay::NodesField` for a replacement.")
             return GraphQL::Types::Relay::NodesField
           end
         end
@@ -199,11 +202,14 @@ module GraphQL
       # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       # @param extensions [Array<Class, Hash<Class => Object>>] Named extensions to apply to this field (see also {#extension})
+      # @param directives [Hash{Class => Hash}] Directives to apply to this field
       # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
       # @param broadcastable [Boolean] Whether or not this field can be distributed in subscription broadcasts
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, &definition_block)
+      # @param validates [Array<Hash>] Configurations for validating this field
+      # @param legacy_edge_class [Class, nil] (DEPRECATED) If present, pass this along to the legacy field definition
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, legacy_edge_class: nil, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -230,7 +236,7 @@ module GraphQL
         end
         @function = function
         @resolve = resolve
-        @deprecation_reason = deprecation_reason
+        self.deprecation_reason = deprecation_reason
 
         if method && hash_key
           raise ArgumentError, "Provide `method:` _or_ `hash_key:`, not both. (called with: `method: #{method.inspect}, hash_key: #{hash_key.inspect}`)"
@@ -269,6 +275,7 @@ module GraphQL
         @relay_nodes_field = relay_nodes_field
         @ast_node = ast_node
         @method_conflict_warning = method_conflict_warning
+        @legacy_edge_class = legacy_edge_class
 
         arguments.each do |name, arg|
           if arg.is_a?(Hash)
@@ -281,21 +288,31 @@ module GraphQL
         @owner = owner
         @subscription_scope = subscription_scope
 
-        # Do this last so we have as much context as possible when initializing them:
         @extensions = EMPTY_ARRAY
-        if extensions.any?
-          self.extensions(extensions)
-        end
         # This should run before connection extension,
         # but should it run after the definition block?
         if scoped?
           self.extension(ScopeExtension)
         end
+
         # The problem with putting this after the definition_block
         # is that it would override arguments
         if connection? && connection_extension
           self.extension(connection_extension)
         end
+
+        # Do this last so we have as much context as possible when initializing them:
+        if extensions.any?
+          self.extensions(extensions)
+        end
+
+        if directives.any?
+          directives.each do |(dir_class, options)|
+            self.directive(dir_class, **options)
+          end
+        end
+
+        self.validates(validates)
 
         if definition_block
           if definition_block.arity == 1
@@ -438,8 +455,8 @@ module GraphQL
           field_defn.description = @description
         end
 
-        if @deprecation_reason
-          field_defn.deprecation_reason = @deprecation_reason
+        if self.deprecation_reason
+          field_defn.deprecation_reason = self.deprecation_reason
         end
 
         if @resolver_class
@@ -459,6 +476,10 @@ module GraphQL
 
         if @relay_nodes_field
           field_defn.relay_nodes_field = @relay_nodes_field
+        end
+
+        if @legacy_edge_class
+          field_defn.edge_class = @legacy_edge_class
         end
 
         field_defn.resolve = self.method(:resolve_field)
@@ -580,6 +601,9 @@ module GraphQL
         begin
           # Unwrap the GraphQL object to get the application object.
           application_object = object.object
+
+          Schema::Validator.validate!(validators, application_object, ctx, args)
+
           ctx.schema.after_lazy(self.authorized?(application_object, args, ctx)) do |is_authorized|
             if is_authorized
               public_send_field(object, args, ctx)

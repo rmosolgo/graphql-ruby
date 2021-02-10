@@ -25,6 +25,6 @@ end
 
 This way, you won't hit your database for 1000 items!
 
-## Relay Connections
+## Connections
 
-Relay connections accept a {% internal_link "`max_page_size` option","/relay/connections.html#maximum-page-size" %} which limits the number of nodes.
+Connections accept a {% internal_link "`max_page_size` option","/pagination/using_connections#max-page-size" %} which limits the number of nodes.

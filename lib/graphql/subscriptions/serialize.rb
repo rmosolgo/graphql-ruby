@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# test_via: ../subscriptions.rb
 require "set"
 module GraphQL
   class Subscriptions

@@ -57,7 +57,7 @@ module GraphQL
       def platform_field_key(type, field)
         "graphql.#{type.graphql_name}.#{field.graphql_name}"
       end
-      
+
       def platform_authorized_key(type)
         "graphql.authorized.#{type.graphql_name}"
       end
@@ -112,6 +112,8 @@ module GraphQL
             graphql_query_string(data[key])
           when :multiplex
             graphql_multiplex(data[key])
+          when :path
+            [key, data[key].join(".")]
           else
             [key, data[key]]
           end

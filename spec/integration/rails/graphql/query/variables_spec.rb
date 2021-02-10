@@ -15,13 +15,17 @@ describe GraphQL::Query::Variables do
   }
   |}
   let(:ast_variables) { GraphQL.parse(query_string).definitions.first.variables }
-  let(:schema) { Dummy::Schema }
+  let(:schema) {
+    Class.new(Dummy::Schema) {
+      # This tests coercion behavior which only happens when `.interpreter?` is false
+      use GraphQL::Execution::Execute
+      use GraphQL::Analysis
+    }
+  }
+  let(:query_context) { GraphQL::Query.new(schema, "{ __typename }").context }
   let(:variables) {
     GraphQL::Query::Variables.new(
-    OpenStruct.new({
-      schema: schema,
-      warden: GraphQL::Schema::Warden.new(schema.default_filter, schema: schema, context: nil),
-    }),
+    query_context,
     ast_variables,
     provided_variables)
   }
@@ -151,7 +155,9 @@ describe GraphQL::Query::Variables do
         }
       |}
       let(:result) {
-        schema.execute(query_string, variables: provided_variables, root_value: ObjectWithThingsCount)
+        GraphQL::Deprecation.stub(:warn, nil) do
+          schema.execute(query_string, variables: provided_variables, root_value: ObjectWithThingsCount)
+        end
       }
 
       describe "when they are present, but null" do
@@ -195,27 +201,48 @@ describe GraphQL::Query::Variables do
       let(:schema) {
         args_cache = args
 
-        complex_val = GraphQL::InputObjectType.define do
-          name "ComplexVal"
-          argument :val, types.Int
-          argument :val_with_default, types.Int, default_value: 13
+        complex_val = Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "ComplexVal"
+          argument :val, Integer, required: false, camelize: false
+          argument :val_with_default, Integer, required: false, default_value: 13, camelize: false
         end
 
-        query_type = GraphQL::ObjectType.define do
-          name "Query"
-          field :variables_test, types.Int do
-            argument :val, types.Int
-            argument :val_with_default, types.Int, default_value: 13
-            argument :complex_val, complex_val
-            resolve ->(o, a, c) {
-              args_cache[c.ast_node.alias] = a
-              1
-            }
+        query_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Query"
+          field :variables_test, Integer, null: true, extras: [:ast_node], camelize: false do
+            argument :val, Integer, required: false
+            argument :val_with_default, Integer, required: false, default_value: 13, camelize: false
+            argument :complex_val, complex_val, required: false, camelize: false
+          end
+
+          def variables_test(ast_node:, **args)
+            context.schema.args_cache[ast_node.alias] = args
+            1
           end
         end
 
-        GraphQL::Schema.define do
+        Class.new(GraphQL::Schema) do
           query(query_type)
+
+          class << self
+            attr_accessor :args_cache
+          end
+          # Work around the fact that:
+          # - These tests check for `!intepreter?` behavior
+          # - Previously, these tests used an OpenStruct instead of a real context
+          # - But, now, the context requires `.dataloader.append_job`
+          # - At first I used NullContext, but that doesn't have the `.schema` reference that Variables needs.
+          # - So I built a _real_ context, but that started returning `.interpreter? => true`
+          # - So, update the schema to _really_ be `.interpreter? => false`
+          # When the legacy runtime is removed, so can the tests for that behavior (and the behavior itself.)
+          def args_cache
+            self.class.args_cache
+          end
+
+          self.args_cache = args_cache
+          # This tests some coercion behavior that only applies to the legacy runtime:
+          use GraphQL::Execution::Execute
+          use GraphQL::Analysis
         end
       }
 
@@ -262,13 +289,14 @@ describe GraphQL::Query::Variables do
       GRAPHQL
       }
 
-      let(:run_query) { schema.execute(query_string, variables: provided_variables) }
+      let(:run_query) {
+        GraphQL::Deprecation.stub(:warn, nil) do
+          schema.execute(query_string, variables: provided_variables)
+        end
+      }
 
       let(:variables) { GraphQL::Query::Variables.new(
-        OpenStruct.new({
-          schema: schema,
-          warden: GraphQL::Schema::Warden.new(schema.default_mask, schema: schema, context: nil),
-        }),
+        query_context,
         ast_variables,
         provided_variables)
       }
@@ -283,66 +311,66 @@ describe GraphQL::Query::Variables do
         run_query
         # Provided `nil` should be passed along to args
         # and override any defaults (variable defaults and arg defaults)
-        assert_has_key_with_value(args["aa"], "val", true, nil)
-        assert_has_key_with_value(args["ba"], "val_with_default", true, nil)
-        assert_has_key_with_value(args["ca"]["complex_val"], "val", true, nil)
-        assert_has_key_with_value(args["da"]["complex_val"], "val_with_default", true, nil)
+        assert_has_key_with_value(args["aa"], :val, true, nil)
+        assert_has_key_with_value(args["ba"], :val_with_default, true, nil)
+        assert_has_key_with_value(args["ca"][:complex_val], :val, true, nil)
+        assert_has_key_with_value(args["da"][:complex_val], :val_with_default, true, nil)
       end
 
       it "doesn't contain variables that weren't present" do
         assert_has_key_with_value(variables, "intWithoutVariable", false, nil)
         run_query
-        assert_has_key_with_value(args["ab"], "val", false, nil)
+        assert_has_key_with_value(args["ab"], :val, false, nil)
         # This one _is_ present, it gets the argument.default_value
-        assert_has_key_with_value(args["bb"], "val_with_default", true, 13)
-        assert_has_key_with_value(args["cb"]["complex_val"], "val", false, nil)
+        assert_has_key_with_value(args["bb"], :val_with_default, true, 13)
+        assert_has_key_with_value(args["cb"][:complex_val], :val, false, nil)
         # This one _is_ present, it gets the argument.default_value
-        assert_has_key_with_value(args["db"]["complex_val"], "val_with_default", true, 13)
+        assert_has_key_with_value(args["db"][:complex_val], :val_with_default, true, 13)
       end
 
       it "preserves explicit null when variable has a default value" do
         assert_has_key_with_value(variables, "intWithDefault", true, nil)
         run_query
-        assert_has_key_with_value(args["ac"], "val", true, nil)
-        assert_has_key_with_value(args["bc"], "val_with_default", true, nil)
-        assert_has_key_with_value(args["cc"]["complex_val"], "val", true, nil)
-        assert_has_key_with_value(args["dc"]["complex_val"], "val_with_default", true, nil)
+        assert_has_key_with_value(args["ac"], :val, true, nil)
+        assert_has_key_with_value(args["bc"], :val_with_default, true, nil)
+        assert_has_key_with_value(args["cc"][:complex_val], :val, true, nil)
+        assert_has_key_with_value(args["dc"][:complex_val], :val_with_default, true, nil)
       end
 
       it "uses null default value" do
         assert_has_key_with_value(variables, "intDefaultNull", true, nil)
         run_query
-        assert_has_key_with_value(args["ad"], "val", true, nil)
-        assert_has_key_with_value(args["bd"], "val_with_default", true, nil)
-        assert_has_key_with_value(args["cd"]["complex_val"], "val", true, nil)
-        assert_has_key_with_value(args["dd"]["complex_val"], "val_with_default", true, nil)
+        assert_has_key_with_value(args["ad"], :val, true, nil)
+        assert_has_key_with_value(args["bd"], :val_with_default, true, nil)
+        assert_has_key_with_value(args["cd"][:complex_val], :val, true, nil)
+        assert_has_key_with_value(args["dd"][:complex_val], :val_with_default, true, nil)
       end
 
       it "applies argument default values" do
         run_query
         # It wasn't present in the query string, but it gets argument.default_value:
-        assert_has_key_with_value(args["aa"], "val_with_default", true, 13)
+        assert_has_key_with_value(args["aa"], :val_with_default, true, 13)
       end
 
       it "applies coercion to input objects passed as variables" do
         run_query
-        assert_has_key_with_value(args["ea"]["complex_val"], "val", true, 1)
-        assert_has_key_with_value(args["ea"]["complex_val"], "val_with_default", true, 2)
+        assert_has_key_with_value(args["ea"][:complex_val], :val, true, 1)
+        assert_has_key_with_value(args["ea"][:complex_val], :val_with_default, true, 2)
 
         # Since the variable wasn't provided, it's not present at all:
-        assert_has_key_with_value(args["eb"], "complex_val", false, nil)
+        assert_has_key_with_value(args["eb"], :complex_val, false, nil)
 
-        assert_has_key_with_value(args["ec"]["complex_val"], "val", true, 10)
-        assert_has_key_with_value(args["ec"]["complex_val"], "val_with_default", true, 13)
+        assert_has_key_with_value(args["ec"][:complex_val], :val, true, 10)
+        assert_has_key_with_value(args["ec"][:complex_val], :val_with_default, true, 13)
 
-        assert_has_key_with_value(args["ed"]["complex_val"], "val", true, 11)
-        assert_has_key_with_value(args["ed"]["complex_val"], "val_with_default", true, 11)
+        assert_has_key_with_value(args["ed"][:complex_val], :val, true, 11)
+        assert_has_key_with_value(args["ed"][:complex_val], :val_with_default, true, 11)
 
-        assert_has_key_with_value(args["ee"]["complex_val"], "val", true, nil)
-        assert_has_key_with_value(args["ee"]["complex_val"], "val_with_default", true, nil)
+        assert_has_key_with_value(args["ee"][:complex_val], :val, true, nil)
+        assert_has_key_with_value(args["ee"][:complex_val], :val_with_default, true, nil)
 
-        assert_has_key_with_value(args["ef"]["complex_val"], "val", true, 8)
-        assert_has_key_with_value(args["ef"]["complex_val"], "val_with_default", true, 13)
+        assert_has_key_with_value(args["ef"][:complex_val], :val, true, 8)
+        assert_has_key_with_value(args["ef"][:complex_val], :val_with_default, true, 13)
       end
     end
   end
@@ -367,7 +395,9 @@ describe GraphQL::Query::Variables do
       end
 
       it "works" do
-        res = schema.execute(query_string, variables: params["variables"])
+        res = GraphQL::Deprecation.stub(:warn, nil) do
+          schema.execute(query_string, variables: params["variables"])
+        end
         assert_equal 1, res["data"]["searchDairy"].length
       end
     end

@@ -59,14 +59,15 @@ module GraphQL
 
       # Return the GraphQL schema string for the introspection type system
       def self.print_introspection_schema
-        query_root = ObjectType.define(name: "Root") do
-          field :throwaway_field, types.String
+        query_root = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Root"
+          field :throwaway_field, String, null: true
         end
-        schema = GraphQL::Schema.define(query: query_root)
+        schema = Class.new(GraphQL::Schema) { query(query_root) }
 
         introspection_schema_ast = GraphQL::Language::DocumentFromSchemaDefinition.new(
           schema,
-          except: ->(member, _) { member.name == "Root" },
+          except: ->(member, _) { member.graphql_name == "Root" },
           include_introspection_types: true,
           include_built_in_directives: true,
         ).document

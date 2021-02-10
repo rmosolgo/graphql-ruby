@@ -12,17 +12,6 @@ GraphQL-Ruby ships with a few implementations of the {% internal_link "connectio
 
 Additionally, connections allow you to limit the number of items returned with [`max_page_size`](#max-page-size).
 
-## Adding the Plugin
-
-GraphQL-Ruby 1.10.0 includes a new plugin for connections. It's more flexible and easier to customize. If it's not already added to your schema with `use ...`, add it:
-
-```ruby
-class MySchema < GraphQL::Schema
-  # ...
-  # Add the plugin for connection pagination
-  use GraphQL::Pagination::Connections
-```
-
 ## Make Connection Fields
 
 Use `.connection_type` to generate a connection type for paginating over objects of a given type:

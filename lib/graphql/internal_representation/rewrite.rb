@@ -60,7 +60,7 @@ module GraphQL
 
       # @return [Hash<String, Node>] Roots of this query
       def operations
-        warn "#{self.class}#operations is deprecated; use `document.operation_definitions` instead"
+        GraphQL::Deprecation.warn "#{self.class}#operations is deprecated; use `document.operation_definitions` instead"
         @document.operation_definitions
       end
 

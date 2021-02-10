@@ -29,29 +29,16 @@ describe GraphQL::Tracing::NewRelicTracing do
       def self.resolve_type(_type, _obj, _ctx)
         Thing
       end
-
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
 
     class SchemaWithTransactionName < GraphQL::Schema
       query(Query)
       use(GraphQL::Tracing::NewRelicTracing, set_transaction_name: true)
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
 
     class SchemaWithScalarTrace < GraphQL::Schema
       query(Query)
       use(GraphQL::Tracing::NewRelicTracing, trace_scalars: true)
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
   end
 

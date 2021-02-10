@@ -127,87 +127,26 @@ describe GraphQL::Schema::Object do
       new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
       assert_equal method_defs, new_method_defs
     end
-
-    it "can implement legacy interfaces" do
-      object_type = Class.new(GraphQL::Schema::Object) do
-        implements GraphQL::Relay::Node.interface # class-based would be `GraphQL::Types::Relay::Node`
-      end
-      assert_equal ["Node"], object_type.interfaces.map(&:graphql_name)
-      assert_equal ["id"], object_type.fields.keys
-    end
   end
 
-  if !TESTING_INTERPRETER
-  describe "using GraphQL::Function" do # rubocop:disable Layout/IndentationWidth
-    new_test_func_payload = Class.new(GraphQL::Schema::Object) do
-      graphql_name "TestFuncPayload"
-      field :name, String, null: false
+  it "doesnt convolute field names that differ with underscore" do
+    interface = Module.new do
+      include GraphQL::Schema::Interface
+      graphql_name 'TestInterface'
+      description 'Requires an id'
+
+      field :id, GraphQL::Types::ID, null: false
     end
 
-    it "returns data on a field" do
-      new_func_class = Class.new(GraphQL::Function) do
-        argument :name, GraphQL::STRING_TYPE
-        type new_test_func_payload
+    object = Class.new(GraphQL::Schema::Object) do
+      graphql_name 'TestObject'
+      implements interface
+      global_id_field :id
 
-        def call(o, a, c)
-          { name: a[:name] }
-        end
-      end
-
-      new_object_class = Class.new(GraphQL::Schema::Object) do
-        graphql_name "GraphQL"
-        field :test, function: new_func_class.new
-      end
-
-      schema = Class.new(GraphQL::Schema) do
-        query(new_object_class)
-      end
-
-      query_str = <<-GRAPHQL
-      {
-        test(name: "graphql") {
-          name
-        }
-      }
-      GRAPHQL
-      res = schema.execute(query_str)
-      assert_equal "graphql", res["data"]["test"]["name"]
+      field :_id, String, description: 'database id', null: true
     end
 
-    it "returns data on a connection" do
-      new_func_class = Class.new(GraphQL::Function) do
-        argument :name, GraphQL::STRING_TYPE
-        type new_test_func_payload.connection_type
-
-        def call(o, a, c)
-          [{ name: a[:name] }]
-        end
-      end
-
-      new_object_class = Class.new(GraphQL::Schema::Object) do
-        graphql_name "GraphQL"
-        field :test_conn, function: new_func_class.new
-      end
-
-      schema = Class.new(GraphQL::Schema) do
-        query(new_object_class)
-      end
-
-      query_str = <<-GRAPHQL
-      {
-        testConn(name: "graphql") {
-          edges {
-            node {
-              name
-            }
-          }
-        }
-      }
-      GRAPHQL
-      res = schema.execute(query_str)
-      assert_equal "graphql", res["data"]["testConn"]["edges"][0]["node"]["name"]
-    end
-  end
+    assert_equal 2, object.fields.size
   end
 
   describe "wrapping a Hash" do
@@ -264,7 +203,7 @@ describe GraphQL::Schema::Object do
 
       name_field = obj_type.all_fields[3]
       assert_equal "name", name_field.name
-      assert_equal GraphQL::STRING_TYPE.to_non_null_type, name_field.type
+      assert_equal GraphQL::DEPRECATED_STRING_TYPE.to_non_null_type, name_field.type
       assert_equal nil, name_field.description
     end
 
@@ -347,8 +286,7 @@ describe GraphQL::Schema::Object do
     it "skips fields properly" do
       query_str = "{ find(id: \"MagicalSkipId\") { __typename } }"
       res = Jazz::Schema.execute(query_str)
-      # TBH I think `{}` is probably righter than `nil`, I guess we'll see.
-      skip_value = TESTING_INTERPRETER ? {} : nil
+      skip_value = {}
       assert_equal({"data" => skip_value }, res.to_h)
     end
   end
@@ -447,9 +385,6 @@ describe GraphQL::Schema::Object do
       def self.type_error(err, ctx)
         raise err
       end
-
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
 
     it "raises them when invalid nil is returned" do

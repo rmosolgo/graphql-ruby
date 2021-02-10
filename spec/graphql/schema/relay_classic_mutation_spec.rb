@@ -36,6 +36,16 @@ describe GraphQL::Schema::RelayClassicMutation do
     end
   end
 
+  describe "input argument" do
+    it "sets a description for the input argument" do
+      mutation = Class.new(GraphQL::Schema::RelayClassicMutation) do
+        graphql_name "SomeMutation"
+      end
+
+      assert_equal "Parameters for SomeMutation", mutation.field_options[:arguments][:input][:description]
+    end
+  end
+
   describe "execution" do
     after do
       Jazz::Models.reset
@@ -288,6 +298,218 @@ describe GraphQL::Schema::RelayClassicMutation do
       assert_nil res["data"].fetch("renameEnsemble")
       # Failed silently
       refute res.key?("errors")
+    end
+  end
+
+  describe "migrated legacy tests" do
+
+    describe "specifying return interfaces" do
+      class MutationInterfaceSchema < GraphQL::Schema
+        module ResultInterface
+          include GraphQL::Schema::Interface
+          field :success, Boolean, null: false
+          field :notice, String, null: true
+        end
+
+        module ErrorInterface
+          include GraphQL::Schema::Interface
+          field :error, String, null: true
+        end
+
+        class BaseReturnType < GraphQL::Schema::Object
+          implements ResultInterface, ErrorInterface
+        end
+
+        class ReturnTypeWithInterfaceTest < GraphQL::Schema::RelayClassicMutation
+          field :name, String, null: true
+          object_class BaseReturnType
+
+          def resolve
+            {
+              name: "Type Specific Field",
+              success: true,
+              notice: "Success Interface Field",
+              error: "Error Interface Field"
+            }
+          end
+        end
+
+        class Mutation < GraphQL::Schema::Object
+          field :custom, mutation: ReturnTypeWithInterfaceTest
+        end
+
+        mutation(Mutation)
+
+        def self.resolve_type(abs_type, obj, ctx)
+          NO_OP_RESOLVE_TYPE.call(abs_type, obj, ctx)
+        end
+      end
+
+      it 'makes the mutation type implement the interfaces' do
+        mutation = MutationInterfaceSchema::ReturnTypeWithInterfaceTest
+        assert_equal(
+          [MutationInterfaceSchema::ResultInterface, MutationInterfaceSchema::ErrorInterface],
+          mutation.payload_type.interfaces
+        )
+      end
+
+      it "returns interface values and specific ones" do
+        result = MutationInterfaceSchema.execute('mutation { custom(input: {clientMutationId: "123"}) { name, success, notice, error, clientMutationId } }')
+        assert_equal "Type Specific Field", result["data"]["custom"]["name"]
+        assert_equal "Success Interface Field", result["data"]["custom"]["notice"]
+        assert_equal true, result["data"]["custom"]["success"]
+        assert_equal "Error Interface Field", result["data"]["custom"]["error"]
+        assert_equal "123", result["data"]["custom"]["clientMutationId"]
+      end
+    end
+
+    if testing_rails?
+      describe "star wars mutation tests" do
+        let(:query_string) {%|
+          mutation addBagel($clientMutationId: String, $shipName: String = "Bagel") {
+            introduceShip(input: {shipName: $shipName, factionId: "1", clientMutationId: $clientMutationId}) {
+              clientMutationId
+              shipEdge {
+                node { name, id }
+              }
+              faction { name }
+            }
+          }
+        |}
+        let(:introspect) {%|
+          {
+            __schema {
+              types { name, fields { name } }
+            }
+          }
+        |}
+
+        after do
+          StarWars::DATA["Ship"].delete("9")
+          StarWars::DATA["Faction"]["1"].ships.delete("9")
+        end
+
+        it "supports null values" do
+          result = star_wars_query(query_string, { "clientMutationId" => "1234", "shipName" => nil })
+
+          expected = {"data" => {
+            "introduceShip" => {
+              "clientMutationId" => "1234",
+              "shipEdge" => {
+                "node" => {
+                  "name" => nil,
+                  "id" => GraphQL::Schema::UniqueWithinType.encode("Ship", "9"),
+                },
+              },
+              "faction" => {"name" => StarWars::DATA["Faction"]["1"].name }
+            }
+          }}
+          assert_equal(expected, result)
+        end
+
+        it "supports lazy resolution" do
+          result = star_wars_query(query_string, { "clientMutationId" => "1234", "shipName" => "Slave II" })
+          assert_equal "Slave II", result["data"]["introduceShip"]["shipEdge"]["node"]["name"]
+        end
+
+        it "returns the result & clientMutationId" do
+          result = star_wars_query(query_string, { "clientMutationId" => "1234" })
+          expected = {"data" => {
+            "introduceShip" => {
+              "clientMutationId" => "1234",
+              "shipEdge" => {
+                "node" => {
+                  "name" => "Bagel",
+                  "id" => GraphQL::Schema::UniqueWithinType.encode("Ship", "9"),
+                },
+              },
+              "faction" => {"name" => StarWars::DATA["Faction"]["1"].name }
+            }
+          }}
+          assert_equal(expected, result)
+        end
+
+        it "doesn't require a clientMutationId to perform mutations" do
+          result = star_wars_query(query_string)
+          new_ship_name = result["data"]["introduceShip"]["shipEdge"]["node"]["name"]
+          assert_equal("Bagel", new_ship_name)
+        end
+
+
+        describe "return_field ... property:" do
+          it "resolves correctly" do
+            query_str = <<-GRAPHQL
+              mutation {
+                introduceShip(input: {shipName: "Bagel", factionId: "1"}) {
+                  aliasedFaction { name }
+                }
+              }
+            GRAPHQL
+            result = star_wars_query(query_str)
+            faction_name = result["data"]["introduceShip"]["aliasedFaction"]["name"]
+            assert_equal("Alliance to Restore the Republic", faction_name)
+          end
+        end
+
+        describe "handling errors" do
+          it "supports returning an error in resolve" do
+            result = star_wars_query(query_string, { "clientMutationId" => "5678", "shipName" => "Millennium Falcon" })
+
+            expected = {
+              "data" => {
+                "introduceShip" => nil,
+              },
+              "errors" => [
+                {
+                  "message" => "Sorry, Millennium Falcon ship is reserved",
+                  "locations" => [ { "line" => 3 , "column" => 13}],
+                  "path" => ["introduceShip"]
+                }
+              ]
+            }
+
+            assert_equal(expected, result)
+          end
+
+          it "supports raising an error in a lazy callback" do
+            result = star_wars_query(query_string, { "clientMutationId" => "5678", "shipName" => "Ebon Hawk" })
+
+            expected = {
+              "data" => {
+                "introduceShip" => nil,
+              },
+              "errors" => [
+                {
+                  "message" => "💥",
+                  "locations" => [ { "line" => 3 , "column" => 13}],
+                  "path" => ["introduceShip"]
+                }
+              ]
+            }
+
+            assert_equal(expected, result)
+          end
+
+          it "supports raising an error in the resolve function" do
+            result = star_wars_query(query_string, { "clientMutationId" => "5678", "shipName" => "Leviathan" })
+
+            expected = {
+              "data" => {
+                "introduceShip" => nil,
+              },
+              "errors" => [
+                {
+                  "message" => "🔥",
+                  "locations" => [ { "line" => 3 , "column" => 13}],
+                  "path" => ["introduceShip"]
+                }
+              ]
+            }
+
+            assert_equal(expected, result)
+          end
+        end
+      end
     end
   end
 end

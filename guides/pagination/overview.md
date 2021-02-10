@@ -6,6 +6,8 @@ section: Pagination
 title: Overview
 desc: Introduction to pagination in GraphQL
 index: 0
+redirect_from:
+  - /relay/connections/
 ---
 
 

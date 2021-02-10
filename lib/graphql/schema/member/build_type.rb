@@ -60,11 +60,11 @@ module GraphQL
               parse_type(type_expr.first, null: false)
             when 2
               inner_type, nullable_option = type_expr
-              if nullable_option.keys != [:null] || nullable_option.values != [true]
+              if nullable_option.keys != [:null] || (nullable_option[:null] != true && nullable_option[:null] != false)
                 raise ArgumentError, LIST_TYPE_ERROR
               end
               list_type = true
-              parse_type(inner_type, null: true)
+              parse_type(inner_type, null: nullable_option[:null])
             else
               raise ArgumentError, LIST_TYPE_ERROR
             end
@@ -75,7 +75,7 @@ module GraphQL
             if type_expr.respond_to?(:graphql_definition)
               type_expr
             else
-              # Eg `String` => GraphQL::STRING_TYPE
+              # Eg `String` => GraphQL::Types::String
               parse_type(type_expr.name, null: true)
             end
           when Proc

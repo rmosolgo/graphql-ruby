@@ -203,27 +203,5 @@ describe GraphQL::StaticValidation::Validator do
     it "runs the specified rules" do
       assert_equal 0, errors.size
     end
-
-    describe "With a legacy-style rule" do
-      # GraphQL-Pro's operation store uses this
-      class ValidatorSpecLegacyRule
-        include GraphQL::StaticValidation::Error::ErrorHelper
-        def validate(ctx)
-          ctx.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(n, _p) {
-            ctx.errors << error("Busted!", n, context: ctx)
-          }
-        end
-      end
-
-      let(:rules) {
-        GraphQL::StaticValidation::ALL_RULES + [ValidatorSpecLegacyRule]
-      }
-
-      let(:query_string) { "{ __typename }"}
-
-      it "runs the rule" do
-        assert_equal ["Busted!"], errors.map { |e| e["message"] }
-      end
-    end
   end
 end
