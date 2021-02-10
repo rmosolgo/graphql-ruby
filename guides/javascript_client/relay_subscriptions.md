@@ -31,7 +31,7 @@ Pass `pusher:` to get Subscription updates over Pusher:
 
 ```js
 // Load the helper function
-import { createRelaySubscriptionHandler } from "graphql-ruby-client"
+import createRelaySubscriptionHandler from "graphql-ruby-client/subscriptions/createRelaySubscriptionHandler"
 
 // Prepare a Pusher client
 var Pusher = require("pusher-js")
@@ -87,7 +87,7 @@ Pass `ably:` to get Subscription updates over Ably:
 
 ```js
 // Load the helper function
-import { createRelaySubscriptionHandler } from "graphql-ruby-client"
+import createRelaySubscriptionHandler from "graphql-ruby-client/subscriptions/createRelaySubscriptionHandler"
 
 // Load Ably and create a client
 const Ably = require("ably")
@@ -116,7 +116,7 @@ For example:
 
 ```js
 // Require the helper function
-import { createRelaySubscriptionHandler } from "graphql-ruby-client")
+import createRelaySubscriptionHandler from "graphql-ruby-client/subscriptions/createRelaySubscriptionHandler")
 // Optionally, load your OperationStoreClient
 var OperationStoreClient = require("./OperationStoreClient")
 

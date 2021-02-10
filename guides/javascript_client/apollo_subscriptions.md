@@ -40,7 +40,7 @@ import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 
 // Load PusherLink from graphql-ruby-client
-import { PusherLink } from 'graphql-ruby-client';
+import PusherLink from 'graphql-ruby-client/subscriptions/PusherLink';
 
 // Load Pusher and create a client
 import Pusher from "pusher-js"
@@ -101,7 +101,7 @@ import { ApolloClient } from 'apollo-client';
 import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 // Load Ably subscriptions link
-import { AblyLink } from 'graphql-ruby-client'
+import AblyLink from 'graphql-ruby-client/subscriptions/AblyLink'
 // Load Ably and create a client
 const Ably = require("ably")
 const ablyClient = new Ably.Realtime({ key: "your-app-key" })
@@ -148,7 +148,7 @@ import { ApolloClient } from 'apollo-client';
 import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import ActionCable from 'actioncable';
-import { ActionCableLink } from 'graphql-ruby-client';
+import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink';
 
 const cable = ActionCable.createConsumer()
 
@@ -193,7 +193,7 @@ var Pusher = require("pusher-js")
 var pusherClient = new Pusher(appKey, options)
 
 // Add subscriptions to the network interface with the `pusher:` options
-import { addGraphQLSubscriptions } from "graphql-ruby-client"
+import addGraphQLSubscriptions from "graphql-ruby-client/subscriptions/addGraphQLSubscriptions"
 addGraphQLSubscriptions(myNetworkInterface, {pusher: pusherClient})
 
 // Optionally, add persisted query support:
@@ -245,7 +245,7 @@ var RailsNetworkInterface = apollo.createNetworkInterface({
 });
 
 // Add subscriptions to the network interface
-import { addGraphQLSubscriptions } from "graphql-ruby-client"
+import addGraphQLSubscriptions from "graphql-ruby-client/subscriptions/addGraphQLSubscriptions"
 addGraphQLSubscriptions(RailsNetworkInterface, {cable: cable})
 
 // Optionally, add persisted query support:

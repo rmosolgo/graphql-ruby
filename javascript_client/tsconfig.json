@@ -1,4 +1,6 @@
 {
+  "include": ["./src"],
+  "exclude": ["**/*.js"],
   "compilerOptions": {
     /* Basic Options */
     // "incremental": true,                   /* Enable incremental compilation */
@@ -12,7 +14,7 @@
     // "declarationMap": true,                /* Generates a sourcemap for each corresponding '.d.ts' file. */
     // "sourceMap": true,                     /* Generates corresponding '.map' file. */
     // "outFile": "./",                       /* Concatenate and emit output to single file. */
-    "outDir": "./dist",                       /* Redirect output structure to the directory. */
+    "outDir": "./",                           /* Redirect output structure to the directory. */
     "rootDir": "./src",                       /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
     // "composite": true,                     /* Enable project compilation */
     // "tsBuildInfoFile": "./",               /* Specify file to store incremental compilation information */
