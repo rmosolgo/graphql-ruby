@@ -2,7 +2,8 @@
 
 ## 1.9.0 (10 Feb 2021)
 
-- Move "compiled" `.js` files into the root directory of the published NPM package (instead of `dist/`). To upgrade, remove `dist/` from your import paths. (These files will be treated as public APIs in their own right, published independently to support smaller bundle sizes.) #2768
+- Move "compiled" `.js` files into the root directory of the published NPM package (instead of `dist/`). To upgrade, remove `dist/` from your import paths. (These files will be treated as public APIs in their own right, exposed independently to support smaller bundle sizes.) #2768
+- Upgrade dependency from `apollo-link` to `@apollo/client` #3270
 
 ## 1.8.2 (2 Feb 2021)
 
