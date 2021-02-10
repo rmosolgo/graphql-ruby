@@ -170,7 +170,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
               })
             }
 
-            await new Promise((resolve, reject) => {
+            await new Promise<void>((resolve, reject) => {
               disposedChannel.detach((err) => {
                 if (err) {
                   reject(new AblyError(err))

@@ -1,7 +1,7 @@
 import ActionCableLink from "../ActionCableLink"
 import { parse } from "graphql"
 import { Cable } from "actioncable"
-import { Operation } from "apollo-link"
+import { Operation } from "@apollo/client"
 
 describe("ActionCableLink", () => {
   var log: any[]
