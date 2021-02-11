@@ -679,4 +679,16 @@ describe GraphQL::Dataloader do
     assert_equal(nil, res["data"])
     assert_equal(expected_errors, context[:errors].sort)
   end
+
+  it "passes along throws" do
+    value = catch(:hello) do
+      dataloader = GraphQL::Dataloader.new
+      dataloader.append_job do
+        throw(:hello, :world)
+      end
+      dataloader.run
+    end
+
+    assert :world, value
+  end
 end

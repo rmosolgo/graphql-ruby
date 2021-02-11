@@ -95,7 +95,7 @@ module GraphQL
         else
           # These fibers were previously waiting for sources to load data,
           # resume them. (They might wait again, in which case, re-enqueue them.)
-          f.resume
+          resume(f)
           if f.alive?
             next_fibers << f
           end
@@ -109,7 +109,7 @@ module GraphQL
               job.call
             end
           }
-          result = f.resume
+          result = resume(f)
           if result.is_a?(StandardError)
             raise result
           end
@@ -138,7 +138,7 @@ module GraphQL
             # that newly-pending source will run _before_ the one that depends on it.
             # (See below where the old fiber is pushed to the stack, then the new fiber is pushed on the stack.)
             while (outer_source_fiber = source_fiber_stack.pop)
-              result = outer_source_fiber.resume
+              result = resume(outer_source_fiber)
               if result.is_a?(StandardError)
                 raise result
               end
@@ -203,6 +203,12 @@ module GraphQL
       end
 
       source_fiber
+    end
+
+    def resume(fiber)
+      fiber.resume
+    rescue UncaughtThrowError => e
+      throw e.tag, e.value
     end
   end
 end
