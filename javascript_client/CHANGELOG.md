@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.9.1 (11 Feb 2021)
+
+- Support graphql 15.x in dependencies #3334
+
 ## 1.9.0 (10 Feb 2021)
 
 - Move "compiled" `.js` files into the root directory of the published NPM package (instead of `dist/`). To upgrade, remove `dist/` from your import paths. (These files will be treated as public APIs in their own right, exposed independently to support smaller bundle sizes.) #2768
