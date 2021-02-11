@@ -109,7 +109,7 @@ module GraphQL
               job.call
             end
           }
-          result = resume(f)
+          resume(f)
           # In this case, the job yielded. Queue it up to run again after
           # we load whatever it's waiting for.
           if f.alive?
@@ -135,7 +135,7 @@ module GraphQL
             # that newly-pending source will run _before_ the one that depends on it.
             # (See below where the old fiber is pushed to the stack, then the new fiber is pushed on the stack.)
             while (outer_source_fiber = source_fiber_stack.pop)
-              result = resume(outer_source_fiber)
+              resume(outer_source_fiber)
 
               if outer_source_fiber.alive?
                 source_fiber_stack << outer_source_fiber
