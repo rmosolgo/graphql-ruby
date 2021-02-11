@@ -33,12 +33,21 @@ module GraphQL
       # @param item [Object] The newly-added item (will be wrapped in `edge_class`)
       # @param parent [Object] The owner of `collection`, will be passed to the connection if provided
       # @param context [GraphQL::Query::Context] The surrounding `ctx`, will be passed to the connection if provided (this is required for cursor encoders)
-      # @param edge_class [Class] The class to wrap `item` with
-      def initialize(collection:, item:, parent: nil, context: nil, edge_class: Relay::Edge)
-        connection_class = BaseConnection.connection_for_nodes(collection)
+      # @param edge_class [Class] The class to wrap `item` with (defaults to the connection's edge class)
+      def initialize(collection:, item:, parent: nil, context: nil, edge_class: nil)
+        if context && context.schema.new_connections?
+          conn_class = context.schema.connections.wrapper_for(collection)
+          # The rest will be added by ConnectionExtension
+          @connection = conn_class.new(collection, parent: parent, context: context, edge_class: edge_class)
+          @edge = @connection.edge_class.new(item, @connection)
+        else
+          connection_class = BaseConnection.connection_for_nodes(collection)
+          @connection = connection_class.new(collection, {}, parent: parent, context: context)
+          edge_class ||= Relay::Edge
+          @edge = edge_class.new(item, @connection)
+        end
+
         @parent = parent
-        @connection = connection_class.new(collection, {}, parent: parent, context: context)
-        @edge = edge_class.new(item, @connection)
       end
     end
   end

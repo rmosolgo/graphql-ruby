@@ -972,4 +972,23 @@ describe GraphQL::Query do
       assert_equal "order_by", order_by_argument_value.definition.graphql_name
     end
   end
+
+  describe "when provided input object field names are not unique" do
+    let(:variables) { {} }
+    let(:result) { Dummy::Schema.execute(query_string, variables: variables) }
+
+    describe "the query is invalid" do
+      let(:query_string) {%|
+        query getCheeses{
+          searchDairy(product: [{ source: COW, source: COW }]) {
+            __typename
+          }
+        }
+      |}
+
+      it "returns errors" do
+        refute_nil(result["errors"])
+      end
+    end
+  end
 end

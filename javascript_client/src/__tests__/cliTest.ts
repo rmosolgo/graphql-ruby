@@ -4,7 +4,7 @@ describe("CLI", () => {
   it("exits 1 on error", () => {
     expect(() => {
       childProcess.execSync("node ./dist/cli.js sync", {stdio: "pipe"})
-    }).toThrow("URL must be provided for sync")
+    }).toThrow("Client name must be provided for sync")
   })
 
   it("exits 0 on OK", () => {

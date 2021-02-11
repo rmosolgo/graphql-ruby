@@ -25,6 +25,21 @@ describe("sync operations", () => {
     jest.clearAllMocks();
   })
 
+  describe("generating artifacts without syncing", () => {
+    it("works without a URL", () => {
+      var options = {
+        client: "test-1",
+        path: "./src/__tests__/documents",
+      }
+
+      return sync(options).then(function() {
+        var generatedCode = fs.readFileSync("./src/OperationStoreClient.js", "utf8")
+        expect(generatedCode).toMatch('"GetStuff": "f7f65309043352183e905e1396e51078"')
+        expect(generatedCode).toMatchSnapshot()
+      })
+    })
+  })
+
   describe("custom HTTP options", () => {
     it("uses the provided `send` option & provided URL", () => {
       var url: string

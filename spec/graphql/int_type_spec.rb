@@ -3,14 +3,18 @@ require "spec_helper"
 
 describe GraphQL::INT_TYPE do
   describe "coerce_input" do
-    it "accepts ints" do
+    it "accepts ints within the bounds" do
+      assert_equal -(2**31), GraphQL::INT_TYPE.coerce_isolated_input(-(2**31))
       assert_equal 1, GraphQL::INT_TYPE.coerce_isolated_input(1)
+      assert_equal (2**31)-1, GraphQL::INT_TYPE.coerce_isolated_input((2**31)-1)
     end
 
-    it "rejects other types" do
+    it "rejects other types and ints outside the bounds" do
       assert_nil GraphQL::INT_TYPE.coerce_isolated_input("55")
       assert_nil GraphQL::INT_TYPE.coerce_isolated_input(true)
       assert_nil GraphQL::INT_TYPE.coerce_isolated_input(6.1)
+      assert_nil GraphQL::INT_TYPE.coerce_isolated_input(2**31)
+      assert_nil GraphQL::INT_TYPE.coerce_isolated_input(-(2**31 + 1))
     end
 
     describe "handling boundaries" do

@@ -14,11 +14,13 @@ pro: true
 After creating an app on Ably, you can hook it up to your GraphQL schema.
 
 - [How it Works](#how-it-works)
+- [Ably setup](#ably-setup)
 - [Database setup](#database-setup)
 - [Schema configuration](#schema-configuration)
 - [Execution configuration](#execution-configuration)
 - [Webhook configuration](#webhook-configuration)
 - [Authorization](#authorization)
+- [End-to-end encryption](#encryption)
 - [Serializing context](#serializing-context)
 - [Dashboard](#dashboard)
 - [Development tips](#development-tips)
@@ -124,6 +126,11 @@ end
 
 That connection will be used for managing subscription state. All writes to Redis are prefixed with `graphql:sub:`.
 
+There are also two configurations for managing persistence:
+
+- `stale_ttl_s:` expires subscription data after the given number of seconds without any update. After `stale_ttl_s` has passed, the data will expire from Redis. Each time a subscription receives an update, its TTL is refreshed. (Generally, this isn't required because the backend is built to clean itself up. But, if you find that Redis is collecting stale queries, you can set them to expire after some very long time as a safeguard.)
+- `cleanup_delay_s:` prevents deleting a subscription during those first seconds after it's created. Usually, this isn't necessary, but if you observe latency between the subscription's initial response and the client's subscription to the delivery channel, you can set this configuration to account for it.
+
 ## Execution configuration
 
 During execution, GraphQL will assign a `subscription_id` to the `context` hash. The client will use that ID to listen for updates, so you must return the `subscription_id` in the response headers.
@@ -206,6 +213,43 @@ end
 ```
 
 [Ably's tutorial](https://www.ably.io/tutorials/webhook-chuck-norris#tutorial-step-4) also demonstrates some of the setup for this.
+
+## Encryption
+
+You can use Ably's [end-to-end encryption](https://www.ably.io/documentation/realtime/encryption) with GraphQL subscriptions. To enable it, add `cipher_base:` to your setup:
+
+```ruby
+  use GraphQL::Pro::AblySubscriptions,
+    redis: $graphql_subscriptions_redis,
+    ably: Ably::Rest.new(key: ABLY_API_KEY),
+    # Add `cipher_base:` to enable end-to-end encryption
+    cipher_base: "ff16381ae2f2b6c6de6ff696226009f3"
+```
+
+(Any random string will do, eg `ruby -e "require 'securerandom'; puts SecureRandom.hex"`.)
+
+Also, return a header to client so that it can decrypt subscription updates. The key is put in `context[:ably_cipher_base64]`, and `graphql-ruby-client` expects to find it in the `X-Subscription-Key` header:
+
+```ruby
+result = MySchema.execute(...)
+# For subscriptions, return the subscription_id as a header
+if result.subscription?
+  response.headers["X-Subscription-ID"] = result.context[:subscription_id]
+  # Also return the encryption key so that clients
+  # can decode subscription updates
+  response.headers["X-Subscription-Key"] = result.context[:ably_cipher_base64]
+end
+```
+
+(Also, if you're using CORS requests, update `Access-Control-Expose-Headers` to include `X-Subscription-Key`)
+
+With this setup,
+
+- `GraphQL::Pro::AblySubscriptions` will generate per-subscription keys (using `cipher_base` and the subscription ID) and use them to encrypt Ably payloads
+- Those keys will be returned to clients in `X-Subscription-Key`
+- Clients will use those keys to decrypt incoming messages
+
+__Backwards compatibility:__ `GraphQL::Pro::AblySubscriptions` will only encrypt payloads whose `query.context[:ably_cipher_base64]` is present. Any subscriptions created _before_ `cipher_base:` was added to the setup will _not_ be encrypted. (There was no key to encrypt them, and clients don't have a key to _decrypt_ them!)
 
 ## Serializing Context
 

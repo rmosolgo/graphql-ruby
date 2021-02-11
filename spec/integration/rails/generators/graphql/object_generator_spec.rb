@@ -10,6 +10,7 @@ class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
       t.datetime :created_at
       t.date :birthday
       t.integer :points, null: false
+      t.decimal :rating, null: false
     end
   end
 
@@ -74,6 +75,7 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: true
     field :birthday, GraphQL::Types::ISO8601Date, null: true
     field :points, Integer, null: false
+    field :rating, Float, null: false
   end
 end
 RUBY
@@ -88,6 +90,7 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: true
     field :birthday, GraphQL::Types::ISO8601Date, null: true
     field :points, Integer, null: false
+    field :rating, Float, null: false
     field :name, String, null: false
   end
 end

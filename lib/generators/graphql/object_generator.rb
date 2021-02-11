@@ -40,6 +40,8 @@ module Graphql
         case type_expression
         when "Text"
           ["String", null]
+        when "Decimal"
+          ["Float", null]
         when "DateTime", "Datetime"
           ["GraphQL::Types::ISO8601DateTime", null]
         when "Date"

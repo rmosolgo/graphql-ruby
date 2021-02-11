@@ -72,7 +72,7 @@ module GraphQL
         elsif @operation_name_error
           @validation_errors << @operation_name_error
         else
-          validation_result = @schema.static_validator.validate(@query, validate: @validate)
+          validation_result = @schema.static_validator.validate(@query, validate: @validate, timeout: @schema.validate_timeout)
           @validation_errors.concat(validation_result[:errors])
           @internal_representation = validation_result[:irep]
 

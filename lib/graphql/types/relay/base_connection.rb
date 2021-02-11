@@ -94,7 +94,8 @@ module GraphQL
             type = nullable ? [@node_type, null: true] : [@node_type]
             field :nodes, type,
               null: nullable,
-              description: "A list of nodes."
+              description: "A list of nodes.",
+              connection: false
           end
         end
 

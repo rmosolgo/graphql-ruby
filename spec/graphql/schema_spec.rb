@@ -62,6 +62,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_execution_strategy, schema.query_execution_strategy
       assert_equal base_schema.mutation_execution_strategy, schema.mutation_execution_strategy
       assert_equal base_schema.subscription_execution_strategy, schema.subscription_execution_strategy
+      assert_equal base_schema.validate_timeout, schema.validate_timeout
       assert_equal base_schema.max_complexity, schema.max_complexity
       assert_equal base_schema.max_depth, schema.max_depth
       assert_equal base_schema.default_max_page_size, schema.default_max_page_size
@@ -114,6 +115,7 @@ describe GraphQL::Schema do
 
       context_class = Class.new
       schema.context_class(context_class)
+      schema.validate_timeout(10)
       schema.max_complexity(10)
       schema.max_depth(20)
       schema.default_max_page_size(30)
@@ -139,6 +141,7 @@ describe GraphQL::Schema do
       assert_equal cursor_encoder, schema.cursor_encoder
 
       assert_equal context_class, schema.context_class
+      assert_equal 10, schema.validate_timeout
       assert_equal 10, schema.max_complexity
       assert_equal 20, schema.max_depth
       assert_equal 30, schema.default_max_page_size

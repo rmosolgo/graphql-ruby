@@ -329,6 +329,9 @@ describe("createAblyHandler", () => {
 
     // For executing this test you need to provide a valid Ably API key in
     // environment variable ABLY_KEY
+    //
+    // This test might take longer than the default jest timeout of 5s.
+    // Consider setting a higher timeout when running in CI.
     testWithAblyKey("can make more than 200 subscriptions", async () => {
       let caughtError = null
       const ably = new Realtime({ key, log: { level: 0 } })
@@ -355,7 +358,9 @@ describe("createAblyHandler", () => {
         onNext,
         onCompleted
       }
-      for (let i = 0; i < 201; ++i) {
+
+      const disposals = []
+      for (let i = 0; i < 200; ++i) {
         const { dispose } = ablyHandler(
           operation,
           variables,
@@ -364,14 +369,96 @@ describe("createAblyHandler", () => {
         )
         await new Promise(resolve => setTimeout(resolve, 0))
 
-        dispose()
+        disposals.push(dispose())
       }
+      await Promise.all(disposals)
 
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // 201st subscription - should work now that previous 200 subscriptions have been diposed
+      const { dispose } = ablyHandler(
+        operation,
+        variables,
+        cacheConfig,
+        observer
+      )
+      await new Promise(resolve => setTimeout(resolve, 0))
+      await dispose()
 
       ably.close()
 
       if (caughtError) throw caughtError
     })
+
+    // For executing this test you need to provide a valid Ably API key in
+    // environment variable ABLY_KEY
+    testWithAblyKey(
+      "receives message sent before subscribe takes effect",
+      async () => {
+        let caughtError = null
+        const ably = new Realtime({ key, log: { level: 0 } })
+        ably.connect()
+
+        const subscriptionId = Math.random().toString(36)
+        const fetchOperation = async () => ({
+          headers: new Map([["X-Subscription-ID", subscriptionId]]),
+          body: { data: "immediateResult" }
+        })
+        const ablyHandler = createAblyHandler({ ably, fetchOperation })
+        const operation = {}
+        const variables = {}
+        const cacheConfig = {}
+        const onError = (error: Error) => {
+          caughtError = error
+        }
+        const messages: any[] = []
+        const onNext = (message: any) => {
+          messages.push(message.data)
+        }
+        const onCompleted = () => {}
+        const observer = {
+          onError,
+          onNext,
+          onCompleted
+        }
+
+        // Publish before subscribe
+        await new Promise((resolve, reject) => {
+          const ablyPublisher = new Realtime({ key, log: { level: 0 } })
+          const publishChannel = ablyPublisher.channels.get(subscriptionId)
+          publishChannel.publish(
+            "update",
+            {
+              result: { data: "asyncResult" }
+            },
+            err => {
+              ablyPublisher.close()
+              if (err) {
+                reject(err)
+              } else {
+                resolve()
+              }
+            }
+          )
+        })
+
+        const { dispose } = ablyHandler(
+          operation,
+          variables,
+          cacheConfig,
+          observer
+        )
+
+        for (let i = 0; i < 20 && messages.length < 2; ++i) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+
+        await dispose()
+
+        ably.close()
+
+        if (caughtError) throw caughtError
+
+        expect(messages).toEqual(["immediateResult", "asyncResult"])
+      }
+    )
   })
 })

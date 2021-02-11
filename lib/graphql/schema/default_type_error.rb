@@ -8,6 +8,8 @@ module GraphQL
           ctx.errors << type_error
         when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
           raise type_error
+        when GraphQL::IntegerDecodingError
+          nil
         end
       end
     end

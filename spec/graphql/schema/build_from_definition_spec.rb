@@ -578,7 +578,7 @@ type Root {
 
       built_schema = assert_schema_and_compare_output(schema.chop)
       id_scalar = built_schema.types["ID"]
-      assert_equal true, id_scalar.valid_input?("123", OpenStruct.new(schema: built_schema))
+      assert_equal true, id_scalar.valid_isolated_input?("123")
     end
 
     it 'supports custom scalar' do
@@ -596,9 +596,8 @@ type Root {
 
       built_schema = assert_schema_and_compare_output(schema.chop)
       custom_scalar = built_schema.types["CustomScalar"]
-      dummy_ctx = OpenStruct.new(schema: built_schema)
-      assert_equal true, custom_scalar.valid_input?("anything", dummy_ctx)
-      assert_equal true, custom_scalar.valid_input?(12345, dummy_ctx)
+      assert_equal true, custom_scalar.valid_isolated_input?("anything")
+      assert_equal true, custom_scalar.valid_isolated_input?(12345)
     end
 
     it 'supports input object' do

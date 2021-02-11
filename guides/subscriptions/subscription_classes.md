@@ -102,8 +102,8 @@ Like mutations, you can use a generated return type for subscriptions. When you 
 
 ```ruby
 class Subscriptions::MessageWasPosted < Subscriptions::BaseSubscription
-  field :room, Types::RoomType, null: true
-  field :message, Types::MessageType, null: true
+  field :room, Types::RoomType, null: false
+  field :message, Types::MessageType, null: false
 end
 ```
 

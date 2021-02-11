@@ -14,18 +14,33 @@ module GraphQL
         # This hash is the one used at runtime.
         #
         # @return [Hash<Symbol, Object>]
-        attr_reader :keyword_arguments
+        def keyword_arguments
+          @keyword_arguments ||= begin
+            kwargs = {}
+            argument_values.each do |name, arg_val|
+              kwargs[name] = arg_val.value
+            end
+            kwargs
+          end
+        end
 
-        def initialize(keyword_arguments:, argument_values:)
-          @keyword_arguments = keyword_arguments
+        # @param argument_values [nil, Hash{Symbol => ArgumentValue}]
+        def initialize(argument_values:)
           @argument_values = argument_values
+          @empty = argument_values.nil? || argument_values.empty?
         end
 
         # @return [Hash{Symbol => ArgumentValue}]
-        attr_reader :argument_values
+        def argument_values
+          @argument_values ||= {}
+        end
 
-        def_delegators :@keyword_arguments, :key?, :[], :fetch, :keys, :each, :values
-        def_delegators :@argument_values, :each_value
+        def empty?
+          @empty
+        end
+
+        def_delegators :keyword_arguments, :key?, :[], :fetch, :keys, :each, :values
+        def_delegators :argument_values, :each_value
 
         def inspect
           "#<#{self.class} @keyword_arguments=#{keyword_arguments.inspect}>"

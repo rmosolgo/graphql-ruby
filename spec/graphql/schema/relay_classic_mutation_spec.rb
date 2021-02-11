@@ -36,6 +36,16 @@ describe GraphQL::Schema::RelayClassicMutation do
     end
   end
 
+  describe "input argument" do
+    it "sets a description for the input argument" do
+      mutation = Class.new(GraphQL::Schema::RelayClassicMutation) do
+        graphql_name "SomeMutation"
+      end
+
+      assert_equal "Parameters for SomeMutation", mutation.field_options[:arguments][:input][:description]
+    end
+  end
+
   describe "execution" do
     after do
       Jazz::Models.reset

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import parseArgs from "minimist"
 import sync from "./sync/index"
-console.log(sync)
 var argv = parseArgs(process.argv.slice(2))
 
 if (argv.help || argv.h) {

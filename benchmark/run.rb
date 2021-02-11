@@ -19,6 +19,9 @@ module GraphQLBenchmark
   BIG_SCHEMA = GraphQL::Schema.from_definition(File.join(BENCHMARK_PATH, "big_schema.graphql"))
   BIG_QUERY = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "big_query.graphql")))
 
+  FIELDS_WILL_MERGE_SCHEMA = GraphQL::Schema.from_definition("type Query { hello: String }")
+  FIELDS_WILL_MERGE_QUERY = GraphQL.parse("{ #{Array.new(5000, "hello").join(" ")} }")
+
   module_function
   def self.run(task)
     Benchmark.ips do |x|
@@ -30,6 +33,7 @@ module GraphQLBenchmark
         x.report("validate - abstract fragments") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS) }
         x.report("validate - abstract fragments 2") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS_2) }
         x.report("validate - big query") { BIG_SCHEMA.validate(BIG_QUERY) }
+        x.report("validate - fields will merge") { FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY) }
       else
         raise("Unexpected task #{task}")
       end

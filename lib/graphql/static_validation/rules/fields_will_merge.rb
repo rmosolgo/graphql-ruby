@@ -202,15 +202,16 @@ module GraphQL
             )
           end
 
-          args = possible_arguments(node1, node2)
-          if args.size > 1
-            msg = "Field '#{response_key}' has an argument conflict: #{args.map { |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?"
+          if !same_arguments?(node1, node2)
+            args = [serialize_field_args(node1), serialize_field_args(node2)]
+            conflicts = args.map { |arg| GraphQL::Language.serialize(arg) }.join(" or ")
+            msg = "Field '#{response_key}' has an argument conflict: #{conflicts}?"
             context.errors << GraphQL::StaticValidation::FieldsWillMergeError.new(
               msg,
               nodes: [node1, node2],
               path: [],
               field_name: response_key,
-              conflicts: args.map { |arg| GraphQL::Language.serialize(arg) }.join(" or ")
+              conflicts: conflicts
             )
           end
         end
@@ -326,20 +327,19 @@ module GraphQL
         [fields, fragment_spreads]
       end
 
-      def possible_arguments(field1, field2)
+      def same_arguments?(field1, field2)
         # Check for incompatible / non-identical arguments on this node:
-        [field1, field2].map do |n|
-          if n.arguments.any?
-            serialized_args = {}
-            n.arguments.each do |a|
-              arg_value = a.value
-              serialized_args[a.name] = serialize_arg(arg_value)
-            end
-            serialized_args
-          else
-            NO_ARGS
-          end
-        end.uniq
+        arguments1 = field1.arguments
+        arguments2 = field2.arguments
+
+        return false if arguments1.length != arguments2.length
+
+        arguments1.all? do |argument1|
+          argument2 = arguments2.find { |argument| argument.name == argument1.name }
+          return false if argument2.nil?
+
+          serialize_arg(argument1.value) == serialize_arg(argument2.value)
+        end
       end
 
       def serialize_arg(arg_value)
@@ -351,6 +351,14 @@ module GraphQL
         else
           GraphQL::Language.serialize(arg_value)
         end
+      end
+
+      def serialize_field_args(field)
+        serialized_args = {}
+        field.arguments.each do |argument|
+          serialized_args[argument.name] = serialize_arg(argument.value)
+        end
+        serialized_args
       end
 
       def compared_fragments_key(frag1, frag2, exclusive)

@@ -39,7 +39,7 @@ module GraphQL
       end
 
       def inspect
-        if name.nil? && parent_class.respond_to?(:mutation) && (mutation = parent_class.mutation)
+        if (name.nil? || parent_class.name.nil?) && parent_class.respond_to?(:mutation) && (mutation = parent_class.mutation)
           "#{mutation.inspect}::#{parent_class.graphql_name}::InvalidNullError"
         else
           super

@@ -66,6 +66,16 @@ module StarWars
     end
   end
 
+  class NewCustomBaseEdge < GraphQL::Pagination::Connection::Edge
+    def upcased_name
+      node.name.upcase
+    end
+
+    def upcased_parent_name
+      parent.name.upcase
+    end
+  end
+
   class CustomBaseEdgeType < GraphQL::Types::Relay::BaseEdge
     node_type(BaseType)
     field :upcased_name, String, null: true
@@ -78,10 +88,16 @@ module StarWars
   end
 
   class CustomEdgeBaseConnectionType < GraphQL::Types::Relay::BaseConnection
-    edge_type(CustomBaseEdgeType, edge_class: CustomBaseEdge, nodes_field: true)
+    edge_type(CustomBaseEdgeType, edge_class: (TESTING_INTERPRETER ? NewCustomBaseEdge : CustomBaseEdge), nodes_field: true)
     field :total_count_times_100, Integer, null: true
     def total_count_times_100
-      object.nodes.count * 100
+      if object.is_a?(GraphQL::Pagination::Connection)
+        # new-style
+        object.items.count * 100
+      else
+        # legacy
+        object.nodes.count * 100
+      end
     end
 
     field :field_name, String, null: true
@@ -318,6 +334,16 @@ module StarWars
     end
   end
 
+  class NewLazyNodesRelationConnection < GraphQL::Pagination::ActiveRecordRelationConnection
+    def initialize(wrapper, **kwargs)
+      super(wrapper.relation, **kwargs)
+    end
+
+    def edge_nodes
+      LazyWrapper.new { super }
+    end
+  end
+
   GraphQL::Relay::BaseConnection.register_connection_implementation(LazyNodesWrapper, LazyNodesRelationConnection)
 
   class QueryType < GraphQL::Schema::Object
@@ -436,7 +462,7 @@ module StarWars
       use GraphQL::Execution::Interpreter
       use GraphQL::Analysis::AST
       use GraphQL::Pagination::Connections
-      connections.add(LazyNodesWrapper, LazyNodesRelationConnection)
+      connections.add(LazyNodesWrapper, NewLazyNodesRelationConnection)
     end
 
     def self.resolve_type(type, object, ctx)
