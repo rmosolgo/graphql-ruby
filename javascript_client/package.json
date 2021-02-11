@@ -34,7 +34,7 @@
     "@types/actioncable": "^5.2.3",
     "@types/pusher-js": "^4.2.2",
     "glob": "^7.1.4",
-    "graphql": "^14.3.1",
+    "graphql": "^14.3.1 || ^15.0.0",
     "minimist": "^1.2.0",
     "request": "^2.88.2",
     "typescript": "^3.7.5"
