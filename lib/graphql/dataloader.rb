@@ -110,9 +110,6 @@ module GraphQL
             end
           }
           result = resume(f)
-          if result.is_a?(StandardError)
-            raise result
-          end
           # In this case, the job yielded. Queue it up to run again after
           # we load whatever it's waiting for.
           if f.alive?
@@ -139,9 +136,6 @@ module GraphQL
             # (See below where the old fiber is pushed to the stack, then the new fiber is pushed on the stack.)
             while (outer_source_fiber = source_fiber_stack.pop)
               result = resume(outer_source_fiber)
-              if result.is_a?(StandardError)
-                raise result
-              end
 
               if outer_source_fiber.alive?
                 source_fiber_stack << outer_source_fiber
