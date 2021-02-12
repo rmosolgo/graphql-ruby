@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 1.11.8 (12 Feb 2021)
+
+### Bug fixes
+
+- Improve performance of `Schema.possible_types(t)` for object types #3172
+
 # 1.11.7 (18 January 2021)
 
 ### Breaking changes
