@@ -1,0 +1,185 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Pro - Privacy</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.4/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-pro-guides">GraphQL Pro</a>
+  &raquo; Privacy
+</p>
+
+
+<h1 class="guide-header">Privacy</h1>
+<div class="guide-container">
+  <p>The following statement describes what data GraphQL::Pro collects during normal operation and how that data is used.</p>
+
+<ul>
+  <li><a href="#what-data-we-collect-and-how-its-used">What Data We Collect And How It’s Used</a></li>
+  <li><a href="#third-party-services">Third-Party Services</a></li>
+  <li><a href="#data-security">Data Security</a></li>
+  <li><a href="#more-information">More Information</a></li>
+</ul>
+
+<h3 id="what-data-we-collect-and-how-its-used">What Data We Collect And How It’s Used</h3>
+
+<p>GraphQL::Pro collects the following kinds of data:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kind of Data</th>
+      <th>Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Cookies</td>
+      <td>User authentication</td>
+    </tr>
+    <tr>
+      <td>HTTP traffic information, such as IP address and bundler credential</td>
+      <td>Authentication, system operation</td>
+    </tr>
+    <tr>
+      <td>User-provided profile information, such as contact email address and company name</td>
+      <td>Business communications, newsletter delivery (if signed up)</td>
+    </tr>
+    <tr>
+      <td>Billing information</td>
+      <td>Recurring payment for GraphQL::Pro license</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The <code class="language-plaintext highlighter-rouge">graphql-pro</code> Ruby gem collects no data and never “phones home” for any purpose.</p>
+
+<p>GraphQL::Pro is not directed at children under the age of 13. If you are under age 13, please do not use GraphQL::Pro.</p>
+
+<h3 id="third-party-services">Third-Party Services</h3>
+
+<p>Use of GraphQL::Pro includes the following third-party services:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name of Service</th>
+      <th>Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GitHub Pages</td>
+      <td>Website Hosting</td>
+    </tr>
+    <tr>
+      <td>Digital Ocean</td>
+      <td>Cloud Application Hosting</td>
+    </tr>
+    <tr>
+      <td>Heroku</td>
+      <td>Cloud Application Hosting</td>
+    </tr>
+    <tr>
+      <td>Bugsnag</td>
+      <td>Application Monitoring</td>
+    </tr>
+    <tr>
+      <td>New Relic APM</td>
+      <td>Application Monitoring</td>
+    </tr>
+    <tr>
+      <td>Papertrail</td>
+      <td>Application Monitoring</td>
+    </tr>
+    <tr>
+      <td>Stripe</td>
+      <td>Payment Processing</td>
+    </tr>
+    <tr>
+      <td>MailChimp</td>
+      <td>Newsletter Management</td>
+    </tr>
+    <tr>
+      <td>Google Apps</td>
+      <td>Company Infrastructure</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="data-security">Data Security</h3>
+
+<p>GraphQL::Pro does not collect <a href="https://gdpr-info.eu/art-9-gdpr/">“Sensitive Personal Information”</a>. GraphQL::Pro’s systems are secured with strong, unique passwords and two-factor authentication is enabled wherever possible.</p>
+
+<p>You are responsible for using a strong, unique password to log into https://billing.graphql.pro.</p>
+
+<h3 id="more-information">More Information</h3>
+
+<p>This document is managed <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/guides/pro/privacy.md">on GitHub</a>. You can use a GitHub account to watch for changes or subscribe to a <a href="https://github.com/rmosolgo/graphql-ruby/commits/master.atom">public RSS feed</a>.</p>
+
+<p>For questions, comments, or requests regarding this policy, please contact <a href="mailto:info@graphql.pro">info@graphql.pro</a></p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/pro/privacy.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Privacy">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
