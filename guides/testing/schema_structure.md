@@ -21,7 +21,7 @@ Here are few tips for managing schema structure changes.
 
 Make structure changes part of the normal code review process by adding a `schema.graphql` artifact to your project. This way, any changes to schema structure will show up clearly in a pull request as a diff to that file.
 
-You can read about this approach in ["Tracking Schema Changes with GraphQL-Ruby"](https://rmosolgo.github.io/blog/2017/03/16/tracking-schema-changes-with-graphql-ruby/) or the built-in {{ "GraphQL::RakeTask" | api_doc }} for generating schema dumps.
+You can read about this approach in ["Tracking Schema Changes with GraphQL-Ruby"](https://rmosolgo.github.io/ruby/graphql/2017/03/16/tracking-schema-changes-with-graphql-ruby) or the built-in {{ "GraphQL::RakeTask" | api_doc }} for generating schema dumps.
 
 ## Automatically check for breaking changes
 
