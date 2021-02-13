@@ -8,7 +8,17 @@
 
 ### Bug Fix
 
+# 1.17.5 (13 Feb 2021)
+
+### Bug Fix
+
+- Subscriptions: Use `MULTI` instead of Lua for some operations
+- Subscriptions: Use `EVAL_SHA` for duplicate scripts to reduce network overhead #3285
+- Subscriptions: Don't use `redis.call`, which is unsupported in the `redis-namespace` gem #3322
+
 # 1.17.4 (4 Feb 2021)
+
+## Bug Fix
 
 - Stable Relation Connection: Don't emit `OR ... IS NULL` for columns that are known to be `null: false` (this improves index utilization)
 
