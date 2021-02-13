@@ -108,7 +108,7 @@ describe GraphQL::Pagination::Connections do
     end
 
     assert_includes err.message, "Failed to build a GraphQL list result for field `Query.things` at path `things`."
-    assert_includes err.message, "to implement `.each` to satisfy the GraphQL return type `[ThingConnection!]!`"
+    assert_includes err.message, "(GraphQL::Pagination::ArrayConnection) to implement `.each` to satisfy the GraphQL return type `[ThingConnection!]!`"
     assert_includes err.message, "This field was treated as a Relay-style connection; add `connection: false` to the `field(...)` to disable this behavior."
   end
 
