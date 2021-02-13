@@ -276,8 +276,29 @@ module GraphQL
           end
         end
 
+        # Get or set the `max_page_size:` which will be configured for fields using this resolver
+        # (`nil` means "unlimited max page size".)
+        # @param max_page_size [Integer, nil] Set a new value
+        # @return [Integer, nil] The `max_page_size` assigned to fields that use this resolver
+        def max_page_size(new_max_page_size = :not_given)
+          if new_max_page_size != :not_given
+            @max_page_size = new_max_page_size
+          elsif defined?(@max_page_size)
+            @max_page_size
+          elsif superclass.respond_to?(:max_page_size)
+            superclass.max_page_size
+          else
+            nil
+          end
+        end
+
+        # @return [Boolean] `true` if this resolver or a superclass has an assigned `max_page_size`
+        def has_max_page_size?
+          defined?(@max_page_size) || (superclass.respond_to?(:has_max_page_size?) && superclass.has_max_page_size?)
+        end
+
         def field_options
-          {
+          field_opts = {
             type: type_expr,
             description: description,
             extras: extras,
@@ -289,6 +310,12 @@ module GraphQL
             extensions: extensions,
             broadcastable: broadcastable?,
           }
+
+          if has_max_page_size?
+            field_opts[:max_page_size] = max_page_size
+          end
+
+          field_opts
         end
 
         # A non-normalized type configuration, without `null` applied
