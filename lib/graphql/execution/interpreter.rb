@@ -113,7 +113,7 @@ module GraphQL
         def initialize(value:, path:, field:)
           message = "Failed to build a GraphQL list result for field `#{field.path}` at path `#{path.join(".")}`.\n".dup
 
-          message << "Expected `#{value.inspect}` to implement `.each` to satisfy the GraphQL return type `#{field.type.to_type_signature}`.\n"
+          message << "Expected `#{value.inspect}` (#{value.class}) to implement `.each` to satisfy the GraphQL return type `#{field.type.to_type_signature}`.\n"
 
           if field.connection?
             message << "\nThis field was treated as a Relay-style connection; add `connection: false` to the `field(...)` to disable this behavior."
