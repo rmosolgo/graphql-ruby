@@ -214,4 +214,32 @@ describe GraphQL::Backtrace do
     res = backtrace_schema.validate("{ __typename }")
     assert_equal [], res
   end
+
+  it "works with stand-alone analysis" do
+    example_analyzer = Class.new(GraphQL::Analysis::AST::Analyzer) do
+      def result
+        :finished
+      end
+    end
+    query = GraphQL::Query.new(backtrace_schema, "{ __typename }")
+    result = GraphQL::Analysis::AST.analyze_query(query, [example_analyzer])
+    assert_equal [:finished], result
+  end
+
+  it "works with multiplex analysis" do
+    example_analyzer = Class.new(GraphQL::Analysis::AST::Analyzer) do
+      def result
+        :finished
+      end
+    end
+    query = GraphQL::Query.new(backtrace_schema, "{ __typename }")
+    multiplex = GraphQL::Execution::Multiplex.new(
+      schema: schema,
+      queries: [query],
+      context: {},
+      max_complexity: nil,
+    )
+    result = GraphQL::Analysis::AST.analyze_multiplex(multiplex, [example_analyzer])
+    assert_equal [:finished], result
+  end
 end

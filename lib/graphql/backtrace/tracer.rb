@@ -44,13 +44,13 @@ module GraphQL
         end
 
         if push_data && multiplex
-          multiplex.context[:graphql_backtrace_contexts][push_key] = push_data
+          push_storage = multiplex.context[:graphql_backtrace_contexts] ||= {}
+          push_storage[push_key] = push_data
           multiplex.context[:last_graphql_backtrace_context] = push_data
         end
 
         if key == "execute_multiplex"
           multiplex_context = metadata[:multiplex].context
-          multiplex_context[:graphql_backtrace_contexts] = {}
           begin
             yield
           rescue StandardError => err
