@@ -9,7 +9,7 @@ module GraphQL
     # should be ordered and paginated before providing it here.
     #
     # @example Adding a comment to list of comments
-    #   post = Post.find(args[:postId])
+    #   post = Post.find(args[:post_id])
     #   comments = post.comments
     #   new_comment = comments.build(body: args[:body])
     #   new_comment.save!
@@ -18,13 +18,13 @@ module GraphQL
     #     parent: post,
     #     collection: comments,
     #     item: new_comment,
-    #     context: ctx,
+    #     context: context,
     #   )
     #
     #   response = {
     #     post: post,
-    #     commentsConnection: range_add.connection,
-    #     newCommentEdge: range_add.edge,
+    #     comments_connection: range_add.connection,
+    #     new_comment_edge: range_add.edge,
     #   }
     class RangeAdd
       attr_reader :edge, :connection, :parent
@@ -39,7 +39,12 @@ module GraphQL
           conn_class = context.schema.connections.wrapper_for(collection)
           # The rest will be added by ConnectionExtension
           @connection = conn_class.new(collection, parent: parent, context: context, edge_class: edge_class)
-          @edge = @connection.edge_class.new(item, @connection)
+          # Check if this connection supports it, to support old versions of GraphQL-Pro
+          @edge = if @connection.respond_to?(:range_add_edge)
+            @connection.range_add_edge(item)
+          else
+            @connection.edge_class.new(item, @connection)
+          end
         else
           connection_class = BaseConnection.connection_for_nodes(collection)
           @connection = connection_class.new(collection, {}, parent: parent, context: context)
