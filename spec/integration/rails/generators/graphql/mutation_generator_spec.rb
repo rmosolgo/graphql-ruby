@@ -11,7 +11,7 @@ class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
     prepare_destination
     FileUtils.cd(File.expand_path("../../../tmp", File.dirname(__FILE__))) do
       `rm -rf dummy`
-      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle`
+      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
     end
 
     FileUtils.cd(destination_root) do
