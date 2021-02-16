@@ -10,7 +10,7 @@ class GraphQLGeneratorsRelayGeneratorTest < Rails::Generators::TestCase
     prepare_destination
 
     FileUtils.cd(File.join(destination_root, '..')) do
-      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle`
+      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
 
       FileUtils.cd("dummy") do
         `rails generate graphql:install`

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'rails/generators'
 require 'rails/generators/base'
 require_relative 'core'
 require_relative 'relay'

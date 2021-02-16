@@ -66,13 +66,17 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
   require f
 end
 
+if testing_rails?
+  require "integration/rails/spec_helper"
+end
+
 # Load dependencies
 ['Mongoid', 'Rails'].each do |integration|
   begin
     Object.const_get(integration)
-    Dir["#{File.dirname(__FILE__)}/integration/#{integration.downcase}/**/*.rb"].each do |f|
-      if f.end_with?("spec_helper.rb") || ENV["TEST"].nil?
-        require f
+    if ENV["TEST"].nil?
+      Dir["spec/integration/#{integration.downcase}/**/*.rb"].each do |f|
+        require f.sub("spec/", "")
       end
     end
   rescue NameError
