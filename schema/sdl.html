@@ -120,14 +120,7 @@
 
 <h2 id="plugins">Plugins</h2>
 
-<table>
-  <tbody>
-    <tr>
-      <td>{ “GraphQL::Schema.from_definition”</td>
-      <td>api_doc }} accepts a <code class="language-plaintext highlighter-rouge">using:</code> argument, which may be given as a map of <code class="language-plaintext highlighter-rouge">plugin =&gt; args</code> pairs. For example:</td>
-    </tr>
-  </tbody>
-</table>
+<p><a href="/api-doc/1.12.4/GraphQL/Schema#from_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.from_definition"><code>GraphQL::Schema.from_definition</code></a> accepts a <code class="language-plaintext highlighter-rouge">using:</code> argument, which may be given as a map of <code class="language-plaintext highlighter-rouge">plugin =&gt; args</code> pairs. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">from_definition</span><span class="p">(</span><span class="s2">"path/to/schema.graphql"</span><span class="p">,</span> <span class="ss">using: </span><span class="p">{</span>
   <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PusherSubscriptions</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="ss">redis: </span><span class="vg">$redis</span> <span class="p">},</span>

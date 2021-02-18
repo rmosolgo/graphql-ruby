@@ -12,7 +12,7 @@ The connection doesn’t receive outside arguments, so the list of
 items should be ordered and paginated before providing it here. 
 Examples:</p>
 <h1 id="adding-a-comment-to-list-of-comments">Adding a comment to list of comments</h1>
-<p>post = Post.find(args[:postId])
+<p>post = Post.find(args[:post_id])
 comments = post.comments
 new_comment = comments.build(body: args[:body])
 new_comment.save!
@@ -20,12 +20,12 @@ range_add = GraphQL::Relay::RangeAdd.new(
 parent: post,
 collection: comments,
 item: new_comment,
-context: ctx,
+context: context,
 )
 response = {
 post: post,
-commentsConnection: range_add.connection,
-newCommentEdge: range_add.edge,
+comments_connection: range_add.connection,
+new_comment_edge: range_add.edge,
 }
 Instance methods:
 initialize</p>
