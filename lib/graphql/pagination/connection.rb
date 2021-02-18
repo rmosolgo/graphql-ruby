@@ -105,6 +105,15 @@ module GraphQL
         end
       end
 
+      # This is called by `Relay::RangeAdd` -- it can be overridden
+      # when `item` needs some modifications based on this connection's state.
+      #
+      # @param item [Object] An item newly added to `items`
+      # @return [Edge]
+      def range_add_edge(item)
+        edge_class.new(item, self)
+      end
+
       attr_writer :last
       # @return [Integer, nil] A clamped `last` value. (The underlying instance variable doesn't have limits on it)
       def last

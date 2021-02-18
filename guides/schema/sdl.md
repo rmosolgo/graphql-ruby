@@ -78,7 +78,7 @@ The hash may contain:
 
 ## Plugins
 
-{ "GraphQL::Schema.from_definition" | api_doc }} accepts a `using:` argument, which may be given as a map of `plugin => args` pairs. For example:
+{{ "GraphQL::Schema.from_definition" | api_doc }} accepts a `using:` argument, which may be given as a map of `plugin => args` pairs. For example:
 
 ```ruby
 MySchema = GraphQL::Schema.from_definition("path/to/schema.graphql", using: {
