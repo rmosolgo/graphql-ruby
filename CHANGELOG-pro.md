@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+# 1.17.6 (18 Feb 2021)
+
+### New Features
+
+- Stable connections: implement `range_add_edge` to leverage GraphQL-Ruby 1.12.5's improved RangeAdd #2184
+
+### Bug Fix
+
+- Defer: Update to work with Dataloader
+
 # 1.17.5 (13 Feb 2021)
 
 ### Bug Fix
