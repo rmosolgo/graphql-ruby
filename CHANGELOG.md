@@ -8,6 +8,20 @@
 
 ### Bug fixes
 
+# 1.12.5 (18 February 2021)
+
+### New features
+
+- Resolvers: support `max_page_size` config #3338
+- RangeAdd: call `range_add_edge` (if supported) to improve stable connection support #3341
+
+### Bug fixes
+
+- Backtrace: fix new tracer when analyzing multiplex without executing it #3342
+- Dataloader: pass along `throw`s #3333
+- Skip possible_types filtering for non-interface types #3336
+- Improve debugging message for ListResultFailedError #3339
+
 # 1.12.4 (8 February 2021)
 
 ### Bug fixes
