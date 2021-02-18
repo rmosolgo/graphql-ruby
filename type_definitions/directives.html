@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.12.4/">API</a>
+          <a href="/api-doc/1.12.5/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -83,15 +83,15 @@
 <p>Here’s how the two built-in directives work:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">@skip(if: ...)</code> skips the selection if the <code class="language-plaintext highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.12.4/GraphQL/Schema/Directive/Skip" target="_blank" title="API docs for GraphQL::Schema::Directive::Skip"><code>GraphQL::Schema::Directive::Skip</code></a>)</li>
-  <li><code class="language-plaintext highlighter-rouge">@include(if: ...)</code> includes the selection if the <code class="language-plaintext highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.12.4/GraphQL/Schema/Directive/Include" target="_blank" title="API docs for GraphQL::Schema::Directive::Include"><code>GraphQL::Schema::Directive::Include</code></a>)</li>
+  <li><code class="language-plaintext highlighter-rouge">@skip(if: ...)</code> skips the selection if the <code class="language-plaintext highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.12.5/GraphQL/Schema/Directive/Skip" target="_blank" title="API docs for GraphQL::Schema::Directive::Skip"><code>GraphQL::Schema::Directive::Skip</code></a>)</li>
+  <li><code class="language-plaintext highlighter-rouge">@include(if: ...)</code> includes the selection if the <code class="language-plaintext highlighter-rouge">if: ...</code> value is truthy (<a href="/api-doc/1.12.5/GraphQL/Schema/Directive/Include" target="_blank" title="API docs for GraphQL::Schema::Directive::Include"><code>GraphQL::Schema::Directive::Include</code></a>)</li>
 </ul>
 
 <p>GraphQL-Ruby also supports custom runtime directives for use with the <a href="/queries/interpreter">interpreter runtime</a>.</p>
 
 <h3 id="custom-runtime-directives">Custom Runtime Directives</h3>
 
-<p>Custom directives extend <a href="/api-doc/1.12.4/GraphQL/Schema/Directive" target="_blank" title="API docs for GraphQL::Schema::Directive"><code>GraphQL::Schema::Directive</code></a>:</p>
+<p>Custom directives extend <a href="/api-doc/1.12.5/GraphQL/Schema/Directive" target="_blank" title="API docs for GraphQL::Schema::Directive"><code>GraphQL::Schema::Directive</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/directives/my_directive.rb</span>
 <span class="k">class</span> <span class="nc">Directives::MyDirective</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Directive</span>
@@ -117,7 +117,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p><a href="/api-doc/1.12.4/GraphQL/Schema/Directive/Feature" target="_blank" title="API docs for GraphQL::Schema::Directive::Feature"><code>GraphQL::Schema::Directive::Feature</code></a> and <a href="/api-doc/1.12.4/GraphQL/Schema/Directive/Transform" target="_blank" title="API docs for GraphQL::Schema::Directive::Transform"><code>GraphQL::Schema::Directive::Transform</code></a> are included in the library as examples.</p>
+<p><a href="/api-doc/1.12.5/GraphQL/Schema/Directive/Feature" target="_blank" title="API docs for GraphQL::Schema::Directive::Feature"><code>GraphQL::Schema::Directive::Feature</code></a> and <a href="/api-doc/1.12.5/GraphQL/Schema/Directive/Transform" target="_blank" title="API docs for GraphQL::Schema::Directive::Transform"><code>GraphQL::Schema::Directive::Transform</code></a> are included in the library as examples.</p>
 
 <h3 id="runtime-hooks">Runtime hooks</h3>
 
@@ -145,7 +145,7 @@
 
 <h3 id="custom-schema-directives">Custom Schema Directives</h3>
 
-<p>To make a custom schema directive, extend <a href="/api-doc/1.12.4/GraphQL/Schema/Directive" target="_blank" title="API docs for GraphQL::Schema::Directive"><code>GraphQL::Schema::Directive</code></a>:</p>
+<p>To make a custom schema directive, extend <a href="/api-doc/1.12.5/GraphQL/Schema/Directive" target="_blank" title="API docs for GraphQL::Schema::Directive"><code>GraphQL::Schema::Directive</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/directives/permission.rb</span>
 <span class="k">class</span> <span class="nc">Directives::Permission</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Directive</span>
@@ -171,16 +171,16 @@
 
 <ul>
   <li>the configured object’s <code class="language-plaintext highlighter-rouge">.directives</code> method will return an array containing an instance of the specified directive</li>
-  <li>IDL dumps (from <a href="/api-doc/1.12.4/GraphQL/Schema#to_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.to_definition"><code>Schema.to_definition</code></a>) will include the configured directives</li>
+  <li>IDL dumps (from <a href="/api-doc/1.12.5/GraphQL/Schema#to_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.to_definition"><code>Schema.to_definition</code></a>) will include the configured directives</li>
 </ul>
 
-<p>Similarly, <a href="/api-doc/1.12.4/GraphQL/Schema#from_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.from_definition"><code>Schema.from_definition</code></a> parses directives from IDL strings.</p>
+<p>Similarly, <a href="/api-doc/1.12.5/GraphQL/Schema#from_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.from_definition"><code>Schema.from_definition</code></a> parses directives from IDL strings.</p>
 
 <p>For a couple of built-in examples, check out:</p>
 
 <ul>
-  <li><a href="/api-doc/1.12.4/GraphQL/Schema/Directive/Deprecated" target="_blank" title="API docs for GraphQL::Schema::Directive::Deprecated"><code>GraphQL::Schema::Directive::Deprecated</code></a> which implements <code class="language-plaintext highlighter-rouge">deprecation_reason</code> (via <a href="/api-doc/1.12.4/GraphQL/Schema/Member/HasDeprecationReason" target="_blank" title="API docs for GraphQL::Schema::Member::HasDeprecationReason"><code>GraphQL::Schema::Member::HasDeprecationReason</code></a>)</li>
-  <li><a href="/api-doc/1.12.4/GraphQL/Schema/Directive/Flagged" target="_blank" title="API docs for GraphQL::Schema::Directive::Flagged"><code>GraphQL::Schema::Directive::Flagged</code></a>, which is an example of using schema directives to implement <a href="/authorization/visibility">visibility</a></li>
+  <li><a href="/api-doc/1.12.5/GraphQL/Schema/Directive/Deprecated" target="_blank" title="API docs for GraphQL::Schema::Directive::Deprecated"><code>GraphQL::Schema::Directive::Deprecated</code></a> which implements <code class="language-plaintext highlighter-rouge">deprecation_reason</code> (via <a href="/api-doc/1.12.5/GraphQL/Schema/Member/HasDeprecationReason" target="_blank" title="API docs for GraphQL::Schema::Member::HasDeprecationReason"><code>GraphQL::Schema::Member::HasDeprecationReason</code></a>)</li>
+  <li><a href="/api-doc/1.12.5/GraphQL/Schema/Directive/Flagged" target="_blank" title="API docs for GraphQL::Schema::Directive::Flagged"><code>GraphQL::Schema::Directive::Flagged</code></a>, which is an example of using schema directives to implement <a href="/authorization/visibility">visibility</a></li>
 </ul>
 
 <h2 id="custom-name">Custom Name</h2>
