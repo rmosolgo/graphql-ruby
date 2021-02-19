@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.9.2 (19 Feb 2021)
+
+- Remove dependency on React by changing imports to `@apollo/client/core` #3349
+
 # 1.9.1 (11 Feb 2021)
 
 - Support graphql 15.x in dependencies #3334
