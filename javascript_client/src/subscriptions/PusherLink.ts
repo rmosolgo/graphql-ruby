@@ -34,7 +34,7 @@
 //     // Do something with `data` and/or `errors`
 //   }})
 //
-import { ApolloLink, Observable, Observer, Operation, NextLink, FetchResult } from "@apollo/client"
+import { ApolloLink, Observable, Observer, Operation, NextLink, FetchResult } from "@apollo/client/core"
 import Pusher from "pusher-js"
 
 type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>

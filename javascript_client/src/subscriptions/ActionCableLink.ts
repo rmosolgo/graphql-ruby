@@ -1,4 +1,4 @@
-import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client"
+import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client/core"
 import { Cable } from "actioncable"
 import { print } from "graphql"
 
