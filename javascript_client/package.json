@@ -22,7 +22,6 @@
     "pako": "^2.0.3",
     "prettier": "^1.19.1",
     "pusher-js": "^7.0.3",
-    "react": "^17.0.1",
     "ts-jest": "^25.2.0"
   },
   "scripts": {

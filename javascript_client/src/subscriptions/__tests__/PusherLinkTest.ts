@@ -1,7 +1,7 @@
 import PusherLink from "../PusherLink"
 import { parse } from "graphql"
 import Pusher from "pusher-js"
-import { Operation } from "@apollo/client"
+import { Operation } from "@apollo/client/core"
 import pako from 'pako'
 
 type MockChannel = {
