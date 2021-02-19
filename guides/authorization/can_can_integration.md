@@ -194,6 +194,20 @@ end
 
 (See {{ "GraphQL::Schema::Field" | api_doc }} for the different values available for defaults.)
 
+### Providing a Custom CanCan Subject
+
+Authorization checks are _skipped_ whenever the underlying `object` is `nil`. This can happen in root query fields, for example, when no `root_value: ...` is given. To provide a `can_can_subject` in this case, you can add it as a field configuration:
+
+```ruby
+field :users, Types::User.connection_type, null: false,
+  can_can_action: :manage,
+  # `:all` will be used instead of `object` (which is `nil`)
+  can_can_subject: :all
+end
+```
+
+The configuration above will call `can?(:manage, :all)` whenever that field is requested.
+
 ## Authorizing Arguments
 
 Similar to field-level checks, you can require certain permissions to _use_ certain arguments. To do this, add the integration to your base argument class:

@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+# 1.17.7 (19 Feb 2021)
+
+### New Features
+
+- CanCan integration: support `can_can_subject:` config for overriding the use of `object` as the CanCan subject #3350
+
+### Bug Fixes
+
+- Subscriptions: Support `Redis::Namespace` without deprecation warnings for `script load` #3347
+
 # 1.17.6 (18 Feb 2021)
 
 ### New Features
