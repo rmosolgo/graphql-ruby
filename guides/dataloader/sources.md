@@ -65,7 +65,7 @@ class Sources::ActiveRecordObject < GraphQL::Dataloader::Source
   def fetch(ids)
     records = @model_class.where(id: ids)
     # return a list with `nil` for any ID that wasn't found
-    ids.map { |id| records.find { |r| r.id == id } }
+    ids.map { |id| records.find { |r| r.id == id.to_i } }
   end
 end
 ```
