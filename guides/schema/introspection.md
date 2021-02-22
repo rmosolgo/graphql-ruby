@@ -90,9 +90,7 @@ For unions and interfaces, `__typename` returns the _object_ type for the curren
 
 ## Customizing Introspection
 
-This is an __experimental feature__, only supported in class-based schemas.
-
-With a class-based schema, you can use custom introspection types.
+You can use custom introspection types.
 
 ```ruby
 # create a module namespace for your custom types:
