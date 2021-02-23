@@ -85,6 +85,13 @@ describe GraphQL::Execution::Lookahead do
     end
   end
 
+  let(:first_lookahead) {
+    ast_node = document.definitions.first.selections.first
+    type = LookaheadTest::Query
+    lookahead = GraphQL::Execution::Lookahead.new(query: query, selections_by_type: { type => [ast_node] })
+  }
+
+
   describe "looking ahead" do
     let(:document) {
       GraphQL.parse <<-GRAPHQL
@@ -150,7 +157,7 @@ describe GraphQL::Execution::Lookahead do
       end
 
       it "works for field lookaheads" do
-        assert_includes query.lookahead.selection(:find_bird_species).inspect, "#<GraphQL::Execution::Lookahead @field="
+        assert_includes query.lookahead.selection(:find_bird_species).inspect, "#<GraphQL::Execution::Lookahead field=\"Query.findBirdSpecies\""
       end
     end
 
@@ -303,10 +310,7 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "provides a list of all selections" do
-      ast_node = document.definitions.first.selections.first
-      field = LookaheadTest::Query.fields["findBirdSpecies"]
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
-      assert_equal [:name, :similar_species], lookahead.selections.map(&:name)
+      assert_equal [:name, :similar_species], first_lookahead.selections.map(&:name)
     end
 
     it "filters outs selections which do not match arguments" do
@@ -375,10 +379,7 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "works for missing selections" do
-      ast_node = document.definitions.first.selections.first
-      field = LookaheadTest::Query.fields["findBirdSpecies"]
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
-      null_lookahead = lookahead.selection(:genus)
+      null_lookahead = first_lookahead.selection(:genus)
       # This is an implementation detail, but I want to make sure the test is set up right
       assert_instance_of GraphQL::Execution::Lookahead::NullLookahead, null_lookahead
       assert_equal [], null_lookahead.selections
@@ -425,19 +426,13 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "returns true for a field that is selected" do
-      ast_node = document.definitions.first.selections.first
-      field = LookaheadTest::Query.fields["findBirdSpecies"]
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
-      assert lookahead.selects?(:name)
-      assert lookahead.selects?(:similar_species)
-      assert_equal false, lookahead.selects?(:is_waterfowl)
+      assert first_lookahead.selects?(:name)
+      assert first_lookahead.selects?(:similar_species)
+      assert_equal false, first_lookahead.selects?(:is_waterfowl)
     end
 
     it "returns false for a field that is not selected" do
-      ast_node = document.definitions.first.selections.first
-      field = LookaheadTest::Query.fields["findBirdSpecies"]
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
-      assert_equal false, lookahead.selects?(:is_waterfowl)
+      assert_equal false, first_lookahead.selects?(:is_waterfowl)
     end
 
     it "returns false for a selection which does not match arguments" do
@@ -506,10 +501,7 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "returns false on missing selections" do
-      ast_node = document.definitions.first.selections.first
-      field = LookaheadTest::Query.fields["findBirdSpecies"]
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], field: field)
-      assert_equal false, lookahead.selection(:genus).selects?(:name)
+      assert_equal false, first_lookahead.selection(:genus).selects?(:name)
     end
 
     it "returns true for fields enabled by directives" do
