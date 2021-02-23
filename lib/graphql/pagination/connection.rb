@@ -46,7 +46,7 @@ module GraphQL
       end
 
       # @return [Hash<Symbol => Object>] The field arguments from the field that returned this connection
-      attr_reader :arguments
+      attr_accessor :arguments
 
       # @param items [Object] some unpaginated collection item, like an `Array` or `ActiveRecord::Relation`
       # @param context [Query::Context]
