@@ -3,8 +3,9 @@
 module GraphQL
   module Tracing
     # This implementation forwards events to ActiveSupport::Notifications
-    # with a `graphql.` prefix.
+    # with a `graphql` suffix.
     #
+    # @see KEYS for event names
     module ActiveSupportNotificationsTracing
       # A cache of frequently-used keys to avoid needless string allocations
       KEYS = {
