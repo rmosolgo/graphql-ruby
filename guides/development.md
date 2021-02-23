@@ -47,16 +47,6 @@ bundle exec rake test TEST=spec/graphql/query_spec.rb
 # run tests in `query_spec.rb` only
 ```
 
-Alternatively, you can run a __specific file__ with the [m](https://github.com/qrush/m) gem:
-
-```
-gem install m
-bundle exec m spec/graphql/query_spec.rb
-# run tests in `query_spec.rb` only
-bundle exec m spec/graphql/query_spec.rb:68
-# run test for `query_spec.rb:68` only
-```
-
 You can focus on a __specific example__ with `focus`:
 
 ```ruby
