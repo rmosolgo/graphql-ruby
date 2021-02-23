@@ -4,7 +4,6 @@ require "json"
 require "set"
 require "singleton"
 require "forwardable"
-require_relative "./graphql/railtie" if defined? Rails::Railtie
 
 module GraphQL
   # forwards-compat for argument handling
@@ -103,6 +102,9 @@ require "graphql/scalar_type"
 require "graphql/name_validator"
 
 require "graphql/language"
+
+require_relative "./graphql/railtie" if defined? Rails::Railtie
+
 require "graphql/analysis"
 require "graphql/tracing"
 require "graphql/dig"

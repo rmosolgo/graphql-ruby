@@ -462,12 +462,22 @@ def parse_document
   end
 end
 
-def self.parse(query_string, filename: nil, tracer: GraphQL::Tracing::NullTracer)
-  self.new(query_string, filename: filename, tracer: tracer).parse_document
-end
+class << self
+  attr_accessor :cache
 
-def self.parse_file(filename, tracer: GraphQL::Tracing::NullTracer)
-  self.parse(File.read(filename), filename: filename, tracer: tracer)
+  def parse(query_string, filename: nil, tracer: GraphQL::Tracing::NullTracer)
+    new(query_string, filename: filename, tracer: tracer).parse_document
+  end
+
+  def parse_file(filename, tracer: GraphQL::Tracing::NullTracer)
+    if cache
+      cache.fetch(filename) do
+        parse(File.read(filename), filename: filename, tracer: tracer)
+      end
+    else
+      parse(File.read(filename), filename: filename, tracer: tracer)
+    end
+  end
 end
 
 private
