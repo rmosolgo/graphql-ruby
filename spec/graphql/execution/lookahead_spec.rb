@@ -238,7 +238,11 @@ describe GraphQL::Execution::Lookahead do
       }
 
       it "finds selections using merging" do
-        merged_lookahead = query.lookahead.selection(:find_bird_species).selection(:similar_species)
+        merged_lookahead = query
+          .lookahead
+          .selection(:find_bird_species)
+          .selection(:similar_species)
+
         assert merged_lookahead.selects?(:__typename)
         assert merged_lookahead.selects?(:is_waterfowl)
         assert merged_lookahead.selects?(:name)
@@ -306,19 +310,13 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "filters outs selections which do not match arguments" do
-      ast_node = document.definitions.first
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
       arguments = { by_name: "Cardinal" }
-
-      assert_equal lookahead.selections(arguments: arguments).map(&:name), []
+      assert_equal query.lookahead.selections(arguments: arguments).map(&:name), []
     end
 
     it "includes selections which match arguments" do
-      ast_node = document.definitions.first
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
       arguments = { by_name: "Laughing Gull" }
-
-      assert_equal lookahead.selections(arguments: arguments).map(&:name), [:find_bird_species]
+      assert_equal query.lookahead.selections(arguments: arguments).map(&:name), [:find_bird_species]
     end
 
     it 'handles duplicate selections across fragments' do
@@ -371,7 +369,7 @@ describe GraphQL::Execution::Lookahead do
 
       node_lookahead = query.lookahead.selection("node")
       assert_equal(
-        [[LookaheadTest::Node, :id], [LookaheadTest::BirdSpecies, :name], [LookaheadTest::BirdGenus, :name]],
+        [[LookaheadTest::BirdSpecies, :name], [LookaheadTest::BirdGenus, :name], [LookaheadTest::Node, :id]],
         node_lookahead.selections.map { |s| [s.owner_type, s.name] }
       )
     end
@@ -443,19 +441,13 @@ describe GraphQL::Execution::Lookahead do
     end
 
     it "returns false for a selection which does not match arguments" do
-      ast_node = document.definitions.first
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
       arguments = { by_name: "Cardinal" }
-
-      assert_equal false, lookahead.selects?(:name, arguments: arguments)
+      assert_equal false, query.lookahead.selects?(:name, arguments: arguments)
     end
 
     it "returns true for a selection which matches arguments" do
-      ast_node = document.definitions.first
-      lookahead = GraphQL::Execution::Lookahead.new(query: query, ast_nodes: [ast_node], root_type: LookaheadTest::Query)
       arguments = { by_name: "Laughing Gull" }
-
-      assert lookahead.selects?(:find_bird_species, arguments: arguments)
+      assert query.lookahead.selects?(:find_bird_species, arguments: arguments)
     end
 
     it 'returns true for selection that is duplicated across fragments' do
@@ -495,6 +487,9 @@ describe GraphQL::Execution::Lookahead do
           node(id: "Cardinal") {
             ... on BirdSpecies {
               name
+              similarSpecies {
+                name
+              }
             }
             ... on BirdGenus {
               name
@@ -507,6 +502,7 @@ describe GraphQL::Execution::Lookahead do
       node_lookahead = query.lookahead.selection("node")
       assert node_lookahead.selects?(:id)
       assert node_lookahead.selects?(:name)
+      assert node_lookahead.selection(:similar_species).selects?(:name)
     end
 
     it "returns false on missing selections" do

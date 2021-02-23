@@ -166,7 +166,7 @@ module GraphQL
         ast_node = selected_operation
         root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
         root_type = root_type.type_class || raise("Invariant: `lookahead` only works with class-based types")
-        GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
+        GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, selections_by_type: { root_type => [ast_node] })
       end
     end
 
