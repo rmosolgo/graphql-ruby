@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+# 1.17.8 (23 Feb 2021)
+
+### New Features
+
+- Subscriptions: change the default `cleanup_delay_s:` to 5 seconds (use `cleanup_delay_s: 0` to get the old behavior)
+
+### Bug Fix
+
+- Subscriptions: Handle unsubscribe race condition #3357
+
 # 1.17.7 (19 Feb 2021)
 
 ### New Features
