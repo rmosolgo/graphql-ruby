@@ -10,12 +10,12 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
     prepare_destination
 
     FileUtils.cd(File.join(destination_root, '..')) do
-      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle`
+      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
     end
   end
 
   test "it generates a folder structure" do
-    run_generator
+    run_generator([ "--relay", "false"])
 
     assert_file "app/graphql/types/.keep"
     assert_file "app/graphql/mutations/.keep"
@@ -45,12 +45,12 @@ class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
-  # Opt in to the new runtime (default in future graphql-ruby versions)
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
-
-  # Add built-in connections for pagination
-  use GraphQL::Pagination::Connections
+  # Union and Interface Resolution
+  def self.resolve_type(abstract_type, obj, ctx)
+    # TODO: Implement this function
+    # to return the correct object type for `obj`
+    raise(GraphQL::RequiredImplementationMissingError)
+  end
 end
 RUBY
     assert_file "app/graphql/dummy_schema.rb", expected_schema
@@ -124,22 +124,30 @@ RUBY
   end
 
   test "it allows for a user-specified install directory" do
-    run_generator(["--directory", "app/mydirectory"])
+    run_generator(["--directory", "app/mydirectory", "--relay", "false"])
 
     assert_file "app/mydirectory/types/.keep"
     assert_file "app/mydirectory/mutations/.keep"
   end
 
-  test "it generates graphql-batch and relay boilerplate" do
-    run_generator(["--batch", "--relay"])
-    assert_file "app/graphql/loaders/.keep"
-    assert_file "Gemfile" do |contents|
-      assert_match %r{gem ('|")graphql-batch('|")}, contents
-    end
+  if Rails::VERSION::STRING > "3.9"
+    # This test doesn't work on Rails 3 because it tries to boot the app
+    # between the batch and relay generators, but `bundle install`
+    # hasn't run yet, so graphql-batch isn't present
+    test "it generates graphql-batch and relay boilerplate" do
+      run_generator(["--batch"])
+      assert_file "app/graphql/loaders/.keep"
+      assert_file "Gemfile" do |contents|
+        assert_match %r{gem ('|")graphql-batch('|")}, contents
+      end
 
-    expected_query_type = <<-RUBY
+      expected_query_type = <<-RUBY
 module Types
   class QueryType < Types::BaseObject
+    # Add `node(id: ID!) and `nodes(ids: [ID!]!)`
+    include GraphQL::Types::Relay::HasNodeField
+    include GraphQL::Types::Relay::HasNodesField
+
     # Add root-level fields here.
     # They will be entry points for queries on your schema.
 
@@ -149,14 +157,13 @@ module Types
     def test_field
       \"Hello World!\"
     end
-
-    field :node, field: GraphQL::Relay::Node.field
   end
 end
 RUBY
 
-    assert_file "app/graphql/types/query_type.rb", expected_query_type
-    assert_file "app/graphql/dummy_schema.rb", EXPECTED_RELAY_BATCH_SCHEMA
+      assert_file "app/graphql/types/query_type.rb", expected_query_type
+      assert_file "app/graphql/dummy_schema.rb", EXPECTED_RELAY_BATCH_SCHEMA
+    end
   end
 
   test "it doesn't install graphiql when API Only" do
@@ -215,7 +222,7 @@ class GraphqlController < ApplicationController
   # protect_from_forgery with: :null_session
 
   def execute
-    variables = ensure_hash(params[:variables])
+    variables = prepare_variables(params[:variables])
     query = params[:query]
     operation_name = params[:operationName]
     context = {
@@ -231,21 +238,23 @@ class GraphqlController < ApplicationController
 
   private
 
-  # Handle form data, JSON body, or a blank value
-  def ensure_hash(ambiguous_param)
-    case ambiguous_param
+  # Handle variables in form data, JSON body, or a blank value
+  def prepare_variables(variables_param)
+    case variables_param
     when String
-      if ambiguous_param.present?
-        ensure_hash(JSON.parse(ambiguous_param))
+      if variables_param.present?
+        JSON.parse(variables_param) || {}
       else
         {}
       end
-    when Hash, ActionController::Parameters
-      ambiguous_param
+    when Hash
+      variables_param
+    when ActionController::Parameters
+      variables_param.to_unsafe_hash # GraphQL-Ruby will validate name and type of incoming variables.
     when nil
       {}
     else
-      raise ArgumentError, "Unexpected parameter: #{ambiguous_param}"
+      raise ArgumentError, "Unexpected parameter: #{variables_param}"
     end
   end
 
@@ -263,14 +272,17 @@ class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
-  # Opt in to the new runtime (default in future graphql-ruby versions)
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
+  # GraphQL::Batch setup:
+  use GraphQL::Batch
 
-  # Add built-in connections for pagination
-  use GraphQL::Pagination::Connections
+  # Union and Interface Resolution
+  def self.resolve_type(abstract_type, obj, ctx)
+    # TODO: Implement this function
+    # to return the correct object type for `obj`
+    raise(GraphQL::RequiredImplementationMissingError)
+  end
 
-  # Relay Object Identification:
+  # Relay-style Object Identification:
 
   # Return a string UUID for `object`
   def self.id_from_object(object, type_definition, query_ctx)
@@ -289,16 +301,6 @@ class DummySchema < GraphQL::Schema
     # find an object in your application
     # ...
   end
-
-  # Object Resolution
-  def self.resolve_type(type, obj, ctx)
-    # TODO: Implement this function
-    # to return the correct type for `obj`
-    raise(GraphQL::RequiredImplementationMissingError)
-  end
-
-  # GraphQL::Batch setup:
-  use GraphQL::Batch
 end
 RUBY
 end

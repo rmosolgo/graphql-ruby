@@ -22,7 +22,7 @@ describe GraphQL::Execution::Typecast do
       assert !subtype?(Dummy::DairyAppQuery.graphql_definition, Dummy::DairyProduct.graphql_definition)
       assert !subtype?(Dummy::Cheese.graphql_definition, Dummy::DairyProduct.graphql_definition)
       assert !subtype?(Dummy::Edible.graphql_definition, Dummy::DairyProduct.graphql_definition)
-      assert !subtype?(Dummy::Edible.graphql_definition, GraphQL::STRING_TYPE)
+      assert !subtype?(Dummy::Edible.graphql_definition, GraphQL::DEPRECATED_STRING_TYPE)
       assert !subtype?(Dummy::Edible.graphql_definition, Dummy::DairyProductInput.graphql_definition)
     end
 
@@ -31,7 +31,7 @@ describe GraphQL::Execution::Typecast do
       assert subtype?(Dummy::DairyProduct.graphql_definition.to_list_type, Dummy::Milk.graphql_definition.to_list_type)
       assert !subtype?(Dummy::Cheese.graphql_definition.to_list_type, Dummy::DairyProduct.graphql_definition.to_list_type)
       assert !subtype?(Dummy::Edible.graphql_definition.to_list_type, Dummy::DairyProduct.graphql_definition.to_list_type)
-      assert !subtype?(Dummy::Edible.graphql_definition.to_list_type, GraphQL::STRING_TYPE.to_list_type)
+      assert !subtype?(Dummy::Edible.graphql_definition.to_list_type, GraphQL::DEPRECATED_STRING_TYPE.to_list_type)
     end
 
     it "counts non-null types as subtypes of nullable parent types" do
@@ -39,8 +39,8 @@ describe GraphQL::Execution::Typecast do
       assert subtype?(Dummy::Edible.graphql_definition, Dummy::Milk.graphql_definition.to_non_null_type)
       assert subtype?(Dummy::Edible.graphql_definition.to_non_null_type, Dummy::Milk.graphql_definition.to_non_null_type)
       assert subtype?(
-        GraphQL::STRING_TYPE.to_non_null_type.to_list_type,
-        GraphQL::STRING_TYPE.to_non_null_type.to_list_type.to_non_null_type,
+        GraphQL::DEPRECATED_STRING_TYPE.to_non_null_type.to_list_type,
+        GraphQL::DEPRECATED_STRING_TYPE.to_non_null_type.to_list_type.to_non_null_type,
       )
     end
   end

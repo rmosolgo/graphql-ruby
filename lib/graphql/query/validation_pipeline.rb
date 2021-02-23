@@ -72,7 +72,7 @@ module GraphQL
         elsif @operation_name_error
           @validation_errors << @operation_name_error
         else
-          validation_result = @schema.static_validator.validate(@query, validate: @validate)
+          validation_result = @schema.static_validator.validate(@query, validate: @validate, timeout: @schema.validate_timeout)
           @validation_errors.concat(validation_result[:errors])
           @internal_representation = validation_result[:irep]
 
@@ -90,6 +90,9 @@ module GraphQL
         end
 
         @valid = @validation_errors.empty?
+      rescue SystemStackError => err
+        @valid = false
+        @schema.query_stack_error(@query, err)
       end
 
       # If there are max_* values, add them,

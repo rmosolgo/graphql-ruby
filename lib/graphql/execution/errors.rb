@@ -18,6 +18,10 @@ module GraphQL
     #
     class Errors
       def self.use(schema)
+        if schema.plugins.any? { |(plugin, kwargs)| plugin == self }
+          definition_line = caller(2, 1).first
+          GraphQL::Deprecation.warn("GraphQL::Execution::Errors is now installed by default, remove `use GraphQL::Execution::Errors` from #{definition_line}")
+        end
         schema.error_handler = self.new(schema)
       end
 

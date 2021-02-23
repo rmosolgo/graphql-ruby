@@ -1,3 +1,4 @@
+<% module_namespacing_when_supported do -%>
 module Types
   class <%= type_ruby_name.split('::')[-1] %> < Types::BaseScalar
     def self.coerce_input(input_value, context)
@@ -11,3 +12,4 @@ module Types
     end
   end
 end
+<% end -%>

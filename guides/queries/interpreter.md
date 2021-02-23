@@ -8,19 +8,9 @@ desc: A New Runtime for GraphQL-Ruby
 index: 11
 ---
 
-GraphQL-Ruby 1.9.0 includes a new runtime module which you may use for your schema. Eventually, it will become the default.
+GraphQL-Ruby 1.9.0 includes a new runtime module which you may use for your schema. It is the default runtime since 1.12.0.
 
-It's called `GraphQL::Execution::Interpreter` and you can hook it up with `use ...` in your schema class:
-
-```ruby
-class MySchema < GraphQL::Schema
-  use GraphQL::Execution::Interpreter
-  # Also required in GraphQL-Ruby 1.10+:
-  use GraphQL::Analysis::AST
-end
-```
-
-Read on to learn more!
+It's called `GraphQL::Execution::Interpreter`, read on to learn more!
 
 ## Rationale
 
@@ -32,12 +22,12 @@ The new runtime was added to address a few specific concerns:
 
 ## Installation
 
-You can opt in to the interpreter in your schema class:
+In GraphQL-Ruby 1.12, the interpreter is installed __by default__. In older versions, you can opt in to the interpreter in your schema class:
 
 ```ruby
 class MySchema < GraphQL::Schema
+  # These are default in 1.12+:
   use GraphQL::Execution::Interpreter
-  # Also required in GraphQL-Ruby 1.10+:
   use GraphQL::Analysis::AST
 end
 ```
@@ -109,7 +99,6 @@ use GraphQL::Analysis::AST
 When you use _both_ `Interpreter` and `Analysis::AST`, GraphQL-Ruby will skip the slow process of building `irep_nodes`.
 
 All analyzers must be migrated at once; running _some_ legacy analyzers and _some_ AST analyzers is not supported.
-
 
 In GraphQL-Ruby 1.9, you can migrate to `Interpreter` before migrating to `Analysis::AST`. In that case, the `irep_node` tree will still be constructed and used for analysis, even though it will not be used for execution.
 

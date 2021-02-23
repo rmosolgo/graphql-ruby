@@ -9,6 +9,13 @@ module GraphQL
     class Directive < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasArguments
       class << self
+        # Directives aren't types, they don't have kinds.
+        undef_method :kind
+
+        def path
+          "@#{super}"
+        end
+
         # Return a name based on the class name,
         # but downcase the first letter.
         def default_graphql_name
@@ -21,6 +28,11 @@ module GraphQL
 
         def locations(*new_locations)
           if new_locations.any?
+            new_locations.each do |new_loc|
+              if !LOCATIONS.include?(new_loc.to_sym)
+                raise ArgumentError, "#{self} (#{self.graphql_name}) has an invalid directive location: `locations #{new_loc}` "
+              end
+            end
             @locations = new_locations
           else
             @locations ||= (superclass.respond_to?(:locations) ? superclass.locations : [])
@@ -87,6 +99,23 @@ module GraphQL
         end
       end
 
+      # @return [GraphQL::Schema::Field, GraphQL::Schema::Argument, Class, Module]
+      attr_reader :owner
+
+      # @return [GraphQL::Interpreter::Arguments]
+      attr_reader :arguments
+
+      def initialize(owner, **arguments)
+        @owner = owner
+        assert_valid_owner
+        # It's be nice if we had the real context here, but we don't. What we _would_ get is:
+        # - error handling
+        # - lazy resolution
+        # Probably, those won't be needed here, since these are configuration arguments,
+        # not runtime arguments.
+        @arguments = self.class.coerce_arguments(nil, arguments, Query::NullContext)
+      end
+
       LOCATIONS = [
         QUERY =                  :QUERY,
         MUTATION =               :MUTATION,
@@ -129,6 +158,53 @@ module GraphQL
         INPUT_OBJECT:             'Location adjacent to an input object type definition.',
         INPUT_FIELD_DEFINITION:   'Location adjacent to an input object field definition.',
       }
+
+      private
+
+      def assert_valid_owner
+        case @owner
+        when Class
+          if @owner < GraphQL::Schema::Object
+            assert_has_location(OBJECT)
+          elsif @owner < GraphQL::Schema::Union
+            assert_has_location(UNION)
+          elsif @owner < GraphQL::Schema::Enum
+            assert_has_location(ENUM)
+          elsif @owner < GraphQL::Schema::InputObject
+            assert_has_location(INPUT_OBJECT)
+          elsif @owner < GraphQL::Schema::Scalar
+            assert_has_location(SCALAR)
+          elsif @owner < GraphQL::Schema
+            assert_has_location(SCHEMA)
+          else
+            raise "Unexpected directive owner class: #{@owner}"
+          end
+        when Module
+          assert_has_location(INTERFACE)
+        when GraphQL::Schema::Argument
+          if @owner.owner.is_a?(GraphQL::Schema::Field)
+            assert_has_location(ARGUMENT_DEFINITION)
+          else
+            assert_has_location(INPUT_FIELD_DEFINITION)
+          end
+        when GraphQL::Schema::Field
+          assert_has_location(FIELD_DEFINITION)
+        when GraphQL::Schema::EnumValue
+          assert_has_location(ENUM_VALUE)
+        else
+          raise "Unexpected directive owner: #{@owner.inspect}"
+        end
+      end
+
+      def assert_has_location(location)
+        if !self.class.locations.include?(location)
+          raise ArgumentError, <<-MD
+Directive `@#{self.class.graphql_name}` can't be attached to #{@owner.graphql_name} because #{location} isn't included in its locations (#{self.class.locations.join(", ")}).
+
+Use `locations(#{location})` to update this directive's definition, or remove it from #{@owner.graphql_name}.
+MD
+        end
+      end
     end
   end
 end

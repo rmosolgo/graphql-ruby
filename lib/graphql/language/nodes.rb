@@ -255,7 +255,7 @@ module GraphQL
               return
             else
               arguments = scalar_method_names.map { |m| "#{m}: nil"} +
-                @children_methods.keys.map { |m| "#{m}: []" }
+                @children_methods.keys.map { |m| "#{m}: NO_CHILDREN" }
 
               assignments = scalar_method_names.map { |m| "@#{m} = #{m}"} +
                 @children_methods.keys.map { |m| "@#{m} = #{m}.freeze" }
@@ -524,6 +524,7 @@ module GraphQL
 
       # Usage of a variable in a query. Name does _not_ include `$`.
       class VariableIdentifier < NameOnlyNode
+        self.children_method_name = :value
       end
 
       class SchemaDefinition < AbstractNode

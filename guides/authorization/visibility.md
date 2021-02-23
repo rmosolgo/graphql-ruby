@@ -5,6 +5,8 @@ section: Authorization
 title: Visibility
 desc: Programatically hide parts of the GraphQL schema from some users.
 index: 1
+redirect_from:
+- /schema/limiting_visibility
 ---
 
 With GraphQL-Ruby, it's possible to _hide_ parts of your schema from some users. This isn't exactly part of the GraphQL spec, but it's roughly within the bounds of the spec.

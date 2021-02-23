@@ -66,8 +66,6 @@ To __map the wrapper to a class of objects__, add it to your schema:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  # Add the connection plugin
-  use GraphQL::Pagination::Connections
   # Hook up a custom wrapper
   connections.add(SearchEngine::Result, Connections::SearchResultsConnection)
 end

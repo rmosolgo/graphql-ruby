@@ -16,7 +16,7 @@ The primitive for analysis is {{ "GraphQL::Analysis::AST::Analyzer" | api_doc }}
 
 ### Using Analyzers
 
-Query analyzers are added to the schema the same one as before with `query_analyzer`. However, to use the new analysis engine, you must opt in by using `use GraphQL::Analysis::AST`, for example:
+Query analyzers are added to the schema with `query_analyzer`; however, to use the new analysis engine, you must opt in by using `use GraphQL::Analysis::AST`, for example:
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -45,7 +45,7 @@ class BasicCounterAnalyzer < GraphQL::Analysis::AST::Analyzer
     @arguments = Set.new
   end
 
-  # Visitor are all defined on the AST::Analyzer base class
+  # Visitors are all defined on the AST::Analyzer base class
   # We override them for custom analyzers.
   def on_leave_field(node, _parent, _visitor)
     @fields.add(node.name)
@@ -69,7 +69,7 @@ class BasicFieldAnalyzer < GraphQL::Analysis::AST::Analyzer
     @fields = Set.new
   end
 
-  # Visitor are all defined on the AST::Analyzer base class
+  # Visitors are all defined on the AST::Analyzer base class
   # We override them for custom analyzers.
   def on_leave_field(node, _parent, visitor)
     if visitor.skipping? || visitor.visiting_fragment_definition?

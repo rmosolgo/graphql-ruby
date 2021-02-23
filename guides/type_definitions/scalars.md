@@ -18,6 +18,7 @@ Scalars are "leaf" values in GraphQL. There are several built-in scalars, and yo
 - `ISO8601DateTime`, an ISO 8601-encoded datetime
 - `ISO8601Date`, an ISO 8601-encoded date
 - `JSON`, ⚠ This returns arbitrary JSON (Ruby hashes, arrays, strings, integers, floats, booleans and nils). Take care: by using this type, you completely lose all GraphQL type safety. Consider building object types for your data instead.
+- `BigInt`, a numeric value which may exceed the size of a 32-bit integer
 
 Fields can return built-in scalars by referencing them by name:
 
@@ -40,6 +41,8 @@ field :created_at, GraphQL::Types::ISO8601DateTime, null: false
 field :birthday, GraphQL::Types::ISO8601Date, null: false
 # JSON field ⚠
 field :parameters, GraphQL::Types::JSON, null: false
+# BigInt field
+field :sales, GraphQL::Types::BigInt, null: false
 ```
 
 Custom scalars (see below) can also be used by name:

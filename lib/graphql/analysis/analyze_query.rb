@@ -3,6 +3,11 @@ module GraphQL
   module Analysis
     module_function
 
+    def use(schema_class)
+      schema = schema_class.is_a?(Class) ? schema_class : schema_class.target
+      schema.analysis_engine = self
+    end
+
     # @return [void]
     def analyze_multiplex(multiplex, analyzers)
       multiplex.trace("analyze_multiplex", { multiplex: multiplex }) do
@@ -38,6 +43,8 @@ module GraphQL
     # @param analyzers [Array<#call>] Objects that respond to `#call(memo, visit_type, irep_node)`
     # @return [Array<Any>] Results from those analyzers
     def analyze_query(query, analyzers, multiplex_states: [])
+      GraphQL::Deprecation.warn "Legacy analysis will be removed in GraphQL-Ruby 2.0, please upgrade to AST Analysis: https://graphql-ruby.org/queries/ast_analysis.html (schema: #{query.schema})"
+
       query.trace("analyze_query", { query: query }) do
         analyzers_to_run = analyzers.select do |analyzer|
           if analyzer.respond_to?(:analyze?)

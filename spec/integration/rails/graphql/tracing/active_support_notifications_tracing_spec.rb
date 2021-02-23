@@ -12,18 +12,10 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
     traces = []
 
     callback = ->(name, started, finished, id, data) {
-      path_str = if TESTING_INTERPRETER
-        if data.key?(:field)
-          " (#{data[:field].path})"
-        else
-          ""
-        end
+      path_str = if data.key?(:field)
+        " (#{data[:field].path})"
       else
-        if data.key?(:context)
-          " (#{data[:context].irep_node.owner_type}.#{data[:context].field.name})"
-        else
-          ""
-        end
+        ""
       end
       traces << "#{name}#{path_str}"
     }
@@ -50,16 +42,16 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
       "validate.graphql",
       "analyze_query.graphql",
       "analyze_multiplex.graphql",
-      (TESTING_INTERPRETER ? "authorized.graphql" : nil),
+      "authorized.graphql",
       "execute_field.graphql (Query.batchedBase)",
       "execute_field.graphql (Query.batchedBase)",
       "execute_query.graphql",
       "lazy_loader.graphql",
       "execute_field_lazy.graphql (Query.batchedBase)",
-      (TESTING_INTERPRETER ? "authorized.graphql" : nil),
+      "authorized.graphql",
       "execute_field.graphql (Base.name)",
       "execute_field_lazy.graphql (Query.batchedBase)",
-      (TESTING_INTERPRETER ? "authorized.graphql" : nil),
+      "authorized.graphql",
       "execute_field.graphql (Base.name)",
       "execute_field_lazy.graphql (Base.name)",
       "execute_field_lazy.graphql (Base.name)",

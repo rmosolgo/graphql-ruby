@@ -88,6 +88,7 @@ module GraphQL
         schema = schema.graphql_definition
       end
       @schema = schema
+      @interpreter = @schema.interpreter?
       @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       @warden = warden
@@ -148,7 +149,11 @@ module GraphQL
       @query_string ||= (document ? document.to_query_string : nil)
     end
 
-    def_delegators :@schema, :interpreter?
+    def interpreter?
+      @interpreter
+    end
+
+    attr_accessor :multiplex
 
     def subscription_update?
       @subscription_topic && subscription?
@@ -247,11 +252,17 @@ module GraphQL
     # @return Hash{Symbol => Object}
     def arguments_for(ast_node, definition, parent_object: nil)
       if interpreter?
+        arguments_cache.fetch(ast_node, definition, parent_object)
+      else
+        arguments_cache[ast_node][definition]
+      end
+    end
+
+    def arguments_cache
+      if interpreter?
         @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
-        @arguments_cache.fetch(ast_node, definition, parent_object)
       else
         @arguments_cache ||= ArgumentsCache.build(self)
-        @arguments_cache[ast_node][definition]
       end
     end
 
@@ -259,9 +270,9 @@ module GraphQL
     # - Variables inlined to the query
     # - Strings replaced with `<REDACTED>`
     # @return [String, nil] Returns nil if the query is invalid.
-    def sanitized_query_string
+    def sanitized_query_string(inline_variables: true)
       with_prepared_ast {
-        GraphQL::Language::SanitizedPrinter.new(self).sanitized_query_string
+        GraphQL::Language::SanitizedPrinter.new(self, inline_variables: inline_variables).sanitized_query_string
       }
     end
 

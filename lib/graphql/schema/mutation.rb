@@ -78,6 +78,10 @@ module GraphQL
 
         private
 
+        def conflict_field_name_warning(field_defn)
+          "#{self.graphql_name}'s `field :#{field_defn.name}` conflicts with a built-in method, use `hash_key:` or `method:` to pick a different resolve behavior for this field (for example, `hash_key: :#{field_defn.resolver_method}_value`, and modify the return hash). Or use `method_conflict_warning: false` to suppress this warning."
+        end
+
         # Override this to attach self as `mutation`
         def generate_payload_type
           payload_class = super

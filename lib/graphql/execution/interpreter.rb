@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "fiber"
 require "graphql/execution/interpreter/argument_value"
 require "graphql/execution/interpreter/arguments"
 require "graphql/execution/interpreter/arguments_cache"
@@ -22,12 +23,15 @@ module GraphQL
       end
 
       def self.use(schema_class)
-        schema_class.interpreter = true
-        schema_class.query_execution_strategy(GraphQL::Execution::Interpreter)
-        schema_class.mutation_execution_strategy(GraphQL::Execution::Interpreter)
-        schema_class.subscription_execution_strategy(GraphQL::Execution::Interpreter)
-        schema_class.add_subscription_extension_if_necessary
-        GraphQL::Schema::Object.include(HandlesRawValue)
+        if schema_class.interpreter?
+          definition_line = caller(2, 1).first
+          GraphQL::Deprecation.warn("GraphQL::Execution::Interpreter is now the default; remove `use GraphQL::Execution::Interpreter` from the schema definition (#{definition_line})")
+        else
+          schema_class.query_execution_strategy(self)
+          schema_class.mutation_execution_strategy(self)
+          schema_class.subscription_execution_strategy(self)
+          schema_class.add_subscription_extension_if_necessary
+        end
       end
 
       def self.begin_multiplex(multiplex)
@@ -91,15 +95,25 @@ module GraphQL
         end
         final_values.compact!
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-          Interpreter::Resolve.resolve_all(final_values)
+          Interpreter::Resolve.resolve_all(final_values, multiplex.dataloader)
         end
+        queries.each do |query|
+          runtime = query.context.namespace(:interpreter)[:runtime]
+          if runtime
+            runtime.delete_interpreter_context(:current_path)
+            runtime.delete_interpreter_context(:current_field)
+            runtime.delete_interpreter_context(:current_object)
+            runtime.delete_interpreter_context(:current_arguments)
+          end
+        end
+        nil
       end
 
       class ListResultFailedError < GraphQL::Error
         def initialize(value:, path:, field:)
           message = "Failed to build a GraphQL list result for field `#{field.path}` at path `#{path.join(".")}`.\n".dup
 
-          message << "Expected `#{value.inspect}` to implement `.each` to satisfy the GraphQL return type `#{field.type.to_type_signature}`.\n"
+          message << "Expected `#{value.inspect}` (#{value.class}) to implement `.each` to satisfy the GraphQL return type `#{field.type.to_type_signature}`.\n"
 
           if field.connection?
             message << "\nThis field was treated as a Relay-style connection; add `connection: false` to the `field(...)` to disable this behavior."

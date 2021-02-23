@@ -2,6 +2,8 @@
 module GraphQL
   # @api deprecated
   class ObjectType < GraphQL::BaseType
+    extend Define::InstanceDefinable::DeprecatedDefine
+
     accepts_definitions :interfaces, :fields, :mutation, :relay_node_type, field: GraphQL::Define::AssignObjectField
     accepts_definitions implements: ->(type, *interfaces, inherit: false) { type.implements(interfaces, inherit: inherit) }
 
@@ -119,8 +121,6 @@ module GraphQL
           iface = GraphQL::BaseType.resolve_related_type(type_membership.abstract_type)
           if iface.is_a?(GraphQL::InterfaceType)
             @clean_inherited_fields.merge!(iface.fields)
-          else
-            pp iface
           end
         end
         @clean_inherited_fields

@@ -22,7 +22,9 @@ module GraphQL
       field :enum_values, [GraphQL::Schema::LateBoundType.new("__EnumValue")], null: true do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: true
+      field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: true  do
+        argument :include_deprecated, Boolean, required: false, default_value: false
+      end
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type"), null: true
 
       def name
@@ -55,9 +57,11 @@ module GraphQL
         end
       end
 
-      def input_fields
+      def input_fields(include_deprecated:)
         if @object.kind.input_object?
-          @context.warden.arguments(@object)
+          args = @context.warden.arguments(@object)
+          args = args.reject(&:deprecation_reason) unless include_deprecated
+          args
         else
           nil
         end

@@ -42,8 +42,8 @@ module GraphQL
   # execute_multiplex | `{ multiplex: GraphQL::Execution::Multiplex }`
   # execute_query | `{ query: GraphQL::Query }`
   # execute_query_lazy | `{ query: GraphQL::Query?, multiplex: GraphQL::Execution::Multiplex? }`
-  # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext?, owner: Class?, field: GraphQL::Schema::Field?, query: GraphQL::Query?, path: Array<String, Integer>?}`
-  # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext?, owner: Class?, field: GraphQL::Schema::Field?, query: GraphQL::Query?, path: Array<String, Integer>?}`
+  # execute_field | `{ owner: Class, field: GraphQL::Schema::Field, query: GraphQL::Query, path: Array<String, Integer>, ast_node: GraphQL::Language::Nodes::Field}`
+  # execute_field_lazy | `{ owner: Class, field: GraphQL::Schema::Field, query: GraphQL::Query, path: Array<String, Integer>, ast_node: GraphQL::Language::Nodes::Field}`
   # authorized | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`
   # authorized_lazy | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`
   # resolve_type | `{ context: GraphQL::Query::Context, type: Class, object: Object, path: Array<String, Integer> }`

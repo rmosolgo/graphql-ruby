@@ -4,9 +4,7 @@ require "graphql/subscriptions/broadcast_analyzer"
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
-if defined?(ActionCable)
-  require "graphql/subscriptions/action_cable_subscriptions"
-end
+require "graphql/subscriptions/action_cable_subscriptions"
 require "graphql/subscriptions/subscription_root"
 require "graphql/subscriptions/default_subscription_resolve_extension"
 
@@ -28,7 +26,9 @@ module GraphQL
 
       instrumentation = Subscriptions::Instrumentation.new(schema: schema)
       defn.instrument(:query, instrumentation)
-      defn.instrument(:field, instrumentation)
+      if !schema.is_a?(Class)
+        defn.instrument(:field, instrumentation)
+      end
       options[:schema] = schema
       schema.subscriptions = self.new(**options)
       schema.add_subscription_extension_if_necessary
@@ -100,16 +100,16 @@ module GraphQL
       # Lookup the saved data for this subscription
       query_data = read_subscription(subscription_id)
       if query_data.nil?
-        # Jump down to the `delete_subscription` call
-        raise GraphQL::Schema::Subscription::UnsubscribedError
+        delete_subscription(subscription_id)
+        return nil
       end
+
       # Fetch the required keys from the saved data
       query_string = query_data.fetch(:query_string)
       variables = query_data.fetch(:variables)
       context = query_data.fetch(:context)
       operation_name = query_data.fetch(:operation_name)
-      # Re-evaluate the saved query
-      @schema.execute(
+      result = @schema.execute(
         query: query_string,
         context: context,
         subscription_topic: event.topic,
@@ -117,14 +117,21 @@ module GraphQL
         variables: variables,
         root_value: object,
       )
-    rescue GraphQL::Schema::Subscription::NoUpdateError
-      # This update was skipped in user code; do nothing.
-      nil
-    rescue GraphQL::Schema::Subscription::UnsubscribedError
-      # `unsubscribe` was called, clean up on our side
-      # TODO also send `{more: false}` to client?
-      delete_subscription(subscription_id)
-      nil
+      subscriptions_context = result.context.namespace(:subscriptions)
+      if subscriptions_context[:no_update]
+        result = nil
+      end
+
+      unsubscribed = subscriptions_context[:unsubscribed]
+
+      if unsubscribed
+        # `unsubscribe` was called, clean up on our side
+        # TODO also send `{more: false}` to client?
+        delete_subscription(subscription_id)
+        result = nil
+      end
+
+      result
     end
 
     # Run the update query for this subscription and deliver it

@@ -1,3 +1,4 @@
+<% module_namespacing_when_supported do -%>
 module Mutations
   class BaseMutation < GraphQL::Schema::RelayClassicMutation
     argument_class Types::BaseArgument
@@ -6,3 +7,4 @@ module Mutations
     object_class Types::BaseObject
   end
 end
+<% end -%>

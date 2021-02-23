@@ -105,51 +105,126 @@ describe GraphQL::Introspection::TypeType do
       assert_equal(expected, result)
     end
 
-    describe "input objects" do
-      let(:query_string) {%|
-         query introspectionQuery {
-           __type(name: "DairyProductInput") { name, description, kind, inputFields { name, type { kind, name }, defaultValue } }
-         }
-      |}
-
-      it "exposes metadata about input objects" do
-        expected = { "data" => {
-            "__type" => {
-              "name"=>"DairyProductInput",
-              "description"=>"Properties for finding a dairy product",
-              "kind"=>"INPUT_OBJECT",
-              "inputFields"=>[
-                {"name"=>"source", "type"=>{"kind"=>"NON_NULL","name"=>nil, }, "defaultValue"=>nil},
-                {"name"=>"originDairy", "type"=>{"kind"=>"SCALAR","name"=>"String"}, "defaultValue"=>"\"Sugar Hollow Dairy\""},
-                {"name"=>"fatContent", "type"=>{"kind"=>"SCALAR","name" => "Float"}, "defaultValue"=>"0.3"},
-                {"name"=>"organic", "type"=>{"kind"=>"SCALAR","name" => "Boolean"}, "defaultValue"=>"false"},
-                {"name"=>"order_by", "type"=>{"kind"=>"INPUT_OBJECT", "name"=>"ResourceOrderType"}, "defaultValue"=>"{direction: \"ASC\"}"},
-              ]
-            }
-          }}
-        assert_equal(expected, result)
-      end
-
-      it "includes Relay fields" do
-        res = StarWars::Schema.execute <<-GRAPHQL
-        {
-          __schema {
-            types {
+    it "hides deprecated field arguments by default" do
+      result = Dummy::Schema.execute <<-GRAPHQL
+      {
+        __type(name: "Query") { 
+          fields { 
+            name
+            args {
               name
-              fields {
-                name
-                args { name }
-              }
             }
           }
         }
-        GRAPHQL
-        type_result = res["data"]["__schema"]["types"].find { |t| t["name"] == "Faction" }
-        field_result = type_result["fields"].find { |f| f["name"] == "bases" }
-        all_arg_names = ["after", "before", "first", "last", "nameIncludes", "complexOrder"]
-        returned_arg_names = field_result["args"].map { |a| a["name"] }
-        assert_equal all_arg_names, returned_arg_names
-      end
+      }
+      GRAPHQL
+
+      from_source_field = result['data']['__type']['fields'].find { |f| f['name'] == 'fromSource' }
+      expected = [
+        {"name" => "source"}
+      ]
+      assert_equal(expected, from_source_field['args'])
+    end
+
+    it "can expose deprecated field arguments" do
+      result = Dummy::Schema.execute <<-GRAPHQL
+      {
+        __type(name: "Query") { 
+          fields { 
+            name
+            args(includeDeprecated: true) {
+              name
+              isDeprecated
+              deprecationReason
+            }
+          }
+        }
+      }
+      GRAPHQL
+
+      from_source_field = result['data']['__type']['fields'].find { |f| f['name'] == 'fromSource' }
+      expected = [
+        {"name" => "source", "isDeprecated" => false, "deprecationReason" => nil},
+        {"name" => "oldSource", "isDeprecated" => true, "deprecationReason" => "No longer supported"}
+      ]
+      assert_equal(expected, from_source_field['args'])
+    end
+  end
+
+  describe "input objects" do
+    let(:query_string) {%|
+       query introspectionQuery {
+         __type(name: "DairyProductInput") { name, description, kind, inputFields { name, type { kind, name }, defaultValue } }
+       }
+    |}
+
+    it "exposes metadata about input objects" do
+      expected = { "data" => {
+          "__type" => {
+            "name"=>"DairyProductInput",
+            "description"=>"Properties for finding a dairy product",
+            "kind"=>"INPUT_OBJECT",
+            "inputFields"=>[
+              {"name"=>"source", "type"=>{"kind"=>"NON_NULL","name"=>nil, }, "defaultValue"=>nil},
+              {"name"=>"originDairy", "type"=>{"kind"=>"SCALAR","name"=>"String"}, "defaultValue"=>"\"Sugar Hollow Dairy\""},
+              {"name"=>"fatContent", "type"=>{"kind"=>"SCALAR","name" => "Float"}, "defaultValue"=>"0.3"},
+              {"name"=>"organic", "type"=>{"kind"=>"SCALAR","name" => "Boolean"}, "defaultValue"=>"false"},
+              {"name"=>"order_by", "type"=>{"kind"=>"INPUT_OBJECT", "name"=>"ResourceOrderType"}, "defaultValue"=>"{direction: \"ASC\"}"},
+            ]
+          }
+        }}
+      assert_equal(expected, result)
+    end
+
+    it "can expose deprecated input fields" do
+      result = Dummy::Schema.execute <<-GRAPHQL
+      {
+        __type(name: "DairyProductInput") { 
+          inputFields(includeDeprecated: true) { 
+            name
+            isDeprecated
+            deprecationReason
+          }
+        }
+      }
+      GRAPHQL
+
+      expected = {
+        "data" => {
+          "__type" => {
+            "inputFields" => [
+              {"name" => "source", "isDeprecated" => false, "deprecationReason" => nil},
+              {"name" => "originDairy", "isDeprecated" => false, "deprecationReason" => nil},
+              {"name" => "fatContent", "isDeprecated" => false, "deprecationReason" => nil},
+              {"name" => "organic", "isDeprecated" => false, "deprecationReason" => nil},
+              {"name" => "order_by", "isDeprecated" => false, "deprecationReason" => nil},
+              {"name" => "oldSource", "isDeprecated" => true, "deprecationReason" => "No longer supported"},
+            ]
+          }
+        }
+      }
+      assert_equal(expected, result)
+    end
+
+    it "includes Relay fields" do
+      res = StarWars::Schema.execute <<-GRAPHQL
+      {
+        __schema {
+          types {
+            name
+            fields {
+              name
+              args { name }
+            }
+          }
+        }
+      }
+      GRAPHQL
+      type_result = res["data"]["__schema"]["types"].find { |t| t["name"] == "Faction" }
+      field_result = type_result["fields"].find { |f| f["name"] == "bases" }
+      all_arg_names = ["after", "before", "first", "last", "nameIncludes", "complexOrder"]
+      returned_arg_names = field_result["args"].map { |a| a["name"] }
+      assert_equal all_arg_names, returned_arg_names
     end
   end
 end

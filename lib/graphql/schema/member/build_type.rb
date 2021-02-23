@@ -4,6 +4,10 @@ module GraphQL
     class Member
       # @api private
       module BuildType
+        if !String.method_defined?(:match?)
+          using GraphQL::StringMatchBackport
+        end
+
         LIST_TYPE_ERROR = "Use an array of [T] or [T, null: true] for list types; other arrays are not supported"
 
         module_function
@@ -56,11 +60,11 @@ module GraphQL
               parse_type(type_expr.first, null: false)
             when 2
               inner_type, nullable_option = type_expr
-              if nullable_option.keys != [:null] || nullable_option.values != [true]
+              if nullable_option.keys != [:null] || (nullable_option[:null] != true && nullable_option[:null] != false)
                 raise ArgumentError, LIST_TYPE_ERROR
               end
               list_type = true
-              parse_type(inner_type, null: true)
+              parse_type(inner_type, null: nullable_option[:null])
             else
               raise ArgumentError, LIST_TYPE_ERROR
             end
@@ -71,7 +75,7 @@ module GraphQL
             if type_expr.respond_to?(:graphql_definition)
               type_expr
             else
-              # Eg `String` => GraphQL::STRING_TYPE
+              # Eg `String` => GraphQL::Types::String
               parse_type(type_expr.name, null: true)
             end
           when Proc
@@ -162,10 +166,16 @@ module GraphQL
         end
 
         def underscore(string)
-          string
-            .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
-            .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
-            .downcase
+          if string.match?(/\A[a-z_]+\Z/)
+            return string
+          end
+          string2 = string.dup
+
+          string2.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
+          string2.gsub!(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+          string2.downcase!
+
+          string2
         end
       end
     end

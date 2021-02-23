@@ -23,12 +23,14 @@ module GraphQL
     #    Bugsnag.notify(timeout_error, {query_string: query_ctx.query.query_string})
     #   end
     #
+    # @api deprecated
+    # @see Schema::Timeout
     class TimeoutMiddleware
       # @param max_seconds [Numeric] how many seconds the query should be allowed to resolve new fields
       def initialize(max_seconds:, context_key: nil, &block)
         @max_seconds = max_seconds
         if context_key
-          warn("TimeoutMiddleware's `context_key` is ignored, timeout data is now stored in isolated storage")
+          GraphQL::Deprecation.warn("TimeoutMiddleware's `context_key` is ignored, timeout data is now stored in isolated storage")
         end
         @error_handler = block
       end

@@ -15,6 +15,7 @@ module GraphQL
         include GraphQL::Schema::Member::Scoped
         include GraphQL::Schema::Member::HasAstNode
         include GraphQL::Schema::Member::HasUnresolvedTypeError
+        include GraphQL::Schema::Member::HasDirectives
 
         # Methods defined in this block will be:
         # - Added as class methods to this interface
@@ -30,7 +31,7 @@ module GraphQL
 
         # The interface is accessible if any of its possible types are accessible
         def accessible?(context)
-          context.schema.possible_types(self).each do |type|
+          context.schema.possible_types(self, context).each do |type|
             if context.schema.accessible?(type, context)
               return true
             end

@@ -1,5 +1,35 @@
 # graphql-ruby-client
 
+# 1.9.2 (19 Feb 2021)
+
+- Remove dependency on React by changing imports to `@apollo/client/core` #3349
+
+# 1.9.1 (11 Feb 2021)
+
+- Support graphql 15.x in dependencies #3334
+
+## 1.9.0 (10 Feb 2021)
+
+- Move "compiled" `.js` files into the root directory of the published NPM package (instead of `dist/`). To upgrade, remove `dist/` from your import paths. (These files will be treated as public APIs in their own right, exposed independently to support smaller bundle sizes.) #2768
+- Upgrade dependency from `apollo-link` to `@apollo/client` #3270
+
+## 1.8.2 (2 Feb 2021)
+
+- Pusher: Accept a `decompress:` function for handling compressed payloads #3311
+
+## 1.8.1 (16 Nov 2020)
+
+- Sync: When `--url` is omitted, generate an outfile without syncing with a server
+
+## 1.8.0 (10 Nov 2020)
+
+- Ably: Support server-side `cipher_base:` config in the client
+
+## 1.7.12 (3 Nov 2020)
+
+- Ably: Add `rewind:` config so messages aren't lost between subscribe and registration of listener. #3210
+- Ably: Fix race condition where error was raised before the channel was available. #3210
+
 ## 1.7.11 (15 June 2020)
 
 - Ably: Improve channel state handling in case the initial subscription result contains errors #2993

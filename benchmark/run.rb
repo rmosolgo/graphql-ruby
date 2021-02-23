@@ -5,6 +5,7 @@ require "jazz"
 require "benchmark/ips"
 require "ruby-prof"
 require "memory_profiler"
+require "graphql/batch"
 
 module GraphQLBenchmark
   QUERY_STRING = GraphQL::Introspection::INTROSPECTION_QUERY
@@ -19,6 +20,9 @@ module GraphQLBenchmark
   BIG_SCHEMA = GraphQL::Schema.from_definition(File.join(BENCHMARK_PATH, "big_schema.graphql"))
   BIG_QUERY = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "big_query.graphql")))
 
+  FIELDS_WILL_MERGE_SCHEMA = GraphQL::Schema.from_definition("type Query { hello: String }")
+  FIELDS_WILL_MERGE_QUERY = GraphQL.parse("{ #{Array.new(5000, "hello").join(" ")} }")
+
   module_function
   def self.run(task)
     Benchmark.ips do |x|
@@ -30,6 +34,7 @@ module GraphQLBenchmark
         x.report("validate - abstract fragments") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS) }
         x.report("validate - abstract fragments 2") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS_2) }
         x.report("validate - big query") { BIG_SCHEMA.validate(BIG_QUERY) }
+        x.report("validate - fields will merge") { FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY) }
       else
         raise("Unexpected task #{task}")
       end
@@ -117,8 +122,7 @@ module GraphQLBenchmark
 
     class Schema < GraphQL::Schema
       query QueryType
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
+      use GraphQL::Dataloader
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL
@@ -137,5 +141,72 @@ module GraphQLBenchmark
         }
       }
     GRAPHQL
+  end
+
+  def self.profile_batch_loaders
+    require_relative "./batch_loading"
+    include BatchLoading
+
+    document = GraphQL.parse <<-GRAPHQL
+    {
+      braves: team(name: "Braves") { ...TeamFields }
+      bulls: team(name: "Bulls") { ...TeamFields }
+    }
+
+    fragment TeamFields on Team {
+      players {
+        team {
+          players {
+            team {
+              name
+            }
+          }
+        }
+      }
+    }
+    GRAPHQL
+    batch_result = GraphQLBatchSchema.execute(document: document).to_h
+    dataloader_result = GraphQLDataloaderSchema.execute(document: document).to_h
+    no_batch_result = GraphQLNoBatchingSchema.execute(document: document).to_h
+
+    results = [batch_result, dataloader_result, no_batch_result].uniq
+    if results.size > 1
+      puts "Batch result:"
+      pp batch_result
+      puts "Dataloader result:"
+      pp dataloader_result
+      puts "No-batch result:"
+      pp no_batch_result
+      raise "Got different results -- fix implementation before benchmarking."
+    end
+
+    Benchmark.ips do |x|
+      x.report("GraphQL::Batch") { GraphQLBatchSchema.execute(document: document) }
+      x.report("GraphQL::Dataloader") { GraphQLDataloaderSchema.execute(document: document) }
+      x.report("No Batching") { GraphQLNoBatchingSchema.execute(document: document) }
+
+      x.compare!
+    end
+
+    puts "========== GraphQL-Batch Memory =============="
+    report = MemoryProfiler.report do
+      GraphQLBatchSchema.execute(document: document)
+    end
+
+    report.pretty_print
+
+    puts "========== Dataloader Memory ================="
+    report = MemoryProfiler.report do
+      GraphQLDataloaderSchema.execute(document: document)
+    end
+
+    report.pretty_print
+
+    puts "========== No Batch Memory =============="
+    report = MemoryProfiler.report do
+      GraphQLNoBatchingSchema.execute(document: document)
+    end
+
+    report.pretty_print
   end
 end

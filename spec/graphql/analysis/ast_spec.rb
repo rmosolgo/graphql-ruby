@@ -96,9 +96,7 @@ describe GraphQL::Analysis::AST do
 
       Class.new(GraphQL::Schema) do
         query query_type
-        use GraphQL::Analysis::AST
         query_analyzer AstErrorAnalyzer
-        use GraphQL::Execution::Interpreter
       end
     end
 

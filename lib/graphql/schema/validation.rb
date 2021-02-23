@@ -6,6 +6,8 @@ module GraphQL
     # Its {RULES} contain objects that respond to `#call(type)`. Rules are
     # looked up for given types (by class ancestry), then applied to
     # the object until an error is returned.
+    #
+    # Remove this in GraphQL-Ruby 2.0 when schema instances are removed.
     class Validation
       # Lookup the rules for `object` based on its class,
       # Then returns an error message or `nil`
@@ -133,6 +135,12 @@ module GraphQL
           end
         }
 
+        DEPRECATED_ARGUMENTS_ARE_OPTIONAL = ->(argument) {
+          if argument.deprecation_reason && argument.type.non_null?
+            "must be optional because it's deprecated"
+          end
+        }
+
         TYPE_IS_VALID_INPUT_TYPE = ->(type) {
           outer_type = type.type
           inner_type = outer_type.respond_to?(:unwrap) ? outer_type.unwrap : nil
@@ -195,7 +203,7 @@ module GraphQL
         RESERVED_TYPE_NAME = ->(type) {
           if type.name.start_with?('__') && !type.introspection?
             # TODO: make this a hard failure in a later version
-            warn("Name #{type.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
+            GraphQL::Deprecation.warn("Name #{type.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
             nil
           else
             # ok name
@@ -205,7 +213,7 @@ module GraphQL
         RESERVED_NAME = ->(named_thing) {
           if named_thing.name.start_with?('__')
             # TODO: make this a hard failure in a later version
-            warn("Name #{named_thing.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
+            GraphQL::Deprecation.warn("Name #{named_thing.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
             nil
           else
             # no worries
@@ -265,8 +273,10 @@ module GraphQL
           Rules::NAME_IS_STRING,
           Rules::RESERVED_NAME,
           Rules::DESCRIPTION_IS_STRING_OR_NIL,
+          Rules.assert_property(:deprecation_reason, String, NilClass),
           Rules::TYPE_IS_VALID_INPUT_TYPE,
           Rules::DEFAULT_VALUE_IS_VALID_FOR_TYPE,
+          Rules::DEPRECATED_ARGUMENTS_ARE_OPTIONAL,
         ],
         GraphQL::BaseType => [
           Rules::NAME_IS_STRING,

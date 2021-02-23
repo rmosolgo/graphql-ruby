@@ -53,16 +53,18 @@ MySchema.execute(
 )
 ```
 
-### Deleting Data
+### Archiving and Deleting Data
 
-Clients can only _add_ to the database, but as an administrator, you can also delete entries from the database. (Make sure you {% internal_link "authorize access to the Dashboard","/pro/dashboard" %}.)This is a dangerous operation: by deleting something, any clients who depend on that data will crash.
+Clients can only _add_ to the database, but as an administrator, you can also archive or delete entries from the database. (Make sure you {% internal_link "authorize access to the Dashboard","/pro/dashboard" %}.) This is a dangerous operation: by archiving or deleting something, any clients who depend on that data will crash.
 
-Some reasons to delete from the database are:
+Some reasons to archive or delete from the database are:
 
 - Data was pushed in error; the data is not used
 - The queries are invalid or unsafe; it's better to remove them than to keep them
 
-If this is true, you can use "Delete" buttons to remove individual operations or entire clients.
+If this is true, you can use "Archive" or "Delete" buttons to remove things from production.
+
+When an operation is archived, it's no longer available to clients, but it's still in the database. It can be unarchived later, so this is lower-risk than full deletion.
 
 ### Integration with Your Application
 

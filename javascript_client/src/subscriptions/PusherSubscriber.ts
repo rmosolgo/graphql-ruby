@@ -1,5 +1,5 @@
 import registry from "./registry"
-import { Pusher } from "pusher-js"
+import Pusher from "pusher-js"
 
 interface ApolloNetworkInterface {
   use: Function
@@ -15,10 +15,12 @@ interface ApolloNetworkInterface {
 class PusherSubscriber {
   _pusher: Pusher
   _networkInterface: ApolloNetworkInterface
+  _decompress: (compressed: string) => any
 
-  constructor(pusher: Pusher, networkInterface: ApolloNetworkInterface) {
+  constructor(pusher: Pusher, networkInterface: ApolloNetworkInterface, decompress?: (compressed: string) => any) {
     this._pusher = pusher
     this._networkInterface = networkInterface
+    this._decompress = decompress || function(_compressed) { throw new Error("Received compressed_result but this addGraphQLSubscriptions wasn't configured with `decompress: (result: string) => any`. Add this configuration.")}
     // This is a bit tricky:
     // only the _request_ is passed to the `subscribe` function, s
     // so we have to attach the subscription id to the `request`.
@@ -44,6 +46,7 @@ class PusherSubscriber {
   subscribe(request: {__subscriptionId: string}, handler: any) {
     var pusher = this._pusher
     var networkInterface = this._networkInterface
+    var decompress = this._decompress
     var subscription = {
       _channelName: "", // set after the successful POST
       unsubscribe: function() {
@@ -60,11 +63,11 @@ class PusherSubscriber {
       subscription._channelName = subscriptionChannel
       var pusherChannel = pusher.subscribe(subscriptionChannel)
       // When you get an update form Pusher, send it to Apollo
-      pusherChannel.bind("update", function(payload) {
+      pusherChannel.bind("update", function(payload: any) {
         if (!payload.more) {
           registry.unsubscribe(id)
         }
-        var result = payload.result
+        var result = payload.compressed_result ? decompress(payload.compressed_result) : payload.result
         if (result) {
           handler(result.errors, result.data)
         }

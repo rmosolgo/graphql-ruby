@@ -113,6 +113,11 @@ end
 
 That connection will be used for managing subscription state. All writes to Redis are prefixed with `graphql:sub:`.
 
+There are also two configurations for managing persistence:
+
+- `stale_ttl_s:` expires subscription data after the given number of seconds without any update. After `stale_ttl_s` has passed, the data will expire from Redis. Each time a subscription receives an update, its TTL is refreshed. (Generally, this isn't required because the backend is built to clean itself up. But, if you find that Redis is collecting stale queries, you can set them to expire after some very long time as a safeguard.)
+- `cleanup_delay_s:` (default: `5`) prevents deleting a subscription during those first seconds after it's created. Usually, a longer delay isn't necessary, but if you observe latency between the subscription's initial response and the client's subscription to the delivery channel, you can set this configuration to account for it.
+
 ## Execution configuration
 
 During execution, GraphQL will assign a `subscription_id` to the `context` hash. The client will use that ID to listen for updates, so you must return the `subscription_id` in the response headers.
@@ -141,6 +146,27 @@ end
 ```
 
 Read more here: ["Using CORS"](https://www.html5rocks.com/en/tutorials/cors/).
+
+#### Payload Compression
+
+To mitigate problems with [Pusher's 10kb message limit](https://support.pusher.com/hc/en-us/articles/360019115473-What-is-the-message-size-limit-when-publishing-a-message-in-Channels-), you can specify `compress_pusher_payload: true` in the `context` of your subscription. For example:
+
+```ruby
+# app/controllers/graphql_controller.rb
+def execute
+  # ...
+  # Somehow detect whether the client supports compressed payloads,
+  # for example, User-Agent, query param, or request header:
+  if client_supports_compressed_payloads?
+    context[:compress_pusher_payload] = true
+  end
+  # ...
+end
+```
+
+This will cause subscription payloads to include `compressed_result: "..."` instead of `result: "..."` when they're sent over Pusher. See docs for {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %} or {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %} to read about preparing clients for compressed payloads.
+
+By configuring `compress_pusher_payload: true` on a query-by-query basis, the subscription backend can continue to support clients running _old_ client code (by not compressing) while upgrading new clients to compressed payloads.
 
 ## Webhook configuration
 

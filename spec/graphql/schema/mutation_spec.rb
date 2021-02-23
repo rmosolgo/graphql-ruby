@@ -102,7 +102,7 @@ describe GraphQL::Schema::Mutation do
       response = Jazz::Schema.execute(query_str)
       assert_equal "Trombone", response["data"]["addInstrument"]["instrument"]["name"]
       assert_equal "BRASS", response["data"]["addInstrument"]["instrument"]["family"]
-      errors_class = TESTING_INTERPRETER ? "GraphQL::Execution::Interpreter::ExecutionErrors" : "GraphQL::Query::Context::ExecutionErrors"
+      errors_class = "GraphQL::Execution::Interpreter::ExecutionErrors"
       assert_equal errors_class, response["data"]["addInstrument"]["ee"]
       assert_equal 7, response["data"]["addInstrument"]["entries"].size
     end
@@ -163,6 +163,27 @@ describe GraphQL::Schema::Mutation do
 
       assert_equal false, inheriting_mutation.field_options[:null]
       assert override_mutation.field_options[:null]
+    end
+  end
+
+  it "warns once for possible conflict methods" do
+    expected_warning = "X's `field :module` conflicts with a built-in method, use `hash_key:` or `method:` to pick a different resolve behavior for this field (for example, `hash_key: :module_value`, and modify the return hash). Or use `method_conflict_warning: false` to suppress this warning.\n"
+    assert_output "", expected_warning do
+      # This should warn:
+      mutation = Class.new(GraphQL::Schema::Mutation) do
+        graphql_name "X"
+        field :module, String, null: true
+      end
+      # This should not warn again, when generating the payload type with the same fields:
+      mutation.payload_type
+    end
+
+    assert_output "", "" do
+      mutation = Class.new(GraphQL::Schema::Mutation) do
+        graphql_name "X"
+        field :module, String, null: true, hash_key: :module_value
+      end
+      mutation.payload_type
     end
   end
 end

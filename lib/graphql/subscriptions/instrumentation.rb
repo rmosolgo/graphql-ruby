@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# test_via: ../subscriptions.rb
 module GraphQL
   class Subscriptions
     # Wrap the root fields of the subscription type with special logic for:

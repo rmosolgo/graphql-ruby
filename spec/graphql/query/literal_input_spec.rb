@@ -4,45 +4,44 @@ require "spec_helper"
 describe GraphQL::Query::LiteralInput do
   describe ".from_arguments" do
     describe "arguments are prepared" do
-      let(:schema) {
-        type = GraphQL::ObjectType.define do
-          name "SomeType"
-
-          field :addToArgumentValue do
-            type !types.Int
-            argument :value do
-              type types.Int
-              default_value 3
-              prepare ->(arg, ctx) do
+      class LiteralInputTestSchema < GraphQL::Schema
+        class SomeType < GraphQL::Schema::Object
+          field :add_to_argument_value, Integer, null: false do
+            argument :value, Integer, required: false, default_value: 3,
+              prepare: ->(arg, ctx) {
                 return GraphQL::ExecutionError.new("Can't return more than 3 digits") if arg > 998
                 arg + ctx[:val]
-              end
-            end
-            resolve ->(t, a, c) { a[:value] }
+              }
           end
 
-          field :fieldWithArgumentThatIsBadByDefault do
-            type types.Int
-            argument :value do
-              type types.Int
-              default_value 7
-              prepare ->(arg, ctx) do
-                GraphQL::ExecutionError.new("Always bad")
-              end
-            end
+          def add_to_argument_value(value:)
+            value
+          end
 
-            resolve ->(*args) { 42 }
+          field :field_with_argument_that_is_bad_by_default, Integer, null: true do
+            argument :value, Integer, required: false, default_value: 7,
+              prepare: ->(arg, ctx) {
+                raise GraphQL::ExecutionError.new("Always bad")
+              }
+          end
+
+          def field_with_argument_that_is_bad_by_default(value:)
+            42
           end
         end
 
-        query = GraphQL::ObjectType.define do
-          name "Query"
+        class Query < GraphQL::Schema::Object
+          field :top, SomeType, null: false
 
-          field :top, type, resolve: ->(_, _, _) { true }
+          def top
+            true
+          end
         end
 
-        GraphQL::Schema.define(query: query)
-      }
+        query(Query)
+      end
+
+      let(:schema) { LiteralInputTestSchema }
 
       it "prepares values from query literals" do
         result = schema.execute("{ top { addToArgumentValue(value: 1) } }", context: { val: 1 })
@@ -80,10 +79,11 @@ describe GraphQL::Query::LiteralInput do
 
       it "adds message to errors key if an ExecutionError is returned from the prepare function" do
         result = schema.execute("{ top { addToArgumentValue(value: 999) } }")
-        assert_equal(result["data"]["top"], nil)
+        assert_nil result.fetch("data")
         assert_equal(result["errors"][0]["message"], "Can't return more than 3 digits")
         assert_equal(result["errors"][0]["locations"][0]["line"], 1)
-        assert_equal(result["errors"][0]["locations"][0]["column"], 28)
+        # TODO: on the old runtime, this was `28`, the position ov `value:`, which was better.
+        assert_equal(9, result["errors"][0]["locations"][0]["column"])
         assert_equal(result["errors"][0]["path"], ["top", "addToArgumentValue"])
       end
     end

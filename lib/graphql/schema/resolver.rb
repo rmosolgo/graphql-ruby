@@ -24,6 +24,7 @@ module GraphQL
       # Really we only need description from here, but:
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
+      extend GraphQL::Schema::Member::HasValidators
       include Schema::Member::HasPath
       extend Schema::Member::HasPath
 
@@ -40,6 +41,7 @@ module GraphQL
           @arguments_by_keyword[arg.keyword] = arg
         end
         @arguments_loads_as_type = self.class.arguments_loads_as_type
+        @prepared_arguments = nil
       end
 
       # @return [Object] The application object this field is being resolved on
@@ -48,8 +50,17 @@ module GraphQL
       # @return [GraphQL::Query::Context]
       attr_reader :context
 
+      # @return [GraphQL::Dataloader]
+      def dataloader
+        context.dataloader
+      end
+
       # @return [GraphQL::Schema::Field]
       attr_reader :field
+
+      def arguments
+        @prepared_arguments || raise("Arguments have not been prepared yet, still waiting for #load_arguments to resolve. (Call `.arguments` later in the code.)")
+      end
 
       # This method is _actually_ called by the runtime,
       # it does some preparation and then eventually calls
@@ -74,6 +85,8 @@ module GraphQL
             # for that argument, or may return a lazy object
             load_arguments_val = load_arguments(args)
             context.schema.after_lazy(load_arguments_val) do |loaded_args|
+              @prepared_arguments = loaded_args
+              Schema::Validator.validate!(self.class.validators, object, context, loaded_args, as: @field)
               # Then call `authorized?`, which may raise or may return a lazy object
               authorized_val = if loaded_args.any?
                 authorized?(**loaded_args)
@@ -263,8 +276,29 @@ module GraphQL
           end
         end
 
+        # Get or set the `max_page_size:` which will be configured for fields using this resolver
+        # (`nil` means "unlimited max page size".)
+        # @param max_page_size [Integer, nil] Set a new value
+        # @return [Integer, nil] The `max_page_size` assigned to fields that use this resolver
+        def max_page_size(new_max_page_size = :not_given)
+          if new_max_page_size != :not_given
+            @max_page_size = new_max_page_size
+          elsif defined?(@max_page_size)
+            @max_page_size
+          elsif superclass.respond_to?(:max_page_size)
+            superclass.max_page_size
+          else
+            nil
+          end
+        end
+
+        # @return [Boolean] `true` if this resolver or a superclass has an assigned `max_page_size`
+        def has_max_page_size?
+          defined?(@max_page_size) || (superclass.respond_to?(:has_max_page_size?) && superclass.has_max_page_size?)
+        end
+
         def field_options
-          {
+          field_opts = {
             type: type_expr,
             description: description,
             extras: extras,
@@ -276,6 +310,12 @@ module GraphQL
             extensions: extensions,
             broadcastable: broadcastable?,
           }
+
+          if has_max_page_size?
+            field_opts[:max_page_size] = max_page_size
+          end
+
+          field_opts
         end
 
         # A non-normalized type configuration, without `null` applied

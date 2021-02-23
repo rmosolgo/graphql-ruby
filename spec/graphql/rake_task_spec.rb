@@ -33,7 +33,7 @@ describe GraphQL::RakeTask do
         Rake::Task["graphql:schema:dump"].invoke
       end
       dumped_json = File.read("./schema.json")
-      expected_json = JSON.pretty_generate(RakeTaskSchema.execute(GraphQL::Introspection::INTROSPECTION_QUERY))
+      expected_json = JSON.pretty_generate(RakeTaskSchema.execute(GraphQL::Introspection.query(include_deprecated_args: true)))
 
       # Test that that JSON is logically equivalent, not serialized the same
       assert_equal(JSON.parse(expected_json), JSON.parse(dumped_json))

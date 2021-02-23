@@ -207,6 +207,10 @@ module GraphQL
       metadata[:type_class]
     end
 
+    def get_argument(argument_name)
+      arguments[argument_name]
+    end
+
     private
 
     def build_default_resolver

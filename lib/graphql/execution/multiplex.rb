@@ -29,11 +29,13 @@ module GraphQL
 
       include Tracing::Traceable
 
-      attr_reader :context, :queries, :schema, :max_complexity
+      attr_reader :context, :queries, :schema, :max_complexity, :dataloader
       def initialize(schema:, queries:, context:, max_complexity:)
         @schema = schema
         @queries = queries
+        @queries.each { |q| q.multiplex = self }
         @context = context
+        @context[:dataloader] = @dataloader = @schema.dataloader_class.new
         @tracers = schema.tracers + (context[:tracers] || [])
         # Support `context: {backtrace: true}`
         if context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
@@ -72,39 +74,10 @@ module GraphQL
           end
         end
 
-        private
-
-        def run_as_multiplex(multiplex)
-
-          multiplex.schema.query_execution_strategy.begin_multiplex(multiplex)
-          queries = multiplex.queries
-          # Do as much eager evaluation of the query as possible
-          results = queries.map do |query|
-            begin_query(query, multiplex)
-          end
-
-          # Then, work through lazy results in a breadth-first way
-          multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
-
-          # Then, find all errors and assign the result to the query object
-          results.each_with_index.map do |data_result, idx|
-            query = queries[idx]
-            finish_query(data_result, query, multiplex)
-            # Get the Query::Result, not the Hash
-            query.result
-          end
-        rescue Exception
-          # TODO rescue at a higher level so it will catch errors in analysis, too
-          # Assign values here so that the query's `@executed` becomes true
-          queries.map { |q| q.result_values ||= {} }
-          raise
-        end
-
         # @param query [GraphQL::Query]
-        # @return [Hash] The initial result (may not be finished if there are lazy values)
-        def begin_query(query, multiplex)
+        def begin_query(results, idx, query, multiplex)
           operation = query.selected_operation
-          if operation.nil? || !query.valid? || query.context.errors.any?
+          result = if operation.nil? || !query.valid? || query.context.errors.any?
             NO_OPERATION
           else
             begin
@@ -115,6 +88,44 @@ module GraphQL
               NO_OPERATION
             end
           end
+          results[idx] = result
+          nil
+        end
+
+        private
+
+        def run_as_multiplex(multiplex)
+
+          multiplex.schema.query_execution_strategy.begin_multiplex(multiplex)
+          queries = multiplex.queries
+          # Do as much eager evaluation of the query as possible
+          results = []
+          queries.each_with_index do |query, idx|
+            multiplex.dataloader.append_job { begin_query(results, idx, query, multiplex) }
+          end
+
+          multiplex.dataloader.run
+
+          # Then, work through lazy results in a breadth-first way
+          multiplex.dataloader.append_job {
+            multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
+          }
+          multiplex.dataloader.run
+
+          # Then, find all errors and assign the result to the query object
+          results.each_with_index do |data_result, idx|
+            query = queries[idx]
+            finish_query(data_result, query, multiplex)
+            # Get the Query::Result, not the Hash
+            results[idx] = query.result
+          end
+
+          results
+        rescue Exception
+          # TODO rescue at a higher level so it will catch errors in analysis, too
+          # Assign values here so that the query's `@executed` becomes true
+          queries.map { |q| q.result_values ||= {} }
+          raise
         end
 
         # @param data_result [Hash] The result for the "data" key, if any
@@ -144,6 +155,8 @@ module GraphQL
 
         # use the old `query_execution_strategy` etc to run this query
         def run_one_legacy(schema, query)
+          GraphQL::Deprecation.warn "Multiplex.run_one_legacy will be removed from GraphQL-Ruby 2.0, upgrade to the Interpreter to avoid this deprecated codepath: https://graphql-ruby.org/queries/interpreter.html"
+
           query.result_values = if !query.valid?
             all_errors = query.validation_errors + query.analysis_errors + query.context.errors
             if all_errors.any?

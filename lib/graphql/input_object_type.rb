@@ -2,6 +2,8 @@
 module GraphQL
   # @api deprecated
   class InputObjectType < GraphQL::BaseType
+    extend Define::InstanceDefinable::DeprecatedDefine
+
     accepts_definitions(
       :arguments, :mutation,
       input_field: GraphQL::Define::AssignArgument,
@@ -56,6 +58,10 @@ module GraphQL
       end
 
       result
+    end
+
+    def get_argument(argument_name)
+      arguments[argument_name]
     end
 
     private

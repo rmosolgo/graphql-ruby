@@ -165,6 +165,49 @@ end
 
 It will require the named action (`:review_applicants`) for the object being viewed (a `JobPosting`).
 
+### Authorizing by attribute
+
+CanCan 3.0 added attribute-level authorization ([pull request](https://github.com/CanCanCommunity/cancancan/pull/474)). You can leverage this in your field definitions with the `can_can_attribute:` configuration:
+
+```ruby
+# This will call `.can?(:read, user, :email_address)`
+field :email_address, String, null: true,
+  can_can_action: :read,
+  can_can_attribute: :email_address
+```
+
+You could also provide a _default value_ for `can_can_attribute` in your base field class:
+
+```ruby
+class Types::BaseField
+  def initialize(*args, **kwargs, &block)
+    # pass all configs to the super class:
+    super
+    # Then set a new `can_can_attribute` value, if applicable
+    if can_can_attribute.nil? && can_can_action.present?
+      # `method_sym` is the thing GraphQL-Ruby will use to resolve this field
+      can_can_attribute(method_sym)
+    end
+  end
+end
+```
+
+(See {{ "GraphQL::Schema::Field" | api_doc }} for the different values available for defaults.)
+
+### Providing a Custom CanCan Subject
+
+Authorization checks are _skipped_ whenever the underlying `object` is `nil`. This can happen in root query fields, for example, when no `root_value: ...` is given. To provide a `can_can_subject` in this case, you can add it as a field configuration:
+
+```ruby
+field :users, Types::User.connection_type, null: false,
+  can_can_action: :manage,
+  # `:all` will be used instead of `object` (which is `nil`)
+  can_can_subject: :all
+end
+```
+
+The configuration above will call `can?(:manage, :all)` whenever that field is requested.
+
 ## Authorizing Arguments
 
 Similar to field-level checks, you can require certain permissions to _use_ certain arguments. To do this, add the integration to your base argument class:

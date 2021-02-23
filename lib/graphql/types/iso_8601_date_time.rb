@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 require 'time'
 
-# frozen_string_literal: true
 module GraphQL
   module Types
     # This scalar takes `Time`s and transmits them as strings,

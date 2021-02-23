@@ -97,7 +97,7 @@ For example, options can be used for modifying execution:
 
 ```ruby
 def after_resolve(value:, **rest)
-  # Apply the limit from the options
+  # Apply the limit from the options, a readable attribute on the class
   value.limit(options[:limit])
 end
 ```

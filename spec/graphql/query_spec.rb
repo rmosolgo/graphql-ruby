@@ -756,88 +756,6 @@ describe GraphQL::Query do
     end
   end
 
-  if !TESTING_INTERPRETER
-    describe '#internal_representation' do
-      let(:schema) {
-        Class.new(Dummy::Schema) do
-          query_execution_strategy(GraphQL::Execution::Execute)
-          self.interpreter = false
-          self.analysis_engine = GraphQL::Analysis
-        end
-      }
-      it "includes all definition roots" do
-        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.operation_definitions["getFlavor"]
-        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["cheeseFields"]
-        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["edibleFields"]
-        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["milkFields"]
-        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["dairyFields"]
-      end
-
-      describe '#irep_selection' do
-        it "returns the irep for the selected operation" do
-          assert_kind_of GraphQL::InternalRepresentation::Node, query.irep_selection
-          assert_equal 'getFlavor', query.irep_selection.name
-        end
-
-        it "returns nil when there is no selected operation" do
-          query = GraphQL::Query.new(schema, '# Only a comment')
-          assert_nil query.irep_selection
-        end
-      end
-    end
-  end
-
-  describe "query_execution_strategy" do
-    let(:custom_execution_schema) {
-      Class.new(schema) do
-        self.interpreter = false
-        query_execution_strategy DummyStrategy
-        mutation_execution_strategy GraphQL::Execution::Execute
-        instrument(:multiplex, DummyMultiplexInstrumenter)
-      end
-    }
-
-    class DummyStrategy
-      def execute(ast_operation, root_type, query_object)
-        { "dummy" => true }
-      end
-    end
-
-    class DummyMultiplexInstrumenter
-      def self.before_multiplex(m)
-        m.queries.first.context[:before_multiplex] = true
-      end
-
-      def self.after_multiplex(m)
-      end
-    end
-
-    it "is used for running a query, if it's present and not the default" do
-      result = custom_execution_schema.execute(" { __typename }")
-      assert_equal({"data"=>{"dummy"=>true}}, result)
-
-      result = custom_execution_schema.execute(" mutation { __typename } ")
-      assert_equal({"data"=>{"__typename" => "Mutation"}}, result)
-    end
-
-    it "treats the query as a one-item multiplex" do
-      ctx = {}
-      custom_execution_schema.execute(" { __typename }", context: ctx)
-      assert_equal true, ctx[:before_multiplex]
-    end
-
-    it "can't run a multiplex" do
-      err = assert_raises ArgumentError do
-        custom_execution_schema.multiplex([
-          {query: " { __typename }"},
-          {query: " { __typename }"},
-        ])
-      end
-      msg = "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
-      assert_equal msg, err.message
-    end
-  end
-
   it "Accepts a passed-in warden" do
     warden = GraphQL::Schema::Warden.new(->(t, ctx) { false }, schema: Jazz::Schema, context: nil)
     res = Jazz::Schema.execute("{ __typename } ", warden: warden)
@@ -914,6 +832,7 @@ describe GraphQL::Query do
       source_arg_value = detailed_args.argument_values[:source]
       assert_equal false, source_arg_value.default_used?
       assert_equal "SHEEP", detailed_args[:source]
+      assert_equal "SHEEP", detailed_args.fetch(:source)
       assert_equal "SHEEP", source_arg_value.value
       assert_equal "source", source_arg_value.definition.graphql_name
 
@@ -969,6 +888,25 @@ describe GraphQL::Query do
       assert_equal true, order_by_argument_value.default_used?
       assert_equal({direction: "ASC"}, order_by_argument_value.value.to_h)
       assert_equal "order_by", order_by_argument_value.definition.graphql_name
+    end
+  end
+
+  describe "when provided input object field names are not unique" do
+    let(:variables) { {} }
+    let(:result) { Dummy::Schema.execute(query_string, variables: variables) }
+
+    describe "the query is invalid" do
+      let(:query_string) {%|
+        query getCheeses{
+          searchDairy(product: [{ source: COW, source: COW }]) {
+            __typename
+          }
+        }
+      |}
+
+      it "returns errors" do
+        refute_nil(result["errors"])
+      end
     end
   end
 end

@@ -140,37 +140,38 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
   end
 
   describe "custom error messages" do
-    let(:schema) {
-      TimeType = GraphQL::ScalarType.define do
-        name "Time"
+    class CustomErrorMessagesSchema2 < GraphQL::Schema
+      class TimeType < GraphQL::Schema::Scalar
         description "Time since epoch in seconds"
 
-        coerce_input ->(value, ctx) do
-          begin
-            Time.at(Float(value))
-          rescue ArgumentError
-            raise GraphQL::CoercionError, 'cannot coerce to Float'
-          end
+        def self.coerce_input(value, ctx)
+          Time.at(Float(value))
+        rescue ArgumentError
+          raise GraphQL::CoercionError, 'cannot coerce to Float'
         end
 
-        coerce_result ->(value, ctx) { value.to_f }
+        def self.coerce_result(value, ctx)
+          value.to_f
+        end
       end
 
-      QueryType = GraphQL::ObjectType.define do
-        name "Query"
+
+      class Query < GraphQL::Schema::Object
         description "The query root of this schema"
 
-        field :time do
-          type TimeType
-          argument :value, !TimeType
-          resolve ->(obj, args, ctx) { args[:value] }
+        field :time, TimeType, null: true do
+          argument :value, TimeType, required: false
+        end
+
+        def time(value: nil, range: nil)
+          value
         end
       end
 
-      GraphQL::Schema.define do
-        query QueryType
-      end
-    }
+      query(Query)
+    end
+
+    let(:schema) { CustomErrorMessagesSchema2 }
 
     let(:query_string) {%|
       query(

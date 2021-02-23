@@ -25,8 +25,15 @@ module GraphQL
           types[type["name"]] = type_object
         end
 
+        directives = []
+        schema.fetch("directives", []).each do |directive|
+          next if GraphQL::Schema.default_directives.include?(directive.fetch("name"))
+          directives << define_directive(directive, type_resolver)
+        end
+
         Class.new(GraphQL::Schema) do
           orphan_types(types.values)
+          directives(directives)
 
           def self.resolve_type(*)
             raise(GraphQL::RequiredImplementationMissingError, "This schema was loaded from string, so it can't resolve types for objects")
@@ -98,7 +105,7 @@ module GraphQL
                 value(
                   enum_value["name"],
                   description: enum_value["description"],
-                  deprecation_reason: enum_value["deprecation_reason"],
+                  deprecation_reason: enum_value["deprecationReason"],
                 )
               end
             end
@@ -147,6 +154,16 @@ module GraphQL
           end
         end
 
+        def define_directive(directive, type_resolver)
+          loader = self
+          Class.new(GraphQL::Schema::Directive) do
+            graphql_name(directive["name"])
+            description(directive["description"])
+            locations(*directive["locations"].map(&:to_sym))
+            loader.build_arguments(self, directive["args"], type_resolver)
+          end
+        end
+
         public
 
         def build_fields(type_defn, fields, type_resolver)
@@ -156,6 +173,7 @@ module GraphQL
               field_hash["name"],
               type: type_resolver.call(field_hash["type"]),
               description: field_hash["description"],
+              deprecation_reason: field_hash["deprecationReason"],
               null: true,
               camelize: false,
             ) do
@@ -171,6 +189,7 @@ module GraphQL
             kwargs = {
               type: type_resolver.call(arg["type"]),
               description: arg["description"],
+              deprecation_reason: arg["deprecationReason"],
               required: false,
               method_access: false,
               camelize: false,

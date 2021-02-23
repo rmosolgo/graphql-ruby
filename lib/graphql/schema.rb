@@ -21,6 +21,7 @@ require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
 
+require "graphql/schema/validator"
 require "graphql/schema/member"
 require "graphql/schema/wrapper"
 require "graphql/schema/list"
@@ -40,6 +41,7 @@ require "graphql/schema/directive/deprecated"
 require "graphql/schema/directive/include"
 require "graphql/schema/directive/skip"
 require "graphql/schema/directive/feature"
+require "graphql/schema/directive/flagged"
 require "graphql/schema/directive/transform"
 require "graphql/schema/type_membership"
 
@@ -80,6 +82,7 @@ module GraphQL
     extend GraphQL::Schema::Member::AcceptsDefinition
     extend GraphQL::Schema::Member::HasAstNode
     include GraphQL::Define::InstanceDefinable
+    extend GraphQL::Define::InstanceDefinable::DeprecatedDefine
     extend GraphQL::Schema::FindInheritedValue
 
     class DuplicateTypeNamesError < GraphQL::Error
@@ -127,7 +130,7 @@ module GraphQL
         end
       end
 
-      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered wtih {#lazy_resolve}.
+      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered with {#lazy_resolve}.
       def lazy_method_name(obj)
         lazy_methods.get(obj)
       end
@@ -157,7 +160,7 @@ module GraphQL
 
     accepts_definitions \
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :max_depth, :max_complexity, :default_max_page_size,
+      :validate_timeout, :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
       :error_bubbling,
       :raise_definition_error,
@@ -181,7 +184,7 @@ module GraphQL
       },
       query_analyzer: ->(schema, analyzer) {
         if analyzer == GraphQL::Authorization::Analyzer
-          warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
+          GraphQL::Deprecation.warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
         end
         schema.query_analyzers << analyzer
       },
@@ -196,7 +199,7 @@ module GraphQL
     attr_accessor \
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :max_depth, :max_complexity, :default_max_page_size,
+      :validate_timeout, :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :directives,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
@@ -281,11 +284,11 @@ module GraphQL
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
-      # Default to the built-in execution strategy:
+      # For schema instances, default to legacy runtime modules
       @analysis_engine = GraphQL::Analysis
-      @query_execution_strategy = self.class.default_execution_strategy
-      @mutation_execution_strategy = self.class.default_execution_strategy
-      @subscription_execution_strategy = self.class.default_execution_strategy
+      @query_execution_strategy = GraphQL::Execution::Execute
+      @mutation_execution_strategy = GraphQL::Execution::Execute
+      @subscription_execution_strategy = GraphQL::Execution::Execute
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
       @context_class = GraphQL::Query::Context
@@ -300,11 +303,10 @@ module GraphQL
 
     # @return [Boolean] True if using the new {GraphQL::Execution::Interpreter}
     def interpreter?
-      @interpreter
+      query_execution_strategy == GraphQL::Execution::Interpreter &&
+        mutation_execution_strategy == GraphQL::Execution::Interpreter &&
+        subscription_execution_strategy == GraphQL::Execution::Interpreter
     end
-
-    # @api private
-    attr_writer :interpreter
 
     def inspect
       "#<#{self.class.name} ...>"
@@ -366,11 +368,11 @@ module GraphQL
       validator_opts = { schema: self }
       rules && (validator_opts[:rules] = rules)
       validator = GraphQL::StaticValidation::Validator.new(**validator_opts)
-      res = validator.validate(query)
+      res = validator.validate(query, timeout: validate_timeout)
       res[:errors]
     end
 
-    def define(**kwargs, &block)
+    def deprecated_define(**kwargs, &block)
       super
       ensure_defined
       # Assert that all necessary configs are present:
@@ -709,7 +711,7 @@ module GraphQL
     alias :_schema_class :class
     def_delegators :_schema_class, :unauthorized_object, :unauthorized_field, :inaccessible_fields
     def_delegators :_schema_class, :directive
-    def_delegators :_schema_class, :error_handler
+    def_delegators :_schema_class, :error_handler, :rescues
 
 
     # Given this schema member, find the class-based definition object
@@ -787,22 +789,24 @@ module GraphQL
     # @param default_resolve [<#call(type, field, obj, args, ctx)>] A callable for handling field resolution
     # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
     # @param using [Hash] Plugins to attach to the created schema with `use(key, value)`
-    # @param interpreter [Boolean] If false, the legacy {Execution::Execute} runtime will be used
     # @return [Class] the schema described by `document`
-    def self.from_definition(definition_or_path, default_resolve: nil, interpreter: true, parser: BuildFromDefinition::DefaultParser, using: {})
+    def self.from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {})
       # If the file ends in `.graphql`, treat it like a filepath
-      definition = if definition_or_path.end_with?(".graphql")
-        File.read(definition_or_path)
+      if definition_or_path.end_with?(".graphql")
+        GraphQL::Schema::BuildFromDefinition.from_definition_path(
+          definition_or_path,
+          default_resolve: default_resolve,
+          parser: parser,
+          using: using,
+        )
       else
-        definition_or_path
+        GraphQL::Schema::BuildFromDefinition.from_definition(
+          definition_or_path,
+          default_resolve: default_resolve,
+          parser: parser,
+          using: using,
+        )
       end
-      GraphQL::Schema::BuildFromDefinition.from_definition(
-        definition,
-        default_resolve: default_resolve,
-        parser: parser,
-        using: using,
-        interpreter: interpreter,
-      )
     end
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
@@ -832,7 +836,7 @@ module GraphQL
     # @param except [<#call(member, ctx)>]
     # @return [Hash] GraphQL result
     def as_json(only: nil, except: nil, context: {})
-      execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context).to_h
+      execute(Introspection.query(include_deprecated_args: true), only: only, except: except, context: context).to_h
     end
 
     # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
@@ -880,7 +884,7 @@ module GraphQL
       # @param except [<#call(member, ctx)>]
       # @return [Hash] GraphQL result
       def as_json(only: nil, except: nil, context: {})
-        execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context).to_h
+        execute(Introspection.query(include_deprecated_args: true), only: only, except: except, context: context).to_h
       end
 
       # Return the GraphQL IDL for the schema
@@ -945,6 +949,7 @@ module GraphQL
         schema_defn.query = query && query.graphql_definition
         schema_defn.mutation = mutation && mutation.graphql_definition
         schema_defn.subscription = subscription && subscription.graphql_definition
+        schema_defn.validate_timeout = validate_timeout
         schema_defn.max_complexity = max_complexity
         schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
@@ -1112,7 +1117,17 @@ module GraphQL
           if type.kind.union?
             type.possible_types(context: context)
           else
-            own_possible_types[type.graphql_name] ||
+            stored_possible_types = own_possible_types[type.graphql_name]
+            visible_possible_types = if stored_possible_types && type.kind.interface?
+              stored_possible_types.select do |possible_type|
+                # Use `.graphql_name` comparison to match legacy vs class-based types.
+                # When we don't need to support legacy `.define` types, use `.include?(type)` instead.
+                possible_type.interfaces(context).any? { |interface| interface.graphql_name == type.graphql_name }
+              end
+            else
+              stored_possible_types
+            end
+            visible_possible_types ||
               introspection_system.possible_types[type.graphql_name] ||
               (
                 superclass.respond_to?(:possible_types) ?
@@ -1141,6 +1156,14 @@ module GraphQL
           joined_um
         end
       end
+
+      # @api private
+      # @see GraphQL::Dataloader
+      def dataloader_class
+        @dataloader_class || GraphQL::Dataloader::NullDataloader
+      end
+
+      attr_writer :dataloader_class
 
       def references_to(to_type = nil, from: nil)
         @own_references_to ||= Hash.new { |h, k| h[k] = [] }
@@ -1258,6 +1281,18 @@ module GraphQL
         end
       end
 
+      attr_writer :validate_timeout
+
+      def validate_timeout(new_validate_timeout = nil)
+        if new_validate_timeout
+          @validate_timeout = new_validate_timeout
+        elsif defined?(@validate_timeout)
+          @validate_timeout
+        else
+          find_inherited_value(:validate_timeout)
+        end
+      end
+
       attr_writer :max_complexity
 
       def max_complexity(max_complexity = nil)
@@ -1273,7 +1308,7 @@ module GraphQL
       attr_writer :analysis_engine
 
       def analysis_engine
-        @analysis_engine || find_inherited_value(:analysis_engine, GraphQL::Analysis)
+        @analysis_engine || find_inherited_value(:analysis_engine, self.default_analysis_engine)
       end
 
       def using_ast_analysis?
@@ -1281,11 +1316,9 @@ module GraphQL
       end
 
       def interpreter?
-        if defined?(@interpreter)
-          @interpreter
-        else
-          find_inherited_value(:interpreter?, false)
-        end
+        query_execution_strategy == GraphQL::Execution::Interpreter &&
+          mutation_execution_strategy == GraphQL::Execution::Interpreter &&
+          subscription_execution_strategy == GraphQL::Execution::Interpreter
       end
 
       attr_writer :interpreter
@@ -1369,7 +1402,15 @@ module GraphQL
         if superclass <= GraphQL::Schema
           superclass.default_execution_strategy
         else
-          @default_execution_strategy ||= GraphQL::Execution::Execute
+          @default_execution_strategy ||= GraphQL::Execution::Interpreter
+        end
+      end
+
+      def default_analysis_engine
+        if superclass <= GraphQL::Schema
+          superclass.default_analysis_engine
+        else
+          @default_analysis_engine ||= GraphQL::Analysis::AST
         end
       end
 
@@ -1523,6 +1564,10 @@ module GraphQL
       end
 
       def instrument(instrument_step, instrumenter, options = {})
+        if instrument_step == :field
+          GraphQL::Deprecation.warn "Field instrumentation (#{instrumenter.inspect}) will be removed in GraphQL-Ruby 2.0, please upgrade to field extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
+        end
+
         step = if instrument_step == :field && options[:after_built_ins]
           :field_after_built_ins
         else
@@ -1534,9 +1579,9 @@ module GraphQL
 
       # Add several directives at once
       # @param new_directives [Class]
-      def directives(new_directives = nil)
-        if new_directives
-          new_directives.each { |d| directive(d) }
+      def directives(*new_directives)
+        if new_directives.any?
+          new_directives.flatten.each { |d| directive(d) }
         end
 
         find_inherited_value(:directives, default_directives).merge(own_directives)
@@ -1544,17 +1589,20 @@ module GraphQL
 
       # Attach a single directive to this schema
       # @param new_directive [Class]
+      # @return void
       def directive(new_directive)
-        add_type_and_traverse(new_directive, root: false)
-        own_directives[new_directive.graphql_name] = new_directive
+        own_directives[new_directive.graphql_name] ||= begin
+          add_type_and_traverse(new_directive, root: false)
+          new_directive
+        end
       end
 
       def default_directives
-        {
+        @default_directives ||= {
           "include" => GraphQL::Schema::Directive::Include,
           "skip" => GraphQL::Schema::Directive::Skip,
           "deprecated" => GraphQL::Schema::Directive::Deprecated,
-        }
+        }.freeze
       end
 
       def tracer(new_tracer)
@@ -1567,7 +1615,7 @@ module GraphQL
 
       def query_analyzer(new_analyzer)
         if new_analyzer == GraphQL::Authorization::Analyzer
-          warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
+          GraphQL::Deprecation.warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
         end
         own_query_analyzers << new_analyzer
       end
@@ -1578,6 +1626,7 @@ module GraphQL
 
       def middleware(new_middleware = nil)
         if new_middleware
+          GraphQL::Deprecation.warn "Middleware will be removed in GraphQL-Ruby 2.0, please upgrade to Field Extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
           own_middleware << new_middleware
         else
           # TODO make sure this is cached when running a query
@@ -1654,13 +1703,17 @@ module GraphQL
         if interpreter? && !defined?(@subscription_extension_added) && subscription && self.subscriptions
           @subscription_extension_added = true
           if subscription.singleton_class.ancestors.include?(Subscriptions::SubscriptionRoot)
-            warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")
+            GraphQL::Deprecation.warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")
           else
             subscription.fields.each do |name, field|
               field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
             end
           end
         end
+      end
+
+      def query_stack_error(query, err)
+        query.context.errors.push(GraphQL::ExecutionError.new("This query is too large to execute."))
       end
 
       private
@@ -1673,6 +1726,7 @@ module GraphQL
           else
             @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
             @lazy_methods.set(GraphQL::Execution::Lazy, :value)
+            @lazy_methods.set(GraphQL::Dataloader::Request, :load)
           end
         end
         @lazy_methods
@@ -1783,16 +1837,7 @@ module GraphQL
           if owner.kind.union?
             # It's a union with possible_types
             # Replace the item by class name
-            owner.type_memberships.each { |tm|
-              possible_type = tm.object_type
-              if possible_type.is_a?(String) && (possible_type == type.name)
-                # This is a match of Ruby class names, not graphql names,
-                # since strings are used to refer to constants.
-                tm.object_type = type
-              elsif possible_type.is_a?(LateBoundType) && possible_type.graphql_name == type.graphql_name
-                tm.object_type = type
-              end
-            }
+            owner.assign_type_membership_object_type(type)
             own_possible_types[owner.graphql_name] = owner.possible_types
           elsif type.kind.interface? && owner.kind.object?
             new_interfaces = []
@@ -1878,13 +1923,16 @@ module GraphQL
           end
         else
           own_types[type.graphql_name] = type
+          add_directives_from(type)
           if type.kind.fields?
             type.fields.each do |name, field|
               field_type = field.type.unwrap
               references_to(field_type, from: field)
               field_path = path + [name]
               add_type(field_type, owner: field, late_types: late_types, path: field_path)
+              add_directives_from(field)
               field.arguments.each do |arg_name, arg|
+                add_directives_from(arg)
                 arg_type = arg.type.unwrap
                 references_to(arg_type, from: arg)
                 add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg_name])
@@ -1893,6 +1941,7 @@ module GraphQL
           end
           if type.kind.input_object?
             type.arguments.each do |arg_name, arg|
+              add_directives_from(arg)
               arg_type = arg.type.unwrap
               references_to(arg_type, from: arg)
               add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg_name])
@@ -1930,7 +1979,19 @@ module GraphQL
           end
         end
       end
+
+      def add_directives_from(owner)
+        owner.directives.each { |dir| directive(dir.class) }
+      end
     end
+
+    def dataloader_class
+      self.class.dataloader_class
+    end
+
+    # Install these here so that subclasses will also install it.
+    use(GraphQL::Execution::Errors)
+    use(GraphQL::Pagination::Connections)
 
     protected
 

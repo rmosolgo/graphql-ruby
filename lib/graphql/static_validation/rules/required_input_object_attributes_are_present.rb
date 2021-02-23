@@ -26,8 +26,7 @@ module GraphQL
           context.field_definition
         end
 
-        parent_type = context.warden.arguments(defn)
-          .find{|f| f.name == parent_name(parent, defn) }
+        parent_type = context.warden.get_argument(defn, parent_name(parent, defn))
         parent_type ? parent_type.type.unwrap : nil
       end
 

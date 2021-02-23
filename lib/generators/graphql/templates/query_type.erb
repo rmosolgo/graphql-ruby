@@ -1,3 +1,4 @@
+<% module_namespacing_when_supported do -%>
 module Types
   class QueryType < Types::BaseObject
     # Add root-level fields here.
@@ -9,7 +10,6 @@ module Types
     def test_field
       "Hello World!"
     end
-<% if options[:relay] %>
-    field :node, field: GraphQL::Relay::Node.field
-<% end %>  end
+  end
 end
+<% end -%>

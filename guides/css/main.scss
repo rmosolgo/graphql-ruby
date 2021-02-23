@@ -105,7 +105,7 @@ pre {
   border-radius: $code-border-radius;
   background-color: $code-background;
   margin: 10px 0px;
-  overflow-x: scroll;
+  overflow-x: auto;
   line-height: 1.4rem;
 }
 
@@ -326,10 +326,6 @@ table {
   td, th {
     padding: 5px 10px 5px 0px;
   }
-}
-
-li p, li div {
-  display: inline-block;
 }
 
 .search-input {

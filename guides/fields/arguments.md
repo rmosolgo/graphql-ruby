@@ -5,7 +5,7 @@ search: true
 section: Fields
 title: Arguments
 desc: Fields may take arguments as inputs
-index: 10
+index: 1
 ---
 
 Fields can take **arguments** as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in `MutationType`).
@@ -61,6 +61,16 @@ def search_posts(category:)
   Post.where(category: category).limit(10)
 end
 ```
+
+**Experimental:** __Deprecated__ arguments can be marked by adding a `deprecation_reason:` keyword argument:
+
+```ruby
+field :search_posts, [PostType], null: false do
+  argument :name, String, required: false, deprecation_reason: "Use `query` instead."
+  argument :query, String, required: false
+end
+```
+Note argument deprecation is a stage 2 GraphQL [proposal](https://github.com/graphql/graphql-spec/pull/525) so not all clients will leverage this information.
 
 Use `as: :alternate_name` to use a different key from within your resolvers while
 exposing another key to clients.

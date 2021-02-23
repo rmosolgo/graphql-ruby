@@ -35,7 +35,7 @@ describe GraphQL::Pagination::Connections do
   end
 
   it "returns connections by class, using inherited mappings and local overrides" do
-    field_defn = OpenStruct.new(max_page_size: 10)
+    field_defn = OpenStruct.new(max_page_size: 10, type: GraphQL::Types::Relay::BaseConnection)
 
     set_wrapper = schema.connections.wrap(field_defn, nil, Set.new([1,2,3]), {}, nil)
     assert_instance_of SetConnection, set_wrapper
@@ -45,23 +45,30 @@ describe GraphQL::Pagination::Connections do
 
     array_wrapper = schema.connections.wrap(field_defn, nil, [1,2,3], {}, nil)
     assert_instance_of OtherArrayConnection, array_wrapper
+
+    raw_value = schema.connections.wrap(field_defn, nil, GraphQL::Execution::Interpreter::RawValue.new([1,2,3]), {}, nil)
+    assert_instance_of GraphQL::Execution::Interpreter::RawValue, raw_value
   end
 
-  it "uses passed-in wrappers" do
+  it "uses cached wrappers" do
     field_defn = OpenStruct.new(max_page_size: 10)
-
+    dummy_ctx = Class.new do
+      def namespace(some_key)
+        if some_key == :connections
+          { all_wrappers: {} }
+        else
+          raise ArgumentError, "unsupported key: #{some_key.inspect}"
+        end
+      end
+    end
     assert_raises GraphQL::Pagination::Connections::ImplementationMissingError do
-      schema.connections.wrap(field_defn, nil, Set.new([1,2,3]), {}, nil, wrappers: {})
+      schema.connections.wrap(field_defn, nil, Set.new([1,2,3]), {}, dummy_ctx.new)
     end
   end
 
   # Simulate a schema with a `*Connection` type that _isn't_
   # supposed to be a connection. Help debug, see https://github.com/rmosolgo/graphql-ruby/issues/2588
   class ConnectionErrorTestSchema < GraphQL::Schema
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
-    use GraphQL::Pagination::Connections
-
     class BadThing
       def name
         self.no_such_method # raise a NoMethodError
@@ -101,7 +108,7 @@ describe GraphQL::Pagination::Connections do
     end
 
     assert_includes err.message, "Failed to build a GraphQL list result for field `Query.things` at path `things`."
-    assert_includes err.message, "to implement `.each` to satisfy the GraphQL return type `[ThingConnection!]!`"
+    assert_includes err.message, "(GraphQL::Pagination::ArrayConnection) to implement `.each` to satisfy the GraphQL return type `[ThingConnection!]!`"
     assert_includes err.message, "This field was treated as a Relay-style connection; add `connection: false` to the `field(...)` to disable this behavior."
   end
 
@@ -111,5 +118,22 @@ describe GraphQL::Pagination::Connections do
     end
 
     assert_includes err.message, "undefined method `no_such_method' for <BadThing!>"
+  end
+
+  class SingleNewConnectionSchema < GraphQL::Schema
+    class Query < GraphQL::Schema::Object
+      field :strings, GraphQL::Types::String.connection_type, null: false
+
+      def strings
+        GraphQL::Pagination::ArrayConnection.new(["a", "b", "c"])
+      end
+    end
+
+    query(Query)
+  end
+
+  it "works when new connections are not installed" do
+    res = SingleNewConnectionSchema.execute("{ strings(first: 2) { edges { node } } }")
+    assert_equal ["a", "b"], res["data"]["strings"]["edges"].map { |e| e["node"] }
   end
 end

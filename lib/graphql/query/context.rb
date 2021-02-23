@@ -1,6 +1,4 @@
 # frozen_string_literal: true
-# test_via: ../execution/execute.rb
-# test_via: ../execution/lazy.rb
 module GraphQL
   class Query
     # Expose some query-specific info to field resolve functions.
@@ -34,7 +32,7 @@ module GraphQL
         # Remove this child from the result value
         # (used for null propagation and skip)
         # @api private
-        def delete(child_ctx)
+        def delete_child(child_ctx)
           @value.delete(child_ctx.key)
         end
 
@@ -158,6 +156,10 @@ module GraphQL
         @scoped_context = {}
       end
 
+      def dataloader
+        @dataloader ||= query.multiplex ? query.multiplex.dataloader : schema.dataloader_class.new
+      end
+
       # @api private
       attr_writer :interpreter
 
@@ -167,8 +169,10 @@ module GraphQL
       # @api private
       attr_accessor :scoped_context
 
-      def_delegators :@provided_values, :[]=
-      def_delegators :to_h, :fetch, :dig
+      def []=(key, value)
+        @provided_values[key] = value
+      end
+
       def_delegators :@query, :trace, :interpreter?
 
       # @!method []=(key, value)
@@ -178,6 +182,34 @@ module GraphQL
       def [](key)
         return @scoped_context[key] if @scoped_context.key?(key)
         @provided_values[key]
+      end
+
+      def delete(key)
+        if @scoped_context.key?(key)
+          @scoped_context.delete(key)
+        else
+          @provided_values.delete(key)
+        end
+      end
+
+      UNSPECIFIED_FETCH_DEFAULT = Object.new
+
+      def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
+        if @scoped_context.key?(key)
+          @scoped_context[key]
+        elsif @provided_values.key?(key)
+          @provided_values[key]
+        elsif default != UNSPECIFIED_FETCH_DEFAULT
+          default
+        elsif block_given?
+          yield(self, key)
+        else
+          raise KeyError.new(key: key)
+        end
+      end
+
+      def dig(key, *other_keys)
+        @scoped_context.key?(key) ? @scoped_context.dig(key, *other_keys) : @provided_values.dig(key, *other_keys)
       end
 
       def to_h
@@ -293,7 +325,7 @@ module GraphQL
             end
           when GraphQL::Execution::Execute::SKIP
             @parent.skipped = true
-            @parent.delete(self)
+            @parent.delete_child(self)
           else
             @value = new_value
           end

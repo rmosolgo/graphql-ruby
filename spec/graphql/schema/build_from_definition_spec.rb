@@ -66,10 +66,58 @@ schema {
 
 directive @foo(arg: Int, nullDefault: Int = null) on FIELD
 
-type Hello {
+directive @greeting(pleasant: Boolean = true) on ARGUMENT_DEFINITION | ENUM | FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | UNION
+
+directive @hashed on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @language(is: String!) on ENUM_VALUE
+
+type Hello implements Secret @greeting {
+  goodbye(saying: Parting @greeting): Parting
+  humbug: Int @greeting(pleasant: false)
+  password: Phrase @hashed
+  str(in: Input): String
+}
+
+input Input @greeting {
+  value: String @hashed
+}
+
+enum Parting @greeting {
+  AU_REVOIR @language(is: "fr")
+  ZAI_JIAN @language(is: "zh")
+}
+
+union Phrase @greeting = Hello | Word
+
+interface Secret @greeting {
+  password: String
+}
+
+type Word {
   str: String
 }
       SCHEMA
+
+      parsed_schema = GraphQL::Schema.from_definition(schema)
+      hello_type = parsed_schema.get_type("Hello")
+      assert_equal ["deprecated", "foo", "greeting", "hashed", "include", "language", "skip"], parsed_schema.directives.keys.sort
+      parsed_schema.directives.values.each do |dir_class|
+        assert dir_class < GraphQL::Schema::Directive
+      end
+      assert_equal 1, hello_type.directives.size
+      assert_instance_of parsed_schema.directives["greeting"], hello_type.directives.first
+      assert_equal({ pleasant: true }, hello_type.directives.first.arguments.keyword_arguments)
+
+      humbug_directives = hello_type.get_field("humbug").directives
+      assert_equal 1, humbug_directives.size
+      assert_instance_of parsed_schema.directives["greeting"], humbug_directives.first
+      assert_equal({ pleasant: false }, humbug_directives.first.arguments.keyword_arguments)
+
+      au_revoir_directives = parsed_schema.get_type("Parting").values["AU_REVOIR"].directives
+      assert_equal 1, au_revoir_directives.size
+      assert_instance_of parsed_schema.directives["language"], au_revoir_directives.first
+      assert_equal({ is: "fr" }, au_revoir_directives.first.arguments.keyword_arguments)
 
       assert_schema_and_compare_output(schema.chop)
     end
@@ -743,10 +791,16 @@ enum MyEnum {
   VALUE
 }
 
+input MyInput {
+  int: Int @deprecated(reason: "This is not the argument you're looking for")
+  string: String
+}
+
 type Query {
   enum: MyEnum
   field1: String @deprecated
   field2: Int @deprecated(reason: "Because I said so")
+  field3(deprecatedArg: MyInput @deprecated(reason: "Use something else")): String
 }
       SCHEMA
 
@@ -811,6 +865,30 @@ type Type implements Interface {
       assert_equal [26, 1], schema.directives["Directive"].ast_node.position
       assert_equal [28, 3], schema.directives["Directive"].arguments["argument"].ast_node.position
       assert_equal [31, 22], schema.types["Type"].ast_node.interfaces[0].position
+    end
+
+    it 'can build a schema from a file path' do
+      schema = <<-SCHEMA
+schema {
+  query: HelloScalars
+}
+
+type HelloScalars {
+  bool: Boolean
+  float: Float
+  id: ID
+  int: Int
+  str: String!
+}
+      SCHEMA
+
+      Tempfile.create(['test', '.graphql']) do |file|
+        file.write(schema)
+        file.close
+
+        built_schema = GraphQL::Schema.from_definition(file.path)
+        assert_equal schema.strip, GraphQL::Schema::Printer.print_schema(built_schema)
+      end
     end
   end
 

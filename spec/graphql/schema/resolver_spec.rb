@@ -333,6 +333,25 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class ResolverWithAuthArgs < GraphQL::Schema::RelayClassicMutation
+      argument :number_s, String, required: true, prepare: ->(v, ctx) { v.to_i }
+      argument :loads_id, ID, required: true, loads: IntegerWrapper
+
+      field :result, Integer, null: false
+
+      def authorized?(**_args)
+        if arguments[:number_s] == 1 && arguments[:loads] == 1
+          true
+        else
+          raise GraphQL::ExecutionError, "Auth failed (#{arguments[:number_s].inspect})"
+        end
+      end
+
+      def resolve(number_s:, loads:)
+        { result: number_s + loads }
+      end
+    end
+
     class MutationWithNullableLoadsArgument < GraphQL::Schema::Mutation
       argument :label_id, ID, required: false, loads: HasValue
       argument :label_ids, [ID], required: false, loads: HasValue
@@ -410,6 +429,7 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_12, resolver: PrepResolver12
       field :prep_resolver_13, resolver: PrepResolver13
       field :prep_resolver_14, resolver: PrepResolver14
+      field :resolver_with_auth_args, resolver: ResolverWithAuthArgs
       field :resolver_with_error_handler, resolver: ResolverWithErrorHandler
     end
 
@@ -418,10 +438,6 @@ describe GraphQL::Schema::Resolver do
       mutation(Mutation)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
 
       def self.object_from_id(id, ctx)
         if id == "invalid"
@@ -435,6 +451,15 @@ describe GraphQL::Schema::Resolver do
 
   def exec_query(*args, **kwargs)
     ResolverTest::Schema.execute(*args, **kwargs)
+  end
+
+  it "can access self.arguments inside authorized?" do
+    res = exec_query("{ resolverWithAuthArgs(input: { numberS: \"1\", loadsId: 1 }) { result } }")
+    assert_equal 2, res["data"]["resolverWithAuthArgs"]["result"]
+
+    # Test auth failure:
+    res = exec_query("{ resolverWithAuthArgs(input: { numberS: \"2\", loadsId: 1 }) { result } }")
+    assert_equal ["Auth failed (2)"], res["errors"].map { |e| e["message"] }
   end
 
   describe ".path" do
@@ -772,6 +797,54 @@ describe GraphQL::Schema::Resolver do
       it "uses extension to build response" do
         res = exec_query " { resolverWithExtension } "
         assert_equal "Hi, Robert!", res["data"]["resolverWithExtension"]
+      end
+    end
+
+    describe "max_page_size" do
+      class NoMaxPageSizeResolver < GraphQL::Schema::Resolver
+      end
+
+      class MaxPageSizeBaseResolver < GraphQL::Schema::Resolver
+        max_page_size 10
+      end
+
+      class MaxPageSizeSubclass < MaxPageSizeBaseResolver
+      end
+
+      class MaxPageSizeOverrideSubclass < MaxPageSizeBaseResolver
+        max_page_size nil
+      end
+
+      class ObjectWithMaxPageSizeResolver < GraphQL::Schema::Object
+        field :items, [String], null: false, resolver: MaxPageSizeBaseResolver
+      end
+
+      it "defaults to absent" do
+        assert_nil NoMaxPageSizeResolver.max_page_size
+        refute NoMaxPageSizeResolver.has_max_page_size?
+        refute NoMaxPageSizeResolver.field_options[:max_page_size]
+      end
+
+      it "implements has_max_page_size?" do
+        assert MaxPageSizeBaseResolver.has_max_page_size?
+        assert MaxPageSizeSubclass.has_max_page_size?
+        assert MaxPageSizeOverrideSubclass.has_max_page_size?
+      end
+
+      it "is inherited" do
+        assert_equal 10, MaxPageSizeBaseResolver.max_page_size
+        assert_equal 10, MaxPageSizeBaseResolver.field_options[:max_page_size]
+        assert_equal 10, MaxPageSizeSubclass.max_page_size
+        assert_equal 10, MaxPageSizeSubclass.field_options[:max_page_size]
+      end
+
+      it "is overridden by nil" do
+        assert_nil MaxPageSizeOverrideSubclass.max_page_size
+        assert_nil MaxPageSizeOverrideSubclass.field_options.fetch(:max_page_size)
+      end
+
+      it "is passed along to the field" do
+        assert_equal 10, ObjectWithMaxPageSizeResolver.fields["items"].max_page_size
       end
     end
   end

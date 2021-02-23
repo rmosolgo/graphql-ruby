@@ -13,6 +13,12 @@ describe GraphQL::Schema::Field do
       end
     end
 
+    describe "inspect" do
+      it "includes the path and return type" do
+        assert_equal "#<Jazz::BaseField Query.inspectInput(...): [String!]!>", field.inspect
+      end
+    end
+
     it "uses the argument class" do
       arg_defn = field.graphql_definition.arguments.values.first
       assert_equal :ok, arg_defn.metadata[:custom]
@@ -180,8 +186,6 @@ describe GraphQL::Schema::Field do
           end
 
           query(Query)
-          use(GraphQL::Execution::Interpreter)
-          use(GraphQL::Analysis::AST)
         end
 
         it "provides metadata about arguments" do
@@ -311,18 +315,6 @@ describe GraphQL::Schema::Field do
 
       assert_includes err.message, "Thing.stuff"
       assert_includes err.message, "Received `false` instead of a type, maybe a `!` should be replaced with `null: true` (for fields) or `required: true` (for arguments)"
-    end
-
-    it "makes a suggestion when the type is a GraphQL::Field" do
-      err = assert_raises ArgumentError do
-        Class.new(GraphQL::Schema::Object) do
-          graphql_name "Thing"
-          # Previously, field was a valid second argument
-          field :stuff, GraphQL::Relay::Node.field, null: false
-        end
-      end
-
-      assert_includes err.message, "use the `field:` keyword for this instead"
     end
   end
 

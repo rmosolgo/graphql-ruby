@@ -73,7 +73,7 @@ end
 
 {{ "/operation_store/graphql_ui.png" | link_to_img:"GraphQL Persisted Operations Dashboard" }}
 
-The are both Rack apps, so you can mount them in Sinatra or any other Rack app.
+`operation_store_sync` and `dashboard` are both Rack apps, so you can mount them in Rails, Sinatra, or any other Rack app.
 
 #### Update the Controller
 

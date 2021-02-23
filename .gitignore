@@ -25,4 +25,10 @@ spec/integration/tmp
 .vscode/
 *.swp
 *.swo
-javascript_client/dist/
+# These are generated for distribution, but shouldn't be
+# versioned with the typescript source (which is in javascript_client/src):
+javascript_client/__tests__
+javascript_client/subscriptions
+javascript_client/sync
+javascript_client/cli*
+javascript_client/index*

@@ -8,6 +8,165 @@
 
 ### Bug Fix
 
+# 1.17.8 (23 Feb 2021)
+
+### New Features
+
+- Subscriptions: change the default `cleanup_delay_s:` to 5 seconds (use `cleanup_delay_s: 0` to get the old behavior)
+
+### Bug Fix
+
+- Subscriptions: Handle unsubscribe race condition #3357
+
+# 1.17.7 (19 Feb 2021)
+
+### New Features
+
+- CanCan integration: support `can_can_subject:` config for overriding the use of `object` as the CanCan subject #3350
+
+### Bug Fixes
+
+- Subscriptions: Support `Redis::Namespace` without deprecation warnings for `script load` #3347
+
+# 1.17.6 (18 Feb 2021)
+
+### New Features
+
+- Stable connections: implement `range_add_edge` to leverage GraphQL-Ruby 1.12.5's improved RangeAdd #2184
+
+### Bug Fix
+
+- Defer: Update to work with Dataloader
+
+# 1.17.5 (13 Feb 2021)
+
+### Bug Fix
+
+- Subscriptions: Use `MULTI` instead of Lua for some operations
+- Subscriptions: Use `EVAL_SHA` for duplicate scripts to reduce network overhead #3285
+- Subscriptions: Don't use `redis.call`, which is unsupported in the `redis-namespace` gem #3322
+
+# 1.17.4 (4 Feb 2021)
+
+## Bug Fix
+
+- Stable Relation Connection: Don't emit `OR ... IS NULL` for columns that are known to be `null: false` (this improves index utilization)
+
+## 1.17.3 (2 Feb 2021)
+
+### New Features
+
+- Pusher subscriptions: `context[:compress_pusher_payload] = true` will cause the payload to be gzipped before being sent to Pusher
+
+## 1.17.2 (30 Jan 2021)
+
+### Bug Fix
+
+- Subscriptions: don't generate keys inside Lua scripts (for redis-namespace compatibility, and probably better support for Redis cluster) #3307
+
+## 1.17.1 (25 Jan 2021)
+
+### New Features
+
+- OperationStore: add `OperationStore::AddOperationBatch.call` for adding data directly
+- Subscriptions: use Lua scripts for more efficient Redis access
+
+## 1.17.0 (20 Jan 2021)
+
+### New Features
+
+- Updates for 1.12.0 compatibility
+
+### Bug Fix
+
+- OperationStore: improve performance by batching reads and writes during updates
+
+## 1.16.2 (21 Dec 2020)
+
+### New Features
+
+- Subscriptions: Add `stale_ttl_s:` and `cleanup_delay_s:` to customize persistence in Redis #3252
+
+## 1.16.1 (3 Dec 2020)
+
+### Bug Fix
+
+- Fix duplicate calls to `Argument#authorized?` in CanCan and Pundit integrations #3242
+
+## 1.16.0 (10 Nov 2020)
+
+### New Features
+
+- Ably Subscriptions: `cipher_base:` sets up end-to-end encryption
+
+## 1.15.7 (29 Sept 2020)
+
+### Bug Fix
+
+- Encoder: fix Ruby 2.7 warning #3161
+- Stable connections: Handle `ARRAY[...]` selections and cursors on Postgres #3166
+- Pundit: properly lookup policies for list inputs #3146
+
+## 1.15.6 (17 Sept 2020)
+
+### Bug Fix
+
+- Stable Connections: Use method access to get `.cursor_#{idx}` values instead of `.attributes[:cursor_#{idx}]`, fixes #3149
+
+## 1.15.5
+
+### New Features
+
+- Stable Connections: use `.to_sql` to handle orderings that use complex Arel expressions (#3109)
+
+## 1.15.4 (28 July 2020)
+
+### New Features
+
+- Pundit: add `pundit_policy_class_for(object, context)` and `pundit_role_for(object, context)` for custom runtime lookups
+
+## 1.15.3 (17 July 2020)
+
+### Bug Fix
+
+- Subscriptions: don't send empty updates when subscriptions return `:no_update`
+
+## 1.15.2 (16 July 2020)
+
+### New Features
+
+- OperationStore: improve handling of archived operations in index views
+
+## 1.15.1 (16 July 2020)
+
+(Oops, bad release!)
+
+## 1.15.0 (15 July 2020)
+
+- OperationStore: Store & display `last_used_at` for operation store clients and operations. To upgrade, add the column to your ActiveRecord table:
+
+  ```ruby
+  add_column :graphql_client_operations, :last_used_at, :datetime
+  ```
+
+  (It works out-of-the-box with the Redis backend.)
+
+  You can opt out of this feature by adding `use GraphQL::Pro::OperationStore, ... default_touch_last_used_at: false` to your schema setup.
+
+- OperationStore: Add archive/unarchive workflow for operations. To upgrade, add the column to your table:
+
+  ```ruby
+  add_column :graphql_client_operations, :is_archived, :boolean, index: true
+  ```
+
+  (It works out-of-the-box with the Redis backend.)
+
+- OperationStore: Fix indexing of enum values
+
+## 1.14.1 (29 June 2020)
+
+- CanCan: Accept `can_can_attribute:` configuration, which is passed as the third input to `.can?(...)`
+
 ## 1.14.0 (13 June 2020)
 
 ### New Features

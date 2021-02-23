@@ -46,6 +46,7 @@ And read on about the different features of the integration:
 - [Authorizing Arguments](#authorizing-arguments)
 - [Authorizing Mutations](#authorizing-mutations)
 - [Custom Policy Lookup](#custom-policy-lookup)
+- [Custom User Lookup](#custom-user-lookup)
 
 ## Authorizing Objects
 
@@ -318,45 +319,18 @@ In the example above, `PromoteEmployeePolicy#admin?` will be checked before runn
 
 #### Custom Policy Class
 
-By default, Pundit uses the mutation's class name to look up a policy. You can override this by defining `self.policy_class` on your mutation:
+By default, Pundit uses the mutation's class name to look up a policy. You can override this by defining `pundit_policy_class` on your mutation:
 
 ```ruby
 class Mutations::PromoteEmployee < Mutations::BaseMutation
-  def self.policy_class
-    ::UserPolicy
-  end
-
+  pundit_policy_class ::UserPolicy
   pundit_role :admin
 end
 ```
 
 Now, the mutation will check `UserPolicy#admin?` before running.
 
-Another good approach is to have one policy per mutation. You can implement `self.policy_class` to look up a class _within_ the mutation, for example:
-
-```ruby
-class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
-  def self.policy_class
-    # Look up a nested `Policy` constant:
-    self.const_get(:Policy)
-  end
-end
-```
-
-Then, each mutation can define its policy inline, for example:
-
-```ruby
-class Mutations::PromoteEmployee < Mutations::BaseMutation
-  # This will be found by `BaseMutation.policy_class`, defined above:
-  class Policy
-    # ...
-  end
-
-  pundit_role :admin
-end
-```
-
-Now, `Mutations::PromoteEmployee::Policy#admin` will be checked before running the mutation.
+For really custom policy lookup, see [Custom Policy Lookup](#custom-policy-lookup) below.
 
 #### Authorizing Loaded Objects
 
@@ -414,9 +388,12 @@ By default, the integration uses `Pundit`'s top-level methods to interact with p
 - `Pundit.policy!(context[:current_user], object)` is called to find a policy instance
 - `Pundit.policy_scope!(context[:current_user], items)` is called to filter `items`
 
-You can override these by defining the following methods in your schema:
+### Custom Policy Methods
 
-- `pundit_policy(context, object)` to find a policy (or raise an error if one isn't found)
+You can implement a custom lookup by defining the following methods in your schema:
+
+- `pundit_policy_class_for(object, context)` to return a policy class (or raise an error if one isn't found)
+- `pundit_role_for(object, context)` to return a role method (Symbol), or `nil` to bypass authorization
 - `scope_by_pundit_policy(context, items)` to apply a scope to `items` (or raise an error if one isn't found)
 
 Since different objects have different lifecycles, the hooks are installed slightly different ways:
@@ -429,13 +406,22 @@ Here's an example of how the custom hooks can be installed:
 ```ruby
 module CustomPolicyLookup
   # Lookup policies in the `SystemAdmin::` namespace for system_admin users
-  def pundit_policy(context, object)
+  def pundit_policy_class_for(object, context)
     current_user = context[:current_user]
     if current_user.system_admin?
       policy_class = SystemAdmin.const_get("#{object.class.name}Policy")
       policy_class.new(current_user, object)
     else
       super
+    end
+  end
+
+  # Require admin permissions if the object is pending_approval
+  def pundit_role_for(object, context)
+    if object.pending_approval?
+      :admin
+    else
+      super # fall back to the normally-configured role
     end
   end
 end
@@ -466,6 +452,34 @@ class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   include CustomPolicyLookup
 end
 ```
+
+### One Policy Per Class
+
+Another good approach is to have one policy per class. You can implement `policy_class_for(object, context)` to look up a policy _within_ the class, for example:
+
+```ruby
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
+  def policy_class_for(_object, _context)
+    # Look up a nested `Policy` constant:
+    self.class.const_get(:Policy)
+  end
+end
+```
+
+Then, each mutation can define its policy inline, for example:
+
+```ruby
+class Mutations::PromoteEmployee < Mutations::BaseMutation
+  # This will be found by `BaseMutation.policy_class`, defined above:
+  class Policy
+    # ...
+  end
+
+  pundit_role :admin
+end
+```
+
+Now, `Mutations::PromoteEmployee::Policy#admin?` will be checked before running the mutation.
 
 ## Custom User Lookup
 

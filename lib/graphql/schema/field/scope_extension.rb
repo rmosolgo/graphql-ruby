@@ -4,7 +4,7 @@ module GraphQL
   class Schema
     class Field
       class ScopeExtension < GraphQL::Schema::FieldExtension
-        def after_resolve(value:, context:, **rest)
+        def after_resolve(object:, arguments:, context:, value:, memo:)
           if value.nil?
             value
           else

@@ -99,6 +99,10 @@ module GraphQL
     def type_class
       metadata[:type_class]
     end
+
+    def get_argument(argument_name)
+      arguments[argument_name]
+    end
   end
 end
 

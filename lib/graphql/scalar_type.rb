@@ -2,6 +2,8 @@
 module GraphQL
   # @api deprecated
   class ScalarType < GraphQL::BaseType
+    extend Define::InstanceDefinable::DeprecatedDefine
+
     accepts_definitions :coerce, :coerce_input, :coerce_result
     ensure_defined :coerce_non_null_input, :coerce_result
 

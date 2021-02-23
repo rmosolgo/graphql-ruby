@@ -4,7 +4,7 @@ import ActionCableLink from "./subscriptions/ActionCableLink"
 import PusherLink from "./subscriptions/PusherLink"
 import AblyLink from "./subscriptions/AblyLink"
 import addGraphQLSubscriptions from "./subscriptions/addGraphQLSubscriptions"
-import createHandler from "./subscriptions/createHandler"
+import createRelaySubscriptionHandler from "./subscriptions/createRelaySubscriptionHandler"
 
 export {
   sync,
@@ -13,5 +13,5 @@ export {
   PusherLink,
   AblyLink,
   addGraphQLSubscriptions,
-  createHandler as createRelaySubscriptionHandler,
+  createRelaySubscriptionHandler,
 }
