@@ -45,6 +45,9 @@ module GraphQL
         end
       end
 
+      # @return [Hash<Symbol => Object>] The field arguments from the field that returned this connection
+      attr_accessor :arguments
+
       # @param items [Object] some unpaginated collection item, like an `Array` or `ActiveRecord::Relation`
       # @param context [Query::Context]
       # @param parent [Object] The object this collection belongs to
@@ -52,8 +55,9 @@ module GraphQL
       # @param after [String, nil] A cursor for pagination, if the client provided one
       # @param last [Integer, nil] Limit parameter from the client, if provided
       # @param before [String, nil] A cursor for pagination, if the client provided one.
+      # @param arguments [Hash] The arguments to the field that returned the collection wrapped by this connection
       # @param max_page_size [Integer, nil] A configured value to cap the result size. Applied as `first` if neither first or last are given.
-      def initialize(items, parent: nil, field: nil, context: nil, first: nil, after: nil, max_page_size: :not_given, last: nil, before: nil, edge_class: nil)
+      def initialize(items, parent: nil, field: nil, context: nil, first: nil, after: nil, max_page_size: :not_given, last: nil, before: nil, edge_class: nil, arguments: nil)
         @items = items
         @parent = parent
         @context = context
@@ -62,6 +66,7 @@ module GraphQL
         @after_value = after
         @last_value = last
         @before_value = before
+        @arguments = arguments
         @edge_class = edge_class || self.class::Edge
         # This is only true if the object was _initialized_ with an override
         # or if one is assigned later.

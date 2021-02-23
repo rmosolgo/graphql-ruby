@@ -84,6 +84,7 @@ module GraphQL
           after: arguments[:after],
           last: arguments[:last],
           before: arguments[:before],
+          arguments: arguments,
           edge_class: edge_class_for_field(field),
         )
       end
