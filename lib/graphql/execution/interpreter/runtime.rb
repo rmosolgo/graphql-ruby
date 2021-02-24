@@ -26,7 +26,7 @@ module GraphQL
           @interpreter_context = @context.namespace(:interpreter)
           @response = response
           @dead_paths = {}
-          @types_at_paths = {}
+          @non_null_at_paths = {}
           # A cache of { Class => { String => Schema::Field } }
           # Which assumes that MyObject.get_field("myField") will return the same field
           # during the lifetime of a query
@@ -185,7 +185,7 @@ module GraphQL
           # This seems janky, but we need to know
           # the field's return type at this path in order
           # to propagate `null`
-          set_type_at_path(next_path, return_type)
+          set_non_null_at(next_path, return_type)
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           set_all_interpreter_context(nil, field_defn, nil, next_path)
 
@@ -397,7 +397,7 @@ module GraphQL
                 next_path << idx
                 next_path.freeze
                 idx += 1
-                set_type_at_path(next_path, inner_type)
+                set_non_null_at(next_path, inner_type)
                 # This will update `response_list` with the lazy
                 after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments) do |inner_inner_value|
                   continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node)
@@ -420,7 +420,7 @@ module GraphQL
             response_list
           when "NON_NULL"
             inner_type = current_type.of_type
-            # Don't `set_type_at_path` because we want the static type,
+            # Don't `set_non_null_at` because we want the static type,
             # we're going to use that to determine whether a `nil` should be propagated or not.
             continue_field(path, value, owner_type, field, inner_type, ast_node, next_selections, true, owner_object, arguments)
           else
@@ -463,16 +463,16 @@ module GraphQL
 
         def set_all_interpreter_context(object, field, arguments, path)
           if object
-            @context[:current_object] = @interpreter_context[:current_object] = object
+            @interpreter_context[:current_object] = object
           end
           if field
-            @context[:current_field] = @interpreter_context[:current_field] = field
+            @interpreter_context[:current_field] = field
           end
           if arguments
-            @context[:current_arguments] = @interpreter_context[:current_arguments] = arguments
+            @interpreter_context[:current_arguments] = arguments
           end
           if path
-            @context[:current_path] = @interpreter_context[:current_path] = path
+            @interpreter_context[:current_path] = path
           end
         end
 
@@ -483,7 +483,6 @@ module GraphQL
         # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, ast_node:, eager: false, trace: true, &block)
-          set_all_interpreter_context(owner_object, field, arguments, path)
           if schema.lazy?(lazy_obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
               set_all_interpreter_context(owner_object, field, arguments, path)
@@ -513,6 +512,7 @@ module GraphQL
               lazy
             end
           else
+            set_all_interpreter_context(owner_object, field, arguments, path)
             yield(lazy_obj)
           end
         end
@@ -548,7 +548,7 @@ module GraphQL
           if dead_path?(path)
             return
           else
-            if value.nil? && path.any? && type_at(path).non_null?
+            if value.nil? && path.any? && non_null_at?(path)
               # This nil is invalid, try writing it at the previous spot
               propagate_path = path[0..-2]
               write_in_response(propagate_path, value)
@@ -572,12 +572,14 @@ module GraphQL
         # To propagate nulls, we have to know what the field type was
         # at previous parts of the response.
         # This hash matches the response
-        def type_at(path)
-          @types_at_paths.fetch(path)
+        def non_null_at?(path)
+          @non_null_at_paths[path]
         end
 
-        def set_type_at_path(path, type)
-          @types_at_paths[path] = type
+        def set_non_null_at(path, type)
+          if type.non_null?
+            @non_null_at_paths[path] = true
+          end
           nil
         end
 

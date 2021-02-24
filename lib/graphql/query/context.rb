@@ -169,19 +169,23 @@ module GraphQL
       # @api private
       attr_accessor :scoped_context
 
+      #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
       def []=(key, value)
         @provided_values[key] = value
       end
 
       def_delegators :@query, :trace, :interpreter?
 
-      # @!method []=(key, value)
-      #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
-
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`
       def [](key)
-        return @scoped_context[key] if @scoped_context.key?(key)
-        @provided_values[key]
+        if key == :current_object || key == :current_field || key == :current_arguments || key == :current_path
+          # Direct these keys to `interpreter` -- this avoids the overhead of additional writes at runtime.
+          namespace(:interpreter)[key]
+        elsif @scoped_context.key?(key)
+          @scoped_context[key]
+        else
+          @provided_values[key]
+        end
       end
 
       def delete(key)
@@ -195,7 +199,9 @@ module GraphQL
       UNSPECIFIED_FETCH_DEFAULT = Object.new
 
       def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
-        if @scoped_context.key?(key)
+        if key == :current_object || key == :current_field || key == :current_arguments || key == :current_path
+          namespace(:interpreter)[key]
+        elsif @scoped_context.key?(key)
           @scoped_context[key]
         elsif @provided_values.key?(key)
           @provided_values[key]

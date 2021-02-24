@@ -136,7 +136,7 @@ describe GraphQL::Execution::Interpreter do
         base_ctx_value = context[key]
         interpreter_ctx_value = context.namespace(:interpreter)[key]
         if base_ctx_value != interpreter_ctx_value
-          raise "Context mismatch for #{key} -> #{base_ctx_value} / intepreter: #{interpreter_ctx_value}"
+          raise "Context mismatch for #{key.inspect} -> #{base_ctx_value.inspect} / intepreter: #{interpreter_ctx_value.inspect}"
         else
           base_ctx_value
         end
