@@ -194,10 +194,10 @@
 <span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-client</span><span class="dl">'</span><span class="p">;</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link-http</span><span class="dl">'</span><span class="p">;</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-cache-inmemory</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="nx">ActionCable</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">actioncable</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">createConsumer</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@rails/actioncable</span><span class="dl">'</span><span class="p">;</span>
 <span class="k">import</span> <span class="nx">ActionCableLink</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/ActionCableLink</span><span class="dl">'</span><span class="p">;</span>
 
-<span class="kd">const</span> <span class="nx">cable</span> <span class="o">=</span> <span class="nx">ActionCable</span><span class="p">.</span><span class="nx">createConsumer</span><span class="p">()</span>
+<span class="kd">const</span> <span class="nx">cable</span> <span class="o">=</span> <span class="nx">createConsumer</span><span class="p">()</span>
 
 <span class="kd">const</span> <span class="nx">httpLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HttpLink</span><span class="p">({</span>
   <span class="na">uri</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span>
@@ -221,6 +221,8 @@
   <span class="na">cache</span><span class="p">:</span> <span class="k">new</span> <span class="nx">InMemoryCache</span><span class="p">()</span>
 <span class="p">});</span>
 </code></pre></div></div>
+
+<p>Note that for Rails 5, the ActionCable client package is <code class="language-plaintext highlighter-rouge">actioncable</code>, not <code class="language-plaintext highlighter-rouge">@rails/actioncable</code>.</p>
 
 <h2 id="apollo-1">Apollo 1</h2>
 
@@ -272,7 +274,7 @@
 <p>For example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load ActionCable and create a consumer</span>
-<span class="kd">var</span> <span class="nx">ActionCable</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">actioncable</span><span class="dl">'</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">ActionCable</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">@rails/actioncable</span><span class="dl">'</span><span class="p">)</span>
 <span class="kd">var</span> <span class="nx">cable</span> <span class="o">=</span> <span class="nx">ActionCable</span><span class="p">.</span><span class="nx">createConsumer</span><span class="p">()</span>
 <span class="nb">window</span><span class="p">.</span><span class="nx">cable</span> <span class="o">=</span> <span class="nx">cable</span>
 
