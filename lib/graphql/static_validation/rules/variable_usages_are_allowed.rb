@@ -29,8 +29,8 @@ module GraphQL
             context.directive_definition.arguments
           when GraphQL::Language::Nodes::InputObject
             arg_type = context.argument_definition.type.unwrap
-            if arg_type.is_a?(GraphQL::InputObjectType)
-              arguments = arg_type.input_fields
+            if arg_type.kind.input_object?
+              arguments = arg_type.arguments
             else
               # This is some kind of error
               nil
