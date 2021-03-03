@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.17.9 (3 Mar 2021)
+
+### Bug Fix
+
+- Fix OperationStore assignment on GraphQL-Ruby 1.9
+
 # 1.17.8 (23 Feb 2021)
 
 ### New Features
