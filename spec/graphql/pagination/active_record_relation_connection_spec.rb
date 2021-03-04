@@ -93,6 +93,22 @@ if testing_rails?
 
       log = with_active_record_log do
         results = schema.execute("{
+          items(first: 11, maxPageSizeOverride: 11) {
+            nodes {
+              __typename
+            }
+            pageInfo {
+              hasNextPage
+            }
+          }
+        }")
+      end
+      assert_equal ["Item"] * 10, results["data"]["items"]["nodes"].map { |i| i["__typename"] }
+      assert_equal 1, log.split("\n").size, "It runs only one query when less than total count is requested"
+      assert_equal 0, log.scan("COUNT(").size, "It runs no count query"
+
+      log = with_active_record_log do
+        results = schema.execute("{
           items(first: 3) {
             nodes {
               __typename
@@ -103,7 +119,6 @@ if testing_rails?
           }
         }")
       end
-
       # This currently runs one query to load the nodes, then another one to count _just beyond_ the nodes.
       # A better implementation would load `first + 1` nodes and use that to set `has_next_page`.
       assert_equal ["Item", "Item", "Item"], results["data"]["items"]["nodes"].map { |i| i["__typename"] }
