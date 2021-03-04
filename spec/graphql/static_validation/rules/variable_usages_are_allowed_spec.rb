@@ -248,4 +248,36 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       end
     end
   end
+
+  describe "for input properties" do
+    class InputVariableSchema < GraphQL::Schema
+      class Input < GraphQL::Schema::InputObject
+        argument(:id, String, required: true)
+      end
+
+      class FooMutation < GraphQL::Schema::Mutation
+        field(:foo, String, null: true)
+        argument(:input, Input, required: true)
+
+        def resolve(input:)
+          { foo: input.id }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field(:foo_mutation, mutation: FooMutation)
+      end
+
+      mutation(Mutation)
+    end
+
+    it "gives a proper error" do
+      res1 = InputVariableSchema.execute("mutation($id: String) { fooMutation(input: { id: $id }) { foo } }")
+      assert_equal ["Nullability mismatch on variable $id and argument id (String / String!)"], res1["errors"].map { |e| e["message"] }
+
+      res2 = InputVariableSchema.execute("mutation($id: String!) { fooMutation(input: { id: $id }) { foo } }", variables: { id: "abc" })
+      refute res2.key?("errors")
+      assert_equal "abc", res2["data"]["fooMutation"]["foo"]
+    end
+  end
 end
