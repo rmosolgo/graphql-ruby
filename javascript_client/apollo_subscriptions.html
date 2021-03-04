@@ -122,9 +122,11 @@
   <span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">,</span>
   <span class="na">decompress</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">compressed</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1">// Decode base64</span>
-    <span class="kd">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">btoa</span><span class="p">(</span><span class="nx">compressed</span><span class="p">)</span>
+    <span class="kd">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">atob</span><span class="p">(</span><span class="nx">compressed</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="dl">''</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">x</span><span class="p">.</span><span class="nx">charCodeAt</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
     <span class="c1">// Decompress</span>
-    <span class="kd">const</span> <span class="nx">payloadString</span> <span class="o">=</span> <span class="nx">pako</span><span class="p">.</span><span class="nx">inflate</span><span class="p">(</span><span class="nx">data</span><span class="p">,</span> <span class="p">{</span> <span class="na">to</span><span class="p">:</span> <span class="dl">'</span><span class="s1">string</span><span class="dl">'</span> <span class="p">})</span>
+    <span class="kd">const</span> <span class="nx">payloadString</span> <span class="o">=</span> <span class="nx">pako</span><span class="p">.</span><span class="nx">inflate</span><span class="p">(</span><span class="k">new</span> <span class="nb">Uint8Array</span><span class="p">(</span><span class="nx">data</span><span class="p">),</span> <span class="p">{</span> <span class="na">to</span><span class="p">:</span> <span class="dl">'</span><span class="s1">string</span><span class="dl">'</span> <span class="p">});</span>
     <span class="c1">// Parse into an object</span>
     <span class="k">return</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">payloadString</span><span class="p">);</span>
   <span class="p">}</span>
