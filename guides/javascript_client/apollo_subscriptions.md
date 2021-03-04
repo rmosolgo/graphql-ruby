@@ -77,9 +77,11 @@ const pusherLink = new PusherLink({
   pusher: pusherClient,
   decompress: function(compressed) {
     // Decode base64
-    const data = btoa(compressed)
+    const data = atob(compressed)
+      .split('')
+      .map(x => x.charCodeAt(0));
     // Decompress
-    const payloadString = pako.inflate(data, { to: 'string' })
+    const payloadString = pako.inflate(new Uint8Array(data), { to: 'string' });
     // Parse into an object
     return JSON.parse(payloadString);
   }
