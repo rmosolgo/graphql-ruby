@@ -12,6 +12,8 @@ module GraphQL
           child_class.extend(Relay::DefaultRelay)
           child_class.default_relay(true)
           child_class.node_nullable(true)
+          child_class.edges_nullable(true)
+          child_class.edge_nullable(true)
           add_page_info_field(child_class)
         end
 
@@ -32,7 +34,7 @@ module GraphQL
           # It's called when you subclass this base connection, trying to use the
           # class name to set defaults. You can call it again in the class definition
           # to override the default (or provide a value, if the default lookup failed).
-          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: true, node_nullable: self.node_nullable)
+          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: true, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable)
             # Set this connection's graphql name
             node_type_name = node_type.graphql_name
 
@@ -40,8 +42,8 @@ module GraphQL
             @edge_type = edge_type_class
             @edge_class = edge_class
 
-            field :edges, [edge_type_class, null: true],
-              null: true,
+            field :edges, [edge_type_class, null: edge_nullable],
+              null: edges_nullable,
               description: "A list of edges.",
               legacy_edge_class: edge_class, # This is used by the old runtime only, for EdgesInstrumentation
               connection: false
@@ -82,6 +84,26 @@ module GraphQL
               @node_nullable ||= new_value
             end
           end
+
+          # Set the default `edges_nullable` for this class and its child classes. (Defaults to `true`.)
+          # Use `edges_nullable(false)` in your base class to make non-null `edges` fields.
+          def edges_nullable(new_value = nil)
+            if new_value.nil?
+              @edges_nullable || superclass.edges_nullable
+            else
+              @edges_nullable ||= new_value
+            end
+          end     
+          
+          # Set the default `edge_nullable` for this class and its child classes. (Defaults to `true`.)
+          # Use `edge_nullable(false)` in your base class to make non-null `edge` fields.
+          def edge_nullable(new_value = nil)
+            if new_value.nil?
+              @edge_nullable || superclass.edge_nullable
+            else
+              @edge_nullable ||= new_value
+            end
+          end               
 
           private
 
