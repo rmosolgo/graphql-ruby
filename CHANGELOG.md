@@ -8,6 +8,19 @@
 
 ### Bug fixes
 
+# 1.12.6 (11 March 2021)
+
+### New features
+
+- Connection types: support `edges_nullable(false)` and `edge_nullable(false)` for non-null fields #3376
+- Connections: add `.arguments` reader to new `Pagination::Connection` classes #3360
+
+### Bug fixes
+
+- Relation connection: Remove extra `COUNT` query from some scenarios #3373
+- Add a Bootsnap-style parsing cache when Bootsnap is detected #3156
+- Fix input validation for input object variables #3370
+
 # 1.12.5 (18 February 2021)
 
 ### New features
