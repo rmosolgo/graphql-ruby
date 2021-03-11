@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.17.10 (11 Mar 2021)
+
+### Bug Fix
+
+- Pundit, CanCan integrations: properly call configured auth hooks for arguments that are lists and input objects
+
 # 1.17.9 (3 Mar 2021)
 
 ### Bug Fix
