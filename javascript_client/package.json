@@ -9,11 +9,13 @@
   "license": "LGPL-3.0",
   "bin": "./cli.js",
   "devDependencies": {
+    "@types/actioncable": "^5.2.3",
     "@types/glob": "^7.1.1",
     "@types/jest": "^25.1.2",
     "@types/minimist": "^1.2.0",
     "@types/node": "^13.7.1",
     "@types/pako": "^1.0.1",
+    "@types/pusher-js": "^4.2.2",
     "@types/react": "^17.0.0",
     "@types/zen-observable": "^0.8.2",
     "ably": "^1.2.4",
@@ -22,7 +24,8 @@
     "pako": "^2.0.3",
     "prettier": "^1.19.1",
     "pusher-js": "^7.0.3",
-    "ts-jest": "^25.2.0"
+    "ts-jest": "^25.2.0",
+    "typescript": "^3.7.5"
   },
   "scripts": {
     "test": "tsc && jest",
@@ -30,13 +33,10 @@
   },
   "dependencies": {
     "@apollo/client": "^3.3.6",
-    "@types/actioncable": "^5.2.3",
-    "@types/pusher-js": "^4.2.2",
     "glob": "^7.1.4",
     "graphql": "^14.3.1 || ^15.0.0",
     "minimist": "^1.2.0",
-    "request": "^2.88.2",
-    "typescript": "^3.7.5"
+    "request": "^2.88.2"
   },
   "prettier": {
     "semi": false,
