@@ -53,10 +53,9 @@
 
 <h3 id="using-analyzers">Using Analyzers</h3>
 
-<p>Query analyzers are added to the schema with <code class="language-plaintext highlighter-rouge">query_analyzer</code>; however, to use the new analysis engine, you must opt in by using <code class="language-plaintext highlighter-rouge">use GraphQL::Analysis::AST</code>, for example:</p>
+<p>Query analyzers are added to the schema with <code class="language-plaintext highlighter-rouge">query_analyzer</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span>
   <span class="n">query_analyzer</span> <span class="no">MyQueryAnalyzer</span>
 <span class="k">end</span>
 </code></pre></div></div>
