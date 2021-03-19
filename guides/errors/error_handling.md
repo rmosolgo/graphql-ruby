@@ -10,7 +10,7 @@ index: 3
 
 You can configure your schema to rescue application errors during field resolution. Errors during batch loading will also be rescued.
 
-Thanks to [`@exAspArk`](https://github.com/exaspark) for the [`graphql-errors`](https://github.com/exAspArk/graphql-errors) gem which inspired this behavior and [`@thiago-sydow`](https://github.com/thiago-sydow) who [suggested](https://github.com/rmosolgo/graphql-ruby/issues/2139#issuecomment-524913594) and implementation like this.
+Thanks to [`@exAspArk`](https://github.com/exaspark) for the [`graphql-errors`](https://github.com/exAspArk/graphql-errors) gem which inspired this behavior and [`@thiago-sydow`](https://github.com/thiago-sydow) who [suggested](https://github.com/rmosolgo/graphql-ruby/issues/2139#issuecomment-524913594) an implementation like this.
 
 ## Add error handlers
 
