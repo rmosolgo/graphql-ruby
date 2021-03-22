@@ -277,10 +277,7 @@ module GraphQL
               end
               after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node)
-                if RawValue === continue_value
-                  # Write raw value directly to the response without resolving nested objects
-                  write_in_response(next_path, continue_value.resolve)
-                elsif HALT != continue_value
+                if HALT != continue_value
                   continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments)
                 end
               end
@@ -331,6 +328,10 @@ module GraphQL
 
             continue_value(path, next_value, parent_type, field, is_non_null, ast_node)
           elsif GraphQL::Execution::Execute::SKIP == value
+            HALT
+          elsif value.is_a?(GraphQL::Execution::Interpreter::RawValue)
+            # Write raw value directly to the response without resolving nested objects
+            write_in_response(path, value.resolve)
             HALT
           else
             value
