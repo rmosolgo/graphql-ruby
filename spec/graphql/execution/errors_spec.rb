@@ -15,10 +15,23 @@ describe "GraphQL::Execution::Errors" do
     class ErrorD < RuntimeError; end
 
     class ErrorASubclass < ErrorA; end
+    class ErrorBChildClass < ErrorB; end
+    class ErrorBGrandchildClass < ErrorBChildClass; end
 
     rescue_from(ErrorA) do |err, obj, args, ctx, field|
       ctx[:errors] << "#{err.message} (#{field.owner.name}.#{field.graphql_name}, #{obj.inspect}, #{args.inspect})"
       nil
+    end
+
+    rescue_from(ErrorBChildClass) do |*|
+      "Handled ErrorBChildClass"
+    end
+
+    # Trying to assert that _specificity_ takes priority
+    # over sequence, but the stability of that assertion
+    # depends on the underlying implementation.
+    rescue_from(ErrorBGrandchildClass) do |*|
+      "Handled ErrorBGrandchildClass"
     end
 
     rescue_from(ErrorB) do |*|
@@ -93,6 +106,11 @@ describe "GraphQL::Execution::Errors" do
         -> { raise ErrorB }
       end
 
+      field :f7, String, null: true
+      def f7
+        raise ErrorBGrandchildClass
+      end
+
       field :thing, Thing, null: true
       def thing
         :thing
@@ -136,6 +154,11 @@ describe "GraphQL::Execution::Errors" do
       res = ErrorsTestSchema.execute("{ f2 }", context: ctx)
       assert_equal({ "data" => { "f2" => nil } }, res)
       assert_equal ["f2 broke (ErrorsTestSchema::Query.f2, nil, {})"], ctx[:errors]
+    end
+
+    it "picks the most specific handler and uses the return value from it" do
+      res = ErrorsTestSchema.execute("{ f7 }")
+      assert_equal({ "data" => { "f7" => "Handled ErrorBGrandchildClass" } }, res)
     end
 
     it "rescues errors from lazy code with handlers that re-raise" do

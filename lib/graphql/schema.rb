@@ -711,7 +711,7 @@ module GraphQL
     alias :_schema_class :class
     def_delegators :_schema_class, :unauthorized_object, :unauthorized_field, :inaccessible_fields
     def_delegators :_schema_class, :directive
-    def_delegators :_schema_class, :error_handler, :rescues
+    def_delegators :_schema_class, :error_handler
 
 
     # Given this schema member, find the class-based definition object
@@ -989,7 +989,7 @@ module GraphQL
           schema_defn.lazy_methods.set(lazy_class, value_method)
         end
 
-        rescues.each do |err_class, handler|
+        error_handler.each_rescue do |err_class, handler|
           schema_defn.rescue_from(err_class, &handler)
         end
 
@@ -1424,7 +1424,7 @@ module GraphQL
 
       def rescue_from(*err_classes, &handler_block)
         err_classes.each do |err_class|
-          own_rescues[err_class] = handler_block
+          error_handler.rescue_from(err_class, handler_block)
         end
       end
 
@@ -1466,10 +1466,6 @@ module GraphQL
         end
         child_class.singleton_class.prepend(ResolveTypeWithType)
         super
-      end
-
-      def rescues
-        find_inherited_value(:rescues, EMPTY_HASH).merge(own_rescues)
       end
 
       def object_from_id(node_id, ctx)
@@ -1548,15 +1544,10 @@ module GraphQL
       def parse_error(parse_err, ctx)
         ctx.errors.push(parse_err)
       end
-      attr_writer :error_handler
 
-      # @return [GraphQL::Execution::Errors, Class<GraphQL::Execution::Errors::NullErrorHandler>]
+      # @return [GraphQL::Execution::Errors]
       def error_handler
-        if defined?(@error_handler)
-          @error_handler
-        else
-          find_inherited_value(:error_handler, GraphQL::Execution::Errors::NullErrorHandler)
-        end
+        @error_handler ||= GraphQL::Execution::Errors.new(self)
       end
 
       def lazy_resolve(lazy_class, value_method)
@@ -1742,10 +1733,6 @@ module GraphQL
 
       def own_plugins
         @own_plugins ||= []
-      end
-
-      def own_rescues
-        @own_rescues ||= {}
       end
 
       def own_orphan_types
@@ -1990,7 +1977,6 @@ module GraphQL
     end
 
     # Install these here so that subclasses will also install it.
-    use(GraphQL::Execution::Errors)
     use(GraphQL::Pagination::Connections)
 
     protected
