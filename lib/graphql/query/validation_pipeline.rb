@@ -36,7 +36,7 @@ module GraphQL
         @valid
       end
 
-      # @return [Array<GraphQL::StaticValidation::Error >] Static validation errors for the query string
+      # @return [Array<GraphQL::StaticValidation::Error, GraphQL::Query::VariableValidationError>] Static validation errors for the query string
       def validation_errors
         ensure_has_validated
         @validation_errors
