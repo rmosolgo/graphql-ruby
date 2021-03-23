@@ -5,12 +5,14 @@ module GraphQL
       attr_reader :name
       attr_reader :type_name
       attr_reader :argument_name
+      attr_reader :parent
 
-      def initialize(message, path: nil, nodes: [], name:, type:, argument:)
+      def initialize(message, path: nil, nodes: [], name:, type:, argument:, parent_defn:)
         super(message, path: path, nodes: nodes)
         @name = name
         @type_name = type
         @argument_name = argument
+        @parent = parent_defn
       end
 
       # A hash representation of this Message

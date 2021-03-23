@@ -4,13 +4,17 @@ module GraphQL
     class ArgumentLiteralsAreCompatibleError < StaticValidation::Error
       attr_reader :type_name
       attr_reader :argument_name
+      attr_reader :argument
+      attr_reader :value
 
-      def initialize(message, path: nil, nodes: [], type:, argument: nil, extensions: nil, coerce_extensions: nil)
+      def initialize(message, path: nil, nodes: [], type:, argument: nil, extensions: nil, coerce_extensions: nil, argument_defn: nil, value: nil)
         super(message, path: path, nodes: nodes)
         @type_name = type
         @argument_name = argument
         @extensions = extensions
         @coerce_extensions = coerce_extensions
+        @argument = argument_defn
+        @value = value
       end
 
       # A hash representation of this Message
