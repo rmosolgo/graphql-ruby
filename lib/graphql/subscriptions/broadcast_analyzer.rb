@@ -35,9 +35,6 @@ module GraphQL
           pt = @query.possible_types(current_type)
           pt.each do |object_type|
             ot_field = @query.get_field(object_type, current_field.graphql_name)
-            if !ot_field
-              binding.pry
-            end
             # Inherited fields would be exactly the same object;
             # only check fields that are overrides of the inherited one
             if ot_field && ot_field != current_field
