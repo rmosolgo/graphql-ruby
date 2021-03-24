@@ -11,6 +11,7 @@ module GraphQL
           child_class.extend(ClassMethods)
           child_class.extend(Relay::DefaultRelay)
           child_class.default_relay(true)
+          child_class.has_nodes_field(true)
           child_class.node_nullable(true)
           child_class.edges_nullable(true)
           child_class.edge_nullable(true)
@@ -34,7 +35,7 @@ module GraphQL
           # It's called when you subclass this base connection, trying to use the
           # class name to set defaults. You can call it again in the class definition
           # to override the default (or provide a value, if the default lookup failed).
-          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: true, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable)
+          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: self.has_nodes_field, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable)
             # Set this connection's graphql name
             node_type_name = node_type.graphql_name
 
@@ -102,6 +103,16 @@ module GraphQL
               defined?(@edge_nullable) ? @edge_nullable : superclass.edge_nullable
             else
               @edge_nullable = new_value
+            end
+          end
+
+          # Set the default `nodes_field` for this class and its child classes. (Defaults to `true`.)
+          # Use `nodes_field(false)` in your base class to prevent adding of a nodes field.
+          def has_nodes_field(new_value = nil)
+            if new_value.nil?
+              defined?(@nodes_field) ? @nodes_field : superclass.has_nodes_field
+            else
+              @nodes_field = new_value
             end
           end
 

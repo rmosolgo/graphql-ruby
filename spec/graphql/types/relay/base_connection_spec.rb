@@ -25,6 +25,10 @@ describe GraphQL::Types::Relay::BaseConnection do
       field :connection, NonNullableNodeEdgeConnectionType, null: false
     end
 
+    class NoNodesFieldClassOverrideConnectionType < GraphQL::Types::Relay::BaseConnection
+      has_nodes_field(false)
+    end
+
     class Schema < GraphQL::Schema
       query Query
     end
@@ -66,5 +70,9 @@ describe GraphQL::Types::Relay::BaseConnection do
 
     refute type.connection_type.fields["nodes"].connection?
     refute type.connection_type.fields["edges"].type.unwrap.fields["node"].connection?
+  end
+
+  it "supports class-level nodes_field config" do
+    assert_equal false, NonNullAbleNodeDummy::NoNodesFieldClassOverrideConnectionType.has_nodes_field
   end
 end
