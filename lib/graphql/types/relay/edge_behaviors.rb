@@ -8,6 +8,7 @@ module GraphQL
           child_class.description("An edge in a connection.")
           child_class.field(:cursor, String, null: false, description: "A cursor for use in pagination.")
           child_class.extend(ClassMethods)
+          child_class.node_nullable(true)
         end
 
         module ClassMethods
@@ -15,7 +16,7 @@ module GraphQL
           #
           # @param node_type [Class] A `Schema::Object` subclass
           # @param null [Boolean]
-          def node_type(node_type = nil, null: true)
+          def node_type(node_type = nil, null: self.node_nullable)
             if node_type
               @node_type = node_type
               # Add a default `node` field
@@ -34,6 +35,16 @@ module GraphQL
 
           def visible?(ctx)
             node_type.visible?(ctx)
+          end
+
+          # Set the default `node_nullable` for this class and its child classes. (Defaults to `true`.)
+          # Use `node_nullable(false)` in your base class to make non-null `node` field.
+          def node_nullable(new_value = nil)
+            if new_value.nil?
+              defined?(@node_nullable) ? @node_nullable : superclass.node_nullable
+            else
+              @node_nullable = new_value
+            end
           end
         end
       end

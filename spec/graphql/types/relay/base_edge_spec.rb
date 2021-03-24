@@ -11,6 +11,10 @@ describe GraphQL::Types::Relay::BaseEdge do
       node_type(NonNullableNode, null: false)
     end
 
+    class NonNullableNodeClassOverrideEdgeType < GraphQL::Types::Relay::BaseEdge
+      node_nullable(false)
+    end
+
     class NonNullableNodeEdgeConnectionType < GraphQL::Types::Relay::BaseConnection
       edge_type(NonNullableNodeEdgeType, nodes_field: false)
     end
@@ -31,5 +35,9 @@ describe GraphQL::Types::Relay::BaseEdge do
     node_field = edge_type["fields"].find { |f| f["name"] == "node" }
     assert_equal "NON_NULL", node_field["type"]["kind"]
     assert_equal "NonNullableNode", node_field["type"]["ofType"]["name"]
+  end
+
+  it "supports class-level node_nullable config" do
+    assert_equal false, NonNullableDummy::NonNullableNodeClassOverrideEdgeType.node_nullable
   end
 end
