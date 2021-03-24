@@ -80,9 +80,9 @@ module GraphQL
           # Use `node_nullable(false)` in your base class to make non-null `node` and `nodes` fields.
           def node_nullable(new_value = nil)
             if new_value.nil?
-              @node_nullable || superclass.node_nullable
+              defined?(@node_nullable) ? @node_nullable : superclass.node_nullable
             else
-              @node_nullable ||= new_value
+              @node_nullable = new_value
             end
           end
 
@@ -90,9 +90,9 @@ module GraphQL
           # Use `edges_nullable(false)` in your base class to make non-null `edges` fields.
           def edges_nullable(new_value = nil)
             if new_value.nil?
-              @edges_nullable || superclass.edges_nullable
+              defined?(@edges_nullable) ? @edges_nullable : superclass.edges_nullable
             else
-              @edges_nullable ||= new_value
+              @edges_nullable = new_value
             end
           end
 
@@ -100,9 +100,9 @@ module GraphQL
           # Use `edge_nullable(false)` in your base class to make non-null `edge` fields.
           def edge_nullable(new_value = nil)
             if new_value.nil?
-              @edge_nullable || superclass.edge_nullable
+              defined?(@edge_nullable) ? @edge_nullable : superclass.edge_nullable
             else
-              @edge_nullable ||= new_value
+              @edge_nullable = new_value
             end
           end
 

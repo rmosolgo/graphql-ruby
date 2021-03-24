@@ -84,6 +84,16 @@ describe GraphQL::Schema::FieldExtension do
       end
     end
 
+    class ObjectClassExtension < GraphQL::Schema::FieldExtension
+      def resolve(object:, **_args)
+        object.class.name
+      end
+
+      def after_resolve(value:, object:, **_args)
+        [object.class.name, value]
+      end
+    end
+
     class BaseObject < GraphQL::Schema::Object
     end
 
@@ -142,6 +152,8 @@ describe GraphQL::Schema::FieldExtension do
         extension ExtendsArguments
         extension ShortcutsResolve, shortcut_value: 3
       end
+
+      field :object_class_test, [String], null: false, extensions: [ObjectClassExtension]
     end
 
     class Schema < GraphQL::Schema
@@ -151,6 +163,13 @@ describe GraphQL::Schema::FieldExtension do
 
   def exec_query(query_str, **kwargs)
     FilterTestSchema::Schema.execute(query_str, **kwargs)
+  end
+
+  describe "object" do
+    it "is the schema type object" do
+      res = exec_query("{ objectClassTest }")
+      assert_equal ["FilterTestSchema::Query", "FilterTestSchema::Query"], res["data"]["objectClassTest"]
+    end
   end
 
   describe "reading" do
