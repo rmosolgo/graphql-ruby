@@ -26,7 +26,7 @@ describe GraphQL::Types::Relay::BaseConnection do
     end
 
     class NoNodesFieldClassOverrideConnectionType < GraphQL::Types::Relay::BaseConnection
-      nodes_field(false)
+      has_nodes_field(false)
     end
 
     class Schema < GraphQL::Schema
@@ -73,6 +73,6 @@ describe GraphQL::Types::Relay::BaseConnection do
   end
 
   it "supports class-level nodes_field config" do
-    assert_equal false, NonNullAbleNodeDummy::NoNodesFieldClassOverrideConnectionType.nodes_field
+    assert_equal false, NonNullAbleNodeDummy::NoNodesFieldClassOverrideConnectionType.has_nodes_field
   end
 end
