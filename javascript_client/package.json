@@ -18,7 +18,7 @@
     "@types/pusher-js": "^4.2.2",
     "@types/react": "^17.0.0",
     "@types/zen-observable": "^0.8.2",
-    "ably": "^1.2.4",
+    "ably": "1.2.6",
     "jest": "^25.0.0",
     "nock": "^11.0.0",
     "pako": "^2.0.3",
