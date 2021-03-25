@@ -72,11 +72,10 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
         # This is from the extra validation
         "v",
-        # Interestingly, lex and parse are _before_ execute multiplex in this case
-        "l",
-        "p",
         "em",
         "am",
+        "l",
+        "p",
         "v",
         "aq",
         "eq",
