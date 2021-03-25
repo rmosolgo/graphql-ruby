@@ -15,8 +15,8 @@ module GraphQL
             nodes: node,
             name: error_arg_name,
             type: kind_of_node,
-            argument: node.name,
-            parent_defn: parent_defn
+            argument_name: node.name,
+            parent: parent_defn
           ))
         else
           # Some other weird error
