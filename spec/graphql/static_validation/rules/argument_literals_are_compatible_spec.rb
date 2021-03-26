@@ -333,6 +333,35 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     end
   end
 
+  describe "error references argument" do
+    let(:validator) { GraphQL::StaticValidation::Validator.new(schema: schema) }
+    let(:query) { GraphQL::Query.new(schema, query_string) }
+    let(:errors) { validator.validate(query)[:errors] }
+    let(:query_string) {"
+      query {
+        cheese(id: true) { source }
+        milk(id: 1) { source @skip(if: TRUE) }
+      }
+    "}
+
+    it "works with field" do
+      id_argument = schema.types['Query'].fields['cheese'].get_argument('id')
+      error = errors.find { |error| error.argument_name == 'id' }
+
+      assert_equal id_argument, error.argument
+      assert_equal true, error.value
+    end
+
+    it "works with directive" do
+      if_argument = schema.directives['skip'].get_argument('if')
+      error = errors.find { |error| error.argument_name == 'if' }
+
+      assert_equal if_argument, error.argument
+      assert_instance_of GraphQL::Language::Nodes::Enum, error.value
+      assert_equal "TRUE", error.value.name
+    end
+  end
+
   class CustomErrorMessagesSchema < GraphQL::Schema
     class TimeType < GraphQL::Schema::Scalar
       description "Time since epoch in seconds"
