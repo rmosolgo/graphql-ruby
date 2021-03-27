@@ -24,6 +24,10 @@ module GraphQL
       #   end
       #   class Types::PostConnection < Types::BaseConnection
       #     edge_type(Types::PostEdge)
+      #     edges_nullable(true)
+      #     edge_nullable(true)
+      #     node_nullable(true)
+      #     has_nodes_field(true)
       #   end
       #
       # @see Relay::BaseEdge for edge types
