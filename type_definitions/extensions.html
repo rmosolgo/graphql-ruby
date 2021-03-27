@@ -163,6 +163,14 @@
 <p>For example, you can create a custom connection:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::MyCustomConnection</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span>
+  <span class="c1"># BaseConnection has these nullable configurations</span>
+  <span class="c1"># and the nodes field by default, but you can change</span>
+  <span class="c1"># these options if you want</span>
+  <span class="n">edges_nullable</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span>
+  <span class="n">edge_nullable</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span>
+  <span class="n">node_nullable</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span>
+  <span class="n">has_nodes_field</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span>
+
   <span class="n">field</span> <span class="ss">:total_count</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 
   <span class="k">def</span> <span class="nf">total_count</span>

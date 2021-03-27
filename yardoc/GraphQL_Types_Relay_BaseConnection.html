@@ -24,6 +24,10 @@ node_type(Types::Post)
 end
 class Types::PostConnection &lt; Types::BaseConnection
 edge_type(Types::PostEdge)
+edges_nullable(true)
+edge_nullable(true)
+node_nullable(true)
+has_nodes_field(true)
 end
 See Also:</p>
   </li>
