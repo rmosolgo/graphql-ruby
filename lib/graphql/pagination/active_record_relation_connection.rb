@@ -5,6 +5,13 @@ module GraphQL
   module Pagination
     # Customizes `RelationConnection` to work with `ActiveRecord::Relation`s.
     class ActiveRecordRelationConnection < Pagination::RelationConnection
+      private
+
+      def relation_larger_than(relation, size)
+        initial_offset = relation.offset_value || 0
+        relation.offset(initial_offset + size).exists?
+      end
+
       def relation_count(relation)
         int_or_hash = if relation.respond_to?(:unscope)
           relation.unscope(:order).count(:all)
