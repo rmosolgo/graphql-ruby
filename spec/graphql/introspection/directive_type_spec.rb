@@ -18,6 +18,15 @@ describe GraphQL::Introspection::DirectiveType do
     }
   |}
 
+  let(:directive_with_deprecated_arg) do
+    Class.new(GraphQL::Schema::Directive) do
+      graphql_name "customTransform"
+      locations GraphQL::Schema::Directive::FIELD
+      argument :old_way, String, required: false, deprecation_reason: "Use the newWay"
+      argument :new_way, String, required: false
+    end
+  end
+
   let(:schema) { Class.new(Dummy::Schema) }
   let(:result) { schema.execute(query_string) }
   before do
@@ -62,5 +71,52 @@ describe GraphQL::Introspection::DirectiveType do
       }
     }}
     assert_equal(expected, result)
+  end
+
+  it "hides deprecated arguments by default" do
+    schema.directive(directive_with_deprecated_arg)
+    result = schema.execute <<-GRAPHQL
+      {
+        __schema {
+          directives {
+            name
+            args { 
+              name 
+            }
+          }
+        }
+      }
+    GRAPHQL
+
+    directive_result = result["data"]["__schema"]["directives"].find { |d| d["name"] == "customTransform" }
+    expected = [
+      {"name" => "newWay"}
+    ]
+    assert_equal(expected, directive_result["args"])
+  end
+
+  it "can expose deprecated arguments" do
+    schema.directive(directive_with_deprecated_arg)
+    result = schema.execute <<-GRAPHQL
+      {
+        __schema {
+          directives {
+            name
+            args(includeDeprecated: true) { 
+              name
+              isDeprecated
+              deprecationReason
+            }
+          }
+        }
+      }
+    GRAPHQL
+
+    directive_result = result["data"]["__schema"]["directives"].find { |d| d["name"] == "customTransform" }
+    expected = [
+      {"name" => "oldWay", "isDeprecated" => true, "deprecationReason" => "Use the newWay"},
+      {"name" => "newWay", "isDeprecated" => false, "deprecationReason" => nil}
+    ]
+    assert_equal(expected, directive_result["args"])
   end
 end

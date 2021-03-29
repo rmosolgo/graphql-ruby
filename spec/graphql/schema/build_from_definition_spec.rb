@@ -785,6 +785,8 @@ union Union = Concrete
 
     it 'supports @deprecated' do
       schema = <<-SCHEMA
+directive @directiveWithDeprecatedArg(deprecatedArg: Boolean @deprecated(reason: "Don't use me!")) on OBJECT
+
 enum MyEnum {
   OLD_VALUE @deprecated
   OTHER_VALUE @deprecated(reason: "Terrible reasons")
