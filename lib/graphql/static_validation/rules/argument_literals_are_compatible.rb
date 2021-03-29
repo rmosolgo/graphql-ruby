@@ -41,7 +41,9 @@ module GraphQL
               error_options = {
                 nodes: parent,
                 type: kind_of_node,
-                argument: node.name
+                argument_name: node.name,
+                argument: arg_defn,
+                value: node.value
               }
               if coerce_extensions
                 error_options[:coerce_extensions] = coerce_extensions

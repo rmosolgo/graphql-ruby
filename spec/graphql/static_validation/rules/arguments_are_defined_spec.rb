@@ -109,4 +109,30 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
       })
     end
   end
+
+  describe "error references argument's parent" do
+    let(:validator) { GraphQL::StaticValidation::Validator.new(schema: schema) }
+    let(:query) { GraphQL::Query.new(schema, query_string) }
+    let(:errors) { validator.validate(query)[:errors] }
+    let(:query_string) {"
+      query {
+        cheese(silly: true, id: 1) { source }
+        milk(id: 1) { source @skip(something: 3.4, if: false) }
+      }
+    "}
+
+    it "works with field" do
+      query_cheese_field = schema.types['Query'].fields['cheese']
+      error = errors.find { |error| error.argument_name == 'silly' }
+
+      assert_equal query_cheese_field, error.parent
+    end
+
+    it "works with directive" do
+      skip_directive = schema.directives['skip']
+      error = errors.find { |error| error.argument_name == 'something' }
+
+      assert_equal skip_directive, error.parent
+    end
+  end
 end
