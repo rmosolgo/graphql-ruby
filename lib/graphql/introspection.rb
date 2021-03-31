@@ -17,7 +17,7 @@ query IntrospectionQuery {
       name
       description
       locations
-      args {
+      args#{include_deprecated_args ? '(includeDeprecated: true)' : ''} {
         ...InputValue
       }
     }

@@ -152,7 +152,7 @@ skipping a field. Directives provide this by describing additional information
 to the executor.
 """
 type __Directive {
-  args: [__InputValue!]!
+  args(includeDeprecated: Boolean = false): [__InputValue!]!
   description: String
   locations: [__DirectiveLocation!]!
   name: String!
@@ -857,6 +857,8 @@ directive @a(a: Letter) on ENUM_VALUE
 directive @b(b: BInput) on ENUM_VALUE
 
 directive @customDirective on FIELD_DEFINITION
+
+directive @directiveWithDeprecatedArg(deprecatedArg: Boolean @deprecated(reason: "Don't use me!")) on OBJECT
 
 directive @intDir(a: Int!) on INPUT_FIELD_DEFINITION
 
