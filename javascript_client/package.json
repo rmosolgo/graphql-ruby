@@ -9,6 +9,7 @@
   "license": "LGPL-3.0",
   "bin": "./cli.js",
   "devDependencies": {
+    "@apollo/client": "^3.3.13",
     "@types/actioncable": "^5.2.3",
     "@types/glob": "^7.1.1",
     "@types/jest": "^25.1.2",
@@ -19,6 +20,7 @@
     "@types/react": "^17.0.0",
     "@types/zen-observable": "^0.8.2",
     "ably": "1.2.6",
+    "graphql": "^15.0.0",
     "jest": "^25.0.0",
     "nock": "^11.0.0",
     "pako": "^2.0.3",
