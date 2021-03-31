@@ -10,6 +10,10 @@
 
 # 1.12.6 (11 March 2021)
 
+### Breaking changes
+
+- Static validation: previously, variables passed as arguments to input objects were not properly type-checked. #3370 fixed type checking in this case, but may case existing (invalid) queries to break.
+
 ### New features
 
 - Connection types: support `edges_nullable(false)` and `edge_nullable(false)` for non-null fields #3376
