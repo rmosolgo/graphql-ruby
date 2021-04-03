@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.17.12 (3 Apr 2021)
+
+### Bug Fix
+
+- Stable Connections: Re-select aliased fields that are referenced by ORDER BY. #3421
+
 # 1.17.11 (12 Mar 2021)
 
 ### Bug Fix
