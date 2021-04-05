@@ -171,6 +171,12 @@ describe GraphQL::Execution::Interpreter do
         raw_value(sym: "RAW", name: "Raw expansion", always_cached_value: 42)
       end
 
+      field :expansion_mixed, [Expansion], null: false
+
+      def expansion_mixed
+        expansions + [expansion_raw]
+      end
+
       field :expansions, [Expansion], null: false
       def expansions
         EXPANSIONS
@@ -508,6 +514,23 @@ describe GraphQL::Execution::Interpreter do
   end
 
   describe "returning raw values" do
+    it "returns raw value" do
+      query_str = <<-GRAPHQL
+      {
+        expansionRaw {
+          name
+          sym
+          alwaysCachedValue
+        }
+      }
+      GRAPHQL
+
+      res = InterpreterTest::Schema.execute(query_str)
+      assert_equal({ sym: "RAW", name: "Raw expansion", always_cached_value: 42 }, res["data"]["expansionRaw"])
+    end
+  end
+
+  describe "returning raw values and resolved fields" do
     it "returns raw value" do
       query_str = <<-GRAPHQL
       {
