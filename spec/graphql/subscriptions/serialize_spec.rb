@@ -64,4 +64,11 @@ describe GraphQL::Subscriptions::Serialize do
     reloaded = serialize_load(serialized)
     assert_equal os, reloaded, "It reloads #{os.inspect} from #{serialized.inspect}"
   end
+
+  it "can deserialize single key hash" do
+    os = { 'a' => 1 }
+    serialized = os.to_json
+    reloaded = serialize_load(serialized)
+    assert_equal os, reloaded
+  end
 end
