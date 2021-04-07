@@ -8,6 +8,26 @@
 
 ### Bug fixes
 
+# 1.12.7 (7 Apr 2021)
+
+### Breaking changes
+
+- `Execution::Errors` (which implements `rescue_from`) was refactored so that, when an error matches more than one registered handler, it picks the _most specific_ handler instead of the _first match_ in the underlying Hash. This might "break" your code if your application registered a handler for a parent class and a child class, but expects instances of the child class to be handled by the handler for the parent class. (This seems very unlikely -- I consider the change to be a "breaking fix.") #3404
+
+### New features
+
+- Errors: pick the most specific error handlers (instead of an order-dependent selection) #3404
+- Add `node_nullable(...)` connection configuration options #3389
+- Add `has_nodes_field(true|false)` connection configuration option #3388
+
+### Bug fixes
+
+- Fix connection nullability settings to properly handle `false` #3386
+- Fix returning `RawValue`s as part of a list #3403
+- Fix introspection for deprecated directive arguments #3416
+- Optimize `has_next_page` for ActiveRecord::Relation connections #3414
+- Tracing: consistent event sequencing when queries are executed with `Query#result` #3408
+
 # 1.12.6 (11 March 2021)
 
 ### Breaking changes
