@@ -19,6 +19,7 @@
 - Errors: pick the most specific error handlers (instead of an order-dependent selection) #3404
 - Add `node_nullable(...)` connection configuration options #3389
 - Add `has_nodes_field(true|false)` connection configuration option #3388
+- Store more metadata in argument-related static validation errors #3406
 
 ### Bug fixes
 
