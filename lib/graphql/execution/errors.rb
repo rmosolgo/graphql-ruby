@@ -115,7 +115,7 @@ module GraphQL
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object
           end
-          handler.call(err, obj, args, ctx, field)
+          handler[:handler].call(err, obj, args, ctx, field)
         else
           raise err
         end
@@ -148,11 +148,11 @@ module GraphQL
         # If there's an inherited one, but not one defined here, use the inherited one.
         # Otherwise, there's no handler for this error, return `nil`.
         if parent_handler && handler && parent_handler[:class] < handler[:class]
-          parent_handler[:handler]
+          parent_handler
         elsif handler
-          handler[:handler]
+          handler
         elsif parent_handler
-          parent_handler[:handler]
+          parent_handler
         else
           nil
         end
