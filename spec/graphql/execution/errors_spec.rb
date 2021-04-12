@@ -2,7 +2,16 @@
 require "spec_helper"
 
 describe "GraphQL::Execution::Errors" do
-  class ErrorsTestSchema < GraphQL::Schema
+  class ParentErrorsTestSchema < GraphQL::Schema
+    class ErrorD < RuntimeError; end
+
+    rescue_from(ErrorD) do |err, obj, args, ctx, field|
+      raise GraphQL::ExecutionError, "ErrorD on #{obj.inspect} at #{field ? "#{field.path}(#{args})" : "boot"}"
+    end
+  end
+
+  class ErrorsTestSchema < ParentErrorsTestSchema
+    ErrorD = ParentErrorsTestSchema::ErrorD
     class ErrorA < RuntimeError; end
     class ErrorB < RuntimeError; end
     class ErrorC < RuntimeError
@@ -12,7 +21,6 @@ describe "GraphQL::Execution::Errors" do
         super
       end
     end
-    class ErrorD < RuntimeError; end
 
     class ErrorASubclass < ErrorA; end
     class ErrorBChildClass < ErrorB; end
@@ -42,9 +50,6 @@ describe "GraphQL::Execution::Errors" do
       err.value
     end
 
-    rescue_from(ErrorD) do |err, obj, args, ctx, field|
-      raise GraphQL::ExecutionError, "ErrorD on #{obj.inspect} at #{field ? "#{field.path}(#{args})" : "boot"}"
-    end
 
     class Thing < GraphQL::Schema::Object
       def self.authorized?(obj, ctx)
