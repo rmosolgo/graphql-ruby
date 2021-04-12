@@ -70,6 +70,9 @@ module GraphQL
               when OPEN_STRUCT_KEY
                 ostruct_values = load_value(value[OPEN_STRUCT_KEY])
                 OpenStruct.new(ostruct_values)
+              else
+                key = value.keys.first
+                { key => load_value(value[key]) }
               end
             else
               loaded_h = {}
