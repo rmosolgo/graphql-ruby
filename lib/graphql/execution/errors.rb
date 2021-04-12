@@ -123,6 +123,12 @@ module GraphQL
 
       # @return [Proc, nil] The handler for `error_class`, if one was registered on this schema or inherited
       def find_handler_for(error_class)
+        handler = find_handler_definition_for(error_class)
+        handler[:handler] unless handler.nil?
+      end
+
+      # @return [Hash, nil] The handler definition for `error_class`, if one was registered on this schema or inherited
+      def find_handler_definition_for(error_class)
         handlers = @handlers[:subclass_handlers]
         handler = nil
         while (handlers) do
@@ -139,7 +145,7 @@ module GraphQL
 
         # check for a handler from a parent class:
         if @schema.superclass.respond_to?(:error_handler) && (parent_errors = @schema.superclass.error_handler)
-          parent_handler = parent_errors.find_handler_for(error_class)
+          parent_handler = parent_errors.find_handler_definition_for(error_class)
         end
 
         # If the inherited handler is more specific than the one defined here,
@@ -148,11 +154,11 @@ module GraphQL
         # If there's an inherited one, but not one defined here, use the inherited one.
         # Otherwise, there's no handler for this error, return `nil`.
         if parent_handler && handler && parent_handler[:class] < handler[:class]
-          parent_handler[:handler]
+          parent_handler
         elsif handler
-          handler[:handler]
+          handler
         elsif parent_handler
-          parent_handler[:handler]
+          parent_handler
         else
           nil
         end
