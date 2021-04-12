@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+# 1.12.8 (12 Apr 2021)
+
+### Bug fixes
+
+- Fix loading single-key hashes in Subscriptions #3428
+- Fix looking up `rescue_from` handlers inherited from parent schema classes #3431
+
 # 1.12.7 (7 Apr 2021)
 
 ### Breaking changes
