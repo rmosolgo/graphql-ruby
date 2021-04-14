@@ -8,6 +8,11 @@
 
 ### Bug Fix
 
+# 1.17.13 (14 Apr 2021)
+
+- Stable Connections: When using aliases and GROUP BY, replace the alias when building a HAVING condition.
+- Pundit integration: Add a `use_owner_role(true)` configuration option
+
 # 1.17.12 (3 Apr 2021)
 
 ### Bug Fix
