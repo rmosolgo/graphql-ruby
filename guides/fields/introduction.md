@@ -230,3 +230,5 @@ class CustomField < GraphQL::Schema::Field
   end
 end
 ```
+
+To use `CustomField` in your Objects and Interfaces, you'll need to register it as a `field_class` on those classes. See  [Customizing Fields](https://graphql-ruby.org/type_definitions/extensions#customizing-fields) for more information on how to do so.
