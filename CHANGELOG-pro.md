@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.17.14 (14 Apr 2021)
+
+- Dashboard: fix stack error when OperationStore isn't configured on a class-based schema
+
 # 1.17.13 (14 Apr 2021)
 
 - Stable Connections: When using aliases and GROUP BY, replace the alias when building a HAVING condition.
