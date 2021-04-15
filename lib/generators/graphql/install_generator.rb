@@ -122,7 +122,7 @@ module Graphql
         if options.api?
           say("Skipped graphiql, as this rails project is API only")
           say("  You may wish to use GraphiQL.app for development: https://github.com/skevy/graphiql-app")
-        elsif !options[:skip_graphiql]
+        elsif !options[:skip_graphiql] && !File.read(Rails.root.join("Gemfile")).include?("graphiql-rails")
           gem("graphiql-rails", group: :development)
 
           # This is a little cheat just to get cleaner shell output:
