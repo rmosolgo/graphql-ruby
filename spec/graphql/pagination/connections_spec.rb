@@ -140,7 +140,7 @@ describe GraphQL::Pagination::Connections do
       query(query_type)
     end
 
-    res = schema.execute(<<~GRAPHQL).to_h
+    res = schema.execute(<<-GRAPHQL).to_h
       {
         users {
           nodes {
