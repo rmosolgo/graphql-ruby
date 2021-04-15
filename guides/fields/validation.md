@@ -37,7 +37,7 @@ Validations can be provided with a keyword (`validates: { ... }`) or with a meth
 All the validators below accept the following options:
 
 - `allow_blank: true` will permit any input that responds to `.blank?` and returns true for it.
-- `allow_nil: true` will permit `nil` (bypassing the validation)
+- `allow_null: true` will permit `null` (from JS) and/or `nil` (from Ruby) (bypassing the validation)
 - `message: "..."` customizes the error message when the validation fails
 
 For example:
