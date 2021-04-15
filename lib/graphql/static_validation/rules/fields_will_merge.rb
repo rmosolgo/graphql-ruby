@@ -373,17 +373,26 @@ module GraphQL
       # In this context, `parents` represends the "self scope" of the field,
       # what types may be found at this point in the query.
       def mutually_exclusive?(parents1, parents2)
-        parents1.each do |type1|
-          parents2.each do |type2|
-            # If the types we're comparing are both different object types,
-            # they have to be mutually exclusive.
-            if type1 != type2 && type1.kind.object? && type2.kind.object?
-              return true
+        if parents1.empty? || parents2.empty?
+          false
+        elsif parents1.length == parents2.length
+          parents1.length.times.any? do |i|
+            type1 = parents1[i - 1]
+            type2 = parents2[i - 1]
+            if type1 == type2
+              # If the types we're comparing are the same type,
+              # then they aren't mutually exclusive
+              false
+            else
+              # Check if these two scopes have _any_ types in common.
+              possible_right_types = context.query.possible_types(type1)
+              possible_left_types = context.query.possible_types(type2)
+              (possible_right_types & possible_left_types).empty?
             end
           end
+        else
+          true
         end
-
-        false
       end
     end
   end

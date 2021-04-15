@@ -11,7 +11,10 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         cat: Cat
         pet: Pet
         toy: Toy
+        animal: Animal
       }
+
+      union Animal = Dog \| Cat
 
       type Mutation {
         registerPet(params: PetParams): Pet
@@ -50,7 +53,15 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         toys: [Toy!]!
       }
 
-      type Dog implements Pet & Mammal {
+      interface Canine {
+        barkVolume: Int!
+      }
+
+      interface Feline {
+        meowVolume: Int!
+      }
+
+      type Dog implements Pet & Mammal & Canine {
         name(surname: Boolean = false): String!
         nickname: String
         doesKnowCommand(dogCommand: PetCommand): Boolean!
@@ -58,7 +69,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         toys: [Toy!]!
       }
 
-      type Cat implements Pet & Mammal {
+      type Cat implements Pet & Mammal & Feline {
         name(surname: Boolean = false): String!
         nickname: String
         doesKnowCommand(catCommand: PetCommand): Boolean!
@@ -474,6 +485,25 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       assert_equal [
         "Field 'name' has a field conflict: name or nickname?",
       ], error_messages
+    end
+  end
+
+  describe "same aliases on divergent abstract types" do
+    let(:query_string) {%|
+      {
+        animal {
+          ... on Feline {
+            volume: meowVolume
+          }
+          ... on Canine {
+            volume: barkVolume
+          }
+        }
+      }
+    |}
+
+    it "passes rule" do
+      assert_equal [], errors
     end
   end
 
