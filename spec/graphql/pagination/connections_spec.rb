@@ -35,7 +35,7 @@ describe GraphQL::Pagination::Connections do
   end
 
   it "returns connections by class, using inherited mappings and local overrides" do
-    field_defn = OpenStruct.new(max_page_size: 10, type: GraphQL::Types::Relay::BaseConnection)
+    field_defn = OpenStruct.new(has_max_page_size?: true, max_page_size: 10, type: GraphQL::Types::Relay::BaseConnection)
 
     set_wrapper = schema.connections.wrap(field_defn, nil, Set.new([1,2,3]), {}, nil)
     assert_instance_of SetConnection, set_wrapper
@@ -114,10 +114,43 @@ describe GraphQL::Pagination::Connections do
 
   it "lets unrelated NoMethodErrors bubble up" do
     err = assert_raises NoMethodError do
-      pp ConnectionErrorTestSchema.execute("{ things2 { name } }")
+      ConnectionErrorTestSchema.execute("{ things2 { name } }")
     end
 
     assert_includes err.message, "undefined method `no_such_method' for <BadThing!>"
+  end
+
+  it "uses a field's `max_page_size: nil` configuration" do
+    user_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name 'User'
+      field :name, String, null: false
+    end
+
+    query_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name 'Query'
+      field :users, user_type.connection_type, null: true, max_page_size: nil
+      def users
+        [{ name: 'Yoda' }, { name: 'Anakin' }, { name: 'Obi Wan' }]
+      end
+    end
+
+    schema = Class.new(GraphQL::Schema) do
+      # This value should be overriden by `max_page_size: nil` in the field definition above
+      default_max_page_size 2
+      query(query_type)
+    end
+
+    res = schema.execute(<<-GRAPHQL).to_h
+      {
+        users {
+          nodes {
+            name
+          }
+        }
+      }
+    GRAPHQL
+
+    assert_equal ["Yoda", "Anakin", "Obi Wan"], res['data']['users']['nodes'].map { |node| node['name'] }
   end
 
   class SingleNewConnectionSchema < GraphQL::Schema
