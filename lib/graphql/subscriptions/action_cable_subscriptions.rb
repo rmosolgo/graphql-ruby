@@ -96,6 +96,7 @@ module GraphQL
         @action_cable_coder = action_cable_coder
         @serializer = serializer
         @transmit_ns = namespace
+        @decoded_messages = {}
         super
       end
 
@@ -146,7 +147,6 @@ module GraphQL
       def setup_stream(channel, initial_event)
         topic = initial_event.topic
         channel.stream_from(stream_event_name(initial_event), coder: @action_cable_coder) do |message|
-          object = @serializer.load(message)
           events_by_fingerprint = @events[topic]
           events_by_fingerprint.each do |_fingerprint, events|
             if events.any? && events.first == initial_event
@@ -154,6 +154,7 @@ module GraphQL
               # so just run it once, then deliver the result to every subscriber
               first_event = events.first
               first_subscription_id = first_event.context.fetch(:subscription_id)
+              object = decode_message(message)
               result = execute_update(first_subscription_id, first_event, object)
               # Having calculated the result _once_, send the same payload to all subscribers
               events.each do |event|
@@ -210,6 +211,11 @@ module GraphQL
 
       def stream_event_name(event)
         [EVENT_PREFIX, @transmit_ns, event.topic].join
+      end
+
+      # cache message in case the same message is sent to events with different fingerprints
+      def decode_message(message)
+        @decoded_messages[message] ||= @serializer.load(message)
       end
     end
   end
