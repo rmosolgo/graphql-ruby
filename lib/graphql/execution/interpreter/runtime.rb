@@ -50,7 +50,7 @@ module GraphQL
           root_type = schema.root_type_for_operation(root_op_type)
           path = []
           set_all_interpreter_context(query.root_value, nil, nil, path)
-          object_proxy = authorized_new(root_type, query.root_value, context, path)
+          object_proxy = authorized_new(root_type, query.root_value, context)
           object_proxy = schema.sync_lazy(object_proxy)
           if object_proxy.nil?
             # Root .authorized? returned false.
@@ -193,7 +193,7 @@ module GraphQL
           object = owner_object
 
           if is_introspection
-            object = authorized_new(field_defn.owner, object, context, next_path)
+            object = authorized_new(field_defn.owner, object, context)
           end
 
           total_args_count = field_defn.arguments.size
@@ -372,7 +372,7 @@ module GraphQL
             end
           when "OBJECT"
             object_proxy = begin
-              authorized_new(current_type, value, context, path)
+              authorized_new(current_type, value, context)
             rescue GraphQL::ExecutionError => err
               err
             end
@@ -635,22 +635,8 @@ module GraphQL
           end
         end
 
-        def authorized_new(type, value, context, path)
-          trace_payload = { context: context, type: type, object: value, path: path }
-
-          auth_val = context.query.trace("authorized", trace_payload) do
-            type.authorized_new(value, context)
-          end
-
-          if context.schema.lazy?(auth_val)
-            GraphQL::Execution::Lazy.new do
-              context.query.trace("authorized_lazy", trace_payload) do
-                context.schema.sync_lazy(auth_val)
-              end
-            end
-          else
-            auth_val
-          end
+        def authorized_new(type, value, context)
+          type.authorized_new(value, context)
         end
       end
     end
