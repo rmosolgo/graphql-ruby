@@ -113,27 +113,15 @@ module GraphQL
         end
 
         def visible?(context)
-          if @mutation
-            @mutation.visible?(context)
-          else
-            true
-          end
+          true
         end
 
         def accessible?(context)
-          if @mutation
-            @mutation.accessible?(context)
-          else
-            true
-          end
+          true
         end
 
         def authorized?(object, context)
-          if @mutation
-            @mutation.authorized?(object, context)
-          else
-            true
-          end
+          true
         end
       end
     end
