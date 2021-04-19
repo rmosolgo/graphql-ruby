@@ -246,11 +246,17 @@ module GraphQL
                   # Use this flag to tell Interpreter::Arguments to add itself
                   # to the keyword args hash _before_ freezing everything.
                   extra_args[:argument_details] = :__arguments_add_self
+                when :irep_node
+                  # This is used by `__typename` in order to support the legacy runtime,
+                  # but it has no use here (and it's always `nil`).
+                  # Stop adding it here to avoid the overhead of `.merge_extras` below.
                 else
                   extra_args[extra] = field_defn.fetch_extra(extra, context)
                 end
               end
-              resolved_arguments = resolved_arguments.merge_extras(extra_args)
+              if extra_args.any?
+                resolved_arguments = resolved_arguments.merge_extras(extra_args)
+              end
               resolved_arguments.keyword_arguments
             end
 
