@@ -121,6 +121,14 @@ module Types
 end
 RUBY
     assert_file "app/graphql/types/base_interface.rb", expected_base_interface
+
+    # Run it again and make sure the gemfile only contains graphiql-rails once
+    FileUtils.cd(File.join(destination_root)) do
+      `rails g graphql:install --relay false`
+    end
+    assert_file "Gemfile" do |contents|
+      assert_equal 1, contents.scan(/graphiql-rails/).length
+    end
   end
 
   test "it allows for a user-specified install directory" do
