@@ -301,16 +301,26 @@ module GraphQL
 
       private
 
-      def validate_input_type(input_type)
+      def validate_input_type(input_type, wrapped: false)
         if input_type.is_a?(String) || input_type.is_a?(GraphQL::Schema::LateBoundType)
           # Do nothing; assume this will be validated later
+          false
         elsif input_type.kind.non_null? || input_type.kind.list?
-          validate_input_type(input_type.unwrap)
+          type_ready = validate_input_type(input_type.unwrap, wrapped: true)
+          validate_default_value(default_value, input_type) if default_value? && type_ready && !wrapped
+          type_ready
         elsif !input_type.kind.input?
           raise ArgumentError, "Invalid input type for #{path}: #{input_type.graphql_name}. Must be scalar, enum, or input object, not #{input_type.kind.name}."
         else
-          # It's an input type, we're OK
+          # It's an input type, the type itself is OK but make sure the default conforms
+          validate_default_value(default_value, input_type) if default_value? && !wrapped
+          true
         end
+      end
+
+      def validate_default_value(default_value, input_type)
+        default_value = input_type.coerce_isolated_result(default_value) unless default_value.nil?
+        raise "BOOM" unless input_type.valid_isolated_input?(default_value)
       end
 
       def validate_deprecated_or_optional(null:, deprecation_reason:)

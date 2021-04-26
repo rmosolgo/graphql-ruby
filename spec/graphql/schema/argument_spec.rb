@@ -209,6 +209,13 @@ describe GraphQL::Schema::Argument do
       res = SchemaArgumentTest::Schema.execute(query_str)
       assert_equal "Argument 'requiredWithDefaultArg' on Field 'field' has an invalid value (null). Expected type 'Int!'.", res['errors'][0]['message']
     end
+
+    it 'validates the type of the default value' do
+      arg = GraphQL::Schema::Argument.new("my_arg", GraphQL::Types::Int, required: true, owner: nil, default_value: "a_string")
+      assert_raises(StandardError) do
+        arg.type
+      end
+    end
   end
 
   describe 'loads' do
