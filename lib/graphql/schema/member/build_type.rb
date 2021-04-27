@@ -82,6 +82,11 @@ module GraphQL
             parse_type(type_expr.call, null: true)
           when false
             raise ArgumentError, "Received `false` instead of a type, maybe a `!` should be replaced with `null: true` (for fields) or `required: true` (for arguments)"
+          else
+            # Perhaps it's a non-module object that still defines a GraphQL definition.
+            if type_expr.respond_to?(:graphql_definition)
+              type_expr
+            end
           end
 
           if return_type.nil?

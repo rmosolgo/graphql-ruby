@@ -293,6 +293,23 @@ module Jazz
     def self.coerce_result(val, ctx)
       val.to_notation
     end
+
+    def self.[](required_root)
+      KeyWithRootRequirement.new(required_root)
+    end
+  end
+
+  class KeyWithRootRequirement < Struct.new(:required_root)
+    def coerse_input(val, ctx)
+      key = Key.coerse_input(val, ctx)
+      return nil unless key.root == required_root
+      key
+    end
+
+    def self.coerce_result(val, ctx)
+      return nil unless val.root == required_root
+      Key.coerce_result(val, ctx)
+    end
   end
 
   class Musician < BaseObject

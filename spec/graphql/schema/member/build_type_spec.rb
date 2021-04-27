@@ -27,6 +27,10 @@ describe GraphQL::Schema::Member::BuildType do
       assert_equal Jazz::BaseObject, GraphQL::Schema::Member::BuildType.parse_type(Jazz::BaseObject, null: true)
     end
 
+    it "resolves an object type from a dynamically defined scalar" do
+      assert_equal Jazz::Key["A"], GraphQL::Schema::Member::BuildType.parse_type(Jazz::Key["A"], null: true)
+    end
+
     it "resolves an object type from a string" do
       assert_equal Jazz::BaseObject, GraphQL::Schema::Member::BuildType.parse_type("Jazz::BaseObject", null: true)
     end
