@@ -487,7 +487,7 @@ describe GraphQL::Schema::InputObject do
 
     it "works with empty objects" do
       res = Jazz::Schema.execute("{ defaultValueTest2 }")
-      assert_equal "Jazz::InspectableInput -> {}", res["data"]["defaultValueTest2"]
+      assert_equal "Jazz::FullyOptionalInput -> {}", res["data"]["defaultValueTest2"]
     end
 
     it "introspects in GraphQL language with enums" do

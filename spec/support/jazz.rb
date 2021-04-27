@@ -335,6 +335,10 @@ module Jazz
     argument :int_value, Int, required: true
   end
 
+  class FullyOptionalInput < GraphQL::Schema::InputObject
+    argument :optional_value, String, required: false
+  end
+
   class InspectableInput < GraphQL::Schema::InputObject
     argument :ensemble_id, ID, required: false, loads: Ensemble
     argument :string_value, String, required: true, description: "Test description kwarg"
@@ -547,7 +551,7 @@ module Jazz
     end
 
     field :default_value_test_2, String, null: false, resolver_method: :default_value_test do
-      argument :arg_with_default, InspectableInput, required: false, default_value: {}
+      argument :arg_with_default, FullyOptionalInput, required: false, default_value: {}
     end
 
     field :complex_hash_key, String, null: false, hash_key: :'foo bar/fizz-buzz'
