@@ -146,14 +146,15 @@ module GraphQL
       def setup_stream(channel, initial_event)
         topic = initial_event.topic
         channel.stream_from(stream_event_name(initial_event), coder: @action_cable_coder) do |message|
-          object = @serializer.load(message)
           events_by_fingerprint = @events[topic]
+          object = nil
           events_by_fingerprint.each do |_fingerprint, events|
             if events.any? && events.first == initial_event
               # The fingerprint has told us that this response should be shared by all subscribers,
               # so just run it once, then deliver the result to every subscriber
               first_event = events.first
               first_subscription_id = first_event.context.fetch(:subscription_id)
+              object ||= @serializer.load(message)
               result = execute_update(first_subscription_id, first_event, object)
               # Having calculated the result _once_, send the same payload to all subscribers
               events.each do |event|
