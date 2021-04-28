@@ -1,4 +1,4 @@
-import { Cable, Channel } from "actioncable"
+import { Cable } from "actioncable"
 
 /**
  * Create a Relay Modern-compatible subscription handler.
@@ -20,7 +20,7 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
     var operations = options.operations
 
     // Register the subscription by subscribing to the channel
-    const subscription = cable.subscriptions.create({
+    const channel = cable.subscriptions.create({
       channel: "GraphqlChannel",
       channelId: channelId,
     }, {
@@ -41,10 +41,8 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
             query: operation.text
           }
         }
-        // `this.perform` stopped working after https://github.com/DefinitelyTyped/DefinitelyTyped/pull/52421
-        ((this as unknown) as Channel).perform('send', channelParams);
-
-        ((this as unknown) as Channel).perform("execute", channelParams)
+        channel.perform('send', channelParams)
+        channel.perform("execute", channelParams)
       },
       // This result is sent back from ActionCable.
       received: function(payload: { result: { errors: any[], data: object }, more: boolean}) {
@@ -66,7 +64,7 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
     // Return an object for Relay to unsubscribe with
     return {
       dispose: function() {
-        subscription.unsubscribe()
+        channel.unsubscribe()
       }
     }
   }

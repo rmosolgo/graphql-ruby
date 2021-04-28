@@ -16,6 +16,7 @@ describe("ActionCableLink", () => {
     cable = {
       subscriptions: {
         create: function(_channelName: string, options: {connected: Function, received: Function}) {
+          var alreadyConnected = false
           var subscription = Object.assign(
             Object.create({
               perform: function(actionName: string, options: object) {
@@ -29,8 +30,15 @@ describe("ActionCableLink", () => {
           )
 
           subscription.connected = subscription.connected.bind(subscription)
+          var received = subscription.received
+          subscription.received = function(data: any) {
+            if (!alreadyConnected) {
+              alreadyConnected = true
+              subscription.connected()
+            }
+            received(data)
+          }
           subscription.__proto__.unsubscribe = subscription.__proto__.unsubscribe.bind(subscription)
-          subscription.connected()
           return subscription
         }
       }

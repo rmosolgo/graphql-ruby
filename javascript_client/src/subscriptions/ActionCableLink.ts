@@ -1,5 +1,5 @@
 import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client/core"
-import { Cable, Channel } from "actioncable"
+import { Cable } from "actioncable"
 import { print } from "graphql"
 
 type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
@@ -25,13 +25,12 @@ class ActionCableLink extends ApolloLink {
     return new Observable((observer) => {
       var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
       var actionName = this.actionName
-      var subscription = this.cable.subscriptions.create(Object.assign({},{
+      var channel = this.cable.subscriptions.create(Object.assign({},{
         channel: this.channelName,
         channelId: channelId
       }, this.connectionParams), {
         connected: function() {
-          // Broken since https://github.com/DefinitelyTyped/DefinitelyTyped/pull/52421 ??
-          ((this as unknown) as Channel).perform(
+          channel.perform(
             actionName,
             {
               query: operation.query ? print(operation.query) : null,
@@ -52,9 +51,8 @@ class ActionCableLink extends ApolloLink {
           }
         }
       })
-
       // Make the ActionCable subscription behave like an Apollo subscription
-      return Object.assign(subscription, {closed: false})
+      return Object.assign(channel, {closed: false})
     })
   }
 }

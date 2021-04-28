@@ -1,6 +1,6 @@
 import printer from "graphql/language/printer"
 import registry from "./registry"
-import { Cable, Channel } from "actioncable"
+import { Cable } from "actioncable"
 
 interface ApolloNetworkInterface {
   applyMiddlewares: Function
@@ -30,14 +30,12 @@ class ActionCableSubscriber {
     var networkInterface = this._networkInterface
     // unique-ish
     var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
-
     var channel = this._cable.subscriptions.create({
       channel: "GraphqlChannel",
       channelId: channelId,
     }, {
       // After connecting, send the data over ActionCable
       connected: function() {
-        var _this = this
         // applyMiddlewares code is inspired by networkInterface internals
         var opts = Object.assign({}, networkInterface._opts)
         networkInterface
@@ -52,10 +50,8 @@ class ActionCableSubscriber {
               variables: variables,
               operationId: operationId,
               operationName: operationName,
-            }) as any
-            // This goes to the #execute method of the channel
-            // Broken since https://github.com/DefinitelyTyped/DefinitelyTyped/pull/52421
-            ((_this as unknown) as Channel).perform("execute", channelParams)
+            })
+            channel.perform("execute", channelParams)
           })
       },
       // Payload from ActionCable should have at least two keys:
