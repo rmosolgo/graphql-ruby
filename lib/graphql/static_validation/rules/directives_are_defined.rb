@@ -4,7 +4,7 @@ module GraphQL
     module DirectivesAreDefined
       def initialize(*)
         super
-        @directive_names = context.schema.directives.keys
+        @directive_names = context.warden.directives.map(&:graphql_name)
       end
 
       def on_directive(node, parent)
