@@ -402,9 +402,17 @@ describe GraphQL::Authorization do
       field :do_unauthorized_stuff, mutation: DoUnauthorizedStuff
     end
 
+    class Nothing < GraphQL::Schema::Directive
+      locations(FIELD)
+      def self.visible?(ctx)
+        !!ctx[:show_nothing_directive]
+      end
+    end
+
     class Schema < GraphQL::Schema
       query(Query)
       mutation(Mutation)
+      directive(Nothing)
 
       lazy_resolve(Box, :value)
 
@@ -600,6 +608,14 @@ describe GraphQL::Authorization do
       assert_includes full_sdl, 'hidden'
       refute_includes restricted_sdl, 'Hidden'
       refute_includes restricted_sdl, 'hidden'
+    end
+
+    it "works with directives" do
+      query_str = "{ __typename @nothing }"
+      visible_response = auth_execute(query_str, context: { show_nothing_directive: true })
+      assert_equal "Query", visible_response["data"]["__typename"]
+      hidden_response = auth_execute(query_str)
+      assert_equal ["Directive @nothing is not defined"], hidden_response["errors"].map { |e| e["message"] }
     end
   end
 
