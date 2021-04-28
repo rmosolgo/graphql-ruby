@@ -1,5 +1,5 @@
 import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client/core"
-import { Cable } from "actioncable"
+import { Cable, Channel } from "actioncable"
 import { print } from "graphql"
 
 type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
@@ -30,7 +30,8 @@ class ActionCableLink extends ApolloLink {
         channelId: channelId
       }, this.connectionParams), {
         connected: function() {
-          this.perform(
+          // Broken since https://github.com/DefinitelyTyped/DefinitelyTyped/pull/52421 ??
+          ((this as unknown) as Channel).perform(
             actionName,
             {
               query: operation.query ? print(operation.query) : null,

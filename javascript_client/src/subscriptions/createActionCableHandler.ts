@@ -1,4 +1,4 @@
-import { Cable } from "actioncable"
+import { Cable, Channel } from "actioncable"
 
 /**
  * Create a Relay Modern-compatible subscription handler.
@@ -41,8 +41,10 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
             query: operation.text
           }
         }
+        // `this.perform` stopped working after https://github.com/DefinitelyTyped/DefinitelyTyped/pull/52421
+        ((this as unknown) as Channel).perform('send', channelParams);
 
-        this.perform("execute", channelParams)
+        ((this as unknown) as Channel).perform("execute", channelParams)
       },
       // This result is sent back from ActionCable.
       received: function(payload: { result: { errors: any[], data: object }, more: boolean}) {
