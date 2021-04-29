@@ -43,10 +43,7 @@ namespace :graphql do
         puts '⏳  Validating queries...'
         puts "\n"
 
-        validator = GraphQL::StaticValidation::Validator.new(schema: schema)
-        results = queries
-                    .map { |query| query = GraphQL::Query.new(schema, query) }
-                    .map { |query| validator.validate(query) }
+        results = queries.map { |query| schema.validate(query) }
         errors = results
                    .select { |result| result[:errors].present? }
                    .map { |result| result[:errors] }
