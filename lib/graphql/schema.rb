@@ -355,23 +355,6 @@ module GraphQL
     # For forwards-compatibility with Schema classes
     alias :graphql_definition :itself
 
-    # Validate a query string according to this schema.
-    # @param string_or_document [String, GraphQL::Language::Nodes::Document]
-    # @return [Array<GraphQL::StaticValidation::Error >]
-    def validate(string_or_document, rules: nil, context: nil)
-      doc = if string_or_document.is_a?(String)
-        GraphQL.parse(string_or_document)
-      else
-        string_or_document
-      end
-      query = GraphQL::Query.new(self, document: doc, context: context)
-      validator_opts = { schema: self }
-      rules && (validator_opts[:rules] = rules)
-      validator = GraphQL::StaticValidation::Validator.new(**validator_opts)
-      res = validator.validate(query, timeout: validate_timeout)
-      res[:errors]
-    end
-
     def deprecated_define(**kwargs, &block)
       super
       ensure_defined
@@ -712,6 +695,7 @@ module GraphQL
     def_delegators :_schema_class, :unauthorized_object, :unauthorized_field, :inaccessible_fields
     def_delegators :_schema_class, :directive
     def_delegators :_schema_class, :error_handler
+    def_delegators :_schema_class, :validate
 
 
     # Given this schema member, find the class-based definition object
@@ -861,7 +845,6 @@ module GraphQL
       def_delegators :graphql_definition,
         # Execution
         :execution_strategy_for_operation,
-        :validate,
         # Configuration
         :metadata, :redefine,
         :id_from_object_proc, :object_from_id_proc,
@@ -1293,11 +1276,21 @@ module GraphQL
         end
       end
 
-      def validate(query)
-        validator = GraphQL::StaticValidation::Validator.new(schema: self)
-        query = GraphQL::Query.new(self, query)
-        result = validator.validate(query, timeout: validate_timeout)
-        result[:errors]
+      # Validate a query string according to this schema.
+      # @param string_or_document [String, GraphQL::Language::Nodes::Document]
+      # @return [Array<GraphQL::StaticValidation::Error >]
+      def validate(string_or_document, rules: nil, context: nil)
+        doc = if string_or_document.is_a?(String)
+                GraphQL.parse(string_or_document)
+              else
+                string_or_document
+              end
+        query = GraphQL::Query.new(self, document: doc, context: context)
+        validator_opts = { schema: self }
+        rules && (validator_opts[:rules] = rules)
+        validator = GraphQL::StaticValidation::Validator.new(**validator_opts)
+        res = validator.validate(query, timeout: validate_timeout)
+        res[:errors]
       end
 
       attr_writer :max_complexity
