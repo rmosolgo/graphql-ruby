@@ -27,6 +27,8 @@ The directives `@skip` and `@include` are built into any GraphQL server and clie
 Apollo-Client has [experimental support](https://www.apollographql.com/docs/react/features/defer-support.html)
 but it may [have some issues](https://github.com/apollographql/apollo-client/issues/4484), so you can try [this updated fork](https://github.com/rmosolgo/apollo-client) while they're worked out.
 
+`@defer` also accepts a `label:` option which will be included in outgoing patches when it's present in the query (eg, `@defer(label: "patch1")`).
+
 Want to use `@defer` with another client? Please {% open_an_issue "Client support for @defer with ..." %} or email `support@graphql.pro` and we'll dig in!
 
 ## Next Steps

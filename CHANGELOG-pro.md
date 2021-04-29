@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.17.15 (29 Apr 2021)
+
+### New Features
+
+- Defer: support `label:` argument which is returned in the patch for that deferral #3454
+
 # 1.17.14 (14 Apr 2021)
 
 - Dashboard: fix stack error when OperationStore isn't configured on a class-based schema
