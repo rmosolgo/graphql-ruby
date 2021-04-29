@@ -1293,6 +1293,13 @@ module GraphQL
         end
       end
 
+      def validate(query)
+        validator = GraphQL::StaticValidation::Validator.new(schema: self)
+        query = GraphQL::Query.new(self, query)
+        result = validator.validate(query, timeout: validate_timeout)
+        result[:errors]
+      end
+
       attr_writer :max_complexity
 
       def max_complexity(max_complexity = nil)
