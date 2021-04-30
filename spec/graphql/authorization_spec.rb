@@ -966,4 +966,54 @@ describe GraphQL::Authorization do
       refute res.key?("errors")
     end
   end
+
+  describe "overriding authorized_new" do
+    class AuthorizedNewOverrideSchema < GraphQL::Schema
+      class LogTracer
+        def trace(key, data)
+          if (c = data[:context]) || ((q = data[:query]) && (c = q.context))
+            c[:log] << key
+          end
+          yield
+        end
+      end
+
+      module CustomIntrospection
+        class DynamicFields < GraphQL::Introspection::DynamicFields
+          def self.authorized_new(obj, ctx)
+            new(obj, ctx)
+          end
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        def self.authorized_new(obj, ctx)
+          new(obj, ctx)
+        end
+        field :int, Integer, null: false
+        def int; 1; end
+      end
+
+      query(Query)
+      introspection(CustomIntrospection)
+      tracer(LogTracer.new)
+    end
+
+    it "avoids calls to Object.authorized?" do
+      log = []
+      res = AuthorizedNewOverrideSchema.execute("{ __typename int }", context: { log: log })
+      assert_equal "Query", res["data"]["__typename"]
+      assert_equal 1, res["data"]["int"]
+      expected_log = [
+        "validate",
+        "analyze_query",
+        "execute_query",
+        "execute_field",
+        "execute_field",
+        "execute_query_lazy"
+      ]
+
+      assert_equal expected_log, log
+    end
+  end
 end
