@@ -29,7 +29,12 @@ module GraphQL
 
     def initialize
       @source_cache = Hash.new { |h, source_class| h[source_class] = Hash.new { |h2, batch_parameters|
-          source = source_class.new(*batch_parameters)
+          source = if RUBY_VERSION < "3"
+            source_class.new(*batch_parameters)
+          else
+            batch_args, batch_kwargs = batch_parameters
+            source_class.new(*batch_args, **batch_kwargs)
+          end
           source.setup(self)
           h2[batch_parameters] = source
         }
@@ -43,8 +48,15 @@ module GraphQL
     # @param batch_parameters [Array<Object>]
     # @return [GraphQL::Dataloader::Source] An instance of {source_class}, initialized with `self, *batch_parameters`,
     #   and cached for the lifetime of this {Multiplex}.
-    def with(source_class, *batch_parameters)
-      @source_cache[source_class][batch_parameters]
+    if RUBY_VERSION < "3"
+      def with(source_class, *batch_parameters)
+        @source_cache[source_class][batch_parameters]
+      end
+    else
+      def with(source_class, *batch_args, **batch_kwargs)
+        batch_parameters = [batch_args, batch_kwargs]
+        @source_cache[source_class][batch_parameters]
+      end
     end
 
     # Tell the dataloader that this fiber is waiting for data.
