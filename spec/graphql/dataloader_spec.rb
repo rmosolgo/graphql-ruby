@@ -67,6 +67,20 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class KeywordArgumentSource < GraphQL::Dataloader::Source
+      def initialize(column:)
+        @column = column
+      end
+
+      def fetch(keys)
+        if @column == :id
+          Database.mget(keys)
+        else
+          Database.find_by(@column, keys)
+        end
+      end
+    end
+
     module Ingredient
       include GraphQL::Schema::Interface
       field :name, String, null: false
@@ -147,6 +161,14 @@ describe GraphQL::Dataloader do
 
       def recipe(recipe:)
         recipe
+      end
+
+      field :key_ingredient, Ingredient, null: true do
+        argument :id, ID, required: true
+      end
+
+      def key_ingredient(id:)
+        dataloader.with(KeywordArgumentSource, column: :id).load(id)
       end
 
       field :recipe_ingredient, Ingredient, null: true do
@@ -454,6 +476,26 @@ describe GraphQL::Dataloader do
     res2 = FiberSchema.execute(query_str, context: { use_request: true })
     assert_equal expected_data, res2["data"]
     assert_equal expected_log, database_log
+  end
+
+  it "works with sources that use keyword arguments in the initializer" do
+    query_str = <<-GRAPHQL
+    {
+      keyIngredient(id: 1) {
+        __typename
+        name
+      }
+    }
+    GRAPHQL
+
+    res = FiberSchema.execute(query_str)
+    expected_data = {
+      "keyIngredient" => {
+        "__typename" => "Grain",
+        "name" => "Wheat",
+      }
+    }
+    assert_equal expected_data, res["data"]
   end
 
   class UsageAnalyzer < GraphQL::Analysis::AST::Analyzer
