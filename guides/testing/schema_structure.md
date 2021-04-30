@@ -25,4 +25,47 @@ You can read about this approach in ["Tracking Schema Changes with GraphQL-Ruby"
 
 ## Automatically check for breaking changes
 
-You can use [GraphQL::SchemaComparator](https://github.com/xuorig/graphql-schema_comparator) to check for breaking changes during development or CI.
+You can use [GraphQL::SchemaComparator](https://github.com/xuorig/graphql-schema_comparator) to check for breaking changes during development or CI. If you maintain a dump of queries that typically run against your server, you may also utilize `GraphQL::StaticValidation` to validate these queries directly. A Rake task such as the one below can be used to identify changes that are incompatible with existing queries.
+
+```ruby
+namespace :graphql do
+  namespace :queries do
+    desc 'Validates GraphQL queries against the current schema'
+    task validate: [:environment] do
+      queries_file = 'test/fixtures/files/queries.json'
+      queries = Oj.load(File.read(queries_file))
+
+      Validate.run_validate(queries, MySchema)
+    end
+
+    module Validate
+      def self.run_validate(queries, schema)
+        puts '⏳  Validating queries...'
+        puts "\n"
+
+        results = queries.map { |query| schema.validate(query) }
+        errors = results
+                   .select { |result| result[:errors].present? }
+                   .map { |result| result[:errors] }
+                   .flatten
+
+        if errors.empty?
+          puts '✅  All queries are valid'
+        else
+          print_errors(errors)
+        end
+      end
+
+      def self.print_errors(errors)
+        puts 'Detected the following errors:'
+        puts "\n"
+
+        errors.each do |error|
+          path = error.path.join(', ')
+          puts "❌  #{path}: #{error.message}"
+        end
+      end
+    end
+  end
+end
+```

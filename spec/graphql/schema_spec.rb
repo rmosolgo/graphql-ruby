@@ -358,4 +358,26 @@ describe GraphQL::Schema do
       assert_equal expected_message, err.message
     end
   end
+
+  describe 'validate' do
+    let(:schema) { Dummy::Schema}
+
+    describe 'validate' do
+      it 'validates valid query ' do
+        query = "query sample { root }"
+
+        errors = schema.validate(query)
+
+        assert_empty errors
+      end
+
+      it 'validates invalid query ' do
+        query = "query sample { invalid }"
+
+        errors = schema.validate(query)
+
+        assert_equal(1, errors.size)
+      end
+    end
+  end
 end
