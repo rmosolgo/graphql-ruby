@@ -33,8 +33,6 @@ At a high level, `GraphQL::Dataloader`'s usage of `Fiber` looks like this:
 - `GraphQL::Dataloader` takes the first paused Fiber and resumes it, causing the `GraphQL::Dataloader::Source` to execute its `#fetch(...)` call. That Fiber continues execution as far as it can.
 - Likewise, paused Fibers are resumed, causing GraphQL execution to continue, until all paused Fibers are evaluated completely.
 
-Since _all_ GraphQL execution is inside a Fiber, __`Thread.current[...]` won't be set__. Those assignments are _Fiber-local_, so each new Fiber has an _empty_ `Thread.current`. For `GraphQL::Dataloader`, use GraphQL-Ruby's `context` object to provide "current" values to a GraphQL query. Inside `#fetch(...)` methods, those values can be re-assigned to `Thread.current` if application code requires it.
-
 ## Getting Started
 
 To install {{ "GraphQL::Dataloader" | api_doc }}, add it to your schema with `use ...`, for example:
