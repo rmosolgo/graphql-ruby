@@ -33,6 +33,8 @@ At a high level, `GraphQL::Dataloader`'s usage of `Fiber` looks like this:
 - `GraphQL::Dataloader` takes the first paused Fiber and resumes it, causing the `GraphQL::Dataloader::Source` to execute its `#fetch(...)` call. That Fiber continues execution as far as it can.
 - Likewise, paused Fibers are resumed, causing GraphQL execution to continue, until all paused Fibers are evaluated completely.
 
+Whenever `GraphQL::Dataloader` creates a new `Fiber`, it copies each pair from `Thread.current[...]` and reassigns them inside the new `Fiber`.
+
 ## Getting Started
 
 To install {{ "GraphQL::Dataloader" | api_doc }}, add it to your schema with `use ...`, for example:
