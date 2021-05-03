@@ -226,8 +226,8 @@ module GraphQL
         # It's funny to think of a _result_ of an input object.
         # This is used for rendering the default value in introspection responses.
         def coerce_result(value, ctx)
-          # Allow the application to provide values as :symbols, and convert them to the strings
-          value = value.reduce({}) { |memo, (k, v)| memo[k.to_s] = v; memo }
+          # Allow the application to provide values as :snake_symbols, and convert them to the camelStrings
+          value = value.reduce({}) { |memo, (k, v)| memo[Member::BuildType.camelize(k.to_s)] = v; memo }
 
           result = {}
 

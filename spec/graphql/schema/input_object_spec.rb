@@ -493,18 +493,18 @@ describe GraphQL::Schema::InputObject do
     it "introspects in GraphQL language with enums" do
       class InputDefaultSchema < GraphQL::Schema
         class Letter < GraphQL::Schema::Enum
-          value "A"
-          value "B"
+          value "A", value: 1
+          value "B", value: 2
         end
 
         class InputObj < GraphQL::Schema::InputObject
-          argument :a, Letter, required: false
-          argument :b, Letter, required: false
+          argument :arg_a, Letter, required: false
+          argument :arg_b, Letter, required: false
         end
 
         class Query < GraphQL::Schema::Object
           field :i, Int, null: true do
-            argument :arg, InputObj, required: false, default_value: { a: "A", b: "B" }
+            argument :arg, InputObj, required: false, default_value: { arg_a: 1, arg_b: 2 }
           end
         end
 
@@ -524,7 +524,7 @@ describe GraphQL::Schema::InputObject do
         }
       }
       "
-      assert_equal "{a: A, b: B}", res["data"]["__type"]["fields"].first["args"].first["defaultValue"]
+      assert_equal "{argA: A, argB: B}", res["data"]["__type"]["fields"].first["args"].first["defaultValue"]
     end
   end
 
