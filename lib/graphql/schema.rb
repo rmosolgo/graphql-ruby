@@ -1281,10 +1281,10 @@ module GraphQL
       # @return [Array<GraphQL::StaticValidation::Error >]
       def validate(string_or_document, rules: nil, context: nil)
         doc = if string_or_document.is_a?(String)
-                GraphQL.parse(string_or_document)
-              else
-                string_or_document
-              end
+          GraphQL.parse(string_or_document)
+        else
+          string_or_document
+        end
         query = GraphQL::Query.new(self, document: doc, context: context)
         validator_opts = { schema: self }
         rules && (validator_opts[:rules] = rules)
