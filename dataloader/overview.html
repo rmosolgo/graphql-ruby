@@ -86,7 +86,7 @@
   <li>Likewise, paused Fibers are resumed, causing GraphQL execution to continue, until all paused Fibers are evaluated completely.</li>
 </ul>
 
-<p>Since <em>all</em> GraphQL execution is inside a Fiber, <strong><code class="language-plaintext highlighter-rouge">Thread.current[...]</code> won’t be set</strong>. Those assignments are <em>Fiber-local</em>, so each new Fiber has an <em>empty</em> <code class="language-plaintext highlighter-rouge">Thread.current</code>. For <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code>, use GraphQL-Ruby’s <code class="language-plaintext highlighter-rouge">context</code> object to provide “current” values to a GraphQL query. Inside <code class="language-plaintext highlighter-rouge">#fetch(...)</code> methods, those values can be re-assigned to <code class="language-plaintext highlighter-rouge">Thread.current</code> if application code requires it.</p>
+<p>Whenever <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> creates a new <code class="language-plaintext highlighter-rouge">Fiber</code>, it copies each pair from <code class="language-plaintext highlighter-rouge">Thread.current[...]</code> and reassigns them inside the new <code class="language-plaintext highlighter-rouge">Fiber</code>.</p>
 
 <h2 id="getting-started">Getting Started</h2>
 
