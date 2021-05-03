@@ -116,7 +116,7 @@ module GraphQL
         while @pending_jobs.any?
           # Create a Fiber to consume jobs until one of the jobs yields
           # or jobs run out
-          f = Fiber.new {
+          f = spawn_fiber {
             while (job = @pending_jobs.shift)
               job.call
             end
@@ -203,7 +203,7 @@ module GraphQL
         #
         # This design could probably be improved by maintaining a `@pending_sources` queue which is shared by the fibers,
         # similar to `@pending_jobs`. That way, when a fiber is resumed, it would never pick up work that was finished by a different fiber.
-        source_fiber = Fiber.new do
+        source_fiber = spawn_fiber do
           pending_sources.each(&:run_pending_keys)
         end
       end
@@ -215,6 +215,25 @@ module GraphQL
       fiber.resume
     rescue UncaughtThrowError => e
       throw e.tag, e.value
+    end
+
+    # Copies the thread local vars into the fiber thread local vars. Many
+    # gems (such as RequestStore, MiniRacer, etc.) rely on thread local vars
+    # to keep track of execution context, and without this they do not
+    # behave as expected.
+    #
+    # @see https://github.com/rmosolgo/graphql-ruby/issues/3449
+    def spawn_fiber
+      fiber_locals = {} 
+
+      Thread.current.keys.each do |fiber_var_key|
+        fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
+      end 
+
+      Fiber.new do 
+        fiber_locals.each { |k, v| Thread.current[k] = v }
+        yield
+      end 
     end
   end
 end
