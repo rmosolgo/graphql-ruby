@@ -34,12 +34,12 @@ module GraphQL
     #         channel: self,
     #       }
     #
-    #       result = MySchema.execute({
+    #       result = MySchema.execute(
     #         query: query,
     #         context: context,
     #         variables: variables,
     #         operation_name: operation_name
-    #       })
+    #       )
     #
     #       payload = {
     #         result: result.to_h,
