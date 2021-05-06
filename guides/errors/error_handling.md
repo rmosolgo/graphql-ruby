@@ -19,6 +19,7 @@ Handlers are added with `rescue_from` configurations in the schema:
 ```ruby
 class MySchema < GraphQL::Schema
   # ...
+  use GraphQL::Execution::Errors
 
   rescue_from(ActiveRecord::RecordNotFound) do |err, obj, args, ctx, field|
     # Raise a graphql-friendly error with a custom message
