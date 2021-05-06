@@ -36,12 +36,12 @@ context = {</p>
     <h1 id="make-sure-the-channel-is-in-the-context">Make sure the channel is in the context</h1>
     <p>channel: self,
 }
-result = MySchema.execute({
+result = MySchema.execute(
 query: query,
 context: context,
 variables: variables,
 operation_name: operation_name
-})
+)
 payload = {
 result: result.to_h,
 more: result.subscription?,
