@@ -8,6 +8,24 @@
 
 ### Bug fixes
 
+# 1.12.9 (7 May 2021)
+
+### New features
+
+- Overriding `.authorized_new(...)` to call `.new(...)` effectively skips object authorization #3446
+- Dataloader copies Fiber-local values from `Thread.current[...]` when initializing new Fibers #3461
+
+### Bug fixes
+
+- Fix introspection of default value input objects #3456
+- Add `StandardError => ...` condition to the generated GraphqlController #3460
+- Fix `Dataloader::Source` on Ruby 3 with keyword arguments
+- Respect directive visibility at runtime #3450
+- ActionCable subscriptions: only deserialize the broadcast payload once #3443
+- Don't re-add `graphiql-rails` when `generate graphql:install` is run twice #3441
+- Allow differing selections on mutually exclusive interfaces #3063
+- Respect `max_page_size: nil` override in fields #3438
+
 # 1.12.8 (12 Apr 2021)
 
 ### Bug fixes
