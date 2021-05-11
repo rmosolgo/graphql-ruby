@@ -3,15 +3,17 @@ import { Cable } from "actioncable"
 import { print } from "graphql"
 
 type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
-
+type ConnectionParams = object | ((operation: Operation) => object)
 
 class ActionCableLink extends ApolloLink {
   cable: Cable
   channelName: string
   actionName: string
-  connectionParams: object
+  connectionParams: ConnectionParams
 
-  constructor(options: { cable: Cable, channelName?: string, actionName?: string, connectionParams?: object }) {
+  constructor(options: {
+    cable: Cable, channelName?: string, actionName?: string, connectionParams?: ConnectionParams
+  }) {
     super()
     this.cable = options.cable
     this.channelName = options.channelName || "GraphqlChannel"
@@ -25,10 +27,12 @@ class ActionCableLink extends ApolloLink {
     return new Observable((observer) => {
       var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
       var actionName = this.actionName
+      var connectionParams = (typeof this.connectionParams === "function") ?
+        this.connectionParams(operation) : this.connectionParams
       var channel = this.cable.subscriptions.create(Object.assign({},{
         channel: this.channelName,
         channelId: channelId
-      }, this.connectionParams), {
+      }, connectionParams), {
         connected: function() {
           channel.perform(
             actionName,
