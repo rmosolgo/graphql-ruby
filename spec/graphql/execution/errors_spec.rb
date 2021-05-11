@@ -56,6 +56,7 @@ describe "GraphQL::Execution::Errors" do
         if ctx[:authorized] == false
           raise ErrorD
         end
+        true
       end
 
       field :string, String, null: false
@@ -134,6 +135,14 @@ describe "GraphQL::Execution::Errors" do
         input
       end
 
+      field :f9, String, null: true do
+        argument :thing_id, ID, required: true, loads: Thing
+      end
+
+      def f9(thing:)
+        thing[:id]
+      end
+
       field :thing, Thing, null: true
       def thing
         :thing
@@ -151,6 +160,18 @@ describe "GraphQL::Execution::Errors" do
 
     query(Query)
     lazy_resolve(Proc, :call)
+
+    def self.object_from_id(id, ctx)
+      if id == "boom"
+        raise ErrorB
+      end
+
+      { thing: true, id: id }
+    end
+
+    def self.resolve_type(type, obj, ctx)
+      Thing
+    end
   end
 
   class ErrorsTestSchemaWithoutInterpreter < GraphQL::Schema
@@ -228,6 +249,17 @@ describe "GraphQL::Execution::Errors" do
         assert_equal ["errors"], res3.keys
         assert_equal ["Variable $v of type PickyString! was provided invalid value"], res3["errors"].map { |e| e["message"] }
         assert_equal [["boom!"]], res3["errors"].map { |e| e["extensions"]["problems"].map { |pr| pr["explanation"] } }
+      end
+    end
+
+    describe "errors raised when loading objects from ID" do
+      it "rescues them" do
+        res1 = ErrorsTestSchema.execute("{ f9(thingId: \"abc\") }")
+        pp res1
+        assert_equal "abc", res1["data"]["f9"]
+
+        res2 = ErrorsTestSchema.execute("{ f9(thingId: \"boom\") }")
+        assert_equal ["boom!"], res2["errors"].map { |e| e["message"] }
       end
     end
 

@@ -266,7 +266,9 @@ module GraphQL
               loaded_values = coerced_value.map { |val| owner.load_application_object(self, loads, val, context) }
               context.schema.after_any_lazies(loaded_values) { |result| result }
             else
-              owner.load_application_object(self, loads, coerced_value, context)
+              context.query.with_error_handling do
+                owner.load_application_object(self, loads, coerced_value, context)
+              end
             end
           end
 
