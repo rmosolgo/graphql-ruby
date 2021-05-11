@@ -9,10 +9,16 @@ module GraphQL
         def visible_type?(t); true; end
       end
 
+      class NullQuery
+        def with_error_handling
+          yield
+        end
+      end
+
       attr_reader :schema, :query, :warden, :dataloader
 
       def initialize
-        @query = nil
+        @query = NullQuery.new
         @dataloader = GraphQL::Dataloader::NullDataloader.new
         @schema = GraphQL::Schema.new
         @warden = NullWarden.new(

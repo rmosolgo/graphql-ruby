@@ -56,6 +56,7 @@ describe "GraphQL::Execution::Errors" do
         if ctx[:authorized] == false
           raise ErrorD
         end
+        true
       end
 
       field :string, String, null: false
@@ -72,6 +73,16 @@ describe "GraphQL::Execution::Errors" do
           :thing
         else
           raise ErrorD
+        end
+      end
+    end
+
+    class PickyString < GraphQL::Schema::Scalar
+      def self.coerce_input(value, ctx)
+        if value == "picky"
+          value
+        else
+          raise ErrorB, "The string wasn't \"picky\""
         end
       end
     end
@@ -116,6 +127,22 @@ describe "GraphQL::Execution::Errors" do
         raise ErrorBGrandchildClass
       end
 
+      field :f8, String, null: true do
+        argument :input, PickyString, required: true
+      end
+
+      def f8(input:)
+        input
+      end
+
+      field :f9, String, null: true do
+        argument :thing_id, ID, required: true, loads: Thing
+      end
+
+      def f9(thing:)
+        thing[:id]
+      end
+
       field :thing, Thing, null: true
       def thing
         :thing
@@ -133,6 +160,18 @@ describe "GraphQL::Execution::Errors" do
 
     query(Query)
     lazy_resolve(Proc, :call)
+
+    def self.object_from_id(id, ctx)
+      if id == "boom"
+        raise ErrorB
+      end
+
+      { thing: true, id: id }
+    end
+
+    def self.resolve_type(type, obj, ctx)
+      Thing
+    end
   end
 
   class ErrorsTestSchemaWithoutInterpreter < GraphQL::Schema
@@ -196,6 +235,32 @@ describe "GraphQL::Execution::Errors" do
       res = ErrorsTestSchema.execute("{ f5 }", context: context)
       assert_equal({ "data" => { "f5" => nil } }, res)
       assert_equal ["raised subclass (ErrorsTestSchema::Query.f5, nil, {})"], context[:errors]
+    end
+
+    describe "errors raised when coercing inputs" do
+      it "rescues them" do
+        res1 = ErrorsTestSchema.execute("{ f8(input: \"picky\") }")
+        assert_equal "picky", res1["data"]["f8"]
+        res2 = ErrorsTestSchema.execute("{ f8(input: \"blah\") }")
+        assert_equal ["errors"], res2.keys
+        assert_equal ["boom!"], res2["errors"].map { |e| e["message"] }
+
+        res3 = ErrorsTestSchema.execute("query($v: PickyString!) { f8(input: $v) }", variables: { v: "blah" })
+        assert_equal ["errors"], res3.keys
+        assert_equal ["Variable $v of type PickyString! was provided invalid value"], res3["errors"].map { |e| e["message"] }
+        assert_equal [["boom!"]], res3["errors"].map { |e| e["extensions"]["problems"].map { |pr| pr["explanation"] } }
+      end
+    end
+
+    describe "errors raised when loading objects from ID" do
+      it "rescues them" do
+        res1 = ErrorsTestSchema.execute("{ f9(thingId: \"abc\") }")
+        pp res1
+        assert_equal "abc", res1["data"]["f9"]
+
+        res2 = ErrorsTestSchema.execute("{ f9(thingId: \"boom\") }")
+        assert_equal ["boom!"], res2["errors"].map { |e| e["message"] }
+      end
     end
 
     describe "errors raised in authorized hooks" do
