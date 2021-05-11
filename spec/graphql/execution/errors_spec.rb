@@ -76,6 +76,16 @@ describe "GraphQL::Execution::Errors" do
       end
     end
 
+    class PickyString < GraphQL::Schema::Scalar
+      def self.coerce_input(value, ctx)
+        if value == "picky"
+          value
+        else
+          raise ErrorB, "The string wasn't \"picky\""
+        end
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       field :f1, Int, null: true do
         argument :a1, Int, required: false
@@ -114,6 +124,14 @@ describe "GraphQL::Execution::Errors" do
       field :f7, String, null: true
       def f7
         raise ErrorBGrandchildClass
+      end
+
+      field :f8, String, null: true do
+        argument :input, PickyString, required: true
+      end
+
+      def f8(input:)
+        input
       end
 
       field :thing, Thing, null: true
@@ -196,6 +214,21 @@ describe "GraphQL::Execution::Errors" do
       res = ErrorsTestSchema.execute("{ f5 }", context: context)
       assert_equal({ "data" => { "f5" => nil } }, res)
       assert_equal ["raised subclass (ErrorsTestSchema::Query.f5, nil, {})"], context[:errors]
+    end
+
+    describe "errors raised when coercing inputs" do
+      it "rescues them" do
+        res1 = ErrorsTestSchema.execute("{ f8(input: \"picky\") }")
+        assert_equal "picky", res1["data"]["f8"]
+        res2 = ErrorsTestSchema.execute("{ f8(input: \"blah\") }")
+        assert_equal ["errors"], res2.keys
+        assert_equal ["boom!"], res2["errors"].map { |e| e["message"] }
+
+        res3 = ErrorsTestSchema.execute("query($v: PickyString!) { f8(input: $v) }", variables: { v: "blah" })
+        assert_equal ["errors"], res3.keys
+        assert_equal ["Variable $v of type PickyString! was provided invalid value"], res3["errors"].map { |e| e["message"] }
+        assert_equal [["boom!"]], res3["errors"].map { |e| e["extensions"]["problems"].map { |pr| pr["explanation"] } }
+      end
     end
 
     describe "errors raised in authorized hooks" do

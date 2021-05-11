@@ -73,6 +73,11 @@ module GraphQL
             irep: irep,
           }
         end
+      rescue GraphQL::ExecutionError => e
+        {
+          errors: [e],
+          irep: nil,
+        }
       end
 
       # Invoked when static validation times out.
