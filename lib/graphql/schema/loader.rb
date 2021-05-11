@@ -169,6 +169,12 @@ module GraphQL
         def build_fields(type_defn, fields, type_resolver)
           loader = self
           fields.each do |field_hash|
+            unwrapped_field_hash = field_hash
+            while (of_type = unwrapped_field_hash["ofType"])
+              unwrapped_field_hash = of_type
+            end
+            type_name = unwrapped_field_hash["name"]
+
             type_defn.field(
               field_hash["name"],
               type: type_resolver.call(field_hash["type"]),
@@ -176,6 +182,8 @@ module GraphQL
               deprecation_reason: field_hash["deprecationReason"],
               null: true,
               camelize: false,
+              connection_extension: nil,
+              connection: type_name.end_with?("Connection"),
             ) do
               if field_hash["args"].any?
                 loader.build_arguments(self, field_hash["args"], type_resolver)

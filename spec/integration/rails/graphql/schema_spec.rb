@@ -190,10 +190,16 @@ type Query {
 
   describe ".from_introspection" do
     let(:schema) {
+      # This type would easily be mistaken for a connection... but it's not one.
+      db_connection = Class.new(GraphQL::Schema::Object) do
+        graphql_name "DatabaseConnection"
+        field :name, String, null: false
+      end
 
       query_root = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Query'
         field :str, String, null: true
+        field :db, db_connection, null: false, connection: false
       end
 
       Class.new(GraphQL::Schema) do
