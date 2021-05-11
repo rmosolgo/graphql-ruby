@@ -144,13 +144,24 @@ schema {
 }
 
 directive @foo(arg: InputA) on FIELD
+directive @bar(arg: InputA) on FIELD_DEFINITION
+
+type Hello {
+  int: Int @bar(arg: { int: 1 })
+}
 
 input InputA {
   value: InputB
+  value2: InputC
+  int: Int
 }
 
 input InputB {
   value: InputA
+}
+
+input InputC {
+  value: InputB
 }
       SCHEMA
 
