@@ -81,7 +81,7 @@ Fields with a `deprecation_reason:` will appear as "deprecated" in GraphiQL.
 
 ### Field Resolution
 
-In general, fields return Ruby values corresponding to their GraphQL return types. For example, a field with the return type `String` should return a Ruby string, and a field with the return type `[User!]!` should return a Ruby array with zero or more `User` objects in it.
+In general, fields return Ruby values corresponding to their GraphQL return types. For example, a field with the return type `String` should return a Ruby string, and a field with the return type `[User!]!` should return a Ruby array with one or more `User` objects in it.
 
 By default, fields return values by:
 
