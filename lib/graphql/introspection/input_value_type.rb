@@ -19,7 +19,7 @@ module GraphQL
 
       def default_value
         if @object.default_value?
-          value = @object.default_value
+          value = @object.default_value(@context)
           if value.nil?
             'null'
           else

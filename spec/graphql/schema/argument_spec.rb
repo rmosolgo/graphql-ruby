@@ -211,6 +211,13 @@ describe GraphQL::Schema::Argument do
     end
   end
 
+  it 'validates the type of the default value' do
+    arg = GraphQL::Schema::Argument.new("my_arg", GraphQL::Types::Int, required: true, owner: nil, default_value: :some_symbol)
+    assert_raises(StandardError) do
+      arg.default_value
+    end
+  end
+
   describe 'loads' do
     it "loads input object arguments" do
       query_str = <<-GRAPHQL

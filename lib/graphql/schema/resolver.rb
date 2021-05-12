@@ -148,7 +148,7 @@ module GraphQL
       def authorized?(**inputs)
         self.class.arguments.each_value do |argument|
           arg_keyword = argument.keyword
-          if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
+          if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value(context))
             arg_auth, err = argument.authorized?(self, arg_value, context)
             if !arg_auth
               return arg_auth, err

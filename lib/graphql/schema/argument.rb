@@ -87,7 +87,15 @@ module GraphQL
       end
 
       # @return [Object] the value used when the client doesn't provide a value for this argument
-      attr_reader :default_value
+      def default_value(context = GraphQL::Query::NullContext)
+        return @default_value if @default_value == NO_DEFAULT
+
+        coerced_value = @default_value.nil? ? nil : type.coerce_result(@default_value, context)
+        validation = type.validate_input(coerced_value, context)
+        raise validation.problems.first unless validation.valid?
+
+        @default_value
+      end
 
       # @return [Boolean] True if this argument has a default value
       def default_value?
@@ -250,7 +258,7 @@ module GraphQL
           value = values[arg_key]
         elsif default_value?
           has_value = true
-          value = default_value
+          value = default_value(context)
           default_used = true
         end
 
