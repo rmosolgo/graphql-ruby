@@ -52,22 +52,25 @@ module GraphQL
           set_all_interpreter_context(query.root_value, nil, nil, path)
           object_proxy = authorized_new(root_type, query.root_value, context)
           object_proxy = schema.sync_lazy(object_proxy)
+
           if object_proxy.nil?
             # Root .authorized? returned false.
             write_in_response(path, nil)
           else
-            gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
-            # Make the first fiber which will begin execution
-            @dataloader.append_job {
-              evaluate_selections(
-                path,
-                context.scoped_context,
-                object_proxy,
-                root_type,
-                root_op_type == "mutation",
-                gathered_selections,
-              )
-            }
+            resolve_with_directives(object_proxy, root_operation) do # execute query level directives
+              gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
+              # Make the first fiber which will begin execution
+              @dataloader.append_job {
+                evaluate_selections(
+                  path,
+                  context.scoped_context,
+                  object_proxy,
+                  root_type,
+                  root_op_type == "mutation",
+                  gathered_selections,
+                )
+              }
+            end
           end
           delete_interpreter_context(:current_path)
           delete_interpreter_context(:current_field)
