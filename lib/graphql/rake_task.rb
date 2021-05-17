@@ -98,6 +98,9 @@ module GraphQL
       result = schema.public_send(method_name, only: @only, except: @except, context: context)
       dir = File.dirname(file)
       FileUtils.mkdir_p(dir)
+      if !result.end_with?("\n")
+        result += "\n"
+      end
       File.write(file, result)
     end
 
