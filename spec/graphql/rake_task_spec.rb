@@ -40,7 +40,7 @@ describe GraphQL::RakeTask do
 
       dumped_idl = File.read("./schema.graphql")
       expected_idl = rake_task_schema_defn.chomp
-      assert_equal(expected_idl, dumped_idl)
+      assert_equal(expected_idl + "\n", dumped_idl)
     end
   end
 
@@ -52,7 +52,8 @@ describe GraphQL::RakeTask do
       dumped_idl = File.read("./tmp/configured_schema.graphql")
       expected_idl = "type Query {
   allowed(allowed: ID!): Int
-}"
+}
+"
       assert_equal expected_idl, dumped_idl
     end
   end
