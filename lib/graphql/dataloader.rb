@@ -224,16 +224,18 @@ module GraphQL
     #
     # @see https://github.com/rmosolgo/graphql-ruby/issues/3449
     def spawn_fiber
-      fiber_locals = {} 
+      fiber_locals = {}
 
       Thread.current.keys.each do |fiber_var_key|
         fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
-      end 
+      end
 
-      Fiber.new do 
+      Fiber.new do
         fiber_locals.each { |k, v| Thread.current[k] = v }
         yield
-      end 
+      end
     end
   end
 end
+
+require "graphql/dataloader/async_dataloader"
