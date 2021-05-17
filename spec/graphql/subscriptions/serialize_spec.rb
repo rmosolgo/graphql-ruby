@@ -35,6 +35,18 @@ describe GraphQL::Subscriptions::Serialize do
       assert_equal parsed_obj_a, ["first", 2, user_a]
       assert_equal parsed_obj_b, {'first' => 'first', 'second' => 2, 'user' => user_b}
     end
+
+    it "uses locate_many for arrays of global ids" do
+      user_a = GlobalIDUser.new("a")
+      user_b = GlobalIDUser.new("b")
+      str = serialize_dump({ "users" => [user_a, user_b] })
+
+      loaded = serialize_load(str)
+      assert_equal [user_a, user_b], loaded["users"]
+      # It went through the plural load codepath:
+      assert_equal false, user_a.located_many?
+      assert_equal [true, true], loaded["users"].map(&:located_many?)
+    end
   end
 
   it "can deserialize symbols" do
