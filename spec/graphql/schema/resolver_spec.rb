@@ -733,6 +733,19 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    describe "load_* argument methods" do
+      it "doesn't override inherited methods" do
+        r1 = Class.new(GraphQL::Schema::Resolver) do
+          def load_input(input); end
+        end
+        r2 = Class.new(r1) do
+          argument :input, Integer, required: false
+        end
+
+        assert_equal r1.instance_method(:load_input).source_location, r2.instance_method(:load_input).source_location
+      end
+    end
+
     describe "Loading inputs" do
       it "calls object_from_id" do
         res = exec_query('{ prepResolver9(intId: "5") { value } }')
