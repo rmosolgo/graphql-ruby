@@ -31,7 +31,7 @@ module GraphQL
       end
 
       def directives
-        context.schema.directives.values
+        @context.warden.directives
       end
 
       private
