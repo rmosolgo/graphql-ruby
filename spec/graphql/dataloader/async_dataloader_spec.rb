@@ -12,8 +12,26 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         end
       end
 
+      class Sleeper < GraphQL::Schema::Object
+        field :sleeper, Sleeper, null: false, resolver_method: :sleep do
+          argument :duration, Float, required: true
+        end
+
+        def sleep(duration:)
+          `sleep #{duration}`
+          duration
+        end
+
+        field :duration, Float, null: false
+        def duration; object; end
+      end
+
       class Query < GraphQL::Schema::Object
         field :sleep, Float, null: false do
+          argument :duration, Float, required: true
+        end
+
+        field :sleeper, Sleeper, null: false, resolver_method: :sleep do
           argument :duration, Float, required: true
         end
 
@@ -76,6 +94,39 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       ended_at = Time.now
       assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
       assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+    end
+
+    it "nested fields don't wait for slower higher-level fields" do
+      query_str = <<-GRAPHQL
+      {
+        s1: sleeper(duration: 0.1) {
+          sleeper(duration: 0.1) {
+            sleeper(duration: 0.1) {
+              duration
+            }
+          }
+        }
+        s2: sleeper(duration: 0.2) {
+          sleeper(duration: 0.1) {
+            duration
+          }
+        }
+        s3: sleeper(duration: 0.3) {
+          duration
+        }
+      }
+      GRAPHQL
+      started_at = Time.now
+      res = AsyncSchema.execute(query_str)
+      ended_at = Time.now
+
+      expected_data = {
+        "s1" => { "sleeper" => { "sleeper" => { "duration" => 0.1 } } },
+        "s2" => { "sleeper" => { "duration" => 0.1 } },
+        "s3" => { "duration" => 0.3 }
+      }
+      assert_equal expected_data, res["data"]
+      assert_in_delta 0.3, ended_at - started_at, 0.05, "Fields ran without any waiting"
     end
   end
 end

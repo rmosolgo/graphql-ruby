@@ -169,7 +169,7 @@ module GraphQL
 
             selected = {}
 
-            readable&.each do |io|
+            readable && readable.each do |io|
               if fiber = @readable.delete(io)
                 selected[fiber] = IO::READABLE
               elsif io == @urgent.first
@@ -177,7 +177,7 @@ module GraphQL
               end
             end
 
-            writable&.each do |io|
+            writable && writeable.each do |io|
               if fiber = @writable.delete(io)
                 selected[fiber] |= IO::WRITABLE
               end
@@ -246,7 +246,7 @@ module GraphQL
           self.fiber do
             sleep(duration)
 
-            if fiber&.alive?
+            if fiber && fiber.alive?
               fiber.raise(klass, message)
             end
           end
