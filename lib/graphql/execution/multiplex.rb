@@ -120,6 +120,7 @@ module GraphQL
             results[idx] = query.result
           end
 
+          multiplex.dataloader.close
           results
         rescue Exception
           # TODO rescue at a higher level so it will catch errors in analysis, too
