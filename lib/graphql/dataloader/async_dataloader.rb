@@ -177,7 +177,7 @@ module GraphQL
               end
             end
 
-            writable && writeable.each do |io|
+            writable && writable.each do |io|
               if fiber = @writable.delete(io)
                 selected[fiber] |= IO::WRITABLE
               end
