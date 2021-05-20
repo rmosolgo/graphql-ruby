@@ -40,7 +40,6 @@ describe GraphQL::Dataloader::AsyncDataloader do
 
     assert_equal({ a: 1, b: 2, c: 3 }, results, "All the jobs ran")
     assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
-    dataloader.close
   end
 
   it "works with sources" do
@@ -68,8 +67,6 @@ describe GraphQL::Dataloader::AsyncDataloader do
     assert_in_delta 0.0, started_at_2 - ended_at_2, 0.05, "Already-loaded values returned instantly"
 
     assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
-
-    dataloader.close
   end
 
   it "works with GraphQL" do

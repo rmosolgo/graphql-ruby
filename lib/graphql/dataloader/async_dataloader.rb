@@ -3,25 +3,14 @@
 module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
-      # TODO: sometimes, the scheduler would be left dangling and
-      # it would prevent the Minitest thread from `.join`ing.
-      # I don't know why ... but clearing the scheduler _works_.
-      #
-      # This shouldn't be necessary. Instead, is there some way
-      # to detect when `run` (and nested `run`s) are finished,
-      # then restore the previous scheduler?
-      def close
-        Fiber.set_scheduler(nil)
-      end
-
-      def scheduler
-        @scheduler ||= Scheduler.new
-      end
-
       # This is mostly copied from the parent class, except for
       # a few random calls to `scheduler.run`
       def run
-        if Fiber.scheduler.nil?
+        prev_scheduler = Fiber.scheduler
+        if !prev_scheduler.is_a?(Scheduler)
+          # Create a new scheduler if there isn't one,
+          # but if there's already one in action, don't bother
+          scheduler = Scheduler.new
           Fiber.set_scheduler(scheduler)
         end
 
@@ -92,6 +81,11 @@ module GraphQL
           raise "Invariant: #{pending_fibers.size} pending fibers: #{pending_fibers}"
         elsif next_fibers.any?
           raise "Invariant: #{next_fibers.size} next fibers"
+        end
+        if !prev_scheduler.is_a?(Scheduler)
+          # If this `run` is a top-level call, then put the old scheduler back
+          # (It's probably `nil`)
+          Fiber.set_scheduler(prev_scheduler)
         end
         nil
       end
