@@ -40,6 +40,14 @@ module GraphQL
           # Which assumes that MyObject.get_field("myField") will return the same field
           # during the lifetime of a query
           @fields_cache = Hash.new { |h, k| h[k] = {} }
+          # { Class => Boolean }
+          @lazy_cache = {}
+        end
+
+        def lazy?(object)
+          @lazy_cache.fetch(object.class) {
+            @lazy_cache[object.class] = @schema.lazy?(object)
+          }
         end
 
         # TODO not maintain this?
@@ -585,7 +593,7 @@ module GraphQL
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, trace: true, &block)
           set_all_interpreter_context(owner_object, field, arguments, path)
-          if schema.lazy?(lazy_obj)
+          if lazy?(lazy_obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
               set_all_interpreter_context(owner_object, field, arguments, path)
               context.scoped_context = scoped_context
@@ -645,7 +653,7 @@ module GraphQL
             query.resolve_type(type, value)
           end
 
-          if schema.lazy?(resolved_type)
+          if lazy?(resolved_type)
             GraphQL::Execution::Lazy.new do
               query.trace("resolve_type_lazy", trace_payload) do
                 schema.sync_lazy(resolved_type)
