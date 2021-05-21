@@ -8,6 +8,17 @@ module GraphQL
       #
       # @api private
       class Runtime
+
+        class GraphQLResultHash < Hash
+          def graphql_metadata
+            @graphql_metadata ||= {
+              dead: false,
+              non_null: nil,
+              list: false,
+            }
+          end
+        end
+
         # @return [GraphQL::Query]
         attr_reader :query
 
@@ -24,7 +35,7 @@ module GraphQL
           @context = query.context
           @multiplex_context = query.multiplex.context
           @interpreter_context = @context.namespace(:interpreter)
-          @result = {}
+          @result = GraphQLResultHash.new
           # A cache of { Class => { String => Schema::Field } }
           # Which assumes that MyObject.get_field("myField") will return the same field
           # during the lifetime of a query
@@ -66,20 +77,16 @@ module GraphQL
 
         def clean_result(r)
           case r
-          when Hash
-            r2 = r[:list] ? [] : {}
+          when GraphQLResultHash
+            r2 = r.graphql_metadata[:list] ? [] : {}
             r.each do |k, v|
-              if k.is_a?(Symbol)
-                # pass
-              else
-                r2[k] = clean_result(v)
-              end
+              r2[k] = clean_result(v)
             end
             # Check results in r2 because a child field could have propagated a `nil`
-            if r[:non_null]
-              if r[:non_null] == true # list
+            if (nn = r.graphql_metadata[:non_null])
+              if nn == true # list
                 r2.any?(&:nil?) ? nil : r2
-              elsif r[:non_null].any? { |k| r2.fetch(k, false).nil? }
+              elsif nn.any? { |k| r2[k].nil? && r2.key?(k) }
                 nil
               else
                 r2
@@ -245,7 +252,7 @@ module GraphQL
           # the field's return type at this path in order
           # to propagate `null`
           if return_type.non_null?
-            (selections_result[:non_null] ||= []).push(result_name)
+            (selections_result.graphql_metadata[:non_null] ||= []).push(result_name)
           end
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           set_all_interpreter_context(nil, field_defn, nil, next_path)
@@ -363,11 +370,11 @@ module GraphQL
         end
 
         def dead_end?(selection_result, result_name)
-          selection_result[:dead]
+          selection_result.graphql_metadata[:dead]
         end
 
         def set_dead_end(selection_result, result_name)
-          selection_result[:dead] = true
+          selection_result.graphql_metadata[:dead] = true
         end
 
         def set_result(selection_result, result_name, value)
@@ -470,7 +477,7 @@ module GraphQL
             after_lazy(object_proxy, owner: current_type, path: path, ast_node: ast_node, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result) do |inner_object|
               continue_value = continue_value(path, inner_object, owner_type, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
-                response_hash = {}
+                response_hash = GraphQLResultHash.new
                 set_result(selection_result, result_name, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
                 evaluate_selections(path, context.scoped_context, continue_value, current_type, false, gathered_selections, response_hash)
@@ -480,7 +487,9 @@ module GraphQL
           when "LIST"
             inner_type = current_type.of_type
             # TODO rename this local
-            response_list = { list: true, non_null: inner_type.non_null? }
+            response_list = GraphQLResultHash.new
+            response_list.graphql_metadata[:list] = true
+            response_list.graphql_metadata[:non_null] = inner_type.non_null?
             set_result(selection_result, result_name, response_list)
 
             idx = 0
