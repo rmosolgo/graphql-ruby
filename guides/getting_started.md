@@ -28,9 +28,11 @@ On Rails, you can get started with a few [GraphQL generators](https://rmosolgo.g
 
 ```sh
 # Add graphql-ruby boilerplate and mount graphiql in development
-rails g graphql:install
+$ rails g graphql:install
+# You may need to run bundle install again, as by default graphiql-rails is added on installation.
+$ bundle install
 # Make your first object type
-rails g graphql:object Post title:String rating:Int comments:[Comment]
+$ rails g graphql:object Post title:String rating:Int comments:[Comment]
 ```
 
 Or, you can build a GraphQL server by hand:
