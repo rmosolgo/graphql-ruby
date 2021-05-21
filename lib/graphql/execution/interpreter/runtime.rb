@@ -300,7 +300,8 @@ module GraphQL
 
         HALT = Object.new
         def continue_value(path, value, parent_type, field, is_non_null, ast_node)
-          if value.nil?
+          case value
+          when nil
             if is_non_null
               err = parent_type::InvalidNullError.new(parent_type, field, value)
               write_invalid_null_in_response(path, err)
@@ -308,29 +309,39 @@ module GraphQL
               write_in_response(path, nil)
             end
             HALT
-          elsif value.is_a?(GraphQL::ExecutionError)
-            value.path ||= path
-            value.ast_node ||= ast_node
-            write_execution_errors_in_response(path, [value])
-            HALT
-          elsif value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
-            value.each_with_index do |error, index|
-              error.ast_node ||= ast_node
-              error.path ||= path + (field.type.list? ? [index] : [])
+          when GraphQL::Error
+            # Merge these into one `case` to avoid checking two classes (this is an infrequent path)
+            case value
+            when GraphQL::ExecutionError
+              value.path ||= path
+              value.ast_node ||= ast_node
+              write_execution_errors_in_response(path, [value])
+              HALT
+            when GraphQL::UnauthorizedError
+              # this hook might raise & crash, or it might return
+              # a replacement value
+              next_value = begin
+                schema.unauthorized_object(value)
+              rescue GraphQL::ExecutionError => err
+                err
+              end
+              continue_value(path, next_value, parent_type, field, is_non_null, ast_node)
+            else
+              # This is unexpected, but keep returning it
+              value
             end
-            write_execution_errors_in_response(path, value)
-            HALT
-          elsif value.is_a?(GraphQL::UnauthorizedError)
-            # this hook might raise & crash, or it might return
-            # a replacement value
-            next_value = begin
-              schema.unauthorized_object(value)
-            rescue GraphQL::ExecutionError => err
-              err
+          when Array
+            if value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
+              value.each_with_index do |error, index|
+                error.ast_node ||= ast_node
+                error.path ||= path + (field.type.list? ? [index] : [])
+              end
+              write_execution_errors_in_response(path, value)
+              HALT
+            else
+              value
             end
-
-            continue_value(path, next_value, parent_type, field, is_non_null, ast_node)
-          elsif GraphQL::Execution::Execute::SKIP == value
+          when GraphQL::Execution::Execute::SKIP
             HALT
           else
             value
@@ -346,6 +357,11 @@ module GraphQL
         #
         # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
         def continue_field(path, value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments) # rubocop:disable Metrics/ParameterLists
+          if current_type.non_null?
+            is_non_null = true
+            current_type = current_type.of_type
+          end
+
           case current_type.kind.name
           when "SCALAR", "ENUM"
             r = current_type.coerce_result(value, context)
@@ -418,11 +434,6 @@ module GraphQL
             end
 
             response_list
-          when "NON_NULL"
-            inner_type = current_type.of_type
-            # Don't `set_non_null_at` because we want the static type,
-            # we're going to use that to determine whether a `nil` should be propagated or not.
-            continue_field(path, value, owner_type, field, inner_type, ast_node, next_selections, true, owner_object, arguments)
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
           end
@@ -502,7 +513,8 @@ module GraphQL
                 rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
                   err
               end
-              after_lazy(inner_obj, owner: owner, field: field, path: path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager, trace: trace, &block)
+              yield(inner_obj)
+              # after_lazy(inner_obj, owner: owner, field: field, path: path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: owner_object, arguments: arguments, eager: eager, trace: trace, &block)
             end
 
             if eager
@@ -512,6 +524,7 @@ module GraphQL
               lazy
             end
           else
+            # TODO some error test depends on this -- move it to the caller?
             set_all_interpreter_context(owner_object, field, arguments, path)
             yield(lazy_obj)
           end
@@ -594,6 +607,9 @@ module GraphQL
         end
 
         def dead_path?(path)
+          if @dead_paths.size == 0
+            return false
+          end
           res = @dead_paths
           path.each do |part|
             if res

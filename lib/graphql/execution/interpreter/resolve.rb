@@ -34,13 +34,14 @@ module GraphQL
           next_results = []
           while results.any?
             result_value = results.shift
-            if result_value.is_a?(Hash)
+            case result_value
+            when Hash
               results.concat(result_value.values)
               next
-            elsif result_value.is_a?(Array)
+            when Array
               results.concat(result_value)
               next
-            elsif result_value.is_a?(Lazy)
+            when Lazy
               loaded_value = result_value.value
               if loaded_value.is_a?(Lazy)
                 # Since this field returned another lazy,
