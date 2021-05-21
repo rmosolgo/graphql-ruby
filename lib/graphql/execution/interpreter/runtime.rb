@@ -9,14 +9,16 @@ module GraphQL
       # @api private
       class Runtime
 
+        module GraphQLResult
+          attr_accessor :graphql_dead, :graphql_non_null, :graphql_list, :graphql_parent, :graphql_name
+        end
+
         class GraphQLResultHash < Hash
-          def graphql_metadata
-            @graphql_metadata ||= {
-              dead: false,
-              non_null: nil,
-              list: false,
-            }
-          end
+          include GraphQLResult
+        end
+
+        class GraphQLResultArray < Array
+          include GraphQLResult
         end
 
         # @return [GraphQL::Query]
@@ -76,35 +78,11 @@ module GraphQL
               break
             end
           end
-          clean_result(response)
+          response
         end
 
         def final_value
-          clean_result(@result)
-        end
-
-        def clean_result(r)
-          case r
-          when GraphQLResultHash
-            r2 = r.graphql_metadata[:list] ? [] : {}
-            r.each do |k, v|
-              r2[k] = clean_result(v)
-            end
-            # Check results in r2 because a child field could have propagated a `nil`
-            if (nn = r.graphql_metadata[:non_null])
-              if nn == true # list
-                r2.any?(&:nil?) ? nil : r2
-              elsif nn.any? { |k| r2[k].nil? && r2.key?(k) }
-                nil
-              else
-                r2
-              end
-            else
-              r2
-            end
-          else
-            r
-          end
+          @result
         end
 
         def inspect
@@ -260,7 +238,7 @@ module GraphQL
           # the field's return type at this path in order
           # to propagate `null`
           if return_type.non_null?
-            (selections_result.graphql_metadata[:non_null] ||= []).push(result_name)
+            (selections_result.graphql_non_null ||= []).push(result_name)
           end
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           set_all_interpreter_context(nil, field_defn, nil, next_path)
@@ -378,16 +356,29 @@ module GraphQL
         end
 
         def dead_end?(selection_result, result_name)
-          selection_result.graphql_metadata[:dead]
+          selection_result.graphql_dead
         end
 
         def set_dead_end(selection_result, result_name)
-          selection_result.graphql_metadata[:dead] = true
+          selection_result.graphql_dead = true
         end
 
         def set_result(selection_result, result_name, value)
           if !dead_end?(selection_result, result_name)
-            selection_result[result_name] = value
+            if value.nil? &&
+                (nn = selection_result.graphql_non_null) &&
+                (nn == true || nn.include?(result_name))
+              # This is an invalid nil that should be propagated
+              parent = selection_result.graphql_parent
+              name_in_parent = selection_result.graphql_name
+              if parent.nil? # This is a top-level result hash
+                @result = nil
+              else
+                set_result(parent, name_in_parent, nil)
+              end
+            else
+              selection_result[result_name] = value
+            end
           end
         end
 
@@ -486,6 +477,8 @@ module GraphQL
               continue_value = continue_value(path, inner_object, owner_type, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new
+                response_hash.graphql_parent = selection_result
+                response_hash.graphql_name = result_name
                 set_result(selection_result, result_name, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
                 evaluate_selections(path, context.scoped_context, continue_value, current_type, false, gathered_selections, response_hash)
@@ -495,9 +488,11 @@ module GraphQL
           when "LIST"
             inner_type = current_type.of_type
             # TODO rename this local
-            response_list = GraphQLResultHash.new
-            response_list.graphql_metadata[:list] = true
-            response_list.graphql_metadata[:non_null] = inner_type.non_null?
+            response_list = GraphQLResultArray.new
+            response_list.graphql_list = true
+            response_list.graphql_non_null = inner_type.non_null?
+            response_list.graphql_parent = selection_result
+            response_list.graphql_name = result_name
             set_result(selection_result, result_name, response_list)
 
             idx = 0
