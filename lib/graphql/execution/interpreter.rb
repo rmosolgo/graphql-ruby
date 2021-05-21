@@ -4,7 +4,6 @@ require "graphql/execution/interpreter/argument_value"
 require "graphql/execution/interpreter/arguments"
 require "graphql/execution/interpreter/arguments_cache"
 require "graphql/execution/interpreter/execution_errors"
-require "graphql/execution/interpreter/hash_response"
 require "graphql/execution/interpreter/runtime"
 require "graphql/execution/interpreter/resolve"
 require "graphql/execution/interpreter/handles_raw_value"
@@ -67,10 +66,7 @@ module GraphQL
         # Although queries in a multiplex _share_ an Interpreter instance,
         # they also have another item of state, which is private to that query
         # in particular, assign it here:
-        runtime = Runtime.new(
-          query: query,
-          response: HashResponse.new,
-        )
+        runtime = Runtime.new(query: query)
         query.context.namespace(:interpreter)[:runtime] = runtime
 
         query.trace("execute_query", {query: query}) do
