@@ -51,6 +51,13 @@ In general, each `.define { ... }` block will be converted to a class.
 
 See sections below for specific information about each schema definition class.
 
+### Note: Finding legacy members
+As of https://github.com/DmitryTsepelev/rubocop-graphql/pull/39, [rubocop-graphql](https://github.com/DmitryTsepelev/rubocop-graphql) supports a rule to find legacy DSL classes! You can install the gem and require it in your `.rubocop.yml` file.
+
+An example command to find violating files would then be:
+
+```$ rubocop --format files --only GraphQL/LegacyDsl app >> violating_files.txt```
+
 ### ⚠️ Heads up ⚠️
 
 Keep in mind that class based Schemas will be initialized at execution time instead of application boot, depending on the size of your schema, this could result in request timeouts for your users after your application restarts. For a workaround please check https://github.com/rmosolgo/graphql-ruby/issues/2034
