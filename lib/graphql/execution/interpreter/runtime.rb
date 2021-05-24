@@ -12,7 +12,7 @@ module GraphQL
         module GraphQLResult
           # These methods are private concerns of GraphQL-Ruby,
           # they aren't guaranteed to continue working in the future.
-          attr_accessor :graphql_dead, :graphql_non_null, :graphql_list, :graphql_parent, :graphql_name
+          attr_accessor :graphql_dead, :graphql_non_null, :graphql_parent, :graphql_result_name
         end
 
         class GraphQLResultHash < Hash
@@ -321,22 +321,14 @@ module GraphQL
           end
         end
 
-        def dead_end?(selection_result, result_name)
-          selection_result.graphql_dead
-        end
-
-        def set_dead_end(selection_result, result_name)
-          selection_result.graphql_dead = true
-        end
-
         def set_result(selection_result, result_name, value)
-          if !dead_end?(selection_result, result_name)
+          if !selection_result.graphql_dead
             if value.nil? &&
                 (nn = selection_result.graphql_non_null) &&
                 (nn == true || nn.include?(result_name))
               # This is an invalid nil that should be propagated
               parent = selection_result.graphql_parent
-              name_in_parent = selection_result.graphql_name
+              name_in_parent = selection_result.graphql_result_name
               if parent.nil? # This is a top-level result hash
                 @response = nil
               else
@@ -353,17 +345,17 @@ module GraphQL
           if value.nil?
             if is_non_null
               err = parent_type::InvalidNullError.new(parent_type, field, value)
-              if !dead_end?(selection_result, result_name)
+              if !selection_result.graphql_dead
                 schema.type_error(err, context)
                 set_result(selection_result, result_name, nil)
-                set_dead_end(selection_result, result_name)
+                selection_result.graphql_dead = true
               end
             else
               set_result(selection_result, result_name, nil)
             end
             HALT
           elsif value.is_a?(GraphQL::ExecutionError)
-            if !dead_end?(selection_result, result_name)
+            if !selection_result.graphql_dead
               value.path ||= path
               value.ast_node ||= ast_node
               context.errors << value
@@ -371,7 +363,7 @@ module GraphQL
             end
             HALT
           elsif value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
-            if !dead_end?(selection_result, result_name)
+            if !selection_result.graphql_dead
               value.each_with_index do |error, index|
                 error.ast_node ||= ast_node
                 error.path ||= path + (field.type.list? ? [index] : [])
@@ -444,7 +436,7 @@ module GraphQL
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new
                 response_hash.graphql_parent = selection_result
-                response_hash.graphql_name = result_name
+                response_hash.graphql_result_name = result_name
                 set_result(selection_result, result_name, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
                 evaluate_selections(path, context.scoped_context, continue_value, current_type, false, gathered_selections, response_hash)
@@ -453,12 +445,10 @@ module GraphQL
             end
           when "LIST"
             inner_type = current_type.of_type
-            # TODO rename this local
             response_list = GraphQLResultArray.new
-            response_list.graphql_list = true
             response_list.graphql_non_null = inner_type.non_null?
             response_list.graphql_parent = selection_result
-            response_list.graphql_name = result_name
+            response_list.graphql_result_name = result_name
             set_result(selection_result, result_name, response_list)
 
             idx = 0
