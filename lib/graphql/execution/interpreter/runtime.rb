@@ -342,7 +342,8 @@ module GraphQL
 
         HALT = Object.new
         def continue_value(path, value, parent_type, field, is_non_null, ast_node, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
-          if value.nil?
+          case value
+          when nil
             if is_non_null
               err = parent_type::InvalidNullError.new(parent_type, field, value)
               if !selection_result.graphql_dead
@@ -354,37 +355,51 @@ module GraphQL
               set_result(selection_result, result_name, nil)
             end
             HALT
-          elsif value.is_a?(GraphQL::ExecutionError)
-            if !selection_result.graphql_dead
-              value.path ||= path
-              value.ast_node ||= ast_node
-              context.errors << value
-              set_result(selection_result, result_name, nil)
-            end
-            HALT
-          elsif value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
-            if !selection_result.graphql_dead
-              value.each_with_index do |error, index|
-                error.ast_node ||= ast_node
-                error.path ||= path + (field.type.list? ? [index] : [])
-                context.errors << error
+          when GraphQL::Error
+            # Handle these cases inside a single `when`
+            # to avoid the overhead of checking three different classes
+            # every time.
+            if value.is_a?(GraphQL::ExecutionError)
+              if !selection_result.graphql_dead
+                value.path ||= path
+                value.ast_node ||= ast_node
+                context.errors << value
+                set_result(selection_result, result_name, nil)
               end
-              set_result(selection_result, result_name, nil)
+              HALT
+            elsif value.is_a?(GraphQL::UnauthorizedError)
+              # this hook might raise & crash, or it might return
+              # a replacement value
+              next_value = begin
+                schema.unauthorized_object(value)
+              rescue GraphQL::ExecutionError => err
+                err
+              end
+              continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
+              HALT
+            elsif GraphQL::Execution::Execute::SKIP == value
+              HALT
+            else
+              # What could this actually _be_? Anyhow,
+              # preserve the default behavior of doing nothing with it.
+              value
             end
-            HALT
-          elsif value.is_a?(GraphQL::UnauthorizedError)
-            # this hook might raise & crash, or it might return
-            # a replacement value
-            next_value = begin
-              schema.unauthorized_object(value)
-            rescue GraphQL::ExecutionError => err
-              err
+          when Array
+            # It's an array full of execution errors; add them all.
+            if value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
+              if !selection_result.graphql_dead
+                value.each_with_index do |error, index|
+                  error.ast_node ||= ast_node
+                  error.path ||= path + (field.type.list? ? [index] : [])
+                  context.errors << error
+                end
+                set_result(selection_result, result_name, nil)
+              end
+              HALT
+            else
+              value
             end
-
-            continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
-          elsif GraphQL::Execution::Execute::SKIP == value
-            HALT
-          elsif value.is_a?(GraphQL::Execution::Interpreter::RawValue)
+          when GraphQL::Execution::Interpreter::RawValue
             # Write raw value directly to the response without resolving nested objects
             set_result(selection_result, result_name, value.resolve)
             HALT
@@ -402,6 +417,11 @@ module GraphQL
         #
         # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
         def continue_field(path, value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
+          if current_type.non_null?
+            current_type = current_type.of_type
+            is_non_null = true
+          end
+
           case current_type.kind.name
           when "SCALAR", "ENUM"
             r = current_type.coerce_result(value, context)
@@ -480,9 +500,6 @@ module GraphQL
             end
 
             response_list
-          when "NON_NULL"
-            inner_type = current_type.of_type
-            continue_field(path, value, owner_type, field, inner_type, ast_node, next_selections, true, owner_object, arguments, result_name, selection_result)
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
           end
@@ -543,7 +560,6 @@ module GraphQL
         # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, owner:, field:, path:, scoped_context:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, trace: true, &block)
-          set_all_interpreter_context(owner_object, field, arguments, path)
           if lazy?(lazy_obj)
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
               set_all_interpreter_context(owner_object, field, arguments, path)
@@ -573,6 +589,7 @@ module GraphQL
               lazy
             end
           else
+            set_all_interpreter_context(owner_object, field, arguments, path)
             yield(lazy_obj)
           end
         end

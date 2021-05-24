@@ -6,7 +6,7 @@ module GraphQL
     class Execute
 
       # @api private
-      class Skip; end
+      class Skip < GraphQL::Error; end
 
       # Just a singleton for implementing {Query::Context#skip}
       # @api private
