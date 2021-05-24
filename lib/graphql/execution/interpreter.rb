@@ -18,7 +18,7 @@ module GraphQL
       def execute(_operation, _root_type, query)
         runtime = evaluate(query)
         sync_lazies(query: query)
-        runtime.final_value
+        runtime.response
       end
 
       def self.use(schema_class)
@@ -56,7 +56,7 @@ module GraphQL
 
       def self.finish_query(query, _multiplex)
         {
-          "data" => query.context.namespace(:interpreter)[:runtime].final_value
+          "data" => query.context.namespace(:interpreter)[:runtime].response
         }
       end
 
@@ -87,7 +87,7 @@ module GraphQL
         final_values = queries.map do |query|
           runtime = query.context.namespace(:interpreter)[:runtime]
           # it might not be present if the query has an error
-          runtime ? runtime.final_value : nil
+          runtime ? runtime.response : nil
         end
         final_values.compact!
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do

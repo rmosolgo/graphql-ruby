@@ -10,6 +10,8 @@ module GraphQL
       class Runtime
 
         module GraphQLResult
+          # These methods are private concerns of GraphQL-Ruby,
+          # they aren't guaranteed to continue working in the future.
           attr_accessor :graphql_dead, :graphql_non_null, :graphql_list, :graphql_parent, :graphql_name
         end
 
@@ -30,6 +32,9 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
+        # @return [Hash]
+        attr_reader :response
+
         def initialize(query:)
           @query = query
           @dataloader = query.multiplex.dataloader
@@ -37,7 +42,7 @@ module GraphQL
           @context = query.context
           @multiplex_context = query.multiplex.context
           @interpreter_context = @context.namespace(:interpreter)
-          @result = GraphQLResultHash.new
+          @response = GraphQLResultHash.new
           # A cache of { Class => { String => Schema::Field } }
           # Which assumes that MyObject.get_field("myField") will return the same field
           # during the lifetime of a query
@@ -46,47 +51,8 @@ module GraphQL
           @lazy_cache = {}
         end
 
-        def lazy?(object)
-          @lazy_cache.fetch(object.class) {
-            @lazy_cache[object.class] = @schema.lazy?(object)
-          }
-        end
-
-        # TODO not maintain this?
-        def write_in_response(path, value)
-          response = @result
-          *keys, last = path
-          keys.each do |key|
-            if response && (response = response[key])
-              next
-            else
-              break
-            end
-          end
-          if response
-            response[last] = value
-          end
-          nil
-        end
-
-        def value_at(path)
-          response = @result
-          path.each do |key|
-            if response && (response = response[key])
-              next
-            else
-              break
-            end
-          end
-          response
-        end
-
-        def final_value
-          @result
-        end
-
         def inspect
-          "#<#{self.class.name}>"
+          "#<#{self.class.name} response=#{@response.inspect}>"
         end
 
         # This _begins_ the execution. Some deferred work
@@ -103,7 +69,7 @@ module GraphQL
 
           if object_proxy.nil?
             # Root .authorized? returned false.
-            @result = nil
+            @response = nil
           else
             resolve_with_directives(object_proxy, root_operation) do # execute query level directives
               gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
@@ -116,7 +82,7 @@ module GraphQL
                   root_type,
                   root_op_type == "mutation",
                   gathered_selections,
-                  @result,
+                  @response,
                 )
               }
             end
@@ -203,7 +169,7 @@ module GraphQL
         attr_reader :progress_path
 
         # @return [void]
-        def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field, selections_result)
+        def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field, selections_result) # rubocop:disable Metrics/ParameterLists
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
           # selections of the field, it will be an Array of nodes
@@ -372,7 +338,7 @@ module GraphQL
               parent = selection_result.graphql_parent
               name_in_parent = selection_result.graphql_name
               if parent.nil? # This is a top-level result hash
-                @result = nil
+                @response = nil
               else
                 set_result(parent, name_in_parent, nil)
               end
@@ -383,7 +349,7 @@ module GraphQL
         end
 
         HALT = Object.new
-        def continue_value(path, value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
+        def continue_value(path, value, parent_type, field, is_non_null, ast_node, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
           if value.nil?
             if is_non_null
               err = parent_type::InvalidNullError.new(parent_type, field, value)
@@ -661,6 +627,12 @@ module GraphQL
 
         def authorized_new(type, value, context)
           type.authorized_new(value, context)
+        end
+
+        def lazy?(object)
+          @lazy_cache.fetch(object.class) {
+            @lazy_cache[object.class] = @schema.lazy?(object)
+          }
         end
       end
     end

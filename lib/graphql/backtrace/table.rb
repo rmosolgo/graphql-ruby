@@ -83,7 +83,7 @@ module GraphQL
           value = if top && @override_value
             @override_value
           else
-            @context.query.context.namespace(:interpreter)[:runtime].value_at(context_entry.path)
+            value_at(@context.query.context.namespace(:interpreter)[:runtime], context_entry.path)
           end
           rows << [
             "#{context_entry.ast_node ? context_entry.ast_node.position.join(":") : ""}",
@@ -130,7 +130,7 @@ module GraphQL
           if object.is_a?(GraphQL::Schema::Object)
             object = object.object
           end
-          value = context_entry.namespace(:interpreter)[:runtime].value_at([])
+          value = value_at(context_entry.namespace(:interpreter)[:runtime], [])
           rows << [
             "#{position}",
             "#{op_type}#{op_name ? " #{op_name}" : ""}",
@@ -141,6 +141,18 @@ module GraphQL
         else
           raise "Unexpected get_rows subject #{context_entry.class} (#{context_entry.inspect})"
         end
+      end
+
+      def value_at(runtime, path)
+        response = runtime.response
+        path.each do |key|
+          if response && (response = response[key])
+            next
+          else
+            break
+          end
+        end
+        response
       end
     end
   end
