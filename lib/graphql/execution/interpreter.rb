@@ -4,7 +4,6 @@ require "graphql/execution/interpreter/argument_value"
 require "graphql/execution/interpreter/arguments"
 require "graphql/execution/interpreter/arguments_cache"
 require "graphql/execution/interpreter/execution_errors"
-require "graphql/execution/interpreter/hash_response"
 require "graphql/execution/interpreter/runtime"
 require "graphql/execution/interpreter/resolve"
 require "graphql/execution/interpreter/handles_raw_value"
@@ -19,7 +18,7 @@ module GraphQL
       def execute(_operation, _root_type, query)
         runtime = evaluate(query)
         sync_lazies(query: query)
-        runtime.final_value
+        runtime.response
       end
 
       def self.use(schema_class)
@@ -57,7 +56,7 @@ module GraphQL
 
       def self.finish_query(query, _multiplex)
         {
-          "data" => query.context.namespace(:interpreter)[:runtime].final_value
+          "data" => query.context.namespace(:interpreter)[:runtime].response
         }
       end
 
@@ -67,10 +66,7 @@ module GraphQL
         # Although queries in a multiplex _share_ an Interpreter instance,
         # they also have another item of state, which is private to that query
         # in particular, assign it here:
-        runtime = Runtime.new(
-          query: query,
-          response: HashResponse.new,
-        )
+        runtime = Runtime.new(query: query)
         query.context.namespace(:interpreter)[:runtime] = runtime
 
         query.trace("execute_query", {query: query}) do
@@ -91,7 +87,7 @@ module GraphQL
         final_values = queries.map do |query|
           runtime = query.context.namespace(:interpreter)[:runtime]
           # it might not be present if the query has an error
-          runtime ? runtime.final_value : nil
+          runtime ? runtime.response : nil
         end
         final_values.compact!
         tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
