@@ -47,6 +47,13 @@ module GraphQL
           @multiplex_context = query.multiplex.context
           @interpreter_context = @context.namespace(:interpreter)
           @response = GraphQLResultHash.new
+          @runtime_directive_names = []
+          noop_resolve_owner = GraphQL::Schema::Directive.singleton_class
+          schema.directives.each do |name, dir_defn|
+            if dir_defn.method(:resolve).owner != noop_resolve_owner
+              @runtime_directive_names << name
+            end
+          end
           # A cache of { Class => { String => Schema::Field } }
           # Which assumes that MyObject.get_field("myField") will return the same field
           # during the lifetime of a query
@@ -75,7 +82,6 @@ module GraphQL
             # Root .authorized? returned false.
             @response = nil
           else
-            p [:Root_object_id, @response.object_id]
             resolve_with_directives(object_proxy, root_operation) do # execute query level directives
               gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
               use_forking = gathered_selections.size > 1
@@ -163,7 +169,7 @@ module GraphQL
                 selections_by_name[response_key] = node
               end
             when GraphQL::Language::Nodes::InlineFragment
-              if node.directives.any? { |d| d.name != "skip" && d.name != "include" }
+              if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = GraphQLSelectionSet.new
                 next_selections.graphql_ast_node = node
                 selections_to_run << next_selections
@@ -188,7 +194,7 @@ module GraphQL
             when GraphQL::Language::Nodes::FragmentSpread
               fragment_def = query.fragments[node.name]
               type_defn = schema.get_type(fragment_def.type.name)
-              if node.directives.any? { |d| d.name != "skip" && d.name != "include" }
+              if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = GraphQLSelectionSet.new
                 next_selections.graphql_ast_node = node
                 selections_to_run << next_selections
@@ -405,7 +411,6 @@ module GraphQL
                 set_result(parent, name_in_parent, nil)
               end
             else
-              p [:set, selection_result.object_id, result_name, value.class]
               selection_result[result_name] = value
             end
           end
@@ -680,7 +685,6 @@ module GraphQL
             if eager
               lazy.value
             else
-              p [:set_lazy, result.object_id, result_name, lazy.class]
               result[result_name] = lazy
               lazy
             end

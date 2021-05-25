@@ -93,7 +93,6 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
         ctx[:count_fields] ||= Hash.new { |h, k| h[k] = [] }
         field_count = result.is_a?(Hash) ? result.size : 1
-        p [path, field_count, result]
         ctx[:count_fields][path] << field_count
         nil # this does nothing
       end
@@ -146,7 +145,6 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
   end
 
   describe "runtime directives" do
-    focus
     it "works with fragment spreads, inline fragments, and fields" do
       query_str = <<-GRAPHQL
       {
