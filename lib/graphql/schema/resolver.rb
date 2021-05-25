@@ -383,14 +383,15 @@ module GraphQL
           own_exts = @own_extensions
           # Jump through some hoops to avoid creating arrays when we don't actually need them
           if superclass.respond_to?(:extensions)
+            s_exts = superclass.extensions
             if own_exts
-              if (s_exts = superclass.extensions).any?
-                own_exts + superclass.extensions
+              if s_exts.any?
+                own_exts + s_exts
               else
                 own_exts
               end
             else
-              superclass.extensions
+              s_exts
             end
           else
             own_exts || EMPTY_ARRAY
