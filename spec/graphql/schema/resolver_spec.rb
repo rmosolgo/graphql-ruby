@@ -811,6 +811,20 @@ describe GraphQL::Schema::Resolver do
         res = exec_query " { resolverWithExtension } "
         assert_equal "Hi, Robert!", res["data"]["resolverWithExtension"]
       end
+
+      it "inherits extensions" do
+        r1 = Class.new(GraphQL::Schema::Resolver) do
+          extension(ResolverTest::GreetingExtension)
+        end
+
+        e2 = Class.new(GraphQL::Schema::FieldExtension)
+        r2 = Class.new(r1) do
+          extension(e2)
+        end
+
+        assert_equal 1, r1.extensions.size
+        assert_equal 2, r2.extensions.size
+      end
     end
 
     describe "max_page_size" do

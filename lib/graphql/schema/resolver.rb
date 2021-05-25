@@ -374,15 +374,35 @@ module GraphQL
         # @param extension [Class] Extension class
         # @param options [Hash] Optional extension options
         def extension(extension, **options)
-          extensions << {extension => options}
+          @own_extensions ||= []
+          @own_extensions << {extension => options}
         end
 
         # @api private
         def extensions
-          @extensions ||= []
+          own_exts = @own_extensions
+          # Jump through some hoops to avoid creating arrays when we don't actually need them
+          if superclass.respond_to?(:extensions)
+            if own_exts
+              if (s_exts = superclass.extensions).any?
+                own_exts + superclass.extensions
+              else
+                own_exts
+              end
+            else
+              superclass.extensions
+            end
+          else
+            own_exts || EMPTY_ARRAY
+          end
         end
 
         private
+
+        def own_extensions
+          @own_extensions
+        end
+
 
         def own_arguments_loads_as_type
           @own_arguments_loads_as_type ||= {}
