@@ -404,7 +404,6 @@ module GraphQL
           @own_extensions
         end
 
-
         def own_arguments_loads_as_type
           @own_arguments_loads_as_type ||= {}
         end
