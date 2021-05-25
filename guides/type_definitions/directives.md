@@ -77,7 +77,7 @@ query {
 Directive classes may implement the following class methods to interact with the runtime:
 
 - `def self.include?(obj, args, ctx)`: If this hook returns `false`, the nodes flagged by this directive will be skipped at runtime.
-- `def self.resolve(obj, args, ctx)`: Wraps the resolution of flagged nodes. Resolution is passed as a __block__, so `yield` will continue resolution. The return value of this method will be treated as the return value of the flagged field.
+- `def self.resolve(obj, args, ctx)`: Wraps the resolution of flagged nodes. Resolution is passed as a __block__, so `yield` will continue resolution.
 
 Looking for a runtime hook that isn't listed here? {% open_an_issue "New directive hook: @something", "<!-- Describe how the directive would be used and then how you might implement it --> " %} to start the conversation!
 

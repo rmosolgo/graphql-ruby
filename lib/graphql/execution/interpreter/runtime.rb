@@ -23,6 +23,10 @@ module GraphQL
           include GraphQLResult
         end
 
+        class GraphQLSelectionSet < Hash
+          attr_accessor :graphql_ast_node
+        end
+
         # @return [GraphQL::Query]
         attr_reader :query
 
@@ -71,20 +75,34 @@ module GraphQL
             # Root .authorized? returned false.
             @response = nil
           else
+            p [:Root_object_id, @response.object_id]
             resolve_with_directives(object_proxy, root_operation) do # execute query level directives
               gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
+              use_forking = gathered_selections.size > 1
               # Make the first fiber which will begin execution
-              @dataloader.append_job {
-                evaluate_selections(
-                  path,
-                  context.scoped_context,
-                  object_proxy,
-                  root_type,
-                  root_op_type == "mutation",
-                  gathered_selections,
-                  @response,
-                )
-              }
+              gathered_selections.each do |selections|
+                selection_response = if use_forking
+                  GraphQLResultHash.new
+                else
+                  @response
+                end
+
+                @dataloader.append_job {
+                  set_all_interpreter_context(query.root_value, nil, nil, path)
+                  resolve_with_directives(object_proxy, selections.graphql_ast_node) do
+                    evaluate_selections(
+                      path,
+                      context.scoped_context,
+                      object_proxy,
+                      root_type,
+                      root_op_type == "mutation",
+                      selections,
+                      selection_response,
+                      use_forking ? @response : nil,
+                    )
+                  end
+                }
+              end
             end
           end
           delete_interpreter_context(:current_path)
@@ -94,7 +112,33 @@ module GraphQL
           nil
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_by_name = {})
+        # @return [void]
+        def deep_merge_selection_result(from_result, into_result)
+          from_result.each do |key, value|
+            if !into_result.key?(key)
+              into_result[key] = value
+            else
+              case value
+              when Hash
+                deep_merge_selection_result(value, into_result[key])
+              when Array
+                raise "Haven't implemented this yet?"
+              else
+                # This is a scalar conflict?!
+                raise "Invariant: conflict merging results on #{key.inspect}. Old: #{into_result[key].inspect}, New: #{value.inspect}.\n Old result: #{into_result.inspect}\n New result: #{from_result.inspect}"
+              end
+            end
+          end
+          nil
+        end
+
+        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = nil)
+          if selections_by_name.nil?
+            selections_by_name = GraphQLSelectionSet.new
+            selections_to_run = []
+            selections_to_run << selections_by_name
+          end
+
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
@@ -119,26 +163,44 @@ module GraphQL
                 selections_by_name[response_key] = node
               end
             when GraphQL::Language::Nodes::InlineFragment
+              if node.directives.any? { |d| d.name != "skip" && d.name != "include" }
+                next_selections = GraphQLSelectionSet.new
+                next_selections.graphql_ast_node = node
+                selections_to_run << next_selections
+              else
+                next_selections = selections_by_name
+              end
+
               if node.type
                 type_defn = schema.get_type(node.type.name)
+
                 # Faster than .map{}.include?()
                 query.warden.possible_types(type_defn).each do |t|
                   if t == owner_type
-                    gather_selections(owner_object, owner_type, node.selections, selections_by_name)
+                    gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
                     break
                   end
                 end
               else
                 # it's an untyped fragment, definitely continue
-                gather_selections(owner_object, owner_type, node.selections, selections_by_name)
+                gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
               end
             when GraphQL::Language::Nodes::FragmentSpread
               fragment_def = query.fragments[node.name]
               type_defn = schema.get_type(fragment_def.type.name)
+              if node.directives.any? { |d| d.name != "skip" && d.name != "include" }
+                next_selections = GraphQLSelectionSet.new
+                next_selections.graphql_ast_node = node
+                selections_to_run << next_selections
+              else
+                next_selections = selections_by_name
+              end
+
+
               possible_types = query.warden.possible_types(type_defn)
               possible_types.each do |t|
                 if t == owner_type
-                  gather_selections(owner_object, owner_type, fragment_def.selections, selections_by_name)
+                  gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
                   break
                 end
               end
@@ -146,24 +208,32 @@ module GraphQL
               raise "Invariant: unexpected selection class: #{node.class}"
             end
           end
-          selections_by_name
+          selections_to_run
         end
 
         NO_ARGS = {}.freeze
 
         # @return [void]
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, selections_result)
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result)
           set_all_interpreter_context(owner_object, nil, nil, path)
 
+          finished_jobs = 0
+          enqueued_jobs = gathered_selections.size
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
             @dataloader.append_job {
               evaluate_selection(
                 path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection, selections_result
               )
+              finished_jobs += 1
+              if target_result && finished_jobs == enqueued_jobs
+                # TODO the problem here is that `selections_result` will be updated later (eg, lazies)
+                # but `target_result` is what gets returned to the caller. So the updates are lost in thin air.
+                deep_merge_selection_result(selections_result, target_result)
+              end
             }
           end
 
-          nil
+          selections_result
         end
 
         attr_reader :progress_path
@@ -335,6 +405,7 @@ module GraphQL
                 set_result(parent, name_in_parent, nil)
               end
             else
+              p [:set, selection_result.object_id, result_name, value.class]
               selection_result[result_name] = value
             end
           end
@@ -459,7 +530,31 @@ module GraphQL
                 response_hash.graphql_result_name = result_name
                 set_result(selection_result, result_name, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
-                evaluate_selections(path, context.scoped_context, continue_value, current_type, false, gathered_selections, response_hash)
+                use_forking = gathered_selections.size != 1
+                gathered_selections.each do |selections|
+                  if use_forking
+                    this_result = GraphQLResultHash.new
+                    this_result.graphql_parent = selection_result
+                    this_result.graphql_result_name = result_name
+                  else
+                    this_result = response_hash
+                  end
+
+                  set_all_interpreter_context(continue_value, nil, nil, path) # reset this mutable state
+                  resolve_with_directives(continue_value, selections.graphql_ast_node) do
+                    evaluate_selections(
+                      path,
+                      context.scoped_context,
+                      continue_value,
+                      current_type,
+                      false,
+                      selections,
+                      this_result,
+                      use_forking ? response_hash : nil
+                    )
+                    this_result
+                  end
+                end
                 response_hash
               end
             end
@@ -506,7 +601,7 @@ module GraphQL
         end
 
         def resolve_with_directives(object, ast_node, &block)
-          return yield if ast_node.directives.empty?
+          return yield if ast_node.nil? || ast_node.directives.empty?
           run_directive(object, ast_node, 0, &block)
         end
 
@@ -585,6 +680,7 @@ module GraphQL
             if eager
               lazy.value
             else
+              p [:set_lazy, result.object_id, result_name, lazy.class]
               result[result_name] = lazy
               lazy
             end
