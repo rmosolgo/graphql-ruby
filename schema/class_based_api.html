@@ -96,6 +96,13 @@
 
 <p>See sections below for specific information about each schema definition class.</p>
 
+<h3 id="note-finding-legacy-members">Note: Finding legacy members</h3>
+<p>As of https://github.com/DmitryTsepelev/rubocop-graphql/pull/39, <a href="https://github.com/DmitryTsepelev/rubocop-graphql">rubocop-graphql</a> supports a rule to find legacy DSL classes! You can install the gem and require it in your <code class="language-plaintext highlighter-rouge">.rubocop.yml</code> file.</p>
+
+<p>An example command to find violating files would then be:</p>
+
+<p><code class="language-plaintext highlighter-rouge">$ rubocop --format files --only GraphQL/LegacyDsl app &gt;&gt; violating_files.txt</code></p>
+
 <h3 id="️-heads-up-️">⚠️ Heads up ⚠️</h3>
 
 <p>Keep in mind that class based Schemas will be initialized at execution time instead of application boot, depending on the size of your schema, this could result in request timeouts for your users after your application restarts. For a workaround please check https://github.com/rmosolgo/graphql-ruby/issues/2034</p>
