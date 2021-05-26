@@ -102,27 +102,39 @@ module GraphQL
           else
             resolve_with_directives(object_proxy, root_operation) do # execute query level directives
               gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
-              use_forking = gathered_selections.size > 1
               # Make the first fiber which will begin execution
-              gathered_selections.each do |selections|
-                selection_response = if use_forking
-                  GraphQLResultHash.new
-                else
-                  @response
+              if gathered_selections.is_a?(Array)
+                gathered_selections.each do |selections|
+                  selection_response = GraphQLResultHash.new
+                  @dataloader.append_job {
+                    set_all_interpreter_context(query.root_value, nil, nil, path)
+                    resolve_with_directives(object_proxy, selections.graphql_ast_node) do
+                      evaluate_selections(
+                        path,
+                        context.scoped_context,
+                        object_proxy,
+                        root_type,
+                        root_op_type == "mutation",
+                        selections,
+                        selection_response,
+                        @response,
+                      )
+                    end
+                  }
                 end
-
+              else
                 @dataloader.append_job {
                   set_all_interpreter_context(query.root_value, nil, nil, path)
-                  resolve_with_directives(object_proxy, selections.graphql_ast_node) do
+                  resolve_with_directives(object_proxy, gathered_selections.graphql_ast_node) do
                     evaluate_selections(
                       path,
                       context.scoped_context,
                       object_proxy,
                       root_type,
                       root_op_type == "mutation",
-                      selections,
-                      selection_response,
-                      use_forking ? @response : nil,
+                      gathered_selections,
+                      @response,
+                      nil,
                     )
                   end
                 }
@@ -157,13 +169,7 @@ module GraphQL
           nil
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = nil)
-          if selections_by_name.nil?
-            selections_by_name = GraphQLSelectionSet.new
-            selections_to_run = []
-            selections_to_run << selections_by_name
-          end
-
+        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = GraphQLSelectionSet.new)
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
@@ -191,7 +197,13 @@ module GraphQL
               if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = GraphQLSelectionSet.new
                 next_selections.graphql_ast_node = node
-                selections_to_run << next_selections
+                if selections_to_run
+                  selections_to_run << next_selections
+                else
+                  selections_to_run = []
+                  selections_to_run << selections_by_name
+                  selections_to_run << next_selections
+                end
               else
                 next_selections = selections_by_name
               end
@@ -216,7 +228,13 @@ module GraphQL
               if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = GraphQLSelectionSet.new
                 next_selections.graphql_ast_node = node
-                selections_to_run << next_selections
+                if selections_to_run
+                  selections_to_run << next_selections
+                else
+                  selections_to_run = []
+                  selections_to_run << selections_by_name
+                  selections_to_run << next_selections
+                end
               else
                 next_selections = selections_by_name
               end
@@ -233,7 +251,7 @@ module GraphQL
               raise "Invariant: unexpected selection class: #{node.class}"
             end
           end
-          selections_to_run
+          selections_to_run || selections_by_name
         end
 
         NO_ARGS = {}.freeze
@@ -554,29 +572,41 @@ module GraphQL
                 response_hash.graphql_result_name = result_name
                 set_result(selection_result, result_name, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
-                use_forking = gathered_selections.size != 1
-                gathered_selections.each do |selections|
-                  if use_forking
+                if gathered_selections.is_a?(Array)
+                  gathered_selections.each do |selections|
                     this_result = GraphQLResultHash.new
                     this_result.graphql_parent = selection_result
                     this_result.graphql_result_name = result_name
-                  else
-                    this_result = response_hash
-                  end
 
+                    set_all_interpreter_context(continue_value, nil, nil, path) # reset this mutable state
+                    resolve_with_directives(continue_value, selections.graphql_ast_node) do
+                      evaluate_selections(
+                        path,
+                        context.scoped_context,
+                        continue_value,
+                        current_type,
+                        false,
+                        selections,
+                        this_result,
+                        response_hash,
+                      )
+                      this_result
+                    end
+                  end
+                else
                   set_all_interpreter_context(continue_value, nil, nil, path) # reset this mutable state
-                  resolve_with_directives(continue_value, selections.graphql_ast_node) do
+                  resolve_with_directives(continue_value, gathered_selections.graphql_ast_node) do
                     evaluate_selections(
                       path,
                       context.scoped_context,
                       continue_value,
                       current_type,
                       false,
-                      selections,
-                      this_result,
-                      use_forking ? response_hash : nil
+                      gathered_selections,
+                      response_hash,
+                      nil,
                     )
-                    this_result
+                    response_hash
                   end
                 end
                 response_hash
