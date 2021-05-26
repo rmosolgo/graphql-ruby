@@ -87,12 +87,17 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
       def self.resolve(obj, args, ctx)
         path = ctx[:current_path]
+        p [:fetched_path, path]
         result = yield
 
-        result = ctx.schema.sync_lazy(result)
+        p [:resolve_all, path]
+        GraphQL::Execution::Interpreter::Resolve.resolve_all([result], ctx.dataloader)
+        p [:run_dataloader, path]
+        ctx.dataloader.run
 
         ctx[:count_fields] ||= Hash.new { |h, k| h[k] = [] }
         field_count = result.is_a?(Hash) ? result.size : 1
+        p [path, field_count, result]
         ctx[:count_fields][path] << field_count
         nil # this does nothing
       end
@@ -145,10 +150,11 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
   end
 
   describe "runtime directives" do
+    focus
     it "works with fragment spreads, inline fragments, and fields" do
       query_str = <<-GRAPHQL
       {
-        thing {
+        t1: thing {
           cn: name @countFields
         }
         ... @countFields {
@@ -169,7 +175,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
       res = RuntimeDirectiveTest::Schema.execute(query_str)
       expected_data = {
-        "thing" => {
+        "t1" => {
           "cn" => "thing",
         },
         "lazyThing" => {
@@ -183,9 +189,9 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       assert_equal expected_data, res["data"]
 
       expected_counts = {
-        ["thing", "cn"] => [1],
+        ["t1", "cn"] => [1],
         [] => [2],
-        ["thing"] => [3],
+        ["lazyThing"] => [3],
       }
       assert_equal expected_counts, res.context[:count_fields]
     end

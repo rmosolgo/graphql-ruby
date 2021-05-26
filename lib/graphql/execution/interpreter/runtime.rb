@@ -17,6 +17,15 @@ module GraphQL
 
         class GraphQLResultHash < Hash
           include GraphQLResult
+
+          attr_accessor :graphql_merged_into
+
+          def []=(key, value)
+            if (t = @graphql_merged_into)
+              t[key] = value
+            end
+            super
+          end
         end
 
         class GraphQLResultArray < Array
@@ -135,6 +144,7 @@ module GraphQL
               end
             end
           end
+          from_result.graphql_merged_into = into_result
           nil
         end
 
