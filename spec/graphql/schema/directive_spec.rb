@@ -87,17 +87,14 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
       def self.resolve(obj, args, ctx)
         path = ctx[:current_path]
-        p [:fetched_path, path]
-        result = yield
-
-        p [:resolve_all, path]
-        GraphQL::Execution::Interpreter::Resolve.resolve_all([result], ctx.dataloader)
-        p [:run_dataloader, path]
-        ctx.dataloader.run
+        result = nil
+        ctx.dataloader.run_contained do
+          result = yield
+          GraphQL::Execution::Interpreter::Resolve.resolve_all([result], ctx.dataloader)
+        end
 
         ctx[:count_fields] ||= Hash.new { |h, k| h[k] = [] }
         field_count = result.is_a?(Hash) ? result.size : 1
-        p [path, field_count, result]
         ctx[:count_fields][path] << field_count
         nil # this does nothing
       end
@@ -150,7 +147,6 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
   end
 
   describe "runtime directives" do
-    focus
     it "works with fragment spreads, inline fragments, and fields" do
       query_str = <<-GRAPHQL
       {
