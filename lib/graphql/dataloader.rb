@@ -136,26 +136,24 @@ module GraphQL
           # This is where an evented approach would be even better -- can we tell which
           # fibers are ready to continue, and continue execution there?
           #
-          source_fiber_stack = if (first_source_fiber = create_source_fiber)
+          source_fiber_queue = if (first_source_fiber = create_source_fiber)
             [first_source_fiber]
           else
             nil
           end
 
-          if source_fiber_stack
-            # Use a stack with `.pop` here so that when a source causes another source to become pending,
-            # that newly-pending source will run _before_ the one that depends on it.
-            # (See below where the old fiber is pushed to the stack, then the new fiber is pushed on the stack.)
-            while (outer_source_fiber = source_fiber_stack.pop)
+          if source_fiber_queue
+            while (outer_source_fiber = source_fiber_queue.shift)
               resume(outer_source_fiber)
 
-              if outer_source_fiber.alive?
-                source_fiber_stack << outer_source_fiber
-              end
               # If this source caused more sources to become pending, run those before running this one again:
               next_source_fiber = create_source_fiber
               if next_source_fiber
-                source_fiber_stack << next_source_fiber
+                source_fiber_queue << next_source_fiber
+              end
+
+              if outer_source_fiber.alive?
+                source_fiber_queue << outer_source_fiber
               end
             end
           end
@@ -224,16 +222,16 @@ module GraphQL
     #
     # @see https://github.com/rmosolgo/graphql-ruby/issues/3449
     def spawn_fiber
-      fiber_locals = {} 
+      fiber_locals = {}
 
       Thread.current.keys.each do |fiber_var_key|
         fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
-      end 
+      end
 
-      Fiber.new do 
+      Fiber.new do
         fiber_locals.each { |k, v| Thread.current[k] = v }
         yield
-      end 
+      end
     end
   end
 end
