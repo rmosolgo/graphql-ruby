@@ -3,7 +3,7 @@
 module GraphQL
   class Schema
     class Addition
-      attr_reader :directives, :possible_types, :types, :union_memberships, :references
+      attr_reader :directives, :possible_types, :types, :union_memberships, :references, :arguments_with_default_values
 
       def initialize(schema:, own_types:, new_types:)
         @schema = schema
@@ -13,6 +13,7 @@ module GraphQL
         @types = {}
         @union_memberships = {}
         @references = Hash.new { |h, k| h[k] = [] }
+        @arguments_with_default_values = []
         add_type_and_traverse(new_types)
       end
 
@@ -164,6 +165,9 @@ module GraphQL
             arg_type = arg.type.unwrap
             references_to(arg_type, from: arg)
             add_type(arg_type, owner: arg, late_types: late_types, path: path + [name])
+            if arg.default_value?
+              @arguments_with_default_values << arg
+            end
           end
         else
           @types[type.graphql_name] = type
@@ -180,6 +184,9 @@ module GraphQL
                 arg_type = arg.type.unwrap
                 references_to(arg_type, from: arg)
                 add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg_name])
+                if arg.default_value?
+                  @arguments_with_default_values << arg
+                end
               end
             end
           end
@@ -189,6 +196,9 @@ module GraphQL
               arg_type = arg.type.unwrap
               references_to(arg_type, from: arg)
               add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg_name])
+              if arg.default_value?
+                @arguments_with_default_values << arg
+              end
             end
           end
           if type.kind.union?

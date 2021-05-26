@@ -396,4 +396,41 @@ describe GraphQL::Schema::Argument do
       assert_equal expected_message, err.message
     end
   end
+
+  describe "validating default values" do
+    it "raises when field argument default values are invalid" do
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :f1, Integer, null: false do
+          argument :arg1, Integer, default_value: nil, required: true
+        end
+      end
+
+      err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
+        Class.new(GraphQL::Schema) do
+          query(query_type)
+        end
+      end
+      expected_message = "`Query.f1.arg1` has an invalid default value: `nil` isn't accepted by `Int!`; update the default value or the argument type."
+      assert_equal expected_message, err.message
+    end
+
+    it "TODO: raises when input argument default values are invalid"
+
+    it "TODO: raises when directive argument default values are invalid"
+
+    it "raises when parsing a schema from a string" do
+      schema_str = <<-GRAPHQL
+      type Query {
+        f1(arg1: Int! = null): Int!
+      }
+      GRAPHQL
+
+      err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
+        GraphQL::Schema.from_definition(schema_str)
+      end
+      expected_message = "`Query.f1.arg1` has an invalid default value: `nil` isn't accepted by `Int!`; update the default value or the argument type."
+      assert_equal expected_message, err.message
+    end
+  end
 end

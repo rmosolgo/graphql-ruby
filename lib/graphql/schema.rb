@@ -1725,6 +1725,10 @@ module GraphQL
         }
 
         addition.directives.each { |dir_class| own_directives[dir_class.graphql_name] = dir_class }
+
+        addition.arguments_with_default_values.each do |arg|
+          arg.validate_default_value
+        end
       end
 
       def lazy_methods
